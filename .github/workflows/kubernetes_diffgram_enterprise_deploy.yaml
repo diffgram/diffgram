@@ -22,6 +22,11 @@ on:
 jobs:
   publishimages:
     needs: [pr_commented]
+    if: "(!github.event.issue.pull_request) ||
+                  (github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                  (github.event.comment.author_association == 'OWNER' ||
+                  github.event.comment.author_association == 'COLLABORATOR' ||
+                  github.event.comment.author_association == 'MEMBER' ))"
     uses: ./.github/workflows/publish_docker_images.yaml
     name: Publish Images
     secrets:
@@ -32,10 +37,6 @@ jobs:
   pr_commented:
     # This job only runs for pull request comments
     name: PR Comment Deploy
-    if: "github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
-          (github.event.comment.author_association == 'OWNER' ||
-          github.event.comment.author_association == 'COLLABORATOR' ||
-          github.event.comment.author_association == 'MEMBER' )"
     runs-on: ubuntu-latest
     steps:
       - run: |
@@ -50,13 +51,8 @@ jobs:
         run: |
           echo "valid_comment=true" >> $GITHUB_ENV
 
-      - name: Check that comments belongs to org/repo
-        if: "github.event.issue.pull_request != null && !contains(github.event.comment.body, '/deploy') ||
-         !(github.event.comment.author_association == 'OWNER' ||
-         github.event.comment.author_association == 'COLLABORATOR' ||
-         github.event.comment.author_association == 'MEMBER' )"
-        run: exit 1
       - uses: xt0rted/pull-request-comment-branch@v1
+        if: "github.event.issue.pull_request"
         id: comment-branch
 
       - name: see vars
@@ -78,6 +74,7 @@ jobs:
 
       - name: Comment PR
         uses: NejcZdovc/comment-pr@v1
+        if: "env.valid_comment"
         with:
           message: "This PR is now Being Deployed.... 🚀🚀🚀🚀 \n
           Execution time: `${{steps.get-time.outputs.result}}` \n
@@ -91,7 +88,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [publishimages]
     environment: production
-    if: "github.event.inputs.environment == 'production' && !github.event.issue.pull_request"
+    if: "((!github.event.issue.pull_request) ||
+                  (github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                  (github.event.comment.author_association == 'OWNER' ||
+                  github.event.comment.author_association == 'COLLABORATOR' ||
+                  github.event.comment.author_association == 'MEMBER' ))) && github.event.inputs.environment == 'production'"
     env:
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
       DIFFGRAM_SYSTEM_MODE: ${{ secrets.DIFFGRAM_SYSTEM_MODE }}
@@ -146,7 +147,7 @@ jobs:
           repository: diffgram/diffgram-helm
       - name: Create Diffgram Version Production From Tag or Branch
         run: |
-          echo "diffgram_version=new-relic-${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "diffgram_version=newrelic-${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
@@ -227,7 +228,11 @@ jobs:
     runs-on: ubuntu-latest
     needs: [publishimages]
     environment: staging
-    if: "github.event.inputs.environment == 'staging' || github.event.issue.pull_request"
+    if: "((!github.event.issue.pull_request) ||
+                  (github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                  (github.event.comment.author_association == 'OWNER' ||
+                  github.event.comment.author_association == 'COLLABORATOR' ||
+                  github.event.comment.author_association == 'MEMBER' ))) && github.event.inputs.environment == 'staging'"
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
@@ -344,6 +349,33 @@ jobs:
         run: |
           echo "diffgram_domain_slug=${{ steps.truncatedString.outputs.string }}" >> $GITHUB_ENV
 
+      - name: Create Diffgram Domain Slug from pr
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ steps.truncatedString.outputs.string }}" >> $GITHUB_ENV
+
+      - uses: mad9000/actions-find-and-replace-string@2
+        if: "!github.event.issue.pull_request"
+        id: finalDomain
+        with:
+            source: ${{ env.GITHUB_REF_SLUG }}
+            find: '.'
+            replace: ''               # replace it with a blank string (ie. removing it)
+      - uses: mad9000/actions-find-and-replace-string@2
+        if: "!github.event.issue.pull_request"
+        id: finalDomain2
+        with:
+          source: ${{ steps.finalDomain.outputs.value }}
+          find: '.'
+          replace: ''               # replace it with a blank string (ie. removing it)
+      - run: echo ${{ steps.finalDomain2.outputs.value }}
+
+      - name: Create Diffgram Domain Slug from Dispatch
+
+        if: "!github.event.issue.pull_request"
+        run: |
+          echo "diffgram_domain_slug=${{ steps.finalDomain2.outputs.value }}" >> $GITHUB_ENV
+
 
       - name: Prepare app.yaml for helm chart.
         uses: microsoft/variable-substitution@v1
@@ -434,7 +466,7 @@ jobs:
           helm upgrade --install diffgram . -f values.yaml --namespace diffgram-staging-${{ env.diffgram_domain_slug }}ns
 
       - name: Comment PR
-        if: ${{ failure() }}
+        if: ${{ failure() && github.event.issue.pull_request}}
         uses: NejcZdovc/comment-pr@v1
         with:
           message: "❌ This PR has failed to deploy \n

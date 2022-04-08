@@ -49,9 +49,6 @@ class Attribute_Template_Group(Base):
     min_value = Column(Integer)
     max_value = Column(Integer)
 
-    # For Tree View Data
-    tree_data = Column(MutableDict.as_mutable(JSONB))
-
     # External ID's for referencing on integrations like Labelbox, Supervisely, etc.
     default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))  # TODO: add to production
     default_external_map = relationship("ExternalMap",
@@ -114,7 +111,6 @@ class Attribute_Template_Group(Base):
             'default_id': self.default_id,
             'is_global': self.is_global,
             'global_type': self.global_type,
-            'tree_data': self.tree_data or {"data": []}
         }
 
     def serialize_for_export(self):
@@ -135,7 +131,6 @@ class Attribute_Template_Group(Base):
             'max_value': self.max_value,
             'is_global': self.is_global,
             'global_type': self.global_type,
-            'tree_data': self.tree_data or {"data": []}
         }
 
     def serialize_with_attributes_and_labels(self, session):
@@ -235,7 +230,7 @@ class Attribute_Template_Group(Base):
              project_id,
              archived = False,
              recursive = False,
-             limit = 100,
+             limit = None,
              return_kind = "objects",
              is_root = None,
              schema_id = None,
@@ -269,8 +264,10 @@ class Attribute_Template_Group(Base):
             )
         # Future
         if recursive == True:
+            if limit:
+                query = query.limit(limit)
 
-            root_group_list = query.limit(limit).all()
+            root_group_list = query.all()
 
             for group in root_group_list:
                 # Caching / have_children? flag on attribute group?
@@ -291,54 +288,15 @@ class Attribute_Template_Group(Base):
 
                 return serialized
         ## end future
-
+        if limit:
+            query = query.limit(limit)
         if return_kind == "count":
-            return query.limit(limit).count()
+            return query.count()
 
         if return_kind == "objects":
-            return query.limit(limit).all()
+            return query.all()
 
-    def generate_unselected_attribute_answer(self, nested_data = None, nested_result = None):
-        if not self.tree_data:
-            return {}
 
-        current_data = nested_data
-        if nested_data is None:
-            current_data = self.tree_data['data']
-
-        result = nested_result
-        if nested_result is None:
-            result = {}
-
-        for elm in current_data:
-            result[elm['name']] = {
-                'is_selected': False
-            }
-            if elm.get('children') and len(elm.get('children')) > 0:
-                self.generate_unselected_attribute_answer(
-                    nested_data = elm.get('children'),
-                    nested_result = result
-                )
-
-        return result
-    def get_tree_attribute_item_names(self, nested_data = None):
-        """
-            Given the attr group. Extract all the names of the items
-            from the tree structure.
-        :param attr_group:
-        :return:
-        """
-        result = []
-        current_data = self.tree_data['data']
-        if nested_data is not None:
-            current_data = nested_data
-        print('CURRENT DATA', current_data)
-        for item in current_data:
-            result.append(item['name'])
-            if item.get('children') and len(item.get('children')) > 0:
-                nested_res = self.get_tree_attribute_item_names(nested_data = item.get('children'))
-                result = result + nested_res
-        return result
 
     @staticmethod
     def get_by_id(session,

@@ -3690,10 +3690,6 @@ export default Vue.extend({
        * to be checking the single file flag ones
        */
 
-      if (this.current_label_file.label.default_sequences_to_single_frame) {
-        return true;
-      }
-
       let count = 0;
 
       for (let i in this.instance_list) {
