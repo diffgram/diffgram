@@ -95,7 +95,7 @@ class LabelSchema(Base, SerializerMixin):
         result = query.all()
         return result
 
-    def get_label_files(self, session: Session, project_id: int):
+    def get_label_files(self, session: Session):
         query = session.query(LabelSchemaLink).filter(
             LabelSchemaLink.schema_id == self.id,
             LabelSchemaLink.label_file_id != None
@@ -106,6 +106,27 @@ class LabelSchema(Base, SerializerMixin):
             result.append(elm.label_file)
         return result
 
+    def get_attribute_groups(self, session: Session):
+        query = session.query(LabelSchemaLink).filter(
+            LabelSchemaLink.schema_id == self.id,
+            LabelSchemaLink.attribute_template_group_id != None
+        )
+        links = query.all()
+        result = []
+        for elm in links:
+            result.append(elm.attribute_template_group)
+        return result
+
+    def get_instance_templates(self, session: Session):
+        query = session.query(LabelSchemaLink).filter(
+            LabelSchemaLink.schema_id == self.id,
+            LabelSchemaLink.instance_template_id != None
+        )
+        links = query.all()
+        result = []
+        for elm in links:
+            result.append(elm.instance_template)
+        return result
 
 class LabelSchemaLink(Base, SerializerMixin):
     __tablename__ = 'label_schema_link'

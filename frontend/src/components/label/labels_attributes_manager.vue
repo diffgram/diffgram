@@ -29,6 +29,7 @@
                         slot-scope="props">
 
                 <v_labels_new @label_created="on_label_created"
+                              :schema_id="schema_id"
                               :menu_open="props.menu_open">
                 </v_labels_new>
 
@@ -48,6 +49,7 @@
         <v-col cols="6" style="border-left: 1px solid #b9d1ec" class="d-flex flex-column">
           <attribute_group_list_manager
             v-if="project_string_id"
+            :schema_id="schema_id"
             ref="attribute_group_list_manager"
             :show_borders="true"
             :project_string_id="project_string_id"
@@ -93,6 +95,9 @@
       },
       props: {
         'project_string_id': {},
+        'schema_id': {
+          required: true
+        },
       },
       watch: {},
       async mounted() {
@@ -103,6 +108,7 @@
         return {
 
           openedPanel: false,
+          schema_id: false,
           label_file_list: [],
           attribute_group_list: [],
           label_file_colour_map: {}

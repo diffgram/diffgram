@@ -46,6 +46,9 @@ import axios from '../../services/customInstance';
     props: {
       'project_string_id' : {
         default: null
+      },
+      'schema_id':{
+        required: true
       }
     },
     data() {
@@ -75,7 +78,7 @@ import axios from '../../services/customInstance';
           '/api/v1/project/' + this.project_string_id +
           '/attribute/group/new',
           {
-
+            schema_id: this.schema_id
           }).then(response => {
 
             // TODO check if syntax is right for emit

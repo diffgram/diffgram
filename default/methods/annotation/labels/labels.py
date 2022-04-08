@@ -65,7 +65,7 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
     project = Project.get_project(session, project_string_id)
 
     if not schema_id:
-        log['error'] = 'Provide Schema_id'
+        log['error']['schema_id'] = 'Provide Schema_id'
         return None
 
     colour = input['colour']

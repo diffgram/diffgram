@@ -501,7 +501,7 @@ class Project(Base, Caching):
 
         if schema_id is not None:
             schema = LabelSchema.get_by_id(session = session, id = schema_id)
-            label_files = schema.get_label_files(session = session, project_id = self.id)
+            label_files = schema.get_label_files(session = session)
             link_file_id_list = [l.id for l in label_files]
             working_dir_file_list_query = working_dir_file_list_query.filter(
                 File.id.in_(link_file_id_list)

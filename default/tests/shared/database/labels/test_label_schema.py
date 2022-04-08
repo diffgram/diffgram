@@ -70,13 +70,86 @@ class TestLabelSchema(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(fetched_schema.name, schema.name)
         self.assertEqual(fetched_schema.project.id, schema.project.id)
 
+
     def test_get_label_files(self):
-        schema1 = LabelSchema.new(
+        schema = LabelSchema.new(
             session = self.session,
             name = 'test',
             project_id = self.project.id,
             member_created_id = self.member.id
         )
+        id_list = []
+        for i in range(0, 5):
+            label1 = data_mocking.create_label({
+                'name': f'apple {i}',
+            }, self.session)
+            label_file1 = data_mocking.create_label_file({
+                'label': label1,
+                'project_id': self.project.id
+            }, self.session)
+            schema_link = LabelSchemaLink.new_label_link(
+                session = self.session,
+                schema_id = schema.id,
+                label_file_id = label_file1.id,
+                member_created_id = self.member.id
+            )
+            id_list.append(label_file1.id)
+        self.session.commit()
+        label_files = schema.get_label_files(session = self.session)
+        self.assertEqual(len(label_files), 5)
+        for elm in label_files:
+            self.assertTrue(elm.id in id_list)
+
+    def test_get_attribute_groups(self):
+        schema = LabelSchema.new(
+            session = self.session,
+            name = 'test',
+            project_id = self.project.id,
+            member_created_id = self.member.id
+        )
+        id_list = []
+        for i in range(0, 5):
+            attr = data_mocking.create_attribute_template_group({
+                'name': f'apple {i}',
+            }, self.session)
+            schema_link = LabelSchemaLink.new_attribute_group_link(
+                session = self.session,
+                schema_id = schema.id,
+                attribute_group_id = attr.id,
+                member_created_id = self.member.id
+            )
+            id_list.append(attr.id)
+        self.session.commit()
+        attr_list = schema.get_attribute_groups(session = self.session)
+        self.assertEqual(len(attr_list), 5)
+        for elm in attr_list:
+            self.assertTrue(elm.id in id_list)
+
+    def test_get_instance_templates(self):
+        schema = LabelSchema.new(
+            session = self.session,
+            name = 'test',
+            project_id = self.project.id,
+            member_created_id = self.member.id
+        )
+        id_list = []
+        for i in range(0, 5):
+            template = data_mocking.create_instance_template({
+                'name': f'apple {i}',
+            }, self.session)
+            schema_link = LabelSchemaLink.new_instance_template_link(
+                session = self.session,
+                schema_id = schema.id,
+                instance_template_id = template.id,
+                member_created_id = self.member.id
+            )
+            id_list.append(template.id)
+        self.session.commit()
+        template_list = schema.get_instance_templates(session = self.session)
+        self.assertEqual(len(template_list), 5)
+        for elm in template_list:
+            self.assertTrue(elm.id in id_list)
+
 
     def test_serialize(self):
         project_data = data_mocking.create_project_with_context(
@@ -178,35 +251,6 @@ class TestLabelSchemaLink(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(schema_link.schema_id, schema.id)
         self.assertEqual(schema_link.label_file_id, label_file.id)
         self.assertEqual(schema_link.member_created_id, self.member.id)
-
-    def test_new_attribute_group_link(self):
-        schema = LabelSchema.new(
-            session = self.session,
-            name = 'test',
-            project_id = self.project.id,
-            member_created_id = self.member.id
-        )
-        id_list = []
-        for i in range(0, 5):
-            label1 = data_mocking.create_label({
-                'name': f'apple {i}',
-            }, self.session)
-            label_file1 = data_mocking.create_label_file({
-                'label': label1,
-                'project_id': self.project.id
-            }, self.session)
-            schema_link = LabelSchemaLink.new_label_link(
-                session = self.session,
-                schema_id = schema.id,
-                label_file_id = label_file1.id,
-                member_created_id = self.member.id
-            )
-            id_list.append(label_file1.id)
-        self.session.commit()
-        label_files = schema.get_label_files(session = self.session, project_id = self.project.id)
-        self.assertEqual(len(label_files), 5)
-        for elm in label_files:
-            self.assertTrue(elm.id in id_list)
 
     def test_new_instance_template_link(self):
         schema = LabelSchema.new(

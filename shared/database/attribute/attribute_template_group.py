@@ -4,6 +4,7 @@ from shared.database.attribute.attribute_template import Attribute_Template
 from shared.database.attribute.attribute_template_group_to_file import Attribute_Template_Group_to_File
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import joinedload
+from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
 
 class Attribute_Template_Group(Base):
     """
@@ -237,6 +238,7 @@ class Attribute_Template_Group(Base):
              limit = 100,
              return_kind = "objects",
              is_root = None,
+             schema_id = None,
              is_global = None
              ):
         """
@@ -258,6 +260,13 @@ class Attribute_Template_Group(Base):
         if is_root:
             query = query.filter(Attribute_Template_Group.is_root == is_root)
 
+        if schema_id:
+            schema = LabelSchema.get_by_id(session, schema_id)
+            attr_group_list = schema.get_attribute_groups(session)
+            group_ids = [g.id for g in attr_group_list]
+            query = query.filter(
+                Attribute_Template_Group.id.in_(group_ids)
+            )
         # Future
         if recursive == True:
 

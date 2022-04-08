@@ -1,10 +1,9 @@
 <template>
-
-
   <v-container class="pa-0 mt-8">
     <v-alert type="success" :dismissible="true" v-model="show_success_alert">Instance template created successfully.
     </v-alert>
-    <v-card style="overflow-y:auto; max-height: 700px" elevation="3" class="pr-4">
+    <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
+    <v-card v-if="!loading" style="overflow-y:auto; max-height: 700px" elevation="3" class="pr-4">
       <v-card-title>
         Instance Templates
         <v-btn icon color="primary" data-cy="new_instance_template" @click="open_instance_template_create_dialog">
@@ -81,6 +80,7 @@
     </v-card>
     <instance_template_creation_dialog
       :project_string_id="project_string_id"
+      :schema_id="schema_id"
       :instance_template="selected_instance_template"
       ref="instance_template_creation_dialog"
       @instance_template_create_success="instance_template_create_success"
@@ -104,8 +104,15 @@
       },
       props: {
         'project_string_id': {},
+        'schema_id': {
+          required: true
+        },
       },
-      watch: {},
+      watch: {
+        schema_id: function(){
+          this.fetch_instance_templates();
+        }
+      },
       mounted() {
         this.fetch_instance_templates();
       },
@@ -181,7 +188,9 @@
           }
           try {
             this.loading = true;
-            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/instance-template/list`, {});
+            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/instance-template/list`, {
+              schema_id: this.schema_id
+            });
             if (response.data.instance_template_list) {
               this.instance_template_list = response.data.instance_template_list;
             }

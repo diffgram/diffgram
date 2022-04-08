@@ -106,14 +106,17 @@
               </v-tab-item>
 
               <v-tab-item>
-                <attribute_home :project_string_id="project_string_id">
+                <attribute_home v-if="current_schema"
+                                :schema_id="current_schema ? current_schema.id : undefined"
+                                :project_string_id="project_string_id">
 
                 </attribute_home>
               </v-tab-item>
 
               <v-tab-item>
                 <instance_template_list
-
+                  v-if="current_schema"
+                  :schema_id="current_schema ? current_schema.id : undefined"
                   :project_string_id="project_string_id"
                 ></instance_template_list>
               </v-tab-item>

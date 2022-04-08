@@ -1,7 +1,7 @@
 # OPENCORE - ADD
 from methods.regular.regular_api import *
 import re
-
+from shared.database.labels.label_schema import LabelSchema
 project_name_regular_expression = re.compile(r"^[a-zA-Z0-9_ ]{4,30}$")
 project_id_regular_expression = re.compile(r"^[a-zA-Z0-9_-]{4,30}$")
 
@@ -33,7 +33,7 @@ def project_new_api():
     with sessionMaker.session_scope() as session:
 
         user = User.get(session=session)
-
+        member =  get_member(session)
         if user.security_email_verified is not True:
             log['error']['security_email_verified'] = "Please verify your email first"
             return jsonify(log=log), 400
@@ -78,6 +78,14 @@ def project_new_api():
             member_created=user.member
         )
 
+        schema = LabelSchema.new(
+            session = session,
+            name = 'Default Schema',
+            project_id = project.id,
+            member_created_id = member.id
+        )
+
         log['success'] = True
         return jsonify(log=log,
+                       schema = schema.serialize(),
                        project=project.serialize()), 200

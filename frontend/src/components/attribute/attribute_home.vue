@@ -4,11 +4,12 @@
 
   <!-- All for a given project? -->
   <attribute_group_list
+      :schema_id="schema_id"
       :project_string_id="project_string_id"
       :mode = " 'edit' "
           >
   </attribute_group_list>
-       
+
 
 </div>
 </template>
@@ -28,6 +29,9 @@ import attribute_group_list from './attribute_group_list.vue';
     props: {
       'project_string_id' : {
         default: null
+      },
+      'schema_id':{
+        required: true
       }
     },
 

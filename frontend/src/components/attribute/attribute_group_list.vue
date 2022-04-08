@@ -1,7 +1,8 @@
 <template>
 <div id="">
 
-<div style="overflow-y:auto">
+<v-progress-linear class="mt-4" indeterminate v-if="loading"></v-progress-linear>
+<div style="overflow-y:auto" v-if="!loading">
   <v-layout v-if="mode == 'edit' " class="d-flex pa-4 align-center">
 
     <!-- TODO trying to separate out this from the list layout
@@ -9,6 +10,7 @@
       admin thing here...-->
 
     <attribute_group_new
+        :schema_id="schema_id"
         :project_string_id="project_string_id">
 
     </attribute_group_new>
@@ -161,6 +163,9 @@ import attribute_group_new from './attribute_group_new.vue'
       'project_string_id' : {
         default: null
       },
+      'schema_id':{
+        required: true
+      },
 
       // edit, annotate,  ...
       'mode' : {
@@ -198,9 +203,11 @@ import attribute_group_new from './attribute_group_new.vue'
     },
 
     watch: {
-
+      schema_id: function(){
+        this.api_attribute_group_list("from_project")
+      },
       attribute_template_group_id() {
-        this.api_attribute_group_list()
+        this.api_attribute_group_list("from_project")
       },
 
       attribute_group_list_prop() {
@@ -296,6 +303,7 @@ import attribute_group_new from './attribute_group_new.vue'
           '/attribute/template/list',
           {
             group_id: this.attribute_template_group_id,
+            schema_id: this.schema_id,
             mode: mode
 
           }).then(response => {

@@ -144,9 +144,7 @@ import Vue from "vue"; export default Vue.extend( {
           this.loading = false
 
           if (error)  {
-              if (error.response.status == 400) {
-                this.error = error.response.data.log.error
-              }
+              this.error = this.$route_api_errors(error)
           }
       });
 
