@@ -7,16 +7,14 @@
       <v-layout row>
         <v-flex>
 
-          <!-- TODO make max height the height of available space? -->
           <v-card style="" elevation="3">
 
             <v-card-title class="d-flex align-center">
-              Label Templates
 
               <!-- New label -->
               <button_with_menu
                 datacy="new_label_template"
-                tooltip_message="New Label Template (Project Wide)"
+                tooltip_message="New Label"
                 :large="true"
                 v-if="show_edit_templates"
                 @click="$store.commit('set_user_is_typing_or_menu_open', true)"
@@ -38,6 +36,7 @@
 
               </button_with_menu>
 
+              <v-spacer></v-spacer>
 
               <v-btn color="primary"
                      text
@@ -286,15 +285,6 @@
               </regular_table>
 
             </v-skeleton-loader>
-
-          </v-card>
-
-          <v-card v-if="show_edit_templates">
-            <v-alert type="info"
-                     dismissible
-            >
-              Once Tasks are launched the labels for those Tasks are "locked" by default.
-            </v-alert>
 
           </v-card>
 
