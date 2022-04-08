@@ -14,8 +14,10 @@
           ref="schema_selector"
           :schema_list="label_schema_list">
         </schema_card_selector>
+
+        <v-card>
         <div class="d-flex flex-column">
-          <div class="mb-4 d-flex align-center justify-start ">
+          <div class="pa-4 d-flex align-center justify-start ">
             <h1 class="font-weight-light mr-2"  >
               <v-icon v-if="!edit_name" color="secondary">mdi-group</v-icon>
               <span class="secondary--text" v-if="current_schema && !edit_name">{{current_schema.name}}</span>
@@ -123,6 +125,7 @@
             </v-tabs-items>
           </v-tabs>
         </div>
+        </v-card>
       </div>
     </v-container>
   </div>

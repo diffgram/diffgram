@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid  v-cloak id="labels_view" class="d-flex flex-column pa-4">
+  <div v-cloak id="labels_view" class="d-flex flex-column pa-4">
 
     <div class="d-flex">
       <v_error_multiple :error="error"></v_error_multiple>
@@ -7,7 +7,7 @@
       <v-layout row>
         <v-flex>
 
-          <v-card style="" elevation="3">
+          <v-card style="" elevation="0">
 
             <v-card-title class="d-flex align-center">
 
@@ -161,11 +161,6 @@
 
                 </template>
 
-                <!--
-                <td>
-                  [category]
-                </td>
-                -->
 
                 <template slot="show_visibility_toggle" slot-scope="props">
 
@@ -344,7 +339,7 @@
     </div>
 
 
-  </v-container>
+  </div>
 </template>
 
 <script lang="ts">
