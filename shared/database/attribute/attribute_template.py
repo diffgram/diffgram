@@ -105,7 +105,7 @@ class Attribute_Template(Base):
              group_id,
              mode = "from_group",
              archived = False,
-             limit = 100,
+             limit = None,
              return_kind = "objects"
              ):
         """
@@ -126,10 +126,14 @@ class Attribute_Template(Base):
         # query = query.order_by(Attribute_Template.display_order)
 
         if return_kind == "count":
-            return query.limit(limit).count()
+            if limit:
+                query = query.limit(limit)
+            return query.count()
 
         if return_kind == "objects":
-            return query.limit(limit).all()
+            if limit:
+                query = query.limit(limit)
+            return query.all()
 
     def serialize(self):
         """

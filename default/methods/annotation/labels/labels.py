@@ -34,13 +34,7 @@ def api_label_new(project_string_id):
 
     spec_list = [
         {'name': str},
-        {'colour': None},
-        {'schema_id': {"type": int, "required": True}},
-        {"default_sequences_to_single_frame": {
-            'default': False,
-            'kind': bool
-        }
-        }
+        {'colour': None}
     ]
 
     log, input, untrusted_input = regular_input.master(request = request,
@@ -78,7 +72,6 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
     label_file = File.new_label_file(
         session=session,
         name=input['name'],
-        default_sequences_to_single_frame=input['default_sequences_to_single_frame'],
         working_dir_id=project.directory_default_id,
         project=project,
         colour=colour,
@@ -106,28 +99,12 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
     return label_file
 
 
-# Rename labels view?
-
 @routes.route('/api/project/<string:project_string_id>/labels', methods = ['GET'])
 @Project_permissions.user_has_project(["admin", "Editor", "Viewer", "allow_if_project_is_public"])
 def api_get_labels(project_string_id):
     """
-    Get labels from project
-
-    In future we could get this from a provided directory,
-    but for now labels all rest in project default directory
-
-    In the past we got this from a individual user's directory but that doesn't
-    make sense in new context Of projects knowing all their directories,
-    sharing work, and even simply using API keys instead of just users logging in
-
     """
 
-    # TODO pull different labels from different places depending on project
-    # Here is in context of a user editing...
-    # Need to know what branch / version...
-    # ie to get from project's master branch
-    # version = project.master_branch.latest_version
     schema_id = request.args.get('schema_id')
     log = regular_log.default()
     with sessionMaker.session_scope() as session:
@@ -142,13 +119,17 @@ def api_get_labels(project_string_id):
         
         global_attribute_groups_serialized_list = project.get_global_attributes(
             session = session)
+
+        attribute_groups_serialized_list = project.get_attributes(session = session)
         
         # Assume can't easily sort this in sql because it's the label which is one layer below
         # labels_out.sort(key=lambda x: x['label']['name'])
 
         return jsonify(labels_out = labels_out,
                        label_file_colour_map = directory.label_file_colour_map,
-                       global_attribute_groups_list = global_attribute_groups_serialized_list), 200
+                       global_attribute_groups_list = global_attribute_groups_serialized_list,
+                       attribute_groups = attribute_groups_serialized_list
+                       ), 200
 
 
 @routes.route('/api/project/<string:project_string_id>' +
@@ -224,7 +205,6 @@ def label_edit(project_string_id):
             label_file = File.new_label_file(
                 session = session,
                 name = name_proposed,
-                default_sequences_to_single_frame = None,
                 working_dir_id = project.directory_default_id,
                 project = project,
                 colour = colour_proposed,
@@ -242,13 +222,6 @@ def label_edit(project_string_id):
 
             colour_proposed = label_file.get("colour", None)
 
-            # Caution note, 'label_proposed' not file
-            default_sequences_to_single_frame_proposed = label_proposed.get(
-                "default_sequences_to_single_frame")
-
-            if default_sequences_to_single_frame_proposed is None:
-                default_sequences_to_single_frame_proposed = False
-
             # Caution
             # We need this because we are trying to
             # maintain unique labels...
@@ -256,8 +229,7 @@ def label_edit(project_string_id):
             # (Which we already have).
             label = Label.new(
                 session,
-                name=name_proposed,
-                default_sequences_to_single_frame=default_sequences_to_single_frame_proposed)
+                name=name_proposed)
 
             existing_file.label_id = label.id
             existing_file.colour = colour_proposed

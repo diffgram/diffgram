@@ -469,6 +469,7 @@ class Project(Base, Caching):
             'api_billing_enabled': self.api_billing_enabled  # TODO review this
         }
 
+
     def get_global_attributes(self, session):
 
         global_attribute_group_list = Attribute_Template_Group.list(
@@ -487,7 +488,27 @@ class Project(Base, Caching):
 
         return global_attribute_groups_serialized_list
 
-    def get_label_list(self, session, directory, schema_id = None):
+ 
+    def get_attributes(self, session):
+
+        attribute_group_list = Attribute_Template_Group.list(
+            session = session,
+            group_id = None,
+            project_id = self.id,
+            archived = False,
+            is_global = None
+            )
+
+        attribute_groups_serialized_list = []
+
+        for attribute_group in attribute_group_list:
+            attribute_groups_serialized_list.append(
+                attribute_group.serialize_with_attributes(session = session))
+
+        return attribute_groups_serialized_list
+
+
+    def get_label_list(self, session, directory, schema_id = None): 
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory.id,
             WorkingDirFileLink.type == "label").subquery('working_dir_sub_query')
@@ -509,8 +530,6 @@ class Project(Base, Caching):
 
         working_dir_file_list = working_dir_file_list_query.all()
         labels_out = []
-
-        # Now getting label file colour map from working dir
 
         colour_map = directory.label_file_colour_map
         rebuild_colour_map = False
@@ -545,9 +564,6 @@ class Project(Base, Caching):
         # In context of a Label File!!
         for file in working_dir_file_list:
 
-            # TODO should we keep file id here
-            # so can use for other aspects assoiated with label
-
             if file.state != "removed":
                 serialized_file_data = file.serialize_base_file()
                 serialized_file_data['colour'] = file.colour
@@ -557,12 +573,10 @@ class Project(Base, Caching):
 
                 labels_out.append(file.serialize_with_label_and_colour(
                     session = session))
-            # label_file_colour_map[file.id] = file.colour
-            # directory.label_file_colour_map[file.id] = file.colour
+
             if rebuild_colour_map is True:
                 colour_map[file.id] = file.colour
                 directory.label_file_colour_map = colour_map
-        # TODO store this...
 
         if rebuild_colour_map is True:
             directory.label_file_colour_map = colour_map

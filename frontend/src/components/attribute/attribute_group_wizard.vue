@@ -552,11 +552,6 @@ export default Vue.extend( {
     Tooltip_button
   },
   props: {
-    'value': {
-      default: {
-        tree_data: []
-      }
-    },
     'kind_list': {
       default: []
     },

@@ -7,7 +7,7 @@ import contextlib
 import inspect
 
 from sqlalchemy.ext.compiler import compiles
-from sqlalchemy.sql.expression import Executable, ClauseElement, _literal_as_text
+from sqlalchemy.sql.expression import Executable, ClauseElement
 
 
 def timeit(method):

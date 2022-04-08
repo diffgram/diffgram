@@ -43,9 +43,6 @@ def upgrade():
                     sa.PrimaryKeyConstraint('id')
                     )
 
-    op.add_column('attribute_template_group', sa.Column('tree_data', MutableDict.as_mutable(JSONB)))
-
-
 def downgrade():
     op.drop_table('project_migration')
     op.drop_column('attribute_template_group', 'tree_data')
