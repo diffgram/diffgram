@@ -20,7 +20,6 @@
           <div class="pa-4 d-flex align-center justify-start ">
             <h1 class="font-weight-light mr-2"  >
               <span class="secondary--text" v-if="!loading && current_schema && !edit_name">{{current_schema.name}}</span>
-              <span class="secondary--text" v-else-if="!loading && !current_schema && !edit_name">All Schemas</span>
             </h1>
             <tooltip_button
               v-if="!edit_name"
@@ -29,15 +28,18 @@
               icon="mdi-pencil"
               :icon_style="true"
               small
+              :disabled="loading"
               color="primary"
               datacy="archive_schema_button"
             >
             </tooltip_button>
+
             <v-text-field
-              v-if="edit_name"
+              v-if="!loading && current_schema && edit_name"
               v-model="current_schema.name"
               @input="has_changes = true"
               @keyup.enter="update_schema_name"
+              :disabled="loading"
               solo
               flat
               style="font-size: 22pt; border: 1px solid grey; height: 55px; max-width: 450px"
@@ -80,6 +82,7 @@
               button_message="Archive Schema"
               @confirm_click="archive_schema"
               icon="mdi-delete"
+              :disabled="loading && !current_schema"
               small
               button_color="error"
               :icon_style="true"
