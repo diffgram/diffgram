@@ -3,15 +3,6 @@
 
   <v-container class="d-flex align-center justify-start">
 
-    <h2 class="font-weight-medium text--primary flex-grow-1">
-      Attributes:
-    </h2>
-
-    <!--
-    <v-icon>mdi-collage</v-icon>
-    -->
-    <v-spacer></v-spacer>
-
     <tooltip_button
       datacy="new_attribute_button"
       button_color="primary"

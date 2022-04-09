@@ -19,7 +19,7 @@
           mdi-file
         </v-icon>
 
-        <h4>Global File Attributes</h4>
+        <h4>Globals</h4>
 
         <v-spacer></v-spacer>
 
