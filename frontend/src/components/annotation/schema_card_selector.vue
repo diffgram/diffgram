@@ -45,7 +45,7 @@
           :class="item.id === selected_schema.id ? 'selected': ''"
         >
           <v-list-item-icon>
-            <v-icon :color="item.id === selected_schema.id ? 'secondary': ''">mdi-group</v-icon>
+            <v-icon :color="item.id === selected_schema.id ? 'secondary': ''">mdi-shape-plus</v-icon>
           </v-list-item-icon>
 
           <v-list-item-content @click="select_schema(item)"

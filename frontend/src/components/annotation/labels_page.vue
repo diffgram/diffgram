@@ -19,9 +19,8 @@
         <div class="d-flex flex-column">
           <div class="pa-4 d-flex align-center justify-start ">
             <h1 class="font-weight-light mr-2"  >
-              <v-icon v-if="!edit_name" color="secondary">mdi-group</v-icon>
-              <span class="secondary--text" v-if="current_schema && !edit_name">{{current_schema.name}}</span>
-              <span class="secondary--text" v-else-if="!current_schema && !edit_name">All Schemas</span>
+              <span class="secondary--text" v-if="!loading && current_schema && !edit_name">{{current_schema.name}}</span>
+              <span class="secondary--text" v-else-if="!loading && !current_schema && !edit_name">All Schemas</span>
             </h1>
             <tooltip_button
               v-if="!edit_name"
@@ -161,9 +160,10 @@ export default Vue.extend({
       tab: null,
       error: null,
       label_schema_list: [],
-      header_items: [{name: 'Labels', icon: 'mdi-group'},
-        {name: 'Attributes', icon: 'mdi-group'},
-        {name: 'Label Templates', icon: 'mdi-group'}]
+      header_items: [
+        {name: 'Labels', icon: 'mdi-star-circle'},
+        {name: 'Attributes', icon: 'mdi-file-tree'},
+        {name: 'Geometries', icon: 'mdi-vector-triangle'}]
     }
   },
   computed: {},

@@ -6,7 +6,7 @@
       data-cy="label_schema_selector"
       :disabled="schema_list_loading"
       @change="on_change_schema"
-      prepend-icon="mdi-group"
+      prepend-icon="mdi-shape-plus"
       item-value="id"
       item-text="name"
       ref="schema_select"
