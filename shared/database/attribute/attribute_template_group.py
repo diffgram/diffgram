@@ -297,7 +297,6 @@ class Attribute_Template_Group(Base):
             return query.all()
 
 
-
     @staticmethod
     def get_by_id(session,
                   id,

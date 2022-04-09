@@ -148,7 +148,6 @@
 import project_new from './project_new';
 import project_members_step from './project_members_step';
 import labels_attributes_manager from '../label/labels_attributes_manager';
-import welcome_builder from '../annotation/welcome_builder';
 import upload_step_wizard from '../input/upload_step_wizard';
 
 import Vue from "vue";
@@ -159,7 +158,6 @@ export default Vue.extend( {
     upload_step_wizard,
     project_members_step,
     labels_attributes_manager,
-    welcome_builder
   },
   data() {
     return {

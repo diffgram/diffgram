@@ -34,3 +34,11 @@ export const logout = async () => {
     console.log(e)
   }
 }
+
+export const is_user_verified = async () => {
+  try {
+    return await axios.get('/api/v1/user/verify/is_email_confirmed')
+  } catch(e) {
+    return e
+  }
+}

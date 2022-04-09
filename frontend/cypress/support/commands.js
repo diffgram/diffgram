@@ -223,7 +223,7 @@ Cypress.Commands.add('registerDataPlatformTestUser', function () {
   cy.get('[data-cy=demo_select]').parent().click()
   cy.get('.v-list.v-select-list div').contains('Not yet.').click({force: true})
   cy.get('.v-slider__tick:nth-child(2)').click();
-  cy.get('[data-cy=finish_singup_button]').click();
+  cy.get('[data-cy=finish_signup_button]').click();
   cy.wait(3000);
   // Create test Project
   cy.visit('http://localhost:8085/a/project/new');

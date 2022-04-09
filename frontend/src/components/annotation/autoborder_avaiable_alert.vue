@@ -16,7 +16,7 @@
         Polygon Autoborder now Available!
       </v-card-title>
       <v-card-text>
-        <img src="https://d9hhrg4mnvzow.cloudfront.net/get.diffgram.com/3137b50c-unnamed-1.gif" width="200px"
+        <img src="https://files.readme.io/a42497c-85f8efdb-unnamed_3.gif" width="200px"
              height="220px">
         You can now perform autobordering on a polygon by clicking any of the nodes of polygon when drawing
         and then clicking another point to automatically border the polygon.
