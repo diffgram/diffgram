@@ -18,7 +18,7 @@
         <v-card>
         <div class="d-flex flex-column">
           <div class="pa-4 d-flex align-center justify-start ">
-            <h1 class="font-weight-light mr-2"  >
+            <h1 class="font-weight-light"  >
               <span class="secondary--text" v-if="!loading && current_schema && !edit_name">{{current_schema.name}}</span>
             </h1>
             <tooltip_button
@@ -93,9 +93,9 @@
           <v-tabs v-model="tab" color="secondary" style="height: 100%; width: 850px" >
             <v-tab class="d-flex justify-start"
                    v-for="item in header_items" :key="item.text"
-                   style="border: 1px solid #e0e0e0; border-bottom: none; width: 100%">
+                   style="border: 1px solid #e0e0e0; border-bottom: none; width: 100%; text-transform: unset">
               <v-icon left>{{ item.icon }}</v-icon>
-              {{ item.name }}
+              <h2 class="font-weight-light"> {{ item.name }} </h2>
             </v-tab>
             <v-tabs-items v-model="tab">
               <v-tab-item>
