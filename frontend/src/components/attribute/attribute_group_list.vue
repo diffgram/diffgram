@@ -2,7 +2,7 @@
 <div id="">
 
 <v-progress-linear class="mt-4" indeterminate v-if="loading"></v-progress-linear>
-<div style="overflow-y:auto" v-if="!loading">
+<div style="overflow-y:auto">
   <v-layout v-if="mode == 'edit' " class="d-flex pa-4 align-center">
 
     <!-- TODO trying to separate out this from the list layout
@@ -203,10 +203,12 @@ import attribute_group_new from './attribute_group_new.vue'
     },
 
     watch: {
-      schema_id: function(){
+      schema_id: function(new_val, old_val){
+        console.log('schema_id', new_val, old_val)
         this.api_attribute_group_list("from_project")
       },
-      attribute_template_group_id() {
+      attribute_template_group_id(new_val, old_val) {
+        console.log('AAA', new_val, old_val)
         this.api_attribute_group_list("from_project")
       },
 

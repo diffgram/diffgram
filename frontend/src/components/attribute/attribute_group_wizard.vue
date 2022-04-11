@@ -551,6 +551,10 @@ export default Vue.extend( {
     attribute,
     Tooltip_button
   },
+  model: {
+    prop: 'group',
+    event: 'change'
+  },
   props: {
     'kind_list': {
       default: []
@@ -567,6 +571,12 @@ export default Vue.extend( {
     'view_only_mode': {
       default : false
     },
+    'group': {
+      type: Object,
+      default() {
+        return {};
+      }
+    },
     'select_format' : {
       default: []
     }
@@ -576,7 +586,6 @@ export default Vue.extend( {
       step: 1,
       member_invited: false,
       toggle_global_attribute: 0,
-      group: {},
       add_path: [],
       items: [],
       tree_items_list: []
@@ -596,26 +605,44 @@ export default Vue.extend( {
     },
   },
   created() {
-    this.group = this.value
-    if(this.group.is_global){
-      this.toggle_global_attribute = 1
-    }
-    else{
-      this.toggle_global_attribute = 0
+
+    if(!this.group){
+      return
     }
 
-   this.group.attribute_template_list.map(attr => {
-     const new_node = new TreeNode(attr.group_id, attr.name)
-     new_node.initialize_existing_node(attr.id, attr.parent_id)
-     this.tree_items_list.push(new_node)
-   })
+    this.set_global_attribute()
+    this.build_tree_data();
+
   },
   watch: {
-    value: function (item) {
-      this.group = item
+    value: {
+      handler: function (item) {
+        this.group = item
+        if(!this.group){
+          return
+        }
+        this.set_global_attribute()
+        this.build_tree_data();
+      },
+      deep: true
     }
   },
   methods: {
+    set_global_attribute: function(){
+      if(this.group.is_global){
+        this.toggle_global_attribute = 1
+      }
+      else{
+        this.toggle_global_attribute = 0
+      }
+    },
+    build_tree_data: function(){
+      this.group.attribute_template_list.map(attr => {
+        const new_node = new TreeNode(attr.group_id, attr.name)
+        new_node.initialize_existing_node(attr.id, attr.parent_id)
+        this.tree_items_list.push(new_node)
+      })
+    },
     set_is_global: function(value, group){
       if(value === 1){
         group.is_global = true

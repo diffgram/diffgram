@@ -273,6 +273,7 @@
                                       :label_settings = "label_settings"
                                       :label_list = "label_list"
                                       :global_attribute_groups_list="global_attribute_groups_list"
+                                      :schema_id="label_schema.id"
                                       :current_global_instance="current_global_instance"
                                       :draw_mode = "draw_mode"
                                       :current_frame = "current_frame"

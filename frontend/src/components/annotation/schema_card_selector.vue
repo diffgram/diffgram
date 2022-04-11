@@ -33,14 +33,14 @@
 
       </button_with_menu>
     </v-card-title>
-    <v-navigation-drawer>
+    <v-card-text>
       <v-list
         dense
         nav
       >
         <v-list-item
           v-for="item in schema_list"
-          :key="item.title"
+          :key="item.id"
           link
           :class="item.id === selected_schema.id ? 'selected': ''"
         >
@@ -56,7 +56,7 @@
 
         </v-list-item>
       </v-list>
-    </v-navigation-drawer>
+    </v-card-text>
   </v-card>
 </template>
 

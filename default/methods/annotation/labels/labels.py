@@ -34,7 +34,10 @@ def api_label_new(project_string_id):
 
     spec_list = [
         {'name': str},
-        {'colour': None}
+        {'colour': None},
+        {'schema_id': {"type": int, "required": True}},
+
+
     ]
 
     log, input, untrusted_input = regular_input.master(request = request,
@@ -118,7 +121,7 @@ def api_get_labels(project_string_id):
         labels_out = project.get_label_list(session, directory = directory, schema_id = schema_id)
         
         global_attribute_groups_serialized_list = project.get_global_attributes(
-            session = session)
+            session = session, schema_id = schema_id)
 
         attribute_groups_serialized_list = project.get_attributes(session = session)
         

@@ -197,7 +197,7 @@
         :kind_list="kind_list"
         :error="error"
         :select_format="select_format"
-        v-model="group_internal"
+        :group="group_internal"
         :loading="loading"
         @change="api_group_update('UPDATE')"
         :project_string_id="project_string_id"
@@ -552,6 +552,7 @@
           tree_rerender_timeout: null,
           first_load: true,
           original_kind: null,
+          loading_update: null,
           min_value: 1,
           max_value: 10,
           openIds: [],
@@ -686,11 +687,11 @@
             const item_node = this.tree_items_list.find(node_item => node_item.get_id() === item)
             const { id, name } = item_node.get_API_data()
             return {[id]: { name, "selected": true}}
-            
+
           })
 
           const tree_post_items = {
-            ...tree_array.reduce((a, v) => ({ ...a, ...v}), {}) 
+            ...tree_array.reduce((a, v) => ({ ...a, ...v}), {})
           }
 
           return tree_post_items
@@ -1052,7 +1053,7 @@
 
 
         api_group_update: function (mode) {
-          this.loading = true
+          this.loading_update = true
           this.error = {}
           this.success = false
 
@@ -1103,7 +1104,7 @@
             //this.group = response.data.group
 
             this.success = true
-            this.loading = false
+            this.loading_update = false
 
             // response.data.log.info
 
@@ -1130,7 +1131,7 @@
               if (error.response.status == 400) {
                 this.error = error.response.data.log.error
               }
-              this.loading = false
+              this.loading_update = false
               console.log(error)
             }
           });

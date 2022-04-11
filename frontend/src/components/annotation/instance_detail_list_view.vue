@@ -21,6 +21,7 @@
          v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
         :global_attribute_groups_list="global_attribute_groups_list"
         :current_global_instance="current_global_instance"
+        :schema_id="schema_id"
         :view_only_mode="view_only_mode"
         @attribute_change="global_attribute_change($event)"
       ></global_attributes_list>
@@ -536,7 +537,8 @@ export default Vue.extend({
       'trigger_refresh_current_instance',  // null or Date.now()  number,
       'current_file',
       'global_attribute_groups_list',
-      'current_global_instance'
+      'current_global_instance',
+      'schema_id'
 
     ],
     watch: {

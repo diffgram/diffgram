@@ -470,16 +470,16 @@ class Project(Base, Caching):
         }
 
 
-    def get_global_attributes(self, session):
+    def get_global_attributes(self, session, schema_id = None):
 
         global_attribute_group_list = Attribute_Template_Group.list(
             session = session,
             group_id = None,
             project_id = self.id,
             archived = False,
-            is_global = True
+            is_global = True,
+            schema_id = schema_id
         )
-
         global_attribute_groups_serialized_list = []
 
         for attribute_group in global_attribute_group_list:
