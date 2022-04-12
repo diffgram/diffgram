@@ -881,3 +881,10 @@ Cypress.Commands.add('create_task_template', function () {
     .get('[data-cy="task-template-credentials-step"] [data-cy="wizard_navigation_next"]').click({force: true})
     return cy.wrap(task_template_name)
 })
+
+Cypress.Commands.add('createLabelSchema', function (schema_name) {
+  cy.visit(`http://localhost:8085/project/${testUser.project_string_id}/labels`)
+    .get('[data-cy"create_label_schema_btn"]').click({force: true})
+    .get('[data-cy="text-field-schema-name"]').type(schema_name)
+    .get('[data-cy"create_schema_start"]').click({force: true})
+});

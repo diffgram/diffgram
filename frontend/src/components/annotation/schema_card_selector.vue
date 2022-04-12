@@ -9,6 +9,7 @@
 
       <button_with_menu
         tooltip_message="Create Schema"
+        datacy="create_label_schema_btn"
         icon="mdi-plus"
         color="primary"
         ref="menu"
@@ -21,11 +22,11 @@
             <v-card-title>Create Schema:</v-card-title>
             <v-card-text>
               <v_error_multiple :error="error"></v_error_multiple>
-              <v-text-field v-model="new_schema_name"></v-text-field>
+              <v-text-field data-cy="text-field-schema-name" v-model="new_schema_name"></v-text-field>
             </v-card-text>
             <v-card-actions class="d-flex justify-lg-space-between align-center">
               <v-btn color="primary" small><v-icon>mdi-close</v-icon>Cancel</v-btn>
-              <v-btn color="success" small @click="create_schema"><v-icon>mdi-plus</v-icon>Create</v-btn>
+              <v-btn color="success" data-cy="create_schema_start" small @click="create_schema"><v-icon>mdi-plus</v-icon>Create</v-btn>
             </v-card-actions>
           </v-card>
 
@@ -42,6 +43,7 @@
           v-for="item in schema_list"
           :key="item.id"
           link
+          :data-cy="`schema_item__${item.name}`"
           :class="item.id === selected_schema.id ? 'selected': ''"
         >
           <v-list-item-icon>
