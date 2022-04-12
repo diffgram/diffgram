@@ -497,26 +497,20 @@ export default Vue.extend({
     },
 
     get_labels_from_project: async function () {
-      console.log('get_labels_from_project 1')
       if (this.labels_list_from_project &&
         this.computed_project_string_id == this.$store.state.project.current.project_string_id) {
         return
       }
-      console.log('get_labels_from_project 2')
       if (!this.computed_project_string_id) {
         return
       }
-
-      console.log('get_labels_from_project 3')
       if (!this.current_label_schema) {
         this.error = {
           current_label_schema: 'Please set the curret label schema'
         }
         return
       }
-
-      console.log('get_labels_from_project 4')
-      let [result, error] = await get_labels(this.project_string_id, this.current_label_schema.id)
+      let [result, error] = await get_labels(this.computed_project_string_id, this.current_label_schema.id)
       if (error) {
         console.error(error)
         return
@@ -589,6 +583,7 @@ export default Vue.extend({
             this.$refs.file_manager_sheet.hide_file_manager_sheet();
           }
           this.task = response.data.task;
+          this.current_label_schema = this.task.job.label_schema;
           await this.get_project(this.task.project_string_id);
         }
         this.task_error = response.data.log.error;

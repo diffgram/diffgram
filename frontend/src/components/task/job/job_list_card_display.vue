@@ -9,7 +9,7 @@
               :data-cy="`job-card`"
               id="card-list"
               width="350px"
-              style="position: relative"
+              style="position: relative; min-height: 350px; height: 100%"
               :class="`ma-4 d-flex flex-column job-card ${job.name.replace(/\s+/g, '')}`"
               elevation="1"
       >
@@ -63,10 +63,16 @@
         </v-card-title>
 
         <v-card-subtitle>
+
+          <v-row class="" dense v-if="job.label_schema">
+            <v-col cols="12" >
+              <v-chip small color="primary" outlined ><v-icon small>mdi-group</v-icon> {{job.label_schema.name}}</v-chip>
+            </v-col>
+          </v-row>
           <v-chip :color="status_color(job.status)" x-small>{{job.status | capitalize }}</v-chip>
           <span>Created: {{job.time_created | moment("DD-MM-YYYY H:mm:ss a")}}</span>
         </v-card-subtitle>
-        <v-card-text class="flex-grow-2">
+        <v-card-text class="">
           <v-container fluid class="d-flex flex-column pa-0">
 
             <v-row>
@@ -118,65 +124,37 @@
                              class="pr-1">
                 </v_user_icon>
               </v-col>
-              <!--
-              <v-col cols="12" v-else>
-                <v-icon color="primary"
-                        left >
-                    mdi-select-all
-                </v-icon>
-                All Users
-              </v-col>
-              -->
             </v-row>
 
-            <v-row class="pl-4">
+            <v-row class="pl-4 d-flex" style="height: 100%">
               <!-- Copy and paste from job list but changed to job-->
-              <div  style="max-width: 200px" class="d-flex flex-wrap"
-                    v-if="job && job.attached_directories_dict && job.attached_directories_dict.attached_directories_list">
-                <div class="dir d-flex align-center  justify-center ml-1"
-                     v-for="dir in job.attached_directories_dict.attached_directories_list"
-                     v-bind:key="dir.id"
-                >
-                  <v-icon color="primary">mdi-folder</v-icon>
-                  <p class="ma-0">{{ dir.nickname }}</p>
+              <v-col cols="12">
+                <div  style="max-width: 200px" class="d-flex flex-wrap"
+                      v-if="job && job.attached_directories_dict && job.attached_directories_dict.attached_directories_list">
+                  <div class="dir d-flex align-center  justify-center ml-1"
+                       v-for="dir in job.attached_directories_dict.attached_directories_list"
+                       v-bind:key="dir.id"
+                  >
+                    <v-icon color="primary">mdi-folder</v-icon>
+                    <p class="ma-0">{{ dir.nickname }}</p>
+                  </div>
+
                 </div>
 
-              </div>
-
-              <div  style="max-width: 200px" class="d-flex flex-wrap"
-                    v-if="job && job.completion_directory">
-                <div class="dir d-flex align-center  justify-center"
-                     v-if="job.completion_directory.nickname">
-                  <v-icon color="primary">mdi-folder</v-icon>
-                  <p class="ma-0">{{ job.completion_directory.nickname }}</p>
+                <div  style="max-width: 200px" class="d-flex flex-wrap"
+                      v-if="job && job.completion_directory">
+                  <div class="dir d-flex align-center  justify-center"
+                       v-if="job.completion_directory.nickname">
+                    <v-icon color="primary">mdi-folder</v-icon>
+                    <p class="ma-0">{{ job.completion_directory.nickname }}</p>
+                  </div>
                 </div>
-              </div>
-            </v-row>
-
-            <v-row class="mb-4" dense>
-              <v-col cols="12" class="pa-0">
-
-                <label_select_only
-                  v-if="job.label_dict &&
-                        job.label_dict.label_file_list_serialized"
-                  :limit="5"
-                  :mode=" 'multiple' "
-                  :label_prompt="null"
-                  :view_only_mode="true"
-                  :label_file_list_prop="job.label_dict.label_file_list_serialized"
-                  :load_selected_id_list="job.label_dict.label_file_list"
-                >
-                </label_select_only>
-
               </v-col>
             </v-row>
+
           </v-container>
         </v-card-text>
-        <v-card-actions style="
-                          position: absolute;
-                          bottom: 0;
-                          right: 0"
-        >
+        <v-card-actions class="mt-auto" style="align-self: end; justify-self: end">
 
           <v-container class="pa-0">
             <v-row dense style="border-top: 2px solid #e6e6e6">
@@ -395,7 +373,7 @@
               this.$router.push(`/project/${this.$props.project_string_id}/exam/new/${job.id}`)
             }
             else{
-              this.$router.push("/job/new/" + job.id)
+              this.$router.push(`/project/${this.$props.project_string_id}/job/new/${job.id}` )
             }
 
             return

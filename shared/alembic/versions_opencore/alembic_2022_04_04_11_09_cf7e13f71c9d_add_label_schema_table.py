@@ -18,7 +18,7 @@ from shared.database.annotation.instance_template import InstanceTemplate
 from shared.database.source_control.working_dir import WorkingDir, WorkingDirFileLink
 from shared.database.source_control.file import File
 from sqlalchemy.ext.declarative import declarative_base
-
+from shared.database.task.job.job import Job
 # revision identifiers, used by Alembic.
 revision = 'cf7e13f71c9d'
 down_revision = '6f3b45681519'
@@ -85,6 +85,14 @@ def add_schemas_to_projects(op):
             print(f'      --> Added Attribute Group: {template.name} to Schema')
         print(f'Num Projects [{i}/{len(all_projects) - 1}]')
         i += 1
+
+        job_list = session.query(Job).filter(
+            Job.project_id == project.id
+        )
+        for job in job_list:
+            job.label_schema_id = new_schema.id
+            session.add(job)
+
 
 
 def upgrade():

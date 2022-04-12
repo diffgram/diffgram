@@ -36,7 +36,14 @@ export default {
   },
   async mounted() {
     await this.fetch_schema_list();
-    this.selected_schema = this.initial_schema;
+    if(this.initial_schema){
+      this.selected_schema = this.initial_schema;
+    }
+    else{
+      this.selected_schema = this.schema_list[0];
+    }
+    this.on_change_schema(this.selected_schema)
+
   },
   data:function (){
     return{
