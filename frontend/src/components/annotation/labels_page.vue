@@ -184,6 +184,7 @@ export default Vue.extend({
     archive_schema: async function(){
       if(this.label_schema_list.length === 1){
         this.error = {schema: 'You must have at least 1 schema'}
+        return
       }
       this.current_schema.archived = true;
       let success = await this.api_update_schema(this.current_schema)

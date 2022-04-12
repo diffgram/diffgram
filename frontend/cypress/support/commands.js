@@ -463,6 +463,7 @@ Cypress.Commands.add('goToStudioFromToolbar', function () {
 });
 
 Cypress.Commands.add('createAndSelectNewAttributeGroup', function () {
+  cy.get('[data-cy="tab__Attributes"]').first().click({force: true})
   cy.get(`[data-cy=new_attribute_button]`).click({force: true});
   cy.get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).first().click({force: true});
 });
