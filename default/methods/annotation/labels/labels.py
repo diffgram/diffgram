@@ -123,7 +123,7 @@ def api_get_labels(project_string_id):
         global_attribute_groups_serialized_list = project.get_global_attributes(
             session = session, schema_id = schema_id)
 
-        attribute_groups_serialized_list = project.get_attributes(session = session)
+        attribute_groups_serialized_list = project.get_attributes(session = session, schema_id = schema_id)
         
         # Assume can't easily sort this in sql because it's the label which is one layer below
         # labels_out.sort(key=lambda x: x['label']['name'])

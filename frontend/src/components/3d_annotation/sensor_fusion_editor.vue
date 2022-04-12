@@ -75,9 +75,12 @@
                                    :view_only_mode="view_only_mode"
                                    :label_settings="label_settings"
                                    :label_list="label_list"
+                                   :schema_id="label_schema.id"
                                    :draw_mode="draw_mode"
                                    :current_frame="current_frame"
                                    :current_video_file_id="file ? file.id : task.file.id"
+                                   :global_attribute_groups_list="global_attribute_groups_list"
+                                   :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
                                    :current_label_file_id="current_label_file.id"
                                    :video_playing="video_playing"
                                    :external_requested_index="request_change_current_instance"
@@ -286,6 +289,14 @@
       },
       label_schema: {
         type: Object,
+        required: true
+      },
+      global_attribute_groups_list: {
+        type: Array,
+        required: true
+      },
+      per_instance_attribute_groups_list: {
+        type: Array,
         required: true
       }
 

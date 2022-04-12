@@ -44,13 +44,13 @@
           v-if="!steps_configuration['labels'].hide"
           :step="steps_configuration['labels'].number"
           style="height: 100%">
-          <step_label_selection_task_template
+          <step_label_schema_selection_task_template
             :project_string_id="project_string_id"
             :job="job"
             :loading_steps="loading"
             @previous_step="go_to_step(steps_configuration['labels'].number - 1)"
             @next_step="go_to_step(steps_configuration['labels'].number + 1)"
-          ></step_label_selection_task_template>
+          ></step_label_schema_selection_task_template>
         </v-stepper-content>
         <v-stepper-content
           v-if="!steps_configuration['members'].hide"
@@ -164,7 +164,7 @@ import step_name_task_template from "./step_name_task_template";
 import step_advanced_options_task_template from "./step_advanced_options_task_template";
 import step_guides_task_template from "./step_guides_task_template";
 import step_upload_files_task_template from "./step_upload_files_task_template";
-import step_label_selection_task_template from "./step_label_selection_task_template";
+import step_label_schema_selection_task_template from "./step_label_schema_selection_task_template";
 import step_ui_schema_task_template from "./step_ui_schema_task_template";
 import step_credentials_task_template from "./step_credentials_task_template";
 import step_users_selection from "./step_users_selection";
@@ -201,7 +201,7 @@ export default Vue.extend({
     step_users_selection,
     step_ui_schema_task_template,
     step_advanced_options_task_template,
-    step_label_selection_task_template,
+    step_label_schema_selection_task_template,
     step_attach_directories_task_template,
     step_reviewers_selection,
   },

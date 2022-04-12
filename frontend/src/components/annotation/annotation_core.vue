@@ -263,6 +263,7 @@
                                       :model_run_list="model_run_list"
                                       :label_file_colour_map="label_file_colour_map"
                                       :refresh="refresh"
+                                      :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
                                       @toggle_instance_focus="focus_instance($event)"
                                       @show_all="focus_instance_show_all()"
                                       @update_canvas="update_canvas"
@@ -1090,7 +1091,14 @@ export default Vue.extend({
     finish_annotation_show: {
       default: false,
     },
-    'global_attribute_groups_list': {},
+    global_attribute_groups_list: {
+      type: Array,
+      required: true
+    },
+    per_instance_attribute_groups_list: {
+      type: Array,
+      required: true
+    },
   },
   watch: {
     finish_annotation_show: function (val) {

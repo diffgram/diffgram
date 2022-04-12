@@ -38,6 +38,7 @@
           :enabled_edit_schema="enabled_edit_schema"
           :finish_annotation_show="show_snackbar"
           :global_attribute_groups_list="global_attribute_groups_list"
+          :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @change_label_schema="on_change_label_schema"
@@ -57,6 +58,8 @@
           :task="task"
           :file="current_file"
           :view_only_mode="view_only"
+          :global_attribute_groups_list="global_attribute_groups_list"
+          :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
           @change_label_schema="on_change_label_schema"
           @request_file_change="request_file_change"
           @request_new_task="change_task"
@@ -73,6 +76,8 @@
           :label_list="label_list"
           :label_file_colour_map="label_file_colour_map"
           :project_string_id="computed_project_string_id"
+          :global_attribute_groups_list="global_attribute_groups_list"
+          :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
           @change_label_schema="on_change_label_schema"
           @request_file_change="request_file_change"
           @request_new_task="change_task"
@@ -154,15 +159,16 @@
         </v-btn>
       </template>
     </v-snackbar>
-    <no_credentials_dialog ref="no_credentials_dialog" :missing_credentials="missing_credentials"></no_credentials_dialog>
+    <no_credentials_dialog ref="no_credentials_dialog"
+                           :missing_credentials="missing_credentials"></no_credentials_dialog>
   </div>
 </template>
 
 
 <script lang="ts">
 import axios from "../../services/customInstance";
-import { create_event } from "../event/create_event";
-import { UI_SCHEMA_TASK_MOCK } from "../ui_schema/ui_schema_task_mock";
+import {create_event} from "../event/create_event";
+import {UI_SCHEMA_TASK_MOCK} from "../ui_schema/ui_schema_task_mock";
 import empty_file_editor_placeholder from "./empty_file_editor_placeholder";
 import no_credentials_dialog from '../task/job/no_credentials_dialog';
 import file_manager_sheet from "../source_control/file_manager_sheet";
@@ -220,29 +226,30 @@ export default Vue.extend({
       error: null,
       request_save: false,
       model_run_id_list: [],
+      per_instance_attribute_groups_list: [],
       missing_credentials: [],
       label_schema_list: [],
 
       view_only: false,
 
-          labels_list_from_project: null,
-          model_run_color_list: null,
-          label_file_colour_map_from_project: null,
+      labels_list_from_project: null,
+      model_run_color_list: null,
+      label_file_colour_map_from_project: null,
 
-          global_attribute_groups_list: null
+      global_attribute_groups_list: []
 
-        }
+    }
   },
   watch: {
     '$route'(to, from) {
-      if(from.name === 'task_annotation' && to.name === 'studio'){
+      if (from.name === 'task_annotation' && to.name === 'studio') {
         this.fetch_project_file_list();
         this.task = null;
-        if(this.$refs.file_manager_sheet){
+        if (this.$refs.file_manager_sheet) {
           this.$refs.file_manager_sheet.display_file_manager_sheet();
         }
       }
-      if(from.name === 'studio' && to.name === 'task_annotation'){
+      if (from.name === 'studio' && to.name === 'task_annotation') {
         this.current_file = null;
         this.fetch_single_task(this.$props.task_id_prop);
         this.$refs.file_manager_sheet.hide_file_manager_sheet()
@@ -252,7 +259,7 @@ export default Vue.extend({
     current_file: {
       handler(newVal, oldVal) {
         if (newVal && newVal != oldVal) {
-          this.$addQueriesToLocation({ file: newVal.id });
+          this.$addQueriesToLocation({file: newVal.id});
         }
       },
     },
@@ -264,10 +271,9 @@ export default Vue.extend({
       this.enabled_edit_schema = true;
     }
     if (this.$route.query.view_only) {
-      if(this.$route.query.view_only === 'false'){
+      if (this.$route.query.view_only === 'false') {
         this.view_only = false;
-      }
-      else{
+      } else {
         this.view_only = true;
       }
 
@@ -299,10 +305,9 @@ export default Vue.extend({
     this.get_model_runs_from_query(this.$route.query);
     if (this.$route.query.view_only) {
       this.view_only = true;
-      if(this.$route.query.view_only === 'false'){
+      if (this.$route.query.view_only === 'false') {
         this.view_only = false;
-      }
-      else{
+      } else {
         this.view_only = true;
       }
     }
@@ -310,7 +315,7 @@ export default Vue.extend({
       this.task = {
         ...UI_SCHEMA_TASK_MOCK,
       };
-      if(this.$refs.file_manager_sheet){
+      if (this.$refs.file_manager_sheet) {
         this.$refs.file_manager_sheet.set_file_list([this.task.file]);
         this.$refs.file_manager_sheet.hide_file_manager_sheet();
       }
@@ -320,7 +325,7 @@ export default Vue.extend({
         await this.fetch_single_task(this.$props.task_id_prop);
         await this.check_credentials();
         this.credentials_granted = this.has_credentials_or_admin();
-        if(!this.credentials_granted){
+        if (!this.credentials_granted) {
           this.show_missing_credentials_dialog();
         }
       } else if (this.$props.file_id_prop) {
@@ -335,7 +340,7 @@ export default Vue.extend({
     this.initializing = false
   },
   computed: {
-    any_loading: function(){
+    any_loading: function () {
       return this.loading || this.loading_project || this.initializing
     },
     file_id: function () {
@@ -345,33 +350,28 @@ export default Vue.extend({
       }
       return file_id;
     },
-    annotation_interface: function(){
-      if(!this.current_file && !this.task){
+    annotation_interface: function () {
+      if (!this.current_file && !this.task) {
         return
       }
-      if(this.current_file){
-        if(this.current_file.type === 'image' || this.current_file.type === 'video'){
+      if (this.current_file) {
+        if (this.current_file.type === 'image' || this.current_file.type === 'video') {
           return 'image_or_video';
-        }
-        else if(this.current_file.type === 'sensor_fusion'){
+        } else if (this.current_file.type === 'sensor_fusion') {
           return 'sensor_fusion';
-        }
-        else if(this.current_file.type === 'text'){
+        } else if (this.current_file.type === 'text') {
           return 'text'
         }
       }
-      if(this.task){
-        if(this.task.file.type === 'image' || this.task.file.type === 'video'){
+      if (this.task) {
+        if (this.task.file.type === 'image' || this.task.file.type === 'video') {
           return 'image_or_video';
-        }
-        else if(this.task.file.type === 'sensor_fusion'){
+        } else if (this.task.file.type === 'sensor_fusion') {
           return 'sensor_fusion';
-        }
-        else if(this.task.file.type === 'text'){
+        } else if (this.task.file.type === 'text') {
           return 'text';
         }
       }
-
 
 
     },
@@ -411,58 +411,57 @@ export default Vue.extend({
     },
   },
   methods: {
-    on_change_label_schema: function(schema){
+    on_change_label_schema: function (schema) {
 
       this.current_label_schema = schema;
       this.labels_list_from_project = null;
       this.get_labels_from_project()
     },
-    fetch_schema_list: async function(){
+    fetch_schema_list: async function () {
       this.schema_list_loading = true
       let [result, error] = await get_schemas(this.project_string_id);
-      if(error){
+      if (error) {
         this.error = this.$route_api_errors(error);
         this.schema_list_loading = false;
       }
-      if(result){
+      if (result) {
         this.label_schema_list = result;
         this.current_label_schema = this.label_schema_list[0];
       }
       this.schema_list_loading = false;
     },
-    show_missing_credentials_dialog: function(){
-      if(this.$refs.no_credentials_dialog){
+    show_missing_credentials_dialog: function () {
+      if (this.$refs.no_credentials_dialog) {
         this.$refs.no_credentials_dialog.open()
       }
     },
-    has_credentials_or_admin: function(){
+    has_credentials_or_admin: function () {
       let project_string_id = this.$store.state.project.current.project_string_id;
-      if( this.$store.state.user.current.is_super_admin){
+      if (this.$store.state.user.current.is_super_admin) {
         return true
       }
-      if(this.user_has_credentials){
+      if (this.user_has_credentials) {
         return true
       }
       let roles = this.$store.getters.get_project_roles(project_string_id);
-      if(roles && roles.includes('admin')){
+      if (roles && roles.includes('admin')) {
         return true
       }
       return false
     },
-    check_credentials: async function(){
+    check_credentials: async function () {
       let project_string_id = this.$store.state.project.current.project_string_id;
       let user_id = this.$store.state.user.current.id;
       let [result, error] = await user_has_credentials(
         project_string_id,
         user_id,
         this.task.job.id,
-
       )
-      if(error){
+      if (error) {
         this.error = this.$route_api_errors(error)
         return
       }
-      if(result){
+      if (result) {
         this.user_has_credentials = result.has_credentials;
         this.missing_credentials = result.missing_credentials;
       }
@@ -509,7 +508,7 @@ export default Vue.extend({
       }
 
       console.log('get_labels_from_project 3')
-      if(!this.current_label_schema){
+      if (!this.current_label_schema) {
         this.error = {
           current_label_schema: 'Please set the curret label schema'
         }
@@ -518,15 +517,16 @@ export default Vue.extend({
 
       console.log('get_labels_from_project 4')
       let [result, error] = await get_labels(this.project_string_id, this.current_label_schema.id)
-      if(error){
+      if (error) {
         console.error(error)
         return
       }
-      if(result){
+      if (result) {
 
         this.labels_list_from_project = result.labels_out
         this.label_file_colour_map_from_project = result.label_file_colour_map
         this.global_attribute_groups_list = result.global_attribute_groups_list
+        this.per_instance_attribute_groups_list = result.attribute_groups
       }
 
 
@@ -535,19 +535,19 @@ export default Vue.extend({
     fetch_project_file_list: async function () {
       this.loading = true;
       if (this.$route.query.file) {
-        if(this.$refs.file_manager_sheet){
+        if (this.$refs.file_manager_sheet) {
           this.current_file = await this.$refs.file_manager_sheet.get_media(
             true,
             this.$route.query.file
           );
         }
       } else {
-        if(this.$refs.file_manager_sheet){
+        if (this.$refs.file_manager_sheet) {
           this.current_file = await this.$refs.file_manager_sheet.get_media();
         }
       }
       this.loading = false;
-      if(this.$refs.file_manager_sheet){
+      if (this.$refs.file_manager_sheet) {
         this.$refs.file_manager_sheet.display_file_manager_sheet();
       }
 
@@ -555,12 +555,12 @@ export default Vue.extend({
 
     fetch_single_file: async function () {
       this.loading = true;
-      if(this.$refs.file_manager_sheet){
+      if (this.$refs.file_manager_sheet) {
         this.current_file = await this.$refs.file_manager_sheet.get_media();
       }
 
       this.loading = false;
-      if(this.$refs.file_manager_sheet){
+      if (this.$refs.file_manager_sheet) {
         this.$refs.file_manager_sheet.display_file_manager_sheet();
       }
     },
@@ -582,7 +582,7 @@ export default Vue.extend({
           builder_or_trainer_mode: this.$store.state.builder_or_trainer.mode,
         });
         if (response.data.log.success == true) {
-          if(this.$refs.file_manager_sheet){
+          if (this.$refs.file_manager_sheet) {
             this.$refs.file_manager_sheet.set_file_list([
               response.data.task.file,
             ]);
@@ -623,7 +623,7 @@ export default Vue.extend({
             history.pushState({}, "", `/task/${response.data.task.id}`);
             // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
             // In the task context we reset the file list on media core to keep only the current task's file.
-            if(this.$refs.file_manager_sheet){
+            if (this.$refs.file_manager_sheet) {
               this.$refs.file_manager_sheet.set_file_list([this.task.file]);
             }
 
@@ -662,7 +662,7 @@ export default Vue.extend({
           return;
         }
 
-        if(!local_project_string_id){
+        if (!local_project_string_id) {
           return
         }
 
@@ -713,7 +713,7 @@ export default Vue.extend({
       if (this.$props.task_id_prop) {
         page_name = "task_detail";
       }
-      if(this.$props.task_id_prop === -1 || this.$props.task_id_prop === '-1'){
+      if (this.$props.task_id_prop === -1 || this.$props.task_id_prop === '-1') {
         return
       }
       const event_data = await create_event(this.computed_project_string_id, {
@@ -725,7 +725,8 @@ export default Vue.extend({
       });
     },
 
-    save_response_callback: function (result) {},
+    save_response_callback: function (result) {
+    },
   },
 });
 </script>

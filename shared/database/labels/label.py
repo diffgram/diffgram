@@ -12,7 +12,6 @@ class Label(Base):
 
 
     @staticmethod
-    @timeit
     def get_by_id(session, id):
         return session.query(Label).filter(
             Label.id == id
@@ -43,7 +42,6 @@ class Label(Base):
         return label
 
 
-    @timeit
     def serialize(self):
         label = {
             'id': self.id,

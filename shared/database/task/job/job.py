@@ -82,6 +82,9 @@ class Job(Base, Caching):
     ui_schema_id = Column(Integer, ForeignKey('ui_schema.id'))
     ui_schema = relationship("UI_Schema", foreign_keys = [ui_schema_id])
 
+    label_schema_id = Column(Integer, ForeignKey('label_schema.id'))
+    label_schema = relationship("LabelSchema", foreign_keys = [label_schema_id])
+
     # Primary data storage for job
     directory_id = Column(Integer, ForeignKey('working_dir.id'))
     directory = relationship("WorkingDir",
@@ -640,6 +643,7 @@ class Job(Base, Caching):
             'id': self.id,
             'name': self.name,
             'is_pinned': self.is_pinned,
+            'label_schema_id': self.label_schema_id,
             'type': self.type,
             'time_created': self.time_created,
             'allow_reviews': self.allow_reviews
@@ -746,6 +750,7 @@ class Job(Base, Caching):
             'member_list_ids': member_list_ids,
             'reviewer_list_ids': reviewer_list_ids,
             'status': self.status,
+            'label_schema_id': self.label_schema_id,
             'time_created': self.time_created,
             'time_completed': self.time_completed,
             'user_to_job': user_to_job_serialized,
@@ -806,6 +811,7 @@ class Job(Base, Caching):
             'name': self.name,
             'type': self.type,
             'status': self.status,
+            'label_schema_id': self.label_schema_id,
             'member_list_ids': member_list_ids,
             'reviewer_list_ids': reviewer_list_ids,
             'time_created': self.time_created,
@@ -909,6 +915,7 @@ class Job(Base, Caching):
             'type': self.type,
             'instance_type': self.instance_type,
             'is_pinned': self.is_pinned,
+            'label_schema_id': self.label_schema_id,
             'is_live': self.is_live,
             'attached_directories_dict': attached_directories_dict,
             'file_count_statistic': self.file_count_statistic,

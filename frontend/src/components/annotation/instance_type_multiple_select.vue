@@ -127,6 +127,9 @@
               this.item_internal.push(elm)
             }
           }
+        },
+        schema_id: function(){
+          this.populate_data()
         }
 
       },
@@ -134,21 +137,7 @@
 
       },
       async mounted(){
-        await this.fetch_task_templates();
-        await this.$nextTick();
-        if(this.$props.initial_value){
-          this.item_internal = []
-          for(let value of this.$props.initial_value){
-            let elm = this.instance_types_and_templates_list.find(item => item.name == value.name)
-            if(elm){
-              this.item_internal.push(elm)
-            }
-
-          }
-        }
-        if(this.$props.init_all_selected){
-          this.item_internal = this.instance_types_and_templates_list.map(elm => elm.name);
-        }
+        this.populate_data()
       },
 
       computed: {
@@ -206,6 +195,23 @@
       },
 
       methods: {
+        populate_data: async function(){
+          await this.fetch_task_templates();
+          await this.$nextTick();
+          if(this.$props.initial_value){
+            this.item_internal = []
+            for(let value of this.$props.initial_value){
+              let elm = this.instance_types_and_templates_list.find(item => item.name == value.name)
+              if(elm){
+                this.item_internal.push(elm)
+              }
+
+            }
+          }
+          if(this.$props.init_all_selected){
+            this.item_internal = this.instance_types_and_templates_list.map(elm => elm.name);
+          }
+        },
         fetch_task_templates: async function(){
           this.loading = true;
           let [data, error] = await getInstanceTemplatesFromProject(this.project_string_id, this.schema_id)

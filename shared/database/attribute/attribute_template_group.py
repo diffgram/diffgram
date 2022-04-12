@@ -138,7 +138,7 @@ class Attribute_Template_Group(Base):
         data = self.serialize_with_attributes(session)
         rels = Attribute_Template_Group_to_File.get_all_from_group(session = session, group_id = self.id)
         label_file_list = [rel.file for rel in rels]
-        data['label_file_list'] = [x.serialize_with_label() for x in label_file_list]
+        data['label_file_list'] = [x.serialize_with_label(session = session) for x in label_file_list]
         return data
 
     def serialize_with_attributes(

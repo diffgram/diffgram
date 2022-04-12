@@ -28,6 +28,7 @@
 
     <instance_type_multiple_select
       :instance_type_list="instance_type_list"
+      :schema_id="schema_id"
       :multiple="true"
       :initial_value="initial_selected_types()"
       :init_all_selected="initial_selected_types() ? false : true"
@@ -77,7 +78,9 @@
       instance_type_multiple_select
     },
     props: {
-
+      schema_id:{
+        required: true
+      }
     },
     data() {
       // move context menu off the page out of view when hidden

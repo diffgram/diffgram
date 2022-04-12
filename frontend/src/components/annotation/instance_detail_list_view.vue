@@ -58,6 +58,7 @@
               v-if="attribute_group_list_prop.length != 0"
               :mode=" 'annotate' "
               :view_only_mode="view_only_mode"
+              :schema_id="schema_id"
               :attribute_group_list_prop="attribute_group_list_prop"
               :current_instance="current_instance"
               @attribute_change="attribute_change($event)"
@@ -538,7 +539,8 @@ export default Vue.extend({
       'current_file',
       'global_attribute_groups_list',
       'current_global_instance',
-      'schema_id'
+      'schema_id',
+      'per_instance_attribute_groups_list'
 
     ],
     watch: {
@@ -733,18 +735,15 @@ export default Vue.extend({
 
         if (!this.label_list
           || !this.current_instance
+          || !this.per_instance_attribute_groups_list
           || !this.current_instance.label_file) {
           return []
         }
-
-        for (var label of this.label_list) {
-
-          if (this.current_instance.label_file_id == label.id) {
-            return label.attribute_group_list
-
-          }
-        }
-        return []
+        let attr_group_list = this.per_instance_attribute_groups_list.filter(elm =>{
+          let file_id_list = elm.label_file_list.map(label_file => label_file.id)
+          return file_id_list.includes(this.current_instance.label_file.id)
+        })
+        return attr_group_list;
 
       },
 

@@ -30,7 +30,7 @@ Base = declarative_base()
 
 def add_schemas_to_projects(op):
     bind = op.get_bind()
-    session = orm.Session(bind=bind)
+    session = orm.Session(bind = bind)
 
     all_projects = session.query(Project).all()
     if len(all_projects) == 0:
@@ -39,7 +39,8 @@ def add_schemas_to_projects(op):
         User.is_super_admin == True
     ).first()
     if not super_admin:
-        raise Exception('Cannot migrated data, need at least one super admin user. Please set a user with super_admin flag enabled')
+        raise Exception(
+            'Cannot migrated data, need at least one super admin user. Please set a user with super_admin flag enabled')
     member = session.query(Member).filter(
         Member.user_id == super_admin.id
     ).first()
@@ -86,7 +87,6 @@ def add_schemas_to_projects(op):
         i += 1
 
 
-
 def upgrade():
     op.create_table('label_schema',
                     sa.Column('id', sa.Integer(), nullable = False),
@@ -106,7 +106,8 @@ def upgrade():
                     sa.Column('schema_id', sa.Integer(), sa.ForeignKey('label_schema.id')),
                     sa.Column('label_file_id', sa.Integer(), sa.ForeignKey('file.id')),
                     sa.Column('instance_template_id', sa.Integer(), sa.ForeignKey('instance_template.id')),
-                    sa.Column('attribute_template_group_id', sa.Integer(), sa.ForeignKey('attribute_template_group.id')),
+                    sa.Column('attribute_template_group_id', sa.Integer(),
+                              sa.ForeignKey('attribute_template_group.id')),
                     sa.Column('member_created_id', sa.Integer(), sa.ForeignKey('member.id')),
                     sa.Column('member_updated_id', sa.Integer(), sa.ForeignKey('member.id')),
                     sa.Column('time_created', sa.DateTime, default = datetime.datetime.utcnow),
@@ -115,15 +116,17 @@ def upgrade():
                     )
     op.create_index('index_label_schema_link_schema_id', 'label_schema_link', ['schema_id'])
     op.create_index('index_label_schema_link_label_file_id', 'label_schema_link', ['label_file_id'])
-    
+
     try:
         op.create_index('index_attribute_template_project_id', 'attribute_template', ['project_id'])
     except:
         print("Already exists")
-
+    op.add_column('job', sa.Column('label_schema_id', sa.Integer, sa.ForeignKey('label_schema.id')))
     add_schemas_to_projects(op)
 
+
 def downgrade():
+    op.drop_column('job', 'label_schema_id')
     op.drop_index('index_label_schema_project_id', 'label_schema')
     op.drop_index('index_label_schema_link_schema_id', 'label_schema_link')
     op.drop_index('index_label_schema_link_label_file_id', 'label_schema_link')
@@ -131,4 +134,3 @@ def downgrade():
 
     op.drop_table('label_schema_link')
     op.drop_table('label_schema')
-

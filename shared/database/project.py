@@ -13,6 +13,7 @@ from shared.database.attribute.attribute_template_group import Attribute_Templat
 from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
 from shared.database.labels.label import Label
 
+
 class Project(Base, Caching):
     """
     serialize(self)
@@ -469,7 +470,6 @@ class Project(Base, Caching):
             'api_billing_enabled': self.api_billing_enabled  # TODO review this
         }
 
-
     def get_global_attributes(self, session, schema_id = None):
 
         global_attribute_group_list = Attribute_Template_Group.list(
@@ -488,27 +488,26 @@ class Project(Base, Caching):
 
         return global_attribute_groups_serialized_list
 
- 
-    def get_attributes(self, session):
+    def get_attributes(self, session, schema_id = None):
 
         attribute_group_list = Attribute_Template_Group.list(
             session = session,
             group_id = None,
             project_id = self.id,
             archived = False,
-            is_global = None
-            )
+            is_global = None,
+            schema_id = schema_id
+        )
 
         attribute_groups_serialized_list = []
 
         for attribute_group in attribute_group_list:
             attribute_groups_serialized_list.append(
-                attribute_group.serialize_with_attributes(session = session))
+                attribute_group.serialize_with_attributes_and_labels(session = session))
 
         return attribute_groups_serialized_list
 
-
-    def get_label_list(self, session, directory, schema_id = None): 
+    def get_label_list(self, session, directory, schema_id = None):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory.id,
             WorkingDirFileLink.type == "label").subquery('working_dir_sub_query')
@@ -568,7 +567,6 @@ class Project(Base, Caching):
                 serialized_file_data['colour'] = file.colour
                 serialized_file_data['label'] = labels_serialized_dict.get(file.label_id)
                 serialized_file_data['attribute_group_list'] = attribute_groups_serialized_dict.get(file.id)
-
 
                 labels_out.append(file.serialize_with_label_and_colour(
                     session = session))

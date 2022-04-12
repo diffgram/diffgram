@@ -300,7 +300,6 @@ class File(Base, Caching):
             'hash': self.hash
         }
 
-    @timeit
     def serialize_base_file(self):
 
         time_last_updated = None
@@ -361,7 +360,6 @@ class File(Base, Caching):
         ).first()
         return file
 
-    @timeit
     def serialize_with_type(self,
                             session = None
                             ):
@@ -388,8 +386,10 @@ class File(Base, Caching):
                 file['point_cloud'] = point_cloud_file.point_cloud.serialize()
 
         if self.type == "label":
-            label = Label.get_by_id(session, self.label_id)
-
+            if session:
+                label = Label.get_by_id(session, self.label_id)
+            else:
+                label = self.label
             #if session:
             #    file['attribute_group_list'] = Attribute_Template_Group.from_file_attribute_group_list_serialize(
             #        session = session,
@@ -429,11 +429,10 @@ class File(Base, Caching):
     def serialize_with_video(self, session):
         return self.serialize_with_type(session)
 
-    def serialize_with_label(self):
-        return self.serialize_with_type()
+    def serialize_with_label(self, session = None):
+        return self.serialize_with_type(session)
 
     # Don't share colour by default, use map
-    @timeit
     def serialize_with_label_and_colour(self, session):
         return self.serialize_with_type(session)
 
