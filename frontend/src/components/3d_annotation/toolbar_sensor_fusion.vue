@@ -41,12 +41,21 @@
 
 
 
-
+      <div class="pl-2 pr-3 pt-4">
+        <label_schema_selector
+          :project_string_id="project_string_id"
+          :initial_schema="label_schema"
+          @change="$emit('change_label_schema', $event)"
+          @update_label_file_visible="$emit('update_label_file_visibility', $event)"
+        >
+        </label_schema_selector>
+      </div>
     <div style="width: 310px" class=" pt-4">
       <label_select_annotation
         data-cy="toolbar_label_selector"
         :project_string_id="project_string_id"
         :label_file_list="label_list"
+        :schema_id="label_schema.id"
         default_hot_keys="l"
         :label_file_colour_map="label_file_colour_map"
         @change="$emit('change_label_file', $event)"
@@ -566,6 +575,7 @@
 
   import Vue from "vue";
   import label_select_annotation from '../label/label_select_annotation.vue';
+  import label_schema_selector from '../label/label_schema_selector.vue';
   import file_meta_data_card from '../annotation/file_meta_data_card'
   import task_status from '../annotation/task_status'
   import time_tracker from '../task/time_track/time_tracker'
@@ -578,6 +588,7 @@
       name: 'toolbar_3d',
       components: {
         label_select_annotation,
+        label_schema_selector,
         file_meta_data_card,
         time_tracker,
         task_status,
@@ -631,7 +642,11 @@
         'instance_type': {},
         'loading_instance_templates': {},
         'instance_type_list': {},
-        'view_issue_mode': {}
+        'view_issue_mode': {},
+        'label_schema': {
+          type: Object,
+          required: true
+        }
       },
       data() {
         return {

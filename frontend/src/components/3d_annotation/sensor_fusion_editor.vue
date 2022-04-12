@@ -15,6 +15,7 @@
             :loading="false"
             :view_only_mode="false"
             :label_settings="editor_3d_settings"
+            :label_schema="label_schema"
             :project_string_id="project_string_id"
             :task="task"
             :file="file"
@@ -23,6 +24,7 @@
             :label_list="label_list"
             :draw_mode="draw_mode"
             :label_file_colour_map="label_file_colour_map"
+            @change_label_schema="on_change_label_schema"
             @label_settings_change="label_settings = $event, refresh = Date.now()"
             @change_label_file="change_label_file"
             @update_label_file_visibility=""
@@ -281,6 +283,10 @@
       },
       'video_mode': {
         default: false,
+      },
+      label_schema: {
+        type: Object,
+        required: true
       }
 
     },
@@ -425,6 +431,9 @@
       }
     },
     methods: {
+      on_change_label_schema: function(schema){
+        this.$emit('change_label_schema', schema)
+      },
       on_task_annotation_complete_and_save: async function () {
         await this.save(false);
         const response = await finishTaskAnnotation(this.task.id);

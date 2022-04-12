@@ -167,7 +167,6 @@
             :project_string_id="project_string_id"
             :initial_schema="label_schema"
             @change="$emit('change_label_schema', $event)"
-            @update_label_file_visible="$emit('update_label_file_visibility', $event)"
           >
           </label_schema_selector>
         </div>
