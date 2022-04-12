@@ -507,7 +507,7 @@ Cypress.Commands.add('createLabels', function (labels_list) {
   const label_list_obj = labels_list.map(elm => ({...elm, exists: false}))
   cy.request({
     method: 'GET',
-    url: `localhost:8085/api/project/diffgram-testing-e2e/labels/refresh`,
+    url: `localhost:8085/api/project/diffgram-testing-e2e/labels`,
     failOnStatusCode: false
   }).then((response) => {
     cy.log('RESPONSE')
@@ -689,9 +689,10 @@ Cypress.Commands.add('uploadAndViewSampleVideo', function (project_string_id) {
 Cypress.Commands.add('createInstanceTemplate', function (name, instance_data) {
   cy.visit('http://localhost:8085/project/diffgram-testing-e2e/labels')
   cy.wait(500)
-  cy.get('[data-cy=new_instance_template]').first().click({force: true});
-  cy.get('[data-cy=instance_template_name_text_field]').type(name);
-  cy.wait(500)
+  cy.get('[data-cy="tab__Geometries"]').first().click({force: true})
+    .get('[data-cy=new_instance_template]').first().click({force: true})
+    .get('[data-cy=instance_template_name_text_field]').type(name)
+    .wait(500)
   for (let node of instance_data.nodes) {
     cy.mousedowncanvas(node.x, node.y)
     cy.wait(500)

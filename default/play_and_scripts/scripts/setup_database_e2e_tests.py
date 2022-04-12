@@ -8,7 +8,7 @@ import pathlib
 import os
 
 parent_path = pathlib.Path().resolve().parent.parent.parent
-init_config_path = f"{parent_path}/shared"
+init_config_path = f"{parent_path}/opencore/diffgram/shared"
 
 os.chdir(init_config_path)
 if settings.DIFFGRAM_SYSTEM_MODE != 'testing_e2e':

@@ -92,7 +92,8 @@
           </div>
           <v-tabs v-model="tab" color="secondary" style="height: 100%; width: 850px" >
             <v-tab class="d-flex justify-start"
-                   v-for="item in header_items" :key="item.text"
+                   :data-cy="`tab__${item.name}`"
+                   v-for="item in header_items" :key="item.name"
                    style="border: 1px solid #e0e0e0; border-bottom: none; width: 100%; text-transform: unset">
               <v-icon left>{{ item.icon }}</v-icon>
               <h2 class="font-weight-light"> {{ item.name }} </h2>

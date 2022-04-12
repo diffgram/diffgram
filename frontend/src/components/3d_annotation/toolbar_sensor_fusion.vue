@@ -68,23 +68,21 @@
     </div>
 
 
-      <v-flex xs2>
-        <div class="pl-3 pr-3 pt-4">
+      <div class="pl-3 pr-3 pt-4">
 
-          <!-- instance_selector -->
-          <diffgram_select
-            v-if="view_only_mode != true"
-            :item_list="instance_type_list"
-            data_cy="instance-type-select"
-            v-model="instance_type"
-            label="New Instance Type"
-            :disabled="loading || loading_instance_templates"
-            @change="$emit('change_instance_type', instance_type)"
-          >
-          </diffgram_select>
+        <!-- instance_selector -->
+        <diffgram_select
+          v-if="view_only_mode != true"
+          :item_list="instance_type_list"
+          data_cy="instance-type-select"
+          v-model="instance_type"
+          label="New Instance Type"
+          :disabled="loading || loading_instance_templates"
+          @change="$emit('change_instance_type', instance_type)"
+        >
+        </diffgram_select>
 
-        </div>
-      </v-flex>
+      </div>
 
       <tooltip_button
         v-if="instance_type == 'tag'"

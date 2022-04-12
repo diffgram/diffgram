@@ -58,7 +58,9 @@ class SensorFusionFileProcessor:
         :return:
         """
         blob_path = f"{settings.PROJECT_PCD_FILES_BASE_DIR}{str(self.input.project_id)}/{str(file_3d.id)}"
-        self.data_tools.upload_to_cloud_storage(temp_local_path = pcd_file_path, blob_path = blob_path)
+        self.data_tools.upload_to_cloud_storage(temp_local_path = pcd_file_path,
+                                                blob_path = blob_path,
+                                                content_type = 'text/plain')
 
         point_cloud = PointCloud.new(
             session = self.session,
