@@ -228,11 +228,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: [publishimages]
     environment: staging
-    if: "((!github.event.issue.pull_request) ||
-                  (github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
-                  (github.event.comment.author_association == 'OWNER' ||
-                  github.event.comment.author_association == 'COLLABORATOR' ||
-                  github.event.comment.author_association == 'MEMBER' ))) && github.event.inputs.environment == 'staging'"
+    if: "(   (!github.event.issue.pull_request) ||
+                  (
+                    (github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                    (github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'COLLABORATOR' || github.event.comment.author_association == 'MEMBER' )
+                  )
+
+                  ) && github.event.inputs.environment == 'staging'"
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
