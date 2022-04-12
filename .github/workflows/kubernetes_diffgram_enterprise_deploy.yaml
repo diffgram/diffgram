@@ -230,7 +230,7 @@ jobs:
     environment: staging
     if: "(   (!github.event.issue.pull_request) ||
                   (
-                    (github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                    (github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy')) &&
                     (github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'COLLABORATOR' || github.event.comment.author_association == 'MEMBER' )
                   )
 
