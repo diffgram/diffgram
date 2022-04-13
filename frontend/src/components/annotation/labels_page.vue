@@ -15,8 +15,7 @@
           :schema_list="label_schema_list">
         </schema_card_selector>
 
-        <v-card>
-        <div class="d-flex flex-column">
+        <div style="width: 70%" class="d-flex flex-column">
           <div class="pa-4 d-flex align-center justify-start ">
             <h1 class="font-weight-light"  >
               <span class="secondary--text" v-if="!loading && current_schema && !edit_name">{{current_schema.name}}</span>
@@ -30,11 +29,12 @@
               small
               :disabled="loading"
               color="primary"
-              datacy="archive_schema_button"
+              datacy="edit_schema_name_button"
             >
             </tooltip_button>
 
             <v-text-field
+              data-cy="schema_name_text_field"
               v-if="!loading && current_schema && edit_name"
               v-model="current_schema.name"
               @input="has_changes = true"
@@ -54,6 +54,7 @@
                 color="primary"
                 icon="save"
                 :icon_style="true"
+                datacy="save_name_button"
                 tooltip_message="Save Name Updates"
                 confirm_message="Confirm"
                 :loading="loading"
@@ -86,6 +87,7 @@
               small
               button_color="error"
               :icon_style="true"
+              datacy_confirm="archive_schema_button_confirm"
               datacy="archive_schema_button"
             >
             </button_with_confirm>
@@ -128,7 +130,6 @@
             </v-tabs-items>
           </v-tabs>
         </div>
-        </v-card>
       </div>
     </v-container>
   </div>

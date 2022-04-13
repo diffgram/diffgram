@@ -884,7 +884,7 @@ Cypress.Commands.add('create_task_template', function () {
 
 Cypress.Commands.add('createLabelSchema', function (schema_name) {
   cy.visit(`http://localhost:8085/project/${testUser.project_string_id}/labels`)
-    .get('[data-cy"create_label_schema_btn"]').click({force: true})
-    .get('[data-cy="text-field-schema-name"]').type(schema_name)
-    .get('[data-cy"create_schema_start"]').click({force: true})
+    .get('[data-cy="create_label_schema_btn"]').click({force: true})
+    .get('[data-cy="text-field-schema-name"]').type(`{selectall}{backspace}${schema_name}`)
+    .get('[data-cy="create_schema_start"]').click({force: true})
 });

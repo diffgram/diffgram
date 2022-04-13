@@ -16,6 +16,7 @@
                   :disabled="disabled"
                   :icon="icon_style"
                   :text="text_style"
+                  :data-cy="datacy"
                   :large="large"
                   :outlined="outlined"
                   :color="button_color"
@@ -51,6 +52,7 @@
 
               <v-btn
                   color="warning"
+                  :data-cy="datacy_confirm"
                   @click="$emit('confirm_click', $event)">
                 Confirm
               </v-btn>
@@ -136,6 +138,12 @@ import Vue from "vue"; export default Vue.extend( {
     },
     'bottom': {
       default: true
+    },
+    'datacy_confirm':{
+
+    },
+    'datacy':{
+
     },
     'confirm_message': {
       default: "Are you sure?",

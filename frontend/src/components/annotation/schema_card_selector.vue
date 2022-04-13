@@ -1,6 +1,6 @@
 <template>
 
-  <v-card    width="256"
+  <v-card    width="25%"
              height="40%"
              style="position: sticky; top: 75px; border: 1px solid #e0e0e0; min-height: 500px"
              class="justify-start mr-6">
