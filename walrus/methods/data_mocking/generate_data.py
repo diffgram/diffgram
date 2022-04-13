@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from methods.input.packet import enqueue_packet
 from shared.database.input import Input
 from shared.database.labels.label import Label
+from shared.database.labels.label_schema import LabelSchema
 from methods.input.process_media import Process_Media
 from shared.utils.job_dir_sync_utils import JobDirectorySyncManager
 from shared.regular.regular_methods import commit_with_rollback
@@ -421,6 +422,9 @@ class DiffgramDataMocker:
         task_template.stat_count_complete = 0
         task_template.allow_reviews = reviews['allow_reviews']
         task_template.review_chance = reviews['review_chance']
+        schema = self.session.query(LabelSchema).filter(LabelSchema.project_id == project.id,
+                                                        LabelSchema.name == 'Default Schema').first()
+        task_template.label_schema_id = schema.id
         directory = WorkingDir.new_blank_directory(session = self.session)
         task_template.directory = directory
         label_files = self.generate_sample_label_files(project = project)

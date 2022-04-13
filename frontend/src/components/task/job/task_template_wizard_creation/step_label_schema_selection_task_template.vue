@@ -37,6 +37,7 @@
     >
     </wizard_navigation>
     <label_manager_dialog @label_created="on_label_created"
+                          :schema_id="job.label_schema_id"
                           :project_string_id="project_string_id"
                           ref="label_manager_dialog">
 

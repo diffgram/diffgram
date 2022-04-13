@@ -6,6 +6,7 @@
          <labels_view @label_created="on_label_created"
                       :show_attributes_table="true"
                       :show_edit_templates="true"
+                      :schema_id="schema_id"
                       :project_string_id="project_string_id"
                       class="pa-8"></labels_view>
        </v-card>
@@ -24,7 +25,7 @@
       components: {
         labels_view: labels_view
       },
-      props: ['project_string_id'],
+      props: ['project_string_id', 'schema_id'],
 
       watch: {},
       mounted() {
