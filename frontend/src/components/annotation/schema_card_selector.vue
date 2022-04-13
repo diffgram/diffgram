@@ -91,6 +91,7 @@ export default {
       this.$emit('schema_selected',item)
     },
     create_schema: async function(){
+      this.error = {};
       if(!this.$props.project_string_id){
         this.error = {
           project: 'Provide project_string_id.'
