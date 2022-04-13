@@ -219,7 +219,7 @@
                         :icon_style="true"
                         :bottom="true"
                         color="primary">
-                    </tooltip_button>                   
+                    </tooltip_button>
 
                     <button_with_menu
                       tooltip_message="Edit"
@@ -627,10 +627,9 @@
             return false
           }
           return item.label.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
-          console.log('search', value, search, item)
         },
         generate_explore_url: function(name){
-          return '/studio/annotate/' + this.$store.state.project.current.project_string_id  + '/explorer?query=labels.' + name + ' > 0'
+          return `/studio/annotate/${this.$store.state.project.current.project_string_id}/explorer?query=labels.${name} > 0`
         },
         open_sample_labels_dialog: function(){
           this.dialog_confirm_sample_data = true;
@@ -658,58 +657,17 @@
           this.$emit('label_created', label);
         },
         expand_once: function () {
-
-          /* It's unclear where to trigger this
-           * For example, changing the file should trigger it,
-           * Maybe on current_video_file_id or something,
-           * BUT still the issue that trigging this doesn't seem to cause the component in the slot load as expected
-           * As a (seperate?) concern, closing expanded stuff, if person clicks on an image file after
-           * So better to still wait on  https://github.com/vuetifyjs/vuetify/pull/5737
-           * Tried    <div v-if="expand_once()">
-                        </div> too - not the right spot / expected behaviour
-           */
-
-          // very hacky
           if (this.video_mode != true) {
-
-            // case of loading a video file
-            // then loading an image
-            /*
-            if (this.expand_once == true) {
-              for (label in this.Labels) {
-                this.$set(this.$refs.label_data_table.expanded,
-                  label.id,
-                  false)
-              }
-            }
-            */
             this.expanded_once = false // reset
             return
           }
-
           if (this.expanded_once == false) {
             this.expanded_once = true
             this.$set(this.$refs.label_data_table.expanded,
               this.Labels[0].id,
               true)
           }
-
-
         },
-
-        // From back when we had sequence thing embedded in data table
-        /*
-        show_sequence: function (expanded) {
-
-          if (this.video_mode == true) {
-            return !expanded
-          }
-          else {
-            return expanded
-          }
-        },
-        */
-
         attribute_menu_close() {
 
           this.refresh_labels_function()
@@ -772,17 +730,7 @@
           if (this.show_edit_templates) {
             return
           }
-          /*
-           *  This will also trigger sequence refresh
-           *  because it pushes label to annotation core
-           *  and sequence list is watching annotation core (label_file_id)
-           *  we can commit to sequence_refresh to force it
-           *  ie this.$store.commit('sequence_refresh', Date.now())
-           *  but it won't really do it as expected since we want the label file anyway here
-           */
 
-          // generally we expect that the label we emit
-          // is valid so lets reject invalid labels here?
           if (label == undefined) {
             return
           }
@@ -797,11 +745,6 @@
 
         },
         keyboard_events_window: function (event) {
-
-
-          // hotkeys
-
-          // is actually generic open menu lock
           if (this.$store.state.user.is_typing_or_menu_open == true) {
             return
           }
@@ -819,8 +762,7 @@
           this.api_file_update_loading = true
           this.info = {}  // reset
 
-          axios.post('/api/v1/project/' + this.project_string_id
-            + '/file/update',
+          axios.post(`/api/v1/project/${this.project_string_id}/file/update`,
             {
               'file_list': [label],
               'mode': mode
@@ -859,7 +801,7 @@
           } else {
             label.is_visible = !label.is_visible
           }
-          this.Labels.splice(this.Labels.indexOf(label), 1, label)
+          let res= this.Labels.splice(this.Labels.indexOf(label), 1, label)
           this.$emit('update_label_file_visible', label)
         },
         next_instance(label_name){
