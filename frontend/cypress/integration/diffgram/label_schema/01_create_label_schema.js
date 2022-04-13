@@ -36,7 +36,7 @@ describe('Label Schemas Management', () => {
     it('Correctly Archives a Schema', () => {
       let url = `/api/v1/project/*/labels-schema/*/update`
       cy.intercept(url).as('update_schema')
-      cy.get(`[data-cy="schema_item__${name}"]`).first().click({force: true})
+      cy.get(`[data-cy="schema_item__Updated Schema Name"]`).first().click({force: true})
         .get(`[data-cy="archive_schema_button"]`).first().click({force: true})
         .get(`[data-cy="archive_schema_button_confirm"]`).first().click({force: true})
         .wait('@update_schema').its('response').should('have.property', 'statusCode', 200)

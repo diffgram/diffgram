@@ -2933,7 +2933,9 @@ export default Vue.extend({
       }
     },
     fetch_instance_template: async function () {
-
+      if(this.label_schema.id === -1){
+        return
+      }
       this.loading_instance_templates = true;
       this.canvas_element = document.getElementById("my_canvas");
       this.canvas_element_ctx = this.canvas_element.getContext("2d");
@@ -3538,7 +3540,8 @@ export default Vue.extend({
       this.add_event_listeners();
       this.fetch_model_run_list();
       this.fetch_instance_template();
-
+      this.update_canvas()
+      this.populate_canvas_element()
       this.canvas_mouse_tools = new CanvasMouseTools(
         this.mouse_position,
         this.canvas_translate,

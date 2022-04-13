@@ -315,6 +315,7 @@ export default Vue.extend({
       this.task = {
         ...UI_SCHEMA_TASK_MOCK,
       };
+      this.current_label_schema = this.task.job.label_schema;
       if (this.$refs.file_manager_sheet) {
         this.$refs.file_manager_sheet.set_file_list([this.task.file]);
         this.$refs.file_manager_sheet.hide_file_manager_sheet();
@@ -335,8 +336,9 @@ export default Vue.extend({
         await this.fetch_schema_list()
         await this.fetch_project_file_list();
       }
+      await this.get_labels_from_project();
     }
-    await this.get_labels_from_project();
+
     this.initializing = false
   },
   computed: {
