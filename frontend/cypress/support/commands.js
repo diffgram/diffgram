@@ -613,7 +613,7 @@ Cypress.Commands.add('uploadImageWithLabels', function (project_string_id) {
   cy.wait(700);
   cy.get('[data-cy=start_files_upload_button]').click();
   cy.wait(3000);
-  cy.get('[data-cy=close_wizard_button]').click();
+  cy.get('[data-cy=close_wizard_button]', {timeout: 15000}).click();
   cy.wait(3000);
   cy.get('[data-cy=refresh-input-icon]').click();
   cy.wait(3000);
@@ -642,7 +642,7 @@ Cypress.Commands.add('uploadAndViewSampleImage', function (project_string_id) {
   cy.wait(700);
   cy.get('[data-cy=start_files_upload_button]').click();
   cy.wait(3000);
-  cy.get('[data-cy=close_wizard_button]').click();
+  cy.get('[data-cy=close_wizard_button]', {timeout: 15000}).click();
   cy.wait(3000);
   cy.get('[data-cy=refresh-input-icon]').click();
   cy.wait(3000);
@@ -678,7 +678,7 @@ Cypress.Commands.add('uploadAndViewSampleVideo', function (project_string_id) {
   cy.wait(700);
   cy.get('[data-cy=start_files_upload_button]').click();
   cy.wait(8000);
-  cy.get('[data-cy=close_wizard_button]').click();
+  cy.get('[data-cy=close_wizard_button]', {timeout: 15000}).click();
   cy.wait(10000);
   cy.get('[data-cy=refresh-input-icon]').click();
   cy.wait(3000);
