@@ -106,6 +106,7 @@ export default Vue.extend( {
       this.success_state = true
       clearInterval(this.intervel)
       this.is_automatically_checking = false
+      this.$store.commit('patch_current_user', ['security_email_verified', true])
       this.$router.push('/welcome/adventure')
     },
 
