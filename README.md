@@ -16,18 +16,18 @@ _________________
 [Twitter](https://twitter.com/diffgram)
 
 
-# Training Data Platform in One Application
+# Open Source Training Data Platform
 
 ![](./github_assets/diffgram_high_level.PNG)
 
-Complete training data platform for machine learning delivered as
+Modern Training Data platform for machine learning delivered as
 a single application. 
 
 Open Source Data Labeling, Workflow, Automation, Exploring, Streaming, and so much more!
 
 Watch a high level [video explanation](https://www.youtube.com/watch?v=dws6J3bDbcU).
 
-# Annotate Anything - Images, Video, 3D, Text, And more
+# Annotate Anything - Images, Video, 3D, Text, Geo And more
 
 ## Images
 Box, Polygons, Lines, [Keypoints](https://diffgram.readme.io/docs/keypoints-annotation-type), Classification Tags, Quadratic Curves, Cuboids, Segmentation,  and More
@@ -46,25 +46,55 @@ Long, High Frame Rate, High Resolution Videos.
 ## Text
 [Text Labeling docs](https://diffgram.readme.io/docs/text-annotation-guide)
 
-1. Named Entity Recognition
-2. Part of Speech Tagging
-3. Coreference Resolution
-4. Dependency Parsing
+Named Entity Recognition, Part of Speech Tagging, Coreference Resolution, Dependency Parsing
 
-![](./github_assets/diffgram_text_interface.png)
+![Diffgram Text Interface](./github_assets/diffgram_text_interface.png)
+
+## Documents
+
+## Geospatial & Tiled Imagery
+Support for GeoTIFF, streaming, multi-layer, standard and cloud-optimized.
+![](./github_assets/geo_ui_preview.png)
+Coming late April 2022
+
+## Audio
+Coming May 2022
 
 ### More
-Build your own UI or contact us. Our intent is to build and cover all major media types in 2022.
+Build your own UI or [contact us](https://diffgram.com/main/contact). Our intent is to build and cover all major media types in 2022, including timeseries, DICOM, and more.
 
-## Customize Everything
+## Manage all of your training data
+Manage multiple Schemas, Users, Datasets, Process, and so much more. 
+
+### Process Manager
+Organize and surface your machine learning processes. 
+From start, through pre-label ingestion, multiple task stages, training, and back again.
+Process Manager coming May 2022.
+
+### Customize Everything
 With Diffgram you can get the exact branded experience you want through the what-you-see-is-what-you-get editor.
-Whitelabel UI Layout & Branding, Automations, Label Schema, Spatial Types, Pipelines, Queries, and More.
+Whitelabel UI Layout & Branding, Automations, Schema, Geometry, Processes, Pipelines, Queries, and More.
 Diffgram is the most customizable training data platform.
 [Training Data Customization](https://diffgram.readme.io/docs/customization)
 
-# What is Training Data?
-Training Data is the art of supervising machines through data. The day to day work involves people transferring their knowledge to the computer - often through the form of annotation. For example declaring a region of media, such as an image or audio file, to be valid or invalid. These annotations produce structured data - ready to be consumed by Data Science. This is required because raw media is considered to be unstructured - meaning not readable by data science.
+### Cybersecurity
+How secure is your training data? [Learn more about Cybersecurity for Training Data](https://diffgram.readme.io/docs/cybersecurity-101)   
 
+
+# Migration
+## Labelbox to Diffgram
+Are you getting great value from Labelbox? [Labelbox vs Diffgram](https://anthony-sarkis.medium.com/considering-labelbox-consider-diffgram-too-fe7a7b8ee8d7)
+
+[One Click Migration from Labelbox](https://diffgram.readme.io/docs/1-click-migration-from-labelbox)
+
+## Labelstudio to Diffgram
+[Learn about upgrading to Diffgram](https://diffgram.com/main/best-open-source-data-labeling-2022)
+
+## SuperAnnotate to Diffgram
+[Contact us](https://diffgram.com/main/contact) to request prioritization of the automatic migration.
+
+# What is Training Data?
+Training Data is the art of supervising machines through data. This includes the activities of annotation, which produces structured data; ready to be consumed by a machine learning model. Annotation is required because raw media is considered to be unstructured and not usable without it. That’s why training data is required for many modern machine learning use cases including computer vision, natural language processing and speech recognition. 
 # What is Diffgram?
 Diffgram is multiple training data tools in one single application.
 1. [Ingest](#Ingest) - Magic Mapping Wizard, High QPS Ingest, All-Cloud File Browser, and More.
@@ -158,8 +188,6 @@ Labelbox, CVAT, SuperAnnotate, Label Studio (Heartex),
 V7 Labs (Darwin), BasicAI, SuperbAI, Kili-Technology, Cord, HastyAI, Dataloop, Keymakr, Scale Nucleus.
 
 Please see the roadmap and talk with us if you see a missing feature.
-
-[Labelbox vs Diffgram](https://anthony-sarkis.medium.com/considering-labelbox-consider-diffgram-too-fe7a7b8ee8d7)
 
 ### How much does this cost? What's your business model?
 If you have less than 20 people and manage your own Diffgram instance there is **no licensing cost**. 
