@@ -54,7 +54,6 @@ Named Entity Recognition, Part of Speech Tagging, Coreference Resolution, Depend
 
 ## Geospatial & Tiled Imagery
 Support for GeoTIFF, streaming, multi-layer, standard and cloud-optimized.
-![](./github_assets/geo_ui_preview.png)
 Coming late April 2022
 
 ## Audio
@@ -63,21 +62,21 @@ Coming May 2022
 ### More
 Build your own UI or [contact us](https://diffgram.com/main/contact). Our intent is to build and cover all major media types in 2022, including timeseries, DICOM, and more.
 
-## Manage all of your training data
+# Manage all of your training data
 Manage multiple Schemas, Users, Datasets, Process, and so much more. 
 
-### Process Manager
+## Process Manager
 Organize and surface your machine learning processes. 
 From start, through pre-label ingestion, multiple task stages, training, and back again.
 Process Manager coming May 2022.
 
-### Customize Everything
+## Customize Everything
 With Diffgram you can get the exact branded experience you want through the what-you-see-is-what-you-get editor.
 Whitelabel UI Layout & Branding, Automations, Schema, Geometry, Processes, Pipelines, Queries, and More.
 Diffgram is the most customizable training data platform.
 [Training Data Customization](https://diffgram.readme.io/docs/customization)
 
-### Cybersecurity
+## Cybersecurity
 How secure is your training data? [Learn more about Cybersecurity for Training Data](https://diffgram.readme.io/docs/cybersecurity-101)   
 
 
@@ -208,14 +207,17 @@ Diffgram Enterprise can help you scale every aspect of your training data.
 
 ## Roadmap
 2022: 
-1. New Interfaces: Text, Audio
-2. Save on labeling costs by only labeling most relevant data. Active Learning.
-3. Save QA costs by using model to debug humans. Explore V2
-4. Save on labeling costs by using interactive automations. Userscripts V2
-5. Scale: Support for up to 1,000+ QPS and up to 10 Billion annotations per install.
+1. New Interfaces: Geo, Timeseries, Document 2.0, Audio
+2. Process Manager (Workflow 2.0)
+3. Save on labeling costs by only labeling most relevant data.
+4. Save QA costs by using model to debug humans. Explore V2
+5. Save on labeling costs by using interactive automations. Userscripts V2
 
 2023:
-1. Scale: Support for up to 10,000+ QPS and up to 500+ Billion annotations.
+Scale: Support for up to 1,000+ QPS and up to 10 Billion annotations per install.
+
+2024:
+Scale: Support for up to 10,000+ QPS and up to 500+ Billion annotations.
 ![Roadmap](./github_assets/roadmap.PNG)
 
 We welcome you to create issues, join our slack channel, and help shape our roadmap.
