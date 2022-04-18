@@ -18,7 +18,9 @@
         <div style="width: 70%" class="d-flex flex-column">
           <div class="pa-4 d-flex align-center justify-start ">
             <h1 class="font-weight-light"  >
-              <span class="secondary--text" v-if="!loading && current_schema && !edit_name">{{current_schema.name}}</span>
+              <span class="secondary--text" v-if="!loading && current_schema && !edit_name">
+                {{current_schema.name | truncate(45)}}
+              </span>
             </h1>
             <tooltip_button
               v-if="!edit_name"
@@ -143,6 +145,11 @@ export default Vue.extend({
   async created() {
 
 
+  },
+  filters:{
+    truncate: function (value, numchars) {
+      return value && value.length > numchars ? value.substring(0, numchars) + "..." : value
+    },
   },
   methods: {
     archive_schema: async function(){

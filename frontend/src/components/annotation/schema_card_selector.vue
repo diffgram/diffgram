@@ -26,7 +26,10 @@
             </v-card-text>
             <v-card-actions class="d-flex justify-lg-space-between align-center">
               <v-btn color="primary" small><v-icon>mdi-close</v-icon>Cancel</v-btn>
-              <v-btn color="success" data-cy="create_schema_start" small @click="create_schema"><v-icon>mdi-plus</v-icon>Create</v-btn>
+              <v-btn :loading="create_loading"
+                     color="success"
+                     data-cy="create_schema_start"
+                     small @click="create_schema"><v-icon>mdi-plus</v-icon>Create</v-btn>
             </v-card-actions>
           </v-card>
 
@@ -82,6 +85,7 @@ export default {
       new_schema_name: sillyname().split(" ")[0],
       selected_schema: {},
       menu_open: false,
+      create_loading: false,
       error: null,
     }
   },
@@ -92,6 +96,7 @@ export default {
     },
     create_schema: async function(){
       this.error = {};
+      this.create_loading = true
       if(!this.$props.project_string_id){
         this.error = {
           project: 'Provide project_string_id.'
@@ -102,6 +107,7 @@ export default {
         this.error = {
           name: 'Name must not be empty.'
         }
+        this.create_loading = false
         return
       }
       let [result, error] = await create_schema(this.$props.project_string_id, this.new_schema_name)
@@ -118,6 +124,7 @@ export default {
         this.$refs.menu.close_menu();
         this.$emit('schema_created', new_schema)
       }
+      this.create_loading = false
     }
   }
 }
