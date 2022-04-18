@@ -638,7 +638,8 @@
           this.loading_create_sample_data = true;
           try{
             const response = await axios.post('/api/walrus/v1/project/' + this.$store.state.project.current.project_string_id + '/gen-data', {
-              data_type: 'label'
+              data_type: 'label',
+              schema_id: this.schema_id
             })
             if(response.status === 200){
               this.refresh_labels_function();

@@ -1,79 +1,101 @@
 <template>
-  <v-layout class="pa-0 d-flex flex-column" style="min-height: 600px">
+  <div>
+    <v-container fluid class="pa-0 d-flex flex-column justify-center align-center" style="min-height: 600px; width: 100%">
 
-    <v-layout>
-      <v-row>
+      <labels_manager_tabs
+        style="min-height: 500px; width: 85%"
+        width="100%"
+        :project_string_id="project_string_id"
+        :current_schema="schema"
+      ></labels_manager_tabs>
 
-        <v-col cols="6">
-          <div class="d-flex align-center ">
-            <h2 class="font-weight-medium text--primary flex-grow-1">Labels:</h2>
-            <v-btn color="primary" icon @click="fetch_labels"><v-icon>mdi-refresh</v-icon></v-btn>
 
-            <button_with_menu
-              datacy="new_label_template"
-              button_text="Create Label"
-              tooltip_message="Create Label"
-              @click="$store.commit('set_user_is_typing_or_menu_open', true)"
-              @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
-              icon="add"
-              :icon_style="false"
-              :large="true"
-              :left="true"
-              icon_color="white"
-              :close_by_button="true"
-              color="primary"
-              offset="x"
-            >
 
-              <template slot="content"
-                        slot-scope="props">
 
-                <v_labels_new @label_created="on_label_created"
-                              :schema_id="schema_id"
-                              :menu_open="props.menu_open">
-                </v_labels_new>
-
-              </template>
-
-            </button_with_menu>
-          </div>
-
-          <labels_management_list
-            :project_string_id="project_string_id"
-            :label_file_list="label_file_list"
-            @label_file_list_updated="on_label_file_list_updated"
-          >
-          </labels_management_list>
-
-        </v-col>
-        <v-col cols="6" style="border-left: 1px solid #b9d1ec" class="d-flex flex-column">
-          <attribute_group_list_manager
-            v-if="project_string_id"
-            :schema_id="schema_id"
-            ref="attribute_group_list_manager"
-            :show_borders="true"
-            :project_string_id="project_string_id"
-            :mode = "'edit'"
-            :show_empty_placeholder="true"
-            @attribute_group_list_updated="on_attribute_group_list_updated"
-          >
-          </attribute_group_list_manager>
-
-        </v-col>
-      </v-row>
-
-    </v-layout>
-
+    </v-container>
     <wizard_navigation
       @next="go_to_step(3)"
       @skip="go_to_step(3)"
       @back="$emit('back')"
       :disabled_next="label_file_list.length == 0 && attribute_group_list.length === 0">
     </wizard_navigation>
+  </div>
 
 
 
-  </v-layout>
+
+  <!--  <v-layout class="pa-0 d-flex flex-column" style="min-height: 600px">-->
+
+<!--    <v-layout>-->
+<!--      <v-row>-->
+
+<!--        <v-col cols="6">-->
+<!--          <div class="d-flex align-center ">-->
+<!--            <h2 class="font-weight-medium text&#45;&#45;primary flex-grow-1">Labels:</h2>-->
+<!--            <v-btn color="primary" icon @click="fetch_labels"><v-icon>mdi-refresh</v-icon></v-btn>-->
+
+<!--            <button_with_menu-->
+<!--              datacy="new_label_template"-->
+<!--              button_text="Create Label"-->
+<!--              tooltip_message="Create Label"-->
+<!--              @click="$store.commit('set_user_is_typing_or_menu_open', true)"-->
+<!--              @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"-->
+<!--              icon="add"-->
+<!--              :icon_style="false"-->
+<!--              :large="true"-->
+<!--              :left="true"-->
+<!--              icon_color="white"-->
+<!--              :close_by_button="true"-->
+<!--              color="primary"-->
+<!--              offset="x"-->
+<!--            >-->
+
+<!--              <template slot="content"-->
+<!--                        slot-scope="props">-->
+
+<!--                <v_labels_new @label_created="on_label_created"-->
+<!--                              :schema_id="schema.id"-->
+<!--                              :menu_open="props.menu_open">-->
+<!--                </v_labels_new>-->
+
+<!--              </template>-->
+
+<!--            </button_with_menu>-->
+<!--          </div>-->
+
+<!--          <labels_management_list-->
+<!--            :project_string_id="project_string_id"-->
+<!--            :label_file_list="label_file_list"-->
+<!--            @label_file_list_updated="on_label_file_list_updated"-->
+<!--          >-->
+<!--          </labels_management_list>-->
+
+<!--        </v-col>-->
+<!--        <v-col cols="6" style="border-left: 1px solid #b9d1ec" class="d-flex flex-column">-->
+<!--          <attribute_group_list_manager-->
+<!--            v-if="project_string_id"-->
+<!--            :schema_id="schema.id"-->
+<!--            ref="attribute_group_list_manager"-->
+<!--            :show_borders="true"-->
+<!--            :project_string_id="project_string_id"-->
+<!--            :mode = "'edit'"-->
+<!--            :show_empty_placeholder="true"-->
+<!--            @attribute_group_list_updated="on_attribute_group_list_updated"-->
+<!--          >-->
+<!--          </attribute_group_list_manager>-->
+
+<!--        </v-col>-->
+<!--      </v-row>-->
+
+<!--    </v-layout>-->
+
+<!--    <wizard_navigation-->
+<!--      @next="go_to_step(3)"-->
+<!--      @skip="go_to_step(3)"-->
+<!--      @back="$emit('back')"-->
+<!--      :disabled_next="label_file_list.length == 0 && attribute_group_list.length === 0">-->
+<!--    </wizard_navigation>-->
+<!--  </v-layout>-->
 
 </template>
 
@@ -82,6 +104,7 @@
   import axios from '../../services/customInstance';
   import Vue from "vue";
   import v_labels_edit from '../annotation/labels_edit'
+  import labels_manager_tabs from './labels_manager_tabs'
   import attribute_group_list_manager from '../attribute/attribute_group_list_manager'
   import labels_management_list from '../label/labels_management_list'
   import {get_labels} from '../../services/labelServices';
@@ -90,12 +113,13 @@
       name: 'labels_attributes_manager',
       components:{
         attribute_group_list_manager,
+        labels_manager_tabs,
         labels_management_list,
         v_labels_edit,
       },
       props: {
         'project_string_id': {},
-        'schema_id': {
+        'schema': {
           required: true
         },
       },
@@ -108,7 +132,6 @@
         return {
 
           openedPanel: false,
-          schema_id: false,
           label_file_list: [],
           attribute_group_list: [],
           label_file_colour_map: {}
@@ -138,7 +161,7 @@
             return
           }
           this.label_refresh_loading = true
-          let [result, error] = await get_labels(this.project_string_id, this.$props.schema_id)
+          let [result, error] = await get_labels(this.project_string_id, this.$props.schema.id)
           if(error){
             return
           }

@@ -158,6 +158,12 @@ class LabelSchemaLink(Base, SerializerMixin):
 
     @staticmethod
     def new_label_link(session: Session, schema_id: int, label_file_id: int, member_created_id: int) -> 'LabelSchemaLink':
+        existing_rel = session.query(LabelSchemaLink).filter(
+            LabelSchemaLink.schema_id == schema_id,
+            LabelSchemaLink.label_file_id == label_file_id
+        ).first()
+        if existing_rel is not None:
+            return existing_rel
         schema_link = LabelSchemaLink(
             schema_id = schema_id,
             label_file_id = label_file_id,
@@ -171,6 +177,12 @@ class LabelSchemaLink(Base, SerializerMixin):
 
     @staticmethod
     def new_attribute_group_link(session: Session, schema_id: int, attribute_group_id: int, member_created_id: int) -> 'LabelSchemaLink':
+        existing_rel = session.query(LabelSchemaLink).filter(
+            LabelSchemaLink.schema_id == schema_id,
+            LabelSchemaLink.attribute_template_group_id == attribute_group_id
+        ).first()
+        if existing_rel is not None:
+            return existing_rel
         schema_link = LabelSchemaLink(
             schema_id = schema_id,
             attribute_template_group_id = attribute_group_id,
@@ -184,6 +196,12 @@ class LabelSchemaLink(Base, SerializerMixin):
 
     @staticmethod
     def new_instance_template_link(session: Session, schema_id: int, instance_template_id: int, member_created_id: int) -> 'LabelSchemaLink':
+        existing_rel = session.query(LabelSchemaLink).filter(
+            LabelSchemaLink.schema_id == schema_id,
+            LabelSchemaLink.instance_template_id == instance_template_id
+        ).first()
+        if existing_rel is not None:
+            return existing_rel
         schema_link = LabelSchemaLink(
             schema_id = schema_id,
             instance_template_id = instance_template_id,

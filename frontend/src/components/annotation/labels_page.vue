@@ -92,43 +92,9 @@
             >
             </button_with_confirm>
           </div>
-          <v-tabs v-model="tab" color="secondary" style="height: 100%; width: 850px" >
-            <v-tab class="d-flex justify-start"
-                   :data-cy="`tab__${item.name}`"
-                   v-for="item in header_items" :key="item.name"
-                   style="border: 1px solid #e0e0e0; border-bottom: none; width: 100%; text-transform: unset">
-              <v-icon left>{{ item.icon }}</v-icon>
-              <h2 class="font-weight-light"> {{ item.name }} </h2>
-            </v-tab>
-            <v-tabs-items v-model="tab">
-              <v-tab-item>
-                <v_labels_view
-                  v-if="current_schema"
-                  :schema_id="current_schema ? current_schema.id : undefined"
-                  :show_edit_templates="true"
-                  :show_create_samples="true"
-                  :show_attributes_table="true"
-                  :project_string_id="project_string_id">
-                </v_labels_view>
-              </v-tab-item>
+          <labels_manager_tabs :current_schema="current_schema" :project_string_id="project_string_id">
 
-              <v-tab-item>
-                <attribute_home v-if="current_schema"
-                                :schema_id="current_schema ? current_schema.id : undefined"
-                                :project_string_id="project_string_id">
-
-                </attribute_home>
-              </v-tab-item>
-
-              <v-tab-item>
-                <instance_template_list
-                  v-if="current_schema"
-                  :schema_id="current_schema ? current_schema.id : undefined"
-                  :project_string_id="project_string_id"
-                ></instance_template_list>
-              </v-tab-item>
-            </v-tabs-items>
-          </v-tabs>
+          </labels_manager_tabs>
         </div>
       </div>
     </v-container>
@@ -139,18 +105,18 @@
 <script lang="ts">
 
 import Vue from "vue";
-import attribute_home from '../attribute/attribute_home'
+
 import {create_event} from "../event/create_event";
 import schema_card_selector from './schema_card_selector'
-import instance_template_list from '../instance_templates/instance_template_list'
+
 import {get_schemas, update_schema} from '../../services/labelServices'
+import Labels_manager_tabs from "../label/labels_manager_tabs.vue";
 
 export default Vue.extend({
   name: 'labels_page',
   components:{
-    instance_template_list: instance_template_list,
+    Labels_manager_tabs,
     schema_card_selector: schema_card_selector,
-    attribute_home: attribute_home
   },
   props: {
     'project_string_id': {},
@@ -165,10 +131,7 @@ export default Vue.extend({
       tab: null,
       error: null,
       label_schema_list: [],
-      header_items: [
-        {name: 'Labels', icon: 'mdi-star-circle'},
-        {name: 'Attributes', icon: 'mdi-file-tree'},
-        {name: 'Geometries', icon: 'mdi-vector-triangle'}]
+
     }
   },
   computed: {},
@@ -206,6 +169,12 @@ export default Vue.extend({
       }
       if(result){
         this.current_schema = result;
+        for(let i = 0; i < this.label_schema_list.length; i++){
+          let current = this.label_schema_list[i]
+          if(current.id === this.current_schema.id){
+            Vue.set(this.label_schema_list, i, this.current_schema);
+          }
+        }
         this.edit_name = false;
         return true
       }

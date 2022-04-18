@@ -61,7 +61,7 @@
           <v-stepper-content step="2" style="height: 100%">
 
             <labels_attributes_manager
-              :schema_id="schema.id"
+              :schema="schema"
               @skip="go_to_step"
               @back="go_back_a_step()"
               :project_string_id="project_string_id">

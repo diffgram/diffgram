@@ -1,9 +1,9 @@
 <template>
-  <v-container class="pa-0">
+  <v-container fluid class="pa-0">
     <v-alert type="success" :dismissible="true" v-model="show_success_alert">Instance template created successfully.
     </v-alert>
     <v-progress-linear indeterminate v-if="loading"></v-progress-linear>
-    <v-card v-if="!loading" style="overflow-y:auto; max-height: 700px" elevation="3" class="pr-4">
+    <v-card v-if="!loading" style="overflow-y:auto; max-height: 700px" elevation="0">
       <v-card-title>
         <v-btn icon color="primary" data-cy="new_instance_template" @click="open_instance_template_create_dialog">
           <v-icon size="36">mdi-plus</v-icon>
