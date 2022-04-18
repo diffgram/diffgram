@@ -87,6 +87,7 @@ export class GeoPoint extends Instance implements InstanceInterface {
     public lonlat: Array<number>;
     public coords: Array<number>;
     public type: string = "geo_point";
+    public ol_id: string;
 
     constructor() {
         super();
@@ -98,6 +99,7 @@ export class GeoPoint extends Instance implements InstanceInterface {
             lonlat: Array<number>,
             coords: Array<number>,
             label_file: any,
+            ol_id: string,
             soft_delete: boolean = false
         ): void {
         this.lonlat = lonlat;
@@ -106,6 +108,7 @@ export class GeoPoint extends Instance implements InstanceInterface {
         this.creation_ref_id = uuidv4();
         this.label_file = label_file;
         this.label_file_id = label_file.id;
+        this.ol_id = ol_id;
     }
 
     public get_instance_data() {
@@ -118,7 +121,8 @@ export class GeoPoint extends Instance implements InstanceInterface {
             soft_delete: this.soft_delete,
             creation_ref_id: this.creation_ref_id,
             lonlat: this.lonlat,
-            coords: this.coords
+            coords: this.coords,
+            ol_id: this.ol_id
         }
         
         return payload
