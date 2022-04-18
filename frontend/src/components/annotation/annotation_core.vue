@@ -273,6 +273,7 @@
                                       :view_only_mode="view_only_mode"
                                       :label_settings = "label_settings"
                                       :label_list = "label_list"
+                                      :project_string_id = "project_string_id"
                                       :global_attribute_groups_list="global_attribute_groups_list"
                                       :schema_id="label_schema.id"
                                       :current_global_instance="current_global_instance"
@@ -7146,7 +7147,6 @@ export default Vue.extend({
     mouse_down: function (event) {
       // TODO review using local variables instead of vuex
       // here for performance
-      console.log('eventt', event)
       // TODO new method ie
       // this.is_actively_drawing = true
       let locked_frame_number = this.current_frame;

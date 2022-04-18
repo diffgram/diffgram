@@ -65,6 +65,7 @@
                                    :instance_list="instance_list"
                                    :model_run_list="undefined"
                                    :label_file_colour_map="label_file_colour_map"
+                                   :project_string_id="project_string_id"
                                    :refresh="refresh"
                                    @toggle_instance_focus="()=>{}"
                                    @show_all="()=>{}"

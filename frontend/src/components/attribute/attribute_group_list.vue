@@ -50,7 +50,7 @@
 
     >
       <v-expansion-panel
-        v-for="group in attribute_group_list"
+        v-for="group in attribute_group_list_computed"
         :key="group.id"
       >
         <v-expansion-panel-header
@@ -139,6 +139,7 @@ import axios from '../../services/customInstance';
 import draggable from 'vuedraggable'
 
 import attribute_group from './attribute_group.vue';
+import {attribute_group_list} from '../../services/attributesService';
 import attribute_kind_icons from './attribute_kind_icons.vue';
 import attribute_group_new from './attribute_group_new.vue'
 
@@ -197,6 +198,7 @@ import attribute_group_new from './attribute_group_new.vue'
 
         name: null,
         attribute_group_list: [],
+        out_of_schema_attributes: [],
 
         openedPanel: null
 
@@ -205,22 +207,22 @@ import attribute_group_new from './attribute_group_new.vue'
 
     watch: {
       schema_id: function(new_val, old_val){
-        console.log('schema_id', new_val, old_val)
         this.api_attribute_group_list("from_project")
       },
       attribute_template_group_id(new_val, old_val) {
-        console.log('AAA', new_val, old_val)
         this.api_attribute_group_list("from_project")
       },
 
       attribute_group_list_prop() {
         this.attribute_group_list = this.attribute_group_list_prop
+      },
+      current_instance(){
+        this.fetch_current_instance_missing_attributes("from_project")
       }
 
     },
 
     created() {
-
       // is edit right name? or "from_project" as seperate context / mode here too
       if (this.mode == 'edit') {
        this.api_attribute_group_list("from_project")
@@ -228,6 +230,7 @@ import attribute_group_new from './attribute_group_new.vue'
 
       if (this.mode == 'annotate') {
        this.attribute_group_list = this.attribute_group_list_prop
+        this.fetch_current_instance_missing_attributes("from_project")
       }
 
     },
@@ -253,7 +256,20 @@ import attribute_group_new from './attribute_group_new.vue'
       this.refresh_watcher() // destroy
     },
     computed: {
-
+      attribute_group_list_computed: function(){
+        if(!this.current_instance){
+          return this.attribute_group_list
+        }
+        let all_attributes = this.attribute_group_list.concat(this.out_of_schema_attributes);
+        let result = [];
+        for(let attr of all_attributes){
+          let id_list = attr.label_file_list.map(elm => elm.id);
+          if(id_list.includes(this.current_instance.label_file_id)){
+            result.push(attr)
+          }
+        }
+        return result
+      }
     },
     methods: {
       api_group_archive: async function (group) {
@@ -280,7 +296,7 @@ import attribute_group_new from './attribute_group_new.vue'
               this.error = error.response.data.log.error
             }
             this.loading = false
-            console.log(error)
+            console.error(error)
           }
         }
       },
@@ -294,41 +310,83 @@ import attribute_group_new from './attribute_group_new.vue'
       update_url_with_current_group(group) {
         this.$addQueriesToLocation({'attribute_group': group.id})
       },
+      fetch_current_instance_missing_attributes: async function(mode){
+        /*
+        * Fetches any attributes that are not on the current schema. This is useful when a user
+        * changed the schema of a task template and it already had attributes from prev schema.
+        * */
 
-      api_attribute_group_list: function (mode) {
+        if(!this.current_instance){
+          return
+        }
+        let attr_dict = this.current_instance.attribute_groups;
+        if(!attr_dict){
+          return
+        }
+        let attribute_group_id_list = Object.keys(attr_dict).map(elm => parseInt(elm, 10));
+        let existing_attribute_id_list = this.attribute_group_list.map(elm => elm.id);
+        let missing_id_list = [];
+        for (let id of attribute_group_id_list){
+          if(!existing_attribute_id_list.includes(id)){
+            missing_id_list.push(id)
+          }
+        }
+        if(missing_id_list.length === 0){
+          return
+        }
+        let [attr_data, error] = await attribute_group_list(
+          this.project_string_id,
+          undefined,
+          undefined,
+          mode,
+          missing_id_list,
+          true
+        )
+
+        if(error){
+          if (error.response.status == 400) {
+            this.error = error.response.data.log.error
+          }
+          this.error = this.$route_api_errors(error)
+          this.loading = false
+          return
+        }
+        if(attr_data){
+          let attribute_group_list = attr_data.attribute_group_list
+          this.out_of_schema_attributes = attribute_group_list
+
+        }
+
+      },
+      api_attribute_group_list: async function (mode) {
 
         this.loading = true
         this.error = {}
         this.success = false
+        let [attr_data, error] = await attribute_group_list(
+          this.project_string_id,
+          this.attribute_template_group_id,
+          this.schema_id,
+          mode,
+          true
+        )
+        if(error){
+          if (error.response.status == 400) {
+            this.error = error.response.data.log.error
+          }
+          this.error = this.$route_api_errors(error)
+          this.loading = false
+          return
+        }
+        if(attr_data){
+          let attribute_group_list = attr_data.attribute_group_list
+          this.attribute_group_list = attribute_group_list.sort(
+            (a, b) => b.id - a.id);
+          await this.fetch_current_instance_missing_attributes(mode)
+          this.success = true
+          this.loading = false
 
-        axios.post(
-          '/api/v1/project/' + this.project_string_id +
-          '/attribute/template/list',
-          {
-            group_id: this.attribute_template_group_id,
-            schema_id: this.schema_id,
-            mode: mode
-
-          }).then(response => {
-
-            let attribute_group_list = response.data.attribute_group_list
-            this.attribute_group_list = attribute_group_list.sort(
-              (a, b) => b.id - a.id);
-
-            this.success = true
-            this.loading = false
-
-          }).catch(error => {
-
-            if (error) {
-              if (error.response.status == 400) {
-                this.error = error.response.data.log.error
-              }
-              this.loading = false
-              console.log(error)
-            }
-          });
-
+        }
       }
 
 

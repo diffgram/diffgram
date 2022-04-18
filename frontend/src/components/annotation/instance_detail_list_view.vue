@@ -26,10 +26,10 @@
         @attribute_change="global_attribute_change($event)"
       ></global_attributes_list>
 
-      <v-divider v-if="attribute_group_list_prop.length != 0"></v-divider>
+      <v-divider v-if="attribute_group_list_prop.length != 0 || (current_instance && current_instance.attribute_groups)"></v-divider>
 
       <v-expansion-panels
-        v-if="attribute_group_list_prop.length != 0"
+        v-if="attribute_group_list_prop.length != 0 || (current_instance && current_instance.attribute_groups)"
         v-model="instance_detail_open"
         accordion
         flat
@@ -54,9 +54,10 @@
           <v-expansion-panel-content>
 
             <attribute_group_list
+              :project_string_id="project_string_id"
               style="overflow-y:auto; max-height: 400px"
-              v-if="attribute_group_list_prop.length != 0"
-              :mode=" 'annotate' "
+              v-if="attribute_group_list_prop.length !== 0 || (current_instance && current_instance.attribute_groups)"
+              :mode="'annotate'"
               :view_only_mode="view_only_mode"
               :schema_id="schema_id"
               :attribute_group_list_prop="attribute_group_list_prop"
@@ -524,6 +525,7 @@ export default Vue.extend({
       'draw_mode',
       'instance_list',
       'label_file_colour_map',
+      'project_string_id',
       'model_run_list',
       'refresh',
       'view_only_mode',

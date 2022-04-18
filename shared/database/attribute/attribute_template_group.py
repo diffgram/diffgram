@@ -234,6 +234,7 @@ class Attribute_Template_Group(Base):
              return_kind = "objects",
              is_root = None,
              schema_id = None,
+             group_id_list = None,
              is_global = None
              ):
         """
@@ -246,6 +247,8 @@ class Attribute_Template_Group(Base):
             Attribute_Template_Group.project_id == project_id,
             Attribute_Template_Group.archived == archived)
 
+        if group_id_list:
+            query = query.filter(Attribute_Template_Group.id.in_(group_id_list))
         if group_id:
             query = query.filter(Attribute_Template_Group.id == group_id)
 
