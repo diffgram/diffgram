@@ -66,7 +66,11 @@
 
           <v-row class="" dense v-if="job.label_schema">
             <v-col cols="12" >
-              <v-chip small color="primary" outlined ><v-icon small>mdi-group</v-icon> {{job.label_schema.name}}</v-chip>
+              <v-chip small
+                      @click="$router.push(`/project/${project_string_id}/labels?schema_id=${job.label_schema.id}`)"
+                      class="schema-chip"
+                      color="primary"
+                      outlined ><v-icon small>mdi-shape-plus</v-icon> {{job.label_schema.name | truncate(25)}}</v-chip>
             </v-col>
           </v-row>
           <v-chip :color="status_color(job.status)" x-small>{{job.status | capitalize }}</v-chip>
@@ -435,6 +439,9 @@
       },
     }
   ) </script>
-<style>
-
+<style scoped>
+.schema-chip:hover {
+  cursor: pointer;
+  background: #0D47A1;
+}
 </style>

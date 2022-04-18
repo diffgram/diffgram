@@ -200,7 +200,18 @@ export default Vue.extend({
       }
       if(result){
         this.label_schema_list = result;
-        this.$refs.schema_selector.select_schema(this.label_schema_list[0]);
+        if(!this.$route.query.schema_id){
+          this.$refs.schema_selector.select_schema(this.label_schema_list[0]);
+        }
+        else{
+          let schema_id_route = parseInt(this.$route.query.schema_id, 10)
+          let schema = this.label_schema_list.find(elm => elm.id === schema_id_route)
+          if(schema){
+            this.$refs.schema_selector.select_schema(schema);
+          }
+
+        }
+
       }
     },
     add_visit_history_event: async function(){

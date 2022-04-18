@@ -80,6 +80,15 @@ export default {
 
     }
   },
+  mounted() {
+    if (this.$route.query.schema_id) {
+      let schema_id_route = parseInt(this.$route.query.schema_id, 10)
+      let schema = this.schema_list.find(elm => elm.id === schema_id_route)
+      if(schema){
+        this.select_schema(schema)
+      }
+    }
+  },
   data: function(){
     return {
       new_schema_name: sillyname().split(" ")[0],
@@ -93,6 +102,10 @@ export default {
     select_schema: function(item){
       this.selected_schema = item;
       this.$emit('schema_selected',item)
+      if(this.$route.query.schema_id !== item.id.toString()){
+        this.$router.replace({ query: { schema_id: item.id } })
+      }
+
     },
     create_schema: async function(){
       this.error = {};
