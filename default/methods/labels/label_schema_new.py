@@ -63,6 +63,15 @@ def label_schema_new_core(session: Session,
     :return:
     """
 
+    existing_schema = session.query(LabelSchema).filter(
+        LabelSchema.name == name,
+        LabelSchema.project_id == project.id
+    ).first()
+
+    if existing_schema is not None:
+        log['error']['schema_exists'] = f'Label Schema "{name}" already exists.'
+        return None, log
+
     schema = LabelSchema.new(
         session = session,
         project_id = project.id,
