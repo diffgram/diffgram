@@ -51,6 +51,7 @@ import geo_sidebar from "./geo_sidebar.vue"
 import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
 import History from "../../helpers/history"
+import { GeoPoint } from "../vue_canvas/instances/GeoInstance"
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
 import Map from 'ol/Map';
@@ -65,7 +66,7 @@ import Circle from 'ol/geom/Circle'
 import { transform } from 'ol/proj';
 import MousePosition from 'ol/control/MousePosition';
 import {createStringXY} from 'ol/coordinate';
-import {defaults as defaultControls} from 'ol/control';
+import { defaults as defaultControls } from 'ol/control';
 import LineString from 'ol/geom/LineString';
 import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
@@ -78,14 +79,54 @@ export default Vue.extend({
             instance_list: undefined,
             history: undefined,
             command_manager: undefined,
-            map_instance: undefined
+            map_instance: undefined,
+            annotation_layer: undefined,
+            mouse_coords: undefined,
+            current_label: undefined,
+            draw_mode: true,
+            current_instance_type: 'geo_circle',
+            instance_type_list: [
+                {
+                    name: "geo_polygon",
+                    display_name: "Polygon",
+                    icon: "mdi-vector-polygon",
+                },
+                { name: "geo_box", display_name: "Box", icon: "mdi-checkbox-blank" },
+                { name: "geo_point", display_name: "Point", icon: "mdi-circle-slice-8" },
+                { name: "geo_polyline", display_name: "Polyine", icon: "mdi-minus" },
+                {
+                    name: "geo_circle",
+                    display_name: "Circle",
+                    icon: "mdi-checkbox-blank-circle-outline",
+                },
+            ],
         }
     },
     components: {
         geo_toolbar,
         geo_sidebar
     },
-    computed: {},
+    computed: {
+        current_style: function() {
+            const { r, g, b } = this.current_label.colour.rgba;
+            const styleSet = {
+                fill: new Fill({
+                    color: `rgba(${r}, ${g}, ${b}, 0.5)`
+                }),
+                stroke: new Stroke({
+                    color: `rgba(${r}, ${g}, ${b}, 1)`
+                })
+            }
+            const style = new Style({
+                ...styleSet,
+                image: new CircleStyle({
+                    radius: 1,
+                    ...styleSet
+                })
+            })
+            return style
+        }
+    },
     watch: {},
     mounted() {
         this.instance_list = new InstanceList()
@@ -106,7 +147,7 @@ export default Vue.extend({
                 projection: 'EPSG:4326',
             });
 
-            // This is temporary, before backend is created
+            // This is temporary, before backend is wired up
             const source = new GeoTIFF({
                 sources: [
                     {
@@ -115,26 +156,31 @@ export default Vue.extend({
                 ],
             });
 
+
+            this.annotation_source = new VectorSource({})
+
             const map = new Map({
                 controls: defaultControls().extend([mousePositionControl]),
                 target: 'map',
                 layers: [
                     new TileLayer({
                         source: new OSM(),
+                    }),
+                    new TileLayer({
+                        source,
+                        opacity: 0.5
+                    }),
+                    new VectorLayer({
+                        source: this.annotation_source
                     })
-                ],
-                view: new View(
-                    {
-                        center: [0, 0],
-                        zoom: 2,
-                    }
-                ),
+                ]
             });
 
-            map.addLayer(new TileLayer({ source, opacity: 0.5 }))
             const view = await source.getView()
             const overlayView = new View({...view})
             map.setView(overlayView)
+
+            // This  is event listener for mouse move within the map, and return coordinates of the map
             map.on('pointermove', (evt) => {
                 this.mouse_coords = evt.coordinate
             })
@@ -143,6 +189,30 @@ export default Vue.extend({
         },
         draw_instance: function() {
             //Start drawing instance depending on the current instance type
+            if (!this.draw_mode) return;
+            
+            if (this.current_instance_type === 'geo_point') {
+                const lonlat = transform(this.mouse_coords, 'EPSG:3857', 'EPSG:4326');
+                const pointFeature = new Feature(new Point(this.mouse_coords));
+                pointFeature.setStyle(this.current_style)
+                this.annotation_source.addFeature(pointFeature)
+                
+                const newPoint = new GeoPoint()
+                newPoint.create_frontend_instance(
+                    lonlat,
+                    this.mouse_coords, 
+                    { ...this.current_label }
+                )
+                this.instance_list.push([newPoint])
+
+                const command = new CreateInstanceCommand([newPoint], this.instance_list)
+                this.command_manager.executeCommand(command)
+                return
+            }
+
+            if (this.current_instance_type === 'geo_circle') {
+                console.log("Draw circle")
+            }
         },
         change_mode: function() {
             // Change between draw and annotate modes
@@ -156,11 +226,11 @@ export default Vue.extend({
         change_label_visibility: function() {
             // Changing visibility of the label
         },
-        change_instance_type: function() {
-            // Change current instance type
+        change_instance_type: function(instance_type) {
+            this.current_instance_type = instance_type
         },
-        change_label_file: function() {
-            //Chaging current label
+        change_label_file: function(event) {
+            this.current_label = event
         },
         undo: function() {
             // Undo function
