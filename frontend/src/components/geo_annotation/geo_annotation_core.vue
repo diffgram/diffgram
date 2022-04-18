@@ -48,18 +48,32 @@
 import Vue from "vue";
 import geo_toolbar from "./geo_toolbar.vue"
 import geo_sidebar from "./geo_sidebar.vue"
+import CommandManager from "../../helpers/command/command_manager"
+import InstanceList from "../../helpers/instance_list"
+import History from "../../helpers/history"
 
 export default Vue.extend({
     name: "text_token_core",
+    data() {
+        return {
+            instance_list: undefined,
+            history: undefined,
+            command_manager: undefined
+        }
+    },
     components: {
         geo_toolbar,
         geo_sidebar
     },
     computed: {},
     watch: {},
-    mounted: {},
+    mounted() {
+        this.instance_list = new InstanceList()
+        this.history = new History()
+        this.command_manager = new CommandManager(this.history)
+    },
     methods: {
-        set_initial_instances: function() {
+        initialize_interface: function() {
             // Get instances from teh backend and render them
         },
         draw_instance: function() {
