@@ -6,10 +6,10 @@ export interface InstanceData {
     label_file: any;
     label_file_id: number;
     soft_delete: boolean;
-    text_tokenizer: string;
 }
 
 export interface TextInstanceData extends InstanceData {
+    text_tokenizer: string;
     start_token: string;
     end_token: string
 }
