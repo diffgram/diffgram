@@ -121,7 +121,7 @@
               height="50"
               class="ma-auto mr-4 ml-4"
               striped
-              :value="percentage">
+              indeterminate>
 
             </v-progress-linear>
           </div>
