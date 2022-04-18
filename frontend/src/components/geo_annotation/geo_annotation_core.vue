@@ -76,12 +76,16 @@ export default Vue.extend({
     name: "text_token_core",
     data() {
         return {
+            // Instance management
             instance_list: undefined,
             history: undefined,
             command_manager: undefined,
+            // map management
             map_instance: undefined,
             annotation_layer: undefined,
             mouse_coords: undefined,
+            feature_list: [],
+            // Others
             current_label: undefined,
             draw_mode: true,
             current_instance_type: 'geo_circle',
@@ -195,23 +199,22 @@ export default Vue.extend({
                 const lonlat = transform(this.mouse_coords, 'EPSG:3857', 'EPSG:4326');
                 const pointFeature = new Feature(new Point(this.mouse_coords));
                 pointFeature.setStyle(this.current_style)
+
                 this.annotation_source.addFeature(pointFeature)
+                this.feature_list.push(pointFeature)
                 
                 const newPoint = new GeoPoint()
                 newPoint.create_frontend_instance(
                     lonlat,
                     this.mouse_coords, 
-                    { ...this.current_label }
+                    { ...this.current_label },
+                    pointFeature.ol_uid
                 )
                 this.instance_list.push([newPoint])
 
                 const command = new CreateInstanceCommand([newPoint], this.instance_list)
                 this.command_manager.executeCommand(command)
                 return
-            }
-
-            if (this.current_instance_type === 'geo_circle') {
-                console.log("Draw circle")
             }
         },
         change_mode: function() {
