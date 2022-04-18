@@ -246,9 +246,18 @@ class PCDLoader extends Loader {
 
 				if ( offset.x !== undefined ) {
 
-					position.push( parseFloat( line[ offset.x ] ) );
-					position.push( parseFloat( line[ offset.y ] ) );
-					position.push( parseFloat( line[ offset.z ] ) );
+          let x = parseFloat( line[ offset.x ] )
+          let y = parseFloat( line[ offset.y ] )
+          let z = parseFloat( line[ offset.z ] )
+
+
+          if (isNaN(x) || isNaN(y) || isNaN(z) ) {
+            continue
+          }
+
+          position.push( x );
+          position.push( y );
+          position.push( z );
 
 				}
 
