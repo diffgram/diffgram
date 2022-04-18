@@ -72,6 +72,18 @@
           @request_new_task="change_task"
         />
       </div>
+      <div v-else-if="annotation_interface === 'geo'">
+        <geo_annotation_core
+          :file="current_file"
+          :task="task"
+          :job_id="job_id"
+          :label_list="label_list"
+          :label_file_colour_map="label_file_colour_map"
+          :project_string_id="computed_project_string_id"
+          @request_file_change="request_file_change"
+          @request_new_task="change_task"
+        />
+      </div>
       <div v-else-if="!annotation_interface">
         <empty_file_editor_placeholder
           :loading="any_loading"
@@ -163,6 +175,7 @@ import file_manager_sheet from "../source_control/file_manager_sheet";
 import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import {user_has_credentials} from '../../services/userServices'
 import text_annotation_core from "../text_annotation/text_annotation_core.vue"
+import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
 import Vue from "vue";
 
 
@@ -173,7 +186,8 @@ export default Vue.extend({
     no_credentials_dialog,
     empty_file_editor_placeholder,
     sensor_fusion_editor,
-    text_annotation_core
+    text_annotation_core,
+    geo_annotation_core
   },
   props: {
     project_string_id: {
@@ -334,6 +348,7 @@ export default Vue.extend({
       if(!this.current_file && !this.task){
         return
       }
+      return 'geo'
       if(this.current_file){
         if(this.current_file.type === 'image' || this.current_file.type === 'video'){
           return 'image_or_video';
