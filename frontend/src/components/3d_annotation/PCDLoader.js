@@ -318,9 +318,17 @@ class PCDLoader extends Loader {
 
 				if ( offset.x !== undefined ) {
 
-					position.push( dataview.getFloat32( ( PCDheader.points * offset.x ) + PCDheader.size[ 0 ] * i, this.littleEndian ) );
-					position.push( dataview.getFloat32( ( PCDheader.points * offset.y ) + PCDheader.size[ 1 ] * i, this.littleEndian ) );
-					position.push( dataview.getFloat32( ( PCDheader.points * offset.z ) + PCDheader.size[ 2 ] * i, this.littleEndian ) );
+          let x = dataview.getFloat32( ( PCDheader.points * offset.x ) + PCDheader.size[ 0 ] * i, this.littleEndian )
+          let y = dataview.getFloat32( ( PCDheader.points * offset.y ) + PCDheader.size[ 1 ] * i, this.littleEndian )
+          let z = dataview.getFloat32( ( PCDheader.points * offset.z ) + PCDheader.size[ 2 ] * i, this.littleEndian )
+
+          if (isNaN(x) || isNaN(y) || isNaN(z) ) {
+            continue
+          }
+
+          position.push( x );
+          position.push( y );
+          position.push( z );
 
 				}
 
@@ -355,10 +363,17 @@ class PCDLoader extends Loader {
 
 				if ( offset.x !== undefined ) {
 
-					position.push( dataview.getFloat32( row + offset.x, this.littleEndian ) );
-					position.push( dataview.getFloat32( row + offset.y, this.littleEndian ) );
-					position.push( dataview.getFloat32( row + offset.z, this.littleEndian ) );
+					let x = dataview.getFloat32( row + offset.x, this.littleEndian )
+					let y = dataview.getFloat32( row + offset.y, this.littleEndian )
+					let z = dataview.getFloat32( row + offset.z, this.littleEndian )
 
+          if (isNaN(x) || isNaN(y) || isNaN(z) ) {
+            continue
+          }
+
+          position.push( x );
+          position.push( y );
+          position.push( z );
 				}
 
 				if ( offset.rgb !== undefined ) {
