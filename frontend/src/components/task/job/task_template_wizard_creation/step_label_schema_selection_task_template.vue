@@ -10,7 +10,7 @@
         @click="open_labels_dialog"
         button_color="primary"
         icon="mdi-format-paint"
-        button_message="Manage Labels & Attributes"
+        button_message="Manage Schema"
         color="white">
       </tooltip_button>
     </div>
@@ -36,8 +36,7 @@
       :skip_visible="false"
     >
     </wizard_navigation>
-    <label_manager_dialog @label_created="on_label_created"
-                          :schema_id="job.label_schema_id"
+    <label_manager_dialog :schema="job.label_schema"
                           :project_string_id="project_string_id"
                           ref="label_manager_dialog">
 
