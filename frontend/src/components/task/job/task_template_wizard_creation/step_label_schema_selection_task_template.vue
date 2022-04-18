@@ -17,7 +17,7 @@
 
     <v_error_multiple :error="error"></v_error_multiple>
     <p class="text--primary">
-      Select The Labels to Use on This Task Template. All are selected by default.
+      Select The Schema you want to use:
     </p>
     <label_schema_selector
       :initial_schema="job.label_schema"

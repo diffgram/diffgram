@@ -3,6 +3,7 @@
     <v-autocomplete
       label="Select Schema"
       return-object
+
       data-cy="label_schema_selector"
       :disabled="schema_list_loading"
       @change="on_change_schema"
@@ -55,7 +56,9 @@ export default {
   },
   methods:{
     on_change_schema: function(schema){
-      this.$emit('change', schema)
+      this.$emit('change', schema);
+      document.activeElement.blur()
+      this.$refs.schema_select.blur()
     },
     on_filter_schemas: function(item, query_text, item_text){
       return item.name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())

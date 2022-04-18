@@ -290,7 +290,8 @@
         },
 
         emit_selected: function () {
-          this.$emit('change', this.selected)
+          this.$emit('change', this.selected);
+          this.$refs.label_select.blur()
         },
 
         keyboard_events_window: function (event) {
