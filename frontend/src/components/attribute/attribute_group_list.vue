@@ -103,6 +103,7 @@
 
         <v-expansion-panel-content>
           <attribute_group
+            :schema_id="schema_id"
             :project_string_id="project_string_id"
             :mode="mode"
             :view_only_mode="view_only_mode"

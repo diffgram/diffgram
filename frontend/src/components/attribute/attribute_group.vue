@@ -194,6 +194,7 @@
       <attribute_group_wizard
         v-if="enable_wizard == true"
         ref="attribute_group_wizard"
+        :schema_id="schema_id"
         :kind_list="kind_list"
         :error="error"
         :select_format="select_format"
@@ -541,6 +542,9 @@
 
         'enable_wizard': {
           default: true   // default back to false
+        },
+        'schema_id':{
+          default: undefined
         }
 
       },

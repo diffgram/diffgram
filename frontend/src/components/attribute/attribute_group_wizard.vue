@@ -215,6 +215,7 @@
             <label_select_only
               v-if="!group.is_global"
               :disabled="group.is_global"
+              :schema_id="schema_id"
               ref="label_selector"
               label_prompt="Visible on Annotation with these Labels:"
               datacy="label_select_attribute"
@@ -558,6 +559,9 @@ export default Vue.extend( {
   props: {
     'kind_list': {
       default: []
+    },
+    'schema_id':{
+      required: true
     },
     'loading': {
       default: false
