@@ -552,11 +552,13 @@
       load_pcd: async function (pcd_url) {
         let file_loader_3d = new FileLoader3DPointClouds(this);
         this.point_cloud_mesh = await file_loader_3d.load_pcd_from_url(pcd_url);
+        /*
         this.point_cloud_mesh.material = new THREE.MeshBasicMaterial({
           color: new THREE.Color('white'),
           opacity: 1,
           transparent: false,
         });
+        */
         return this.point_cloud_mesh
 
       },
