@@ -18,14 +18,7 @@
         <v-spacer>
         </v-spacer>
 
-        <tooltip_button
-            v-if="enable_view_existing"
-            tooltip_message="View Existing"
-            @click="view_existing_open = true"
-            icon="mdi-account-multiple"
-            :icon_style="true"
-            color="primary">
-        </tooltip_button>
+        tooltip_button
 
         <!-- All this button does is toggle the member_kind
             instead of user having to "know" to do it in select.
@@ -70,7 +63,7 @@
                   prepend-icon="mdi-security-account"></v-select>
 
         <v-dialog v-model="view_existing_open"
-                  id="view_existing_members"                  
+                  id="view_existing_members"
                   v-if="enable_view_existing"
                   width="800px">
           <v-card>
@@ -106,7 +99,7 @@
 
           <auth_api_new :project_string_id="project_string_id"></auth_api_new>
 
-        </div> 
+        </div>
         <div v-else>
           <v-text-field label="Email"
                         v-model="email"

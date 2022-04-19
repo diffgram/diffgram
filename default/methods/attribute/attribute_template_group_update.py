@@ -28,8 +28,7 @@ def api_attribute_template_group_update(project_string_id):
         {'min_value': None},
         {'max_value': None},
         {'mode': str},
-        {'is_global': None},
-        {'tree_data': None}
+        {'is_global': None}
     ]
 
     log, input, untrusted_input = regular_input.master(request = request,
@@ -66,7 +65,6 @@ def api_attribute_template_group_update(project_string_id):
             min_value = input['min_value'],
             max_value = input['max_value'],
             default_id = input['default_id'],
-            tree_data = input['tree_data'],
             is_global = input['is_global'])
 
         if len(log["error"].keys()) >= 1:
@@ -128,9 +126,6 @@ def group_update_core(
         return log
 
     if mode == "UPDATE":
-        print("--------------------------------")
-        print(tree_data)
-        print("--------------------------------")
 
         if label_file_list is not None:
             # Create Attribute_Template_Group_to_File for ones
@@ -196,13 +191,6 @@ def group_update_core(
         group.default_value = default_value
         group.default_id = default_id
         group.is_global = is_global
-        child_tree_data = tree_data.get('data')
-        if child_tree_data is not None:
-            has_duplicates = has_duplicate_children_on_tree_data(child_tree_data)
-            if has_duplicates:
-                log['error']['tree_data'] = 'Tree data has duplicate keys'
-                return log
-        group.tree_data = tree_data
         session.add(group)
         log['info']['update'] = "Success"
 

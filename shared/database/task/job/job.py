@@ -10,6 +10,7 @@ from shared.database.event.event import Event
 from shared.regular.regular_member import get_member
 from shared.shared_logger import get_shared_logger
 from shared.database.task.exam.exam import Exam
+from shared.database.labels.label_schema import LabelSchema
 from shared.database.task.task import TASK_STATUSES
 
 logger = get_shared_logger()
@@ -81,6 +82,9 @@ class Job(Base, Caching):
 
     ui_schema_id = Column(Integer, ForeignKey('ui_schema.id'))
     ui_schema = relationship("UI_Schema", foreign_keys = [ui_schema_id])
+
+    label_schema_id = Column(Integer, ForeignKey('label_schema.id'))
+    label_schema = relationship("LabelSchema", foreign_keys = [label_schema_id])
 
     # Primary data storage for job
     directory_id = Column(Integer, ForeignKey('working_dir.id'))
@@ -640,6 +644,7 @@ class Job(Base, Caching):
             'id': self.id,
             'name': self.name,
             'is_pinned': self.is_pinned,
+            'label_schema_id': self.label_schema_id,
             'type': self.type,
             'time_created': self.time_created,
             'allow_reviews': self.allow_reviews
@@ -653,6 +658,8 @@ class Job(Base, Caching):
         data = self.serialize_minimal_info()
         if self.ui_schema:
             data['ui_schema'] = self.ui_schema.serialize()
+        if self.label_schema:
+            data['label_schema'] = self.label_schema.serialize()
         return data
 
     # TODO way too much repeating with these serialize functions let's combine it
@@ -734,7 +741,11 @@ class Job(Base, Caching):
         guide = None
         if self.guide_default_id:
             guide = self.guide_default.serialize_for_trainer()
+        schema_data = None
 
+        if self.label_schema_id:
+            schema = LabelSchema.get_by_id(session = session, id = self.label_schema_id)
+            schema_data = schema.serialize()
         return {
             'id': self.id,
             'name': self.name,
@@ -746,6 +757,8 @@ class Job(Base, Caching):
             'member_list_ids': member_list_ids,
             'reviewer_list_ids': reviewer_list_ids,
             'status': self.status,
+            'label_schema': schema_data,
+            'label_schema_id': self.label_schema_id,
             'time_created': self.time_created,
             'time_completed': self.time_completed,
             'user_to_job': user_to_job_serialized,
@@ -790,6 +803,11 @@ class Job(Base, Caching):
     def serialize_builder_info_edit(self, session):
 
         member_list_ids = None
+        schema_data = None
+
+        if self.label_schema_id:
+            schema = LabelSchema.get_by_id(session = session, id = self.label_schema_id)
+            schema_data = schema.serialize()
         if session:
             member_list_ids = self.get_with_cache(
                 cache_key = 'member_list_ids',
@@ -806,6 +824,8 @@ class Job(Base, Caching):
             'name': self.name,
             'type': self.type,
             'status': self.status,
+            'label_schema_id': self.label_schema_id,
+            'label_schema': schema_data,
             'member_list_ids': member_list_ids,
             'reviewer_list_ids': reviewer_list_ids,
             'time_created': self.time_created,
@@ -886,6 +906,7 @@ class Job(Base, Caching):
             stat_count_available = self.stat_count_tasks - self.stat_count_complete
         member_list_ids = None
         attached_directories_dict = None
+        label_schema_data = None
         if session:
             member_list_ids = self.get_with_cache(
                 cache_key = 'member_list_ids',
@@ -897,6 +918,9 @@ class Job(Base, Caching):
                 cache_miss_function = self.get_attached_dirs_serialized,
                 session = session,
                 miss_function_args = {'session': session})
+            if self.label_schema_id:
+                schema = LabelSchema.get_by_id(session, self.label_schema_id)
+                label_schema_data = schema.serialize()
         return {
             'id': self.id,
             'cache_info': self.cache_dict.get('__info') if self.cache_dict else None,
@@ -909,6 +933,8 @@ class Job(Base, Caching):
             'type': self.type,
             'instance_type': self.instance_type,
             'is_pinned': self.is_pinned,
+            'label_schema_id': self.label_schema_id,
+            'label_schema': label_schema_data,
             'is_live': self.is_live,
             'attached_directories_dict': attached_directories_dict,
             'file_count_statistic': self.file_count_statistic,

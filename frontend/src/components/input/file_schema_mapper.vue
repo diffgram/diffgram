@@ -350,7 +350,7 @@
   import Vue from "vue";
   import _ from "lodash";
   import {HexToHSVA, HexToRGBA, HSVAtoHSLA, get_random_color} from '../../utils/colorUtils'
-
+  import {get_labels} from '../../services/labelServices';
 
   export default Vue.extend({
       name: 'file_schema_mapper',
@@ -637,8 +637,7 @@
               const response = await axios.post('/api/v1/project/' + this.$props.project_string_id +'/label/new',
                 {
                   colour: color_obj,
-                  name: label_name,
-                  default_sequences_to_single_frame: false
+                  name: label_name
                 });
               this.new_label_name = null
 
@@ -666,12 +665,18 @@
 
         },
         validate_label_names: async function () {
-          try {
             this.load_label_names = true
             this.valid_labels = false;
-            const response = await axios.get(`/api/project/${this.project_string_id}/labels/refresh`, {});
-            if (response.status === 200) {
-              const labels = response.data.labels_out;
+            let [result, error] = await get_labels(this.project_string_id, undefined)
+            if(error){
+              console.error(error);
+              this.errors_file_schema = this.$route_api_errors(error);
+              this.valid_labels = false;
+              this.load_label_names = false;
+              return
+            }
+            if(result){
+              const labels = result.labels_out;
               const label_names = labels.map(elm => elm.label.name)
               this.missing_labels = [];
               // Shallow copy before mutating data. Since the pre_labels are frozen (no reactivity)
@@ -705,14 +710,6 @@
               return true
             }
 
-          } catch (e) {
-            console.error(e);
-            this.errors_file_schema = this.$route_api_errors(e);
-            this.valid_labels = false;
-            this.load_label_names = false;
-          } finally {
-
-          }
         },
         validate_frames: function () {
           if (this.file_list_to_upload.filter(f => this.supported_video_files.includes(f.type)).length === 0) {

@@ -8,7 +8,12 @@ export const UI_SCHEMA_TASK_MOCK = {
   time_completed: "2021-08-16 16:05:33.767199",
   time_updated: "2021-08-16 16:05:33.777827",
   job:{
-    id: -1
+    id: -1,
+    label_schema_id: -1,
+    label_schema: {
+      id: -1,
+      name: 'test schema'
+    }
   },
   time_tracking: [],
   file: {

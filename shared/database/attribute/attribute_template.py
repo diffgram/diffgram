@@ -27,7 +27,7 @@ class Attribute_Template(Base):
     kind = Column(String())
     value_type = Column(String())  # ie integer
 
-    project_id = Column(Integer, ForeignKey('project.id'))
+    project_id = Column(Integer, ForeignKey('project.id'), index=True)
     project = relationship("Project")
 
     # Used for Treeview attributes.

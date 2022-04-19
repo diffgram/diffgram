@@ -202,14 +202,22 @@
         this.media_sheet = false;
       },
       get_media: function (fetch_single_file = true, file_id) {
+        if(!this.$refs.media_core){
+          return
+        }
         return this.$refs.media_core.get_media(fetch_single_file, file_id);
       },
       request_change_file: function (direction, file) {
-
+        if(!this.$refs.media_core){
+          return
+        }
         return this.$refs.media_core.change_file(direction, file);
 
       },
       set_file_list: function (file_list) {
+        if(!this.$refs.media_core){
+          return
+        }
         return this.$refs.media_core.set_file_list(file_list);
       },
       full_screen_sheet: function () {

@@ -70,6 +70,9 @@ import Vue from "vue"; export default Vue.extend( {
   props: {
     menu_open: {
       default: false
+    },
+    schema_id: {
+      required: true
     }
   },
 
@@ -87,8 +90,6 @@ import Vue from "vue"; export default Vue.extend( {
       loading: false,
 
       new_label_name: null,
-
-      default_sequences_to_single_frame: false,
 
       error: {},
 
@@ -126,7 +127,8 @@ import Vue from "vue"; export default Vue.extend( {
         '/label/new', {
 
           colour: this.colour,
-          name: this.new_label_name
+          name: this.new_label_name,
+          schema_id: this.schema_id
 
       }).then(response => {
 
@@ -140,9 +142,7 @@ import Vue from "vue"; export default Vue.extend( {
           this.loading = false
 
           if (error)  {
-              if (error.response.status == 400) {
-                this.error = error.response.data.log.error
-              }
+              this.error = this.$route_api_errors(error)
           }
       });
 

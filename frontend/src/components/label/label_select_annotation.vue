@@ -37,13 +37,6 @@
             {{label_list.indexOf(data.item) + 1}}</div>
           -->
 
-          <tooltip_icon
-            v-if="data.item.label.default_sequences_to_single_frame"
-            tooltip_message="Video Defaults to Single Frame"
-            icon="mdi-flag-checkered"
-            color="black">
-          </tooltip_icon>
-
 
           <div v-if="show_visibility_toggle
                   || data.item.is_visible == false">
@@ -94,11 +87,6 @@
               flag
             </v-icon>
 
-            <v-icon v-if="data.item.label.default_sequences_to_single_frame"
-                    color="black">
-              mdi-flag-checkered
-            </v-icon>
-
             {{ label_name_truncated(data.item.label.name) }}
           </div>
 
@@ -127,6 +115,7 @@
 <script lang="ts">
 
   import axios from '../../services/customInstance';
+  import {get_labels} from '../../services/labelServices';
 
   import Vue from "vue";
 
@@ -156,13 +145,18 @@
         'show_visibility_toggle': {
           default: false
         },
+        'schema_id': {
+          default: undefined
+        },
         'select_this_id_at_load': {},
       },
 
       watch: {
-
+        schema_id: function(){
+          this.get_label_list_from_project()
+        },
         request_refresh_from_project: function () {
-          this.refresh_label_list_from_project()
+          this.get_label_list_from_project()
         },
 
       },
@@ -172,7 +166,7 @@
           this.label_list = this.label_file_list_prop
           this.selected = this.label_file_list_prop[0]
         } else {
-          this.refresh_label_list_from_project()
+          this.get_label_list_from_project()
         }
 
         if (this.select_this_id_at_load) {
@@ -217,6 +211,7 @@
         return {
 
           label_refresh_loading: false,
+          error: null,
 
           selected: {},
 
@@ -268,25 +263,21 @@
         },
 
 
-        refresh_label_list_from_project: function () {
+        get_label_list_from_project: async function () {
 
           var url = null
           this.label_refresh_loading = true
-          url = '/api/project/' + this.computed_project_string_id
-            + '/labels/refresh'
-
-          axios.get(url, {})
-            .then(response => {
-
-              this.label_list = response.data.labels_out
-              this.selected = this.label_list[0]
-              this.emit_selected()
-              this.label_refresh_loading = false
-
-            })
-            .catch(error => {
-              console.error(error);
-            });
+          let [result, error] = await get_labels(this.computed_project_string_id, this.$props.schema_id)
+          if(error){
+            this.error = this.$route_api_errors(error)
+            return
+          }
+          if(result){
+            this.label_list = result.labels_out
+            this.selected = this.label_list[0]
+            this.emit_selected()
+            this.label_refresh_loading = false
+          }
 
         },
 
@@ -299,7 +290,8 @@
         },
 
         emit_selected: function () {
-          this.$emit('change', this.selected)
+          this.$emit('change', this.selected);
+          this.$refs.label_select.blur()
         },
 
         keyboard_events_window: function (event) {

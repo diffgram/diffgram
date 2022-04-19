@@ -319,7 +319,7 @@ const routerOptions = [
     }
   },
   {
-    path: '/job/new/:job_id_route',
+    path: '/project/:project_string_id_route/job/new/:job_id_route',
     component: 'task/job/task_template_wizard_creation/task_template_new',
     props: true,
     meta: {

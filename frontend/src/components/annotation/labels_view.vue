@@ -1,20 +1,20 @@
 <template>
-  <div v-cloak id="labels_view">
+  <div v-cloak id="labels_view" class="d-flex flex-column pa-4">
 
+    <div class="d-flex">
+      <v_error_multiple :error="error"></v_error_multiple>
 
       <v-layout row>
         <v-flex>
 
-          <!-- TODO make max height the height of available space? -->
-          <v-card style="overflow-y:auto; max-height: 700px" elevation="3">
+          <v-card style="" elevation="0">
 
             <v-card-title class="d-flex align-center">
-              Label Templates
 
               <!-- New label -->
               <button_with_menu
                 datacy="new_label_template"
-                tooltip_message="New Label Template (Project Wide)"
+                tooltip_message="New Label"
                 :large="true"
                 v-if="show_edit_templates"
                 @click="$store.commit('set_user_is_typing_or_menu_open', true)"
@@ -27,13 +27,16 @@
 
                 <template slot="content">
 
-                  <v_labels_new @label_created="on_label_created">
+                  <v_labels_new
+                    :schema_id="schema_id"
+                    @label_created="on_label_created">
                   </v_labels_new>
 
                 </template>
 
               </button_with_menu>
 
+              <v-spacer></v-spacer>
 
               <v-btn color="primary"
                      text
@@ -42,36 +45,6 @@
                      icon>
                 <v-icon>help</v-icon>
               </v-btn>
-
-              <!-- For admins -->
-
-
-              <!-- refresh_labels_function is called
-                   on return because that updates the instance list /
-                  attribute group information (for annotation use,
-                  not managing it)-->
-
-              <!-- The 'set_user_is_typing_or_menu_open' is for disabling hotkeys -->
-
-              <!-- Attributes -->
-
-              <!-- TODO, do we need min width? it seems to nicely detect it by itself...
-                  min-width="600"
-                  And do we event want or need a direction here?
-
-                  [ ] is the new update return value working as expected?
-                  -->
-
-              <!-- Hide while WIP. TODO move to regular table -->
-              <!--
-              <v-text-field v-model="search"
-                            append-icon="search"
-                            @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-                            @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-                            label="Search"
-                            single-line
-                            hide-details></v-text-field>
-              -->
 
               <tooltip_button
                 v-if="show_create_samples"
@@ -105,13 +78,17 @@
             >
 
               <regular_table
-                    :header_list="header_list"
-                    :column_list="column_list"
-                    datacy="labels_table"
-                    :item_list="Labels"
-                    :elevation="0"
-                    ref="label_data_table"
-                    @row_hover_index="table_row_hover_index = $event"
+                style="height: 100%"
+                :items_per_page="25"
+                :on_search="on_label_search"
+                :searchable="true"
+                :header_list="header_list"
+                :column_list="column_list"
+                datacy="labels_table"
+                :item_list="Labels"
+                :elevation="0"
+                ref="label_data_table"
+                @row_hover_index="table_row_hover_index = $event"
               >
 
                 <template slot="label" slot-scope="props">
@@ -128,73 +105,62 @@
                       </v-icon>
                     </div>
 
-                    <tooltip_icon
-                      tooltip_message="Video Defaults to Single Frame"
-                      v-if="props.item.label && props.item.label.default_sequences_to_single_frame"
-                      icon="mdi-flag-checkered"
-                      color="black">
-                    </tooltip_icon>
 
-                  <div v-if="props.item.id == current_label_file.id">
+                    <div v-if="props.item.id == current_label_file.id">
 
-                    <v-badge v-if="view_only_mode != true &&
+                      <v-badge v-if="view_only_mode != true &&
                           instance_type != 'tag'"
-                              overlap
-                              color="secondary"
-                    >
-                      <v-icon slot="badge">check</v-icon>
-                    </v-badge>
+                               overlap
+                               color="secondary"
+                      >
+                        <v-icon slot="badge">check</v-icon>
+                      </v-badge>
 
+                    </div>
+
+
+                    <!-- Annotation Page Case -->
+                    <v-btn :disabled="video_playing"
+                           v-if="!show_edit_templates && current_label_file"
+                           @click="change_label_function(props.item)"
+                           text
+                           style="text-transform: none !important;"
+                           :color="props.item.id == current_label_file.id ? 'secondary' : 'primary' "
+                    >
+                      <h3 :data-cy="props.item.label.name">
+                        {{ props.item.label.name }} </h3>
+                    </v-btn>
+
+                    <!-- Edit Page Case -->
+                    <h3 v-else :data-cy="props.item.label.name"
+
+                    >{{ props.item.label.name }}</h3>
+
+                  </v-layout>
+
+                </template>
+
+                <template slot="with_next_instance_buttons"
+                          slot-scope="props"
+                >
+
+                  <div v-if="table_row_hover_index == props.index">
+                    <tooltip_button
+
+                      :disabled="loading"
+                      @click="next_instance(props.item.id)"
+                      icon="mdi-debug-step-over"
+                      tooltip_message="Jump to Next Instance"
+                      color="primary"
+                      :icon_style="true"
+                      :large="false"
+                      :bottom="true"
+                    >
+                    </tooltip_button>
                   </div>
 
+                </template>
 
-                  <!-- Annotation Page Case -->
-                  <v-btn :disabled="video_playing"
-                          v-if="!show_edit_templates && current_label_file"
-                          @click="change_label_function(props.item)"
-                          text
-                          style="text-transform: none !important;"
-                          :color="props.item.id == current_label_file.id ? 'secondary' : 'primary' "
-                  >
-                    <h3 :data-cy="props.item.label.name">
-                    {{ props.item.label.name }} </h3>
-                  </v-btn>
-
-                  <!-- Edit Page Case -->
-                  <h3 v-else :data-cy="props.item.label.name"
-
-                      >{{ props.item.label.name }}</h3>
-
-                </v-layout>
-
-              </template>
-
-              <template slot="with_next_instance_buttons"
-                        slot-scope="props"
-                        >
-
-                <div v-if="table_row_hover_index == props.index">
-                  <tooltip_button
-
-                    :disabled="loading"
-                    @click="next_instance(props.item.id)"
-                    icon="mdi-debug-step-over"
-                    tooltip_message="Jump to Next Instance"
-                    color="primary"
-                    :icon_style="true"
-                    :large="false"
-                    :bottom="true"
-                  >
-                  </tooltip_button>
-                </div>
-
-              </template>
-
-                  <!--
-                  <td>
-                    [category]
-                  </td>
-                  -->
 
                 <template slot="show_visibility_toggle" slot-scope="props">
 
@@ -202,27 +168,27 @@
                     <div v-if="table_row_hover_index == props.index
                          || props.item.is_visible == false">
 
-                    <v-layout>
+                      <v-layout>
 
-                      <div v-if="props.item.is_visible == true || props.item.is_visible == null">
-                        <v-btn icon @click="toggle_label_visible(props.item)">
-                          <v-icon color="blue">remove_red_eye</v-icon>
-                        </v-btn>
-                      </div>
+                        <div v-if="props.item.is_visible == true || props.item.is_visible == null">
+                          <v-btn icon @click="toggle_label_visible(props.item)">
+                            <v-icon color="blue">remove_red_eye</v-icon>
+                          </v-btn>
+                        </div>
 
-                      <div v-if="props.item.is_visible == false">
-                        <v-btn icon @click="toggle_label_visible(props.item)">
-                          <v-icon color="grey">remove_red_eye</v-icon>
-                        </v-btn>
-                      </div>
+                        <div v-if="props.item.is_visible == false">
+                          <v-btn icon @click="toggle_label_visible(props.item)">
+                            <v-icon color="grey">remove_red_eye</v-icon>
+                          </v-btn>
+                        </div>
 
-                      <!--
-                      <div v-if="$store.state.user.current.is_super_admin === true">
-                        {{ props.item.id }}
-                      </div>
-                      -->
+                        <!--
+                        <div v-if="$store.state.user.current.is_super_admin === true">
+                          {{ props.item.id }}
+                        </div>
+                        -->
 
-                    </v-layout>
+                      </v-layout>
                     </div>
 
 
@@ -253,7 +219,7 @@
                         :icon_style="true"
                         :bottom="true"
                         color="primary">
-                    </tooltip_button>                   
+                    </tooltip_button>
 
                     <button_with_menu
                       tooltip_message="Edit"
@@ -267,10 +233,10 @@
                       <template slot="content">
 
                         <v_labels_edit :project_string_id="project_string_id"
-                                        :label_file_prop="props.item"
-                                        :edit_label_menu="edit_label_menu"
-                                        :key="props.item.id"
-                                        @request_boxes_refresh="$emit('request_boxes_refresh')">
+                                       :label_file_prop="props.item"
+                                       :edit_label_menu="edit_label_menu"
+                                       :key="props.item.id"
+                                       @request_boxes_refresh="$emit('request_boxes_refresh')">
                         </v_labels_edit>
 
                       </template>
@@ -296,9 +262,9 @@
                           <!-- TODO option to delete all assoicated instances? -->
 
                           <v-btn @click="api_file_update('REMOVE', props.item)"
-                                  color="error"
-                                  :loading="api_file_update_loading"
-                                  :disabled="api_file_update_loading">
+                                 color="error"
+                                 :loading="api_file_update_loading"
+                                 :disabled="api_file_update_loading">
                             <v-icon>delete</v-icon>
                             Delete {{ props.item.label.name }}
                           </v-btn>
@@ -317,82 +283,61 @@
 
           </v-card>
 
-          <!--
-          Only show on label main page
-          as known bug about it refreshing-->
-
-          <div class="pt-4" v-if="show_attributes_table">
-            <v-card>
-              <attribute_home :project_string_id="project_string_id">
-
-              </attribute_home>
-            </v-card>
-          </div>
-          <!--
-           Move attributes to be more visible to help reduce confusion.
-          -->
-
-          <v-card v-if="show_edit_templates">
-            <v-alert type="info"
-                     dismissible
-            >
-              Once Tasks are launched the labels for those Tasks are "locked" by default.
-            </v-alert>
-
-          </v-card>
-
         </v-flex>
       </v-layout>
 
-    <v-dialog v-model="dialog_confirm_sample_data" max-width="450px">
-      <v-card >
-        <v-card-title class="headline">
-          Create sample data
-        </v-card-title>
-        <v-card-text>
-          Do you want to create sample labels?
-          This will add 3 sample labels to the project.
-        </v-card-text>
-        <v_error_multiple :error="error_sample_data">
-        </v_error_multiple>
-        <v-card-actions>
-          <v-spacer></v-spacer>
-          <v-btn
-            color="primary darken-1"
-            text
-            @click="dialog_confirm_sample_data = false"
-          >
-            Cancel
-          </v-btn>
-          <v-btn
-            color="success darken-1"
-            text
-            :loading="loading_create_sample_data"
-            @click="create_sample_labels"
-          >
-            Create Sample Labels
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
-    <v-snackbar
-      v-model="snackbar_success"
-      :timeout="3000"
-      color="primary"
-    >
-      Sample data created successfully.
+      <v-dialog v-model="dialog_confirm_sample_data" max-width="450px">
+        <v-card >
+          <v-card-title class="headline">
+            Create sample data
+          </v-card-title>
+          <v-card-text>
+            Do you want to create sample labels?
+            This will add 3 sample labels to the project.
+          </v-card-text>
+          <v_error_multiple :error="error_sample_data">
+          </v_error_multiple>
+          <v-card-actions>
+            <v-spacer></v-spacer>
+            <v-btn
+              color="primary darken-1"
+              text
+              @click="dialog_confirm_sample_data = false"
+            >
+              Cancel
+            </v-btn>
+            <v-btn
+              color="success darken-1"
+              text
+              :loading="loading_create_sample_data"
+              @click="create_sample_labels"
+            >
+              Create Sample Labels
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+      <v-snackbar
+        v-model="snackbar_success"
+        :timeout="3000"
+        color="primary"
+      >
+        Sample data created successfully.
 
-      <template v-slot:action="{ attrs }">
-        <v-btn
-          color="white"
-          text
-          v-bind="attrs"
-          @click="snackbar_success = false"
-        >
-          Close
-        </v-btn>
-      </template>
-    </v-snackbar>
+        <template v-slot:action="{ attrs }">
+          <v-btn
+            color="white"
+            text
+            v-bind="attrs"
+            @click="snackbar_success = false"
+          >
+            Close
+          </v-btn>
+        </template>
+      </v-snackbar>
+
+    </div>
+
 
   </div>
 </template>
@@ -401,7 +346,8 @@
 
   import axios from '../../services/customInstance';
   import attribute_home from '../attribute/attribute_home'
-
+  import schema_card_selector from './schema_card_selector'
+  import {get_labels} from '../../services/labelServices';
 
   import Vue from "vue";
 
@@ -409,6 +355,7 @@
       name: 'labels_view',
 
       components: {
+        schema_card_selector,
         attribute_home
       },
 
@@ -422,6 +369,7 @@
 
       props: {
         'project_string_id': {},
+        'schema_id': {},
         'with_next_instance_buttons': {
           default: false
         },
@@ -464,6 +412,9 @@
 
       },
       watch: {
+        schema_id: function(){
+          this.refresh_labels_function()
+        },
         loading: function (bool) {
           // this is used to detect change from parent loading
           this.loading_prop = bool
@@ -561,6 +512,8 @@
           },
 
           api_file_update_loading: false,
+          current_schema: {},
+          error: null,
           snackbar_success: false,
           dialog_confirm_sample_data: false,
           loading_create_sample_data: false,
@@ -668,8 +621,14 @@
       },
 
       methods: {
+        on_label_search:function(value, search, item){
+          if(!item.label){
+            return false
+          }
+          return item.label.name.toLocaleLowerCase().includes(search.toLocaleLowerCase())
+        },
         generate_explore_url: function(name){
-          return '/studio/annotate/' + this.$store.state.project.current.project_string_id  + '/explorer?query=labels.' + name + ' > 0'
+          return `/studio/annotate/${this.$store.state.project.current.project_string_id}/explorer?query=labels.${name} > 0`
         },
         open_sample_labels_dialog: function(){
           this.dialog_confirm_sample_data = true;
@@ -678,7 +637,8 @@
           this.loading_create_sample_data = true;
           try{
             const response = await axios.post('/api/walrus/v1/project/' + this.$store.state.project.current.project_string_id + '/gen-data', {
-              data_type: 'label'
+              data_type: 'label',
+              schema_id: this.schema_id
             })
             if(response.status === 200){
               this.refresh_labels_function();
@@ -697,58 +657,17 @@
           this.$emit('label_created', label);
         },
         expand_once: function () {
-
-          /* It's unclear where to trigger this
-           * For example, changing the file should trigger it,
-           * Maybe on current_video_file_id or something,
-           * BUT still the issue that trigging this doesn't seem to cause the component in the slot load as expected
-           * As a (seperate?) concern, closing expanded stuff, if person clicks on an image file after
-           * So better to still wait on  https://github.com/vuetifyjs/vuetify/pull/5737
-           * Tried    <div v-if="expand_once()">
-                        </div> too - not the right spot / expected behaviour
-           */
-
-          // very hacky
           if (this.video_mode != true) {
-
-            // case of loading a video file
-            // then loading an image
-            /*
-            if (this.expand_once == true) {
-              for (label in this.Labels) {
-                this.$set(this.$refs.label_data_table.expanded,
-                  label.id,
-                  false)
-              }
-            }
-            */
             this.expanded_once = false // reset
             return
           }
-
           if (this.expanded_once == false) {
             this.expanded_once = true
             this.$set(this.$refs.label_data_table.expanded,
               this.Labels[0].id,
               true)
           }
-
-
         },
-
-        // From back when we had sequence thing embedded in data table
-        /*
-        show_sequence: function (expanded) {
-
-          if (this.video_mode == true) {
-            return !expanded
-          }
-          else {
-            return expanded
-          }
-        },
-        */
-
         attribute_menu_close() {
 
           this.refresh_labels_function()
@@ -759,7 +678,7 @@
           return "color:" + hex
         },
 
-        refresh_labels_function: function () {
+        refresh_labels_function: async function () {
           /*
          Label refresh process
          Two methods to *access* refresh labels
@@ -775,39 +694,29 @@
           var url = null
           this.label_refresh_loading = true
 
-          if (['full', 'home', 'own_page'].includes(this.render_mode) == true) {
-            url = '/api/project/' + this.project_string_id + '/labels/refresh'
+          if (!['full', 'home', 'own_page'].includes(this.render_mode) == true) {
+            return
           }
 
-          axios.get(url, {})
-            .then(response => {
+          let [result, error] = await get_labels(this.project_string_id, this.$props.schema_id)
+          if(error){
+            this.error = this.$route_api_errors(error)
+            return
+          }
+          if(result){
+            this.Labels = result.labels_out
 
-              this.Labels = response.data.labels_out
+            this.label_file_colour_map = result.label_file_colour_map
+            this.$emit('label_file_colour_map', this.label_file_colour_map)
+            this.$emit('label_list', this.Labels)
 
-              this.label_file_colour_map = response.data.label_file_colour_map
-              this.$emit('label_file_colour_map', this.label_file_colour_map)
-              this.$emit('label_list', this.Labels)
-
-              if (this.Labels[0] != null && !this.show_edit_templates) {  // default to first label
-                this.change_label_function(this.Labels[0])
-              } else {
-                // TODO review this
-                //this.label_warning = true
-              }
-
-
-              this.label_refresh_loading = false
-              this.$emit('request_label_refresh_callback', true)
-              this.$store.commit('finish_label_refresh')
-
-
-              //this.Labels[0].is_active = true;
-
-            })
-            .catch(error => {
-              console.error(error);
-            });
-
+            if (this.Labels[0] != null && !this.show_edit_templates) {  // default to first label
+              this.change_label_function(this.Labels[0])
+            }
+            this.label_refresh_loading = false
+            this.$emit('request_label_refresh_callback', true)
+            this.$store.commit('finish_label_refresh')
+          }
         },
         change_label_from_id_function: function (label_id) {
           for (let i in this.Labels) {
@@ -821,17 +730,7 @@
           if (this.show_edit_templates) {
             return
           }
-          /*
-           *  This will also trigger sequence refresh
-           *  because it pushes label to annotation core
-           *  and sequence list is watching annotation core (label_file_id)
-           *  we can commit to sequence_refresh to force it
-           *  ie this.$store.commit('sequence_refresh', Date.now())
-           *  but it won't really do it as expected since we want the label file anyway here
-           */
 
-          // generally we expect that the label we emit
-          // is valid so lets reject invalid labels here?
           if (label == undefined) {
             return
           }
@@ -846,11 +745,6 @@
 
         },
         keyboard_events_window: function (event) {
-
-
-          // hotkeys
-
-          // is actually generic open menu lock
           if (this.$store.state.user.is_typing_or_menu_open == true) {
             return
           }
@@ -868,8 +762,7 @@
           this.api_file_update_loading = true
           this.info = {}  // reset
 
-          axios.post('/api/v1/project/' + this.project_string_id
-            + '/file/update',
+          axios.post(`/api/v1/project/${this.project_string_id}/file/update`,
             {
               'file_list': [label],
               'mode': mode
@@ -908,7 +801,7 @@
           } else {
             label.is_visible = !label.is_visible
           }
-          this.Labels.splice(this.Labels.indexOf(label), 1, label)
+          let res= this.Labels.splice(this.Labels.indexOf(label), 1, label)
           this.$emit('update_label_file_visible', label)
         },
         next_instance(label_name){

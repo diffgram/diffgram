@@ -403,14 +403,14 @@
 
                 <a
                   class="file-link"
-                  :href="'/file/' + props.item.file_id">
+                  :href="`/studio/annotate/${project_string_id}/?file=${props.item.file_id}` ">
                   {{ props.item.file_id}}
                 </a>
                 <div v-if='props.item.newly_copied_file_id'>
                   Copied to ->
                 </div>
                 <a v-if='props.item.newly_copied_file_id'
-                   :href="'/file/' + props.item.newly_copied_file_id">
+                   :href="`/studio/annotate/${project_string_id}/?file=${props.item.newly_copied_file_id}` ">
                   {{ props.item.newly_copied_file_id}}
                 </a>
 

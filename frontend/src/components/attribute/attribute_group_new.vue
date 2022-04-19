@@ -1,28 +1,19 @@
 <template>
 <div id="">
 
-  <v-container class="d-flex">
-
-    <h2 class="font-weight-medium text--primary flex-grow-1">
-      Attributes:
-    </h2>
-
-    <!--
-    <v-icon>mdi-collage</v-icon>
-    -->
-    <v-spacer></v-spacer>
+  <v-container class="d-flex align-center justify-start">
 
     <tooltip_button
       datacy="new_attribute_button"
       button_color="primary"
       tooltip_message="Create Attribute"
-      button_message="Create Attribute"
+      :icon_style="true"
       @click="api_attribute_group_new"
       icon="add"
       :large="true"
       :loading="loading"
       :disabled="loading"
-      color="white">
+      color="primary">
     </tooltip_button>
 
   </v-container>
@@ -46,6 +37,9 @@ import axios from '../../services/customInstance';
     props: {
       'project_string_id' : {
         default: null
+      },
+      'schema_id':{
+        required: true
       }
     },
     data() {
@@ -75,7 +69,7 @@ import axios from '../../services/customInstance';
           '/api/v1/project/' + this.project_string_id +
           '/attribute/group/new',
           {
-
+            schema_id: this.schema_id
           }).then(response => {
 
             // TODO check if syntax is right for emit

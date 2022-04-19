@@ -33,6 +33,7 @@
     >
 
       <ui_schema_menu_content
+        :schema_id="schema_id"
         @hide="hide"
       >
       </ui_schema_menu_content>
@@ -307,6 +308,9 @@
       'project_string_id':{
         type: String,
         default: null
+      },
+      'schema_id':{
+        required: true
       },
       'show_context_menu':{
         type: Boolean,
