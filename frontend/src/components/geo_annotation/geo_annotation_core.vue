@@ -269,7 +269,7 @@ export default Vue.extend({
             }
         },
         change_mode: function() {
-            // Change between draw and annotate modes
+            this.draw_mode = !this.draw_mode
         },
         delete_instance: function(instance) {
             const delete_command = new DeleteInstanceCommand([instance], this.instance_list)
