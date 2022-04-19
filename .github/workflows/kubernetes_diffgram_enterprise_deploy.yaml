@@ -22,11 +22,11 @@ on:
 jobs:
   publishimages:
     needs: [pr_commented]
-    if: "(!github.event.issue.pull_request) ||
-                  (github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
-                  (github.event.comment.author_association == 'OWNER' ||
-                  github.event.comment.author_association == 'COLLABORATOR' ||
-                  github.event.comment.author_association == 'MEMBER' ))"
+    if: "github.event.issue.pull_request == null ||
+                  (
+                   github.event.issue.pull_request != null && contains(github.event.comment.body, '/deploy') &&
+                  (github.event.comment.author_association == 'OWNER' || github.event.comment.author_association == 'COLLABORATOR' || github.event.comment.author_association == 'MEMBER' )
+                  )"
     uses: ./.github/workflows/publish_docker_images.yaml
     name: Publish Images
     secrets:
