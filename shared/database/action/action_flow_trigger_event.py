@@ -119,8 +119,8 @@ class ActionFlowTriggerEventQueue(Base):
         :param session:
         :return:
         """
-        return session.query(ActionFlowTriggerEventQueue).with_for_update(skip_locked = True).first()
-
+        result = session.query(ActionFlowTriggerEventQueue).with_for_update(skip_locked = True).one_or_none()
+        return result
     def serialize(self):
 
         file = None

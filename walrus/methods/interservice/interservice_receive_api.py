@@ -1,7 +1,7 @@
 from methods.regular.regular_api import *
 from methods.task.task_template.task_template_launch_handler import TaskTemplateLauncherThread
 from methods.sync_events.sync_actions_handler import SyncActionsHandlerThread
-from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueThread
+from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueProcess
 from methods.input.packet import enqueue_packet
 
 
@@ -89,12 +89,12 @@ def interservice_receive_api():
 
         if input_from_request['message'] == 'new_action_flow_queue_item':
 
-            num_flows = ActionFlowTriggerQueueThread.try_to_enqueue_new_action_flows(
+            num_flows = ActionFlowTriggerQueueProcess.try_to_enqueue_new_action_flows(
                 session = session,
                 event_id = input_from_request['id'],
                 commit_per_element = True)
             for i in range(0, num_flows):
-                action_flow_thread = ActionFlowTriggerQueueThread(run_once = True)
+                action_flow_thread = ActionFlowTriggerQueueProcess(run_once = True)
 
         if input_from_request['message'] == 'video_copy':
             enqueue_packet(project_string_id = input_from_request.get('project_string_id'),

@@ -7,9 +7,9 @@ from shared.database.action.action_flow import Action_Flow
 from shared.database.action.action_flow_trigger_event import SUPPORTED_ACTION_TRIGGER_EVENT_TYPES
 from shared.regular.regular_methods import commit_with_rollback
 import multiprocessing
-from multiprocessing import Process
+from multiprocessing import Process, get_context
 
-class ActionFlowTriggerQueueThread:
+class ActionFlowTriggerQueueProcess:
     """
         This class will be in charge of processing the queue element in the
         ActionFlowEventsQueue for determining if a ActionFlow will be trigerred
@@ -24,9 +24,9 @@ class ActionFlowTriggerQueueThread:
         else:
             if settings.DIFFGRAM_SYSTEM_MODE != 'testing':
                 consumers = []
+                ctx = get_context('spawn')
                 for i in range(2):
-                    p = Process(target = self.start_queue_check_loop, args = ())
-
+                    p = ctx.Process(target = self.start_queue_check_loop, args = ())
                     # This is critical! The consumer function has an infinite loop
                     # Which means it will never exit unless we set daemon to true
                     p.daemon = True
@@ -144,7 +144,7 @@ class ActionFlowTriggerQueueThread:
         action_flow_trigger_event_id = None
         logger.debug('Checking for Events to process.')
         try:
-            with sessionMaker.session_scope_threaded() as session:
+            with sessionMaker.session_scope() as session:
 
                 # Main assumptions for pulling 1 at a time
                 # 1) On deployments, each instance has multiple workers that run this. In that context, each worker can
@@ -154,6 +154,7 @@ class ActionFlowTriggerQueueThread:
                 action_flow_trigger_event = ActionFlowTriggerEventQueue.get_next(session)
                 # Can use sort in sql if needed here
                 if action_flow_trigger_event is not None:
+                    logger.info(f'Processing Event: {action_flow_trigger_event}')
                     action_flow_trigger_event_id = int(action_flow_trigger_event.id)
                     self.execute_action_flow_for_event(session, action_flow_trigger_event)
                     session.query(ActionFlowTriggerEventQueue).filter(
