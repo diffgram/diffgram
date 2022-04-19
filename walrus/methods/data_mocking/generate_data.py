@@ -124,6 +124,7 @@ def mock_generate_data_api():
 
 
 def shared_data_gen(session, project, input):
+    print('shared_data_gen', project, input)
     data_mocker = DiffgramDataMocker(session = session)
     if input['data_type'] == 'dataset':
         dataset = WorkingDir.get(session = session,
@@ -275,7 +276,6 @@ class DiffgramDataMocker:
             self.session.add(file)
 
     def generate_sample_label_files(self, project, schema_id = None):
-        print('SEHMAA', schema_id)
         if schema_id is None:
             schema = self.session.query(LabelSchema).filter(LabelSchema.project_id == project.id).first()
         else:
@@ -304,6 +304,11 @@ class DiffgramDataMocker:
                 }
             }
             member = get_member(session = self.session)
+            if not member:
+                admin = self.session.query(User).filter(
+                    User.is_super_admin == True
+                ).first()
+                member = admin.member
             label_name = f"Diffgram Sample Label {i + 1}"
             label = self.session.query(Label).filter(
                 Label.name == label_name).first()
@@ -423,6 +428,7 @@ class DiffgramDataMocker:
 
     def __create_sample_task_template(self, name, project, reviews, member = None):
         user = None
+        print('__create_sample_task_template', name, project, reviews, member)
         if member:
             user = User.get_by_member_id(self.session, member_id = member.id)
         task_template = Job()
@@ -451,6 +457,7 @@ class DiffgramDataMocker:
                                              log = regular_log.default())
 
         task_template.status = 'active'
+        print('STATUSS', task_template.status)
         self.session.add(task_template)
         self.session.flush()
         task_template_label_attach(self.session, task_template)
