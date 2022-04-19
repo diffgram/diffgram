@@ -678,15 +678,17 @@ def new_or_update_core(session,
     job.allow_reviews = allow_reviews
     job.review_chance = (0 if review_chance == None else review_chance) / 100
 
-    log = job.update_member_list(
-        member_list_ids = member_list_ids,
-        session = session,
-        log = log)
+    if member_list_ids is not None:
+        log = job.update_member_list(
+            member_list_ids = member_list_ids,
+            session = session,
+            log = log)
 
-    log = job.update_reviewer_list(
-        session = session,
-        reviewer_list_ids = reviewer_list_ids,
-        log = log)
+    if reviewer_list_ids is not None:
+        log = job.update_reviewer_list(
+            session = session,
+            reviewer_list_ids = reviewer_list_ids,
+            log = log)
 
     if default_userscript_id:
         default_userscript = UserScript.get(
