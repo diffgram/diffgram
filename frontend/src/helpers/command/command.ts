@@ -1,3 +1,4 @@
+import { GeoPoint } from "../../components/vue_canvas/instances/GeoInstance";
 import { TextAnnotationInstance, TextRelationInstance } from "../../components/vue_canvas/instances/TextInstance";
 import InstanceList from "../instance_list";
 import { CommandInterface } from "../interfaces/Command";
@@ -26,6 +27,10 @@ export abstract class Command implements CommandInterface {
 
         if (instance.type === "relation") {
             initializedInstance = new TextRelationInstance()
+        }
+
+        if (instance.type === "geo_point") {
+            initializedInstance = new GeoPoint()
         }
 
         initializedInstance.populate_from_instance_obj(newInstance)
