@@ -570,23 +570,6 @@ const auth = {
 }
 
 
-const annotation_assignment = {
-  state: {
-    assignment: {},
-    on: false,
-  },
-  mutations: {
-    annotation_assignment_on: state => state.on = true,
-    annotation_assignment_off: state => state.on = false,
-    set_annotation_assignment(state, assignment) {
-      state.assignment = assignment
-    },
-    clear_annotation_assignment(state) {
-      state.on = false,
-        state.assignment = {}
-    }
-  }
-}
 
 const annotation_project = {
   state: {
