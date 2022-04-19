@@ -147,6 +147,12 @@ export default Vue.extend({
         current_style: function() {
             return this.create_style(this.current_label)
         },
+        undo_disabled: function() {
+            return !this.history || !this.history.undo_posible
+        },
+        redo_disabled: function() {
+            return !this.history || !this.history.redo_posible
+        },
         draw_instances: function() {
             if (!this.instance_list) return
 
@@ -308,6 +314,11 @@ export default Vue.extend({
         },
         save: function() {
             // Save
+        },
+        change_file(direction, file) {
+            if (direction == "next" || direction == "previous") {
+                this.$emit("request_file_change", direction, file);
+            }
         },
         on_mount_hotkeys: function() {
             // Setting howtkeys for the geo interface
