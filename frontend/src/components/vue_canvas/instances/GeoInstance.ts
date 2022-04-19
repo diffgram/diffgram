@@ -54,7 +54,9 @@ export class GeoCircle extends Instance implements InstanceInterface {
 
 export class GeoPoly extends Instance implements InstanceInterface {
     public bounds: Array<number>;
+    public bounds_lonlat: Array<number>;
     public type: string;
+    public ol_id: string;
 
     constructor(type: string) {
         super();
@@ -63,12 +65,20 @@ export class GeoPoly extends Instance implements InstanceInterface {
 
     public create_instance() {}
 
-    public create_frontend_instance(bounds: Array<number>, label_file: any, soft_delete: boolean = false): void {
+    public create_frontend_instance(
+            bounds: Array<number>, 
+            bounds_lonlat: Array<number>, 
+            label_file: any, 
+            ol_id: string,
+            soft_delete: boolean = false
+        ): void {
         this.bounds = bounds;
+        this.bounds_lonlat = bounds_lonlat;
         this.soft_delete = soft_delete;
         this.creation_ref_id = uuidv4();
         this.label_file = label_file;
         this.label_file_id = label_file.id;
+        this.ol_id = ol_id;
     }
 
     public get_instance_data() {
@@ -81,6 +91,8 @@ export class GeoPoly extends Instance implements InstanceInterface {
             soft_delete: this.soft_delete,
             creation_ref_id: this.creation_ref_id,
             bounds: this.bounds,
+            bounds_lonlat: this.bounds_lonlat,
+            ol_id: this.ol_id
         }
         
         return payload
