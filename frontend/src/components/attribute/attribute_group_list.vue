@@ -368,6 +368,7 @@ import attribute_group_new from './attribute_group_new.vue'
           this.attribute_template_group_id,
           this.schema_id,
           mode,
+          undefined,
           true
         )
         if(error){
