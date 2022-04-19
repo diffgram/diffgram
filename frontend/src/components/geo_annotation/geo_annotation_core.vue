@@ -81,6 +81,7 @@ export default Vue.extend({
             instance_list: undefined,
             history: undefined,
             command_manager: undefined,
+            invisible_labels: [],
             // map management
             map_instance: undefined,
             annotation_layer: undefined,
@@ -121,7 +122,7 @@ export default Vue.extend({
 
             this.instance_list.get_all().map(instance => {
                 const already_exists = this.feature_list.find(feature => feature.ol_uid === instance.ol_id)
-                if (already_exists && instance.soft_delete) {
+                if ((already_exists && instance.soft_delete) || this.invisible_labels.find(label => label.id === instance.label_id)) {
                     this.annotation_source.removeFeature(already_exists)
                     const index_to_remove = this.feature_list.indexOf(already_exists)
                     this.feature_list.splice(index_to_remove, 1)
@@ -243,8 +244,13 @@ export default Vue.extend({
         change_instance_label: function() {
             // change label of the instance
         },
-        change_label_visibility: function() {
-            // Changing visibility of the label
+        change_label_visibility: async function(label) {
+            if (label.is_visible) {
+                this.invisible_labels = this.invisible_labels.filter(label_id => label_id !== label.id)
+            } else {
+                this.invisible_labels.push(label.id)
+            }
+            this.draw_instances
         },
         change_instance_type: function(instance_type) {
             this.current_instance_type = instance_type
