@@ -51,7 +51,7 @@ import geo_sidebar from "./geo_sidebar.vue"
 import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
 import History from "../../helpers/history"
-import { CreateInstanceCommand } from "../../helpers/command/available_commands"
+import { CreateInstanceCommand, DeleteInstanceCommand } from "../../helpers/command/available_commands"
 import { GeoPoint } from "../vue_canvas/instances/GeoInstance"
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
@@ -132,7 +132,6 @@ export default Vue.extend({
                 const style = this.create_style(instance.label_file)
 
                 if (!already_exists && !instance.soft_delete && instance.type === 'geo_point') {
-                    console.log("here")
                     feature = new Feature(new Point(instance.coords));
                 }
 
@@ -235,8 +234,11 @@ export default Vue.extend({
         change_mode: function() {
             // Change between draw and annotate modes
         },
-        delete_instance: function() {
-            // Delete instance and remove from teh map
+        delete_instance: function(instance) {
+            const delete_command = new DeleteInstanceCommand([instance], this.instance_list)
+            this.command_manager.executeCommand(delete_command)
+            this.has_changed = true;
+            this.draw_instances
         },
         change_instance_label: function() {
             // change label of the instance
@@ -286,6 +288,7 @@ export default Vue.extend({
                     ...styleSet
                 })
             })
+            
             return style
         }
     }
