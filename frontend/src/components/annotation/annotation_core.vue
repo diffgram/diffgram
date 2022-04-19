@@ -1488,8 +1488,6 @@ export default Vue.extend({
         label: {},
       },
 
-      Annotation_assignments: [],
-
       html_image: new Image(), // our canvas expects an image at init
 
       save_on_change: true,
