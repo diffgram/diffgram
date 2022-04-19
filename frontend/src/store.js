@@ -116,7 +116,6 @@ export const user_module = {
       commit('clear_ai')
       commit('clear_annotation')
       commit('clear_labels')
-      commit('clear_annotation_assignment')
       commit('clear_annotation_project')
       commit('clear_video_current')
       commit('builder_or_trainer_clear')
@@ -125,6 +124,7 @@ export const user_module = {
       commit('clear_job')
       commit('clear_connection')
       commit('clear_ui_schema')
+      commit('clear_userProjects_list')
 
     },
 
@@ -167,6 +167,9 @@ export const project_list = {
   mutations: {
     set_userProjects_list(state, fetched_projects_list) {
       state.user_projects_list = fetched_projects_list
+    },
+    clear_userProjects_list(state) {
+      state.user_projects_list = undefined
     }
   }
 }
@@ -262,13 +265,7 @@ const org = {
 }
 
 
-/* Feb 14, 2020
- * Example context
- * of wanting to easily access values of counts from different
- * components and context that current media core is kind buried.
- *
- *
- */
+
 const job = {
 
   state: {
@@ -786,7 +783,6 @@ const my_store = new Vuex.Store({
     project_list: project_list,
     ai: ai,
     labels: labels,
-    annotation_assignment: annotation_assignment,
     annotation_project: annotation_project,
     video: video,
     job: job,
