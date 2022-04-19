@@ -1,6 +1,5 @@
 
 
-
 describe('Login Flow tests', function () {
 
   beforeEach(() => {
@@ -15,7 +14,6 @@ describe('Login Flow tests', function () {
       'ai',
       'alert',
       'public_project',
-      'annotation_project',
       'annotation_state',
       'attribute',
       'project_list',

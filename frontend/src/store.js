@@ -116,7 +116,6 @@ export const user_module = {
       commit('clear_ai')
       commit('clear_annotation')
       commit('clear_labels')
-      commit('clear_annotation_project')
       commit('clear_video_current')
       commit('builder_or_trainer_clear')
       commit('clear_alert')
@@ -568,19 +567,6 @@ const auth = {
 
 
 
-const annotation_project = {
-  state: {
-    current: {}
-  },
-  mutations: {
-    set_annotation_project(state, current) {
-      state.current = current
-    },
-    clear_annotation_project(state) {
-      state.current = {}
-    }
-  }
-}
 
 const builder_or_trainer = {
   state: {
@@ -783,7 +769,6 @@ const my_store = new Vuex.Store({
     project_list: project_list,
     ai: ai,
     labels: labels,
-    annotation_project: annotation_project,
     video: video,
     job: job,
     connection: connection,
