@@ -320,6 +320,7 @@ class Job(Base, Caching):
         return users
 
     def get_assignees(self, session):
+
         rels = User_To_Job.list(session = session, job = self, relation = 'annotator')
         users = [rel.user for rel in rels]
         return users
@@ -495,7 +496,6 @@ class Job(Base, Caching):
         session,
         log: dict,
         add_to_session: bool = True):
-
         # TODO feel like this could be a more generic pattern
         # main id is given a list of ids handle updating the attachments
         # TODO abstract more functions here...
