@@ -35,23 +35,13 @@ describe('Task Template Creation', () => {
     })
 
     it('Correctly Shows Label Step in Wizard', () => {
-      cy.get('[data-cy="label-select"]').should('be.visible')
+      cy.get('[data-cy="label_schema_selector"]').should('be.visible')
       cy.get('[data-cy="step-labels-title"]').should('be.visible')
       cy.get('[data-cy="manage-labels-button"]').should('be.visible')
-      cy.get('[data-cy="select-all-labels"]')
-        .parent()
-        .find('.v-input--selection-controls__ripple')
-        .should('be.visible')
     })
 
-    it('Correctly Edits Labels and go to next step', () => {
+    it('Correctly Selects Schema and go to next step', () => {
       cy.intercept(url).as('update_job')
-      cy.get('[data-cy="select-all-labels"]')
-        .click({force: true});
-      cy.selectLabel(testLabels[0].name, 'label-select')
-        cy.get('[data-cy="step-labels-title"]').should('be.visible')
-        .get('[data-cy="manage-labels-button"]').should('be.visible')
-
       cy.get('[data-cy="task-template-labels-step"] [data-cy="wizard_navigation_next"]').click();
       cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
     })

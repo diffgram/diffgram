@@ -136,7 +136,7 @@ import Vue from "vue"; export default Vue.extend( {
 
           this.$store.commit('set_project', response.data.project)
 
-          this.$emit('project_created', response.data.project);
+          this.$emit('project_created', response.data.project, response.data.schema);
           const projext_list_response = await getProjectList();
           const project_list = projext_list_response.data.project_list;
           this.$store.commit("set_userProjects_list", project_list);

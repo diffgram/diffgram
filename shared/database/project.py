@@ -10,6 +10,8 @@ from shared.database.report.report_dashboard import ReportDashboard
 from shared.database.org.org import Org
 from shared.database.account.account import Account
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
+from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
+from shared.database.labels.label import Label
 
 
 class Project(Base, Caching):
@@ -122,11 +124,11 @@ class Project(Base, Caching):
     org = relationship(Org, foreign_keys = [org_id])
 
     account_id = Column(Integer, ForeignKey('account.id'))
-    account = relationship("Account", foreign_keys=[account_id])
+    account = relationship("Account", foreign_keys = [account_id])
 
     plan_id = Column(Integer, ForeignKey('plan.id'))
     plan = relationship('Plan',
-                        foreign_keys=[plan_id])
+                        foreign_keys = [plan_id])
 
     @staticmethod
     def new(session,
@@ -468,17 +470,16 @@ class Project(Base, Caching):
             'api_billing_enabled': self.api_billing_enabled  # TODO review this
         }
 
-    
-    def get_global_attributes(self, session):
+    def get_global_attributes(self, session, schema_id = None):
 
         global_attribute_group_list = Attribute_Template_Group.list(
             session = session,
             group_id = None,
             project_id = self.id,
             archived = False,
-            is_global = True
-            )
-
+            is_global = True,
+            schema_id = schema_id
+        )
         global_attribute_groups_serialized_list = []
 
         for attribute_group in global_attribute_group_list:
@@ -487,8 +488,26 @@ class Project(Base, Caching):
 
         return global_attribute_groups_serialized_list
 
+    def get_attributes(self, session, schema_id = None):
 
-    def get_label_list(self, session, directory):
+        attribute_group_list = Attribute_Template_Group.list(
+            session = session,
+            group_id = None,
+            project_id = self.id,
+            archived = False,
+            is_global = None,
+            schema_id = schema_id
+        )
+
+        attribute_groups_serialized_list = []
+
+        for attribute_group in attribute_group_list:
+            attribute_groups_serialized_list.append(
+                attribute_group.serialize_with_attributes_and_labels(session = session))
+
+        return attribute_groups_serialized_list
+
+    def get_label_list(self, session, directory, schema_id = None):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory.id,
             WorkingDirFileLink.type == "label").subquery('working_dir_sub_query')
@@ -496,12 +515,19 @@ class Project(Base, Caching):
         # Caution, don't do "state != "removed" here,
         # Since we may have removed label files
         # With active instances, and still need this for colour map
-        working_dir_file_list = session.query(File).filter(
-            File.id == working_dir_sub_query.c.file_id).all()
 
+        working_dir_file_list_query = session.query(File).filter(
+            File.id == working_dir_sub_query.c.file_id)
+
+        if schema_id is not None:
+            schema = LabelSchema.get_by_id(session = session, id = schema_id)
+            link_file_id_list = schema.get_label_files(session = session, ids_only = True)
+            working_dir_file_list_query = working_dir_file_list_query.filter(
+                File.id.in_(link_file_id_list)
+            )
+        t1 = time.time()
+        working_dir_file_list = working_dir_file_list_query.all()
         labels_out = []
-
-        # Now getting label file colour map from working dir
 
         colour_map = directory.label_file_colour_map
         rebuild_colour_map = False
@@ -512,21 +538,42 @@ class Project(Base, Caching):
         if rebuild_colour_map is True:
             colour_map = {}
 
+        file_id_list = [f.id for f in working_dir_file_list]
+        # Fetch Labels Data
+        label_ids = [file.label_id for file in working_dir_file_list]
+        labels = session.query(Label).filter(
+            Label.id.in_(label_ids)
+        )
+        labels_serialized_dict = {}
+        for label in labels:
+            labels_serialized_dict[label.id] = label.serialize()
+        # Fetch Attributes
+        group_relations = Attribute_Template_Group.get_group_relations_list(session = session,
+                                                                            file_id_list = file_id_list)
+
+        group_rel_ids = [rel.attribute_template_group_id for rel in group_relations]
+        attribute_groups_serialized_dict = {}
+        # for rel in group_relations:
+        #     if not attribute_groups_serialized_dict.get(rel.file_id):
+        #         attribute_groups_serialized_dict[rel.file_id] = [rel.attribute_template_group.serialize_with_attributes(session = session)]
+        #     else:
+        #         attribute_groups_serialized_dict[rel.file_id].append(rel.attribute_template_group.serialize_with_attributes(session = session))
+
         # In context of a Label File!!
         for file in working_dir_file_list:
 
-            # TODO should we keep file id here
-            # so can use for other aspects assoiated with label
-
             if file.state != "removed":
+                serialized_file_data = file.serialize_base_file()
+                serialized_file_data['colour'] = file.colour
+                serialized_file_data['label'] = labels_serialized_dict.get(file.label_id)
+                serialized_file_data['attribute_group_list'] = attribute_groups_serialized_dict.get(file.id)
+
                 labels_out.append(file.serialize_with_label_and_colour(
                     session = session))
-            # label_file_colour_map[file.id] = file.colour
-            # directory.label_file_colour_map[file.id] = file.colour
+
             if rebuild_colour_map is True:
                 colour_map[file.id] = file.colour
                 directory.label_file_colour_map = colour_map
-        # TODO store this...
 
         if rebuild_colour_map is True:
             directory.label_file_colour_map = colour_map

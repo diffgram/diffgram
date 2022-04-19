@@ -140,6 +140,9 @@
   props: {
     project_string_id: undefined,
     instance_template: undefined,
+    schema_id: {
+      required: true
+    },
   },
   components: {
     drawable_canvas: drawable_canvas,
@@ -505,6 +508,7 @@
             name: this.name,
             reference_height: this.canvas_height,
             reference_width: this.canvas_width,
+            schema_id: this.schema_id,
             mode: this.mode,
             instance_list: this.instance_list.map(inst => inst.get_instance_data()),
 

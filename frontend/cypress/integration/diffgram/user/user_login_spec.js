@@ -19,6 +19,7 @@ describe('Login Flow tests', function () {
       'project_list',
       'auth',
       'builder_or_trainer',
+
       'error',
       'job',
       'network',
@@ -31,6 +32,9 @@ describe('Login Flow tests', function () {
       'user',
       'clipboard',
       'video',
-      'ui_schema');
+      'ui_schema',
+      'snackbar',
+      'system'
+    );
   })
 });

@@ -1,6 +1,7 @@
 <template>
   <div>
     <attribute_group_new
+      :schema_id="schema_id"
       :project_string_id="project_string_id">
 
     </attribute_group_new>
@@ -98,6 +99,9 @@
         'attribute_group_list_prop': {
           default: null
         },
+        'schema_id':{
+          required: true
+        }
       },
 
       data() {
@@ -171,6 +175,7 @@
               `/api/v1/project/${this.project_string_id}/attribute/template/list`,
               {
                 group_id: this.attribute_template_group_id,
+                schema_id: this.schema_id,
                 mode: mode
 
               })
