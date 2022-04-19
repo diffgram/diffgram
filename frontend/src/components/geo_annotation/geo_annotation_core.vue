@@ -56,7 +56,7 @@ import {
     DeleteInstanceCommand,
     UpdateInstanceLabelCommand
 } from "../../helpers/command/available_commands"
-import { GeoPoint } from "../vue_canvas/instances/GeoInstance"
+import { GeoCircle, GeoPoint } from "../vue_canvas/instances/GeoInstance"
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
 import Map from 'ol/Map';
@@ -117,8 +117,12 @@ export default Vue.extend({
             annotation_layer: undefined,
             mouse_coords: undefined,
             feature_list: [],
+            drawing_feature: undefined,
             // Others
             current_label: undefined,
+            drawing_instance: false,
+            draw_init: undefined,
+            drawing_coords: undefined,
             draw_mode: true,
             has_changed: false,
             current_instance_type: 'geo_circle',
@@ -172,6 +176,10 @@ export default Vue.extend({
                     feature = new Feature(new Point(instance.coords));
                 }
 
+                else if (!already_exists && !instance.soft_delete && instance.type === 'geo_circle') {
+                    feature = new Feature(new Circle(instance.coords, instance.radius));
+                }
+
                 if (feature) {
                     feature.setStyle(style)
                     this.annotation_source.addFeature(feature)
@@ -182,7 +190,21 @@ export default Vue.extend({
             })
         }
     },
-    watch: {},
+    watch: {
+        mouse_coords: function() {
+            if (!this.drawing_instance) return;
+
+            if (this.current_instance_type === 'geo_circle') {
+                this.annotation_source.removeFeature(this.drawing_feature)
+                const line = new LineString([this.draw_init, this.mouse_coords]);
+                const radius = getLength(line); 
+                const circleFeature = new Feature(new Circle(this.draw_init, radius));
+                circleFeature.setStyle(this.current_style)
+                this.annotation_source.addFeature(circleFeature)
+                this.drawing_feature = circleFeature
+            }
+        }
+    },
     mounted() {
         this.instance_list = new InstanceList()
         this.history = new History()
@@ -267,6 +289,45 @@ export default Vue.extend({
                 this.command_manager.executeCommand(command)
                 return
             }
+
+            if (!this.drawing_instance) {
+                const pointFeature = new Feature(new Point(this.mouse_coords));
+                pointFeature.setStyle(this.current_style)
+
+                this.annotation_source.addFeature(pointFeature)
+                this.drawing_feature = pointFeature
+                
+                this.drawing_instance = true
+                this.draw_init = this.mouse_coords
+                this.drawing_coords = this.mouse_coords
+                return
+            }
+
+            if (this.current_instance_type === 'geo_circle') {
+                const lonlat = transform(this.draw_init, 'EPSG:3857', 'EPSG:4326');
+                const line = new LineString([this.draw_init, this.mouse_coords]);
+                const radius = getLength(line); 
+
+                const newCircle = new GeoCircle()
+                newCircle.create_frontend_instance(
+                    lonlat,
+                    this.draw_init,
+                    radius,
+                    { ...this.current_label },
+                    this.drawing_feature.ol_uid
+                )
+
+                this.instance_list.push([newCircle])
+
+                const command = new CreateInstanceCommand([newCircle], this.instance_list)
+                this.command_manager.executeCommand(command)
+            }
+
+            this.drawing_instance = false;
+            this.feature_list.push(this.drawing_feature);
+            this.drawing_feature = undefined;
+            this.draw_init = undefined;
+            this.drawing_coords = undefined;
         },
         change_mode: function() {
             this.draw_mode = !this.draw_mode

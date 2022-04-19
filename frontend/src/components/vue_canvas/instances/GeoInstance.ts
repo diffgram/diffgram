@@ -7,6 +7,7 @@ export class GeoCircle extends Instance implements InstanceInterface {
     public lonlat: Array<number>;
     public coords: Array<number>;
     public radius: number;
+    public ol_id: string;
 
     constructor() {
         super();
@@ -19,6 +20,7 @@ export class GeoCircle extends Instance implements InstanceInterface {
             coords: Array<any>, 
             radius: number, 
             label_file: any, 
+            ol_id: string,
             soft_delete: boolean = false
         ): void {
         this.lonlat = lonlat;
@@ -28,6 +30,7 @@ export class GeoCircle extends Instance implements InstanceInterface {
         this.creation_ref_id = uuidv4();
         this.label_file = label_file;
         this.label_file_id = label_file.id;
+        this.ol_id = ol_id;
     }
 
     public get_instance_data() {
@@ -41,7 +44,8 @@ export class GeoCircle extends Instance implements InstanceInterface {
             creation_ref_id: this.creation_ref_id,
             lonlat: this.lonlat,
             coords: this.coords,
-            radius: this.radius
+            radius: this.radius,
+            ol_id: this.ol_id
         }
         
         return payload
