@@ -2,10 +2,27 @@
   <div>
 
 
-    <v-menu  v-model="project_menu"
+    <v-flex v-if="!$store.state.project.current.project_string_id
+                && $store.state.user.current.security_email_verified == true
+                && $store.state.project_list.user_projects_list
+                && $store.state.project_list.user_projects_list.length > 0">
+      <v-btn color="primary"
+              text
+              style="text-transform: none !important;"
+              @click="$router.push('/projects')">
+        <span>
+          <v-icon left>folder</v-icon>
+          Change Project
+        </span>
+      </v-btn>
+    </v-flex>
+
+    <v-menu v-model="project_menu"
             :nudge-width="150"
             offset-y
-            :disabled="false">
+            :disabled="false"
+            v-if="$store.state.project.current.project_string_id"
+            >
 
       <template v-slot:activator="{ on }">
         <v-btn  v-on="on"
@@ -13,7 +30,8 @@
                 id="open_main_menu"
                 data-cy="project_menu_dropdown_toggle"
                 text
-                :disabled="!$store.state.project.current.project_string_id || $store.state.user.current.security_email_verified != true">
+                v-if="$store.state.project.current.project_string_id"
+                :disabled="$store.state.user.current.security_email_verified != true">
           <v-icon left> mdi-lightbulb </v-icon>
           Project
           <v-icon right> mdi-chevron-down</v-icon>
