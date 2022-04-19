@@ -51,6 +51,7 @@ import geo_sidebar from "./geo_sidebar.vue"
 import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
 import History from "../../helpers/history"
+import { CreateInstanceCommand } from "../../helpers/command/available_commands"
 import { GeoPoint } from "../vue_canvas/instances/GeoInstance"
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
@@ -88,6 +89,7 @@ export default Vue.extend({
             // Others
             current_label: undefined,
             draw_mode: true,
+            has_changed: false,
             current_instance_type: 'geo_circle',
             instance_type_list: [
                 {
@@ -112,23 +114,36 @@ export default Vue.extend({
     },
     computed: {
         current_style: function() {
-            const { r, g, b } = this.current_label.colour.rgba;
-            const styleSet = {
-                fill: new Fill({
-                    color: `rgba(${r}, ${g}, ${b}, 0.5)`
-                }),
-                stroke: new Stroke({
-                    color: `rgba(${r}, ${g}, ${b}, 1)`
-                })
-            }
-            const style = new Style({
-                ...styleSet,
-                image: new CircleStyle({
-                    radius: 1,
-                    ...styleSet
-                })
+            return this.create_style(this.current_label)
+        },
+        draw_instances: function() {
+            if (!this.instance_list) return
+
+            this.instance_list.get_all().map(instance => {
+                const already_exists = this.feature_list.find(feature => feature.ol_uid === instance.ol_id)
+                if (already_exists && instance.soft_delete) {
+                    this.annotation_source.removeFeature(already_exists)
+                    const index_to_remove = this.feature_list.indexOf(already_exists)
+                    this.feature_list.splice(index_to_remove, 1)
+                    return
+                }
+
+                let feature;
+                const style = this.create_style(instance.label_file)
+
+                if (!already_exists && !instance.soft_delete && instance.type === 'geo_point') {
+                    console.log("here")
+                    feature = new Feature(new Point(instance.coords));
+                }
+
+                if (feature) {
+                    feature.setStyle(style)
+                    this.annotation_source.addFeature(feature)
+                    this.feature_list.push(feature)
+                    instance.ol_id = feature.ol_uid
+                }
+
             })
-            return style
         }
     },
     watch: {},
@@ -235,17 +250,43 @@ export default Vue.extend({
         change_label_file: function(event) {
             this.current_label = event
         },
-        undo: function() {
-            // Undo function
+        undo: function () {
+            if (!this.history.undo_posible) return;
+            let undone = this.command_manager.undo();
+            if (undone) this.has_changed = true;
+            this.draw_instances
         },
-        redo: function() {
-            // Redo fucntion
+        redo: function () {
+            if (!this.history.redo_posible) return;
+            let redone = this.command_manager.redo();
+            
+            if (redone) this.has_changed = true;
+            this.draw_instances
         },
         save: function() {
             // Save
         },
         on_mount_hotkeys: function() {
             // Setting howtkeys for the geo interface
+        },
+        create_style: function(label_file) {
+            const { r, g, b } = label_file.colour.rgba;
+            const styleSet = {
+                fill: new Fill({
+                    color: `rgba(${r}, ${g}, ${b}, 0.5)`
+                }),
+                stroke: new Stroke({
+                    color: `rgba(${r}, ${g}, ${b}, 1)`
+                })
+            }
+            const style = new Style({
+                ...styleSet,
+                image: new CircleStyle({
+                    radius: 1,
+                    ...styleSet
+                })
+            })
+            return style
         }
     }
 })
