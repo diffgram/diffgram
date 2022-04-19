@@ -118,16 +118,13 @@ datasaur_sync_manager = DatasaurSyncManager(thread_sleep_time_min=settings.DATAS
                                             thread_sleep_time_max=settings.DATASAUR_SYNC_THREAD_SLEEP_TIME_MAX)
 datasaur_sync_manager.start_sync_loop()
 
-actions_thread = ActionFlowTriggerQueueThread(thread_sleep_time_min=settings.ACTION_THREAD_SLEEP_TIME_MIN,
-                                              thread_sleep_time_max=settings.ACTION_THREAD_SLEEP_TIME_MAX,
-                                              run_once=False)
+actions_thread = ActionFlowTriggerQueueThread(run_once=False)
 
 
 print("Startup in", time.time() - start_time)
 
 # actions_thread = ActionFlowTriggerQueueThread(thread_sleep_time_min=5,
-#                                               thread_sleep_time_max=6,
-#                                               run_once=False)
+
 # Debug
 if __name__ == '__main__':
 

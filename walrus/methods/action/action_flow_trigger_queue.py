@@ -6,6 +6,8 @@ import traceback
 from shared.database.action.action_flow import Action_Flow
 from shared.database.action.action_flow_trigger_event import SUPPORTED_ACTION_TRIGGER_EVENT_TYPES
 from shared.regular.regular_methods import commit_with_rollback
+import multiprocessing
+from multiprocessing import Process
 
 class ActionFlowTriggerQueueThread:
     """
@@ -15,22 +17,22 @@ class ActionFlowTriggerQueueThread:
     """
 
     def __init__(self,
-                 run_once=True,
-                 thread_sleep_time_min=0,
-                 thread_sleep_time_max=0, ):
+                 run_once=True):
 
         if run_once is True:
-            self.thread = threading.Thread(
-                target=self.check_if_events_to_process)
+            self.thread = threading.Thread(target=self.check_if_events_to_process)
         else:
-            self.thread_sleep_time_min = thread_sleep_time_min
-            self.thread_sleep_time_max = thread_sleep_time_max
+            if settings.DIFFGRAM_SYSTEM_MODE != 'testing':
+                consumers = []
+                for i in range(2):
+                    p = Process(target = self.start_queue_check_loop, args = ())
 
-            self.thread = threading.Thread(target=self.start_queue_check_loop)
-
-        if settings.DIFFGRAM_SYSTEM_MODE != 'testing':
-            self.thread.daemon = True  # Allow hot reload to work
-            self.thread.start()
+                    # This is critical! The consumer function has an infinite loop
+                    # Which means it will never exit unless we set daemon to true
+                    p.daemon = True
+                    consumers.append(p)
+                for c in consumers:
+                    c.start()
 
     @staticmethod
     def try_to_enqueue_new_action_flows(session, event_id, commit_per_element=True):
@@ -174,14 +176,8 @@ class ActionFlowTriggerQueueThread:
 
     def start_queue_check_loop(self):
         """
-
+            Infinite Loop for checking if more jobs exists.
         """
-        regular_methods.loop_forever_with_random_load_balancing(
-            log_start_message='Starting ActionFlow Queue handler... ',
-            log_heartbeat_message='[ActionFlow Queue heartbeat]',
-            function_call=self.check_if_events_to_process,
-            function_args={},
-            thread_sleep_time_min=self.thread_sleep_time_min,
-            thread_sleep_time_max=self.thread_sleep_time_max,
-            logger=logger
-        )
+        logger.info('Starting Action Events Checker process')
+        while True:
+            self.check_if_events_to_process()
