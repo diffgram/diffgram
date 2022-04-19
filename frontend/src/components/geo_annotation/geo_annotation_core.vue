@@ -163,7 +163,6 @@ export default Vue.extend({
             if (!this.instance_list) return
 
             this.instance_list.get_all().map(instance => {
-                console.log("here start")
                 const already_exists = this.feature_list.find(feature => feature.ol_uid === instance.ol_id)
                 if ((already_exists && instance.soft_delete) || this.invisible_labels.find(label => label.id === instance.label_id)) {
                     this.annotation_source.removeFeature(already_exists)
@@ -175,8 +174,6 @@ export default Vue.extend({
                 let feature;
                 const style = this.create_style(instance.label_file)
 
-                console.log(already_exists)
-
                 if (!instance.soft_delete && instance.type === 'geo_point') {
                     feature = new Feature(new Point(instance.coords));
                 }
@@ -187,6 +184,10 @@ export default Vue.extend({
 
                 else if (!instance.soft_delete && instance.type === 'geo_polyline') {
                     feature = new Feature(new LineString(instance.bounds));
+                }
+
+                else if (!instance.soft_delete && instance.type === 'geo_polygon') {
+                    feature = new Feature(new Polygon([instance.bounds]));
                 }
 
                 if (feature) {
@@ -220,6 +221,14 @@ export default Vue.extend({
                 polylineFeature.setStyle(this.current_style)
                 this.annotation_source.addFeature(polylineFeature)
                 this.drawing_feature = polylineFeature
+            }
+
+            if (this.current_instance_type === 'geo_polygon') {
+                this.annotation_source.removeFeature(this.drawing_feature)
+                const polygoneFeature = new Feature(new Polygon([[this.draw_init, ...this.drawing_poly, this.mouse_coords]]));
+                polygoneFeature.setStyle(this.current_style)
+                this.annotation_source.addFeature(polygoneFeature)
+                this.drawing_feature = polygoneFeature
             }
         }
     },
@@ -340,7 +349,8 @@ export default Vue.extend({
                 this.command_manager.executeCommand(command)
             }
 
-            if (this.current_instance_type === 'geo_polyline') {
+            if (this.current_instance_type === 'geo_polyline' || this.current_instance_type === 'geo_polygon') {
+                console.log("here")
                 this.drawing_poly.push(this.mouse_coords)
                 return
             }
@@ -440,7 +450,13 @@ export default Vue.extend({
         },
         create_poly_instance: function() {
             this.annotation_source.removeFeature(this.drawing_feature)
-            const polyFeature = new Feature(new LineString([this.draw_init, ...this.drawing_poly]))
+            let polyFeature;
+            
+            if (this.current_instance_type === 'geo_polyline') {
+                polyFeature = new Feature(new LineString([this.draw_init, ...this.drawing_poly]))
+            } else if (this.current_instance_type === 'geo_polygon') {
+                polyFeature = new Feature(new Polygon([[this.draw_init, ...this.drawing_poly]]))
+            }
             polyFeature.setStyle(this.current_style)
             this.annotation_source.addFeature(polyFeature)
 
