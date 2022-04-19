@@ -56,7 +56,7 @@ import {
     DeleteInstanceCommand,
     UpdateInstanceLabelCommand
 } from "../../helpers/command/available_commands"
-import { GeoCircle, GeoPoint } from "../vue_canvas/instances/GeoInstance"
+import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
 import Map from 'ol/Map';
@@ -68,6 +68,7 @@ import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import Point from 'ol/geom/Point'
 import Circle from 'ol/geom/Circle'
+import Polygon from 'ol/geom/Polygon'
 import { transform } from 'ol/proj';
 import MousePosition from 'ol/control/MousePosition';
 import {createStringXY} from 'ol/coordinate';
@@ -123,6 +124,7 @@ export default Vue.extend({
             drawing_instance: false,
             draw_init: undefined,
             drawing_coords: undefined,
+            drawing_poly: [],
             draw_mode: true,
             has_changed: false,
             current_instance_type: 'geo_circle',
@@ -161,6 +163,7 @@ export default Vue.extend({
             if (!this.instance_list) return
 
             this.instance_list.get_all().map(instance => {
+                console.log("here start")
                 const already_exists = this.feature_list.find(feature => feature.ol_uid === instance.ol_id)
                 if ((already_exists && instance.soft_delete) || this.invisible_labels.find(label => label.id === instance.label_id)) {
                     this.annotation_source.removeFeature(already_exists)
@@ -172,15 +175,22 @@ export default Vue.extend({
                 let feature;
                 const style = this.create_style(instance.label_file)
 
-                if (!already_exists && !instance.soft_delete && instance.type === 'geo_point') {
+                console.log(already_exists)
+
+                if (!instance.soft_delete && instance.type === 'geo_point') {
                     feature = new Feature(new Point(instance.coords));
                 }
 
-                else if (!already_exists && !instance.soft_delete && instance.type === 'geo_circle') {
+                else if (!instance.soft_delete && instance.type === 'geo_circle') {
                     feature = new Feature(new Circle(instance.coords, instance.radius));
                 }
 
+                else if (!instance.soft_delete && instance.type === 'geo_polyline') {
+                    feature = new Feature(new LineString(instance.bounds));
+                }
+
                 if (feature) {
+                    this.annotation_source.removeFeature(already_exists)
                     feature.setStyle(style)
                     this.annotation_source.addFeature(feature)
                     this.feature_list.push(feature)
@@ -203,6 +213,14 @@ export default Vue.extend({
                 this.annotation_source.addFeature(circleFeature)
                 this.drawing_feature = circleFeature
             }
+
+            if (this.current_instance_type === 'geo_polyline') {
+                this.annotation_source.removeFeature(this.drawing_feature)
+                const polylineFeature = new Feature(new LineString([this.draw_init, ...this.drawing_poly, this.mouse_coords]));
+                polylineFeature.setStyle(this.current_style)
+                this.annotation_source.addFeature(polylineFeature)
+                this.drawing_feature = polylineFeature
+            }
         }
     },
     mounted() {
@@ -210,9 +228,8 @@ export default Vue.extend({
         this.history = new History()
         this.command_manager = new CommandManager(this.history)
 
+        this.hot_key_listeners()
         this.initialize_map()
-        this.initialize_interface()
-        this.on_mount_hotkeys()
     },
     methods: {
         initialize_interface_data: function() {
@@ -323,6 +340,11 @@ export default Vue.extend({
                 this.command_manager.executeCommand(command)
             }
 
+            if (this.current_instance_type === 'geo_polyline') {
+                this.drawing_poly.push(this.mouse_coords)
+                return
+            }
+
             this.drawing_instance = false;
             this.feature_list.push(this.drawing_feature);
             this.drawing_feature = undefined;
@@ -381,8 +403,20 @@ export default Vue.extend({
                 this.$emit("request_file_change", direction, file);
             }
         },
-        on_mount_hotkeys: function() {
-            // Setting howtkeys for the geo interface
+        hot_key_listeners: function() {
+            window.removeEventListener("keydown", this.keydown_event_listeners)
+            window.addEventListener("keydown", this.keydown_event_listeners)
+        },
+        keydown_event_listeners: function(e) {
+            if (e.keyCode === 13) {
+                if (this.drawing_instance) {
+                    this.create_poly_instance()
+                }
+            }
+
+            if (e.keyCode === 27) {
+                console.log("press esk")
+            }
         },
         create_style: function(label_file) {
             const { r, g, b } = label_file.colour.rgba;
@@ -403,6 +437,32 @@ export default Vue.extend({
             })
             
             return style
+        },
+        create_poly_instance: function() {
+            this.annotation_source.removeFeature(this.drawing_feature)
+            const polyFeature = new Feature(new LineString([this.draw_init, ...this.drawing_poly]))
+            polyFeature.setStyle(this.current_style)
+            this.annotation_source.addFeature(polyFeature)
+
+            const newPoly = new GeoPoly(this.current_instance_type)
+            newPoly.create_frontend_instance(
+                [this.draw_init, ...this.drawing_poly],
+                [],
+                { ...this.current_label },
+                polyFeature.ol_uid
+            )
+
+            this.instance_list.push([newPoly])
+            const command = new CreateInstanceCommand([newPoly], this.instance_list)
+            this.command_manager.executeCommand(command)
+
+
+            this.drawing_instance = false;
+            this.feature_list.push(polyFeature);
+            this.drawing_feature = undefined;
+            this.drawing_poly = []
+            this.draw_init = undefined;
+            this.drawing_coords = undefined;
         }
     }
 })
