@@ -51,7 +51,11 @@ import geo_sidebar from "./geo_sidebar.vue"
 import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
 import History from "../../helpers/history"
-import { CreateInstanceCommand, DeleteInstanceCommand } from "../../helpers/command/available_commands"
+import { 
+    CreateInstanceCommand, 
+    DeleteInstanceCommand,
+    UpdateInstanceLabelCommand
+} from "../../helpers/command/available_commands"
 import { GeoPoint } from "../vue_canvas/instances/GeoInstance"
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
@@ -75,6 +79,32 @@ import 'ol/ol.css';
 
 export default Vue.extend({
     name: "text_token_core",
+        props: {
+        file: {
+            type: Object,
+            default: undefined
+        },
+        task: {
+            type: Object,
+            default: undefined
+        },
+        job_id: {
+            type: Number,
+            default: undefined
+        },
+        label_file_colour_map: {
+            type: Object,
+            requered: true
+        },
+        label_list: {
+            type: Array,
+            requered: true
+        },
+        project_string_id: {
+            type: String,
+            requered: true
+        }
+    },
     data() {
         return {
             // Instance management
@@ -241,8 +271,13 @@ export default Vue.extend({
             this.has_changed = true;
             this.draw_instances
         },
-        change_instance_label: function() {
-            // change label of the instance
+        change_instance_label: async function(event) {
+            const { instance, label } = event
+            const command = new UpdateInstanceLabelCommand([instance], this.instance_list)
+            command.set_new_label(label)
+            this.command_manager.executeCommand(command)
+            this.has_changed = true
+            this.draw_instances
         },
         change_label_visibility: async function(label) {
             if (label.is_visible) {
