@@ -128,7 +128,14 @@ export default Vue.extend({
         this.$forceUpdate();
       },
       on_assign: function() {
-          this.$emit("assign", this.member_list_ids)
+          let user_id_list = [];
+          for (let member_id of this.member_list_ids){
+            let user = this.member_list.find(m => m.member_id === member_id);
+            if(user){
+              user_id_list.push(user.id)
+            }
+          }
+          this.$emit("assign", user_id_list)
       },
       on_cancel: function() {
           this.$emit("close")
