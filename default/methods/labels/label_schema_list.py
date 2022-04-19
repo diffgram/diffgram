@@ -10,7 +10,7 @@ from shared.database.auth.member import Member
 from shared.database.labels.label_schema import LabelSchema
 
 @routes.route('/api/v1/project/<string:project_string_id>/labels-schema', methods = ['GET'])
-@Project_permissions.user_has_project(Roles = ["admin", "Editor"], apis_user_list = ["api_enabled_builder"])
+@Project_permissions.user_has_project(Roles = ["admin", "Editor", "Viewer"], apis_user_list = ["api_enabled_builder"])
 def api_label_schema_list(project_string_id: str):
     """
         List all the labels schemas of the given project.
