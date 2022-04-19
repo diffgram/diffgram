@@ -426,7 +426,6 @@
           default: false
         },
         'current_video_file_id': {},
-        'annotation_assignment_on': {},
         'render_mode': {
           default: 'own_page'
         },
