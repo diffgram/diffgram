@@ -5,7 +5,7 @@ except:
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/instance/<int:instance_id>/history', methods = ['POST'])
-@Project_permissions.user_has_project(Roles = ["admin", "Editor"], apis_user_list = ["api_enabled_builder"])
+@Project_permissions.user_has_project(Roles = ["admin", "Editor", "Viewer"], apis_user_list = ["api_enabled_builder"])
 def instance_history_api(project_string_id, instance_id):
     """
         Create a new instance template.
