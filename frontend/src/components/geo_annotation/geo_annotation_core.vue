@@ -71,7 +71,7 @@ import Circle from 'ol/geom/Circle'
 import Polygon from 'ol/geom/Polygon'
 import { transform } from 'ol/proj';
 import MousePosition from 'ol/control/MousePosition';
-import {createStringXY} from 'ol/coordinate';
+import { createStringXY } from 'ol/coordinate';
 import { defaults as defaultControls } from 'ol/control';
 import LineString from 'ol/geom/LineString';
 import { getLength } from 'ol/sphere';
