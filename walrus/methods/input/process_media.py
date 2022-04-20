@@ -2163,10 +2163,10 @@ class Process_Media():
                         self.input.status_text = f"Invalid Extension{str(content_type)}"
                         self.log['error']['status_text'] = self.input.status_text
                         return
-
-            self.input.media_type = self.determine_media_type(
-                extension = self.input.extension,
-                allow_csv = self.allow_csv)
+            if self.input.media_type is None:
+                self.input.media_type = self.determine_media_type(
+                    extension = self.input.extension,
+                    allow_csv = self.allow_csv)
 
             if self.input.media_type is None or \
                 self.input.media_type not in ["image", "video"]:
