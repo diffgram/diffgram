@@ -37,7 +37,7 @@ export abstract class Command implements CommandInterface {
             initializedInstance = new GeoCircle()
         }
 
-        if (instance.type === "geo_polyline" || instance.type === "geo_polygon") {
+        if (instance.type === "geo_polyline" || instance.type === "geo_polygon" || instance.type === "geo_box") {
             initializedInstance = new GeoPoly(instance.type)
         }
 
