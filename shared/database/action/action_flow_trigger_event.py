@@ -89,6 +89,24 @@ class ActionFlowTriggerEventQueue(Base):
                           aggregation_window_start_time = None,
                           member_created_id = None,
                           member_updated_id = None):
+        """
+            Adds a new event to the actions queue.
+        :param session:
+        :param add_to_session:
+        :param flush_session:
+        :param type:
+        :param input_id:
+        :param project_id:
+        :param task_id:
+        :param job_id:
+        :param org_id:
+        :param action_flow_id:
+        :param has_aggregation_event_running:
+        :param aggregation_window_start_time:
+        :param member_created_id:
+        :param member_updated_id:
+        :return:
+        """
 
         action_flow_trigger_event = ActionFlowTriggerEventQueue(
             type = type,
@@ -119,8 +137,12 @@ class ActionFlowTriggerEventQueue(Base):
         :param session:
         :return:
         """
-        result = session.query(ActionFlowTriggerEventQueue).with_for_update(skip_locked = True).one_or_none()
-        return result
+        result = session.query(ActionFlowTriggerEventQueue).with_for_update(skip_locked = True) \
+            .order_by(ActionFlowTriggerEventQueue.time_created).all()
+        if len(result) == 0:
+            return None
+        else:
+            return result[0]
     def serialize(self):
 
         file = None
