@@ -731,6 +731,7 @@
 
         },
         file_list_updated: function (new_file_list) {
+          console.log('UPDATEEEEESD', new_file_list)
           this.file_list_to_upload = new_file_list;
         },
         close: function () {

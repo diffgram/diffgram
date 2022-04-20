@@ -27,31 +27,65 @@
       </v-btn>
     </div>
   </div>
-  <div v-else-if="with_prelabeled == undefined && upload_mode === 'new'" class="d-flex justify-center flex-column">
+  <div v-else-if="geo_tiff_prompt">
     <h1 class="text-center">
-      <v-icon x-large color="primary">mdi-upload</v-icon>
-      Do you want to add Pre-Labeled data? (Json/Csv format)
+      <v-icon x-large color="primary">mdi-map-search-outline</v-icon>
+      We detected .Tiff files. Are these GeoTiff files?
     </h1>
     <br>
     <br>
     <div class="d-flex justify-space-around">
+
       <v-btn
-        x-large
-        data-cy="with_no_pre_labels_button"
         color="primary lighten-2"
-        @click="set_with_pre_labeled(false)"
+        x-large
+        data-cy="no_geotiff_button"
+        @click="set_geo_tiff_upload(false)"
       >
+        <v-icon class="mr-4">mdi-close-box</v-icon>
         No
       </v-btn>
       <v-btn
-        color="primary"
         x-large
-        data-cy="with_pre_labels_button"
-        @click="set_with_pre_labeled(true)"
+        color="primary "
+        data-cy="yes_geotiff_button"
+        @click="set_geo_tiff_upload(true)"
       >
+        <v-icon class="mr-4">mdi-checkbox-marked-outline</v-icon>
         Yes
       </v-btn>
     </div>
+
+  </div>
+  <div v-else-if="with_prelabeled == undefined && upload_mode === 'new'" class="d-flex justify-center flex-column">
+    <div >
+      <h1 class="text-center">
+        <v-icon x-large color="primary">mdi-upload</v-icon>
+        Do you want to add Pre-Labeled data? (Json/Csv format)
+      </h1>
+      <br>
+      <br>
+      <div class="d-flex justify-space-around">
+        <v-btn
+          x-large
+          data-cy="with_no_pre_labels_button"
+          color="primary lighten-2"
+          @click="set_with_pre_labeled(false)"
+        >
+          No
+        </v-btn>
+        <v-btn
+          color="primary"
+          x-large
+          data-cy="with_pre_labels_button"
+          @click="set_with_pre_labeled(true)"
+        >
+          Yes
+        </v-btn>
+      </div>
+    </div>
+
+
   </div>
   <v-card v-else elevation="0" style="height: 100%" class="ma-0 d-flex flex-column">
     <v-card-title v-if="upload_mode === 'update'">Update Files</v-card-title>
@@ -191,7 +225,6 @@
                       <v-icon>mdi-delete</v-icon>
                     </v-btn>
                   </td>
-
                 </tr>
                 <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Diffgram Export')">
                   <td style="max-width: 300px">
@@ -282,6 +315,9 @@
       data() {
 
         return {
+          GEO_TIFF_FORMATS: ['image/tiff', 'image/tif'],
+          geo_tiff_upload: false,
+          geo_tiff_prompt: false,
           file_list_to_upload: [],
           error: {},
           sync_job_list: [],
@@ -366,10 +402,17 @@
                 }
                 file.source = 'local';
                 $vm.file_list_to_upload.push(file);
-
+                console.log('added file')
                 $vm.$emit('file_list_updated', $vm.file_list_to_upload)
               });
               this.on('removedfile', function (file) {
+                if(!$vm.$refs.myVueDropzone){
+                  return
+                }
+                if($vm.$refs.myVueDropzone.dropzone.disabled){
+                  return
+                }
+                console.log('REMOVEED FILE', file)
                 $vm.file_list_to_upload.splice($vm.file_list_to_upload.indexOf(file), 1);
                 $vm.$emit('file_list_updated', $vm.file_list_to_upload)
               });
@@ -639,6 +682,10 @@
           }
 
         },
+        set_geo_tiff_upload: function(value){
+          this.geo_tiff_upload = value;
+          this.move_to_next_step()
+        },
         upload_raw_media: async function (file_list) {
           this.$emit('upload_in_progress')
           if (this.$props.upload_mode === 'update') {
@@ -664,11 +711,14 @@
           }
 
         },
+        show_geotiff_prompt: function(){
+          this.geo_tiff_prompt = true;
+
+        },
         move_to_next_step: function () {
           const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');
-          // if(annotationFile.length > 0){
-          //   this.with_prelabeled = true;
-          // }
+          let file_types = this.file_list_to_upload.map(f => f.type)
+          console.log('asdasd', this.file_list_to_upload, file_types)
           const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
           const export_files = this.file_list_to_upload.filter(f => f.data_type === 'Diffgram Export');
           if(this.with_prelabeled && annotationFile.length === 0){
@@ -692,6 +742,11 @@
             if (raw_media.length === 0) {
               this.error = {}
               this.error.media_files = 'Please upload at least one media file to continue.'
+              return
+            }
+            console.log('asdasd', this.GEO_TIFF_FORMATS, file_types)
+            if(this.GEO_TIFF_FORMATS.some(item => file_types.includes(item)) && !this.geo_tiff_prompt){
+              this.show_geotiff_prompt()
               return
             }
           } else if (this.$props.upload_mode === 'from_diffgram_export') {
