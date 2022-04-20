@@ -207,7 +207,7 @@
                     :close_by_button="true"
                 >
                     <template slot="content">
-                        <text_hotkeys />
+                        <geo_hotkeys />
                     </template>
                 </button_with_menu>
 
@@ -361,6 +361,7 @@
                 :close_by_button="true"
             >
                 <template slot="content">
+                    <geo_hotkeys />
                 </template>
             </button_with_menu>
 
@@ -374,10 +375,13 @@
 import Vue from 'vue'
 import label_select_annotation from "../label/label_select_annotation.vue"
 import task_status from "../annotation/task_status.vue"
+import geo_hotkeys from "./geo_hotkeys.vue"
+
 export default Vue.extend({
     name: "geo_toolbar",
     components: {
         label_select_annotation,
+        geo_hotkeys,
         task_status
     },
     props: {
