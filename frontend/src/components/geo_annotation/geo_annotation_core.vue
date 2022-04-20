@@ -186,7 +186,7 @@ export default Vue.extend({
                     feature = new Feature(new LineString(instance.bounds));
                 }
 
-                else if (!instance.soft_delete && instance.type === 'geo_polygon') {
+                else if (!instance.soft_delete && (instance.type === 'geo_polygon' || instance.type === 'geo_box')) {
                     feature = new Feature(new Polygon([instance.bounds]));
                 }
 
@@ -226,6 +226,14 @@ export default Vue.extend({
             if (this.current_instance_type === 'geo_polygon') {
                 this.annotation_source.removeFeature(this.drawing_feature)
                 const polygoneFeature = new Feature(new Polygon([[this.draw_init, ...this.drawing_poly, this.mouse_coords]]));
+                polygoneFeature.setStyle(this.current_style)
+                this.annotation_source.addFeature(polygoneFeature)
+                this.drawing_feature = polygoneFeature
+            }
+
+            if (this.current_instance_type === 'geo_box') {
+                this.annotation_source.removeFeature(this.drawing_feature)
+                const polygoneFeature = new Feature(new Polygon([[this.draw_init, [this.draw_init[0], this.mouse_coords[1]], this.mouse_coords, [this.mouse_coords[0], this.draw_init[1]], this.draw_init]]));
                 polygoneFeature.setStyle(this.current_style)
                 this.annotation_source.addFeature(polygoneFeature)
                 this.drawing_feature = polygoneFeature
@@ -350,9 +358,22 @@ export default Vue.extend({
             }
 
             if (this.current_instance_type === 'geo_polyline' || this.current_instance_type === 'geo_polygon') {
-                console.log("here")
                 this.drawing_poly.push(this.mouse_coords)
                 return
+            }
+
+            if (this.current_instance_type === 'geo_box') {
+                const newBox = new GeoPoly('geo_box')
+                newBox.create_frontend_instance(
+                    [this.draw_init, [this.draw_init[0], this.mouse_coords[1]], this.mouse_coords, [this.mouse_coords[0], this.draw_init[1]], this.draw_init],
+                    [],
+                    { ...this.current_label },
+                    this.drawing_feature.ol_uid
+                )
+
+                this.instance_list.push([newBox])
+                const command = new CreateInstanceCommand([newBox], this.instance_list)
+                this.command_manager.executeCommand(command)
             }
 
             this.drawing_instance = false;
