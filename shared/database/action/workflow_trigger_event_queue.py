@@ -1,5 +1,5 @@
 from shared.database.common import *
-from shared.database.action.action_flow import Action_Flow
+from shared.database.action.workflow import Workflow
 SUPPORTED_ACTION_TRIGGER_EVENT_TYPES = [
     'task_completed',
     'task_created',
@@ -9,16 +9,17 @@ SUPPORTED_ACTION_TRIGGER_EVENT_TYPES = [
 ]
 
 
-class ActionFlowTriggerEventQueue(Base):
+class WorkFlowTriggerEventQueue(Base):
     """
-        A system generated event that might be a possible trigger of an action flow.
+        A system generated event that might be a possible trigger a workflow or action inside a workflow.
         Contains metadata like the related objects, who triggered it and other relevant information.
+
         This table will work as a queue, so all elements that are beings processed here will be eventually
         deleted when they have been processed.
 
     """
 
-    __tablename__ = 'action_flow_trigger_event_queue'
+    __tablename__ = 'workflow_trigger_event_queue'
 
     id = Column(BIGINT, primary_key = True)
 
@@ -41,8 +42,8 @@ class ActionFlowTriggerEventQueue(Base):
     job_id = Column(Integer, ForeignKey('job.id'))
     job = relationship("Job", foreign_keys = [job_id])
 
-    action_flow_id = Column(Integer, ForeignKey('action_flow.id'))
-    action_flow = relationship(Action_Flow, foreign_keys = [action_flow_id])
+    workflow_id = Column(Integer, ForeignKey('workflow.id'))
+    workflow = relationship(Workflow, foreign_keys = [workflow_id])
 
     org_id = Column(Integer, ForeignKey('org.id'))
     org = relationship("Org", foreign_keys = [org_id])
@@ -58,18 +59,18 @@ class ActionFlowTriggerEventQueue(Base):
 
     @staticmethod
     def list(session = None,
-             action_flow_id = None,
+             workflow_id = None,
              type = None,
              has_aggregation_event_running = None):
 
-        query = session.query(ActionFlowTriggerEventQueue)
-        if action_flow_id:
-            query = query.filter(ActionFlowTriggerEventQueue.action_flow_id == action_flow_id)
+        query = session.query(WorkFlowTriggerEventQueue)
+        if workflow_id:
+            query = query.filter(WorkFlowTriggerEventQueue.workflow_id == workflow_id)
         if type:
-            query = query.filter(ActionFlowTriggerEventQueue.type == type)
+            query = query.filter(WorkFlowTriggerEventQueue.type == type)
         if has_aggregation_event_running:
             query = query.filter(
-                ActionFlowTriggerEventQueue.has_aggregation_event_running == has_aggregation_event_running
+                WorkFlowTriggerEventQueue.has_aggregation_event_running == has_aggregation_event_running
             )
 
         return query.all()
@@ -84,7 +85,7 @@ class ActionFlowTriggerEventQueue(Base):
                           task_id = None,
                           job_id = None,
                           org_id = None,
-                          action_flow_id = None,
+                          workflow_id = None,
                           has_aggregation_event_running = False,
                           aggregation_window_start_time = None,
                           member_created_id = None,
@@ -100,7 +101,7 @@ class ActionFlowTriggerEventQueue(Base):
         :param task_id:
         :param job_id:
         :param org_id:
-        :param action_flow_id:
+        :param workflow_id:
         :param has_aggregation_event_running:
         :param aggregation_window_start_time:
         :param member_created_id:
@@ -108,14 +109,14 @@ class ActionFlowTriggerEventQueue(Base):
         :return:
         """
 
-        action_flow_trigger_event = ActionFlowTriggerEventQueue(
+        workflow_trigger_event = WorkFlowTriggerEventQueue(
             type = type,
             input_id = input_id,
             project_id = project_id,
             task_id = task_id,
             job_id = job_id,
             org_id = org_id,
-            action_flow_id = action_flow_id,
+            workflow_id = workflow_id,
             time_created = datetime.datetime.now(),
             member_created_id = member_created_id,
             member_updated_id = member_updated_id,
@@ -124,11 +125,11 @@ class ActionFlowTriggerEventQueue(Base):
             time_updated = datetime.datetime.now(),
         )
         if add_to_session:
-            session.add(action_flow_trigger_event)
+            session.add(workflow_trigger_event)
         if flush_session:
             session.flush()
 
-        return action_flow_trigger_event
+        return workflow_trigger_event
 
     @staticmethod
     def get_next(session):
@@ -137,8 +138,8 @@ class ActionFlowTriggerEventQueue(Base):
         :param session:
         :return:
         """
-        result = session.query(ActionFlowTriggerEventQueue).with_for_update(skip_locked = True) \
-            .order_by(ActionFlowTriggerEventQueue.time_created).all()
+        result = session.query(WorkFlowTriggerEventQueue).with_for_update(skip_locked = True) \
+            .order_by(WorkFlowTriggerEventQueue.time_created).all()
         if len(result) == 0:
             return None
         else:

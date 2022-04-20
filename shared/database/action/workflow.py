@@ -16,7 +16,7 @@ TIME_WINDOW_SECONDS_MAPPER = {
 }
 
 
-class Action_Flow(Base):
+class Workflow(Base):
     """
 
     Group of actions.
@@ -25,7 +25,7 @@ class Action_Flow(Base):
 
     """
 
-    __tablename__ = 'action_flow'
+    __tablename__ = 'workflow'
     id = Column(Integer, primary_key = True)
 
     name = Column(String())
@@ -80,7 +80,7 @@ class Action_Flow(Base):
         member
     ):
         # Else create a new one
-        action_flow = Action_Flow(
+        workflow = Workflow(
             active = False,
             project = project,
             org = org,
@@ -89,34 +89,14 @@ class Action_Flow(Base):
             time_window = time_window,
             member_created = member)
 
-        Action_Flow.update_string_id(
+        Workflow.update_string_id(
             session = session,
-            flow = action_flow)
+            flow = workflow)
 
-        # Removing for now as not sure if with new sync setup a new directory has to be created for each new
-        # flow. Maybe worth adding an output to dir action or something similar.
-
-        # nickname = "Action Flow " + action_flow.string_id
-        #
-        # action_flow.directory = WorkingDir.new_blank_directory(
-        #     session=session,
-        #     nickname=nickname,
-        #     project_id=project.id
-        # )
-        #
-        # # TODO not clear why this is seperate from new_blank_directory
-        # # A hold over maybe
-        # Project_Directory_List.add(
-        #     session=session,
-        #     working_dir_id=action_flow.directory.id,
-        #     project_id=project.id,
-        #     nickname=nickname
-        # )
-
-        session.add(action_flow)
+        session.add(workflow)
         session.flush()
 
-        return action_flow
+        return workflow
 
     def get_existing_unmodified_flow(
         session,
@@ -136,10 +116,10 @@ class Action_Flow(Base):
 
         """
 
-        return session.query(Action_Flow).filter(
-            Action_Flow.is_new == True,
-            Action_Flow.member_created == member,
-            Action_Flow.project == project).first()
+        return session.query(Workflow).filter(
+            Workflow.is_new == True,
+            Workflow.member_created == member,
+            Workflow.project == project).first()
 
     def serialize(self):
 
@@ -166,16 +146,16 @@ class Action_Flow(Base):
 
         """
 
-        return session.query(Action_Flow).filter(
-            Action_Flow.id == id,
-            Action_Flow.project_id == project_id).first()
+        return session.query(Workflow).filter(
+            Workflow.id == id,
+            Workflow.project_id == project_id).first()
 
     def get_by_string_id(
         session,
         string_id):
 
-        return session.query(Action_Flow).filter(
-            Action_Flow.string_id == string_id).first()
+        return session.query(Workflow).filter(
+            Workflow.string_id == string_id).first()
 
     @staticmethod
     def list(
@@ -191,15 +171,15 @@ class Action_Flow(Base):
 
         """
 
-        query = session.query(Action_Flow).filter(
-            Action_Flow.archived == False,
-            Action_Flow.project_id == project_id)
+        query = session.query(Workflow).filter(
+            Workflow.archived == False,
+            Workflow.project_id == project_id)
 
         if active_only is True:
-            query = query.filter(Action_Flow.active == True)
+            query = query.filter(Workflow.active == True)
 
         if trigger_type is not None:
-            query = query.filter(Action_Flow.trigger_type == trigger_type)
+            query = query.filter(Workflow.trigger_type == trigger_type)
 
         if return_kind == "count":
             return query.limit(limit).count()

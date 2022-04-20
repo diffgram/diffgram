@@ -1,20 +1,20 @@
 from shared.database.common import *
 
 
-class Action_Event(Base):
+class ActionRun(Base):
     """
     Design doc:
     https://docs.google.com/document/d/1gMddC4vR1vnrO7WxGm1p6kUCzSnvk2FuX3lZkfJsBh0/edit#heading=h.brnwo25wzzr
 
-    Created for each "Run" of each action in a flow
+    Created for each "Run" of each action in a workflow
 
     """
 
-    __tablename__ = 'action_event'
+    __tablename__ = 'action_run'
     id = Column(BIGINT, primary_key = True)
 
-    flow_event_id = Column(BIGINT, ForeignKey('action_flow_event.id'))
-    flow_event = relationship("Action_Flow_Event", foreign_keys = [flow_event_id])
+    workflow_run_id = Column(BIGINT, ForeignKey('workflow_run.id'))
+    workflow_run = relationship("WorkflowRun", foreign_keys = [workflow_run_id])
 
     file_id = Column(BIGINT, ForeignKey('file.id'))
     file = relationship("File", foreign_keys = [file_id])
@@ -25,8 +25,8 @@ class Action_Event(Base):
     # Cache here
     kind = Column(String())
 
-    flow_id = Column(Integer, ForeignKey('action_flow.id'))
-    flow = relationship("Action_Flow", foreign_keys = [flow_id])
+    workflow_id = Column(Integer, ForeignKey('workflow.id'))
+    workflow = relationship("Workflow", foreign_keys = [workflow_id])
 
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")
@@ -87,7 +87,7 @@ class Action_Event(Base):
         if flow_event_id is None:
             return
 
-        action_event = Action_Event(
+        action_event = WofklowRun(
             flow_event_id = flow_event_id,
             flow_id = flow_id,
             action_id = action_id,
@@ -119,9 +119,9 @@ class Action_Event(Base):
 
         """
 
-        query = session.query(Action_Event).filter(
-            Action_Event.flow_event_id == id,
-            Action_Event.project_id == project_id)
+        query = session.query(WofklowRun).filter(
+            WofklowRun.flow_event_id == id,
+            WofklowRun.project_id == project_id)
 
         # if active_only is True:
         #	query = query.filter(Action.active == True)

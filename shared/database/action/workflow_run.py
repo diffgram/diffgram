@@ -1,18 +1,16 @@
 from shared.database.common import *
 
 
-class Action_Flow_Event(Base):
+class WorkflowRun(Base):
     """
     Direct link to class in design doc:
     https://docs.google.com/document/d/1gMddC4vR1vnrO7WxGm1p6kUCzSnvk2FuX3lZkfJsBh0/edit#heading=h.mzaw1n5b53n
 
-    Instance of a Flow.
-    Relates to multiple Action_Events, an action event is for each action that
-    gets fired.
+    The execution of a Workflow
 
     """
 
-    __tablename__ = 'action_flow_event'
+    __tablename__ = 'workflow_run'
     id = Column(BIGINT, primary_key = True)
 
     status = Column(String())
@@ -22,8 +20,8 @@ class Action_Flow_Event(Base):
     file_id = Column(BIGINT, ForeignKey('file.id'))
     file = relationship("File", foreign_keys = [file_id])
 
-    flow_id = Column(Integer, ForeignKey('action_flow.id'))
-    flow = relationship("Action_Flow", foreign_keys = [flow_id])
+    workflow_id = Column(Integer, ForeignKey('workflow.id'))
+    workflow = relationship("Workflow", foreign_keys = [workflow_id])
 
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")
@@ -39,7 +37,7 @@ class Action_Flow_Event(Base):
 
     @staticmethod
     def new(session,
-            flow = None,
+            workflow = None,
             project = None,
             org = None,
             file = None
@@ -51,19 +49,19 @@ class Action_Flow_Event(Base):
 
         """
 
-        flow_event = Action_Flow_Event(
-            flow = flow,
+        workflow_run = WorkflowRun(
+            workflow = workflow,
             project = project,
             org = org,
             file = file
         )
 
-        session.add(flow_event)
+        session.add(workflow_run)
 
         # To get id
         session.flush()
 
-        return flow_event
+        return workflow_run
 
     @staticmethod
     def list(
@@ -84,14 +82,14 @@ class Action_Flow_Event(Base):
 
         """
 
-        query = session.query(Action_Flow_Event).filter(
-            Action_Flow_Event.flow_id == id,
-            Action_Flow_Event.project_id == project_id)
+        query = session.query(WorkflowRun).filter(
+            WorkflowRun.flow_id == id,
+            WorkflowRun.project_id == project_id)
 
         # if active_only is True:
         #	query = query.filter(Action.active == True)
 
-        query = query.order_by(Action_Flow_Event.id.desc())
+        query = query.order_by(WorkflowRun.id.desc())
 
         if return_kind == "count":
             return query.limit(limit).count()

@@ -7,8 +7,8 @@
            style="text-transform: none !important;"
            :loading="loading"
            :disabled="loading">
-      <v-icon left>mdi-auto-fix</v-icon>
-      New Email Alert or Webhook
+      <v-icon left>mdi-sitemap</v-icon>
+      New Workflow
     </v-btn>
 
     <v_error_multiple :error="error">

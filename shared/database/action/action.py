@@ -2,13 +2,10 @@ from shared.database.common import *
 from shared.database.org.org import Org
 from shared.database.action.action_template import Action_Template
 
+
 class Action(Base):
     """
-
-    Instance of an action.
-    A flow has many actions.
-    An action has many (Action) Events
-
+        Each step of a workflow is called an action.
 
     """
 
@@ -26,8 +23,8 @@ class Action(Base):
     template_id = Column(Integer, ForeignKey('action_template.id'))
     template = relationship(Action_Template, foreign_keys = [template_id])
 
-    flow_id = Column(Integer, ForeignKey('action_flow.id'))
-    flow = relationship("Action_Flow", foreign_keys = [flow_id])
+    workflow_id = Column(Integer, ForeignKey('workflow.id'))
+    workflow = relationship("Workflow", foreign_keys = [workflow_id])
 
     is_root = Column(Boolean)
     root_id = Column(Integer, ForeignKey('action.id'))
@@ -181,7 +178,7 @@ class Action(Base):
             'id': self.id,
             'kind': self.kind,
             'active': self.active,
-            'flow_id': self.flow_id,
+            'flow_id': self.workflow_id,
             'project_id': self.project_id,
             'template_id': self.template_id
         }
@@ -284,7 +281,7 @@ class Action(Base):
         """
 
         query = session.query(Action).filter(
-            Action.flow_id == flow_id,
+            Action.workflow_id == flow_id,
             Action.project_id == project_id,
             Action.archived == archived
         )

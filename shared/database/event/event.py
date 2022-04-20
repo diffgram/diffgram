@@ -6,7 +6,7 @@ import threading
 import requests
 import shared.helpers.sessionMaker as sessionMaker
 from shared.helpers.sessionMaker import AfterCommitAction
-import shared.database.action.action_flow_trigger_event as action_flow_trigger_event
+import shared.database.action.workflow_trigger_event_queue as workflow_trigger_event_queue
 
 logger = get_shared_logger()
 # The extra imports are only needed if they haven't already been
@@ -90,8 +90,6 @@ class Event(Base):
 
     report_template_data = Column(MutableDict.as_mutable(JSONEncodedDict))
     report_data = Column(MutableDict.as_mutable(JSONEncodedDict))
-    # WIP idea from call for tracking flow, maybe as soon as enqueued / passed off to other tracking or something
-    # action_flow_requests_enqueued = Column()
 
     install_fingerprint = Column(String)
 
@@ -229,7 +227,7 @@ class Event(Base):
 
         if not event_id: return
 
-        if event_kind in action_flow_trigger_event.SUPPORTED_ACTION_TRIGGER_EVENT_TYPES:
+        if event_kind in workflow_trigger_event_queue.SUPPORTED_ACTION_TRIGGER_EVENT_TYPES:
             regular_methods.transmit_interservice_request(
                 message = 'new_action_flow_queue_item',
                 logger = logger,

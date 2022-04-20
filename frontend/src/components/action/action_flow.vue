@@ -3,11 +3,6 @@
 
     <v-card>
       <v-container>
-
-        <!-- Flow level info -- >
-
-       <!-- email to send to (defaults to user email) -->
-
         <v-layout class="d-flex flex-column">
           <v-row class="d-flex justify-end align-center">
             <v-col cols="1" v-if="flow_id">

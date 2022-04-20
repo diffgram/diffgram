@@ -2,7 +2,7 @@ from methods.regular.regular_api import *
 
 from shared.database.action.action import Action
 from shared.database.action.action_flow import Action_Flow
-from shared.database.action.action_event import Action_Event
+from shared.database.action.action_event import WofklowRun
 
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
@@ -75,7 +75,7 @@ def api_action_event_list(project_string_id):
         user = User.get(session=session)
         project = Project.get(session, project_string_id)
 
-        event_list = Action_Event.list(
+        event_list = WofklowRun.list(
             session=session,
             id=input['flow_event_id'],
             project_id=project.id,

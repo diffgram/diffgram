@@ -2,21 +2,16 @@ from shared.database.common import *
 
 class Action_Template(Base):
     """
-
-    For adding more information to action kind.
-    ie the "kind" may be "brain"
-    and there is a Action_Template.kind == "brain".
-
-    The goal is to be able to have say a list of things a user
-    can select from,
-    and add more stuff here over time (ie if a kind is available)
-    or available for certain users etc...
-
-    Called templated and not kind since Action.kind is already reserved,
-    it's a Template of Action Kinds.
-
-    For now templates are assumed to be global,
-    but in future could have per project or custom made ones
+        This represents any of the possible "step" options when building a flow.
+        For example:
+            - Prelabel Data
+            - Add to Task Template
+            - Send Email
+            - Post to Webhook
+        Most of these are added as part of the alembic migrations on database creation.
+        For example check:
+            alembic_2021_11_12_10_08_7059bb6bc019_add_default_action_templates.py
+        for the default templates available.
 
     """
 

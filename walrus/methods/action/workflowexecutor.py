@@ -5,9 +5,8 @@ import tempfile
 import numpy as np
 
 from methods.regular.regular_api import *
-from shared.database.action.action_flow import Action_Flow, TIME_WINDOW_SECONDS_MAPPER
-from shared.database.action.action_event import Action_Event
-from shared.database.action.action_flow_event import Action_Flow_Event
+from shared.database.action.workflow import Workflow, TIME_WINDOW_SECONDS_MAPPER
+from shared.database.action.workflow_run import WorkflowRun
 from shared.database.image import Image
 from shared.data_tools_core import Data_tools
 from io import BytesIO
@@ -15,7 +14,7 @@ from PIL import Image as PIL_Image
 from shared.database.notifications.notification import Notification
 
 
-class Action_Pipeline():
+class WorkflowExecutor:
     SUPPORTED_WINDOWING_EVENTS = ['task_completed', 'task_created', 'input_file_uploaded']
 
     def __init__(self,
@@ -26,7 +25,7 @@ class Action_Pipeline():
                  log,
                  mode,
                  file,
-                 flow=None,
+                 workflow=None,
                  trigger_event=None
                  ):
 
@@ -39,7 +38,7 @@ class Action_Pipeline():
         self.log = log  # Question, if not running from http do we actually
         # want to use same logging thing or?
 
-        self.flow = flow
+        self.workflow = workflow
 
         # Having a flow and flow id is just confusing?
 
@@ -61,24 +60,24 @@ class Action_Pipeline():
         Assume if flow gets passed then it's ok?
         """
 
-        if not flow:
+        if not self.workflow:
 
-            self.flow = Action_Flow.get_by_id(
+            self.workflow = Workflow.get_by_id(
                 session=self.session,
-                id=self.flow_id,
+                id=self.workflow_id,
                 project_id=self.project.id)
 
-            if self.flow is None:
-                self.log['error']['flow_id'] = "Invalid flow_id"
+            if self.workflow is None:
+                self.log['error']['workflow_id'] = "Invalid workflow_id"
                 return
 
     def new_action_flow_event(self):
 
         # TODO Where is flow_id coming from
 
-        self.flow_event = Action_Flow_Event.new(
+        self.flow_event = WorkflowRun.new(
             session=self.session,
-            flow=self.flow,
+            flow=self.workflow,
             project=self.project,
             org=self.org,
             file=self.file
@@ -96,9 +95,9 @@ class Action_Pipeline():
 
         # TODO how to load member, link other stuff..
 
-        self.action_event = Action_Event.new(
+        self.action_event = WofklowRun.new(
             flow_event_id=self.flow_event.id,
-            flow_id=self.flow.id,
+            flow_id=self.workflow.id,
             action_id=self.action.id,
             session=self.session,
             file_id=self.file.id if self.file else None,
@@ -109,13 +108,13 @@ class Action_Pipeline():
 
     def sleep_for_aggregation_window_time(self):
 
-        if not self.flow.time_window or self.trigger_event.type not in self.SUPPORTED_WINDOWING_EVENTS:
+        if not self.workflow.time_window or self.trigger_event.type not in self.SUPPORTED_WINDOWING_EVENTS:
             return
         # We're saving in memory the init time. So when thread restart we can calculate the time diff.
         # Value is based on Actionflow event creation time.
-        logger.debug('Sleeping flow for {}'.format(self.flow.time_window))
+        logger.debug('Sleeping flow for {}'.format(self.workflow.time_window))
         self.init_time = self.trigger_event.aggregation_window_start_time
-        time.sleep(TIME_WINDOW_SECONDS_MAPPER[self.flow.time_window])
+        time.sleep(TIME_WINDOW_SECONDS_MAPPER[self.workflow.time_window])
 
     def start(self):
         """
@@ -128,12 +127,12 @@ class Action_Pipeline():
         Assumes always at least one action
 
         """
-        logger.debug('Started Action pipeline {}'.format(self.flow.id))
+        logger.debug('Started Action pipeline {}'.format(self.workflow.id))
         limit_actions = 20
         actions_counter = 0
         reset_aggg_time = False
         ### Setup
-        self.action = self.flow.first_action
+        self.action = self.workflow.first_action
 
         self.new_action_flow_event()
 
@@ -172,7 +171,7 @@ class Action_Pipeline():
 
             actions_counter += 1
         if reset_aggg_time:
-            self.flow.aggregation_window_start_time = None
+            self.workflow.aggregation_window_start_time = None
 
     def run_action(self):
         """
@@ -358,7 +357,7 @@ class Action_Pipeline():
         # Back two layers?
         # This feels pretty awkward!!! Also how we
         # want to construct this dynamically...
-        logger.debug('[ActionFlow {}] Running Email Action'.format(self.flow.id))
+        logger.debug('[ActionFlow {}] Running Email Action'.format(self.workflow.id))
         subject = "Diffgram Event"
 
         if self.previous_action_event:
@@ -372,7 +371,7 @@ class Action_Pipeline():
         # TODO store url as more generic thing with flow event...
 
         url = "{}project/".format(settings.URL_BASE) + str(self.action.project.project_string_id) + \
-              "/flow/" + str(self.flow.id) + "/event/" + str(self.flow_event.id)
+              "/flow/" + str(self.workflow.id) + "/event/" + str(self.flow_event.id)
 
         # Create Email Notification
         notification = Notification.new(
@@ -387,7 +386,7 @@ class Action_Pipeline():
             member_created=self.trigger_event.member_created
         )
 
-        if self.flow.time_window and hasattr(self.trigger_event, 'aggregation_window_start_time') and \
+        if self.workflow.time_window and hasattr(self.trigger_event, 'aggregation_window_start_time') and \
                 self.trigger_event.aggregation_window_start_time:
             notification.send_email(session=self.session,
                                     email=self.action.email_send_to,
@@ -406,7 +405,7 @@ class Action_Pipeline():
 
         """
 
-        logger.debug('[ActionFlow {}] Running Webhook Action'.format(self.flow.id))
+        logger.debug('[ActionFlow {}] Running Webhook Action'.format(self.workflow.id))
 
         # Create Email Notification
         # URL to flow
@@ -424,7 +423,7 @@ class Action_Pipeline():
             input_id=self.trigger_event.input_id,
             member_created=self.trigger_event.member_created
         )
-        if self.flow.time_window and self.trigger_event.aggregation_window_start_time:
+        if self.workflow.time_window and self.trigger_event.aggregation_window_start_time:
             notification.send_to_webhook(session=self.session,
                                          url=url_webhook,
                                          secret=secret,
