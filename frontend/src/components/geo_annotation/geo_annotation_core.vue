@@ -299,7 +299,6 @@ export default Vue.extend({
             this.map_instance = map
         },
         draw_instance: function() {
-            //Start drawing instance depending on the current instance type
             if (!this.draw_mode) return;
             
             if (this.current_instance_type === 'geo_point') {
@@ -337,6 +336,8 @@ export default Vue.extend({
                 return
             }
 
+            
+
             if (this.current_instance_type === 'geo_circle') {
                 const lonlat = transform(this.draw_init, 'EPSG:3857', 'EPSG:4326');
                 const line = new LineString([this.draw_init, this.mouse_coords]);
@@ -364,9 +365,11 @@ export default Vue.extend({
 
             if (this.current_instance_type === 'geo_box') {
                 const newBox = new GeoPoly('geo_box')
+                const bounds = [this.draw_init, [this.draw_init[0], this.mouse_coords[1]], this.mouse_coords, [this.mouse_coords[0], this.draw_init[1]], this.draw_init]
+                const lonlat_bounds = bounds.map(bound => transform(bound, 'EPSG:3857', 'EPSG:4326'))
                 newBox.create_frontend_instance(
                     [this.draw_init, [this.draw_init[0], this.mouse_coords[1]], this.mouse_coords, [this.mouse_coords[0], this.draw_init[1]], this.draw_init],
-                    [],
+                    lonlat_bounds,
                     { ...this.current_label },
                     this.drawing_feature.ol_uid
                 )
@@ -481,10 +484,13 @@ export default Vue.extend({
             polyFeature.setStyle(this.current_style)
             this.annotation_source.addFeature(polyFeature)
 
+            const bounds = [this.draw_init, ...this.drawing_poly]
+            const lonlat_bounds = bounds.map(bound => transform(bound, 'EPSG:3857', 'EPSG:4326'))
+
             const newPoly = new GeoPoly(this.current_instance_type)
             newPoly.create_frontend_instance(
-                [this.draw_init, ...this.drawing_poly],
-                [],
+                bounds,
+                lonlat_bounds,
                 { ...this.current_label },
                 polyFeature.ol_uid
             )
