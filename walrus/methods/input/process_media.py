@@ -1024,6 +1024,8 @@ class Process_Media():
                 self.input.status = 'failed'
                 logger.error(f"Geotiff file failed to process. Input {self.input.id}")
                 logger.error(self.log)
+                self.input.update_log = self.log
+                return
 
             self.declare_success(self.input)
 
@@ -1048,6 +1050,8 @@ class Process_Media():
                 self.input.status = 'failed'
                 logger.error(f"Sensor fussion file failed to process. Input {self.input.id}")
                 logger.error(self.log)
+                self.input.update_log = self.log
+                return
 
             self.declare_success(self.input)
 
