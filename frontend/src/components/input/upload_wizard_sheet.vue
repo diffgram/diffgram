@@ -571,6 +571,7 @@
           this.batch = batch;
         },
         error_upload_connections: function (error) {
+          console.error(error)
           this.connection_upload_error = error;
         },
 

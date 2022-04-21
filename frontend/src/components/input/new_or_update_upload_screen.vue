@@ -549,9 +549,6 @@
             console.log('new_file_data', new_file_data.type, new_file_data.geo_file)
             file.uuid = new_file_data.uuid;
             file.input_batch_id = new_file_data.input_batch_id;
-            if(file.geo_file){
-              file.type = 'from_geo_tiff'
-            }
           }
           this.$refs.myVueDropzone.processQueue();
         },
@@ -695,6 +692,7 @@
               if(this.GEO_TIFF_FORMATS.includes(f.type)){
                 f.geo_file = true
               }
+              f.status = 'queued'
             }
             this.$emit('file_list_updated', this.file_list_to_upload)
           }
@@ -707,7 +705,7 @@
           this.$refs.myVueDropzone.dropzone.files = this.file_list_to_upload
         },
         upload_raw_media: async function (file_list) {
-          this.$emit('upload_in_proeress')
+          this.$emit('upload_in_progress')
           if (this.$props.upload_mode === 'update') {
             await this.update_files(file_list)
             this.is_actively_sending = false
@@ -817,6 +815,7 @@
           this.bucket_name = name
         },
         drop_zone_sending_event(file, xhr, formData) {
+          console.log('drop_zone_sending_event', file)
           // Doing this here since options doesn't update properly
           formData.append('directory_id',
             this.$store.state.project.current_directory.directory_id);
@@ -857,6 +856,9 @@
         },
 
         drop_zone_error(file, message, xhr) {
+          if(message == 'Upload canceled.'){
+            return
+          }
           this.$emit('error_upload_connections', message)
         }
 
