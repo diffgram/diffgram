@@ -54,6 +54,7 @@ data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
 sensor_fusion_allowed_extensions = [".json"]
+geo_tiff_allowed_extensions = [".tiff", ".tif"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
 text_allowed_file_names = [".txt"]
 csv_allowed_file_names = [".csv"]
@@ -522,6 +523,7 @@ class Process_Media():
                                "from_url",
                                "from_video_split",
                                "from_sensor_fusion_json",
+                               "from_geo_tiff",
                                "ui_wizard"]:
 
             download_result = self.download_media()
@@ -2321,6 +2323,9 @@ class Process_Media():
         if input_type is not None and input_type == 'from_sensor_fusion_json':
             if extension in sensor_fusion_allowed_extensions:
                 return 'sensor_fusion'
+        if input_type is not None and input_type == 'from_geo_tiff':
+            if extension in geo_tiff_allowed_extensions:
+                return 'geo_tiff'
 
         if extension in existing_instances_allowed_file_names:
             return "existing_instances"
