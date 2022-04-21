@@ -14,6 +14,9 @@ class GeoAsset(Base):
     type = Column(String())  # ['layer', 'attachment']
     soft_delete = Column(Boolean, default = False)
 
+    project_id = Column(Integer, ForeignKey('project.id'))
+    project = relationship("Project")
+
     file_id = Column(Integer, ForeignKey('file.id'))
     file = relationship("File")
 
@@ -34,9 +37,11 @@ class GeoAsset(Base):
     @staticmethod
     def new(session,
             file_id,
+            project_id,
             original_filename = None,
             url_signed_blob_path = None,
             description = None,
+            type = 'layer',
             soft_delete = False,
             add_to_session = True,
             flush_session = True
@@ -47,6 +52,8 @@ class GeoAsset(Base):
             url_signed_blob_path = url_signed_blob_path,
             description = description,
             file_id = file_id,
+            project_id = project_id,
+            type = type,
             soft_delete = soft_delete
         )
         if add_to_session:

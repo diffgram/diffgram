@@ -560,19 +560,9 @@ class WorkingDirFileLink(Base):
         # Would prefer a better way to handle this
         # BUT at least this is all in one query...
         if isinstance(type, list):
-            if "text" in type:
-                query = query.filter(
-                    or_(
-                        and_(File.type == "image", File.video_id == None),
-                        File.type == "video",
-                        File.type == "text",
-                        File.type == "sensor_fusion"
-                    )
-                )
-            else:
-                query = query.filter(
-                    File.type.in_(type)
-                )
+            query = query.filter(
+                File.type.in_(type)
+            )
 
         if original_filename is not None:
             if original_filename_match_type == "ilike":
