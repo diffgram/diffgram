@@ -43,6 +43,7 @@ from shared.model.model_manager import ModelManager
 import traceback
 from shared.utils.source_control.file.file_transfer_core import perform_sync_events_after_file_transfer
 from methods.sensor_fusion.sensor_fusion_file_processor import SensorFusionFileProcessor
+from methods.geotiff.GeoTiffProcessor import GeoTiffProcessor
 import numpy as np
 from shared.regular.regular_log import log_has_error
 import os
@@ -50,6 +51,7 @@ from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
 from methods.text_data.text_tokenizer import TextTokenizer
 from shared.utils.instance.transform_instance_utils import rotate_instance_dict_90_degrees
+
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
@@ -524,6 +526,7 @@ class Process_Media():
                                "from_video_split",
                                "from_sensor_fusion_json",
                                "from_geo_tiff",
+                               "from_geo_tiff_json",
                                "ui_wizard"]:
 
             download_result = self.download_media()
@@ -1008,6 +1011,29 @@ class Process_Media():
         if self.input.job.status in ['active', 'in_review']:
             self.create_task_on_job_sync_directories()
 
+    def process_geo_tiff_file(self):
+        geotiff_processor = GeoTiffProcessor(
+            session = self.session,
+            input = self.input,
+            log = self.log
+        )
+        try:
+            result, self.log = geotiff_processor.process_geotiff_data()
+
+            if log_has_error(self.log):
+                self.input.status = 'failed'
+                logger.error(f"Geotiff file failed to process. Input {self.input.id}")
+                logger.error(self.log)
+
+            self.declare_success(self.input)
+
+        except Exception as e:
+            logger.error(f"Exception on process geo data: {traceback.format_exc()}")
+            self.log['error']['geo_data'] = traceback.format_exc()
+            self.input.status = 'failed'
+            self.input.update_log = self.log
+
+
     def process_sensor_fusion_json(self):
         sf_processor = SensorFusionFileProcessor(
             session = self.session,
@@ -1101,6 +1127,7 @@ class Process_Media():
             "text": self.process_one_text_file,
             "frame": self.process_frame,
             "sensor_fusion": self.process_sensor_fusion_json,
+            "geo_tiff": self.process_geo_tiff_file,
             "video": self.process_video,
             "csv": self.process_csv_file
         }
@@ -1554,7 +1581,6 @@ class Process_Media():
 
         return instance_list
 
-
     def check_metadata_and_auto_correct_instances(self, imageio_read_image, image_metadata):
         if not self.input.auto_correct_instances_from_image_metadata:
             return
@@ -1580,7 +1606,6 @@ class Process_Media():
                 self.input.instance_list['list'] = self.rotate_instance_list(self.input.instance_list.get('list'),
                                                                              readed_image_width,
                                                                              readed_image_height)
-
 
     def process_one_image_file(self):
 
@@ -1819,11 +1844,11 @@ class Process_Media():
             if (compress):
                 new_temp_filename = self.input.temp_dir + "/resized_" + str(time.time()) + \
                                     str(self.input.extension)
-                imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=2)
-        #For bmp, tif and tiff files save as PNG and compress
+                imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level = 2)
+        # For bmp, tif and tiff files save as PNG and compress
         elif extension in ['.bmp', '.tif', '.tiff']:
             new_temp_filename = f"{self.input.temp_dir}/resized_{str(time.time())}.png"
-            imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=3)
+            imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level = 3)
         else:
             raise NotImplementedError(f"Extension: {self.input.extension} not supported yet.")
             pass
@@ -1836,7 +1861,7 @@ class Process_Media():
             )
 
             self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
-                                                                self.new_image.url_signed_expiry)
+                                                                    self.new_image.url_signed_expiry)
         except Exception as e:
             message = f'Error uploading to cloud storage: {traceback.format_exc()}'
             logger.error(message)
@@ -1868,8 +1893,9 @@ class Process_Media():
         data_tools.upload_from_string(self.new_text_file.tokens_url_signed_blob_path,
                                       json_string_data,
                                       content_type = 'application/json')
-        self.new_text_file.tokens_url_signed = data_tools.build_secure_url(self.new_text_file.tokens_url_signed_blob_path,
-                                                                           self.new_text_file.tokens_url_signed_expiry)
+        self.new_text_file.tokens_url_signed = data_tools.build_secure_url(
+            self.new_text_file.tokens_url_signed_blob_path,
+            self.new_text_file.tokens_url_signed_expiry)
         logger.info(f"Saved Tokens on: {self.new_text_file.tokens_url_signed_blob_path}")
 
     def save_raw_text_file(self):
@@ -1907,7 +1933,7 @@ class Process_Media():
 
         new_temp_filename = f"{self.input.temp_dir}/resized.jpg"
 
-        imwrite(new_temp_filename, thumbnail_image, quality=95)
+        imwrite(new_temp_filename, thumbnail_image, quality = 95)
 
         # Build URL
         url_signed_thumb = data_tools.build_secure_url(self.new_image.url_signed_thumb_blob_path,
@@ -2303,7 +2329,7 @@ class Process_Media():
         """
         extension = extension.lower()
 
-        if extension in images_allowed_file_names:
+        if extension in images_allowed_file_names and input_type != 'from_geo_tiff':
             return "image"
 
         if extension in videos_allowed_file_names:
