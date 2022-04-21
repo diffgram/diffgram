@@ -532,9 +532,11 @@
           this.$emit('progress_updated', file, totalBytes, totalBytesSent)
         },
         upload_local_raw_media: async function (local_file_list) {
+          console.log('LOCAL FILE upload_local_raw_media', local_file_list)
           if (!local_file_list || local_file_list.length === 0) {
             return
           }
+          console.log('this.$refs.myVueDropzone.dropzone.files', this.$refs.myVueDropzone.dropzone.files)
           // We want to remove them because we'll re-add them with the batch data and uuid data.
           for (const file of this.$refs.myVueDropzone.dropzone.files) {
             const new_file_data = local_file_list.find(elm => elm.upload.uuid === file.upload.uuid)
@@ -543,9 +545,13 @@
               this.$refs.myVueDropzone.removeFile(file);
               continue
             }
-
+            console.log('FILE', file.type, file.geo_file)
+            console.log('new_file_data', new_file_data.type, new_file_data.geo_file)
             file.uuid = new_file_data.uuid;
             file.input_batch_id = new_file_data.input_batch_id;
+            if(file.geo_file){
+              file.type = 'from_geo_tiff'
+            }
           }
           this.$refs.myVueDropzone.processQueue();
         },
@@ -682,12 +688,26 @@
           }
 
         },
-        set_geo_tiff_upload: function(value){
+        set_geo_tiff_upload: async function(value){
           this.geo_tiff_upload = value;
-          this.move_to_next_step()
+          if(this.geo_tiff_upload){
+            for(let f of this.file_list_to_upload){
+              if(this.GEO_TIFF_FORMATS.includes(f.type)){
+                f.geo_file = true
+              }
+            }
+            this.$emit('file_list_updated', this.file_list_to_upload)
+          }
+
+          this.move_to_next_step();
+          this.hide_geotiff_prompt();
+          await this.$nextTick();
+          console.log('AAAAA', this.$refs.myVueDropzone.dropzone.files)
+          console.log('file_list_to_upload', this.file_list_to_upload)
+          this.$refs.myVueDropzone.dropzone.files = this.file_list_to_upload
         },
         upload_raw_media: async function (file_list) {
-          this.$emit('upload_in_progress')
+          this.$emit('upload_in_proeress')
           if (this.$props.upload_mode === 'update') {
             await this.update_files(file_list)
             this.is_actively_sending = false
@@ -715,9 +735,17 @@
           this.geo_tiff_prompt = true;
 
         },
+        hide_geotiff_prompt: function(){
+          this.geo_tiff_prompt = false;
+
+        },
         move_to_next_step: function () {
           const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');
           let file_types = this.file_list_to_upload.map(f => f.type)
+          if(this.$refs.myVueDropzone){
+            console.log('move_to_next_step dropzone.files', this.$refs.myVueDropzone.dropzone.files)
+          }
+
           console.log('asdasd', this.file_list_to_upload, file_types)
           const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
           const export_files = this.file_list_to_upload.filter(f => f.data_type === 'Diffgram Export');
@@ -793,7 +821,13 @@
           formData.append('directory_id',
             this.$store.state.project.current_directory.directory_id);
 
-          formData.append('source', 'ui_wizard');
+          if(file.geo_file){
+            formData.append('source', 'from_geo_tiff')
+          }
+          else{
+            formData.append('source', 'ui_wizard');
+          }
+
 
           formData.append('video_split_duration',
             this.video_split_duration);
@@ -803,6 +837,8 @@
             formData.append('job_id',
               this.job.id);
           }
+
+
 
 
           this.is_actively_sending = true
