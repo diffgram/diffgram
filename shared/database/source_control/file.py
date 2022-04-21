@@ -19,7 +19,7 @@ from shared.shared_logger import get_shared_logger
 from shared.database.core import MutableDict
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import UniqueConstraint
-
+from shared.database.geospatial.geo_asset import GeoAsset
 logger = get_shared_logger()
 
 from sqlalchemy.schema import Index
@@ -355,6 +355,19 @@ class File(Base, Caching):
         ).first()
         return file
 
+    def get_geo_assets(self, session) -> list:
+        assets = session.query(GeoAsset).filter(
+            GeoAsset.file_id == self.id
+        ).all()
+        return assets
+
+    def serialize_geospatial_assets(self, session):
+        assets_list = self.get_geo_assets(session)
+        result = []
+        for asset in assets_list:
+            result.append(asset.serialize())
+        return result
+
     def serialize_with_type(self,
                             session = None
                             ):
@@ -374,6 +387,11 @@ class File(Base, Caching):
         if self.type == "text":
             if self.text_file:
                 file['text'] = self.text_file.serialize()
+
+        if self.type == "geospatial":
+            file['geospatial'] = {
+                'layers': self.serialize_geospatial_assets(session = session)
+            }
 
         if self.type == "sensor_fusion":
             point_cloud_file = self.get_child_point_cloud_file(session = session)
