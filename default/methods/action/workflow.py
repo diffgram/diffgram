@@ -7,13 +7,13 @@ from shared.database.action.workflow_run import WorkflowRun
 
 # NEW
 @routes.route('/api/v1/project/<string:project_string_id>' +
-              '/action/workflow/new',
+              '/actions/workflow/new',
               methods=['POST'])
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
     apis_user_list=["api_enabled_builder"])
 @limiter.limit("10 per day")
-def new_flow_factory_api(project_string_id):
+def new_workflow_factory_api(project_string_id):
     """
 
     Create a new flow object (defaults to "draft")
@@ -138,7 +138,7 @@ def flow_list_view_api(project_string_id):
 
         project = Project.get(session, project_string_id)
 
-        flow_list = Action_Flow.list(
+        flow_list = Workflow.list(
             session=session,
             project_id=project.id,
             limit=100,

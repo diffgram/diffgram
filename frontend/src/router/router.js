@@ -137,6 +137,13 @@ const routerOptions = [
     meta: {requiresAuth: true}
   },
   {
+    // :flow_id is optional?
+    path: '/project/:project_string_id/workflow/:workflow_id?',
+    component: 'action/workflow_builder',
+    props: true,
+    meta: {requiresAuth: true}
+  },
+  {
     // WIP
     path: '/project/:project_string_id/attributes',
     component: 'attribute/attribute_home',
@@ -158,7 +165,7 @@ const routerOptions = [
   },
 
   {
-    path: '/project/:project_string_id/flow/:flow_id/event/:flow_event_id',
+    path: '/project/:project_string_id/workflow/:workflow_id/run/:workflow_run_id',
     component: 'action/action_event_list',
     props: true,
     meta: {requiresAuth: true}

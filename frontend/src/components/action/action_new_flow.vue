@@ -44,7 +44,7 @@
       methods: {
 
         api_flow_new: function () {
-          let url = `/project/${this.project_string_id}/flow/`
+          let url = `/project/${this.project_string_id}/workflow/`
           this.$router.push(url);
         }
 

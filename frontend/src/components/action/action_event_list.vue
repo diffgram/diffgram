@@ -50,7 +50,7 @@ import Vue from "vue"; export default Vue.extend( {
 
     props: {
       'project_string_id': {},
-      'flow_event_id': {}
+      'workflow_run_id': {}
       },
   components: {
     action_event_existing_single : action_event_existing_single
@@ -101,11 +101,11 @@ import Vue from "vue"; export default Vue.extend( {
 
       url = '/api/v1/project/'
           + this.project_string_id
-          + '/action/event/list'
+          + '/actions/action-runs/list'
 
       axios.post(url, {
 
-        flow_event_id : Number(this.flow_event_id)
+        workflow_run_id : Number(this.workflow_run_id)
 
       })
       .then(response => {

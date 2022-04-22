@@ -1,8 +1,8 @@
 from methods.regular.regular_api import *
 
 from shared.database.action.action import Action
-from shared.database.action.action_flow import Action_Flow
-from shared.database.action.action_event import WofklowRun
+from shared.database.action.workflow import Workflow
+from shared.database.action.action_run import ActionRun
 
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
@@ -51,7 +51,7 @@ def api_action_list(project_string_id):
 
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
-              '/action/event/list',
+              '/actions/action-run/list',
               methods=['POST'])
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
@@ -62,7 +62,7 @@ def api_action_event_list(project_string_id):
     """
 
     spec_list = [
-        {'flow_event_id': int},
+        {'workflow_run_id': int},
         {'mode': None}]
 
     log, input, untrusted_input = regular_input.master(request=request,
@@ -75,9 +75,9 @@ def api_action_event_list(project_string_id):
         user = User.get(session=session)
         project = Project.get(session, project_string_id)
 
-        event_list = WofklowRun.list(
+        event_list = ActionRun.list(
             session=session,
-            id=input['flow_event_id'],
+            id=input['workflow_run_id'],
             project_id=project.id,
             limit=100,
             return_kind="objects"

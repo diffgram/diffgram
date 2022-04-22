@@ -1,162 +1,22 @@
 <template>
-  <div id="">
+  <v-container fluid id="" style="height: 100%;">
 
-    <v-card>
-      <v-container>
-        <v-layout class="d-flex flex-column">
-          <v-row class="d-flex justify-end align-center">
-            <v-col cols="1" v-if="flow_id">
-              <!-- Archive button -->
-              <div class="pa-4">
-                <button_with_confirm
-                  @confirm_click="api_flow_update('ARCHIVE')"
-                  color="red"
-                  icon="archive"
-                  :icon_style="true"
-                  tooltip_message="Archive Flow"
-                  confirm_message="Archive Flow"
-                  :loading="loading">
-                </button_with_confirm>
-              </div>
-              <!-- Archive button -->
+    <v-card style=" min-height: 800px">
+      <v-card-title>Workflow Builder</v-card-title>
+      <div class="d-flex">
+        <v-card class="ml-2" width="30%" style=" min-height: 700px">
+          <v-card-title>Steps: </v-card-title>
+          <v-card-text>
 
-            </v-col>
-            <v-col cols="2">
-              <v-btn color="primary"
-                     dark
-                     small
-                     class="justify-end"
-                     href="https://diffgram.readme.io/docs/setting-up-email-notifications"
-                     target="_blank"
-              >
-                Actions Help
-                <v-icon right>mdi-lifebuoy</v-icon>
-
-              </v-btn>
-            </v-col>
-
-          </v-row>
-          <v-row>
-            <v-col cols="12">
-              <v-text-field label="Name"
-                            v-model="flow.name"
-              >
-              </v-text-field>
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12">
-              <v-select :items="trigger_types"
-                        item-text="name"
-                        v-model="flow.trigger_type"
-                        item-value="value"
-                        label="Trigger When: "
-                        @change="change_trigger_type()"
-              >
-
-              </v-select>
-
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12">
-              <v-select :items="time_windows"
-                        item-text="name"
-                        v-model="flow.time_window"
-                        item-value="value"
-                        label="Trigger Every: "
-                        @change="change_trigger_type()"
-              >
-
-              </v-select>
-
-            </v-col>
-          </v-row>
-          <v-row>
-            <v-col cols="12">
-              <v-btn v-if="flow_id" :loading="loading" color="primary" @click="update_or_new">
-                Update
-              </v-btn>
-              <v-btn v-else :loading="loading" color="primary" @click="update_or_new">
-                Create
-              </v-btn>
-            </v-col>
-          </v-row>
-
-          <!-- Hide while WIP -->
-          <!--
-          <v-switch label="Active"
-                    v-model="flow.active">
-          </v-switch>
-          -->
-
-          <!--
-          <v-btn @click="api_flow_update('UPDATE')"
-                  :loading="loading"
-                  :disabled="loading"
-                  color="primary">
-            Update
-          </v-btn>
-          -->
-          <v-alert type="success"
-                   :value="success"
-                   dismissible>
-            Updated.
-          </v-alert>
-
-        </v-layout>
-
-        <v-layout>
-
-          <v_error_multiple :error="error">
-          </v_error_multiple>
-
-        </v-layout>
-
-        <v-layout>
+          </v-card-text>
 
 
-          <action_existing_list
-            v-if="flow_id"
-            :project_string_id="project_string_id"
-            :flow_id="flow_id"
-          >
-          </action_existing_list>
-
-        </v-layout>
-
-
-        <!-- Hide, not relevant in new context -->
-
-        <!--
-        <v-alert type="info">
-          Upload below or email to:
-          {{flow.string_id}}@action.diffgram.com
-        </v-alert>
-
-        <v-alert type="info"
-                 dismissible
-        >
-          If the action has not been run in a while it will take about a minute
-          for it to warm up.
-          After that it will run quickly.
-        </v-alert>
-        -->
-
-        <workflow_run_list
-          v-if="flow_id"
-          :project_string_id="project_string_id"
-          :flow_id="flow_id"
-        >
-        </workflow_run_list>
-
-
-
-      </v-container>
+        </v-card>
+      </div>
 
     </v-card>
 
-  </div>
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -171,7 +31,7 @@
 
   export default Vue.extend({
 
-      name: 'flow',
+      name: 'workflow_builder',
 
       components: {
         action_existing_list: action_existing_list,
@@ -182,7 +42,7 @@
         'project_string_id': {
           default: null
         },
-        'flow_id': {
+        'workflow_id': {
           default: null
         }
       },
@@ -209,7 +69,7 @@
           loading: false,
           error: {},
           success: false,
-          flow: {
+          workflow: {
             name: null,
             active: null,
             is_new: null,

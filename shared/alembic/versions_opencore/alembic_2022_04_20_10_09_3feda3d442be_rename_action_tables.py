@@ -23,6 +23,7 @@ def upgrade():
 
     op.alter_column('action', 'flow_id', new_column_name = 'workflow_id')
     op.alter_column('action_run', 'flow_id', new_column_name = 'workflow_id')
+    op.alter_column('workflow_trigger_event_queue', 'action_flow_id', new_column_name = 'workflow_id')
     op.alter_column('action_run', 'flow_event_id', new_column_name = 'workflow_run_id')
     op.alter_column('workflow_run', 'flow_id', new_column_name = 'workflow_id')
 
@@ -37,3 +38,4 @@ def downgrade():
     op.alter_column('action_event', 'workflow_id', new_column_name = 'flow_id')
     op.alter_column('action_event', 'workflow_run_id', new_column_name = 'flow_event_id')
     op.alter_column('action_flow_event', 'workflow_id', new_column_name = 'flow_id')
+    op.alter_column('action_flow_trigger_event_queue', 'workflow_id', new_column_name = 'action_flow_id')
