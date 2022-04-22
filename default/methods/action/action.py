@@ -3,7 +3,7 @@ from methods.regular.regular_api import *
 import re
 
 from shared.database.action.action import Action
-from shared.database.action.action_flow import Action_Flow
+from shared.database.action.workflow import Workflow
 from shared.database.action.action_template import Action_Template
 from shared.data_tools_core import Data_tools
 
@@ -210,7 +210,7 @@ class Action_Session():
             return
 
         # Careful can't assign this directly to action yet (as it may not exist)
-        self.flow = Action_Flow.get_by_id(
+        self.flow = Workflow.get_by_id(
             session=self.session,
             id=flow_id,
             project_id=self.project.id)

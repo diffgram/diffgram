@@ -1,13 +1,13 @@
 from methods.regular.regular_api import *
 
 from shared.database.action.action import Action
-from shared.database.action.action_flow import Action_Flow
-from shared.database.action.action_flow_event import Action_Flow_Event
+from shared.database.action.workflow import Workflow
+from shared.database.action.workflow_run import WorkflowRun
 
 
 # NEW
 @routes.route('/api/v1/project/<string:project_string_id>' +
-              '/action/flow/new',
+              '/action/workflow/new',
               methods=['POST'])
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
@@ -38,7 +38,7 @@ def new_flow_factory_api(project_string_id):
         member = user.member
 
         ### MAIN
-        flow = Action_Flow.new(
+        flow = Workflow.new(
             name=input['name'],
             trigger_type=input['trigger_type'],
             time_window=input.get('time_window', None),
@@ -94,7 +94,7 @@ def flow_view_api(project_string_id):
         project = Project.get(session, project_string_id)
 
         ### MAIN
-        flow = Action_Flow.get_by_id(
+        flow = Workflow.get_by_id(
             session=session,
             id=input['flow_id'],
             project_id=project.id)
@@ -159,7 +159,7 @@ def flow_list_view_api(project_string_id):
 
 # EVENT LIST
 @routes.route('/api/v1/project/<string:project_string_id>' +
-              '/action/flow/event/list',
+              '/action/workflow-run/list',
               methods=['POST'])
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
@@ -184,7 +184,7 @@ def api_action_flow_event_list(project_string_id):
         user = User.get(session=session)
         project = Project.get(session, project_string_id)
 
-        event_list = Action_Flow_Event.list(
+        event_list = WorkflowRun.list(
             session=session,
             id=input['flow_id'],
             project_id=project.id,

@@ -67,7 +67,7 @@ import Vue from "vue"; export default Vue.extend( {
       loading: false,
       error: {},
 
-      event_list : [],
+      workflow_run_list : [],
 
       selected : [],  // would prefer selected_list but vuetify seems to need 'selected'
 

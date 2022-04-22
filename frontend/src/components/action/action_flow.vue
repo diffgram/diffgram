@@ -325,7 +325,7 @@
 
           axios.post(
             '/api/v1/project/' + this.project_string_id +
-            '/action/flow/update',
+            '/actions/workflow/update',
             {
               flow_id: this.flow_id ? Number(this.flow_id) : undefined,
               name: this.flow.name,

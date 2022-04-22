@@ -1,11 +1,10 @@
 from methods.regular.regular_api import *
-
 from shared.database.action.action import Action
-from shared.database.action.action_flow import Action_Flow
+from shared.database.action.workflow import Workflow
 
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
-              '/action/flow/update',
+              '/actions/workflow/update',
               methods=['POST'])
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
@@ -41,7 +40,7 @@ def api_flow_update(project_string_id):
         user = User.get(session=session)
         project = Project.get(session, project_string_id)
 
-        flow = Action_Flow.get_by_id(
+        flow = Workflow.get_by_id(
             session=session,
             id=input['flow_id'],
             project_id=project.id)
@@ -100,7 +99,7 @@ def flow_update_core(
         flow.time_window = time_window
         flow.member_updated = member
 
-        Action_Flow.update_string_id(
+        Workflow.update_string_id(
             session=session,
             flow=flow)
 

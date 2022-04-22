@@ -34,7 +34,7 @@
 
     <v-data-table :headers="header_list"
                   :options.sync="options"
-                  :items="event_list"
+                  :items="workflow_run_list"
                   :search="search"
                   v-model="selected"
                   class="elevation-1"
@@ -100,7 +100,7 @@
 import axios from '../../services/customInstance';
 
   import Vue from "vue"; export default Vue.extend( {
-    name: 'event_list_data_table',
+    name: 'workflow_run_list',
 
     props: {
       'project_string_id': {},
@@ -139,7 +139,7 @@ import axios from '../../services/customInstance';
       search: null,
       loading: false,
 
-      event_list : [],
+      workflow_run_list : [],
 
       selected : [],  // would prefer selected_list but vuetify seems to need 'selected'
 
@@ -185,7 +185,7 @@ import axios from '../../services/customInstance';
 
       url = '/api/v1/project/'
           + this.project_string_id
-          + '/action/flow/event/list'
+          + '/action/workflow-run/list'
 
       axios.post(url, {
 
@@ -194,7 +194,7 @@ import axios from '../../services/customInstance';
       })
       .then(response => {
 
-        this.event_list = response.data.event_list
+        this.workflow_run_list = response.data.event_list
         this.loading = false
 
       })
