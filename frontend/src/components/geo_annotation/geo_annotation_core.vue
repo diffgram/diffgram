@@ -57,6 +57,7 @@ import {
     UpdateInstanceLabelCommand
 } from "../../helpers/command/available_commands"
 import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
+import { postInstanceList } from "../../services/instanceList";
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
 import Map from 'ol/Map';
@@ -247,6 +248,7 @@ export default Vue.extend({
 
         this.hot_key_listeners()
         this.initialize_map()
+        this.start_autosave()
     },
     methods: {
         initialize_interface_data: function() {
@@ -385,7 +387,7 @@ export default Vue.extend({
             this.drawing_feature = undefined;
             this.draw_init = undefined;
             this.drawing_coords = undefined;
-            this.has_changed = true
+            this.has_changed = true;
         },
         change_mode: function() {
             this.draw_mode = !this.draw_mode
@@ -431,8 +433,28 @@ export default Vue.extend({
             if (redone) this.has_changed = true;
             this.draw_instances
         },
-        save: function() {
-            // Save
+        save: async function() {
+            this.has_changed = false
+            this.save_loading = true
+            let url;
+            if (this.task && this.task.id) {
+                url = `/api/v1/task/${this.task.id}/annotation/update`;
+            } else {
+                url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
+            }
+            if (!this.drawing_instance) {
+                const res = await postInstanceList(url, this.instance_list.get_all())
+                const { added_instances } = res
+                this.instance_list.get_all().map(instance => {
+                    const instance_uuid = instance.creation_ref_id
+                    const updated_instance = added_instances.find(added_instance => added_instance.creation_ref_id === instance_uuid)
+                    if (updated_instance) {
+                        instance.id = updated_instance.id
+                    }
+                })
+            }
+            console.log(this.instance_list)
+            this.save_loading = false
         },
         change_file(direction, file) {
             if (direction == "next" || direction == "previous") {
@@ -452,6 +474,21 @@ export default Vue.extend({
 
             if (e.keyCode === 27) {
                 console.log("press esk")
+            }
+
+            if (e.keyCode === 83) {
+                this.save()
+            }
+        },
+        start_autosave: function () {
+            this.interval_autosave = setInterval(
+                this.detect_is_ok_to_save,
+                15 * 1000
+            );
+        },
+        detect_is_ok_to_save: async function () {
+            if (this.has_changed && !this.drawing_instance) {
+                await this.save();
             }
         },
         create_style: function(label_file) {

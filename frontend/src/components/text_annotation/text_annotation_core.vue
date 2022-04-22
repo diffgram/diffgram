@@ -779,7 +779,6 @@ export default Vue.extend({
             if (!this.instance_in_progress) {
                 const res = await postInstanceList(url, this.new_instance_list.get_all())
                 const { added_instances } = res
-                console.log(added_instances)
                 added_instances.map(add_insatnce => {
                     const old_instance = this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id)
                     const old_id = old_instance.get_instance_data().id
