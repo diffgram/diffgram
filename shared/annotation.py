@@ -1489,7 +1489,14 @@ class Annotation_Update():
 
     def deduct_spatial_coordinates(self):
 
-        if self.instance.type in ["global", "relation", "token"]:
+        if self.instance.type in ["global",
+                                  'geo_point',
+                                  'geo_circle',
+                                  'geo_polyline',
+                                  'geo_polygon',
+                                  'geo_box',
+                                  "relation",
+                                  "token"]:
             return
 
         min_coords = self.get_min_coordinates_instance(self.instance)
