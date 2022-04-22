@@ -75,7 +75,8 @@ class GeoTiffProcessor:
         """
         blob_path = f"{settings.PROJECT_GEOSPATIAL_FILES_BASE_DIR}{str(self.input.project_id)}/assets/{str(geo_asset.id)}"
         self.data_tools.upload_to_cloud_storage(temp_local_path = self.input.temp_dir_path_and_filename,
-                                                blob_path = blob_path)
+                                                blob_path = blob_path,
+                                                content_type = 'image/tiff')
         geo_asset.url_signed_blob_path = blob_path
         geo_asset.regenerate_url(session = self.session)
 
