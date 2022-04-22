@@ -57,7 +57,7 @@ import {
     UpdateInstanceLabelCommand
 } from "../../helpers/command/available_commands"
 import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
-import { postInstanceList } from "../../services/instanceList";
+import { getInstanceList, postInstanceList } from "../../services/instanceList";
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
 import Map from 'ol/Map';
@@ -247,12 +247,50 @@ export default Vue.extend({
         this.command_manager = new CommandManager(this.history)
 
         this.hot_key_listeners()
+        this.initialize_interface_data()
         this.initialize_map()
         this.start_autosave()
     },
     methods: {
-        initialize_interface_data: function() {
+        initialize_interface_data: async function() {
+            let url;
+            let payload;
+            if (this.task && this.task.id) {
+                url = `/api/v1/task/${this.task.id}/annotation/list`;
+                payload = {
+                    directory_id: this.$store.state.project.current_directory.directory_id,
+                    job_id: this.job_id,
+                    attached_to_job: this.task.file.attached_to_job,
+                }
+            } else {
+                url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
+                payload = {}
+            }
+            const raw_instance_list = await getInstanceList(url, payload)
             // Get instances from teh backend and render them
+            const initial_instances = raw_instance_list.map(instance_object => {
+                let instance;
+                const { id, type, bounds, bounds_lonlat, creation_ref_id, radius, lonlat, coords, label_file } = instance_object
+                if (type === 'geo_circle') {
+                    instance = new GeoCircle();
+                    instance.create_instance(id, creation_ref_id, lonlat, coords, radius, label_file)
+                } 
+
+                if (type === 'geo_point') {
+                    instance = new GeoPoint();
+                    instance.create_instance(id, creation_ref_id, lonlat, coords, label_file)
+                }
+
+                if (type === 'geo_polygon' || type === 'geo_polyline' || type === 'geo_box') {
+                    console.log("here")
+                    instance = new GeoPoly(type);
+                    instance.create_instance(id, creation_ref_id, bounds, bounds_lonlat, label_file)
+                }
+                return instance
+            })
+
+            this.instance_list.push(initial_instances)
+            this.draw_instances
         },
         initialize_map: async function() {
             if (!this.file) return
