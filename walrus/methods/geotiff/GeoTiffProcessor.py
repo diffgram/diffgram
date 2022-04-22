@@ -6,7 +6,7 @@ from shared.settings import settings
 from shared.database.source_control.file import File
 from shared.database.point_cloud.point_cloud import PointCloud
 from shared.database.geospatial.geo_asset import GeoAsset
-import gdal
+from osgeo import gdal
 from shared.regular.regular_log import log_has_error
 from osgeo_utils.samples.validate_cloud_optimized_geotiff import validate
 from shared.shared_logger import get_shared_logger
