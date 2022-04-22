@@ -13,7 +13,24 @@ export class GeoCircle extends Instance implements InstanceInterface {
         super();
     }
 
-    public create_instance() {}
+    public create_instance(
+        id: number,
+        creation_ref_id: string,
+        lonlat: Array<number>, 
+        coords: Array<any>, 
+        radius: number, 
+        label_file: any, 
+        soft_delete: boolean = false
+    ): void {
+        this.id = id
+        this.lonlat = lonlat;
+        this.coords = coords;
+        this.radius = radius;
+        this.soft_delete = soft_delete;
+        this.creation_ref_id = creation_ref_id;
+        this.label_file = label_file;
+        this.label_file_id = label_file.id;
+    }
 
     public create_frontend_instance(
             lonlat: Array<number>, 
@@ -63,7 +80,22 @@ export class GeoPoly extends Instance implements InstanceInterface {
         this.type = type;
     }
 
-    public create_instance() {}
+    public create_instance(
+        id: number,
+        creation_ref_id: string,
+        bounds: Array<number>, 
+        bounds_lonlat: Array<number>, 
+        label_file: any, 
+        soft_delete: boolean = false
+    ): void {
+        this.id = id;
+        this.bounds = bounds;
+        this.bounds_lonlat = bounds_lonlat;
+        this.soft_delete = soft_delete;
+        this.creation_ref_id = creation_ref_id;
+        this.label_file = label_file;
+        this.label_file_id = label_file.id;
+    }
 
     public create_frontend_instance(
             bounds: Array<number>, 
@@ -109,7 +141,22 @@ export class GeoPoint extends Instance implements InstanceInterface {
         super();
     }
 
-    public create_instance() {}
+    public create_instance(
+        id: number,
+        creation_ref_id: string,
+        lonlat: Array<number>,
+        coords: Array<number>,
+        label_file: any,
+        soft_delete: boolean = false
+    ): void {
+        this.id = id;
+        this.lonlat = lonlat;
+        this.coords = coords;
+        this.soft_delete = soft_delete;
+        this.creation_ref_id = creation_ref_id;
+        this.label_file = label_file;
+        this.label_file_id = label_file.id;
+    }
 
     public create_frontend_instance(
             lonlat: Array<number>,
