@@ -348,7 +348,7 @@ export default Vue.extend({
       if(!this.current_file && !this.task){
         return
       }
-      return 'geo'
+
       if(this.current_file){
         if(this.current_file.type === 'image' || this.current_file.type === 'video'){
           return 'image_or_video';
@@ -358,6 +358,9 @@ export default Vue.extend({
         }
         else if(this.current_file.type === 'text'){
           return 'text'
+        }
+        else if(this.current_file.type === 'geospatial') {
+          return 'geo'
         }
       }
       if(this.task){
