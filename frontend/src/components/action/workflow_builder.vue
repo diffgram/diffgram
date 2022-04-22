@@ -4,17 +4,38 @@
     <v-card style=" min-height: 800px">
       <v-card-title>Workflow Builder</v-card-title>
       <div class="d-flex">
-        <v-card class="ml-2 steps-container" width="80%" elevation="0">
-          <v-card-title>Steps: </v-card-title>
-          <v-card-text>
+        <v-card class="ml-2 steps-container" width="20%" elevation="0">
+          <v-card-title>Add a Step: </v-card-title>
+          <v-card-subtitle>
+            Drag blocks to the node tree below using the drag handle
+          </v-card-subtitle>
+          <v-container fluid>
             <workflow_steps_visualizer
               :workflow="workflow"
               :project_string_id="project_string_id">
 
             </workflow_steps_visualizer>
+          </v-container>
+        </v-card>
+        <v-card class="ml-2 mr-2 steps-container" width="80%" elevation="0">
+          <v-card-title>Workflow: </v-card-title>
+          <v-card-text>
+            <div
+              class="flex-grow overflow-auto"
+              style="width:100%;"
+            >
+              <flowy
+                class="q-mx-auto"
+                :nodes="nodes"
+                :beforeMove="beforeMove"
+                :beforeAdd="beforeAdd"
+                @add="add"
+                @move="move"
+                @remove="remove"
+                @drag-start="onDragStart"
+              ></flowy>
+            </div>
           </v-card-text>
-
-
         </v-card>
       </div>
 
@@ -72,9 +93,42 @@ import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
             {name: '12 hours.', value: '12_hours'},
             {name: '1 Day', value: '1_days'},
           ],
+          nodes: [
+            {
+              id: '1',
+              parentId: -1,
+              nodeComponent: 'demo-node',
+              data: {
+                text: 'Parent block',
+                title: 'New Visitor',
+                description: '<span>When a <b>new visitor</b> goes to <i>Site 1</i></span>',
+              },
+            },
+            {
+              id: '2',
+              parentId: '1',
+              nodeComponent: 'demo-node',
+              data: {
+                text: 'Parent block',
+                title: 'New Visitor',
+                description: '<span>When a <b>new visitor</b> goes to <i>Site 1</i></span>',
+              },
+            },
+            {
+              id: '3',
+              parentId: '1',
+              nodeComponent: 'demo-node',
+              data: {
+                text: 'Parent block',
+                title: 'New Visitor',
+                description: '<span>When a <b>new visitor</b> goes to <i>Site 1</i></span>',
+              },
+            },
+          ],
           loading: false,
           error: {},
           success: false,
+          newDraggingBlock: null,
           workflow: {
             name: null,
             active: null,
@@ -107,6 +161,40 @@ import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
       },
       computed: {},
       methods: {
+        beforeMove ({ to, from }) {
+          // called before moving node (during drag and after drag)
+          // indicator will turn red when we return false
+          // from is null when we're not dragging from the current node tree
+          console.log('beforeMove', to, from);
+
+          // we cannot drag upper parent nodes in this demo
+          if (from && from.parentId === -1) {
+            return false;
+          }
+          // we're adding a new node (not moving an existing one)
+          if (from === null) {
+            // we've passed this attribute to the demo-node
+            if (this.newDraggingBlock['custom-attribute'] === false) {
+              return false
+            }
+          }
+
+          return true;
+        },
+        // REQUIRED
+        beforeAdd ({ to, from }) {
+          // called before moving node (during drag and after drag)
+          // indicator will turn red when we return false
+          // from is null when we're not dragging from the current node tree
+          console.log('beforeAdd', to, from);
+
+          // we've passed this attribute to the demo-node
+          if (this.newDraggingBlock['custom-attribute'] === false) {
+            return false
+          }
+
+          return true;
+        },
         update_or_new: function(){
           if(this.flow_id){
             this.api_flow_update("UPDATE");

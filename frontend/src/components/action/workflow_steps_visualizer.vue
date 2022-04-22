@@ -1,11 +1,10 @@
 <template>
   <div class="d-flex flex-column">
-    <div>Drag blocks to the node tree below using the drag handle</div>
+
     <div>
       <flowy-new-block
         v-for="(block, index) in blocks"
         :key="index"
-        class="q-mr-md"
         @drag-start="onDragStartNewBlock"
         @drag-stop="onDragStopNewBlock"
       >
@@ -15,13 +14,13 @@
             :description="block.preview.description"
           />
         </template>
-        <template v-slot:node="{}">
-          <demo-node
-            :title="block.node.title"
-            :description="block.node.description"
-            :custom-attribute="block.node.canBeAdded"
-          />
-        </template>
+<!--        <template v-slot:node="{}">-->
+<!--          <demo-node-->
+<!--            :title="block.node.title"-->
+<!--            :description="block.node.description"-->
+<!--            :custom-attribute="block.node.canBeAdded"-->
+<!--          />-->
+<!--        </template>-->
       </flowy-new-block>
     </div>
   </div>
@@ -97,38 +96,7 @@
               },
             },
           ],
-          nodes: [
-            {
-              id: '1',
-              parentId: -1,
-              nodeComponent: 'demo-node',
-              data: {
-                text: 'Parent block',
-                title: 'New Visitor',
-                description: '<span>When a <b>new visitor</b> goes to <i>Site 1</i></span>',
-              },
-            },
-            {
-              id: '2',
-              parentId: '1',
-              nodeComponent: 'demo-node',
-              data: {
-                text: 'Parent block',
-                title: 'New Visitor',
-                description: '<span>When a <b>new visitor</b> goes to <i>Site 1</i></span>',
-              },
-            },
-            {
-              id: '3',
-              parentId: '1',
-              nodeComponent: 'demo-node',
-              data: {
-                text: 'Parent block',
-                title: 'New Visitor',
-                description: '<span>When a <b>new visitor</b> goes to <i>Site 1</i></span>',
-              },
-            },
-          ]
+
         }
       },
       computed: {},
