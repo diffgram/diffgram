@@ -402,7 +402,6 @@
                 }
                 file.source = 'local';
                 $vm.file_list_to_upload.push(file);
-                console.log('added file')
                 $vm.$emit('file_list_updated', $vm.file_list_to_upload)
               });
               this.on('removedfile', function (file) {
@@ -412,7 +411,6 @@
                 if($vm.$refs.myVueDropzone.dropzone.disabled){
                   return
                 }
-                console.log('REMOVEED FILE', file)
                 $vm.file_list_to_upload.splice($vm.file_list_to_upload.indexOf(file), 1);
                 $vm.$emit('file_list_updated', $vm.file_list_to_upload)
               });
@@ -532,11 +530,9 @@
           this.$emit('progress_updated', file, totalBytes, totalBytesSent)
         },
         upload_local_raw_media: async function (local_file_list) {
-          console.log('LOCAL FILE upload_local_raw_media', local_file_list)
           if (!local_file_list || local_file_list.length === 0) {
             return
           }
-          console.log('this.$refs.myVueDropzone.dropzone.files', this.$refs.myVueDropzone.dropzone.files)
           // We want to remove them because we'll re-add them with the batch data and uuid data.
           for (const file of this.$refs.myVueDropzone.dropzone.files) {
             const new_file_data = local_file_list.find(elm => elm.upload.uuid === file.upload.uuid)
@@ -545,8 +541,6 @@
               this.$refs.myVueDropzone.removeFile(file);
               continue
             }
-            console.log('FILE', file.type, file.geo_file)
-            console.log('new_file_data', new_file_data.type, new_file_data.geo_file)
             file.uuid = new_file_data.uuid;
             file.input_batch_id = new_file_data.input_batch_id;
           }
@@ -693,6 +687,7 @@
                 f.geo_file = true
               }
               f.status = 'queued'
+              this.$emit('file_added', f)
             }
             this.$emit('file_list_updated', this.file_list_to_upload)
           }
@@ -700,8 +695,6 @@
           this.move_to_next_step();
           this.hide_geotiff_prompt();
           await this.$nextTick();
-          console.log('AAAAA', this.$refs.myVueDropzone.dropzone.files)
-          console.log('file_list_to_upload', this.file_list_to_upload)
           this.$refs.myVueDropzone.dropzone.files = this.file_list_to_upload
         },
         upload_raw_media: async function (file_list) {
@@ -741,10 +734,8 @@
           const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');
           let file_types = this.file_list_to_upload.map(f => f.type)
           if(this.$refs.myVueDropzone){
-            console.log('move_to_next_step dropzone.files', this.$refs.myVueDropzone.dropzone.files)
           }
 
-          console.log('asdasd', this.file_list_to_upload, file_types)
           const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
           const export_files = this.file_list_to_upload.filter(f => f.data_type === 'Diffgram Export');
           if(this.with_prelabeled && annotationFile.length === 0){
@@ -770,7 +761,6 @@
               this.error.media_files = 'Please upload at least one media file to continue.'
               return
             }
-            console.log('asdasd', this.GEO_TIFF_FORMATS, file_types)
             if(this.GEO_TIFF_FORMATS.some(item => file_types.includes(item)) && !this.geo_tiff_prompt){
               this.show_geotiff_prompt()
               return
@@ -815,7 +805,6 @@
           this.bucket_name = name
         },
         drop_zone_sending_event(file, xhr, formData) {
-          console.log('drop_zone_sending_event', file)
           // Doing this here since options doesn't update properly
           formData.append('directory_id',
             this.$store.state.project.current_directory.directory_id);
