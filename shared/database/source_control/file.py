@@ -519,17 +519,25 @@ class File(Base, Caching):
                 'text_file': self.text_file.serialize_for_source_control(session) if self.text_file else None,
                 'instance_list': [instance.serialize_with_label() for instance in instance_list]
             }
-        if self.type == "video":
+        elif self.type == "video":
             result = self.serialize_with_video(session)
             result['instance_list'] = [instance.serialize_with_label() for instance in instance_list]
             return result
-        if self.type == 'sensor_fusion':
+        elif self.type == 'sensor_fusion':
             return {
                 'id': self.id,
                 'type': self.type,
                 'hash': self.hash,
                 'state': self.state,
                 'point_cloud_3d_file': self.point_cloud.serialize(session) if self.point_cloud else None,
+                'instance_list': [instance.serialize_with_label() for instance in instance_list]
+            }
+        else:
+            return {
+                'id': self.id,
+                'type': self.type,
+                'hash': self.hash,
+                'state': self.state,
                 'instance_list': [instance.serialize_with_label() for instance in instance_list]
             }
 
