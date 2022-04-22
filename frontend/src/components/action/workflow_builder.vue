@@ -4,10 +4,14 @@
     <v-card style=" min-height: 800px">
       <v-card-title>Workflow Builder</v-card-title>
       <div class="d-flex">
-        <v-card class="ml-2" width="30%" style=" min-height: 700px">
+        <v-card class="ml-2 steps-container" width="80%" elevation="0">
           <v-card-title>Steps: </v-card-title>
           <v-card-text>
+            <workflow_steps_visualizer
+              :workflow="workflow"
+              :project_string_id="project_string_id">
 
+            </workflow_steps_visualizer>
           </v-card-text>
 
 
@@ -20,7 +24,7 @@
 </template>
 
 <script lang="ts">
-
+import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
   import axios from '../../services/customInstance';
   import action_existing_list from './action_existing_list.vue';
   import upload from '../upload_large.vue';
@@ -28,12 +32,14 @@
 
 
   import Vue from "vue";
+  import Workflow_steps_visualizer from "./workflow_steps_visualizer.vue";
 
   export default Vue.extend({
 
       name: 'workflow_builder',
 
       components: {
+        Workflow_steps_visualizer,
         action_existing_list: action_existing_list,
         upload: upload,
         workflow_run_list: workflow_run_list
@@ -226,3 +232,9 @@
       }
     }
   ) </script>
+<style>
+.steps-container{
+  min-height: 700px !important;
+  border: 1px solid #e0e0e0 !important;
+}
+</style>

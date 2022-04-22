@@ -352,7 +352,9 @@ Vue.prototype.$get_sequence_color = get_sequence_color
 import {addQueriesToLocation} from './components/regular/regular'
 Vue.prototype.$addQueriesToLocation = addQueriesToLocation
 
-
+import FlowyPlugin from "@hipsjs/flowy-vue";
+import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
+Vue.use(FlowyPlugin)
 
 
 // import {google_cloud_storage_searchbar} from './components/connectors/google_cloud_storage_searchbar.vue'
