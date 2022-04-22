@@ -253,16 +253,16 @@ export default Vue.extend({
             // Get instances from teh backend and render them
         },
         initialize_map: async function() {
+            if (!this.file) return
             const mousePositionControl = new MousePosition({
                 coordinateFormat: createStringXY(4),
                 projection: 'EPSG:4326',
             });
 
-            // This is temporary, before backend is wired up
             const source = new GeoTIFF({
                 sources: [
                     {
-                        url: 'https://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/2020/S2A_36QWD_20200701_0_L2A/TCI.tif',
+                        url: this.file.geospatial.layers[0].url_signed,
                     },
                 ],
             });
@@ -320,6 +320,7 @@ export default Vue.extend({
 
                 const command = new CreateInstanceCommand([newPoint], this.instance_list)
                 this.command_manager.executeCommand(command)
+                this.has_changed = true
                 return
             }
 
@@ -384,6 +385,7 @@ export default Vue.extend({
             this.drawing_feature = undefined;
             this.draw_init = undefined;
             this.drawing_coords = undefined;
+            this.has_changed = true
         },
         change_mode: function() {
             this.draw_mode = !this.draw_mode
