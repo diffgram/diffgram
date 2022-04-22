@@ -79,7 +79,7 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import 'ol/ol.css';
 
 export default Vue.extend({
-    name: "text_token_core",
+    name: "geo_annotation_core",
         props: {
         file: {
             type: Object,
