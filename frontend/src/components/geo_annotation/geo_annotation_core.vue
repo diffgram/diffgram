@@ -21,6 +21,7 @@
                     @change_label_file="change_label_file"
                     @change_label_visibility="change_label_visibility"
                     @change_file="change_file"
+                    @change_task="trigger_task_change"
                     @undo="undo()"
                     @redo="redo()"
                 />
@@ -31,14 +32,16 @@
                 :instance_list="instance_list ? instance_list.get() : []"
                 :label_list="label_list"
                 :label_file_colour_map="label_file_colour_map"
+                :toolbar_height="`${!task ? '100px' : '50px'}`"
                 @delete_instance="delete_instance"
                 @change_instance_label="change_instance_label"
             />
             <div 
                 id="map" 
                 ref="map" 
+                v-if="!rendering"
                 @click="draw_instance" 
-                :style="`height: calc(100vh - 100px); z-index: 0; width: 100%; cursor: ${cursor}`"
+                :style="`height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%; cursor: ${cursor}`"
             />
         </div>
     </div>
@@ -121,6 +124,7 @@ export default Vue.extend({
             feature_list: [],
             drawing_feature: undefined,
             // Others
+            rendering: false,
             current_label: undefined,
             drawing_instance: false,
             draw_init: undefined,
@@ -203,6 +207,38 @@ export default Vue.extend({
         }
     },
     watch: {
+        file: async function() {
+            this.rendering = true;
+            this.map_instance = null
+            this.instance_list = new InstanceList()
+            this.history = new History()
+            this.command_manager = new CommandManager(this.history)
+
+            setTimeout(() => {
+                this.rendering = false
+
+                setTimeout(() => {
+                    this.initialize_interface_data()
+                    this.initialize_map()
+                }, 100)
+            }, 100)
+        },
+        task: function() {
+            this.rendering = true;
+            this.map_instance = null
+            this.instance_list = new InstanceList()
+            this.history = new History()
+            this.command_manager = new CommandManager(this.history)
+
+            setTimeout(() => {
+                this.rendering = false
+
+                setTimeout(() => {
+                    this.initialize_interface_data()
+                    this.initialize_map()
+                }, 100)
+            }, 100)
+        },
         mouse_coords: function() {
             if (!this.drawing_instance) return;
 
@@ -282,7 +318,6 @@ export default Vue.extend({
                 }
 
                 if (type === 'geo_polygon' || type === 'geo_polyline' || type === 'geo_box') {
-                    console.log("here")
                     instance = new GeoPoly(type);
                     instance.create_instance(id, creation_ref_id, bounds, bounds_lonlat, label_file)
                 }
@@ -293,7 +328,7 @@ export default Vue.extend({
             this.draw_instances
         },
         initialize_map: async function() {
-            if (!this.file) return
+            if (!this.file && !this.task) return
             const mousePositionControl = new MousePosition({
                 coordinateFormat: createStringXY(4),
                 projection: 'EPSG:4326',
@@ -302,13 +337,14 @@ export default Vue.extend({
             const source = new GeoTIFF({
                 sources: [
                     {
-                        url: this.file.geospatial.layers[0].url_signed,
+                        url: this.task ? this.task.file.geospatial.layers[0].url_signed : this.file.geospatial.layers[0].url_signed,
                     },
                 ],
             });
 
 
             this.annotation_source = new VectorSource({})
+
 
             const map = new Map({
                 controls: defaultControls().extend([mousePositionControl]),
@@ -491,7 +527,6 @@ export default Vue.extend({
                     }
                 })
             }
-            console.log(this.instance_list)
             this.save_loading = false
         },
         change_file(direction, file) {
@@ -503,7 +538,7 @@ export default Vue.extend({
             window.removeEventListener("keydown", this.keydown_event_listeners)
             window.addEventListener("keydown", this.keydown_event_listeners)
         },
-        keydown_event_listeners: function(e) {
+        keydown_event_listeners: async function(e) {
             if (e.keyCode === 13) {
                 if (this.drawing_instance) {
                     this.create_poly_instance()
@@ -515,7 +550,7 @@ export default Vue.extend({
             }
 
             if (e.keyCode === 83) {
-                this.save()
+                await this.save()
             }
         },
         start_autosave: function () {
@@ -548,6 +583,12 @@ export default Vue.extend({
             })
             
             return style
+        },
+        trigger_task_change: async function (direction, assign_to_user = false) {
+            if (this.has_changed) {
+                await this.save();
+            }
+            this.$emit("request_new_task", direction, this.task, assign_to_user);
         },
         create_poly_instance: function() {
             this.annotation_source.removeFeature(this.drawing_feature)
