@@ -373,6 +373,9 @@ export default Vue.extend({
         else if(this.task.file.type === 'text'){
           return 'text';
         }
+        else if (this.task.file.type === 'geospatial') {
+          return 'geo'
+        }
       }
 
 
