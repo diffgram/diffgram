@@ -6,7 +6,7 @@
         position: sticky;
         left: 0;
         top: ${toolbar_height}
-        `">
+    `">
         <v-data-table
             hide-default-footer
             :style="`width: 350px; max-height: 100%; overflow-y: scroll`"
