@@ -546,7 +546,8 @@ export default Vue.extend({
             }
 
             if (e.keyCode === 27) {
-                console.log("press esk")
+                this.drawing_instance = false
+                this.annotation_source.removeFeature(this.drawing_feature)
             }
 
             if (e.keyCode === 83) {
