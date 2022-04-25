@@ -6,7 +6,8 @@ from shared.database.source_control.working_dir import WorkingDir, WorkingDirFil
 from shared.permissions.project_permissions import Project_permissions
 from shared.database.source_control.file import File
 from shared.database.annotation.instance import Instance
-from shared.database.label import Label
+from shared.database.labels.label import Label
+from shared.database.labels.label_schema import LabelSchema
 from shared.database.event.event import Event
 from shared.settings import settings
 from shared.database.task.task import Task
@@ -25,6 +26,7 @@ from shared.database.task.task_event import TaskEvent
 import datetime
 from shared.database.auth.member import Member
 from shared.database.annotation.instance_template import InstanceTemplate
+from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.annotation.instance_template_relation import InstanceTemplateRelation
 from shared.database.video.video import Video
 from shared.database.image import Image
@@ -55,6 +57,28 @@ def register_member(user, session):
     return new_member
 
 
+def create_label_schema(schema_data, session):
+    schema = LabelSchema(
+        name = schema_data.get('name'),
+        project_id = schema_data.get('project_id'),
+        member_created_id = schema_data.get('member_created_id'),
+        member_updated_id = schema_data.get('member_updated_id'),
+        archived = schema_data.get('archived'),
+    )
+    session.add(schema)
+    session.commit()
+    return schema
+
+
+def create_attribute_template_group(group_data, session):
+    group = Attribute_Template_Group(
+        **group_data
+    )
+    session.add(group)
+    session.commit()
+    return group
+
+
 def create_project_migration(migration_data, session):
     p_migration = ProjectMigration(
         created_time = migration_data.get('created_time'),
@@ -77,6 +101,8 @@ def create_project_migration(migration_data, session):
     session.add(p_migration)
     session.commit()
     return p_migration
+
+
 def register_user(user_data: dict, session):
     """
 

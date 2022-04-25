@@ -161,12 +161,24 @@
 
       <v-divider vertical></v-divider>
 
+      <div v-if="!task">
+        <div class="pl-2 pr-3 pt-4">
+          <label_schema_selector
+            :project_string_id="project_string_id"
+            :initial_schema="label_schema"
+            @change="$emit('change_label_schema', $event)"
+          >
+          </label_schema_selector>
+        </div>
+      </div>
+
       <ui_schema name="label_selector">
         <div style="width: 310px">
           <div class="pl-2 pr-3 pt-4">
             <label_select_annotation
               :project_string_id="project_string_id"
               :label_file_list="label_list"
+              :schema_id="label_schema.id"
               :label_file_colour_map="label_file_colour_map"
               @change="$emit('change_label_file', $event)"
               :loading="loading"
@@ -959,6 +971,7 @@
 <script lang="ts">
 import Vue from "vue";
 import label_select_annotation from "../label/label_select_annotation.vue";
+import label_schema_selector from "../label/label_schema_selector.vue";
 import file_meta_data_card from "./file_meta_data_card.vue";
 import time_tracker from "../task/time_track/time_tracker";
 import task_relations_card from "./task_relations_card.vue";
@@ -973,6 +986,7 @@ export default Vue.extend({
   components: {
     Guided_1_click_mode_selector,
     label_select_annotation,
+    label_schema_selector,
     file_meta_data_card,
     time_tracker,
     file_relations_card,
@@ -983,6 +997,9 @@ export default Vue.extend({
   },
   props: {
     project_string_id: {},
+    label_schema: {
+      required: true
+    },
     label_settings: {
       default: null,
     },

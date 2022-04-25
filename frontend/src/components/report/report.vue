@@ -704,7 +704,7 @@ export default Vue.extend({
         ],
 
         date_period_unit_list: ['day', 'month', 'year'],
-        //group_by_list: ['user', 'project', 'job', 'label', 'date'],
+        group_by_list: ['user', 'project', 'job', 'label', 'date'],
 
         group_by_list_default: [
 

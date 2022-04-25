@@ -1,6 +1,5 @@
 
 
-
 describe('Login Flow tests', function () {
 
   beforeEach(() => {
@@ -15,13 +14,12 @@ describe('Login Flow tests', function () {
       'ai',
       'alert',
       'public_project',
-      'annotation_assignment',
-      'annotation_project',
       'annotation_state',
       'attribute',
       'project_list',
       'auth',
       'builder_or_trainer',
+
       'error',
       'job',
       'network',
@@ -34,6 +32,9 @@ describe('Login Flow tests', function () {
       'user',
       'clipboard',
       'video',
-      'ui_schema');
+      'ui_schema',
+      'snackbar',
+      'system'
+    );
   })
 });

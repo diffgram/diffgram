@@ -719,7 +719,7 @@ export default Vue.extend({
         { name: "Archive", value: "archive" },
         { name: "Assign annotators", value: 'assign' },
         { name: "Remove annotators", value: 'remove' },
-        ],
+      ],
 
       task_assign_dialog_open: false,
       reviewers_list: [],

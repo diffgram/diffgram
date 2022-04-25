@@ -420,7 +420,6 @@ class LabelboxConnector(Connector):
                 label_file = File.new_label_file(
                     session = session,
                     name = name,
-                    default_sequences_to_single_frame = False,
                     working_dir_id = diffgram_project.directory_default_id,
                     project = diffgram_project,
                     colour = color_dict,

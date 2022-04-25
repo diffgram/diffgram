@@ -67,6 +67,12 @@ job_new_spec_list = [
         "required": False
     }
     },
+    {"label_schema_id": {
+        'default': None,
+        'kind': int,
+        "required": False
+    }
+    },
     {"td_api_trainer_basic_training": {
         'default': False,
         'kind': bool,
@@ -175,6 +181,12 @@ update_job_spec_list = [
     }
     },
     {"ui_schema_id": {
+        'default': None,
+        'kind': int,
+        "required": False
+    }
+    },
+    {"label_schema_id": {
         'default': None,
         'kind': int,
         "required": False
@@ -434,6 +446,7 @@ def job_update_core(session, job, project, input: dict, log: dict):
             reviewer_list_ids=input.get('reviewer_list_ids'),
             default_userscript_id=input.get('default_userscript_id'),
             ui_schema_id=input.get('ui_schema_id'),
+            label_schema_id=input.get('label_schema_id'),
             allow_reviews=input.get('allow_reviews'),
             review_chance=input.get('review_chance'),
             job=job
@@ -456,6 +469,9 @@ def job_update_core(session, job, project, input: dict, log: dict):
             session.add(job)
 
             log = update_tasks(job, session, log)
+        if input['label_schema_id']:
+            job.label_schema_id =input['label_schema_id']
+            session.add(job)
 
         if input['name']:
             job.name = input['name']
@@ -642,6 +658,7 @@ def new_or_update_core(session,
                        completion_directory_id=None,
                        interface_connection_id=None,
                        ui_schema_id=None,
+                       label_schema_id=None,
                        job_type=None,
                        job=None,
                        member_list_ids=None,
@@ -678,15 +695,17 @@ def new_or_update_core(session,
     job.allow_reviews = allow_reviews
     job.review_chance = (0 if review_chance == None else review_chance) / 100
 
-    log = job.update_member_list(
-        member_list_ids = member_list_ids,
-        session = session,
-        log = log)
+    if member_list_ids is not None:
+        log = job.update_member_list(
+            member_list_ids = member_list_ids,
+            session = session,
+            log = log)
 
-    log = job.update_reviewer_list(
-        session = session,
-        reviewer_list_ids = reviewer_list_ids,
-        log = log)
+    if reviewer_list_ids is not None:
+        log = job.update_reviewer_list(
+            session = session,
+            reviewer_list_ids = reviewer_list_ids,
+            log = log)
 
     if default_userscript_id:
         default_userscript = UserScript.get(
@@ -760,6 +779,7 @@ def new_or_update_core(session,
         'instance_type': instance_type,
         'file_handling': file_handling,
         'output_dir_action': output_dir_action,
+        'label_schema_id': label_schema_id,
         'interface_connection_id': interface_connection_id,
         'pro_network': pro_network,
     }

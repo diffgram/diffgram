@@ -64,12 +64,15 @@
 <script lang="ts">
 
 import axios from '../../services/customInstance';
-
+import {get_labels} from '../../services/labelServices';
   import Vue from "vue"; export default Vue.extend( {
     name: 'label_list_data_table',
 
     props: {
       'project_string_id': {},
+      'schema_id': {
+        default: undefined
+      },
       'view_only_mode': {}
       },
   watch: {
@@ -113,26 +116,19 @@ import axios from '../../services/customInstance';
 
   methods: {
 
-    refresh_label_list: function () {
-
+    refresh_label_list: async function () {
       if (this.project_string_id == null) {
         return
       }
-
-      var url = null
       this.label_refresh_loading = true
-
-      url = '/api/project/' + this.project_string_id + '/labels/refresh'
-
-      axios.get(url, {})
-      .then(response => {
-
-        this.label_list = response.data.labels_out
-
-      })
-      .catch(error => {
-        console.error(error);
-      });
+      let [result, error] = await get_labels(this.project_string_id, this.$props.schema_id)
+      if(error){
+        this.error = this.$route_api_errors(error)
+        return
+      }
+      if(result){
+        this.label_list = result.labels_out
+      }
 
     },
 

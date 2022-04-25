@@ -71,6 +71,7 @@ class WorkingDir(Base):
                                         uselist=False,
                                         foreign_keys=[default_external_map_id])
 
+    @staticmethod
     def new_user_working_dir(
             session,
             branch,  # branch is sorta deprecated...

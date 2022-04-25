@@ -40,7 +40,6 @@ export default Vue.extend( {
     return {
       step: 1,
       global_progress: 0,
-      project_string_id: null,
     }
   },
   computed: {
