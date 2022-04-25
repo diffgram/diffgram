@@ -4,21 +4,8 @@
     <v-card style=" min-height: 800px">
       <v-card-title>Workflow Builder</v-card-title>
       <div class="d-flex">
-        <v-card class="ml-2 steps-container" width="20%" elevation="0">
-          <v-card-title>Add a Step: </v-card-title>
-          <v-card-subtitle>
-            Drag blocks to the node tree below using the drag handle
-          </v-card-subtitle>
-          <v-container fluid>
-            <workflow_steps_visualizer
-              :workflow="workflow"
-              @newDraggingBlock="on_new_dragging_block"
-              :project_string_id="project_string_id">
 
-            </workflow_steps_visualizer>
-          </v-container>
-        </v-card>
-        <v-card class="ml-2 mr-2 steps-container" width="80%" elevation="0" style="height: 100%">
+        <v-card class="ml-2 mr-2 steps-container" width="20%" elevation="0" style="height: 100%">
           <v-card-title>Workflow: </v-card-title>
           <v-card-text :class="`${over_drag_area ? 'on-drag': ''}`">
             <div
@@ -53,6 +40,22 @@
             </div>
           </v-card-text>
         </v-card>
+
+        <v-card class="ml-2 steps-container" width="80%" elevation="0">
+          <v-card-title>Add a Step: </v-card-title>
+          <v-card-subtitle>
+            Drag blocks to the node tree below using the drag handle
+          </v-card-subtitle>
+          <v-container fluid>
+            <workflow_steps_visualizer
+              :workflow="workflow"
+              @newDraggingBlock="on_new_dragging_block"
+              :project_string_id="project_string_id">
+
+            </workflow_steps_visualizer>
+          </v-container>
+        </v-card>
+
       </div>
 
     </v-card>
