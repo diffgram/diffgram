@@ -11,7 +11,8 @@ describe("Annotation core toolbar test set", () => {
   beforeEach(() => {
     props = {
       propsData: {
-        task: 1
+        task: 1,
+        label_schema: {id: 1, name: 'test'},
       },
       mocks: {
         $get_sequence_color: () => {},
