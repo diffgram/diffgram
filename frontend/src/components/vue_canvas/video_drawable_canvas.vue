@@ -88,6 +88,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       canvas_wrapper_id:{
         default: undefined
       },
+      preview_mode:{
+        default: false
+      },
       project_string_id: {
         default: undefined
       },
@@ -172,6 +175,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
     },
     beforeDestroy(){
       //console.debug("Destroyed")
+      if(this.preview_mode){
+        return
+      }
       document.removeEventListener('focusin', this.focus_in)
       document.removeEventListener('focusout', this.focus_out)
       if(window.stop !== undefined) {
@@ -291,8 +297,13 @@ import {KeypointInstance} from "./instances/KeypointInstance";
           return
         }
         let url = `/api/project/${this.$props.project_string_id}/video/${String(this.$props.file.id)}`
+        if(!this.preview_mode){
+          url += `/instance/buffer/start/${this.current_frame}/end/${(this.current_frame + this.instance_buffer_size)}/list`
+        }
+        else{
+          url += `/instance/buffer/start/${this.current_frame}/end/${(this.current_frame + 1)}/list`
+        }
 
-        url += `/instance/buffer/start/${this.current_frame}/end/${(this.current_frame + this.instance_buffer_size)}/list`
         try{
           const response = await axios.post(url, {
             directory_id : this.$store.state.project.current_directory.directory_id
