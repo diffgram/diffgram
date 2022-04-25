@@ -50,6 +50,11 @@ Named Entity Recognition, Part of Speech Tagging, Coreference Resolution, Depend
 
 ![Diffgram Text Interface](./github_assets/diffgram_text_interface.png)
 
+## Geospatial
+[Geospatial labeling docs](https://diffgram.readme.io/docs/geospatial-annotation)
+
+![Diffgram Geospatial Interface](diffgram_geospatial_interface.png)
+
 ## Documents
 
 ## Geospatial & Tiled Imagery
