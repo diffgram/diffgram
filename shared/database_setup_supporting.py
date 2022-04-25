@@ -26,7 +26,7 @@ from shared.database.video.sequence import Sequence
 
 from shared.database.project import Project
 from shared.database.user import User
-from shared.database.label import Label
+from shared.database.labels.label import Label
 from shared.database.image import Image
 from shared.database.point_cloud.point_cloud import PointCloud
 

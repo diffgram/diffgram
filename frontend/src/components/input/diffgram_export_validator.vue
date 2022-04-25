@@ -112,6 +112,7 @@
   import axios from '../../services/customInstance';
   import Vue from "vue";
   import _ from "lodash";
+  import {get_labels} from '../../services/labelServices';
   import DiffgramExportFileIngestor from "./DiffgramExportFileIngestor";
 
 
@@ -309,8 +310,7 @@
               const response = await axios.post('/api/v1/project/' + this.$props.project_string_id +'/label/new',
                 {
                   colour: color_obj,
-                  name: label_name,
-                  default_sequences_to_single_frame: false
+                  name: label_name
                 });
               this.new_label_name = null
 
@@ -339,51 +339,51 @@
         },
 
         validate_label_names: async function () {
-          try {
-            this.label_names_state = 'loading';
-            this.valid_labels = false;
-            const response = await axios.get(`/api/project/${this.project_string_id}/labels/refresh`, {});
-            if (response.status === 200) {
-              const labels = response.data.labels_out;
-              this.existing_label_file_list = labels;
-              const label_map = {};
-              for(let label of labels){
-                label_map[label.label.name] = label.id;
-              }
-              const label_names = labels.map(elm => elm.label.name)
-              this.missing_labels = [];
-              // Shallow copy before mutating data. Since the pre_labels are frozen (no reactivity)
-              const export_label_names_list = this.diffgram_export_ingestor.get_label_names();
-              for (const label_name of export_label_names_list) {
-                if (!label_names.includes(label_name)) {
-                  this.errors_export_data = {}
-                  this.label_names_state = 'error'
-                  this.errors_export_data['label_names'] = `The label name "${label_name}" does not exist in the project. Please create it.`
-                  this.valid_labels = false;
-                  this.load_label_names = false;
-                  if(!this.missing_labels.includes(label_name)){
-                    this.missing_labels.push(label_name)
-                  }
-                }
-              }
-              if(this.missing_labels.length === 0){
-                this.label_names_state = 'success';
-                this.diffgram_export_ingestor.set_new_label_map(label_map)
-                this.validate_instance_data()
-              }
-            }
 
-          } catch (e) {
-            console.error(e);
+          this.label_names_state = 'loading';
+          this.valid_labels = false;
+          let [result, error] = await get_labels(this.project_string_id, undefined)
+          if(error){
+            console.error(error);
             this.errors_export_data = {};
-            this.errors_export_data = this.$route_api_errors(e);
-            this.errors_export_data['error'] = e.toString();
+            this.errors_export_data = this.$route_api_errors(error);
+            this.errors_export_data['error'] = error.toString();
             this.valid_labels = false;
             this.load_label_names = false;
             this.label_names_state = 'error'
-          } finally {
-
+            return
           }
+          if(result){
+            const labels = result.labels_out;
+            this.existing_label_file_list = labels;
+            const label_map = {};
+            for(let label of labels){
+              label_map[label.label.name] = label.id;
+            }
+            const label_names = labels.map(elm => elm.label.name)
+            this.missing_labels = [];
+            // Shallow copy before mutating data. Since the pre_labels are frozen (no reactivity)
+            const export_label_names_list = this.diffgram_export_ingestor.get_label_names();
+            for (const label_name of export_label_names_list) {
+              if (!label_names.includes(label_name)) {
+                this.errors_export_data = {}
+                this.label_names_state = 'error'
+                this.errors_export_data['label_names'] = `The label name "${label_name}" does not exist in the project. Please create it.`
+                this.valid_labels = false;
+                this.load_label_names = false;
+                if(!this.missing_labels.includes(label_name)){
+                  this.missing_labels.push(label_name)
+                }
+              }
+            }
+            if(this.missing_labels.length === 0){
+              this.label_names_state = 'success';
+              this.diffgram_export_ingestor.set_new_label_map(label_map)
+              this.validate_instance_data()
+            }
+          }
+
+
         },
         fetch_attribute_group_list: async function(){
           try{

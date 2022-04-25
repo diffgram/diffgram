@@ -5,7 +5,7 @@ from shared.database.annotation.instance import Instance
 import shared.data_tools_core as data_tools_core
 import hashlib
 import json
-
+from shared.database.labels.label_schema import LabelSchema
 
 class InstanceTemplate(Base):
     """
@@ -49,9 +49,10 @@ class InstanceTemplate(Base):
 
     @staticmethod
     def list(
-            session,
-            project,
-            status = 'active'
+        session,
+        project,
+        schema: LabelSchema = None,
+        status = 'active'
     ):
         """
             Returns the InstanceTemplates object list matching the given
@@ -60,10 +61,16 @@ class InstanceTemplate(Base):
         :param project:
         :return:
         """
-        result = session.query(InstanceTemplate).filter(
+        query = session.query(InstanceTemplate).filter(
             InstanceTemplate.project_id == project.id,
             InstanceTemplate.status == status
-        ).all()
+        )
+        if schema:
+            templates = schema.get_instance_templates(session = session)
+            template_id_list = [t.id for t in templates]
+            query = query.filter(InstanceTemplate.id.in_(template_id_list))
+
+        result = query.all()
 
         return result
 

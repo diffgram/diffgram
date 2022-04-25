@@ -208,6 +208,7 @@ def job_view_core(session,
 
     # Avoid multiple queries on serializer by fetching joined data
     query = query.options(joinedload(Job.completion_directory))
+    query = query.options(joinedload(Job.label_schema))
 
     job_list = query.all()
 

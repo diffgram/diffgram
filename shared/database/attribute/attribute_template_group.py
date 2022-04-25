@@ -3,7 +3,8 @@ from shared.database.common import *
 from shared.database.attribute.attribute_template import Attribute_Template
 from shared.database.attribute.attribute_template_group_to_file import Attribute_Template_Group_to_File
 from sqlalchemy.dialects.postgresql import JSONB
-
+from sqlalchemy.orm import joinedload
+from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
 
 class Attribute_Template_Group(Base):
     """
@@ -47,9 +48,6 @@ class Attribute_Template_Group(Base):
     # For slider kind
     min_value = Column(Integer)
     max_value = Column(Integer)
-
-    # For Tree View Data
-    tree_data = Column(MutableDict.as_mutable(JSONB))
 
     # External ID's for referencing on integrations like Labelbox, Supervisely, etc.
     default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))  # TODO: add to production
@@ -113,7 +111,6 @@ class Attribute_Template_Group(Base):
             'default_id': self.default_id,
             'is_global': self.is_global,
             'global_type': self.global_type,
-            'tree_data': self.tree_data or {"data": []}
         }
 
     def serialize_for_export(self):
@@ -134,7 +131,6 @@ class Attribute_Template_Group(Base):
             'max_value': self.max_value,
             'is_global': self.is_global,
             'global_type': self.global_type,
-            'tree_data': self.tree_data or {"data": []}
         }
 
     def serialize_with_attributes_and_labels(self, session):
@@ -142,7 +138,7 @@ class Attribute_Template_Group(Base):
         data = self.serialize_with_attributes(session)
         rels = Attribute_Template_Group_to_File.get_all_from_group(session = session, group_id = self.id)
         label_file_list = [rel.file for rel in rels]
-        data['label_file_list'] = [x.serialize_with_label() for x in label_file_list]
+        data['label_file_list'] = [x.serialize_with_label(session = session) for x in label_file_list]
         return data
 
     def serialize_with_attributes(
@@ -218,6 +214,15 @@ class Attribute_Template_Group(Base):
 
         return query.all()
 
+    @staticmethod
+    def get_group_relations_list(session, file_id_list):
+
+        result = session.query(Attribute_Template_Group_to_File).options(
+            joinedload(Attribute_Template_Group_to_File.attribute_template_group)).\
+            filter(Attribute_Template_Group_to_File.file_id.in_(file_id_list)).all()
+
+        return result
+
     # General from project or group id
     @staticmethod
     def list(session,
@@ -228,6 +233,8 @@ class Attribute_Template_Group(Base):
              limit = None,
              return_kind = "objects",
              is_root = None,
+             schema_id = None,
+             group_id_list = None,
              is_global = None
              ):
         """
@@ -240,6 +247,8 @@ class Attribute_Template_Group(Base):
             Attribute_Template_Group.project_id == project_id,
             Attribute_Template_Group.archived == archived)
 
+        if group_id_list:
+            query = query.filter(Attribute_Template_Group.id.in_(group_id_list))
         if group_id:
             query = query.filter(Attribute_Template_Group.id == group_id)
 
@@ -249,6 +258,13 @@ class Attribute_Template_Group(Base):
         if is_root:
             query = query.filter(Attribute_Template_Group.is_root == is_root)
 
+        if schema_id:
+            schema = LabelSchema.get_by_id(session, schema_id)
+            attr_group_list = schema.get_attribute_groups(session)
+            group_ids = [g.id for g in attr_group_list]
+            query = query.filter(
+                Attribute_Template_Group.id.in_(group_ids)
+            )
         # Future
         if recursive == True:
             if limit:
@@ -283,47 +299,6 @@ class Attribute_Template_Group(Base):
         if return_kind == "objects":
             return query.all()
 
-    def generate_unselected_attribute_answer(self, nested_data = None, nested_result = None):
-        if not self.tree_data:
-            return {}
-
-        current_data = nested_data
-        if nested_data is None:
-            current_data = self.tree_data['data']
-
-        result = nested_result
-        if nested_result is None:
-            result = {}
-
-        for elm in current_data:
-            result[elm['name']] = {
-                'is_selected': False
-            }
-            if elm.get('children') and len(elm.get('children')) > 0:
-                self.generate_unselected_attribute_answer(
-                    nested_data = elm.get('children'),
-                    nested_result = result
-                )
-
-        return result
-    def get_tree_attribute_item_names(self, nested_data = None):
-        """
-            Given the attr group. Extract all the names of the items
-            from the tree structure.
-        :param attr_group:
-        :return:
-        """
-        result = []
-        current_data = self.tree_data['data']
-        if nested_data is not None:
-            current_data = nested_data
-        print('CURRENT DATA', current_data)
-        for item in current_data:
-            result.append(item['name'])
-            if item.get('children') and len(item.get('children')) > 0:
-                nested_res = self.get_tree_attribute_item_names(nested_data = item.get('children'))
-                result = result + nested_res
-        return result
 
     @staticmethod
     def get_by_id(session,

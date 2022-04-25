@@ -116,8 +116,6 @@ export const user_module = {
       commit('clear_ai')
       commit('clear_annotation')
       commit('clear_labels')
-      commit('clear_annotation_assignment')
-      commit('clear_annotation_project')
       commit('clear_video_current')
       commit('builder_or_trainer_clear')
       commit('clear_alert')
@@ -125,6 +123,7 @@ export const user_module = {
       commit('clear_job')
       commit('clear_connection')
       commit('clear_ui_schema')
+      commit('clear_userProjects_list')
 
     },
 
@@ -167,6 +166,9 @@ export const project_list = {
   mutations: {
     set_userProjects_list(state, fetched_projects_list) {
       state.user_projects_list = fetched_projects_list
+    },
+    clear_userProjects_list(state) {
+      state.user_projects_list = undefined
     }
   }
 }
@@ -262,13 +264,7 @@ const org = {
 }
 
 
-/* Feb 14, 2020
- * Example context
- * of wanting to easily access values of counts from different
- * components and context that current media core is kind buried.
- *
- *
- */
+
 const job = {
 
   state: {
@@ -570,37 +566,7 @@ const auth = {
 }
 
 
-const annotation_assignment = {
-  state: {
-    assignment: {},
-    on: false,
-  },
-  mutations: {
-    annotation_assignment_on: state => state.on = true,
-    annotation_assignment_off: state => state.on = false,
-    set_annotation_assignment(state, assignment) {
-      state.assignment = assignment
-    },
-    clear_annotation_assignment(state) {
-      state.on = false,
-        state.assignment = {}
-    }
-  }
-}
 
-const annotation_project = {
-  state: {
-    current: {}
-  },
-  mutations: {
-    set_annotation_project(state, current) {
-      state.current = current
-    },
-    clear_annotation_project(state) {
-      state.current = {}
-    }
-  }
-}
 
 const builder_or_trainer = {
   state: {
@@ -769,6 +735,26 @@ const video = {
   }
 }
 
+const snackbar = {
+  state: {
+    show_snackbar: false,
+    text: '',
+    color: 'primary',
+  },
+  mutations: {
+    display_snackbar(state, payload) {
+      state.text = payload.text
+      state.color = payload.color
+      state.show_snackbar = true
+    },
+    hide_snackbar(state) {
+      state.text = ''
+      state.color = 'primary'
+      state.show_snackbar = false
+    }
+  }
+}
+
 export const system = {
   state: {
     is_open_source: undefined
@@ -803,8 +789,6 @@ const my_store = new Vuex.Store({
     project_list: project_list,
     ai: ai,
     labels: labels,
-    annotation_assignment: annotation_assignment,
-    annotation_project: annotation_project,
     video: video,
     job: job,
     connection: connection,
@@ -812,6 +796,7 @@ const my_store = new Vuex.Store({
     clipboard: clipboard,
     public_project: public_project,
     ui_schema: ui_schema,
+    snackbar: snackbar,
     system: system
   },
   plugins: [createPersistedState({

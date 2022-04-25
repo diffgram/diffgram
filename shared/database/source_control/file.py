@@ -8,10 +8,11 @@ from shared.database.text_file import TextFile
 from shared.database.point_cloud.point_cloud import PointCloud
 from shared.database.source_control import working_dir as working_dir_database_models
 from shared.database.annotation.instance import Instance
-from shared.database.label import Label
+from shared.database.labels.label import Label
 from shared.database.text_file import TextFile
 from shared.database.video.sequence import Sequence
 from shared.helpers.sessionMaker import AfterCommitAction
+from shared.database.labels.label_schema import LabelSchema
 import time
 from shared.regular import regular_log
 from sqlalchemy.orm import joinedload
@@ -20,6 +21,9 @@ from shared.database.core import MutableDict
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import UniqueConstraint
 from shared.database.geospatial.geo_asset import GeoAsset
+from shared.helpers.performance import timeit
+
+
 logger = get_shared_logger()
 
 from sqlalchemy.schema import Index
@@ -75,6 +79,8 @@ class File(Base, Caching):
 
     member_updated_id = Column(Integer, ForeignKey('member.id'))
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
+
+
 
     # "added", "removed", "changed"
     state = Column(String())  # for source control
@@ -398,25 +404,18 @@ class File(Base, Caching):
             if point_cloud_file and point_cloud_file.point_cloud:
                 file['point_cloud'] = point_cloud_file.point_cloud.serialize()
 
-        # Could also get parent file information here too...
         if self.type == "label":
-            if self.label:
+            if session:
+                label = Label.get_by_id(session, self.label_id)
+            else:
+                label = self.label
+            #if session:
+            #    file['attribute_group_list'] = Attribute_Template_Group.from_file_attribute_group_list_serialize(
+            #        session = session,
+            #       file_id = self.id)
 
-                # WIP
-                # TODO would prefer this to be a mode or something?
-                # context of only needing group list here
-                # if for label file from project
-                # where as from instance.serialize() we want
-                # the instances of attributes
-
-                if session:
-                    file['attribute_group_list'] = Attribute_Template_Group.from_file_attribute_group_list_serialize(
-                        session = session,
-                        file_id = self.id)
-
-                file['colour'] = self.colour
-
-                file['label'] = self.label.serialize()
+            file['colour'] = self.colour
+            file['label'] = label.serialize()
 
         return file
 
@@ -449,11 +448,10 @@ class File(Base, Caching):
     def serialize_with_video(self, session):
         return self.serialize_with_type(session)
 
-    def serialize_with_label(self):
-        return self.serialize_with_type()
+    def serialize_with_label(self, session = None):
+        return self.serialize_with_type(session)
 
     # Don't share colour by default, use map
-
     def serialize_with_label_and_colour(self, session):
         return self.serialize_with_type(session)
 
@@ -834,7 +832,6 @@ class File(Base, Caching):
     def new_label_file(
         session,
         name = None,
-        default_sequences_to_single_frame = False,
         working_dir_id = None,
         colour = None,
         project = None,
@@ -843,9 +840,8 @@ class File(Base, Caching):
     ):
         label = Label.new(
             session = session,
-            name = name,
-            default_sequences_to_single_frame = default_sequences_to_single_frame,
-        )
+            name = name)
+
         if not label:
             return None
         if existing_file is None:

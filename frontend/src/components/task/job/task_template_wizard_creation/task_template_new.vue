@@ -63,16 +63,11 @@ export default Vue.extend({
       this.$store.state.project.current.project_string_id + " (Project)";
     //this.$store.commit('set_project_string_id', this.project_string_id)
 
-    this.project_string_id = this.project_string_id_route;
 
-    if (!this.project_string_id) {
-      this.project_string_id = this.job.project_string_id;
-    }
     this.loading = false;
   },
   data() {
     return {
-      project_string_id: null,
       loading: false,
       mode: null,
       job: {
@@ -89,6 +84,8 @@ export default Vue.extend({
         share: "project",
         allow_reviews: false,
         review_chance: 0,
+        label_schema_id: undefined,
+        label_schema: undefined,
         instance_type: "box", //"box" or "polygon" or... "text"...
         permission: "all_secure_users",
         field: "Other",
@@ -121,6 +118,14 @@ export default Vue.extend({
         },
       ];
     },
+    project_string_id: function(){
+      let project_string_id = this.project_string_id_route;
+
+      if (!project_string_id) {
+        project_string_id = this.job.project_string_id;
+      }
+      return project_string_id
+    }
   },
   methods: {
     cancel_job_api: async function (mode) {
@@ -159,9 +164,12 @@ export default Vue.extend({
         );
         if (response.data.log.success == true) {
           this.job = response.data.job;
-          this.job.label_file_list = this.job.label_file_list.map((elm) => ({
-            id: elm,
-          }));
+          if(this.job.label_file_list){
+            this.job.label_file_list = this.job.label_file_list.map((elm) => ({
+              id: elm,
+            }));
+          }
+
           this.job.original_attached_directories_dict = {
             ...this.job.attached_directories_dict,
           };
