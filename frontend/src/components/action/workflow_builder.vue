@@ -12,6 +12,7 @@
           <v-container fluid>
             <workflow_steps_visualizer
               :workflow="workflow"
+              @newDraggingBlock="on_new_dragging_block"
               :project_string_id="project_string_id">
 
             </workflow_steps_visualizer>
@@ -48,9 +49,10 @@
 import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
   import axios from '../../services/customInstance';
   import action_existing_list from './action_existing_list.vue';
+  import action_node_box from './action_node_box.vue';
   import upload from '../upload_large.vue';
   import workflow_run_list from './workflow_run_list.vue';
-
+import {v4 as uuidv4 } from 'uuid'
 
   import Vue from "vue";
   import Workflow_steps_visualizer from "./workflow_steps_visualizer.vue";
@@ -61,6 +63,7 @@ import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
 
       components: {
         Workflow_steps_visualizer,
+        action_node_box: action_node_box,
         action_existing_list: action_existing_list,
         upload: upload,
         workflow_run_list: workflow_run_list
@@ -97,7 +100,7 @@ import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
             {
               id: '1',
               parentId: -1,
-              nodeComponent: 'demo-node',
+              nodeComponent: 'action_node_box',
               data: {
                 text: 'Parent block',
                 title: 'New Visitor',
@@ -107,7 +110,7 @@ import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
             {
               id: '2',
               parentId: '1',
-              nodeComponent: 'demo-node',
+              nodeComponent: 'action_node_box',
               data: {
                 text: 'Parent block',
                 title: 'New Visitor',
@@ -117,7 +120,7 @@ import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
             {
               id: '3',
               parentId: '1',
-              nodeComponent: 'demo-node',
+              nodeComponent: 'action_node_box',
               data: {
                 text: 'Parent block',
                 title: 'New Visitor',
@@ -161,6 +164,9 @@ import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
       },
       computed: {},
       methods: {
+        on_new_dragging_block: function(block){
+          this.newDraggingBlock = block;
+        },
         beforeMove ({ to, from }) {
           // called before moving node (during drag and after drag)
           // indicator will turn red when we return false
@@ -269,8 +275,47 @@ import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
           });
 
         },
+        generateId (nodes) {
+          let id = uuidv4()
+          // _.find is a lodash function
+          while (_.find(nodes, { id }) !== undefined) {
+            id = uuidv4()
+          }
+          return id;
+        },
+        onDragStart (event) {
+          console.log('onDragStart', event);
+          this.dragging = true;
+        },
+        remove (event) {
+          console.log('remove', event)
 
+          // node we're dragging to
+          const { node } = event
 
+          // we use lodash in this demo to remove node from the array
+          const nodeIndex = _.findIndex(this.nodes, { id: node.id });
+          this.nodes.splice(nodeIndex, 1);
+        },
+        move (event) {
+          console.log('move', event);
+
+          // node we're dragging to and node we've just dragged
+          const { dragged, to } = event;
+
+          // change panentId to id of node we're dragging to
+          dragged.parentId = to.id;
+        },
+        add (event) {
+          // every node needs an ID
+          const id = this.generateId();
+
+          // add to array of nodes
+          this.nodes.push({
+            id,
+            ...event.node,
+          });
+        },
         api_flow_update: function (mode) {
 
           this.loading = true

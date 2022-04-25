@@ -10,17 +10,22 @@
       >
         <template v-slot:preview="{}">
           <action_step_box
+            :icon="block.icon"
+            :type="block.type"
             :title="block.preview.title"
             :description="block.preview.description"
           />
         </template>
-<!--        <template v-slot:node="{}">-->
-<!--          <demo-node-->
-<!--            :title="block.node.title"-->
-<!--            :description="block.node.description"-->
-<!--            :custom-attribute="block.node.canBeAdded"-->
-<!--          />-->
-<!--        </template>-->
+        <template v-slot:node="{}">
+          <action_node_box
+            @remove="on_remove_node"
+            :icon="block.icon"
+            :type="block.type"
+            :title="block.node.title"
+            :description="block.node.description"
+            :custom-attribute="block.node.canBeAdded"
+          />
+        </template>
       </flowy-new-block>
     </div>
   </div>
@@ -29,8 +34,8 @@
 <script lang="ts">
 
   import axios from '../../services/customInstance';
-  import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
   import action_step_box from './action_step_box'
+  import action_node_box from './action_node_box'
 
   import Vue from "vue";
 
@@ -39,7 +44,8 @@
       name: 'workflow_steps_visualizer',
 
       components: {
-        action_step_box: action_step_box
+        action_step_box: action_step_box,
+        action_node_box: action_node_box
       },
       props: {
         'project_string_id': {
@@ -58,41 +64,47 @@
           dragging: false,
           blocks: [
             {
+              is_trigger: true,
+              icon: 'mdi-folder-arrow-up',
               preview: {
-                title: 'New visitor',
+                title: 'File Upload',
               },
               node: {
-                title: 'New visitor',
-                description: '<span>When a <b>new visitor</b> goes to <b>Site 1</span></span>',
+                title: 'On File Uploaded',
+                description: 'When a file is uploaded',
               },
             },
             {
+              is_trigger: false,
+              icon: 'mdi-checkbox-multiple-marked-outline',
               preview: {
-                title: 'Update database',
-                icon: 'error',
+                title: 'Create Tasks',
               },
               node: {
-                title: 'Update database',
-                description: '<span>Triggers when somebody performs a <b>specified action</b></span>',
+                title: 'Create Tasks',
+                description: 'Add tasks to a task template',
               },
             },
             {
+              is_trigger: false,
+              icon: 'mdi-brain',
               preview: {
-                title: 'Time has passed',
+                title: 'Run Inference Model',
               },
               node: {
-                title: 'Time has passed',
-                description: 'Triggers after a specified <b>amount</b> of time',
+                title: 'Run Inference Model',
+                description: 'Run model and add labels to the file',
               },
             },
             {
+              is_trigger: false,
+              icon: 'mdi-code-braces-box',
               preview: {
-                title: 'Cannot be added',
+                title: 'POST to Webhook',
               },
               node: {
-                title: 'Time has passed',
-                description: 'Triggers after a specified <b>amount</b> of time',
-                canBeAdded: false,
+                title: 'POST to Webhook',
+                description: 'Send data to a given webhook.',
               },
             },
           ],
@@ -106,11 +118,16 @@
           // contains all the props and attributes passed to demo-node
           const { props } = event
           this.newDraggingBlock = props;
+          this.$emit('newDraggingBlock', props)
         },
         onDragStopNewBlock (event) {
           console.log('onDragStopNewBlock', event);
           this.newDraggingBlock = null;
+          this.$emit('newDraggingBlock', null)
         },
+        on_remove_node: function(node){
+          console.log('on_remove_node', node)
+        }
 
       }
     }
