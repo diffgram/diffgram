@@ -18,15 +18,16 @@
             </workflow_steps_visualizer>
           </v-container>
         </v-card>
-        <v-card class="ml-2 mr-2 steps-container" width="80%" elevation="0">
+        <v-card class="ml-2 mr-2 steps-container" width="80%" elevation="0" style="height: 100%">
           <v-card-title>Workflow: </v-card-title>
           <v-card-text>
             <div
               class="flex-grow overflow-auto"
-              style="width:100%;"
+
             >
               <flowy
-                class="q-mx-auto"
+                style="width:100%; border: 1px solid #e0e0e0; background: #e0e0e0; height: 100%; min-height: 650px"
+                class="pa-4"
                 :nodes="nodes"
                 :beforeMove="beforeMove"
                 :beforeAdd="beforeAdd"
@@ -34,7 +35,10 @@
                 @move="move"
                 @remove="remove"
                 @drag-start="onDragStart"
-              ></flowy>
+              >
+
+
+              </flowy>
             </div>
           </v-card-text>
         </v-card>
@@ -102,31 +106,12 @@ import {v4 as uuidv4 } from 'uuid'
               parentId: -1,
               nodeComponent: 'action_node_box',
               data: {
-                text: 'Parent block',
-                title: 'New Visitor',
-                description: '<span>When a <b>new visitor</b> goes to <i>Site 1</i></span>',
+                icon: 'mdi-folder-arrow-up',
+                text: 'Workflow Trigger',
+                title: 'File Upload',
+                description: 'When a file is uploaded to: ',
               },
-            },
-            {
-              id: '2',
-              parentId: '1',
-              nodeComponent: 'action_node_box',
-              data: {
-                text: 'Parent block',
-                title: 'New Visitor',
-                description: '<span>When a <b>new visitor</b> goes to <i>Site 1</i></span>',
-              },
-            },
-            {
-              id: '3',
-              parentId: '1',
-              nodeComponent: 'action_node_box',
-              data: {
-                text: 'Parent block',
-                title: 'New Visitor',
-                description: '<span>When a <b>new visitor</b> goes to <i>Site 1</i></span>',
-              },
-            },
+            }
           ],
           loading: false,
           error: {},

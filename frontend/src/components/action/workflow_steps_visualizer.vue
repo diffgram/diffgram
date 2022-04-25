@@ -10,6 +10,7 @@
       >
         <template v-slot:preview="{}">
           <action_step_box
+            :is_trigger="block.is_trigger"
             :icon="block.icon"
             :type="block.type"
             :title="block.preview.title"
@@ -19,6 +20,7 @@
         <template v-slot:node="{}">
           <action_node_box
             @remove="on_remove_node"
+            :is_trigger="block.is_trigger"
             :icon="block.icon"
             :type="block.type"
             :title="block.node.title"
