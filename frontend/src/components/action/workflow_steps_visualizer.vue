@@ -80,6 +80,18 @@
               },
             },
             {
+              is_trigger: true,
+              icon: 'mdi-folder-arrow-up',
+              kind: 'manual',
+              preview: {
+                title: 'Manual Trigger',
+              },
+              node: {
+                title: 'On Manual Trigger',
+                description: '...',
+              },
+            },
+            {
               is_trigger: false,
               icon: 'mdi-checkbox-multiple-marked-outline',
               kind: 'create_tasks',
