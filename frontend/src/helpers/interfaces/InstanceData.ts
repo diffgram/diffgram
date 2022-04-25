@@ -24,3 +24,8 @@ export interface RelationInstanceData extends InstanceData {
     from_instance_id: number | string;
     to_instance_id: number | string;
 }
+
+export interface TextRelationInstanceData extends RelationInstanceData {
+  text_tokenizer: string;
+}
+
