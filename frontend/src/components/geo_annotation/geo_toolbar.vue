@@ -277,21 +277,34 @@
                 :bottom="true"
                 @click="$emit('redo')"
             />
-
+            
             <v-divider vertical></v-divider>
 
-            <div style="width: 310px">
+            <div class="pl-2 pr-3 pt-4">
+                <label_schema_selector
+                :project_string_id="project_string_id"
+                :initial_schema="label_schema"
+                @change="$emit('change_label_schema', $event)"
+                @update_label_file_visible="$emit('update_label_file_visibility', $event)"
+                >
+                </label_schema_selector>
+            </div>
+            
+            <v-divider vertical></v-divider>
+
+            <div style="width: 310px; overflow-y: hidden; max-height: 50px">
                 <div class="pl-2 pr-3 pt-4">
-                    <label_select_annotation
-                        :project_string_id="project_string_id"
-                        :label_file_list="label_list"
-                        :label_file_colour_map="label_file_colour_map"
-                        :loading="loading"
-                        :request_refresh_from_project="true"
-                        :show_visibility_toggle="true"
-                        @change="$emit('change_label_file', $event)"
-                        @update_label_file_visible="$emit('change_label_visibility', $event)"
-                    />
+                <label_select_annotation
+                    :project_string_id="project_string_id"
+                    :label_file_list="label_list"
+                    :schema_id="label_schema.id"
+                    :label_file_colour_map="label_file_colour_map"
+                    :loading="loading"
+                    :request_refresh_from_project="true"
+                    :show_visibility_toggle="true"
+                    @change="$emit('change_label_file', $event)"
+                    @update_label_file_visible="$emit('change_label_visibility', $event)"
+                />
                 </div>
             </div>
 
@@ -406,6 +419,7 @@
 <script>
 import Vue from 'vue'
 import label_select_annotation from "../label/label_select_annotation.vue"
+import label_schema_selector from "../label/label_schema_selector.vue"
 import task_status from "../annotation/task_status.vue"
 import geo_hotkeys from "./geo_hotkeys.vue"
 
@@ -414,6 +428,7 @@ export default Vue.extend({
     components: {
         label_select_annotation,
         geo_hotkeys,
+        label_schema_selector,
         task_status
     },
     props: {
@@ -468,6 +483,10 @@ export default Vue.extend({
         draw_mode: {
             type: Boolean,
             default: {}
+        },
+        label_schema: {
+            type: Object,
+            required: true
         }
     },
     data() {

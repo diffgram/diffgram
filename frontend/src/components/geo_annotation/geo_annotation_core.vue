@@ -16,6 +16,8 @@
                     :label_file_colour_map="label_file_colour_map"
                     :task="task"
                     :file="file"
+                    :label_schema="label_schema"
+                    @change_label_schema="on_change_label_schema"
                     @edit_mode_toggle="change_mode" 
                     @change_instance_type="change_instance_type"
                     @change_label_file="change_label_file"
@@ -84,7 +86,7 @@ import 'ol/ol.css';
 
 export default Vue.extend({
     name: "geo_annotation_core",
-        props: {
+    props: {
         file: {
             type: Object,
             default: undefined
@@ -99,15 +101,27 @@ export default Vue.extend({
         },
         label_file_colour_map: {
             type: Object,
-            requered: true
+            required: true
         },
         label_list: {
             type: Array,
-            requered: true
+            required: true
         },
         project_string_id: {
             type: String,
-            requered: true
+            required: true
+        },
+        global_attribute_groups_list: {
+            type: Array,
+            required: true
+        },
+        per_instance_attribute_groups_list: {
+            type: Array,
+            required: true
+        },
+        label_schema: {
+            type: Object,
+            required: true
         }
     },
     data() {
@@ -625,7 +639,10 @@ export default Vue.extend({
             this.drawing_poly = []
             this.draw_init = undefined;
             this.drawing_coords = undefined;
-        }
+        },
+        on_change_label_schema: function(schema){
+            this.$emit('change_label_schema', schema)
+        },
     }
 })
 </script>
