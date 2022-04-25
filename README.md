@@ -53,7 +53,7 @@ Named Entity Recognition, Part of Speech Tagging, Coreference Resolution, Depend
 ## Geospatial
 [Geospatial labeling docs](https://diffgram.readme.io/docs/geospatial-annotation)
 
-![Diffgram Geospatial Interface](diffgram_geospatial_interface.png)
+![Diffgram Geospatial Interface](./github_assets/diffgram_geospatial_interface.png)
 
 ## Documents
 
