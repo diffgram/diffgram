@@ -148,10 +148,9 @@
                 <div style="overflow-y: hidden; max-height: 50px">
                     <div class="pl-3 pt-3 pr-2">
                         <v-switch
-                            v-if="draw_mode == true"
                             :label_file="mode_text"
                             data-cy="edit_toggle"
-                            v-model="draw_mode"
+                            :input-value="draw_mode"
                             @change="$emit('edit_mode_toggle')"
                             :label="mode_text"
                         >
@@ -326,10 +325,9 @@
 
             <div class="pl-3 pt-3 pr-2">
                 <v-switch
-                    v-if="draw_mode == true"
                     :label_file="mode_text"
                     data-cy="edit_toggle"
-                    v-model="draw_mode"
+                    :input-value="draw_mode"
                     @change="$emit('edit_mode_toggle')"
                     :label="mode_text"
                 >
