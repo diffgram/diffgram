@@ -17,6 +17,7 @@
                     :task="task"
                     :file="file"
                     :label_schema="label_schema"
+                    :loading="rendering"
                     @change_label_schema="on_change_label_schema"
                     @edit_mode_toggle="change_mode" 
                     @change_instance_type="change_instance_type"
@@ -35,6 +36,7 @@
                 :label_list="label_list"
                 :label_file_colour_map="label_file_colour_map"
                 :toolbar_height="`${!task ? '100px' : '50px'}`"
+                :loading="rendering"
                 @delete_instance="delete_instance"
                 @change_instance_label="change_instance_label"
             />
@@ -43,7 +45,7 @@
                 ref="map" 
                 v-if="!rendering"
                 @click="draw_instance" 
-                :style="`height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%; cursor: ${cursor}`"
+                :style="`height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%;`"
             />
         </div>
     </div>
