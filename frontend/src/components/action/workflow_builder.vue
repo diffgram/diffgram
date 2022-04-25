@@ -20,10 +20,10 @@
         </v-card>
         <v-card class="ml-2 mr-2 steps-container" width="80%" elevation="0" style="height: 100%">
           <v-card-title>Workflow: </v-card-title>
-          <v-card-text>
+          <v-card-text :class="`${over_drag_area ? 'on-drag': ''}`">
             <div
               class="flex-grow overflow-auto"
-
+              v-if="nodes.length > 0"
             >
               <flowy
                 style="width:100%; border: 1px solid #e0e0e0; background: #e0e0e0; height: 100%; min-height: 650px"
@@ -39,6 +39,17 @@
 
 
               </flowy>
+            </div>
+            <div v-else
+                 v-on:mouseenter="on_mouse_over_drag_area"
+                 v-on:mouseleave="on_mouse_outside_drag_area"
+                 class="d-flex justify-center align-center ma-auto"
+                 style="min-height: 650px">
+
+              <div :class="`d-flex flex-column align-center justify-center `">
+                <h1>Drop a Trigger to Get Started</h1>
+                <v-icon size="48">mdi-drag</v-icon>
+              </div>
             </div>
           </v-card-text>
         </v-card>
@@ -106,14 +117,16 @@ import {v4 as uuidv4 } from 'uuid'
               parentId: -1,
               nodeComponent: 'action_node_box',
               data: {
-                icon: 'mdi-folder-arrow-up',
+                icon: 'mdi-clock-start',
                 text: 'Workflow Trigger',
-                title: 'File Upload',
-                description: 'When a file is uploaded to: ',
+                title: 'Action Start',
+                kind: 'action_start',
+                description: 'Drop a trigger below to get started: ',
               },
             }
           ],
           loading: false,
+          over_drag_area: false,
           error: {},
           success: false,
           newDraggingBlock: null,
@@ -149,6 +162,12 @@ import {v4 as uuidv4 } from 'uuid'
       },
       computed: {},
       methods: {
+        on_mouse_outside_drag_area: function(){
+          this.over_drag_area = false;
+        },
+        on_mouse_over_drag_area: function(){
+          this.over_drag_area = true;
+        },
         on_new_dragging_block: function(block){
           this.newDraggingBlock = block;
         },
@@ -354,5 +373,9 @@ import {v4 as uuidv4 } from 'uuid'
 .steps-container{
   min-height: 700px !important;
   border: 1px solid #e0e0e0 !important;
+}
+.on-drag{
+  background: #a1cdff;
+  transition: 0.5s ease;
 }
 </style>

@@ -82,6 +82,7 @@
 <script>
   import Connector_export_renderer from "./connector_export_renderer";
   import connection_select from "../connection/connection_select";
+
   export default {
     components: {Connector_export_renderer, connection_select},
     props: {

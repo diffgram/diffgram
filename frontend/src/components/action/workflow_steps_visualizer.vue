@@ -12,6 +12,7 @@
           <action_step_box
             :is_trigger="block.is_trigger"
             :icon="block.icon"
+            :kind="block.kind"
             :type="block.type"
             :title="block.preview.title"
             :description="block.preview.description"
@@ -22,6 +23,7 @@
             @remove="on_remove_node"
             :is_trigger="block.is_trigger"
             :icon="block.icon"
+            :kind="block.kind"
             :type="block.type"
             :title="block.node.title"
             :description="block.node.description"
@@ -68,6 +70,7 @@
             {
               is_trigger: true,
               icon: 'mdi-folder-arrow-up',
+              kind: 'file_upload',
               preview: {
                 title: 'File Upload',
               },
@@ -79,6 +82,7 @@
             {
               is_trigger: false,
               icon: 'mdi-checkbox-multiple-marked-outline',
+              kind: 'create_tasks',
               preview: {
                 title: 'Create Tasks',
               },
@@ -90,6 +94,7 @@
             {
               is_trigger: false,
               icon: 'mdi-brain',
+              kind: 'run_inferences',
               preview: {
                 title: 'Run Inference Model',
               },
@@ -100,6 +105,7 @@
             },
             {
               is_trigger: false,
+              kind: 'webhook',
               icon: 'mdi-code-braces-box',
               preview: {
                 title: 'POST to Webhook',
