@@ -495,7 +495,7 @@ export default Vue.extend({
             if (this.draw_mode == true) {
                 return "Draw";
             } else {
-                return "View";
+                return "Edit";
             }
         }, 
     }

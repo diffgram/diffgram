@@ -84,7 +84,9 @@ import { defaults as defaultControls } from 'ol/control';
 import LineString from 'ol/geom/LineString';
 import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
+import Select from 'ol/interaction/Select';
 import 'ol/ol.css';
+import instance from "../../services/customInstance";
 
 export default Vue.extend({
     name: "geo_annotation_core",
@@ -133,6 +135,7 @@ export default Vue.extend({
             history: undefined,
             command_manager: undefined,
             invisible_labels: [],
+            active_insatance: null,
             // map management
             map_instance: undefined,
             annotation_layer: undefined,
@@ -179,6 +182,19 @@ export default Vue.extend({
         },
         redo_disabled: function() {
             return !this.history || !this.history.redo_posible
+        },
+        selected_style: function() {
+            const selected = new Style({
+                fill: new Fill({
+                    color: '#eeeeee',
+                }),
+                stroke: new Stroke({
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    width: 2,
+                }),
+            });
+
+            return selected
         },
         draw_instances: function() {
             if (!this.instance_list) return
@@ -358,9 +374,8 @@ export default Vue.extend({
                 ],
             });
 
-
+            
             this.annotation_source = new VectorSource({})
-
 
             const map = new Map({
                 controls: defaultControls().extend([mousePositionControl]),
@@ -378,6 +393,8 @@ export default Vue.extend({
                     })
                 ]
             });
+            
+            map.addInteraction(new Select({ style: this.activate_instance }));
 
             const view = await source.getView()
             const overlayView = new View({...view})
@@ -429,8 +446,6 @@ export default Vue.extend({
                 return
             }
 
-            
-
             if (this.current_instance_type === 'geo_circle') {
                 const lonlat = transform(this.draw_init, 'EPSG:3857', 'EPSG:4326');
                 const line = new LineString([this.draw_init, this.mouse_coords]);
@@ -478,6 +493,11 @@ export default Vue.extend({
             this.draw_init = undefined;
             this.drawing_coords = undefined;
             this.has_changed = true;
+        },
+        activate_instance: function(feature) {
+            const color = feature.get('COLOR') || '#eeeeee';
+            this.selected_style.getFill().setColor(color);
+            return this.selected_style;
         },
         change_mode: function() {
             this.draw_mode = !this.draw_mode
