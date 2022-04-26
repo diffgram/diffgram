@@ -436,6 +436,14 @@ export default Vue.extend({
                 instance_to_move.coords = new_coordinates
                 this.has_changed = true
             }
+            else {
+                const poly_points_translations = [new_coordinates[0] - start_coordinates[0], new_coordinates[1] - start_coordinates[1]]
+                const bounds = instance_to_move.bounds.map(bound => [bound[0] + poly_points_translations[0], bound[1] + poly_points_translations[1]])
+                const lonlat_bounds = bounds.map(bound => transform(bound, 'EPSG:3857', 'EPSG:4326'))
+                instance_to_move.bounds = bounds
+                instance_to_move.lonlat_bounds = lonlat_bounds
+                this.has_changed
+            }
         },
         draw_instance: function() {
             if (!this.draw_mode) return;
@@ -683,7 +691,6 @@ export default Vue.extend({
             this.instance_list.push([newPoly])
             const command = new CreateInstanceCommand([newPoly], this.instance_list)
             this.command_manager.executeCommand(command)
-
 
             this.drawing_instance = false;
             this.feature_list.push(polyFeature);
