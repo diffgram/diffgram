@@ -183,17 +183,24 @@ export default Vue.extend({
             return !this.history || !this.history.redo_posible
         },
         selected_style: function() {
-            const selected = new Style({
+            const styleSet = {
                 fill: new Fill({
                     color: '#eeeeee',
                 }),
                 stroke: new Stroke({
                     color: 'rgba(255, 255, 255, 0.7)',
                     width: 2,
-                }),
-            });
+                })
+            }
+            const style = new Style({
+                ...styleSet,
+                image: new CircleStyle({
+                    radius: 5,
+                    ...styleSet
+                })
+            })
 
-            return selected
+            return style
         },
         draw_instances: function() {
             if (!this.instance_list) return
@@ -376,6 +383,10 @@ export default Vue.extend({
             
             this.annotation_source = new VectorSource({})
 
+            const draw_layer = new VectorLayer({
+                source: this.annotation_source
+            })
+
             const map = new Map({
                 controls: defaultControls().extend([mousePositionControl]),
                 target: 'map',
@@ -387,17 +398,18 @@ export default Vue.extend({
                         source,
                         opacity: 0.5
                     }),
-                    new VectorLayer({
-                        source: this.annotation_source
-                    })
+                    draw_layer
                 ]
             });
 
             const select = new Select({ style: this.activate_instance })
 
             const translate = new Translate({
+                layers: [draw_layer],
                 features: select.getFeatures(),
             });
+
+            translate.on('translateend', this.translate_instance)
             
             map.addInteraction(select);
             map.addInteraction(translate);
@@ -412,6 +424,18 @@ export default Vue.extend({
             })
 
             this.map_instance = map
+        },
+        translate_instance: function(e) {
+            const new_coordinates = e.coordinate
+            const start_coordinates = e.startCoordinate
+            const ol_uid = e.features.array_[0].ol_uid
+            const instance_to_move = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
+            if (instance_to_move.type === "geo_circle" || instance_to_move.type === "geo_point") {
+                const lonlat = transform(new_coordinates, 'EPSG:3857', 'EPSG:4326');
+                instance_to_move.lonlat = lonlat
+                instance_to_move.coords = new_coordinates
+                this.has_changed = true
+            }
         },
         draw_instance: function() {
             if (!this.draw_mode) return;
@@ -501,7 +525,6 @@ export default Vue.extend({
             this.has_changed = true;
         },
         activate_instance: function(feature) {
-            this.active_instance = feature
             const color = feature.get('COLOR') || '#eeeeee';
             this.selected_style.getFill().setColor(color);
             return this.selected_style;
@@ -621,7 +644,7 @@ export default Vue.extend({
             const style = new Style({
                 ...styleSet,
                 image: new CircleStyle({
-                    radius: 1,
+                    radius: 5,
                     ...styleSet
                 })
             })
