@@ -30,7 +30,10 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
         self.project_data = project_data
 
     def test_list_instance_template_api(self):
-        request_data = {}
+        schema = data_mocking.create_label_schema({'name': 'test'}, self.session)
+        request_data = {
+            'schema_id': schema.id
+        }
         instance_template1 = data_mocking.create_instance_template({
             'name': 'test template1',
             'project_id': self.project.id,
@@ -81,6 +84,7 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(len(data['instance_template_list']), 3)
 
     def test_list_instance_template_core(self):
+        schema = data_mocking.create_label_schema({'name': 'test'}, self.session)
         instance_template = data_mocking.create_instance_template({
             'name': 'test template',
             'project_id': self.project.id,
@@ -97,6 +101,7 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
         ).first()
         result, log = instance_template_list.list_instance_templates_core(self.session,
                                                                           self.project,
+                                                                          schema_id = schema.id,
                                                                           log = regular_log.default())
         self.assertEqual(len(log['error'].keys()), 0)
         self.assertEqual(len(result), 1)
