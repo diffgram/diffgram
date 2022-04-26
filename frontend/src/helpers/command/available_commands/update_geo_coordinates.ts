@@ -20,8 +20,8 @@ export default class UpdateInstanceGeoCoordinatesCommand extends Command {
     execute() {
         if (this.initial_instances.length === 0) this.initial_instances = this.instances.map(inst => this._copyInstance(inst))
 
-        this.instances.forEach((instance, index, instanceArray) => {
-            if (instance.type === 'geo_circle' || instance.type === "geo_point") {
+        this.instances.forEach((_, index, instanceArray) => {
+            if (instanceArray[index].type === 'geo_circle' || instanceArray[index].type === "geo_point") {
                 instanceArray[index]["coords"] = this.bounds[0]
                 instanceArray[index]["lonlat"] = this.lonlat_bounds[0]
                 if (this.radius) {
