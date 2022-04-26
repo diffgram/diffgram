@@ -263,6 +263,13 @@ import attribute_group_new from './attribute_group_new.vue'
         let all_attributes = this.attribute_group_list.concat(this.out_of_schema_attributes);
         let result = [];
         for(let attr of all_attributes){
+          if(this.current_instance.type === 'global'){
+            result.push(attr)
+            continue
+          }
+          if(!attr.label_file_list && this.current_instance.type !== 'global'){
+            continue
+          }
           let id_list = attr.label_file_list.map(elm => elm.id);
           if(id_list.includes(this.current_instance.label_file_id)){
             result.push(attr)
