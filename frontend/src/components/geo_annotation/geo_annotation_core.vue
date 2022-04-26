@@ -206,6 +206,13 @@ export default Vue.extend({
         draw_instances: function() {
             if (!this.instance_list) return
 
+            this.feature_list.map(feature => {
+                const feature_to_remove = this.instance_list.get().find(inst => feature.ol_uid === inst.ol_id)
+                if (!feature_to_remove) {
+                    this.annotation_source.removeFeature(feature)
+                }
+            })
+
             this.instance_list.get_all().map(instance => {
                 const already_exists = this.feature_list.find(feature => feature.ol_uid === instance.ol_id)
                 if ((already_exists && instance.soft_delete) || this.invisible_labels.find(label => label.id === instance.label_id)) {
@@ -435,9 +442,10 @@ export default Vue.extend({
         },
         modify_instance: function(e) {
             const ol_uid = e.features.array_[0].ol_uid
-            const instance_to_move = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
+            const find_instance = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
+            const instance_to_move = { ...find_instance }
             if (!instance_to_move) return
-            
+
             if (instance_to_move.type === "geo_point") {
                 const new_coordinates = e.features.array_[0].getGeometry().getCoordinates()
                 const command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
@@ -451,6 +459,14 @@ export default Vue.extend({
                 const command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
                 command.set_new_geo_coords([new_coordinates])
                 command.set_new_radius(newRadius)
+                this.command_manager.executeCommand(command)
+                this.has_changed = true
+            }
+            else {
+                console.log("here modify")
+                const bounds = e.features.array_[0].getGeometry().extent_
+                const command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
+                command.set_new_geo_coords([...bounds])
                 this.command_manager.executeCommand(command)
                 this.has_changed = true
             }
@@ -469,6 +485,7 @@ export default Vue.extend({
                 const bounds = instance_to_move.bounds.map(bound => [bound[0] + poly_points_translations[0], bound[1] + poly_points_translations[1]])
                 command.set_new_geo_coords(bounds)
             }
+            console.log("here translate")
             this.command_manager.executeCommand(command)
             this.has_changed = true
         },
