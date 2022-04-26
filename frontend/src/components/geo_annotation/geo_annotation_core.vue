@@ -84,9 +84,8 @@ import { defaults as defaultControls } from 'ol/control';
 import LineString from 'ol/geom/LineString';
 import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
-import Select from 'ol/interaction/Select';
+import { Select, Translate, defaultInteractions } from 'ol/interaction';
 import 'ol/ol.css';
-import instance from "../../services/customInstance";
 
 export default Vue.extend({
     name: "geo_annotation_core",
@@ -135,7 +134,7 @@ export default Vue.extend({
             history: undefined,
             command_manager: undefined,
             invisible_labels: [],
-            active_insatance: null,
+            active_instance: null,
             // map management
             map_instance: undefined,
             annotation_layer: undefined,
@@ -393,8 +392,15 @@ export default Vue.extend({
                     })
                 ]
             });
+
+            const select = new Select({ style: this.activate_instance })
+
+            const translate = new Translate({
+                features: select.getFeatures(),
+            });
             
-            map.addInteraction(new Select({ style: this.activate_instance }));
+            map.addInteraction(select);
+            map.addInteraction(translate);
 
             const view = await source.getView()
             const overlayView = new View({...view})
@@ -495,6 +501,7 @@ export default Vue.extend({
             this.has_changed = true;
         },
         activate_instance: function(feature) {
+            this.active_instance = feature
             const color = feature.get('COLOR') || '#eeeeee';
             this.selected_style.getFill().setColor(color);
             return this.selected_style;
