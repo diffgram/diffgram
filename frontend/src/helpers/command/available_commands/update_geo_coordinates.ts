@@ -23,7 +23,7 @@ export default class UpdateInstanceGeoCoordinatesCommand extends Command {
         this.instances.forEach((_, index, instanceArray) => {
             if (instanceArray[index].type === 'geo_circle' || instanceArray[index].type === "geo_point") {
                 instanceArray[index]["coords"] = this.bounds[0]
-                instanceArray[index]["lonlat"] = this.lonlat_bounds[0]
+                instanceArray[index]["lonlat"] = this.lonlat_bounds
                 if (this.radius) {
                     instanceArray[index]["radius"] = this.radius
                 }
