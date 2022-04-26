@@ -72,11 +72,59 @@
               icon: 'mdi-folder-arrow-up',
               kind: 'file_upload',
               preview: {
-                title: 'File Upload',
+                title: 'Any New Data',
               },
               node: {
                 title: 'On File Uploaded',
                 description: 'When a file is uploaded',
+              },
+            },
+            {
+              is_trigger: true,
+              icon: 'mdi-folder-arrow-up',
+              kind: 'file_upload',
+              preview: {
+                title: 'Receive Data from Pre-Label',
+              },
+              node: {
+                title: 'On File Uploaded',
+                description: 'When a file is uploaded',
+              },
+            },
+            {
+              is_trigger: false,
+              icon: 'mdi-folder-arrow-up',
+              kind: 'file_upload',
+              preview: {
+                title: 'Generate Export',
+              },
+              node: {
+                title: 'Generate Export',
+                description: '...........',
+              },
+            },
+            {
+              is_trigger: false,
+              icon: 'mdi-folder-arrow-up',
+              kind: 'file_upload',
+              preview: {
+                title: 'Push Data to a Bucket',
+              },
+              node: {
+                title: 'Push Data to a Bucket',
+                description: '...........',
+              },
+            },
+            {
+              is_trigger: false,
+              icon: 'mdi-folder-arrow-up',
+              kind: 'file_upload',
+              preview: {
+                title: 'Run Custom Code',
+              },
+              node: {
+                title: 'Run Custom Code',
+                description: '...........',
               },
             },
             {
@@ -96,10 +144,10 @@
               icon: 'mdi-checkbox-multiple-marked-outline',
               kind: 'create_tasks',
               preview: {
-                title: 'Create Tasks',
+                title: 'Human Tasks',
               },
               node: {
-                title: 'Create Tasks',
+                title: 'Human Tasks',
                 description: 'Add tasks to a task template',
               },
             },
@@ -108,10 +156,10 @@
               icon: 'mdi-brain',
               kind: 'run_inferences',
               preview: {
-                title: 'Run Inference Model',
+                title: 'Run Pre-Label',
               },
               node: {
-                title: 'Run Inference Model',
+                title: 'Run Pre-Label',
                 description: 'Run model and add labels to the file',
               },
             },
@@ -127,6 +175,91 @@
                 description: 'Send data to a given webhook.',
               },
             },
+            {
+              is_trigger: false,
+              icon: 'mdi-filter',
+              kind: 'filter',
+              preview: {
+                title: 'Filter Data',
+              },
+              node: {
+                title: 'Filter Data',
+                description: '...',
+              },
+            },
+            {
+              is_trigger: false,
+              icon: 'mdi-filter',
+              kind: 'filter',
+              preview: {
+                title: 'Start Training',
+              },
+              node: {
+                title: 'Start Training',
+                description: '...',
+              },
+            },
+            {
+              is_trigger: false,
+              icon: 'mdi-filter',
+              kind: 'filter',
+              preview: {
+                title: 'Alert / Email',
+              },
+              node: {
+                title: 'Alert / Email',
+                description: '...',
+              },
+            },
+            {
+              is_trigger: false,
+              icon: 'mdi-filter',
+              kind: 'filter',
+              preview: {
+                title: 'Task Milestone Reached',
+              },
+              node: {
+                title: 'Task Milestone Reached',
+                description: '...',
+              },
+            },
+            {
+              is_trigger: false,
+              icon: 'mdi-filter',
+              kind: 'filter',
+              preview: {
+                title: 'Loop Back to a Step',
+              },
+              node: {
+                title: 'Loop Back to a Step',
+                description: '...',
+              },
+            },
+            {
+              is_trigger: false,
+              icon: 'mdi-filter',
+              kind: 'filter',
+              preview: {
+                title: 'Loop Back to a Step',
+              },
+              node: {
+                title: 'Loop Back to a Step',
+                description: '...',
+              },
+            },
+            {
+              is_trigger: false,
+              icon: 'mdi-filter',
+              kind: 'filter',
+              preview: {
+                title: 'Human Supervision Control Point',
+              },
+              node: {
+                title: 'Human Supervision Control Point',
+                description: '...',
+              },
+            },
+
           ],
 
         }
