@@ -1528,7 +1528,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             'to_creation_ref': ref2,
             'creation_ref_id': str(uuid.uuid4()),
             'soft_delete': False,
-            'label_file_id': None,
+            'label_file_id': label_file.id,
             'type': 'relation'
         }
         instance_list = [inst1, inst2, relation]
@@ -1553,7 +1553,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
             'to_instance_id': new_instances[0].id,
             'creation_ref_id': str(uuid.uuid4()),
             'soft_delete': False,
-            'label_file_id': None,
+            'label_file_id': label_file.id,
             'type': 'relation'
         }
         self.session.commit()
