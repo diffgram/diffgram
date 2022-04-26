@@ -285,6 +285,11 @@ def create_instance_template(instance_template_data, session):
                 instance_id = new_instance.id
             )
             session.add(rel)
+    if instance_template_data.get('schema_id'):
+        schema = LabelSchema.get_by_id(session, instance_template_data.get('schema_id'))
+        schema.add_instance_template(session = session,
+                                     instance_template_id = instance_template.id,
+                                     member_created_id = schema.member_created_id)
     regular_methods.commit_with_rollback(session)
     return instance_template
 
@@ -326,6 +331,9 @@ def create_file(file_data, session):
         regular_methods.commit_with_rollback(session)
         file.image = image
         file.image_id = image.id
+    elif file.type == 'label':
+        label = create_label({'name': 'test_label'}, session)
+        file.label_id = label.id
     session.add(file)
     regular_methods.commit_with_rollback(session)
     return file
