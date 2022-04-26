@@ -474,17 +474,24 @@ export default Vue.extend({
             const start_coordinates = e.startCoordinate
             const ol_uid = e.features.array_[0].ol_uid
             const instance_to_move = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
-            const command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
+            if (!instance_to_move) return;
+
+            let command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
             if (instance_to_move.type === "geo_circle") {
+                command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
                 command.set_new_geo_coords([new_coordinates])
             }
-            else {
+            else if (instance_to_move.type === 'geo_box' || instance_to_move.type === 'geo_polygon' || instance_to_move.type === 'geo_polyline') {
+                command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
                 const poly_points_translations = [new_coordinates[0] - start_coordinates[0], new_coordinates[1] - start_coordinates[1]]
                 const bounds = instance_to_move.bounds.map(bound => [bound[0] + poly_points_translations[0], bound[1] + poly_points_translations[1]])
                 command.set_new_geo_coords(bounds)
             }
-            this.command_manager.executeCommand(command)
-            this.has_changed = true
+
+            if (command) {
+                this.command_manager.executeCommand(command)
+                this.has_changed = true
+            }
         },
         draw_instance: function() {
             if (!this.draw_mode) return;
