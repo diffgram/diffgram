@@ -442,8 +442,7 @@ export default Vue.extend({
         },
         modify_instance: function(e) {
             const ol_uid = e.features.array_[0].ol_uid
-            const find_instance = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
-            const instance_to_move = { ...find_instance }
+            const instance_to_move = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
             if (!instance_to_move) return
 
             if (instance_to_move.type === "geo_point") {
@@ -462,11 +461,10 @@ export default Vue.extend({
                 this.command_manager.executeCommand(command)
                 this.has_changed = true
             }
-            else {
-                console.log("here modify")
-                const bounds = e.features.array_[0].getGeometry().extent_
+            else if (instance_to_move.type === 'geo_box' || instance_to_move.type === 'geo_polygon' || instance_to_move.type === 'geo_polyline') {
+                const bounds = e.features.array_[0].getGeometry().getCoordinates()
                 const command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
-                command.set_new_geo_coords([...bounds])
+                command.set_new_geo_coords(bounds[0])
                 this.command_manager.executeCommand(command)
                 this.has_changed = true
             }
@@ -485,7 +483,6 @@ export default Vue.extend({
                 const bounds = instance_to_move.bounds.map(bound => [bound[0] + poly_points_translations[0], bound[1] + poly_points_translations[1]])
                 command.set_new_geo_coords(bounds)
             }
-            console.log("here translate")
             this.command_manager.executeCommand(command)
             this.has_changed = true
         },
