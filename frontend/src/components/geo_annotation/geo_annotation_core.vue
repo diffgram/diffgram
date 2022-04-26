@@ -62,7 +62,7 @@ import {
     CreateInstanceCommand, 
     DeleteInstanceCommand,
     UpdateInstanceLabelCommand,
-    UpdateInstanceGeoPositionCommand
+    UpdateInstanceGeoCoordinatesCommand
 } from "../../helpers/command/available_commands"
 import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
 import { getInstanceList, postInstanceList } from "../../services/instanceList";
@@ -85,7 +85,7 @@ import { defaults as defaultControls } from 'ol/control';
 import LineString from 'ol/geom/LineString';
 import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
-import { Select, Translate, defaultInteractions } from 'ol/interaction';
+import { Select, Translate, Modify } from 'ol/interaction';
 import 'ol/ol.css';
 
 export default Vue.extend({
@@ -186,10 +186,10 @@ export default Vue.extend({
         selected_style: function() {
             const styleSet = {
                 fill: new Fill({
-                    color: '#eeeeee',
+                    color: 'rgba(255, 255, 255, 0.5)',
                 }),
                 stroke: new Stroke({
-                    color: 'rgba(255, 255, 255, 0.7)',
+                    color: 'rgba(255, 255, 255, 1)',
                     width: 2,
                 })
             }
@@ -410,10 +410,17 @@ export default Vue.extend({
                 features: select.getFeatures(),
             });
 
+            const modify = new Modify({
+                layers: [draw_layer],
+                features: select.getFeatures(),
+            });
+
             translate.on('translateend', this.translate_instance)
+            modify.on('modifyend', this.modify_instance)
             
             map.addInteraction(select);
             map.addInteraction(translate);
+            map.addInteraction(modify);
 
             const view = await source.getView()
             const overlayView = new View({...view})
@@ -426,13 +433,35 @@ export default Vue.extend({
 
             this.map_instance = map
         },
+        modify_instance: function(e) {
+            const ol_uid = e.features.array_[0].ol_uid
+            const instance_to_move = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
+            if (!instance_to_move) return
+            
+            if (instance_to_move.type === "geo_point") {
+                const new_coordinates = e.features.array_[0].getGeometry().getCoordinates()
+                const command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
+                command.set_new_geo_coords([new_coordinates])
+                this.command_manager.executeCommand(command)
+                this.has_changed = true
+            }
+            else if (instance_to_move.type === "geo_circle") {
+                const newRadius = e.features.array_[0].getGeometry().getRadius()
+                const new_coordinates = e.features.array_[0].getGeometry().getCenter()
+                const command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
+                command.set_new_geo_coords([new_coordinates])
+                command.set_new_radius(newRadius)
+                this.command_manager.executeCommand(command)
+                this.has_changed = true
+            }
+        },
         translate_instance: function(e) {
             const new_coordinates = e.coordinate
             const start_coordinates = e.startCoordinate
             const ol_uid = e.features.array_[0].ol_uid
             const instance_to_move = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
-            const command = new UpdateInstanceGeoPositionCommand([instance_to_move], this.instance_list)
-            if (instance_to_move.type === "geo_circle" || instance_to_move.type === "geo_point") {
+            const command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
+            if (instance_to_move.type === "geo_circle") {
                 command.set_new_geo_coords([new_coordinates])
             }
             else {
@@ -530,9 +559,8 @@ export default Vue.extend({
             this.drawing_coords = undefined;
             this.has_changed = true;
         },
-        activate_instance: function(feature) {
-            const color = feature.get('COLOR') || '#eeeeee';
-            this.selected_style.getFill().setColor(color);
+        activate_instance: function() {
+            this.selected_style.getFill()
             return this.selected_style;
         },
         change_mode: function() {
