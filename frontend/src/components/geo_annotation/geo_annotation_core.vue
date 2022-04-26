@@ -61,7 +61,8 @@ import History from "../../helpers/history"
 import { 
     CreateInstanceCommand, 
     DeleteInstanceCommand,
-    UpdateInstanceLabelCommand
+    UpdateInstanceLabelCommand,
+    UpdateInstanceGeoPositionCommand
 } from "../../helpers/command/available_commands"
 import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
 import { getInstanceList, postInstanceList } from "../../services/instanceList";
@@ -430,20 +431,17 @@ export default Vue.extend({
             const start_coordinates = e.startCoordinate
             const ol_uid = e.features.array_[0].ol_uid
             const instance_to_move = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
+            const command = new UpdateInstanceGeoPositionCommand([instance_to_move], this.instance_list)
             if (instance_to_move.type === "geo_circle" || instance_to_move.type === "geo_point") {
-                const lonlat = transform(new_coordinates, 'EPSG:3857', 'EPSG:4326');
-                instance_to_move.lonlat = lonlat
-                instance_to_move.coords = new_coordinates
-                this.has_changed = true
+                command.set_new_geo_coords([new_coordinates])
             }
             else {
                 const poly_points_translations = [new_coordinates[0] - start_coordinates[0], new_coordinates[1] - start_coordinates[1]]
                 const bounds = instance_to_move.bounds.map(bound => [bound[0] + poly_points_translations[0], bound[1] + poly_points_translations[1]])
-                const lonlat_bounds = bounds.map(bound => transform(bound, 'EPSG:3857', 'EPSG:4326'))
-                instance_to_move.bounds = bounds
-                instance_to_move.lonlat_bounds = lonlat_bounds
-                this.has_changed
+                command.set_new_geo_coords(bounds)
             }
+            this.command_manager.executeCommand(command)
+            this.has_changed = true
         },
         draw_instance: function() {
             if (!this.draw_mode) return;
