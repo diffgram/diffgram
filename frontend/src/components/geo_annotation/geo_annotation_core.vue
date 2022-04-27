@@ -85,7 +85,6 @@ import { defaults as defaultControls } from 'ol/control';
 import LineString from 'ol/geom/LineString';
 import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
-import { Select, Translate, Modify } from 'ol/interaction';
 import Transform from "ol-ext/interaction/Transform";
 import 'ol/ol.css';
 
@@ -143,8 +142,6 @@ export default Vue.extend({
             mouse_coords: undefined,
             feature_list: [],
             drawing_feature: undefined,
-            translate_interaction: null,
-            modify_interaction: null,
             transform_interaction: null,
             // Others
             selected: null,
@@ -258,6 +255,13 @@ export default Vue.extend({
         }
     },
     watch: {
+        draw_mode: function() {
+            if (!this.draw_mode) {
+                this.map_instance.addInteraction(this.transform_interaction)
+            } else {
+                this.map_instance.removeInteraction(this.transform_interaction)
+            }
+        },
         file: async function() {
             this.rendering = true;
             this.map_instance = null
@@ -415,50 +419,15 @@ export default Vue.extend({
                 ]
             });
 
-            const select = new Select({ style: this.activate_instance })
-
-            this.translate_interaction = new Translate({
-                layers: [draw_layer],
-                features: select.getFeatures(),
-            });
-
-            this.modify_interaction = new Modify({
-                layers: [draw_layer],
-                features: select.getFeatures(),
-                insertVertexCondition: "never",
-            });
-
             this.transform_interaction = new Transform({
                 layers: [draw_layer],
-                features: select.getFeatures(),
             })
 
-            this.translate_interaction.on('translateend', this.translate_instance)
-            this.modify_interaction.on('modifyend', this.modify_instance)
-            this.transform_interaction.on('modifyend', e => {
-                console.log(e)
-            })
+            this.transform_interaction.on('translateend', this.transform_interraction_handler)
 
-            select.on('select', e => {
-                if (e.selected.length === 0) return this.selected = null                
-                this.selected = e.selected[0]
-                const selected_id = e.selected[0].ol_uid
-                const selected_instance = this.instance_list.get().find(inst => inst.ol_id === selected_id)
-                console.log(selected_instance, e.selected[0])
-                if (selected_instance && selected_instance.type !== 'geo_box') {
-                    console.log('here')
-                    map.removeInteraction(this.transform_interaction)
-                    map.addInteraction(this.translate_interaction)
-                    map.addInteraction(this.modify_interaction)
-                } else {
-                    console.log("here 2")
-                    map.removeInteraction(this.translate_interaction)
-                    map.removeInteraction(this.modify_interaction)
-                    map.addInteraction(this.transform_interaction)
-                }
-            })
+            this.transform_interaction.on('rotateend', this.transform_interraction_handler)
 
-            map.addInteraction(select)
+            this.transform_interaction.on('scaleend', this.transform_interraction_handler)
 
             const view = await source.getView()
             const overlayView = new View({...view})
@@ -471,55 +440,32 @@ export default Vue.extend({
 
             this.map_instance = map
         },
-        modify_instance: function(e) {
-            const ol_uid = e.features.array_[0].ol_uid
-            const instance_to_move = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
-            if (!instance_to_move) return
+        transform_interraction_handler: function(e) {
+            const { ol_uid } = e.feature
+            const instance = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
+            if (!instance) return;
 
-            if (instance_to_move.type === "geo_point") {
-                const new_coordinates = e.features.array_[0].getGeometry().getCoordinates()
-                const command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
-                command.set_new_geo_coords([new_coordinates])
-                this.command_manager.executeCommand(command)
-                this.has_changed = true
-            }
-            else if (instance_to_move.type === "geo_circle") {
-                const newRadius = e.features.array_[0].getGeometry().getRadius()
-                const new_coordinates = e.features.array_[0].getGeometry().getCenter()
-                const command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
-                command.set_new_geo_coords([new_coordinates])
-                command.set_new_radius(newRadius)
-                this.command_manager.executeCommand(command)
-                this.has_changed = true
-            }
-            else if (instance_to_move.type === 'geo_box' || instance_to_move.type === 'geo_polygon' || instance_to_move.type === 'geo_polyline') {
-                const bounds = e.features.array_[0].getGeometry().getCoordinates()
-                const command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
-                command.set_new_geo_coords(bounds[0])
-                this.command_manager.executeCommand(command)
-                this.has_changed = true
-            }
-        },
-        translate_instance: function(e) {
-            const new_coordinates = e.coordinate
-            const start_coordinates = e.startCoordinate
-            const ol_uid = e.features.array_[0].ol_uid
-            const instance_to_move = this.instance_list.get().find(inst => inst.ol_id === ol_uid)
-            if (!instance_to_move) return;
-
-            let command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
-            if (instance_to_move.type === "geo_circle") {
-                command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
-                command.set_new_geo_coords([new_coordinates])
-            }
-            else if (instance_to_move.type === 'geo_box' || instance_to_move.type === 'geo_polygon' || instance_to_move.type === 'geo_polyline') {
-                command = new UpdateInstanceGeoCoordinatesCommand([instance_to_move], this.instance_list)
-                const poly_points_translations = [new_coordinates[0] - start_coordinates[0], new_coordinates[1] - start_coordinates[1]]
-                const bounds = instance_to_move.bounds.map(bound => [bound[0] + poly_points_translations[0], bound[1] + poly_points_translations[1]])
+            if (instance.type === 'geo_polygon' || instance.type === 'geo_polyline' || instance.type === 'geo_box') {
+                let bounds = e.feature.getGeometry().getCoordinates()
+                if (instance.type === 'geo_polygon' || instance.type === 'geo_box') bounds = bounds[0]
+                let command = new UpdateInstanceGeoCoordinatesCommand([instance], this.instance_list)
                 command.set_new_geo_coords(bounds)
+                this.command_manager.executeCommand(command)
+                this.has_changed = true
             }
-
-            if (command) {
+            else if (instance.type === 'geo_circle') {
+                const center = e.feature.getGeometry().getCenter()
+                const radius = e.feature.getGeometry().getRadius()
+                let command = new UpdateInstanceGeoCoordinatesCommand([instance], this.instance_list)
+                command.set_new_geo_coords([center])
+                command.set_new_radius(radius)
+                this.command_manager.executeCommand(command)
+                this.has_changed = true
+            }
+            else if (instance.type === 'geo_point') {
+                const new_coordinates = e.feature.getGeometry().getCoordinates()
+                const command = new UpdateInstanceGeoCoordinatesCommand([instance], this.instance_list)
+                command.set_new_geo_coords([new_coordinates])
                 this.command_manager.executeCommand(command)
                 this.has_changed = true
             }
