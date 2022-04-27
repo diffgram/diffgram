@@ -114,7 +114,7 @@ jobs:
     steps:
       - uses: actions/setup-python@v3
         with:
-          python-version: '3.7.2'
+          python-version: '3.7'
       - run: apt-get install libgdal-dev
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
@@ -133,6 +133,7 @@ jobs:
       - run: cp -rf . /__w/diffgram
       - run: cd /__w/diffgram
       - run: cd walrus
+      - run: virtualenv -p python3.7 venv && source venv/bin/activate
       - run: pip3 install -r walrus/requirements.txt
       - run: pip3 install pytest sqlalchemy-utils
       - run: mkdir /gcp
