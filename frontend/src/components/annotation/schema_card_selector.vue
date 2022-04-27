@@ -81,7 +81,7 @@ export default {
     }
   },
   mounted() {
-    if (this.$route.query.schema_id) {
+    if (this.$route && this.$route.query.schema_id) {
       let schema_id_route = parseInt(this.$route.query.schema_id, 10)
       let schema = this.schema_list.find(elm => elm.id === schema_id_route)
       if(schema){
@@ -102,7 +102,7 @@ export default {
     select_schema: function(item){
       this.selected_schema = item;
       this.$emit('schema_selected',item)
-      if(this.$route.query.schema_id !== item.id.toString()){
+      if(this.$route && this.$route.query.schema_id !== item.id.toString()){
         this.$router.replace({ query: { schema_id: item.id } })
       }
 

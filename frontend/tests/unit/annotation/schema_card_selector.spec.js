@@ -5,6 +5,7 @@ import schema_card_selector from "@/components/annotation/schema_card_selector";
 import * as labelServices from '@/services/labelServices'
 import * as eventServices from '@/components/event/create_event'
 import {create_event} from "@/components/event/create_event";
+
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
 
@@ -17,6 +18,9 @@ describe("Test labels_page.vue", () => {
     props = {
       mocks: {
         $get_sequence_color: () => {
+        },
+        $route: {
+          query: {}
         },
         task: 1,
         $store: {
@@ -66,9 +70,11 @@ describe("Test labels_page.vue", () => {
       new_schema_name: 'test'
     })
     wrapper.vm.$refs.menu = {
-      close_menu: () => {}
+      close_menu: () => {
+      }
     }
-    wrapper.vm.$store.commit = () => {}
+    wrapper.vm.$store.commit = () => {
+    }
     let res = {
       dummy: 'test'
     }
@@ -87,8 +93,6 @@ describe("Test labels_page.vue", () => {
     expect(spy3).toHaveBeenCalled()
     expect(wrapper.emitted().schema_created).toBeTruthy()
   });
-
-
 
 
 });

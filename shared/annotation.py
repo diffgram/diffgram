@@ -170,6 +170,11 @@ class Annotation_Update():
             'valid_values_list': ['box',
                                   'polygon',
                                   'point',
+                                  'geo_point',
+                                  'geo_circle',
+                                  'geo_polyline',
+                                  'geo_polygon',
+                                  'geo_box',
                                   'cuboid',
                                   'tag',
                                   'line',
@@ -362,7 +367,28 @@ class Annotation_Update():
         {'text_tokenizer': {
             'kind': str,
             'required': False
-        }}
+        }},
+        {'lonlat': {
+            'kind': list,
+            'required': False
+        }},
+        {'coords': {
+            'kind': list,
+            'required': False
+        }},
+        {'radius': {
+            'kind': float,
+            'required': False
+        }},
+        {'bounds': {
+            'kind': list,
+            'required': False
+        }},
+        {'bounds_lonlat': {
+            'kind': list,
+            'required': False
+        }},
+
     ])
 
     # If we want this.
@@ -1109,6 +1135,11 @@ class Annotation_Update():
                 to_instance_id = input['to_instance_id'],
                 from_creation_ref = input['from_creation_ref'],
                 to_creation_ref = input['to_creation_ref'],
+                lonlat = input['lonlat'],
+                coords = input['coords'],
+                radius = input['radius'],
+                bounds = input['bounds'],
+                bounds_lonlat = input['bounds_lonlat'],
             )
 
     def get_min_coordinates_instance(self, instance):
@@ -1273,7 +1304,13 @@ class Annotation_Update():
                         from_instance_id = None,
                         to_instance_id = None,
                         from_creation_ref = None,
-                        to_creation_ref = None):
+                        to_creation_ref = None,
+                        lonlat = None,
+                        coords = None,
+                        radius = None,
+                        bounds = None,
+                        bounds_lonlat = None,
+                        ):
         """
         Assumes a "system" level context
 
@@ -1366,8 +1403,12 @@ class Annotation_Update():
             'from_instance_id': from_instance_id,
             'to_instance_id': to_instance_id,
             'text_tokenizer': text_tokenizer,
+            'lonlat': lonlat,
+            'coords': coords,
+            'radius': radius,
+            'bounds': bounds,
+            'bounds_lonlat': bounds_lonlat,
         }
-
         if overwrite_existing_instances and id is not None:
             self.instance = self.session.query(Instance).filter(Instance.id == id).first()
             for key, value in instance_attrs.items():
@@ -1448,7 +1489,14 @@ class Annotation_Update():
 
     def deduct_spatial_coordinates(self):
 
-        if self.instance.type in ["global", "relation", "token"]:
+        if self.instance.type in ["global",
+                                  'geo_point',
+                                  'geo_circle',
+                                  'geo_polyline',
+                                  'geo_polygon',
+                                  'geo_box',
+                                  "relation",
+                                  "token"]:
             return
 
         min_coords = self.get_min_coordinates_instance(self.instance)
