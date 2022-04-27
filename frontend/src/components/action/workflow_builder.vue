@@ -7,52 +7,21 @@
 
         <v-card class="ml-2 mr-2 steps-container" width="20%" elevation="0" style="height: 100%">
           <v-card-title>Workflow: </v-card-title>
-          <v-card-text :class="`${over_drag_area ? 'on-drag': ''}`">
-            <div
-              class="flex-grow overflow-auto"
-              v-if="nodes.length > 0"
-            >
-              <flowy
-                style="width:100%; border: 1px solid #e0e0e0; background: #e0e0e0; height: 100%; min-height: 650px"
-                class="pa-4"
-                :nodes="nodes"
-                :beforeMove="beforeMove"
-                :beforeAdd="beforeAdd"
-                @add="add"
-                @move="move"
-                @remove="remove"
-                @drag-start="onDragStart"
-              >
-
-
-              </flowy>
-            </div>
-            <div v-else
-                 v-on:mouseenter="on_mouse_over_drag_area"
-                 v-on:mouseleave="on_mouse_outside_drag_area"
-                 class="d-flex justify-center align-center ma-auto"
-                 style="min-height: 650px">
-
-              <div :class="`d-flex flex-column align-center justify-center `">
-                <h1>Drop a Trigger to Get Started</h1>
-                <v-icon size="48">mdi-drag</v-icon>
-              </div>
-            </div>
-          </v-card-text>
-        </v-card>
-
-        <v-card class="ml-2 steps-container" width="80%" elevation="0">
-          <v-card-title>Add a Step: </v-card-title>
-          <v-card-subtitle>
-            Drag blocks to the node tree below using the drag handle
-          </v-card-subtitle>
-          <v-container fluid>
+          <v-card-text>
             <workflow_steps_visualizer
+              @select_action="on_select_action"
               :workflow="workflow"
               @newDraggingBlock="on_new_dragging_block"
               :project_string_id="project_string_id">
 
             </workflow_steps_visualizer>
+          </v-card-text>
+
+        </v-card>
+
+        <v-card v-if="selected_action" class="ml-2 steps-container" width="80%" elevation="0">
+          <v-container fluid v-if="selected_action">
+            <action_config :action="selected_action"></action_config>
           </v-container>
         </v-card>
 
@@ -68,6 +37,7 @@ import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
   import axios from '../../services/customInstance';
   import action_existing_list from './action_existing_list.vue';
   import action_node_box from './action_node_box.vue';
+  import action_config from './action_config.vue';
   import upload from '../upload_large.vue';
   import workflow_run_list from './workflow_run_list.vue';
 import {v4 as uuidv4 } from 'uuid'
@@ -80,6 +50,7 @@ import {v4 as uuidv4 } from 'uuid'
       name: 'workflow_builder',
 
       components: {
+        action_config,
         Workflow_steps_visualizer,
         action_node_box: action_node_box,
         action_existing_list: action_existing_list,
@@ -97,6 +68,7 @@ import {v4 as uuidv4 } from 'uuid'
 
       data() {
         return {
+          selected_action: null,
           trigger_types: [
             {name: 'Task is completed.', value: 'task_completed'},
             {name: 'Task is created.', value: 'task_created'},
@@ -138,7 +110,19 @@ import {v4 as uuidv4 } from 'uuid'
             active: null,
             is_new: null,
             time_window: undefined,
-            kind: null
+            kind: null,
+            actions_list: [
+              {
+                title: 'Start Action',
+                description: 'Click + Button to add a new Step',
+                kind: 'action_start',
+                icon: 'mdi-trigger',
+                initial: true,
+                ordinal: -1,
+
+              }
+
+            ],
           }
         }
       },
@@ -165,6 +149,9 @@ import {v4 as uuidv4 } from 'uuid'
       },
       computed: {},
       methods: {
+        on_select_action: function(action){
+          this.selected_action = action
+        },
         on_mouse_outside_drag_area: function(){
           this.over_drag_area = false;
         },

@@ -1,10 +1,10 @@
 <template>
   <div>
-    <v-card :class="`pa-2 node-card ${kind === 'action_start' ? 'action-start' : ''}` "
-            style="position: relative"
-            @click="open_action_config">
+    <v-card :class="`pa-2 node-card ${action.kind === 'action_start' ? 'action-start' : ''}` "
+            @click="select_action(action)"
+            style="position: relative">
       <v-chip
-        v-if="is_trigger"
+        v-if="action.is_trigger"
         x-small
         color="warning"
         style="position: absolute; top: -10px; right: -15px">
@@ -12,9 +12,9 @@
         <strong>Trigger</strong>
       </v-chip>
       <v-card-title class="d-flex">
-        <v-icon color="secondary" x-large>{{icon}}</v-icon>
-        <strong>{{title}}</strong>
-        <div class="ml-auto" v-if="kind !== 'action_start'" >
+        <v-icon color="secondary" x-large>{{action.icon}}</v-icon>
+        <strong>{{action.title}}</strong>
+        <div class="ml-auto" v-if="action.kind !== 'action_start'" >
           <div class="d-flex">
             <flowy-drag-handle>
               <v-btn small icon><v-icon>mdi-drag</v-icon></v-btn>
@@ -25,43 +25,59 @@
       <v-card-text>
         <div class="d-flex">
 
-          <div class="q-py-md" v-html="description"/>
+          <div class="q-py-md" v-html="action.description"/>
 
         </div>
       </v-card-text>
 
-      <v-btn v-if="kind !== 'action_start'" color="primary"  icon  x-small @click="remove"><v-icon color="red">mdi-delete</v-icon></v-btn>
+      <v-btn v-if="action.kind !== 'action_start'" color="primary"  icon  x-small @click="remove"><v-icon color="red">mdi-delete</v-icon></v-btn>
       <div v-if="is_last_node" class=" last-step-arrow d-flex flex-column justify-center align-center">
         <v-icon size="46">mdi-arrow-down</v-icon>
-        <v-btn x-large icon color="secondary" ><v-icon>mdi-plus</v-icon></v-btn>
+        <v-btn @click="open_action_selector" x-large icon color="secondary" ><v-icon>mdi-plus</v-icon></v-btn>
       </div>
     </v-card>
-    <action_config_dialog ref="action_config_dialog" :action="node"></action_config_dialog>
+    <action_selector_dialog
+      @add_action_to_workflow="add_action_to_workflow"
+      ref="action_selector_dialog"
+      :action="node"></action_selector_dialog>
+
   </div>
 
 </template>
 
 <script>
-import action_config_dialog from "@/components/action/action_config_dialog";
+import action_selector_dialog from "@/components/action/action_selector_dialog";
+
 export default {
   name: "action_node_box",
-  components: {action_config_dialog},
-  props: ['node', 'title', 'description', 'type', 'icon', 'remove', 'nodes', 'is_trigger', 'kind'],
+  components: {
+    action_selector_dialog,
+  },
+  props: ['node', 'action', 'actions_list'],
   mounted() {
     console.log('MOUNTED DDDD', this.nodes)
   },
   methods: {
-    open_action_config: function(){
-      if(!this.$refs.action_config_dialog){
+    select_action: function(act){
+      this.$emit('select_action', act)
+    },
+    add_action_to_workflow: function(act){
+     this.$emit('add_action_to_workflow', act)
+    },
+    open_action_selector: function(){
+      if(!this.$refs.action_selector_dialog){
         return
       }
-      this.$refs.action_config_dialog.open();
+      this.$refs.action_selector_dialog.open();
     },
+    remove: function(){
+      this.$emit('remove', this.action)
+    }
 
   },
   computed: {
     is_last_node: function(){
-      return this.nodes.indexOf(this.node) === this.nodes.length - 1
+      return this.actions_list.indexOf(this.action) === this.actions_list.length - 1
     }
   }
 }

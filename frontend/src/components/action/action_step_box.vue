@@ -1,5 +1,5 @@
 <template>
-  <v-card bordered class="ma-2 pa-4" style="position: relative">
+  <v-card bordered class="ma-2 pa-4 action-card" style="position: relative" @click="add_action_to_workflow">
     <v-chip
       v-if="is_trigger"
       x-small
@@ -8,7 +8,7 @@
       <v-icon x-small>mdi-asterisk-circle-outline</v-icon>
       <strong>Trigger</strong>
     </v-chip>
-    <div class="d-flex">
+    <div class="d-flex flex-column">
       <div class="d-flex">
         <div class="d-flex align-center">
           <v-icon x-large color="secondary" class="mr-2">{{ icon }}</v-icon>
@@ -19,12 +19,9 @@
 
         </div>
       </div>
-      <div class="ml-auto">
-        <flowy-drag-handle>
-          <v-btn icon ><v-icon size="36">mdi-drag</v-icon></v-btn>
-        </flowy-drag-handle>
+      <div>
+        <p class="font-weight-light text--primary lighten-1">{{description}}</p>
       </div>
-      <div class="q-py-md" v-html="description"/>
     </div>
 
   </v-card>
@@ -37,11 +34,18 @@ export default {
   methods: {
     remove: function(){
       this.$emit('remove')
+    },
+    add_action_to_workflow: function(act){
+      this.$emit('add_action_to_workflow', act)
     }
   }
 }
 </script>
 
 <style scoped>
-
+.action-card:hover{
+  background: #a1cdff;
+  cursor: pointer;
+  transition: 0.5s ease;
+}
 </style>

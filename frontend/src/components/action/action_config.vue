@@ -1,33 +1,21 @@
 <template>
 
-  <v-dialog v-model="is_open" id="input_payload" :click:outside="close">
-    <v-card>
-      <v-card-text>
-      <v-container class="d-flex flex-wrap">
-        <action_step_box v-for="action in actions_list"
-          :icon="action.icon"
-          :title="action.node.title"
-          :description="action.node.description"
-          :is_trigger="action.is_trigger"
-        >
-
-        </action_step_box>
-      </v-container>
-      </v-card-text>
-    </v-card>
-  </v-dialog>
-
+  <v-container>
+    <file_upload_action_config v-if="action.kind === 'file_upload'" :action="action"></file_upload_action_config>
+  </v-container>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import axios from '../../services/customInstance';
 import action_step_box from "./action_step_box.vue";
+import file_upload_action_config from "./action_configurations/file_upload_action_config";
 export default Vue.extend({
 
-    name: 'action_config_dialog',
+    name: 'action_config',
     components: {
-      action_step_box
+      action_step_box,
+      file_upload_action_config,
 
     },
     props: ['action'],
@@ -39,6 +27,7 @@ export default Vue.extend({
     data() {
       return {
         is_open: true,
+        search: '',
         actions_list: [
           {
             is_trigger: true,
@@ -394,7 +383,14 @@ export default Vue.extend({
     watch: {
 
     },
-
+    computed: {
+      actions_list_filtered: function(){
+        if(!this.search || this.search === ''){
+          return this.actions_list
+        }
+        return this.actions_list.filter(elm => elm.node.title.includes(this.search))
+      }
+    },
     methods: {
       close() {
         this.input = undefined;

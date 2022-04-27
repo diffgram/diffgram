@@ -2,35 +2,22 @@
   <div class="d-flex flex-column">
 
     <div>
-      <flowy-new-block
-        v-for="(block, index) in blocks"
+      <div
+        v-for="(action, index) in workflow.actions_list"
         :key="index"
-        @drag-start="onDragStartNewBlock"
-        @drag-stop="onDragStopNewBlock"
+        class="d-flex flex-column align-center justify-center"
       >
-        <template v-slot:preview="{}">
-          <action_step_box
-            :is_trigger="block.is_trigger"
-            :icon="block.icon"
-            :kind="block.kind"
-            :type="block.type"
-            :title="block.preview.title"
-            :description="block.preview.description"
-          />
-        </template>
-        <template v-slot:node="{}">
-          <action_node_box
-            @remove="on_remove_node"
-            :is_trigger="block.is_trigger"
-            :icon="block.icon"
-            :kind="block.kind"
-            :type="block.type"
-            :title="block.node.title"
-            :description="block.node.description"
-            :custom-attribute="block.node.canBeAdded"
-          />
-        </template>
-      </flowy-new-block>
+        <v-icon  size="48" v-if="index > 0">mdi-arrow-down</v-icon>
+        <action_node_box
+          style="min-width: 300px;"
+          @remove="on_remove_action"
+          @add_action_to_workflow="on_add_action_to_workflow"
+          @select_action="on_select_action"
+          :action="action"
+          :actions_list="workflow.actions_list"
+        />
+
+      </div>
     </div>
   </div>
 </template>
@@ -56,6 +43,7 @@
           default: null
         },
         'workflow': {
+          type: Object,
           default: null
         }
       },
@@ -66,15 +54,19 @@
           error: {},
           holder: [],
           dragging: false,
-          blocks: [
 
 
-          ],
 
         }
       },
       computed: {},
       methods: {
+        on_select_action: function(act){
+          this.$emit('select_action', act)
+        },
+        on_add_action_to_workflow: function(act){
+          this.workflow.actions_list.push(act)
+        },
         onDragStartNewBlock (event) {
           console.log('onDragStartNewBlock', event);
           // contains all the props and attributes passed to demo-node
@@ -87,8 +79,8 @@
           this.newDraggingBlock = null;
           this.$emit('newDraggingBlock', null)
         },
-        on_remove_node: function(node){
-          console.log('on_remove_node', node)
+        on_remove_action: function(act){
+          console.log('on_remove_node', act)
         }
 
       }
