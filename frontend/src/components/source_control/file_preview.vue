@@ -42,6 +42,7 @@
     <v-card-text class="pa-0 ma-0" v-if="file.video">
       <video_drawable_canvas
         :allow_zoom="false"
+        :preview_mode="true"
         :project_string_id="project_string_id"
         :filtered_instance_by_model_runs="filtered_instance_list"
         :video="file.video"

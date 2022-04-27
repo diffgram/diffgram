@@ -9,15 +9,11 @@
         :current_schema="schema"
       ></labels_manager_tabs>
 
-
-
-
     </v-container>
     <wizard_navigation
       @next="go_to_step(3)"
       @skip="go_to_step(3)"
-      @back="$emit('back')"
-      :disabled_next="label_file_list.length == 0 && attribute_group_list.length === 0">
+      @back="$emit('back')">
     </wizard_navigation>
   </div>
 

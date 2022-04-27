@@ -1149,6 +1149,7 @@ export default Vue.extend({
     },
     async task_list_api() {
       this.loading = true;
+      await this.$nextTick();
       try {
         const response = await axios.post(
           `/api/v1/job/${this.job_id}/task/list`,
