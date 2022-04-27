@@ -117,7 +117,9 @@ jobs:
         with:
           python-version: '3.7'
       - run: sed -i -re 's/([a-z]{2}.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-      - run: apt-get update && apt-get install -y git libffi-dev
+      - run: apt-get update && apt-get install -y git libffi-dev virtualenv
+      - run: pip3 install "pip>=20"
+      - run: virtualenv -p python3.7 venv && source venv/bin/activate
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
@@ -135,8 +137,8 @@ jobs:
       - run: cp -rf . /__w/diffgram
       - run: cd /__w/diffgram
       - run: cd walrus
-      - run: pip3 install -r walrus/requirements.txt
-      - run: pip3 install pytest sqlalchemy-utils
+      - run: pip install -r walrus/requirements.txt
+      - run: pip install pytest sqlalchemy-utils
       - run: mkdir /gcp
       - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
       - run: pytest walrus/tests --junitxml=test-results/junit.xml
