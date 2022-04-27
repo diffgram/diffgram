@@ -54,10 +54,15 @@ jobs:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - uses: mdecoleman/pr-branch-name@1.2.0
+        id: vars
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo ${{ steps.vars.outputs.branch }}
       - name: Check out repository code
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ steps.vars.outputs.branch }}
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: cp -rf . /__w/diffgram
       - run: cd /__w/diffgram
@@ -111,10 +116,15 @@ jobs:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - uses: mdecoleman/pr-branch-name@1.2.0
+        id: vars
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo ${{ steps.vars.outputs.branch }}
       - name: Check out repository code
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ steps.vars.outputs.branch }}
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: pwd
       - run: cp -rf . /__w/diffgram
@@ -137,10 +147,15 @@ jobs:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - uses: mdecoleman/pr-branch-name@1.2.0
+        id: vars
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo ${{ steps.vars.outputs.branch }}
       - name: Check out repository code
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.ref }}
+          ref: ${{ steps.vars.outputs.branch }}
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: cd frontend
       - uses: actions/setup-node@v2
