@@ -1,7 +1,6 @@
 <template>
 
   <v-container fluid>
-    <file_upload_action_config v-if="action.kind === 'file_upload'" :project_string_id="project_string_id" :action="action"></file_upload_action_config>
     <create_task_action_config v-if="action.kind === 'create_task'" :project_string_id="project_string_id" :action="action"></create_task_action_config>
     <export_action_config v-if="action.kind === 'export'"
                           :prev_action="prev_action"
@@ -16,7 +15,6 @@
 import Vue from "vue";
 import axios from '../../services/customInstance';
 import action_step_box from "./action_step_box.vue";
-import file_upload_action_config from "./action_configurations/file_upload_action_config";
 import create_task_action_config from "./action_configurations/create_task_action_config";
 import export_action_config from "./action_configurations/export_action_config";
 export default Vue.extend({
@@ -24,7 +22,6 @@ export default Vue.extend({
     name: 'action_config',
     components: {
       action_step_box,
-      file_upload_action_config,
       create_task_action_config,
       export_action_config,
 
