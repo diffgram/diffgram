@@ -112,7 +112,9 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     steps:
-      - uses: actions/setup-python@v3.7
+      - uses: actions/setup-python@v3
+        with:
+          python-version: '3.7'
       - run: apt-get install libgdal-dev
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
