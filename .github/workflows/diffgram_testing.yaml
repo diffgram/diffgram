@@ -132,8 +132,8 @@ jobs:
       - run: cp -rf . /__w/diffgram
       - run: cd /__w/diffgram
       - run: cd walrus
-      - run: pip install -r walrus/requirements.txt
-      - run: pip install pytest sqlalchemy-utils
+      - run: pip3 install -r walrus/requirements.txt
+      - run: pip3 install pytest sqlalchemy-utils
       - run: mkdir /gcp
       - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
       - run: pytest walrus/tests --junitxml=test-results/junit.xml
