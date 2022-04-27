@@ -86,6 +86,7 @@ import LineString from 'ol/geom/LineString';
 import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import { Select, Translate, Modify } from 'ol/interaction';
+import Transform from "ol-ext/interaction/Transform";
 import 'ol/ol.css';
 
 export default Vue.extend({
@@ -142,7 +143,11 @@ export default Vue.extend({
             mouse_coords: undefined,
             feature_list: [],
             drawing_feature: undefined,
+            translate_interaction: null,
+            modify_interaction: null,
+            transform_interaction: null,
             // Others
+            selected: null,
             rendering: false,
             current_label: undefined,
             drawing_instance: false,
@@ -412,22 +417,48 @@ export default Vue.extend({
 
             const select = new Select({ style: this.activate_instance })
 
-            const translate = new Translate({
+            this.translate_interaction = new Translate({
                 layers: [draw_layer],
                 features: select.getFeatures(),
             });
 
-            const modify = new Modify({
+            this.modify_interaction = new Modify({
                 layers: [draw_layer],
                 features: select.getFeatures(),
+                insertVertexCondition: "never",
             });
 
-            translate.on('translateend', this.translate_instance)
-            modify.on('modifyend', this.modify_instance)
-            
-            map.addInteraction(select);
-            map.addInteraction(translate);
-            map.addInteraction(modify);
+            this.transform_interaction = new Transform({
+                layers: [draw_layer],
+                features: select.getFeatures(),
+            })
+
+            this.translate_interaction.on('translateend', this.translate_instance)
+            this.modify_interaction.on('modifyend', this.modify_instance)
+            this.transform_interaction.on('modifyend', e => {
+                console.log(e)
+            })
+
+            select.on('select', e => {
+                if (e.selected.length === 0) return this.selected = null                
+                this.selected = e.selected[0]
+                const selected_id = e.selected[0].ol_uid
+                const selected_instance = this.instance_list.get().find(inst => inst.ol_id === selected_id)
+                console.log(selected_instance, e.selected[0])
+                if (selected_instance && selected_instance.type !== 'geo_box') {
+                    console.log('here')
+                    map.removeInteraction(this.transform_interaction)
+                    map.addInteraction(this.translate_interaction)
+                    map.addInteraction(this.modify_interaction)
+                } else {
+                    console.log("here 2")
+                    map.removeInteraction(this.translate_interaction)
+                    map.removeInteraction(this.modify_interaction)
+                    map.addInteraction(this.transform_interaction)
+                }
+            })
+
+            map.addInteraction(select)
 
             const view = await source.getView()
             const overlayView = new View({...view})
