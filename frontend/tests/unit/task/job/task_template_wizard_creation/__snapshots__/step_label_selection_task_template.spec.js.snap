@@ -1,9 +1,0 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
-
-exports[`step_label_selection_task_template.vue Renders component correctly. 1`] = `
-VueWrapper {
-  "_emitted": Object {},
-  "_emittedByOrder": Array [],
-  "isFunctionalComponent": undefined,
-}
-`;
