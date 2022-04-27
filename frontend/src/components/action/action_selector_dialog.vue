@@ -60,6 +60,13 @@ export default Vue.extend({
             title: 'Create Human Labeling Task',
             description: 'Add tasks to a task template',
           },
+          {
+            is_trigger: true,
+            icon: 'mdi-database-export-outline',
+            kind: 'export',
+            title: 'Generate JSON Export',
+            description: 'Create JSON export from labeled data.',
+          },
         ],
       }
     },
