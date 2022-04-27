@@ -193,15 +193,15 @@ jobs:
           diffgramSettings.IS_OPEN_SOURCE: ${{secrets.IS_OPEN_SOURCE}}
           diffgramSettings.ALLOW_STRIPE_BILLING: ${{secrets.ALLOW_STRIPE_BILLING}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
-          walrusService.requests.memory: "32G"
-          walrusService.limits.memory: "32G"
-          walrusService.requests.cpu: "8"
-          walrusService.limits.cpu: "8"
+          walrusService.requests.memory: "16G"
+          walrusService.limits.memory: "16G"
+          walrusService.requests.cpu: "4"
+          walrusService.limits.cpu: "4"
           defaultService.requests.memory: "4G"
           defaultService.requests.cpu: "2"
           frontendService.requests.memory: "2G"
           frontendService.requests.cpu: "1"
-          defaultService.numReplicas: 3
+          defaultService.numReplicas: 2
           frontendService.numReplicas: 1
           walrusService.numReplicas: 1
           nodeGroupLabel: diffgram-apps
