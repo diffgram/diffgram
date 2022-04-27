@@ -469,7 +469,7 @@ def job_update_core(session, job, project, input: dict, log: dict):
             session.add(job)
 
             log = update_tasks(job, session, log)
-        if input['label_schema_id']:
+        if input.get('label_schema_id'):
             job.label_schema_id =input['label_schema_id']
             session.add(job)
 

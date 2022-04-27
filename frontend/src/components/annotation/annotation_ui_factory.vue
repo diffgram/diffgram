@@ -83,6 +83,22 @@
           @request_new_task="change_task"
         />
       </div>
+      <div v-else-if="annotation_interface === 'geo'">
+        <geo_annotation_core
+          :file="current_file"
+          :task="task"
+          :job_id="job_id"
+          :label_schema="current_label_schema"
+          :label_list="label_list"
+          :label_file_colour_map="label_file_colour_map"
+          :project_string_id="computed_project_string_id"
+          :global_attribute_groups_list="global_attribute_groups_list"
+          :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+          @change_label_schema="on_change_label_schema"
+          @request_file_change="request_file_change"
+          @request_new_task="change_task"
+        />
+      </div>
       <div v-else-if="!annotation_interface">
         <empty_file_editor_placeholder
           :loading="any_loading"
@@ -178,6 +194,7 @@ import {get_labels} from '../../services/labelServices';
 import {get_schemas} from "../../services/labelServices";
 
 import text_annotation_core from "../text_annotation/text_annotation_core.vue"
+import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
 import Vue from "vue";
 
 
@@ -188,7 +205,8 @@ export default Vue.extend({
     no_credentials_dialog,
     empty_file_editor_placeholder,
     sensor_fusion_editor,
-    text_annotation_core
+    text_annotation_core,
+    geo_annotation_core
   },
   props: {
     project_string_id: {
@@ -356,13 +374,17 @@ export default Vue.extend({
       if (!this.current_file && !this.task) {
         return
       }
-      if (this.current_file) {
-        if (this.current_file.type === 'image' || this.current_file.type === 'video') {
+
+      if(this.current_file){
+        if(this.current_file.type === 'image' || this.current_file.type === 'video'){
           return 'image_or_video';
         } else if (this.current_file.type === 'sensor_fusion') {
           return 'sensor_fusion';
         } else if (this.current_file.type === 'text') {
           return 'text'
+        }
+        else if(this.current_file.type === 'geospatial') {
+          return 'geo'
         }
       }
       if (this.task) {
@@ -372,6 +394,9 @@ export default Vue.extend({
           return 'sensor_fusion';
         } else if (this.task.file.type === 'text') {
           return 'text';
+        }
+        else if (this.task.file.type === 'geospatial') {
+          return 'geo'
         }
       }
 

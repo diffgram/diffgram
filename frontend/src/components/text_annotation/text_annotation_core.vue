@@ -264,8 +264,11 @@ export default Vue.extend({
     per_instance_attribute_groups_list: {
       type: Array,
       required: true
+    },
+    label_schema: {
+      type: Object,
+      required: true
     }
-
   },
   data() {
     return {
