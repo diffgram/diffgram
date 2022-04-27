@@ -97,6 +97,7 @@ jobs:
         DIFFGRAM_VERSION_TAG: ${{ secrets.DIFFGRAM_VERSION_TAG }}
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
+        CRYPTOGRAPHY_DONT_BUILD_RUST: 1
     services:
       # Label used to access the service container
       postgres:
