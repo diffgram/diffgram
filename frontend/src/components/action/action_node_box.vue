@@ -12,15 +12,15 @@
         <strong>Trigger</strong>
       </v-chip>
       <v-card-title class="d-flex">
-        <v-icon color="secondary" x-large>{{action.icon}}</v-icon>
-        <strong>{{action.title}}</strong>
-        <div class="ml-auto" v-if="action.kind !== 'action_start'" >
-          <div class="d-flex">
-            <flowy-drag-handle>
-              <v-btn small icon><v-icon>mdi-drag</v-icon></v-btn>
-            </flowy-drag-handle>
-          </div>
-        </div>
+        <v-icon style="width: 20%;" color="secondary" x-large>{{action.icon}}</v-icon>
+        <strong style="width: 80%">{{action.title}}</strong>
+<!--        <div style="width: 10%" class="ml-auto" v-if="action.kind !== 'action_start'" >-->
+<!--          <div class="d-flex">-->
+<!--            <flowy-drag-handle>-->
+<!--              <v-btn small icon><v-icon>mdi-drag</v-icon></v-btn>-->
+<!--            </flowy-drag-handle>-->
+<!--          </div>-->
+<!--        </div>-->
       </v-card-title>
       <v-card-text>
         <div class="d-flex">

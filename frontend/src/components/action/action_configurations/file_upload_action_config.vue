@@ -16,15 +16,15 @@ export default {
   props:{
     action:{
       required: true
+    },
+    project_string_id:{
+      required: true
     }
   },
   components: {
     directory_list: directory_list
   },
   computed:{
-    project_string_id: function(){
-      return this.$store.state.project.current.project_string_id
-    },
     on_directories_updated: function(){
 
     }

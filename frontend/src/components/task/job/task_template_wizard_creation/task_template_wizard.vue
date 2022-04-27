@@ -190,6 +190,9 @@ export default Vue.extend({
     },
     steps_config_overwrite:{
       default: null
+    },
+    redirect_after_launch:{
+      default: true
     }
   },
 
@@ -339,14 +342,17 @@ export default Vue.extend({
         });
         // Push to success / stats page?
         // Show success?
+        if(this.redirect_after_launch){
+          if(this.job.type != 'exam_template'){
+            this.$router.push("/job/list?success_launch=true");
+          }
+          else{
+            this.$router.push(`/${this.$props.project_string_id}/exam/${this.job.id}`);
 
-        if(this.job.type != 'exam_template'){
-          this.$router.push("/job/list?success_launch=true");
+          }
         }
-        else{
-          this.$router.push(`/${this.$props.project_string_id}/exam/${this.job.id}`);
+        this.$emit('task_template_launched', this.job)
 
-        }
       } catch (error) {
         console.error(error);
         this.error = this.$route_api_errors(error);

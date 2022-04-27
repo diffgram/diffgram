@@ -9,6 +9,7 @@
           <v-card-title>Workflow: </v-card-title>
           <v-card-text>
             <workflow_steps_visualizer
+              @remove_selection="on_remove_selection"
               @select_action="on_select_action"
               :workflow="workflow"
               @newDraggingBlock="on_new_dragging_block"
@@ -19,10 +20,14 @@
 
         </v-card>
 
-        <v-card v-if="selected_action" class="ml-2 steps-container" width="80%" elevation="0">
-          <v-container fluid v-if="selected_action">
-            <action_config :action="selected_action"></action_config>
-          </v-container>
+        <v-card v-if="selected_action" class="ml-2 pa-4 steps-container" width="80%" elevation="0">
+          <v-card-title v-if="selected_action.kind !== 'action_start'">
+            <h1 class="font-weight-light">
+            <v-icon size="48" color="primary">mdi-pencil</v-icon>
+            {{selected_action.title}}
+          </h1>
+          </v-card-title>
+          <action_config      :project_string_id="project_string_id" :action="selected_action"></action_config>
         </v-card>
 
       </div>
@@ -149,6 +154,9 @@ import {v4 as uuidv4 } from 'uuid'
       },
       computed: {},
       methods: {
+        on_remove_selection: function(){
+          this.selected_action = null
+        },
         on_select_action: function(action){
           this.selected_action = action
         },

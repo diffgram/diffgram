@@ -66,6 +66,7 @@
         },
         on_add_action_to_workflow: function(act){
           this.workflow.actions_list.push(act)
+          this.$emit('select_action', act)
         },
         onDragStartNewBlock (event) {
           console.log('onDragStartNewBlock', event);
@@ -81,6 +82,7 @@
         },
         on_remove_action: function(act){
           console.log('on_remove_node', act)
+          this.$emit('remove_selection')
         }
 
       }

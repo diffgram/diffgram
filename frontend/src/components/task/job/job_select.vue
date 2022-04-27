@@ -211,6 +211,13 @@
         }
       },
       methods: {
+        add_job_to_list: function(job){
+          this.job_list.push(job)
+        },
+        select_job: function(job){
+          this.job_internal = job
+          this.$emit('change', job)
+        },
         on_job_updated: function (job) {
           this.job_list = this.job_list.map(elm => {
             if (elm.id === job.id) {

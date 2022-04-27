@@ -53,6 +53,13 @@ export default Vue.extend({
             title: 'On File Uploaded',
             description: 'When a file is uploaded',
           },
+          {
+            is_trigger: true,
+            icon: 'mdi-brush',
+            kind: 'create_task',
+            title: 'Create Human Labeling Task',
+            description: 'Add tasks to a task template',
+          },
         ],
       }
     },
