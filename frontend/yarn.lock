@@ -13210,6 +13210,11 @@ obuf@^1.0.0, obuf@^1.1.2:
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
+ol-ext@^3.2.22:
+  version "3.2.22"
+  resolved "https://registry.yarnpkg.com/ol-ext/-/ol-ext-3.2.22.tgz#badb1c4052b20e5e8803b31738d5fb2ea9d5d95a"
+  integrity sha512-A7OCPeN74NZ8ijwZLcC2+TckaFE4gL4QTOXQPdVWFRFnh7VuAWn60UX9l6e76IFwNo8ee/7dlXCTckIMSkdY6Q==
+
 ol-mapbox-style@^7.1.1:
   version "7.1.1"
   resolved "https://registry.yarnpkg.com/ol-mapbox-style/-/ol-mapbox-style-7.1.1.tgz#cf33c39badd943c25fc438c689bf678f9aa847a2"
