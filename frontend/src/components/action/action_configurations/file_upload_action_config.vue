@@ -24,7 +24,7 @@ export default {
   components: {
     directory_list: directory_list
   },
-  computed:{
+  methods:{
     on_directories_updated: function(){
 
     }

@@ -47,6 +47,9 @@ export default Vue.extend({
     },
     computed: {
       prev_action: function(){
+        if(!this.actions_list){
+          return
+        }
         for(let i = 0; i < this.actions_list.length; i++){
           let current = this.actions_list[i]
           if(current === this.action){

@@ -9,7 +9,7 @@
       >
       </job_select>
       <div class="d-flex justify-center ml-auto">
-        <v-btn v-if="!show_task_template_wizard" color="success" @click="show_wizard"><v-icon>mdi-plus</v-icon>Create New Task Template</v-btn>
+        <v-btn :loading="switch_loading" v-if="!show_task_template_wizard" color="success" @click="show_wizard"><v-icon>mdi-plus</v-icon>Create New Task Template</v-btn>
         <v-btn v-else outlined color="error" @click="hide_wizard"><v-icon>mdi-cancel</v-icon>Cancel Creation</v-btn>
       </div>
     </div>
@@ -50,6 +50,7 @@ export default {
       job_to_create: create_empty_job(),
       job_selected: null,
       show_task_template_wizard: false,
+      switch_loading: false,
 
     }
   },
@@ -74,9 +75,13 @@ export default {
       this.show_task_template_wizard = false;
       this.job_to_create = null;
     },
-    show_wizard: function(){
+    show_wizard: async function(){
+      this.switch_loading = true;
+      await this.$nextTick()
       this.show_task_template_wizard = true;
+      await this.$nextTick()
       this.job_to_create = create_empty_job()
+      this.switch_loading = false
     }
   },
   computed:{

@@ -27,7 +27,9 @@
             {{selected_action.title}}
           </h1>
           </v-card-title>
-          <action_config      :project_string_id="project_string_id" :action="selected_action"></action_config>
+          <action_config :actions_list="workflow.actions_list"
+                         :project_string_id="project_string_id"
+                         :action="selected_action"></action_config>
         </v-card>
 
       </div>

@@ -54,14 +54,14 @@ export default Vue.extend({
             description: 'When a file is uploaded',
           },
           {
-            is_trigger: true,
+            is_trigger: false,
             icon: 'mdi-brush',
             kind: 'create_task',
             title: 'Create Human Labeling Task',
             description: 'Add tasks to a task template',
           },
           {
-            is_trigger: true,
+            is_trigger: false,
             icon: 'mdi-database-export-outline',
             kind: 'export',
             title: 'Generate JSON Export',
