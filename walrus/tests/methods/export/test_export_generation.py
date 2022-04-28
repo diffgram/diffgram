@@ -76,6 +76,11 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             self.assertEqual(export_data[file.id]['instance_list'][0]['x_max'], 10)
             self.assertEqual(export_data[file.id]['instance_list'][0]['y_min'], 1)
             self.assertEqual(export_data[file.id]['instance_list'][0]['y_max'], 10)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['lonlat'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['coords'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['radius'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['bounds'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['bounds_lonlat'], None)
             self.assertEqual(export_data[file.id]['instance_list'][0]['label_file_id'], label_file.id)
 
 
@@ -148,5 +153,10 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             self.assertEqual(export_data[file.id]['instance_list'][0]['x_max'], 10)
             self.assertEqual(export_data[file.id]['instance_list'][0]['y_min'], 1)
             self.assertEqual(export_data[file.id]['instance_list'][0]['y_max'], 10)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['lonlat'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['coords'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['radius'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['bounds'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['bounds_lonlat'], None)
             self.assertEqual(export_data[file.id]['instance_list'][0]['label_file_id'], label_file.id)
 
