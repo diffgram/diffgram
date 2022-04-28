@@ -745,6 +745,7 @@ def build_instance(instance, include_label = False):
         'x_min': instance.x_min,
         'y_min': instance.y_min,
         'x_max': instance.x_max,
+        'y_max': instance.y_max,
         'lonlat': instance.lonlat,
         'coords': instance.coords,
         'radius': instance.radius,
