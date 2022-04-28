@@ -1,3 +1,4 @@
+import { GeoCircle, GeoPoint, GeoPoly } from "../../components/vue_canvas/instances/GeoInstance";
 import { TextAnnotationInstance, TextRelationInstance } from "../../components/vue_canvas/instances/TextInstance";
 import InstanceList from "../instance_list";
 import { CommandInterface } from "../interfaces/Command";
@@ -26,6 +27,21 @@ export abstract class Command implements CommandInterface {
 
         if (instance.type === "relation") {
             initializedInstance = new TextRelationInstance()
+        }
+
+        if (instance.type === "geo_point") {
+            initializedInstance = new GeoPoint()
+        }
+
+        if (instance.type === "geo_circle") {
+            initializedInstance = new GeoCircle()
+        }
+
+        if (instance.type === "geo_polyline" || 
+            instance.type === "geo_polygon" || 
+            instance.type === "geo_box"
+        ) {
+            initializedInstance = new GeoPoly(instance.type)
         }
 
         initializedInstance.populate_from_instance_obj(newInstance)

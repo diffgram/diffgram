@@ -571,6 +571,7 @@
           this.batch = batch;
         },
         error_upload_connections: function (error) {
+          console.error(error)
           this.connection_upload_error = error;
         },
 
@@ -581,6 +582,7 @@
           this.dropzone_total_file_size = 0;
         },
         file_removed: function(file){
+
           if (file.size && file.data_type != 'Annotations') {
             this.dropzone_total_file_size -= file.size;
           }

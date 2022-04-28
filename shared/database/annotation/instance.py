@@ -69,6 +69,13 @@ class Instance(Base):
     end_char = Column(Integer())
     sentence = Column(Integer())
 
+    # Geospatial Data
+    lonlat = Column(ARRAY(Float), nullable = True)
+    coords = Column(ARRAY(Float), nullable = True)
+    bounds = Column(ARRAY(Float), nullable = True)
+    bounds_lonlat = Column(ARRAY(Float), nullable = True)
+    radius = Column(Float, nullable = True)
+
     # Keyframe list?
 
     # ie for video
@@ -364,7 +371,12 @@ class Instance(Base):
             self.edges,
             self.pause_object,
             self.to_instance_id,
-            self.from_instance_id
+            self.from_instance_id,
+            self.lonlat,
+            self.coords,
+            self.radius,
+            self.bounds,
+            self.bounds_lonlat,
         ]
 
 
@@ -451,6 +463,11 @@ class Instance(Base):
             'pause_object': self.pause_object,
             'start_token': self.start_token,
             'end_token': self.end_token,
+            'lonlat': self.lonlat,
+            'coords': self.coords,
+            'radius': self.radius,
+            'bounds': self.bounds,
+            'bounds_lonlat': self.bounds_lonlat,
 
         }
 

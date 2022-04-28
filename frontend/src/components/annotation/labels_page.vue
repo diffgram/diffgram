@@ -200,7 +200,7 @@ export default Vue.extend({
       }
       if(result){
         this.label_schema_list = result;
-        if(!this.$route.query.schema_id){
+        if(!this.$route || !this.$route.query.schema_id){
           this.$refs.schema_selector.select_schema(this.label_schema_list[0]);
         }
         else{

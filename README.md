@@ -50,11 +50,15 @@ Named Entity Recognition, Part of Speech Tagging, Coreference Resolution, Depend
 
 ![Diffgram Text Interface](./github_assets/diffgram_text_interface.png)
 
+## Geospatial & Tiled Imagery
+Support for COG (Cloud Optimized GeoTIFF), streaming, multi-layer, standard and cloud-optimized.
+
+Alpha Release: [Geospatial labeling docs](https://diffgram.readme.io/docs/geospatial-annotation)
+
+![Diffgram Geospatial Interface](./github_assets/diffgram_geospatial_interface.png)
+
 ## Documents
 
-## Geospatial & Tiled Imagery
-Support for GeoTIFF, streaming, multi-layer, standard and cloud-optimized.
-Coming late April 2022
 
 ## Audio
 Coming May 2022
