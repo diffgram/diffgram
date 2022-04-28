@@ -67,7 +67,7 @@ jobs:
         with:
           ref: ${{ steps.vars.outputs.branch }}
       - name: Check out repository code
-        if: "github.event.pull_request != null"
+        if: "github.event.pull_request == null"
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref_name }}
@@ -144,7 +144,7 @@ jobs:
         with:
           ref: ${{ steps.vars.outputs.branch }}
       - name: Check out repository code
-        if: "github.event.pull_request != null"
+        if: "github.event.pull_request == null"
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref_name }}
@@ -183,7 +183,7 @@ jobs:
         with:
           ref: ${{ steps.vars.outputs.branch }}
       - name: Check out repository code
-        if: "github.event.pull_request != null"
+        if: "github.event.pull_request == null"
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref_name }}
