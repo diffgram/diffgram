@@ -11,7 +11,7 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y
 RUN apt-get remove --purge python3 -y
 RUN apt-get update -y && apt-get upgrade -y
 
-RUN apt-get -y install python3.7.2 python3-pip libpq-dev python3.7-dev git python3-setuptools libgdal-dev
+RUN apt-get -y install python3.7.2 python3-pip libpq-dev python3.7-dev git python3-setuptools libgdal-dev libxslt-dev
 RUN export CPLUS_INCLUDE_PATH=/usr/include/gdal
 
 RUN export C_INCLUDE_PATH=/usr/include/gdal
