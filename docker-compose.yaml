@@ -19,7 +19,7 @@ services:
     depends_on:
     - default
   walrus:
-    image: gcr.io/diffgram-open-core/walrus:pablotest2
+    image: gcr.io/diffgram-open-core/walrus:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8082:8082"
     expose: [8082]
