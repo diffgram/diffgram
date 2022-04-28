@@ -28,9 +28,15 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
         )
         self.project = project_data['project']
         self.project_data = project_data
+        self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
+        self.member = self.auth_api.member
+        self.schema = data_mocking.create_label_schema({'name': 'test',
+                                                        'member_created_id': self.member.id,
+                                                        'project_id': self.project.id}, self.session)
 
     def test_list_instance_template_api(self):
-        request_data = {}
+        request_data = {'schema_id': self.schema.id}
+
         instance_template1 = data_mocking.create_instance_template({
             'name': 'test template1',
             'project_id': self.project.id,
@@ -40,7 +46,8 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
                     'nodes': [{'x': 0, 'y': 0, 'id': 'abc'}, {'x': 5, 'y': 5, 'id': 'cde'}],
                     'edges': [{'from': 'abc', 'to': 'cde'}]
                 }
-            ]
+            ],
+            'schema_id': self.schema.id,
         }, self.session)
         instance_template2 = data_mocking.create_instance_template({
             'name': 'test template2',
@@ -51,7 +58,8 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
                     'nodes': [{'x': 0, 'y': 0, 'id': 'abc'}, {'x': 5, 'y': 5, 'id': 'cde'}],
                     'edges': [{'from': 'abc', 'to': 'cde'}]
                 }
-            ]
+            ],
+            'schema_id': self.schema.id
         }, self.session)
         instance_template3 = data_mocking.create_instance_template({
             'name': 'test template3',
@@ -62,7 +70,8 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
                     'nodes': [{'x': 0, 'y': 0, 'id': 'abc'}, {'x': 5, 'y': 5, 'id': 'cde'}],
                     'edges': [{'from': 'abc', 'to': 'cde'}]
                 }
-            ]
+            ],
+            'schema_id': self.schema.id
         }, self.session)
         endpoint = f"/api/v1/project/{self.project.project_string_id}/instance-template/list"
         auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
@@ -76,6 +85,7 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
             }
         )
         data = response.json
+        print('dada', data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue('instance_template_list' in data)
         self.assertEqual(len(data['instance_template_list']), 3)
@@ -90,13 +100,15 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
                     'nodes': [{'x': 0, 'y': 0, 'id': 'abc'}, {'x': 5, 'y': 5, 'id': 'cde'}],
                     'edges': [{'from': 'abc', 'to': 'cde'}]
                 }
-            ]
+            ],
+            'schema_id': self.schema.id
         }, self.session)
         member = self.session.query(Member).filter(
             Member.id == self.project_data['users'][0].member_id
         ).first()
         result, log = instance_template_list.list_instance_templates_core(self.session,
                                                                           self.project,
+                                                                          schema_id = self.schema.id,
                                                                           log = regular_log.default())
         self.assertEqual(len(log['error'].keys()), 0)
         self.assertEqual(len(result), 1)
