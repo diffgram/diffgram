@@ -353,6 +353,9 @@ def build_packet(file,
     if file.type == "video":
         return build_video_packet(file, session)
 
+    if file.type == "geospatial":
+        return build_geopacket(file, session, file_comparison_mode)
+
     if file.type == "image":
         return build_image_packet(file, session, file_comparison_mode)
 
@@ -361,6 +364,64 @@ def build_packet(file,
 
     if file.type == "sensor_fusion":
         return build_sensor_fusion_packet(file, session, file_comparison_mode)
+
+def build_geopacket(file, session, file_comparison_mode="latest"):
+    geo_assets = file.get_geo_assets(session = session)
+    assets_serialized = []
+    for asset in geo_assets:
+        asset.regenerate_url(session = session)
+        geo_dict = {
+            'original_filename': asset.original_filename,
+            'signed_expiry': asset.url_signed_expiry,
+            'signed_url': asset.url_signed,
+        }
+        assets_serialized.append(geo_dict)
+
+    instance_dict_list = []
+    relations_list = []
+    if file_comparison_mode == "latest":
+
+        instance_list = Instance.list(
+            session = session,
+            file_id = file.id)
+
+        for instance in instance_list:
+            if instance.type == 'relation':
+                continue
+            instance_dict_list.append(build_instance(instance))
+
+        for relation in instance_list:
+            if relation.type != 'relation':
+                continue
+            relations_list.append(build_relation(relation = relation))
+
+    if file_comparison_mode == "vs_original":
+        # We could use the raw dict of the {'unchanged', 'added', 'deleted'}
+        # sets BUT then it would make the below a little different
+        # TODO review this
+        #
+
+        result, instance_dict = file_difference(
+            session = session,
+            file_id_alpha = file.id,
+            file_id_bravo = file.root_id)
+
+        for change_type in instance_dict.keys():
+            for instance in instance_dict[change_type]:
+                out = build_instance(instance)
+
+                out['change_type'] = change_type
+
+                instance_dict_list.append(out)
+
+    return {'file': {
+        'id': file.id,
+        'created_time': str(file.created_time),
+        'ann_is_complete': file.ann_is_complete,
+        'type': file.type
+    },
+        'geo_assets': assets_serialized,
+        'instance_list': instance_dict_list}
 
 
 def build_video_packet(file, session):
@@ -684,7 +745,11 @@ def build_instance(instance, include_label = False):
         'x_min': instance.x_min,
         'y_min': instance.y_min,
         'x_max': instance.x_max,
-        'y_max': instance.y_max,
+        'lonlat': instance.lonlat,
+        'coords': instance.coords,
+        'radius': instance.radius,
+        'bounds': instance.bounds,
+        'bounds_lonlat': instance.bounds_lonlat,
         'p1': instance.p1,
         'p2': instance.p2,
         'cp': instance.cp,
