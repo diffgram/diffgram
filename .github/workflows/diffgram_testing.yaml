@@ -55,14 +55,23 @@ jobs:
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - uses: mdecoleman/pr-branch-name@1.2.0
+        if: "github.event.issue.pull_request == null"
         id: vars
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: echo ${{ steps.vars.outputs.branch }}
+        if: "github.event.issue.pull_request == null"
       - name: Check out repository code
+        if: "github.event.issue.pull_request == null"
         uses: actions/checkout@v2
         with:
           ref: ${{ steps.vars.outputs.branch }}
+      - name: Check out repository code
+        if: "github.event.issue.pull_request == null"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
+
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: cp -rf . /__w/diffgram
       - run: cd /__w/diffgram
@@ -123,14 +132,22 @@ jobs:
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - uses: mdecoleman/pr-branch-name@1.2.0
+        if: "github.event.issue.pull_request == null"
         id: vars
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: echo ${{ steps.vars.outputs.branch }}
+        if: "github.event.issue.pull_request == null"
       - name: Check out repository code
+        if: "github.event.issue.pull_request == null"
         uses: actions/checkout@v2
         with:
           ref: ${{ steps.vars.outputs.branch }}
+      - name: Check out repository code
+        if: "github.event.issue.pull_request == null"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: pwd
       - run: cp -rf . /__w/diffgram
@@ -154,14 +171,22 @@ jobs:
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - uses: mdecoleman/pr-branch-name@1.2.0
+        if: "github.event.issue.pull_request == null"
         id: vars
         with:
           repo-token: ${{ secrets.GITHUB_TOKEN }}
       - run: echo ${{ steps.vars.outputs.branch }}
+        if: "github.event.issue.pull_request == null"
       - name: Check out repository code
+        if: "github.event.issue.pull_request == null"
         uses: actions/checkout@v2
         with:
           ref: ${{ steps.vars.outputs.branch }}
+      - name: Check out repository code
+        if: "github.event.issue.pull_request == null"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: cd frontend
       - uses: actions/setup-node@v2
