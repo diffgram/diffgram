@@ -13,14 +13,7 @@
       </v-chip>
       <v-card-title class="d-flex">
         <v-icon style="width: 20%;" color="secondary" x-large>{{action.icon}}</v-icon>
-        <strong style="width: 80%">{{action.title}}</strong>
-<!--        <div style="width: 10%" class="ml-auto" v-if="action.kind !== 'action_start'" >-->
-<!--          <div class="d-flex">-->
-<!--            <flowy-drag-handle>-->
-<!--              <v-btn small icon><v-icon>mdi-drag</v-icon></v-btn>-->
-<!--            </flowy-drag-handle>-->
-<!--          </div>-->
-<!--        </div>-->
+        <strong style="width: 80%">{{action.name}}</strong>
       </v-card-title>
       <v-card-text>
         <div class="d-flex">
@@ -36,22 +29,17 @@
         <v-btn @click="open_action_selector" x-large icon color="secondary" ><v-icon>mdi-plus</v-icon></v-btn>
       </div>
     </v-card>
-    <action_selector_dialog
-      @add_action_to_workflow="add_action_to_workflow"
-      ref="action_selector_dialog"
-      :action="node"></action_selector_dialog>
 
   </div>
 
 </template>
 
 <script>
-import action_selector_dialog from "@/components/action/action_selector_dialog";
 
 export default {
   name: "action_node_box",
   components: {
-    action_selector_dialog,
+
   },
   props: ['node', 'action', 'actions_list'],
   mounted() {
@@ -64,11 +52,9 @@ export default {
     add_action_to_workflow: function(act){
      this.$emit('add_action_to_workflow', act)
     },
-    open_action_selector: function(){
-      if(!this.$refs.action_selector_dialog){
-        return
-      }
-      this.$refs.action_selector_dialog.open();
+    open_action_selector: function(e){
+      e.stopPropagation()
+      this.$emit('open_action_selector')
     },
     remove: function(){
       this.$emit('remove', this.action)

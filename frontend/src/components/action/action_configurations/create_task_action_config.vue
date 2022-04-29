@@ -1,31 +1,71 @@
 <template>
   <v-container fluid>
-    <div class="d-flex align-center">
-      <h2 class="font-weight-light mr-6">Select a Task Template: </h2>
-      <job_select v-model="job_selected"
-                  ref="job_select"
-                  @change="on_change_job"
-                  :select_this_id="action.job_id"
-      >
-      </job_select>
-      <div class="d-flex justify-center ml-auto">
-        <v-btn :loading="switch_loading" v-if="!show_task_template_wizard" color="success" @click="show_wizard"><v-icon>mdi-plus</v-icon>Create New Task Template</v-btn>
-        <v-btn v-else outlined color="error" @click="hide_wizard"><v-icon>mdi-cancel</v-icon>Cancel Creation</v-btn>
+    <div class="d-flex flex-column">
+      <div class="mb-4">
+        <h2 class="font-weight-light mr-6">1. Trigger When: </h2>
+        <v-select item-text="name" item-value="value" :items="triggers_list" v-model="action.trigger_data.trigger_event_name"></v-select>
+        <v_directory_list
+          v-model="action.trigger_data.upload_directory_id_list"
+          v-if="action.trigger_data.trigger_event_name === 'file_uploaded'"
+          :project_string_id="project_string_id"
+          :show_new="true"
+          :show_update="true"
+          @change_directory="">
+        </v_directory_list>
       </div>
+
+      <div class="mb-4">
+        <h2 class="font-weight-light mr-6">2. Add Condition [Optional]: </h2>
+        <v-select   item-text="name" item-value="value" :items="conditions_list" v-model="action.condition_data.condition"></v-select>
+      </div>
+
+
+      <div class="mb-4">
+        <h2 class="font-weight-light">3. Select Task Template or Create New: </h2>
+        <div  class="d-flex align-center">
+          <job_select v-model="job_selected"
+                      v-if="!show_task_template_wizard"
+                      ref="job_select"
+                      class="mr-4"
+                      label="Select Task Template to Create tasks On"
+                      @change="on_change_job"
+                      :select_this_id="action.job_id"
+          >
+          </job_select>
+          <div class="d-flex align-center justify-center">
+            <v-btn :loading="switch_loading"
+                   outlined
+                   small
+                   v-if="!show_task_template_wizard"
+                   color="success" @click="show_wizard">
+              <v-icon>mdi-plus</v-icon>
+              Create New
+            </v-btn>
+            <v-btn v-else outlined color="error" @click="hide_wizard"><v-icon>mdi-cancel</v-icon>Cancel Creation</v-btn>
+          </div>
+        </div>
+        <div v-if="show_task_template_wizard">
+          <task_template_wizard
+            @task_template_launched="on_launch"
+            :redirect_after_launch="false"
+            :project_string_id="project_string_id"
+            mode="new"
+            :job="job_to_create"
+          >
+          </task_template_wizard>
+        </div>
+        <div v-else-if="action.job">
+          <job_detail :job_id="action.job.id"></job_detail>
+        </div>
+      </div>
+
+      <div class="mb-4">
+        <h2 class="font-weight-light mr-6">4. Completes When: </h2>
+        <v-select item-text="name" item-value="value" :items="completion_condition_list" v-model="action.complete_condition"></v-select>
+      </div>
+
     </div>
-    <div v-if="show_task_template_wizard">
-      <task_template_wizard
-        @task_template_launched="on_launch"
-        :redirect_after_launch="false"
-        :project_string_id="project_string_id"
-        mode="new"
-        :job="job_to_create"
-      >
-      </task_template_wizard>
-    </div>
-    <div v-else-if="action.job">
-      <job_detail :job_id="action.job.id"></job_detail>
-    </div>
+
 
   </v-container>
 </template>
@@ -34,12 +74,14 @@
 import directory_list from '../../source_control/directory_list'
 import task_template_wizard from '../../task/job/task_template_wizard_creation/task_template_wizard'
 import {create_empty_job} from '../../task/job/empty_job'
+import {Action} from './../Action'
 import Job_detail from "@/components/task/job/job_detail";
 export default {
   name: "file_upload_action_config",
   props:{
     action:{
-      required: true
+      required: true,
+      type: Action
     },
     project_string_id: {
       required: true
@@ -47,6 +89,44 @@ export default {
   },
   data: function(){
     return{
+      triggers_list: [
+        {
+          name: 'File is uploaded',
+          value: 'file_uploaded'
+        },
+        {
+          name: 'Previous Step Completed',
+          value: 'action_completed'
+        },
+      ],
+      completion_condition_list: [
+        {
+          name: 'Task is Completed',
+          value: 'task_completed'
+        }
+      ],
+      conditions_list: [
+        {
+          name: 'Image Files Only',
+          value: 'images_only'
+        },
+        {
+          name: 'Video Files Only',
+          value: 'videos_only'
+        },
+        {
+          name: 'Text Files Only',
+          value: 'text_only'
+        },
+        {
+          name: '3D Files Only',
+          value: '3d_only'
+        },
+        {
+          name: 'Geospatial Files Only',
+          value: 'geo_only'
+        }
+      ],
       job_to_create: create_empty_job(),
       job_selected: null,
       show_task_template_wizard: false,

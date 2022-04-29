@@ -30,9 +30,6 @@ import './css/vue_dropzone.css'
  *  "need" sub components results in more optimal config.
  *
  */
-import FlowyPlugin from "@hipsjs/flowy-vue";
-import "@hipsjs/flowy-vue/dist/lib/flowy-vue.css";
-Vue.use(FlowyPlugin)
 
 import file_preview from './components/source_control/file_preview'
 Vue.component('file_preview', file_preview)

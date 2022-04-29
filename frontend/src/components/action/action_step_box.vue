@@ -12,7 +12,7 @@
       <div class="d-flex">
         <div class="d-flex align-center">
           <v-icon x-large color="secondary" class="mr-2">{{ icon }}</v-icon>
-          <div class="text-h6">{{ title }}</div>
+          <div class="text-h6">{{ name }}</div>
         </div>
 
         <div>
@@ -30,7 +30,7 @@
 <script>
 export default {
   name: "action_step_box",
-  props: ['node', 'title', 'description', 'icon', 'is_trigger'],
+  props: ['node', 'name', 'description', 'icon', 'is_trigger'],
   methods: {
     remove: function(){
       this.$emit('remove')

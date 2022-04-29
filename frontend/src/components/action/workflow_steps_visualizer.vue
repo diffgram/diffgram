@@ -1,8 +1,9 @@
 <template>
   <div class="d-flex flex-column">
 
-    <div>
+    <div  v-if="workflow.actions_list.length > 0">
       <div
+
         v-for="(action, index) in workflow.actions_list"
         :key="index"
         class="d-flex flex-column align-center justify-center"
@@ -11,6 +12,7 @@
         <action_node_box
           style="min-width: 300px;"
           @remove="on_remove_action"
+          @open_action_selector="on_open_action_selector"
           @add_action_to_workflow="on_add_action_to_workflow"
           @select_action="on_select_action"
           :action="action"
@@ -18,6 +20,11 @@
         />
 
       </div>
+    </div>
+    <div v-else class="d-flex flex-column align-center justify-center">
+      <h1 class="font-weight-light mb-4">No steps yet.</h1>
+      <h3 class="font-weight-light text-center">Add A Step to Your Workflow by clicking a step on the right</h3>
+      <v-icon size="96">mdi-sitemap-outline</v-icon>
     </div>
   </div>
 </template>
@@ -61,12 +68,14 @@
       },
       computed: {},
       methods: {
+        on_open_action_selector: function(){
+          this.$emit('open_action_selector')
+        },
         on_select_action: function(act){
           this.$emit('select_action', act)
         },
         on_add_action_to_workflow: function(act){
-          this.workflow.actions_list.push(act)
-          this.$emit('select_action', act)
+          this.$emit('add_action_to_workflow', act)
         },
         onDragStartNewBlock (event) {
           console.log('onDragStartNewBlock', event);

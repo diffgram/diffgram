@@ -61,24 +61,6 @@
               </v-checkbox>
             </div>
 
-
-            <!-- Only show for beta
-                  This is not quite the right setup but at least it simplifies it for
-                  now.
-
-                Hide for now, this is really not fully supported anymore
-                and even for admins it just clutters up the display
-                -->
-            <!--
-            <v-select v-if="$store.state.user.current.api.api_actions
-                      && kind=='Annotations'"
-                      :items="file_comparison_mode_list"
-                      v-model="file_comparison_mode"
-                      label="File comparison"
-                      item-value="text">
-            </v-select>
-            -->
-
             <v-switch v-if="kind=='TF Records'"
                       v-model="masks"
                       label="Masks"
