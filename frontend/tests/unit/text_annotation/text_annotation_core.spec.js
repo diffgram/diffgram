@@ -14,7 +14,6 @@ describe("text_annotation_core.vue", () => {
 
 describe("Test draw_instance method of the text_annotation_core", () => {
     let wrapper;
-    let props;
 
     beforeEach(() => {
         wrapper = shallowMount(text_annotation_core, {}, localVue)
@@ -37,5 +36,9 @@ describe("Test draw_instance method of the text_annotation_core", () => {
 
         const draw_rects_with_empty_object = wrapper.vm.draw_instance({})
         expect(draw_rects_with_empty_object).toEqual([])
+    })
+
+    it("draw_instances has to return valid array to draw", () => {
+        console.log("This  test should pass")
     })
 })
