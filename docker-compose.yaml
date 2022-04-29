@@ -65,6 +65,7 @@ services:
     expose: [8080]
     depends_on:
     - db
+    - rabbitmq
     volumes:
     - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
     environment:
@@ -112,6 +113,14 @@ services:
     - ${POSTGRES_DATA_DIR:-./postgres-data}:${INTERNAL_POSTGRES_DIR:-/var/lib/postgresql/data}
     ports:
     - 5432:5432
-
+  rabbitmq:
+    image: rabbitmq:3.10-rc-management-alpine
+    environment:
+    - RABBITMQ_DEFAULT_USER=admin
+    - RABBITMQ_DEFAULT_PASS=admin
+    container_name: 'rabbitmq'
+    ports:
+        - 5672:5672
+        - 15672:15672
 volumes:
   static: {}
