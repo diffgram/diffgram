@@ -75,6 +75,9 @@ class Instance(Base):
     bounds = Column(ARRAY(Float), nullable = True)
     bounds_lonlat = Column(ARRAY(Float), nullable = True)
     radius = Column(Float, nullable = True)
+    # For Audio Instances
+    start_time = Column(Float())
+    end_time = Column(Float())
 
     # Keyframe list?
 
