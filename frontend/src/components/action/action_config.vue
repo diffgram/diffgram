@@ -1,6 +1,6 @@
 <template>
 
-  <v-container fluid>
+  <v-container fluid class="pt-0">
     <create_task_action_config v-if="action.kind === 'create_task'" :project_string_id="project_string_id" :action="action"></create_task_action_config>
     <export_action_config v-if="action.kind === 'export'"
                           :prev_action="prev_action"

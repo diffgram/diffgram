@@ -18,7 +18,6 @@ from azure.storage.blob._models import BlobSasPermissions
 from azure.storage.blob._shared_access_signature import BlobSharedAccessSignature
 from google.oauth2 import service_account
 
-
 try:
     from sqlalchemy import create_engine
 except Exception as e:
@@ -68,6 +67,8 @@ class DiffgramInstallTool:
     local_database = None
     mailgun = None
     mailgun_key = None
+    rabbit_user_name: str = None
+    rabbit_pass: str = None
     email_domain = None
     z_flag = None
 
@@ -128,12 +129,14 @@ class DiffgramInstallTool:
         try:
             blob_client = client.get_blob_client(container = bucket_name, blob = test_file_path)
             my_content_settings = ContentSettings(content_type = 'text/plain')
-            blob_client.upload_blob('This is a diffgram test file', content_settings = my_content_settings, overwrite=True)
+            blob_client.upload_blob('This is a diffgram test file', content_settings = my_content_settings,
+                                    overwrite = True)
             print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Write Permissions")
         except:
             print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Write Permissions")
-            bcolors.printcolor('Error Connecting to Azure: Please check you have write permissions on the Azure container.',
-                               bcolors.FAIL)
+            bcolors.printcolor(
+                'Error Connecting to Azure: Please check you have write permissions on the Azure container.',
+                bcolors.FAIL)
             print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
@@ -169,8 +172,9 @@ class DiffgramInstallTool:
             print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Read Permissions")
         except:
             print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Read Permissions")
-            bcolors.printcolor('Error Connecting to Azure: Please check you have read permissions on the Azure container.',
-                               bcolors.FAIL)
+            bcolors.printcolor(
+                'Error Connecting to Azure: Please check you have read permissions on the Azure container.',
+                bcolors.FAIL)
             print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
@@ -246,7 +250,8 @@ class DiffgramInstallTool:
         client = None
         bcolors.printcolor('Testing Connection...', bcolors.OKBLUE)
         try:
-            client = boto3.client('s3', aws_access_key_id = access_id, aws_secret_access_key = access_secret, region_name = bucket_region)
+            client = boto3.client('s3', aws_access_key_id = access_id, aws_secret_access_key = access_secret,
+                                  region_name = bucket_region)
             print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Connection To S3 Account")
         except Exception as e:
             print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Connection To S3 Account")
@@ -410,6 +415,9 @@ class DiffgramInstallTool:
         env_file += f"DIFFGRAM_VERSION_TAG={self.diffgram_version}\n"
         env_file += f"DIFFGRAM_HOST_OS={self.get_system_os()}\n"
 
+        env_file += f"RABBITMQ_DEFAULT_USER={self.rabbit_username}\n"
+        env_file += f"RABBITMQ_DEFAULT_PASS={self.rabbit_pass}\n"
+
         if self.local_database:
             env_file += "POSTGRES_IMAGE=postgres:12.5\n"
             env_file += "DATABASE_URL=postgresql+psycopg2://postgres:postgres@db/diffgram\n"
@@ -439,7 +447,6 @@ class DiffgramInstallTool:
         text_file.write(env_file)
         text_file.close()
         bcolors.printcolor(f"✓ Environment file written to: {os.path.abspath(text_file.name)}", bcolors.OKGREEN)
-
 
     def launch_dockers(self):
         try:
@@ -475,7 +482,7 @@ class DiffgramInstallTool:
                 self.db_username = bcolors.inputcolor('Please provide the database username: ')
                 self.db_pass = bcolors.inputcolor('Please provide the database password: ')
 
-                #database_url = f"postgresql+psycopg2://{db_username}:{db_pass}@/{db_name}?host={db_host}"
+                # database_url = f"postgresql+psycopg2://{db_username}:{db_pass}@/{db_name}?host={db_host}"
                 database_url = f"postgresql+psycopg2://{self.db_username}:{self.db_pass}@{self.db_host}/{self.db_name}"
 
                 bcolors.printcolor('Testing DB Connection...', bcolors.WARNING)
@@ -495,7 +502,8 @@ class DiffgramInstallTool:
                     bcolors.printcolor(f"Error data: {str(e)}", bcolors.FAIL)
                     valid = False
 
-        z_flag = bcolors.inputcolor('Do Add Z Flag to Postgres Mount? (Use only when using SELinux distros or similar) Y/N [Press Enter to Skip]: ')
+        z_flag = bcolors.inputcolor(
+            'Do Add Z Flag to Postgres Mount? (Use only when using SELinux distros or similar) Y/N [Press Enter to Skip]: ')
         z_flag = z_flag.lower()
         if z_flag == 'y':
             self.z_flag = True
@@ -513,6 +521,15 @@ class DiffgramInstallTool:
             self.email_domain = email_domain
             return
         return
+
+    def rabbit_config(self):
+        config_rabbit = bcolors.inputcolor(
+            'Do you want to set RabbitMQ Credentials (default user - password will be "admin" - "admin"? [Y/n] ')
+        if config_rabbit.lower() == 'y' or config_rabbit.lower() == 'yes':
+            rabbit_username = bcolors.inputcolor('Please provide the RabbitMQ username: ')
+            rabbit_password = bcolors.inputcolor('Please provide the RabbitMQ password: ')
+            self.rabbit_username = rabbit_username
+            self.rabbit_pass = rabbit_password
 
     def install(self):
         self.print_logo()
@@ -556,6 +573,7 @@ class DiffgramInstallTool:
         self.set_diffgram_version()
         self.database_config()
         self.mailgun_config()
+        self.rabbit_config()
         self.populate_env()
         self.launch_dockers()
 

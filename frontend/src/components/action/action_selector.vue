@@ -44,7 +44,7 @@ export default Vue.extend({
         search: '',
         actions_list: [
           new Action(
-            'Create Human Labeling Task',
+            'Human Labeling Task',
             'mdi-brush',
             'create_task',
             {
@@ -57,7 +57,7 @@ export default Vue.extend({
             'task_completed'
           ),
           new Action(
-            'Generate JSON Export',
+            'JSON Export',
             'mdi-database-export-outline',
             'export',
             {

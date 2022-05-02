@@ -1,5 +1,11 @@
 <template>
   <v-container fluid>
+    <v-tabs v-model="tab" class="mb-6" color="primary" style="height: 100%; border-bottom: 1px solid #e0e0e0">
+      <v-tab v-for="item in items" :key="item.text">
+        <v-icon left>{{ item.icon }}</v-icon>
+        {{ item.text }}
+      </v-tab>
+    </v-tabs>
     <div class="d-flex flex-column">
       <div class="mb-4">
         <h2 class="font-weight-light mr-6">1. Trigger When: </h2>
@@ -89,6 +95,11 @@ export default {
   },
   data: function(){
     return{
+      tab: 0,
+      items: [
+        { text: "Details", icon: "mdi-view-dashboard" },
+        { text: "Step Configuration", icon: "mdi-cog" },
+      ],
       triggers_list: [
         {
           name: 'File is uploaded',
