@@ -2,4 +2,5 @@
 
 class ConsumerCreator:
 
-    def 
+    def create_consumers(self):
+        return

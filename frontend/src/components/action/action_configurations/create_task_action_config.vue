@@ -7,18 +7,7 @@
       </v-tab>
     </v-tabs>
     <div class="d-flex flex-column">
-      <div class="mb-4">
-        <h2 class="font-weight-light mr-6">1. Trigger When: </h2>
-        <v-select item-text="name" item-value="value" :items="triggers_list" v-model="action.trigger_data.trigger_event_name"></v-select>
-        <v_directory_list
-          v-model="action.trigger_data.upload_directory_id_list"
-          v-if="action.trigger_data.trigger_event_name === 'file_uploaded'"
-          :project_string_id="project_string_id"
-          :show_new="true"
-          :show_update="true"
-          @change_directory="">
-        </v_directory_list>
-      </div>
+
 
       <div class="mb-4">
         <h2 class="font-weight-light mr-6">2. Add Condition [Optional]: </h2>
@@ -100,16 +89,7 @@ export default {
         { text: "Details", icon: "mdi-view-dashboard" },
         { text: "Step Configuration", icon: "mdi-cog" },
       ],
-      triggers_list: [
-        {
-          name: 'File is uploaded',
-          value: 'file_uploaded'
-        },
-        {
-          name: 'Previous Step Completed',
-          value: 'action_completed'
-        },
-      ],
+
       completion_condition_list: [
         {
           name: 'Task is Completed',
