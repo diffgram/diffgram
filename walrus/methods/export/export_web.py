@@ -158,11 +158,12 @@ def web_export_to_file(project_string_id):
 
         # Caution assumes project.user_primary
         # Billing check
+        member_generating_export = get_member(session)
         log = check_export_billing(
             session = session,
             project = project,
             directory = directory,
-            member = project.user_primary.member,
+            member = member_generating_export,
             log = log)
 
         if len(log["error"].keys()) >= 1:
@@ -303,7 +304,6 @@ def check_export_billing(
     )
 
     max_allowed_instances = checker.get_limit_from_plan('MAX_INSTANCES_PER_EXPORT')
-
     file_list = WorkingDirFileLink.file_list(
         session = session,
         working_dir_id = directory.id,
