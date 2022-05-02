@@ -198,8 +198,10 @@ jobs:
           walrusService.requests.cpu: "4"
           walrusService.limits.cpu: "4"
           defaultService.requests.memory: "4G"
+          defaultService.limits.memory: "4G"
           defaultService.requests.cpu: "2"
           frontendService.requests.memory: "2G"
+          frontendService.limits.memory: "2G"
           frontendService.requests.cpu: "1"
           defaultService.numReplicas: 2
           frontendService.numReplicas: 1
