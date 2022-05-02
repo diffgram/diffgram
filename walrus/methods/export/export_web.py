@@ -303,15 +303,7 @@ def check_export_billing(
     )
 
     max_allowed_instances = checker.get_limit_from_plan('MAX_INSTANCES_PER_EXPORT')
-    print('MAX ALLOWED INSTANCES', max_allowed_instances)
-    if max_allowed_instances is None:
-        return log
 
-    # Careful if it's a large project,
-    # And no other areas / no billing ID it can hang here ina funny way
-    # Put limit of 200 as a temp measure for this.
-
-    # Free case, could error or success
     file_list = WorkingDirFileLink.file_list(
         session = session,
         working_dir_id = directory.id,
