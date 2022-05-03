@@ -201,6 +201,7 @@ class Share_Project():
                 self.project.project_string_id,
                 len(existing_members))
             self.log['error']['free_tier_limit'] = message
+            self.log['error']['feature_checker'] = feature_checker.log
             return False
 
     def new(self):
