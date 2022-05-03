@@ -43,9 +43,10 @@
         :toolbar_height="`${!task ? '100px' : '50px'}`"
         :project_string_id="project_string_id"
         :schema_id="label_schema.id"
-        :current_instance="this.new_instance_list ? this.new_instance_list.get()[0] : null"
+        :current_instance="current_instance"
         :attribute_group_list_prop="label_list"
         :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+        @on_select_instance="on_select_instance"
         @delete_instance="delete_instance"
         @on_instance_hover="on_instance_hover"
         @on_instance_stop_hover="on_instance_stop_hover"
@@ -287,6 +288,7 @@ export default Vue.extend({
       tokens: [],
       instance_list: [],
       invisible_labels: [],
+      current_instance: null,
       //Modes
       search_mode: false,
       bulk_label: false,
@@ -490,6 +492,7 @@ export default Vue.extend({
     },
     keydown_event_listeners: async function (e) {
       if (e.keyCode === 27) {
+        this.current_instance = null
         this.instance_in_progress = null
         this.path = {};
         this.unselectable = false
@@ -1071,6 +1074,10 @@ export default Vue.extend({
       const end_token = this.tokens.find(token => token.id === end_instance.end_token)
       return starting_token.id < end_token.id
     },
+    on_select_instance: function(instance) {
+      console.log(instance)
+      this.current_instance = instance
+    }
   }
 })
 </script>

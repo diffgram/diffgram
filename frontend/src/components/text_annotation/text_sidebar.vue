@@ -11,14 +11,14 @@
         <v-expansion-panels multiple style="width: 350px;" accordion :value="[1]">
             <v-expansion-panel :disabled="!current_instance">
                 <v-expansion-panel-header>
-                    <strong>Attributes</strong>
+                    <strong>Attributes {{ !current_instance ? "(select instance)" : null }}</strong>
                 </v-expansion-panel-header>
                 <v-expansion-panel-content>
                     <attribute_group_list
                         :project_string_id="project_string_id"
                         v-if="attribute_group_list_prop().length !== 0 || (current_instance && current_instance.attribute_groups)"
                         :mode="'annotate'"
-                        :view_only_mode="view_only_mode"
+                        :view_only_mode="false"
                         :schema_id="schema_id"
                         :attribute_group_list_prop="attribute_group_list_prop()"
                         :current_instance="current_instance"
@@ -39,6 +39,7 @@
                         :items="instance_list"
                         fixed-header
                         disable-pagination
+                        single-select
                     >
                         <template v-slot:body="{ items }">
                             <tbody v-if="items.length > 0 && !loading">
@@ -47,23 +48,25 @@
                                 :key="item.id"
                                 @mouseover="on_hover_item(item)"
                                 @mouseleave="on_stop_hover_item"
+                                @click="on_select_instance(item)"
+                                :style="current_instance && current_instance.id === item.id && 'background-color: #ecf0f1'"
                             >
                                 <td v-if="$store.state.user.current.is_super_admin == true" class="centered-table-items">
                                     {{ item.id || 'new' }}
                                 </td>
                                 <td class="centered-table-items">
-                                    <v-icon 
-                                        v-if="item.type === 'relation'"
-                                        :color="item.label_file.colour.hex"
-                                    >
-                                        mdi-relation-one-to-one
-                                    </v-icon>
-                                    <v-icon 
-                                        v-if="item.type === 'text_token'"
-                                        :color="item.label_file.colour.hex"
-                                    >
-                                        mdi-label
-                                    </v-icon>
+                                        <v-icon 
+                                            v-if="item.type === 'relation'"
+                                            :color="item.label_file.colour.hex"
+                                        >
+                                            mdi-relation-one-to-one
+                                        </v-icon>
+                                        <v-icon 
+                                            v-if="item.type === 'text_token'"
+                                            :color="item.label_file.colour.hex"
+                                        >
+                                            mdi-label
+                                        </v-icon>
                                 </td>
                                 <td class="centered-table-items">
                                     {{ item.label_file.label.name }}
@@ -220,8 +223,10 @@ export default Vue.extend({
         on_stop_hover_item: function() {
             this.$emit("on_instance_stop_hover")
         },
+        on_select_instance: function(instance) {
+            this.$emit("on_select_instance", instance)
+        },
         attribute_group_list_prop: function () {
-        console.log(this.per_instance_attribute_groups_list)
 
         if (!this.label_list
           || !this.current_instance
