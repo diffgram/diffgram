@@ -280,6 +280,9 @@
         >
         </label_schema_selector>
       </div>
+
+      <v-divider vertical></v-divider>
+
       <div style="width: 310px">
         <div class="pl-2 pr-3 pt-4">
           <label_select_annotation

@@ -8,79 +8,106 @@
         left: 0;
         top: ${toolbar_height}
         `">
-        <v-data-table
-            hide-default-footer
-            :style="`width: 350px; max-height: 100%; overflow-y: scroll`"
-            :headers="headers"
-            :items="instance_list"
-            fixed-header
-            disable-pagination
-        >
-            <template v-slot:body="{ items }">
-                <tbody v-if="items.length > 0 && !loading">
-                  <tr
-                    v-for="item in items"
-                    :key="item.id"
-                    @mouseover="on_hover_item(item)"
-                    @mouseleave="on_stop_hover_item"
-                  >
-                    <td v-if="$store.state.user.current.is_super_admin == true" class="centered-table-items">
-                        {{ item.id || 'new' }}
-                    </td>
-                    <td class="centered-table-items">
-                        <v-icon 
-                            v-if="item.type === 'relation'"
-                            :color="item.label_file.colour.hex"
-                        >
-                            mdi-relation-one-to-one
-                        </v-icon>
-                        <v-icon 
-                            v-if="item.type === 'text_token'"
-                            :color="item.label_file.colour.hex"
-                        >
-                            mdi-label
-                        </v-icon>
-                    </td>
-                    <td class="centered-table-items">
-                        {{ item.label_file.label.name }}
-                    </td>
-                    <td class="centered-table-items">
-                        <v-layout justify-center>
-                            <button_with_menu
-                                    tooltip_message="Change Label Template"
-                                    icon="mdi-format-paint"
-                                    color="primary"
-                                    :close_by_button="true"
-                                >
-                                    <template slot="content">
-                                        <label_select_only
-                                        :label_file_list_prop="label_list"
-                                        :select_this_id_at_load="item.label_file_id"
-                                        @label_file="$emit('change_instance_label', { label: $event, instance: item })"
+        <v-expansion-panels multiple style="width: 350px;" accordion :value="[1]">
+            <v-expansion-panel :disabled="!current_instance">
+                <v-expansion-panel-header>
+                    <strong>Attributes</strong>
+                </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                    <attribute_group_list
+                        :project_string_id="project_string_id"
+                        v-if="attribute_group_list_prop().length !== 0 || (current_instance && current_instance.attribute_groups)"
+                        :mode="'annotate'"
+                        :view_only_mode="view_only_mode"
+                        :schema_id="schema_id"
+                        :attribute_group_list_prop="attribute_group_list_prop()"
+                        :current_instance="current_instance"
+                        @attribute_change="attribute_change($event)"
+                        key="attribute_groups_list"
+                    />
+                </v-expansion-panel-content>
+            </v-expansion-panel>
+        <v-expansion-panel>
+                <v-expansion-panel-header>
+                    <strong>Instances</strong>
+                </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                    <v-data-table
+                        hide-default-footer
+                        :style="`width: 350px; max-height: 100%; overflow-y: scroll`"
+                        :headers="headers"
+                        :items="instance_list"
+                        fixed-header
+                        disable-pagination
+                    >
+                        <template v-slot:body="{ items }">
+                            <tbody v-if="items.length > 0 && !loading">
+                            <tr
+                                v-for="item in items"
+                                :key="item.id"
+                                @mouseover="on_hover_item(item)"
+                                @mouseleave="on_stop_hover_item"
+                            >
+                                <td v-if="$store.state.user.current.is_super_admin == true" class="centered-table-items">
+                                    {{ item.id || 'new' }}
+                                </td>
+                                <td class="centered-table-items">
+                                    <v-icon 
+                                        v-if="item.type === 'relation'"
+                                        :color="item.label_file.colour.hex"
+                                    >
+                                        mdi-relation-one-to-one
+                                    </v-icon>
+                                    <v-icon 
+                                        v-if="item.type === 'text_token'"
+                                        :color="item.label_file.colour.hex"
+                                    >
+                                        mdi-label
+                                    </v-icon>
+                                </td>
+                                <td class="centered-table-items">
+                                    {{ item.label_file.label.name }}
+                                </td>
+                                <td class="centered-table-items">
+                                    <v-layout justify-center>
+                                        <button_with_menu
+                                                tooltip_message="Change Label Template"
+                                                icon="mdi-format-paint"
+                                                color="primary"
+                                                :close_by_button="true"
+                                            >
+                                                <template slot="content">
+                                                    <label_select_only
+                                                    :label_file_list_prop="label_list"
+                                                    :select_this_id_at_load="item.label_file_id"
+                                                    @label_file="$emit('change_instance_label', { label: $event, instance: item })"
+                                                    />
+                                                </template>
+                                        </button_with_menu>
+                                        <tooltip_button
+                                            color="primary"
+                                            icon="mdi-delete"
+                                            tooltip_message="Delete instance"
+                                            @click="$emit('delete_instance', item)"
+                                            :icon_style="true"
+                                            :bottom="true"
                                         />
-                                    </template>
-                            </button_with_menu>
-                            <tooltip_button
-                                color="primary"
-                                icon="mdi-delete"
-                                tooltip_message="Delete instance"
-                                @click="$emit('delete_instance', item)"
-                                :icon_style="true"
-                                :bottom="true"
-                            />
-                        </v-layout>
-                    </td>
-                  </tr>
-                </tbody>
-                <tbody v-else>
-                    <tr>
-                        <td :colspan="headers.length" style="text-align: center">
-                            {{ loading ? "Loading..." : "No instances have been created yet" }}
-                        </td>
-                    </tr>
-                </tbody>
-            </template>
-        </v-data-table>
+                                    </v-layout>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tbody v-else>
+                                <tr>
+                                    <td :colspan="headers.length" style="text-align: center">
+                                        {{ loading ? "Loading..." : "No instances have been created yet" }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </template>
+                    </v-data-table>
+                </v-expansion-panel-content>
+            </v-expansion-panel>
+        </v-expansion-panels>
     </div>
 </template>
 
@@ -89,15 +116,33 @@ import Vue from 'vue'
 import instance_detail_list_view from "../annotation/instance_detail_list_view.vue";
 import button_with_menu from '../regular/button_with_menu.vue';
 import label_select_only from '../label/label_select_only.vue'
+import attribute_group_list from '../attribute/attribute_group_list.vue'
 
 export default Vue.extend({
     name: "text_sidepanel",
     components: {
         instance_detail_list_view,
         button_with_menu,
-        label_select_only
+        label_select_only,
+        attribute_group_list
     },
     props: {
+        project_string_id: {
+            type: String,
+            required: true
+        },
+        schema_id: {
+            type: Number,
+            required: true
+        },
+        per_instance_attribute_groups_list: {
+            type: Array,
+            default: []
+        },
+        current_instance: {
+            type: Object,
+            default: null
+        },
         instance_list: {
             type: Array,
             default: []
@@ -174,7 +219,24 @@ export default Vue.extend({
         },
         on_stop_hover_item: function() {
             this.$emit("on_instance_stop_hover")
+        },
+        attribute_group_list_prop: function () {
+        console.log(this.per_instance_attribute_groups_list)
+
+        if (!this.label_list
+          || !this.current_instance
+          || !this.per_instance_attribute_groups_list
+          || !this.current_instance.label_file) {
+          return []
         }
+
+        let attr_group_list = this.per_instance_attribute_groups_list.filter(elm =>{
+          let file_id_list = elm.label_file_list.map(label_file => label_file.id)
+          return file_id_list.includes(this.current_instance.label_file.id)
+        })
+        return attr_group_list;
+
+      },
     }
 })
 </script>
