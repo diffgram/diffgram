@@ -1,34 +1,38 @@
 <template>
-  <div class="mb-4">
-    <h2 class="font-weight-light mr-6">1. Trigger When: </h2>
-    <v-select item-text="name" item-value="value" :items="triggers_list" v-model="action.trigger_data.trigger_event_name"></v-select>
-    <v_directory_list
-      v-model="action.trigger_data.upload_directory_id_list"
-      v-if="action.trigger_data.trigger_event_name === 'file_uploaded'"
-      :project_string_id="project_string_id"
-      :show_new="true"
-      :show_update="true"
-      @change_directory="">
-    </v_directory_list>
-  </div>
+
+  <v-container fluid class="pt-0">
+    <create_task_action_config v-if="action.kind === 'create_task'"
+                               :project_string_id="project_string_id"
+                               :actions_list="actions_list"
+                               :display_mode="display_mode"
+                               :action="action"></create_task_action_config>
+    <export_action_config v-if="action.kind === 'export'"
+                          :prev_action="prev_action"
+                          :display_mode="display_mode"
+                          :actions_list="actions_list"
+                          :project_string_id="project_string_id"
+                          :action="action">
+
+    </export_action_config>
+  </v-container>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
 import axios from '../../services/customInstance';
 import action_step_box from "./action_step_box.vue";
-import create_task_action_config from "./action_configurations/create_task_action_config";
-import export_action_config from "./action_configurations/export_action_config";
+import create_task_action_config from "./action_configurations/create_task/create_task_action_config";
+import export_action_config from "./action_configurations/export/export_action_config";
 export default Vue.extend({
 
-    name: 'action_config',
+    name: 'action_config_factory',
     components: {
       action_step_box,
       create_task_action_config,
       export_action_config,
 
     },
-    props: ['action', 'project_string_id', 'actions_list', 'triggers_list_prop'],
+    props: ['action', 'project_string_id', 'actions_list', 'display_mode'],
 
     mounted() {
 
@@ -38,16 +42,6 @@ export default Vue.extend({
       return {
         is_open: true,
         search: '',
-        default_triggers_list: [
-          {
-            name: 'File is uploaded',
-            value: 'file_uploaded'
-          },
-          {
-            name: 'Previous Step Completed',
-            value: 'action_completed'
-          },
-        ],
 
       }
     },
@@ -55,14 +49,6 @@ export default Vue.extend({
 
     },
     computed: {
-      triggers_list: function(){
-        if(this.triggers_list_prop){
-          return this.triggers_list_prop;
-
-        }
-        
-        return this.default_triggers_list
-      },
       prev_action: function(){
         if(!this.actions_list){
           return

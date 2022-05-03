@@ -1,0 +1,70 @@
+<template>
+
+  <div class="mb-4">
+    <h2 class="font-weight-light mr-6">4. Completes When: </h2>
+    <v-select item-text="name" item-value="value" :items="completion_condition_list" v-model="action.complete_condition"></v-select>
+  </div>
+
+</template>
+
+<script lang="ts">
+import Vue from "vue";
+
+
+export default Vue.extend({
+
+    name: 'complete_conditions_config',
+    components: {
+
+    },
+    props: ['action', 'project_string_id', 'actions_list', 'completion_condition_list_prop'],
+
+    mounted() {
+
+    },
+
+    data() {
+      return {
+        is_open: true,
+        search: '',
+        default_complete_condition_list: [
+          {
+            name: 'File is uploaded',
+            value: 'file_uploaded'
+          },
+          {
+            name: 'Previous Step Completed',
+            value: 'action_completed'
+          },
+        ],
+
+      }
+    },
+    watch: {},
+    computed: {
+      completion_condition_list: function(){
+        if(this.completion_condition_list_prop){
+          return this.completion_condition_list_prop;
+        }
+        return this.default_complete_condition_list;
+      }
+    },
+    methods: {
+      close() {
+        this.input = undefined;
+        this.is_open = false;
+      },
+      open() {
+        this.is_open = true;
+      },
+    }
+  }
+) </script>
+
+
+<style>
+code {
+  width: 100%;
+  height: 100% !important;
+}
+</style>

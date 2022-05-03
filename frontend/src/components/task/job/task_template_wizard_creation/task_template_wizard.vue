@@ -17,7 +17,7 @@
       </v-stepper-header>
 
       <v-progress-linear
-        color="secondary"
+        color="primary"
         striped
         v-model="global_progress"
         height="12"
@@ -91,7 +91,6 @@
             @next_step="go_to_step(steps_configuration['upload'].number + 1)"
           ></step_upload_files_task_template>
         </v-stepper-content>
-
         <v-stepper-content
           v-if="!steps_configuration['datasets'].hide"
           :step="steps_configuration['datasets'].number">
@@ -103,7 +102,6 @@
             @next_step="go_to_step(steps_configuration['datasets'].number + 1)"
           ></step_attach_directories_task_template>
         </v-stepper-content>
-
         <v-stepper-content
           v-if="!steps_configuration['ui_schema'].hide"
           :step="steps_configuration['ui_schema'].number">

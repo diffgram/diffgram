@@ -17,6 +17,7 @@
           @select_action="on_select_action"
           :action="action"
           :actions_list="workflow.actions_list"
+          :project_string_id="project_string_id"
         />
 
       </div>

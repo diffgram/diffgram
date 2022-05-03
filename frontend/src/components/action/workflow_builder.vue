@@ -2,12 +2,11 @@
   <v-container fluid id="" style="height: 100%;">
 
     <v-card style=" min-height: 800px">
-      <v-card-title>Workflow Builder</v-card-title>
       <div class="d-flex" style="height: 100%">
 
         <v-card class="ml-2 mr-2 steps-container d-flex flex-column" width="20%" elevation="0" style="height: 100%">
           <v-card-title>Workflow:</v-card-title>
-          <v-card-text  class="align-stretch" style="height: 100%;">
+          <v-card-text class="align-stretch" style="height: 100%;">
             <workflow_steps_visualizer
               @add_action_to_workflow="on_add_action_to_workflow"
               @open_action_selector="show_add_action_panel"
@@ -24,20 +23,20 @@
 
         <v-card v-if="selected_action && !show_add_action" class="ml-2 pa-4 steps-container" width="80%" elevation="0">
           <v-card-title v-if="selected_action.kind !== 'action_start'">
-            <h1 class="font-weight-light">
-              <v-icon size="48" color="primary">mdi-pencil</v-icon>
-              {{ selected_action.name }}
-            </h1>
+            <h3 class="">
+              <v-icon size="32" color="primary">mdi-pencil</v-icon>
+              Configure: {{ selected_action.name }}
+            </h3>
           </v-card-title>
-          <action_config :actions_list="workflow.actions_list"
-                         :project_string_id="project_string_id"
-                         :action="selected_action">
-          </action_config>
+          <action_config_factory :actions_list="workflow.actions_list"
+                                 :project_string_id="project_string_id"
+                                 :action="selected_action">
+          </action_config_factory>
         </v-card>
         <v-card v-if="show_add_action" class="ml-2 pa-4 steps-container" width="80%" elevation="0">
           <v-card-title>
             <h1 class="font-weight-light">
-              <v-icon size="48" color="primary">mdi-add</v-icon>
+              <v-icon size="48" color="primary">mdi-plus</v-icon>
               Add New Step
             </h1>
           </v-card-title>
@@ -58,7 +57,7 @@ import axios from '../../services/customInstance';
 import action_existing_list from './action_existing_list.vue';
 import action_selector from './action_selector.vue';
 import action_node_box from './action_node_box.vue';
-import action_config from './action_config.vue';
+import action_config_factory from './action_config_factory.vue';
 import upload from '../upload_large.vue';
 import workflow_run_list from './workflow_run_list.vue';
 import {v4 as uuidv4} from 'uuid'
@@ -71,7 +70,7 @@ export default Vue.extend({
     name: 'workflow_builder',
 
     components: {
-      action_config,
+      action_config_factory,
       Workflow_steps_visualizer,
       action_node_box: action_node_box,
       action_existing_list: action_existing_list,
@@ -161,13 +160,13 @@ export default Vue.extend({
       }
     },
     mounted() {
-      if(this.workflow.actions_list.length === 0){
+      if (this.workflow.actions_list.length === 0) {
         this.show_add_action_panel();
       }
     },
     computed: {},
     methods: {
-      on_add_action_to_workflow: function(act){
+      on_add_action_to_workflow: function (act) {
         this.hide_add_action_panel()
         this.workflow.actions_list.push(act)
         this.on_select_action(act)

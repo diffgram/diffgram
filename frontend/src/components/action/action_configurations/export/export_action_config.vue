@@ -1,0 +1,118 @@
+<template>
+  <v-container fluid>
+    <action_config_wizard_base
+      v-if="display_mode === 'wizard'"
+      :action="action"
+      :actions_list="actions_list"
+      :project_string_id="project_string_id">
+      <template v-slot:action_config>
+        <export_config_details :action="action" :project_string_id="project_string_id"></export_config_details>
+      </template>
+    </action_config_wizard_base>
+    <action_config_form_base
+      v-if="display_mode === 'form'"
+      :project_string_id="project_string_id"
+      :action="action"
+      :actions_list="actions_list"
+    >
+      <template v-slot:action_config>
+        <export_config_details :action="action" :project_string_id="project_string_id"></export_config_details>
+      </template>
+    </action_config_form_base>
+
+  </v-container>
+</template>
+
+<script>
+import directory_list from '../../../source_control/directory_list'
+import action_config_wizard_base from '../../actions_config_base/action_config_wizard_base'
+import action_config_form_base from '../../actions_config_base/action_config_form_base'
+import Export_config_details from "@/components/action/action_configurations/export/export_config_details";
+export default {
+  name: "file_upload_action_config",
+  components: {
+    Export_config_details,
+    action_config_wizard_base,
+    action_config_form_base,
+    directory_list: directory_list
+  },
+  props:{
+    prev_action: {
+      default: null
+    },
+    action:{
+      required: true
+    },
+    project_string_id:{
+      required: true
+    },
+    actions_list: {
+      required: true
+    },
+    display_mode: {
+      default: "wizard"
+    }
+  },
+  data: function(){
+    return{
+      triggers_list: [
+        {
+          name: 'Task is Completed',
+          value: 'task_completed'
+        },
+      ],
+      loading: false,
+      source_list: [
+        {
+          'name': 'directory',
+          'display_name': 'Dataset',
+          'icon': 'mdi-folder',
+          'color': 'primary'
+        },
+        {
+          'name': 'job',
+          'display_name': 'Job',
+          'icon': 'mdi-inbox',
+          'color': 'green'
+        },
+        {
+          'name': 'task',
+          'display_name': 'Task',
+          'icon': 'mdi-flash-circle',
+          'color': 'purple'
+        }
+      ],
+      source: "directory",
+      kind_list: ["Annotations"],
+      completion_condition_list: [
+        {
+          name: 'Export is Generated Successfully',
+          value: 'task_completed'
+        }
+      ],
+      conditions_list: [
+        {
+          name: 'All Tasks completed',
+          value: 'all_tasks_completed'
+        }
+      ],
+      items:[
+        {
+          name: 'When All tasks completed',
+          value: 'all_tasks_complete'
+        }
+      ]
+    }
+  },
+
+  computed:{
+    on_directories_updated: function(){
+
+    }
+  }
+}
+</script>
+
+<style scoped>
+
+</style>
