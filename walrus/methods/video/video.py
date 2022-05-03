@@ -94,13 +94,13 @@ class New_video():
         if member:
             user = member.user
 
-        checker = FeatureChecker(
+        feature_checker = FeatureChecker(
             session = self.session,
             user = user,
             project = self.project
         )
 
-        max_frames = checker.get_limit_from_plan('MAX_FRAMES_PER_VIDEO')
+        max_frames = feature_checker.get_limit_from_plan('MAX_FRAMES_PER_VIDEO')
         if max_frames is not None and frame_count >= max_frames:
             self.input.status = "failed"
             message = 'Free Tier Limit Reached - Max Frames Per Video Allowed: {}. But Video has {}'.format(
@@ -112,6 +112,7 @@ class New_video():
             logger.error(message)
             self.input.update_log['error'] = {}
             self.input.update_log['error']['free_tier_limit'] = message
+            self.input.update_log['error']['feature_checker'] = feature_checker.log
             return False
 
         return True
