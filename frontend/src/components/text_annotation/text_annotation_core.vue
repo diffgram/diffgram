@@ -761,6 +761,9 @@ export default Vue.extend({
     },
     delete_instance: async function (instance) {
       this.hover_instance = null
+      if (this.current_instance && instance.creation_ref_id === this.current_instance.creation_ref_id) {
+        this.current_instance = null
+      }
       const new_delete_command = new DeleteInstanceCommand([instance], this.new_instance_list)
       this.new_command_manager.executeCommand(new_delete_command)
       this.has_changed = true

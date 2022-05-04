@@ -42,7 +42,7 @@
                         single-select
                     >
                         <template v-slot:body="{ items }">
-                            <tbody v-if="items.length > 0 && !loading">
+                            <tbody v-if="items.length > 0 && !loading" style="cursor: pointer">
                             <tr
                                 v-for="item in items"
                                 :key="item.id"
@@ -83,7 +83,7 @@
                                                     <label_select_only
                                                     :label_file_list_prop="label_list"
                                                     :select_this_id_at_load="item.label_file_id"
-                                                    @label_file="$emit('change_instance_label', { label: $event, instance: item })"
+                                                    @label_file.stop="$emit('change_instance_label', { label: $event, instance: item })"
                                                     />
                                                 </template>
                                         </button_with_menu>
@@ -91,7 +91,7 @@
                                             color="primary"
                                             icon="mdi-delete"
                                             tooltip_message="Delete instance"
-                                            @click="$emit('delete_instance', item)"
+                                            @click.stop="$emit('delete_instance', item)"
                                             :icon_style="true"
                                             :bottom="true"
                                         />
