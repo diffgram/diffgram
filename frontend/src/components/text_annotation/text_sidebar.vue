@@ -242,6 +242,9 @@ export default Vue.extend({
         return attr_group_list;
 
       },
+      attribute_change: function(attribute) {
+          this.$emit('on_update_attribute', attribute)
+      }
     }
 })
 </script>

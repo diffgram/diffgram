@@ -50,6 +50,7 @@
         @delete_instance="delete_instance"
         @on_instance_hover="on_instance_hover"
         @on_instance_stop_hover="on_instance_stop_hover"
+        @on_update_attribute="on_update_attribute"
         @change_instance_label="change_instance_label"
       />
       <svg
@@ -229,7 +230,8 @@ import History from "../../helpers/history"
 import {
   CreateInstanceCommand,
   DeleteInstanceCommand,
-  UpdateInstanceLabelCommand
+  UpdateInstanceLabelCommand,
+  UpdateInstanceAttributeCommand
 } from "../../helpers/command/available_commands"
 
 export default Vue.extend({
@@ -1075,8 +1077,13 @@ export default Vue.extend({
       return starting_token.id < end_token.id
     },
     on_select_instance: function(instance) {
-      console.log(instance)
       this.current_instance = instance
+    },
+    on_update_attribute: function(attribute) {
+      const command = new UpdateInstanceAttributeCommand([this.current_instance], this.new_instance_list)
+      command.set_new_attribute(attribute[0].id, {...attribute[1]})
+      this.new_command_manager.executeCommand(command)
+      this.has_changed = true
     }
   }
 })
