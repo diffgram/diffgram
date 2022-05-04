@@ -17,7 +17,7 @@ def api_flow_update(project_string_id):
     """
 
     spec_list = [
-        {'flow_id': int},
+        {'workflow_id': int},
         {'name': str},
         {'trigger_type': str},
         {'mode': str},
@@ -42,7 +42,7 @@ def api_flow_update(project_string_id):
 
         flow = Workflow.get_by_id(
             session=session,
-            id=input['flow_id'],
+            id=input['workflow_id'],
             project_id=project.id)
 
         if flow is None:

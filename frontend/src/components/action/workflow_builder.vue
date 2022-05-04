@@ -2,10 +2,107 @@
   <v-container fluid id="" style="height: 100%;">
 
     <v-card style=" min-height: 800px">
+      <v-card-title>
+        <div class="d-flex align-center justify-start " style="width: 100%">
+          <h4 class="">
+                <span>
+                  Workflow:
+                </span>
+            <span class="secondary--text font-weight-light" v-if="!loading && workflow && !edit_name">
+                  {{workflow.name | truncate(45)}}
+                </span>
+          </h4>
+          <tooltip_button
+            v-if="!edit_name"
+            tooltip_message="Change Name"
+            @click="edit_name = true"
+            icon="mdi-pencil"
+            :icon_style="true"
+            small
+            :disabled="loading"
+            color="primary"
+            datacy="edit_schema_name_button"
+          >
+          </tooltip_button>
+
+          <v-text-field
+            class="edit-workflow-name"
+            data-cy="schema_name_text_field"
+            v-if="!loading && workflow && edit_name"
+            v-model="workflow.name"
+            @input="has_changes = true"
+            @keyup.enter="update_workflow_name"
+            :disabled="loading"
+            solo
+            flat
+            height="35px"
+            style="font-size: 18px; border: 1px solid grey; height: 35px; max-width: 450px;"
+            color="blue"
+          >
+          </v-text-field>
+
+          <div>
+            <tooltip_button
+              v-if="edit_name == true"
+              @click="update_workflow_name"
+              color="primary"
+              icon="save"
+              :icon_style="true"
+              datacy="save_name_button"
+              tooltip_message="Save Name Updates"
+              confirm_message="Confirm"
+              :loading="loading"
+              :disabled="loading || !has_changes"
+            >
+            </tooltip_button>
+          </div>
+
+          <tooltip_button
+            v-if="edit_name == true"
+            tooltip_message="Cancel Name Edit"
+            datacy="cancel_edit_name"
+            @click="edit_name = false"
+            icon="mdi-cancel"
+            :icon_style="true"
+            color="primary"
+            class="flex-grow-1"
+            :disabled="loading"
+          >
+          </tooltip_button>
+          <div class="d-flex align-center justify-start ml-auto">
+            <v-tooltip top primary class="">
+              <template v-slot:activator="{ on, attrs }">
+                <div v-on="on" v-bind="attrs">
+                  <v-switch
+                    color="success"
+                    v-model="workflow.active"
+
+                  >
+                  </v-switch>
+                </div>
+              </template>
+              <span>Active: </span>
+            </v-tooltip>
+            <button_with_confirm
+              tooltip_message="Archive Workflow"
+              button_message="Archive Workflow"
+              @confirm_click="archive_action"
+              icon="mdi-delete"
+              :disabled="loading && !workflow"
+              button_color="error"
+              :icon_style="true"
+              datacy_confirm="archive_schema_button_confirm"
+              datacy="archive_schema_button"
+            >
+            </button_with_confirm>
+          </div>
+        </div>
+
+      </v-card-title>
       <div class="d-flex" style="height: 100%">
 
         <v-card class="ml-2 mr-2 steps-container d-flex flex-column" width="20%" elevation="0" style="height: 100%">
-          <v-card-title>Workflow:</v-card-title>
+
           <v-card-text class="align-stretch" style="height: 100%;">
             <workflow_steps_visualizer
               @add_action_to_workflow="on_add_action_to_workflow"
@@ -27,6 +124,7 @@
               <v-icon size="32" color="primary">mdi-pencil</v-icon>
               Configure: {{ selected_action.name }}
             </h3>
+            <v-spacer></v-spacer>
           </v-card-title>
           <action_config_factory :actions_list="workflow.actions_list"
                                  :project_string_id="project_string_id"
@@ -58,13 +156,14 @@ import action_existing_list from './action_existing_list.vue';
 import action_selector from './action_selector.vue';
 import action_node_box from './action_node_box.vue';
 import action_config_factory from './action_config_factory.vue';
+import {workflow_update} from './../../services/workflowServices';
 import upload from '../upload_large.vue';
 import workflow_run_list from './workflow_run_list.vue';
 import {v4 as uuidv4} from 'uuid'
 
 import Vue from "vue";
 import Workflow_steps_visualizer from "./workflow_steps_visualizer.vue";
-
+import sillyname from 'sillyname';
 export default Vue.extend({
 
     name: 'workflow_builder',
@@ -122,7 +221,9 @@ export default Vue.extend({
           }
         ],
         loading: false,
+        has_changes: false,
         show_add_action: false,
+        edit_name: false,
         over_drag_area: false,
         error: {},
         success: false,
@@ -139,13 +240,6 @@ export default Vue.extend({
     },
 
     watch: {
-
-      // for "updates in place" to page.
-      // this is really stupid but vue js / router doesn't seem
-      // to have better way to do this
-      // have to do this on all components ...
-      // and can't call this.created() for some reason
-
       flow_id() {
         this.api_get_flow()
       }
@@ -163,9 +257,13 @@ export default Vue.extend({
       if (this.workflow.actions_list.length === 0) {
         this.show_add_action_panel();
       }
+      this.workflow.name = sillyname()
     },
     computed: {},
     methods: {
+      update_workflow_name: function(){
+        this.edit_name = false
+      },
       on_add_action_to_workflow: function (act) {
         this.hide_add_action_panel()
         this.workflow.actions_list.push(act)
@@ -299,26 +397,26 @@ export default Vue.extend({
       show_add_action_panel: function () {
         this.show_add_action = true
       },
-      api_flow_update: function (mode) {
+      archive_action: function(){
 
-        this.loading = true
-        this.error = {}
-        this.success = false
+      },
+      api_flow_update: async function (mode) {
 
-        axios.post(
-          '/api/v1/project/' + this.project_string_id +
-          '/actions/workflow/update',
-          {
-            flow_id: this.flow_id ? Number(this.flow_id) : undefined,
-            name: this.flow.name,
-            trigger_type: this.flow.trigger_type,
-            time_window: this.flow.time_window,
-            active: this.flow.active,
-            mode: mode
+        this.loading = true;
+        this.error = {};
+        this.success = false;
 
-          }).then(response => {
-
-          this.flow = response.data.flow
+        let [result, err] = await workflow_update(this.project_string_id, this.workflow, mode)
+        if(err){
+          if (err.response.status == 400) {
+            this.error = err.response.data.log.error
+          }
+          this.loading = false
+          console.log(err)
+          return
+        }
+        if(result){
+          this.workflow = result.workflow
 
           this.success = true
           this.loading = false
@@ -327,21 +425,14 @@ export default Vue.extend({
           // careful mode is local, not this.mode
           if (mode == 'ARCHIVE') {
 
-            let url = '/project/' + this.project_string_id +
-              '/flow/list'
+            let url = `/project/${this.project_string_id}/flow/list`
 
             this.$router.push(url)
 
           }
 
-        }).catch(error => {
+        }
 
-          if (error.response.status == 400) {
-            this.error = error.response.data.log.error
-          }
-          this.loading = false
-          console.log(error)
-        });
 
       }
 
@@ -358,4 +449,9 @@ export default Vue.extend({
   background: #a1cdff;
   transition: 0.5s ease;
 }
+.edit-workflow-name .v-input__control{
+  min-height: 5px !important;
+  height: 40px !important;
+}
+
 </style>
