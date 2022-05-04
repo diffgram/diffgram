@@ -13,7 +13,7 @@ export default class UpdateInstanceAttributeCommand extends Command {
         if (this.initial_instances.length === 0) this.initial_instances = this.instances.map(inst => this._copyInstance(inst))
 
         this.instances.forEach((_, index, instanceArray) => {
-            instanceArray[index].attribute_groups = { ...this.attribute_groups }
+            instanceArray[index].attribute_groups = { ...instanceArray[index].attribute_groups, ...this.attribute_groups }
         })
 
         this.instances.map((instance, index) => {
@@ -23,6 +23,7 @@ export default class UpdateInstanceAttributeCommand extends Command {
 
     undo() {
         this.initial_instances.map((instance, index) => {
+            console.log(this.replacement_indexes, index)
             const instance_to_modify = this.instance_list.get_all()[this.replacement_indexes[index]]
             instance_to_modify.attribute_groups = {...instance.attribute_groups}
         })

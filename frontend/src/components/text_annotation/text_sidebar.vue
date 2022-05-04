@@ -8,7 +8,7 @@
         left: 0;
         top: ${toolbar_height}
         `">
-        <v-expansion-panels multiple style="width: 350px;" accordion :value="[1]">
+        <v-expansion-panels multiple style="width: 350px;" accordion>
             <v-expansion-panel :disabled="!current_instance">
                 <v-expansion-panel-header>
                     <strong>Attributes {{ !current_instance ? "(select instance)" : null }}</strong>
