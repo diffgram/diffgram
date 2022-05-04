@@ -23,7 +23,7 @@
 
         <v-card v-if="selected_action && !show_add_action" class="ml-2 pa-4 steps-container" width="80%" elevation="0">
           <v-card-title v-if="selected_action.kind !== 'action_start'">
-            <h3 class="">
+            <h3 class="font-weight-light">
               <v-icon size="32" color="primary">mdi-pencil</v-icon>
               Configure: {{ selected_action.name }}
             </h3>

@@ -43,6 +43,7 @@ import Job_detail from "@/components/task/job/job_detail";
 import task_template_config_details from './task_template_config_details';
 import Action_config_wizard_base from "@/components/action/actions_config_base/action_config_wizard_base";
 import action_config_form_base from "@/components/action/actions_config_base/action_config_form_base";
+import {default_steps_config} from "@/components/action/actions_config_base/default_steps_config";
 export default {
   name: "create_task_action_config",
   props:{
@@ -60,11 +61,20 @@ export default {
       default: "wizard"
     }
   },
+  mounted() {
+    this.steps_config = {
+      ...default_steps_config
+    }
+    this.steps_config.pre_conditions.hide = true
+    this.steps_config.action_config.number = 2
+    this.steps_config.completion_trigger.number = 3
+  },
   data: function(){
     return{
       job_selected: null,
       show_task_template_wizard: false,
       switch_loading: false,
+      steps_config: null
 
     }
   },

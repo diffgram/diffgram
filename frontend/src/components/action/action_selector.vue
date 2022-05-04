@@ -48,7 +48,7 @@ export default Vue.extend({
             'mdi-brush',
             'create_task',
             {
-              trigger_event_name: null,
+              trigger_event_name: 'file_uploaded',
               upload_directory_id_list: null,
               trigger_action_id: null,
             },

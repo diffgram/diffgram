@@ -33,6 +33,10 @@ export default Vue.extend({
             value: 'file_uploaded'
           },
           {
+            name: 'Task is completed',
+            value: 'task_completed'
+          },
+          {
             name: 'Previous Step Completed',
             value: 'action_completed'
           },

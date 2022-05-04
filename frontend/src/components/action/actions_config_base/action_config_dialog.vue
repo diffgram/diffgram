@@ -1,10 +1,20 @@
 <template>
   <v-dialog v-model="is_open" max-width="1000px" id="action_config_dialog">
-    <action_config_factory
-      :action="action"
-      :actions_list="actions_list"
-      display_mode="form"
-      :project_string_id="project_string_id"></action_config_factory>
+      <v-card>
+        <v-card-title>Edit Step: </v-card-title>
+        <v-card-text>
+          <action_config_factory
+            :action="action"
+            :actions_list="actions_list"
+            display_mode="form"
+            :project_string_id="project_string_id"></action_config_factory>
+        </v-card-text>
+
+        <v-card-actions class="d-flex justify-end">
+          <v-btn  large class="primary" @click="close">Close</v-btn>
+          <v-btn large class="primary" color="success" @click="save_action">Save</v-btn>
+        </v-card-actions>
+      </v-card>
   </v-dialog>
 </template>
 
@@ -45,7 +55,10 @@ export default Vue.extend({
       },
       close: function(){
         this.is_open = false
-      }
+      },
+      save_action: function(){
+
+      },
     }
   }
 ) </script>

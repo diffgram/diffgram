@@ -1,6 +1,6 @@
 <template>
   <div class="mb-4">
-    <h2 class="font-weight-light mr-6">1. Trigger When: </h2>
+    <h2 class="mr-6">1. Trigger When: </h2>
     <v-select item-text="name" item-value="value" :items="triggers_list" v-model="action.trigger_data.trigger_event_name"></v-select>
     <v_directory_list
       v-model="action.trigger_data.upload_directory_id_list"
