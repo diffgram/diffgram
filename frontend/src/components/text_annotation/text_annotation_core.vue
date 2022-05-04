@@ -828,6 +828,7 @@ export default Vue.extend({
       if (!this.new_history.undo_posible) return;
 
       let undone = this.new_command_manager.undo();
+      this.current_instance = null
 
       if (undone) this.has_changed = true;
     },
@@ -835,6 +836,7 @@ export default Vue.extend({
       if (!this.new_history.redo_posible) return;
 
       let redone = this.new_command_manager.redo();
+      this.current_instance = null
 
       if (redone) this.has_changed = true;
     },
@@ -1080,7 +1082,7 @@ export default Vue.extend({
       this.current_instance = instance
     },
     on_update_attribute: function(attribute) {
-      const command = new UpdateInstanceAttributeCommand([this.current_instance], this.new_instance_list)
+      const command = new UpdateInstanceAttributeCommand([this.new_instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.new_instance_list)
       command.set_new_attribute(attribute[0].id, {...attribute[1]})
       this.new_command_manager.executeCommand(command)
       this.has_changed = true
