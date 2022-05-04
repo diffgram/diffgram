@@ -617,6 +617,15 @@ export default Vue.extend({
           })
           token_x_position = 40
         }
+        if (word.value === '\n') {
+          this.lines.push({
+            id: this.lines.length,
+            y: this.lines[this.lines.length - 1].y + 40,
+            initial_y: this.lines[this.lines.length - 1].y + 40
+          })
+          token_x_position = 40
+          return
+        }
 
         const token = {
           id: index,
