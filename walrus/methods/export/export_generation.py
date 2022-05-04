@@ -1,6 +1,5 @@
 # OPENCORE - ADD
 from methods.regular.regular_api import *
-import yaml
 from shared.database.export import Export
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.source_control.file_diff import file_difference
@@ -24,12 +23,12 @@ def try_to_commit(session):
 
 
 def new_external_export(
-    session,
-    project,
-    export_id,
-    version = None,
-    working_dir = None,
-    use_request_context = True):
+        session,
+        project,
+        export_id,
+        version = None,
+        working_dir = None,
+        use_request_context = True):
     """
     Create a new export data file
 
@@ -128,20 +127,8 @@ def new_external_export(
 
     if export.kind == "Annotations":
 
-        export.yaml_blob_name = settings.EXPORT_DIR + \
-                                str(export.id) + filename + '.yaml'
-
         export.json_blob_name = settings.EXPORT_DIR + \
                                 str(export.id) + filename + '.json'
-
-        try:
-            yaml_data = yaml.dump(annotations, default_flow_style = False)
-            data_tools.upload_from_string(export.yaml_blob_name, yaml_data, content_type = 'text/yaml',
-                                          bucket_type = 'ml')
-        except Exception as exception:
-            trace_data = traceback.format_exc()
-            logger.error(f"[Export, YAML] {str(exception)}")
-            logger.error(trace_data)
 
         json_data = json.dumps(annotations)
         data_tools.upload_from_string(export.json_blob_name, json_data, content_type = 'text/json', bucket_type = 'ml')
@@ -225,7 +212,6 @@ def annotation_export_core(
         export_label_map[label_file.id] = label_file.label.name
 
     # TODO masks if not part of TF records is not really handled great right now
-
     # TODO pass export object to track it?
 
     """
@@ -293,9 +279,6 @@ def annotation_export_core(
             session = session,
             project = project)
 
-        # TODO
-        # so I guess the "new" yaml one can do it "on demand"
-        # if you substitute version for working directory?
         for index, file in enumerate(file_list):
 
             # Image URL?
@@ -304,15 +287,6 @@ def annotation_export_core(
                 session = session,
                 file_comparison_mode = export.file_comparison_mode)
 
-            # What about by filename?
-            # Original filename is not gauranteed to be unique
-            # Careful! if this is not unique it will overwrite
-            # on export and difficult to debug
-            # as it looks like its' working (ie file count is there)
-            # but first file is "null"...
-            # Prior we used hash here, but in context of a task
-            # We may not re hash file (something to look at in future, maybe
-            # we do want to hash it...)
             annotations[file.id] = packet
 
             export.percent_complete = (index / export.file_list_length) * 100

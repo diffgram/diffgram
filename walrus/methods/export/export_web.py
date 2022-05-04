@@ -58,13 +58,6 @@ def web_export_to_file(project_string_id):
         {"source": str},  # ["job", "directory", "task", "version"]
         {"file_comparison_mode": str},
         {"masks": bool},
-
-        # TODO could we merge all of these ids into
-        # and "id" field, and then rely on the source thing? feels
-        # strange to have it seperate like that...
-        # would make it a lot cleaner...
-        # ie "id" and may be of ["job", "directory", "version"]
-
         {"version_id": None},  # int, but not required?
         {"directory_id": None},  # int, but not required?
         {"job_id": None},
@@ -75,7 +68,7 @@ def web_export_to_file(project_string_id):
             'kind': bool
         }
         },
-        {"ann_is_complete": {  # April 22, 2020, assumes "file" (not task)
+        {"ann_is_complete": {  # Assumes "file" (not task)
             'default': None,  # None means all
             'kind': bool
         }
@@ -111,8 +104,6 @@ def web_export_to_file(project_string_id):
 
     """
 
-    # TODO: if reusing the code somewhere else. Make sure to take it out into a separate function to
-    # follow DRY.
     with sessionMaker.session_scope() as session:
 
         project = Project.get(session, project_string_id)
@@ -133,7 +124,7 @@ def web_export_to_file(project_string_id):
 
             job = Job.get_by_id(session, input["job_id"])
 
-        # need directory for label stuff right
+
         directory = None
 
         if input["source"] in ["task", "job"]:
@@ -141,9 +132,7 @@ def web_export_to_file(project_string_id):
                 job = job,
                 project = project)
 
-            # TODO verify this is working as expected.
             directory = job.completion_directory
-        # print("directory", directory)
 
         if not directory:
             directory = WorkingDir.get_with_fallback(
@@ -156,10 +145,8 @@ def web_export_to_file(project_string_id):
             return jsonify(log = log), 400
 
 
-        # Caution assumes project.user_primary
-        # Billing check
         member_generating_export = get_member(session)
-        log = check_export_billing(
+        log = run_feature_checker(
             session = session,
             project = project,
             directory = directory,
@@ -169,9 +156,7 @@ def web_export_to_file(project_string_id):
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
 
-        # TODO - the directory we pull from may need to make sense in terms of job or not...
 
-        # Class Export() item to track it
         export = Export(
             project = project,
             file_comparison_mode = input['file_comparison_mode'],
@@ -201,7 +186,8 @@ def web_export_to_file(project_string_id):
             t.start()
 
             return jsonify(success = True,
-                           export = export.serialize())
+                           export = export.serialize(),
+                           log = log)
 
         # Immediate return, ie for mock test data
         else:
@@ -283,27 +269,31 @@ def export_web_core(session,
         )
 
 
-def check_export_billing(
-    session,
-    project,
-    directory,
-    member,
-    log):
+def run_feature_checker(
+        session,
+        project,
+        directory,
+        member,
+        log):
     """
 
     """
 
     logger.info('Checking Limits for Plan')
-    if settings.ALLOW_STRIPE_BILLING is False:
-        return log
 
-    checker = FeatureChecker(
+    feature_checker = FeatureChecker(
         session = session,
         user = member.user,
         project = project
     )
 
-    max_allowed_instances = checker.get_limit_from_plan('MAX_INSTANCES_PER_EXPORT')
+    max_allowed_instances = feature_checker.get_limit_from_plan('MAX_INSTANCES_PER_EXPORT')
+
+    if max_allowed_instances is None:
+        logger.info('No limits')
+        log['info']['feature_checker'] = feature_checker.log
+        return log
+
     file_list = WorkingDirFileLink.file_list(
         session = session,
         working_dir_id = directory.id,
@@ -323,25 +313,23 @@ def check_export_billing(
 
     logger.info(f"Checking limits for export with {new_instance_count} instances")
 
-    if max_allowed_instances:
-        if new_instance_count > max_allowed_instances:
-            message = 'Free Tier Limit Reached - Max Instances Allowed: {}. But Export  has {} instances'.format(
-                max_allowed_instances,
-                new_instance_count
-            )
-            log['error']['over_free_plan_limit'] = True
-            log['error']['active_instances'] = new_instance_count
-            log['error']['free_tier_limit'] = message
 
-            Event.new(
-                kind = "export_generation_free_account_over_limit",
-                session = session,
-                member = member,
-                success = False,
-                project_id = project.id
-            )
+    if new_instance_count > max_allowed_instances:
+        message = F'Free Tier Limit Reached - Max Instances Allowed: {max_allowed_instances}. But Export  has {new_instance_count} instances in first 200 files'
+        log['error']['over_free_plan_limit'] = True
+        log['error']['active_instances'] = new_instance_count
+        log['error']['free_tier_limit'] = message
+        log['error']['feature_checker'] = feature_checker.log
 
-            return log
+        Event.new(
+            kind = "export_generation_free_account_over_limit",
+            session = session,
+            member = member,
+            success = False,
+            project_id = project.id
+        )
+
+        return log
 
     print("Export , active instance count", new_instance_count)
 
