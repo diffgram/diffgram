@@ -156,7 +156,7 @@ import action_existing_list from './action_existing_list.vue';
 import action_selector from './action_selector.vue';
 import action_node_box from './action_node_box.vue';
 import action_config_factory from './action_config_factory.vue';
-import {workflow_update, get_workflow} from './../../services/workflowServices';
+import {workflow_update, get_workflow, new_workflow} from './../../services/workflowServices';
 import upload from '../upload_large.vue';
 import workflow_run_list from './workflow_run_list.vue';
 import {v4 as uuidv4} from 'uuid'
@@ -286,35 +286,27 @@ export default Vue.extend({
           this.api_flow_new();
         }
       },
-      api_flow_new: function () {
+      api_flow_new: async function () {
 
         this.loading = true
         this.error = {}
         this.success = false
+        let [result, err] = await new_workflow(this.project_string_id, this.workflow)
+        if(err){
 
-        axios.post(
-          '/api/v1/project/' + this.project_string_id +
-          '/actions/workflow/new',
-          {
-            name: this.flow.name,
-            trigger_type: this.flow.trigger_type,
-            time_window: this.flow.time_window
+          if (err.response.status == 400) {
+            this.error = err.response.data.log.error
+          }
+          this.loading = false
+          console.log(err)
+        }
+        if(result){
 
-          }).then(response => {
-
-          this.flow = response.data.flow;
+          this.flow = result.flow;
           this.flow_id = this.flow.id;
           this.success = true
           this.loading = false
-
-        }).catch(error => {
-
-          if (error.response.status == 400) {
-            this.error = error.response.data.log.error
-          }
-          this.loading = false
-          console.log(error)
-        });
+        }
 
       },
       change_trigger_type: function () {
@@ -342,51 +334,6 @@ export default Vue.extend({
           this.workflow = result.workflow
           this.loading = false
         }
-        axios.post(
-          '/api/v1/project/' + this.project_string_id +
-          '/flow/single',
-          {
-            flow_id: Number(this.flow_id),
-            time_window: this.flow.time_window,
-            name: this.flow.name,
-            trigger_type: this.flow.trigger_type
-
-          }).then(response => {
-
-
-
-        }).catch(error => {
-
-        });
-
-      },
-      generateId(nodes) {
-        let id = uuidv4()
-        // _.find is a lodash function
-        while (_.find(nodes, {id}) !== undefined) {
-          id = uuidv4()
-        }
-        return id;
-      },
-      remove(event) {
-        const {node} = event
-        const nodeIndex = _.findIndex(this.nodes, {id: node.id});
-        this.nodes.splice(nodeIndex, 1);
-      },
-      move(event) {
-        // node we're dragging to and node we've just dragged
-        const {dragged, to} = event;
-        // change panentId to id of node we're dragging to
-        dragged.parentId = to.id;
-      },
-      add(event) {
-        // every node needs an ID
-        const id = this.generateId();
-        // add to array of nodes
-        this.nodes.push({
-          id,
-          ...event.node,
-        });
       },
       hide_add_action_panel: function () {
         this.show_add_action = false

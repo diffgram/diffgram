@@ -1,5 +1,22 @@
 import axios from "@/services/customInstance";
 
+export const new_workflow = async (project_string_id, workflow) => {
+  let url = `/api/v1/project/${this.project_string_id}/actions/workflow/new`;
+  try {
+    const {data} = await axios.post(
+      url,
+      {
+        name: workflow.name,
+        trigger_type: workflow.trigger_type,
+        time_window: workflow.time_window
+      }
+    )
+    return [data, null]
+  } catch (e) {
+    console.error(e)
+    return [null, e]
+  }
+}
 
 export const workflow_update = async (project_string_id, workflow, mode) => {
   let url = `/api/v1/project/${this.project_string_id}/actions/workflow/update`;
