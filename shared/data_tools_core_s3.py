@@ -4,6 +4,7 @@ from io import BytesIO
 from shared.settings import settings
 import boto3
 import mimetypes
+from botocore.config import Config
 
 from imageio import imread
 
@@ -23,10 +24,17 @@ class DataToolsS3:
 
     def __init__(self):
 
-        self.s3_client = boto3.client('s3',
-                                      aws_access_key_id = settings.DIFFGRAM_AWS_ACCESS_KEY_ID,
-                                      aws_secret_access_key = settings.DIFFGRAM_AWS_ACCESS_KEY_SECRET,
-                                      region_name = settings.DIFFGRAM_S3_BUCKET_REGION)
+        if settings.IS_DIFFGRAM_S3_V4_SIGNATURE:
+            self.s3_client = boto3.client('s3', config= Config(signature_version='s3v4'),
+                                        aws_access_key_id = settings.DIFFGRAM_AWS_ACCESS_KEY_ID,
+                                        aws_secret_access_key = settings.DIFFGRAM_AWS_ACCESS_KEY_SECRET,
+                                        region_name = settings.DIFFGRAM_S3_BUCKET_REGION)
+        else: 
+            self.s3_client = boto3.client('s3',
+                                aws_access_key_id = settings.DIFFGRAM_AWS_ACCESS_KEY_ID,
+                                aws_secret_access_key = settings.DIFFGRAM_AWS_ACCESS_KEY_SECRET,
+                                region_name = settings.DIFFGRAM_S3_BUCKET_REGION)
+
         self.s3_bucket_name = settings.DIFFGRAM_S3_BUCKET_NAME
         self.s3_bucket_name_ml = settings.ML__DIFFGRAM_S3_BUCKET_NAME
 

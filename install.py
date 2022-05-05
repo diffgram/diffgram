@@ -17,6 +17,7 @@ from azure.storage.blob import BlobServiceClient, ContentSettings
 from azure.storage.blob._models import BlobSasPermissions
 from azure.storage.blob._shared_access_signature import BlobSharedAccessSignature
 from google.oauth2 import service_account
+from botocore.config import Config
 
 
 try:
@@ -62,6 +63,7 @@ class DiffgramInstallTool:
     gcp_credentials_path = None
     s3_access_id = None
     s3_access_secret = None
+    is_aws_signature_v4 = None
     azure_connection_string = None
     diffgram_version = None
     database_url = None
@@ -242,11 +244,16 @@ class DiffgramInstallTool:
         access_secret = self.s3_access_secret
         bucket_name = self.bucket_name
         bucket_region = self.bucket_region
+        is_aws_signature_v4  = self.is_aws_signature_v4
         test_file_path = 'diffgram_test_file.txt'
         client = None
         bcolors.printcolor('Testing Connection...', bcolors.OKBLUE)
         try:
-            client = boto3.client('s3', aws_access_key_id = access_id, aws_secret_access_key = access_secret, region_name = bucket_region)
+            if is_aws_signature_v4:
+                client = boto3.client('s3', config=Config(signature_version='s3v4'),
+                                      aws_access_key_id=access_id, aws_secret_access_key=access_secret, region_name=bucket_region)
+            else:
+                client = boto3.client('s3', aws_access_key_id=access_id, aws_secret_access_key=access_secret, region_name=bucket_region)
             print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Connection To S3 Account")
         except Exception as e:
             print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Connection To S3 Account")
@@ -334,6 +341,13 @@ class DiffgramInstallTool:
                 self.bucket_region = bucket_region
                 is_valid = True
 
+        # Ask for aws signature version 4
+        is_aws_signature_v4 = bcolors.inputcolor('Use AWS Signature Version 4?[Y/n] ')
+        if is_aws_signature_v4.lower() == 'y' or is_aws_signature_v4.lower() == 'yes':
+            self.is_aws_signature_v4 = True
+        else:
+            self.is_aws_signature_v4 = False
+
     def set_azure_credentials(self):
         # Ask For Access Key ID
         is_valid = False
@@ -384,6 +398,7 @@ class DiffgramInstallTool:
             env_file += f"DIFFGRAM_AWS_ACCESS_KEY_SECRET={self.s3_access_secret}\n"
             env_file += f"DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
             env_file += f"DIFFGRAM_S3_BUCKET_REGION={self.bucket_region}\n"
+            env_file += f"IS_DIFFGRAM_S3_V4_SIGNATURE={self.is_aws_signature_v4}\n"
             env_file += f"ML__DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
             env_file += 'SAME_HOST=False\n'
             env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
