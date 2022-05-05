@@ -5,6 +5,7 @@ from shared.database.account.plan import Plan
 from sqlalchemy.orm.session import Session
 from shared.database.project import Project
 from shared.shared_logger import get_shared_logger
+from shared.regular import regular_log
 
 logger = get_shared_logger()
 
@@ -22,11 +23,13 @@ class FeatureChecker:
     project: Project
     install_fingerprint: str
     FEATURE_FLAGS: list  # Temp list while feature flag system is implemented.
+    log: dict
 
     def __init__(self, session: Session, user: User, project: Project):
         self.user = user
         self.project = project
         self.session = session
+        self.log = regular_log.default_api_log()
         self.install_finger_print = settings.DIFFGRAM_INSTALL_FINGERPRINT
         # This Dict will eventually be replaced by calls to our feature flag system.
         self.FEATURE_FLAGS = [
@@ -39,6 +42,7 @@ class FeatureChecker:
             'MAX_INSTANCES_PER_EXPORT',
             'MAX_PROJECTS',
         ]
+
 
     def get_free_plan_template(self):
         if settings.IS_OPEN_SOURCE:
@@ -91,7 +95,9 @@ class FeatureChecker:
         # SuperAdmin bypass for diffgram.com
         if self.user:    
             if self.user.is_super_admin is True:
-                if settings.IS_OPEN_SOURCE is False:  
+                self.log['info']['user_is_super_admin'] = self.user.is_super_admin
+                if settings.IS_OPEN_SOURCE is False:
+                    self.log['info']['settings_IS_OPEN_SOURCE'] = settings.IS_OPEN_SOURCE
                     return None
 
         plan = None
@@ -100,18 +106,18 @@ class FeatureChecker:
         if self.project:
             plan = self.project.plan
             if plan:
-                logger.info(f"project {self.project.project_string_id} on plan {plan.template.public_name}")
+                self.log['info']['project_plan'] = f"project {self.project.project_string_id} on plan {plan.template.public_name}"
             else:
-                logger.info(f"project {self.project.project_string_id} has no plan")
+                self.log['info']['project_plan'] = f"project {self.project.project_string_id} has no plan"
 
         # 2. Get from user
         if not plan:
             if self.user:
                 plan = self.user.default_plan
                 if plan:
-                    logger.info(f"User on plan {plan.template.public_name}")
+                    self.log['info']['user_plan'] = f"User on plan {plan.template.public_name}"
                 else:
-                    logger.info(f"User {self.user.id} has no plan")
+                    self.log['info']['user_plan'] = f"User {self.user.id} has no plan"
 
         # 3. Failsafe, assume free
         if not plan:
@@ -119,13 +125,12 @@ class FeatureChecker:
             # Attach free plan to project that don't have the plan
             self.project.plan = plan
             self.session.add(self.project)
-            logger.info(f"Attached new free plan to project {self.project.project_string_id}")
+            self.log['info']['created_freeplan'] = f"Attached new free plan to project {self.project.project_string_id}"
 
             if self.user:
                 # Attach free plan to users who don't have the plan
                 self.user.default_plan = plan
                 self.session.add(self.user)
-                logger.info(f"Attached new free plan to user {self.user.id}")
 
         if not plan:
             return None
