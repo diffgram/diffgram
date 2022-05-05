@@ -565,7 +565,7 @@ export default Vue.extend({
       } else if (e.keyCode === 66) {
         this.bulk_label = false;
       } else if (e.keyCode === 37 && this.selection_rect) {
-        this.on_select_text(this.selection_rect.start_token_id - 1, this.selection_rect.start_token_id - 1)
+        this.on_select_text(this.selection_rect.start_token_id - 1, this.selection_rect.start_token_id - 1, "left")
       } else if (e.keyCode === 39 && this.selection_rect) {
         this.on_select_text(this.selection_rect.end_token_id + 1, this.selection_rect.end_token_id + 1)
       }
@@ -635,8 +635,17 @@ export default Vue.extend({
       // this.on_finish_draw_instance(end_token_id)
       this.instance_in_progress = null
     },
-    on_select_text: function(start_token_id, end_token_id) {
-      const start_token = this.tokens.find(token => token.id == start_token_id)
+    on_select_text: function(start_token_id, end_token_id, direction = "right") {
+      if (start_token_id < 0 || end_token_id > this.tokens.length + 1) return
+      let start_token;
+      while(!start_token) {
+        start_token = this.tokens.find(token => token.id == start_token_id)
+        if (!start_token && direction === "left") {
+          start_token_id = start_token_id - 1
+        } else if (!start_token && direction === 'right') {
+          start_token_id = start_token_id + 1
+        }
+      }
       const rect = {
         start_token_id: start_token_id, 
         end_token_id: end_token_id,
