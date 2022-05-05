@@ -6,7 +6,12 @@ export interface TriggerData {
 
 }
 export interface ConditionData {
-  condition: string,
+  event_name: string,
+
+}
+
+export interface CompletionConditionData {
+  event_name: string,
 
 }
 export class Action {
@@ -16,7 +21,7 @@ export class Action {
   public trigger_data: TriggerData;
   public condition_data: ConditionData;
   public description: string;
-  public complete_condition: string;
+  public completion_condition_data: CompletionConditionData;
 
   constructor(name: string,
               icon: string,
@@ -24,14 +29,14 @@ export class Action {
               trigger_data: TriggerData,
               condition_data: ConditionData,
               description: string,
-              complete_condition: string) {
+              complete_condition: CompletionConditionData) {
     this.name = name;
     this.icon = icon;
     this.kind = kind;
     this.trigger_data = trigger_data;
     this.condition_data = condition_data;
     this.description = description;
-    this.complete_condition = complete_condition;
+    this.completion_condition_data = complete_condition;
   }
 }
 

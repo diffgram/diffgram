@@ -1,7 +1,37 @@
 import axios from "@/services/customInstance";
 
+export const action_template_list = async (project_string_id, workflow_id, action) => {
+  let url = `/api/v1/project/${project_string_id}/actions-template`;
+  try {
+    const {data} = await axios.get(url)
+    return [data, null]
+  } catch (e) {
+    console.error(e)
+    return [null, e]
+  }
+}
+
+
+export const new_action = async (project_string_id, workflow_id, action) => {
+  let url = `/api/v1/project/${project_string_id}/actions/workflow/${workflow_id}/actionnew`;
+  try {
+    const {data} = await axios.post(
+      url,
+      {
+        name: workflow.name,
+        trigger_type: workflow.trigger_type,
+        time_window: workflow.time_window
+      }
+    )
+    return [data, null]
+  } catch (e) {
+    console.error(e)
+    return [null, e]
+  }
+}
+
 export const new_workflow = async (project_string_id, workflow) => {
-  let url = `/api/v1/project/${this.project_string_id}/actions/workflow/new`;
+  let url = `/api/v1/project/${project_string_id}/actions/workflow/new`;
   try {
     const {data} = await axios.post(
       url,

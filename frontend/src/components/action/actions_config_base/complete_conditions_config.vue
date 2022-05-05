@@ -2,13 +2,14 @@
 
   <div class="mb-4">
     <h2 class="font-weight-light mr-6">4. Completes When: </h2>
-    <v-select item-text="name" item-value="value" :items="completion_condition_list" v-model="action.complete_condition"></v-select>
+    <v-select item-text="name" item-value="value" :items="completion_condition_list" v-model="action.completion_condition_data.event_name"></v-select>
   </div>
 
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import {Action} from "../Action";
 
 
 export default Vue.extend({
@@ -17,8 +18,21 @@ export default Vue.extend({
     components: {
 
     },
-    props: ['action', 'project_string_id', 'actions_list', 'completion_condition_list_prop'],
-
+    props:{
+      action:{
+        required: true,
+        type: Action
+      },
+      project_string_id:{
+        required: true,
+      },
+      actions_list:{
+        required: true,
+      },
+      completion_condition_list_prop:{
+        required: false,
+      }
+    },
     mounted() {
 
     },

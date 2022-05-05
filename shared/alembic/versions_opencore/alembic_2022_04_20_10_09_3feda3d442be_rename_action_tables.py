@@ -7,12 +7,41 @@ Create Date: 2022-04-20 10:09:05.710726
 """
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import orm
+from shared.database.action.action_template import Action_Template
+from shared.database.core import MutableDict, JSONEncodedDict
+from sqlalchemy.dialects.postgresql import JSONB
 
 # revision identifiers, used by Alembic.
 revision = '3feda3d442be'
 down_revision = 'cf7e13f71c9d'
 branch_labels = None
 depends_on = None
+
+
+def create_default_action_templates(session):
+    Action_Template.new(
+        session = session,
+        public_name = 'Human Labeling Task',
+        description = 'Add tasks to a task template',
+        icon = '',
+        kind = 'create_task',
+        category = None,
+        trigger_data = {'trigger_event_name': 'file_uploaded'},
+        condition_data = {'event_name': None},
+        completion_condition_data = {'event_name': 'task_completed'},
+    )
+    Action_Template.new(
+        session = session,
+        public_name = 'JSON Export',
+        description = 'Add tasks to a task template',
+        icon = '',
+        kind = 'export',
+        category = None,
+        trigger_data = {'trigger_event_name': 'task_completed'},
+        condition_data = {'event_name': 'all_tasks_completed'},
+        completion_condition_data = {'event_name': 'export_generate_success'},
+    )
 
 
 def upgrade():
@@ -27,8 +56,44 @@ def upgrade():
     op.alter_column('action_run', 'flow_event_id', new_column_name = 'workflow_run_id')
     op.alter_column('workflow_run', 'flow_id', new_column_name = 'workflow_id')
 
+    op.add_column('action_template', sa.Column('icon', sa.String, default = ''))
+    op.add_column('action_template', sa.Column('description', sa.String, default = ''))
+    op.add_column('action_template', sa.Column('trigger_data', MutableDict.as_mutable(JSONB)))
+    op.add_column('action_template', sa.Column('condition_data', MutableDict.as_mutable(JSONB)))
+    op.add_column('action_template', sa.Column('completion_condition_data', MutableDict.as_mutable(JSONB)))
+    op.add_column('action_template', sa.Column('is_global', sa.Boolean, default = True))
+
+    # We need to remove old default action templates. Since now we'll init them with new values
+    bind = op.get_bind()
+    session = orm.Session(bind = bind)
+    result = session.query(Action_Template).filter(
+        Action_Template.kind.in_([
+            'count',
+            'delay',
+            'condition',
+            'email',
+            'webhook'
+        ])
+    ).all()
+
+    for temp in result:
+        session.delete(temp)
+
+    create_default_action_templates(session)
+
 
 def downgrade():
+    bind = op.get_bind()
+    session = orm.Session(bind = bind)
+    result = session.query(Action_Template).filter(
+        Action_Template.kind.in_([
+            'create_task',
+            'export',
+        ])
+    ).all()
+
+    for temp in result:
+        session.delete(temp)
     op.rename_table('workflow', 'action_flow')
     op.rename_table('workflow_run', 'action_flow_event')
     op.rename_table('action_run', 'action_event')
@@ -39,3 +104,10 @@ def downgrade():
     op.alter_column('action_event', 'workflow_run_id', new_column_name = 'flow_event_id')
     op.alter_column('action_flow_event', 'workflow_id', new_column_name = 'flow_id')
     op.alter_column('action_flow_trigger_event_queue', 'workflow_id', new_column_name = 'action_flow_id')
+    op.drop_column('action_template', 'icon')
+    op.drop_column('action_template', 'description')
+    op.drop_column('action_template', 'trigger_data')
+    op.drop_column('action_template', 'condition_data')
+    op.drop_column('action_template', 'completion_condition_data')
+    op.drop_column('action_template', 'is_global')
+

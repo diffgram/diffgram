@@ -2,6 +2,7 @@
   <v-container fluid id="" style="height: 100%;">
 
     <v-card style=" min-height: 800px">
+      <v_error_multiple :error="error"></v_error_multiple>
       <v-card-title>
         <div class="d-flex align-center justify-start " style="width: 100%">
           <h4 class="">
@@ -139,6 +140,7 @@
             </h1>
           </v-card-title>
           <action_selector
+            :project_string_id="project_string_id"
             @add_action_to_workflow="on_add_action_to_workflow"
           ></action_selector>
         </v-card>
@@ -264,8 +266,11 @@ export default Vue.extend({
       update_workflow_name: function(){
         this.edit_name = false
       },
-      on_add_action_to_workflow: function (act) {
+      on_add_action_to_workflow: async function (act) {
         this.hide_add_action_panel()
+        if(!this.workflow.id){
+          await this.api_workflow_new()
+        }
         this.workflow.actions_list.push(act)
         this.on_select_action(act)
       },
@@ -286,7 +291,30 @@ export default Vue.extend({
           this.api_flow_new();
         }
       },
-      api_flow_new: async function () {
+      api_action_new: async function (action) {
+
+        this.loading = true
+        this.error = {}
+        this.success = false
+        let [result, err] = await new_workflow(this.project_string_id, this.workflow.id, action)
+        if(err){
+
+          if (err.response.status == 400) {
+            this.error = err.response.data.log.error
+          }
+          this.loading = false
+          console.log(err)
+        }
+        if(result){
+
+          this.workflow = result.workflow;
+          this.workflow_id = this.workflow.id;
+          this.success = true
+          this.loading = false
+        }
+
+      },
+      api_workflow_new: async function () {
 
         this.loading = true
         this.error = {}
@@ -302,8 +330,8 @@ export default Vue.extend({
         }
         if(result){
 
-          this.flow = result.flow;
-          this.flow_id = this.flow.id;
+          this.workflow = result.workflow;
+          this.workflow_id = this.workflow.id;
           this.success = true
           this.loading = false
         }

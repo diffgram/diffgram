@@ -22,8 +22,6 @@ def new_workflow_factory_api(project_string_id):
     """
     spec_list = [
         {'name': str},
-        {'trigger_type': str},
-        {'time_window': str},
     ]
 
     log, input, untrusted_input = regular_input.master(request=request,
@@ -38,10 +36,8 @@ def new_workflow_factory_api(project_string_id):
         member = user.member
 
         ### MAIN
-        flow = Workflow.new(
+        workflow = Workflow.new(
             name=input['name'],
-            trigger_type=input['trigger_type'],
-            time_window=input.get('time_window', None),
             session=session,
             project=project,
             org=project.org,
@@ -58,7 +54,7 @@ def new_workflow_factory_api(project_string_id):
         )
 
         log['success'] = True
-        out = jsonify(flow=flow.serialize(),
+        out = jsonify(workflow=workflow.serialize(),
                       log=log)
         return out, 200
 

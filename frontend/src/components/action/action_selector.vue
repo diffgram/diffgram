@@ -1,9 +1,10 @@
 <template>
 
   <div class="pr-6 pl-6" style="min-height: 850px">
+    <v_error_multiple :error="error"></v_error_multiple>
     <v-text-field label="Search for an action..." v-model="search"></v-text-field>
 
-    <v-container fluid class="d-flex flex-wrap">
+    <v-container fluid class="d-flex flex-wrap" v-if="!loading">
       <action_step_box v-for="action in actions_list_filtered"
                        @add_action_to_workflow="add_action_to_workflow(action)"
 
@@ -16,6 +17,9 @@
 
       </action_step_box>
     </v-container>
+    <v-container v-else>
+      <v-progress-linear indeterminate></v-progress-linear>
+    </v-container>
   </div>
 
 </template>
@@ -25,6 +29,7 @@ import Vue from "vue";
 import axios from '../../services/customInstance';
 import action_step_box from "./action_step_box.vue";
 import {Action} from "./Action";
+import {action_template_list} from './../../services/workflowServices';
 export default Vue.extend({
 
     name: 'action_config_dialog',
@@ -32,15 +37,16 @@ export default Vue.extend({
       action_step_box
 
     },
-    props: ['action'],
+    props: ['action', 'project_string_id'],
 
-    mounted() {
-
+    async mounted() {
+      await this.api_action_template_list()
     },
 
     data() {
       return {
         is_open: false,
+        loading: false,
         search: '',
         actions_list: [
           new Action(
@@ -52,9 +58,9 @@ export default Vue.extend({
               upload_directory_id_list: null,
               trigger_action_id: null,
             },
-            {condition: null},
+            {event_name: null},
             'Add tasks to a task template',
-            'task_completed'
+            {event_name: 'task_completed'}
           ),
           new Action(
             'JSON Export',
@@ -65,9 +71,9 @@ export default Vue.extend({
               upload_directory_id_list: null,
               trigger_action_id: null,
             },
-            {condition: 'all_tasks_completed'},
+            {event_name: 'all_tasks_completed'},
             'Create JSON export from labeled data.',
-            'export_generate_success'
+            {event_name: 'export_generate_success'}
           )
         ],
       }
@@ -84,7 +90,33 @@ export default Vue.extend({
       }
     },
     methods: {
+      build_actions_list: function(action_template_list){
+        this.actions_template_list = [];
+        for(let template of action_template_list){
+          let action = new Action(
+            template.public_name,
+            template.icon,
+            template.kind,
+            template.trigger_data,
+            template.condition_data,
+            template.description,
+            template.completion_condition
+          )
+          this.action_template_list.push(action)
+        }
+      },
+      api_action_template_list: async function(){
 
+        let [result, err] = await action_template_list(this.project_string_id)
+        if(err){
+          this.error = this.$route_api_errors(err);
+          return
+        }
+        if(result){
+          this.build_actions_list(result.action_template_list)
+        }
+
+      },
       add_action_to_workflow: function(act){
         this.$emit('add_action_to_workflow', act)
         this.close();

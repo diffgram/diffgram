@@ -1,4 +1,7 @@
 from shared.database.common import *
+from typing import List
+from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.dialects.postgresql import JSONB
 
 class Action_Template(Base):
     """
@@ -20,12 +23,24 @@ class Action_Template(Base):
 
     public_name = Column(String())
 
+    icon = Column(String())
+
+    description = Column(String())
+
+    trigger_data = Column(MutableDict.as_mutable(JSONB))
+
+    condition_data = Column(MutableDict.as_mutable(JSONB))
+
+    completion_condition_data = Column(MutableDict.as_mutable(JSONB))
+
+
     # Kind matches Action.kind
     kind = Column(String())
 
     category = Column(String())
 
     is_available = Column(Boolean, default = True)
+    is_global = Column(Boolean, default = True)
 
     # Future if we allow non global templates
     # Could store contraints here?
@@ -46,6 +61,14 @@ class Action_Template(Base):
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
     @staticmethod
+    def list(session) -> List["Action_Template"]:
+        """
+            Returns all Action templates available in the installation.
+        """
+
+        return session.query(Action_Template).all()
+
+    @staticmethod
     def get_by_kind(session,
                     kind):
         """
@@ -62,13 +85,36 @@ class Action_Template(Base):
             Action_Template.kind == kind).first()
 
     @staticmethod
-    def new(session, public_name, kind, category):
+    def new(session,
+            public_name,
+            icon,
+            description,
+            kind,
+            category,
+            trigger_data,
+            condition_data,
+            completion_condition_data,
+            is_global = True):
+
         result = Action_Template(
             public_name = public_name,
             kind = kind,
-            category = category
+            category = category,
+            icon = icon,
+            description = description,
+            trigger_data = trigger_data,
+            condition_data = condition_data,
+            completion_condition_data = completion_condition_data,
+            is_global = is_global,
         )
 
         session.add(result)
         session.flush()
         return result
+
+    def serialize(self):
+        data = self.to_dict(rules = (
+            '-member_created',
+            '-member_updated'))
+
+        return data

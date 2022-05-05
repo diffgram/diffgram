@@ -75,9 +75,10 @@ class Workflow(Base):
         project,
         org,
         name,
-        trigger_type,
-        time_window,
-        member
+        member,
+        trigger_type = None,
+        time_window = None,
+
     ):
         # Else create a new one
         workflow = Workflow(

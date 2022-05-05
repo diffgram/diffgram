@@ -3,7 +3,7 @@
   <div class="mb-4">
     <h2 class="font-weight-light mr-6">2. Add Condition [Optional]: </h2>
     <v-select item-text="name" item-value="value" :items="conditions_list"
-              v-model="action.condition_data.condition"></v-select>
+              v-model="action.condition_data.event_name"></v-select>
   </div>
 
 </template>
