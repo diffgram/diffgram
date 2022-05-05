@@ -115,10 +115,24 @@
             />
           </g>
           <g v-if="render_rects.length > 0">
+            <rect
+              v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
+              :key="`instance_rect_${instance.get_instance_data().id}`"
+              :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x"
+              :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y - 15"
+              :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'rgba(255, 0, 0, 0.2)' : `rgba(${instance.label_file.colour.rgba.r}, ${instance.label_file.colour.rgba.g}, ${instance.label_file.colour.rgba.b}, 0.2)`"
+              :width="instance.label_file.label.name.length * 8"
+              :height="15"
+              @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
+              @mousedown="() => on_trigger_instance_click(instance.get_instance_data().id)"
+              @mouseleave="on_instance_stop_hover"
+              style="font-size: 10px; cursor: pointer"
+              class="unselectable"
+            />
             <text
               v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
               :key="`instance_${instance.get_instance_data().id}`"
-              :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x"
+              :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x + 2"
               :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y - 3"
               :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
               @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
