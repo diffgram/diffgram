@@ -114,6 +114,41 @@
               class="unselectable"
             />
           </g>
+          <g v-if="selection_rect">
+            <circle 
+              :cx="selection_rect.x - 2"
+              :cy="selection_rect.y"
+              :r="4"
+              fill="rgba(46, 204, 113)"
+            />
+            <rect
+              :x="selection_rect.x - 2"
+              :y="selection_rect.y"
+              :width="1"
+              :height="25"
+              fill="rgba(46, 204, 113)"
+            />
+            <rect
+              :x="selection_rect.x - 2"
+              :y="selection_rect.y + 5"
+              :width="selection_rect.width + 4"
+              :height="20"
+              fill="rgba(46, 204, 113, 0.4)"
+            />
+             <rect
+              :x="selection_rect.width + 2 + selection_rect.x"
+              :y="selection_rect.y + 5"
+              :width="1"
+              :height="25"
+              fill="rgba(46, 204, 113)"
+            />
+            <circle 
+              :cx="selection_rect.width + 2 + selection_rect.x"
+              :cy="selection_rect.y + 5 + 25"
+              :r="4"
+              fill="rgba(46, 204, 113)"
+            />
+          </g>
           <g v-if="render_rects.length > 0">
             <rect
               v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
@@ -320,6 +355,7 @@ export default Vue.extend({
       text_field_heigth: 100,
       text_field_width: '100%',
       re_render_func: undefined,
+      selection_rect: null,
       // Command
       command_manager: undefined,
       has_changed: false,
@@ -528,6 +564,10 @@ export default Vue.extend({
         this.search_mode = false;
       } else if (e.keyCode === 66) {
         this.bulk_label = false;
+      } else if (e.keyCode === 37 && this.selection_rect) {
+        this.on_select_text(this.selection_rect.start_token_id - 1, this.selection_rect.start_token_id - 1)
+      } else if (e.keyCode === 39 && this.selection_rect) {
+        this.on_select_text(this.selection_rect.end_token_id + 1, this.selection_rect.end_token_id + 1)
       }
     },
     start_autosave: function () {
@@ -590,9 +630,23 @@ export default Vue.extend({
         this.instance_in_progress = null
         return
       }
-      this.on_start_draw_instance(start_token_id)
-      this.on_finish_draw_instance(end_token_id)
+      this.on_select_text(start_token_id, end_token_id)
+      // this.on_start_draw_instance(start_token_id)
+      // this.on_finish_draw_instance(end_token_id)
       this.instance_in_progress = null
+    },
+    on_select_text: function(start_token_id, end_token_id) {
+      const start_token = this.tokens.find(token => token.id == start_token_id)
+      const rect = {
+        start_token_id: start_token_id, 
+        end_token_id: end_token_id,
+        x: start_token.start_x,
+        y: this.lines[start_token.line].y + 3,
+        line: start_token.line,
+        width: start_token.width,
+        color: "red"
+      }
+      this.selection_rect = rect
     },
     on_mount: async function () {
       let set_words;
@@ -828,7 +882,6 @@ export default Vue.extend({
       if (!this.instance_in_progress) {
         const res = await postInstanceList(url, this.new_instance_list.get_all())
         const {added_instances} = res
-        console.log(added_instances)
         added_instances.map(add_insatnce => {
           const old_instance = this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id)
           const old_id = old_instance.get_instance_data().id
