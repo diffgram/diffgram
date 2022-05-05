@@ -156,7 +156,7 @@ import action_existing_list from './action_existing_list.vue';
 import action_selector from './action_selector.vue';
 import action_node_box from './action_node_box.vue';
 import action_config_factory from './action_config_factory.vue';
-import {workflow_update} from './../../services/workflowServices';
+import {workflow_update, get_workflow} from './../../services/workflowServices';
 import upload from '../upload_large.vue';
 import workflow_run_list from './workflow_run_list.vue';
 import {v4 as uuidv4} from 'uuid'
@@ -320,7 +320,7 @@ export default Vue.extend({
       change_trigger_type: function () {
 
       },
-      api_get_flow: function () {
+      api_get_workflow: async function () {
 
         if (!this.flow_id) {
           return
@@ -329,7 +329,19 @@ export default Vue.extend({
         this.loading = true
         this.error = {}
         this.success = false
+        let [result, err] = await get_workflow(this.project_string_id, this.workflow_id)
+        if(err){
 
+          if (err.response.status == 400) {
+            this.error = err.response.data.log.error
+          }
+          this.loading = false
+          console.log(err)
+        }
+        if(result){
+          this.workflow = result.workflow
+          this.loading = false
+        }
         axios.post(
           '/api/v1/project/' + this.project_string_id +
           '/flow/single',
@@ -341,16 +353,10 @@ export default Vue.extend({
 
           }).then(response => {
 
-          this.flow = response.data.flow
-          this.loading = false
+
 
         }).catch(error => {
 
-          if (error.response.status == 400) {
-            this.error = error.response.data.log.error
-          }
-          this.loading = false
-          console.log(error)
         });
 
       },
@@ -363,28 +369,19 @@ export default Vue.extend({
         return id;
       },
       remove(event) {
-        console.log('remove', event)
-
-        // node we're dragging to
         const {node} = event
-
-        // we use lodash in this demo to remove node from the array
         const nodeIndex = _.findIndex(this.nodes, {id: node.id});
         this.nodes.splice(nodeIndex, 1);
       },
       move(event) {
-        console.log('move', event);
-
         // node we're dragging to and node we've just dragged
         const {dragged, to} = event;
-
         // change panentId to id of node we're dragging to
         dragged.parentId = to.id;
       },
       add(event) {
         // every node needs an ID
         const id = this.generateId();
-
         // add to array of nodes
         this.nodes.push({
           id,
@@ -424,9 +421,7 @@ export default Vue.extend({
 
           // careful mode is local, not this.mode
           if (mode == 'ARCHIVE') {
-
             let url = `/project/${this.project_string_id}/flow/list`
-
             this.$router.push(url)
 
           }

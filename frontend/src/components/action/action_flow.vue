@@ -283,7 +283,7 @@
         change_trigger_type: function () {
 
         },
-        api_get_flow: function () {
+        api_get_workflow: function () {
 
           if (!this.flow_id) { return }
 

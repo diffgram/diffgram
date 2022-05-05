@@ -64,14 +64,13 @@ def new_workflow_factory_api(project_string_id):
 
 
 # VIEW SINGLE
-@routes.route('/api/v1/project/<string:project_string_id>' +
-              '/flow/single',
-              methods=['POST'])
+@routes.route('/api/v1/project/<string:project_string_id>/workflow/<int:workflow_id>',
+              methods=['GET'])
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
     apis_user_list=["api_enabled_builder"])
 @limiter.limit("100 per day")
-def flow_view_api(project_string_id):
+def flow_view_api(project_string_id, workflow_id):
     """
 
     Get a single flow object based on id.
@@ -79,8 +78,8 @@ def flow_view_api(project_string_id):
 
     """
     spec_list = [
-        {'flow_id': int},
-        {'mode': None}]
+        {'mode': None}
+    ]
 
     log, input, untrusted_input = regular_input.master(
         request=request,
@@ -94,17 +93,17 @@ def flow_view_api(project_string_id):
         project = Project.get(session, project_string_id)
 
         ### MAIN
-        flow = Workflow.get_by_id(
+        workflow = Workflow.get_by_id(
             session=session,
-            id=input['flow_id'],
+            id=workflow_id,
             project_id=project.id)
         ### END MAIN
-        if flow is None:
+        if workflow is None:
             log['error']['flow'] = "Invalid flow"
             return jsonify(log=log), 400
 
         log['success'] = True
-        out = jsonify(flow=flow.serialize(),
+        out = jsonify(workflow=workflow.serialize(),
                       log=log)
         return out, 200
 
