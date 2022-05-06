@@ -1,16 +1,6 @@
 <template>
   <div v-cloak class="action_flow_container">
-    <h1>Action Flows</h1>
-    <!-- Hide while WIP -->
-    <!--
-  <v-spacer></v-spacer>
-  <v-text-field v-model="search"
-                append-icon="search"
-                label="Search"
-                single-line
-                hide-details></v-text-field>
-  <v-spacer></v-spacer>
-    -->
+    <h1>Workflows</h1>
 
     <new_flow
       :project_string_id="$store.state.project.current.project_string_id">
@@ -25,7 +15,6 @@
                   item-key="id"
     >
 
-      <!-- appears to have to be item for vuetify syntax-->
       <template slot="item" slot-scope="props">
         <tr>
           <td>{{ props.item.name }}</td>
@@ -36,13 +25,6 @@
 
           </td>
 
-          <!--
-        <td>
-
-          {{ props.item.active }}
-
-        </td>
-            -->
 
           <td>
 
@@ -165,7 +147,7 @@
         route_flow: function (flow) {
 
           let url = '/project/' + this.project_string_id
-            + '/flow/' + flow.id
+            + '/workflow/' + flow.id
 
           this.$router.push(url)
 

@@ -123,8 +123,8 @@ const routerOptions = [
   // must come before flow id one (otherwise it will try
   // to pass it as prop
   {
-    path: '/project/:project_string_id/flow/list',
-    component: 'action/action_flow_list',
+    path: '/project/:project_string_id/workflow/list',
+    component: 'action/workflow_list',
     props: true,
     meta: {requiresAuth: true}
   },

@@ -66,24 +66,14 @@ def new_workflow_factory_api(project_string_id):
     Roles=["admin", "Editor"],
     apis_user_list=["api_enabled_builder"])
 @limiter.limit("100 per day")
-def flow_view_api(project_string_id, workflow_id):
+def workflow_view_api(project_string_id, workflow_id):
     """
 
     Get a single flow object based on id.
     Uses projecd id for security
 
     """
-    spec_list = [
-        {'mode': None}
-    ]
-
-    log, input, untrusted_input = regular_input.master(
-        request=request,
-        spec_list=spec_list)
-
-    if len(log["error"].keys()) >= 1:
-        return jsonify(log=log), 400
-
+    log = regular_log.default()
     with sessionMaker.session_scope() as session:
 
         project = Project.get(session, project_string_id)
@@ -99,7 +89,7 @@ def flow_view_api(project_string_id, workflow_id):
             return jsonify(log=log), 400
 
         log['success'] = True
-        out = jsonify(workflow=workflow.serialize(),
+        out = jsonify(workflow=workflow.serialize_with_actions(session = session),
                       log=log)
         return out, 200
 

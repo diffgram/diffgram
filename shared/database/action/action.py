@@ -303,11 +303,15 @@ class Action(Base, SerializerMixin):
         query = query.order_by(Action.id)
 
         if return_kind == "count":
-            return query.limit(limit).count()
-
+            if limit:
+                return query.limit(limit).count()
+            else:
+                return query.count()
         if return_kind == "objects":
-            return query.limit(limit).all()
-
+            if limit:
+                return query.limit(limit).all()
+            else:
+                return query.all()
     @staticmethod
     def get_by_id(session,
                   id,

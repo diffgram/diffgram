@@ -255,11 +255,20 @@ export default Vue.extend({
         this.api_get_flow()
       }
     },
-    mounted() {
-      if (this.workflow.actions_list.length === 0) {
-        this.show_add_action_panel();
+    async mounted() {
+      if(!this.$props.workflow_id){
+        if (this.workflow.actions_list.length === 0) {
+          this.show_add_action_panel();
+        }
+        this.workflow.name = sillyname()
       }
-      this.workflow.name = sillyname()
+      else{
+        await this.api_get_workflow()
+        if (this.workflow.actions_list.length === 0) {
+          this.show_add_action_panel();
+        }
+      }
+
     },
     computed: {},
     methods: {
@@ -348,7 +357,7 @@ export default Vue.extend({
       },
       api_get_workflow: async function () {
 
-        if (!this.flow_id) {
+        if (!this.workflow_id) {
           return
         }
 

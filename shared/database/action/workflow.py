@@ -202,6 +202,19 @@ class Workflow(Base):
         flow.string_id += f"_{create_random_string(length=20)}"
 
 
+    def serialize_with_actions(self, session):
+        data = self.serialize()
+        actions = Action.list(
+            session = session,
+            flow_id = self.id,
+            project_id = self.project_id,
+            limit = None
+        )
+        data['actions_list'] = [a.serialize() for a in actions]
+        print('ADADADA', data)
+        return data
+
+
 # 'abcdefghijklmnopqrstuvwxyz0123456789'
 # can add chars in front if needed ie "." etc.
 valid_chars = f"{string.ascii_letters}{string.digits}"

@@ -230,7 +230,7 @@
             <v-btn color="primary"
                    text
                    style="text-transform: none !important;"
-                   @click="$router.push('/project/' + $store.state.project.current.project_string_id + '/flow/list')">
+                   @click="$router.push('/project/' + $store.state.project.current.project_string_id + '/workflow/list')">
               <v-icon left>mdi-lan</v-icon>
               My WorkFlows
             </v-btn>
