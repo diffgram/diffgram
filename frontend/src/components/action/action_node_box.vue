@@ -13,8 +13,8 @@
         <strong>Trigger</strong>
       </v-chip>
       <v-card-title class="d-flex">
-        <v-icon style="width: 20%;" color="secondary" x-large>{{action.icon}}</v-icon>
-        <strong style="width: 80%">{{action.name}}</strong>
+        <v-img width="50px" height="50px" :src="action.icon"></v-img>
+        <strong style="width: 80%">{{action.public_name}}</strong>
       </v-card-title>
       <v-card-text>
         <div class="d-flex">

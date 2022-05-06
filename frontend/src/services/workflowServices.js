@@ -12,6 +12,30 @@ export const action_template_list = async (project_string_id, workflow_id, actio
 }
 
 
+export const action_update = async (project_string_id, workflow_id, action) => {
+  let url = `/api/v1/project/${project_string_id}/actions/workflow/${workflow_id}/action`;
+  try {
+    const {data} = await axios.post(
+      url,
+      {
+        public_name: action.public_name,
+        kind: action.kind,
+        description: action.description,
+        workflow_id: workflow_id,
+        trigger_data: action.trigger_data,
+        condition_data: action.condition_data,
+        completion_condition_data: action.completion_condition_data,
+        action_template_id: action.action_template_id,
+        icon: action.icon,
+      }
+    )
+    return [data, null]
+  } catch (e) {
+    console.error(e)
+    return [null, e]
+  }
+}
+
 export const new_action = async (project_string_id, workflow_id, action) => {
   let url = `/api/v1/project/${project_string_id}/actions/workflow/${workflow_id}/action`;
   try {
@@ -55,9 +79,9 @@ export const new_workflow = async (project_string_id, workflow) => {
 }
 
 export const workflow_update = async (project_string_id, workflow, mode) => {
-  let url = `/api/v1/project/${this.project_string_id}/actions/workflow/update`;
+  let url = `/api/v1/project/${project_string_id}/actions/workflow/update`;
   try {
-    const {data} = await axios.post(
+    const {data} = await axios.put(
       url,
       {
         workflow_id: this.workflow.id,

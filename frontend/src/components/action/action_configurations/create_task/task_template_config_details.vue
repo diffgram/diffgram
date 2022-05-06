@@ -81,12 +81,13 @@ export default {
       this.job_selected = job;
       this.$refs.job_select.add_job_to_list(job)
       this.$refs.job_select.select_job(job)
-      this.action.job = job
-      this.action.job_id = job.id
+      this.action.config_data.task_template_id = job.id;
+      this.$emit('action_updated', this.action)
 
     },
     on_change_job: function(job){
-
+      this.action.config_data.task_template_id = job.id;
+      this.$emit('action_updated', this.action)
     },
     hide_wizard: function(){
       this.show_task_template_wizard = false;

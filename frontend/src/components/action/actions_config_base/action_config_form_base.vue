@@ -11,7 +11,10 @@
 
     </slot>
     <slot name="completion_trigger">
-      <complete_conditions_config :actions_list=actions_list :action="action"></complete_conditions_config>
+      <complete_conditions_config
+        :project_string_id="project_string_id"
+        :actions_list=actions_list
+        :action="action"></complete_conditions_config>
     </slot>
   </v-container>
 </template>

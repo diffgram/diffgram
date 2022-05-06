@@ -10,6 +10,7 @@
           :action="action"
           :project_string_id="project_string_id"
           :actions_list="actions_list"
+          @action_updated="on_action_updated"
         ></task_template_config_details>
       </template>
     </action_config_wizard_base>
@@ -86,7 +87,9 @@ export default {
     task_template_wizard: task_template_wizard,
   },
   methods: {
-
+    on_action_updated: function(act){
+      this.$emit('action_updated', act)
+    },
   },
   computed:{
     on_directories_updated: function(){

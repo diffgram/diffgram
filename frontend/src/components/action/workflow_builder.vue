@@ -129,6 +129,7 @@
           </v-card-title>
           <action_config_factory :actions_list="workflow.actions_list"
                                  :project_string_id="project_string_id"
+                                 @action_updated="on_action_updated"
                                  :action="selected_action">
           </action_config_factory>
         </v-card>
@@ -166,6 +167,7 @@ import {v4 as uuidv4} from 'uuid'
 import Vue from "vue";
 import Workflow_steps_visualizer from "./workflow_steps_visualizer.vue";
 import sillyname from 'sillyname';
+import {Action, initialize_action_list} from "./Action";
 export default Vue.extend({
 
     name: 'workflow_builder',
@@ -355,6 +357,9 @@ export default Vue.extend({
       change_trigger_type: function () {
 
       },
+      initialize_actions: function(action_list){
+        return initialize_action_list(action_list)
+      },
       api_get_workflow: async function () {
 
         if (!this.workflow_id) {
@@ -375,6 +380,7 @@ export default Vue.extend({
         }
         if(result){
           this.workflow = result.workflow
+          this.workflow.actions_list = this.initialize_actions(this.workflow.actions_list)
           this.loading = false
         }
       },
@@ -387,13 +393,14 @@ export default Vue.extend({
       archive_action: function(){
 
       },
-      api_flow_update: async function (mode) {
-
+      on_action_updated: async function(act){
+        await this.api_action_update(act)
+      },
+      api_action_update: async function(act){
         this.loading = true;
         this.error = {};
         this.success = false;
-
-        let [result, err] = await workflow_update(this.project_string_id, this.workflow, mode)
+        let [result, err] = await action_update(this.project_string_id, this.workflow, "ARCHIVE")
         if(err){
           if (err.response.status == 400) {
             this.error = err.response.data.log.error
@@ -407,18 +414,55 @@ export default Vue.extend({
 
           this.success = true
           this.loading = false
-
-
-          // careful mode is local, not this.mode
-          if (mode == 'ARCHIVE') {
-            let url = `/project/${this.project_string_id}/flow/list`
-            this.$router.push(url)
-
+          let url = `/project/${this.project_string_id}/flow/list`
+          this.$router.push(url)
+        }
+      },
+      api_workflow_archive: async function(act){
+        // careful mode is local, not this.mode
+        this.loading = true;
+        this.error = {};
+        this.success = false;
+        let [result, err] = await workflow_update(this.project_string_id, this.workflow, "ARCHIVE")
+        if(err){
+          if (err.response.status == 400) {
+            this.error = err.response.data.log.error
           }
+          this.loading = false
+          console.log(err)
+          return
+        }
+        if(result){
+          this.workflow = result.workflow
 
+          this.success = true
+          this.loading = false
+          let url = `/project/${this.project_string_id}/flow/list`
+          this.$router.push(url)
         }
 
+      },
+      api_workflow_update: async function (act) {
+        console.log('sasdad21332', act)
+        this.loading = true;
+        this.error = {};
+        this.success = false;
 
+        let [result, err] = await workflow_update(this.project_string_id, this.workflow, "UPDATE")
+        if(err){
+          if (err.response.status == 400) {
+            this.error = err.response.data.log.error
+          }
+          this.loading = false
+          console.log(err)
+          return
+        }
+        if(result){
+          this.workflow = result.workflow
+
+          this.success = true
+          this.loading = false
+        }
       }
 
     }

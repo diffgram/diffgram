@@ -5,12 +5,16 @@
                                :project_string_id="project_string_id"
                                :actions_list="actions_list"
                                :display_mode="display_mode"
-                               :action="action"></create_task_action_config>
+                               @action_updated="on_action_updated"
+                               :action="action">
+
+    </create_task_action_config>
     <export_action_config v-if="action.kind === 'export'"
                           :prev_action="prev_action"
                           :display_mode="display_mode"
                           :actions_list="actions_list"
                           :project_string_id="project_string_id"
+                          @action_updated="on_action_updated"
                           :action="action">
 
     </export_action_config>
@@ -71,6 +75,10 @@ export default Vue.extend({
       }
     },
     methods: {
+      on_action_updated: function(act){
+        console.log('on_action_updated FACT')
+        this.$emit('action_updated', act)
+      },
       close() {
         this.input = undefined;
         this.is_open = false;

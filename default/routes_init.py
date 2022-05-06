@@ -5,9 +5,11 @@ def do_routes_importing():
     from methods.attribute.attribute_template_group_update import api_attribute_template_group_update
 
     from methods.action.action_new import api_action_new
+    from methods.action.action_update import api_action_update
+    from methods.action.action_validate_config import api_action_validate
     from methods.action.workflow import new_workflow_factory_api
     from methods.action.workflow import workflow_view_api
-    from methods.action.action_flow_update import api_flow_update
+    from methods.action.workflow_update import api_workflow_update
     from methods.action.action_list import api_action_list
     from methods.action.action_template_list import api_action_template_list
 

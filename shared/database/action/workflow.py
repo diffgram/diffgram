@@ -211,7 +211,6 @@ class Workflow(Base):
             limit = None
         )
         data['actions_list'] = [a.serialize() for a in actions]
-        print('ADADADA', data)
         return data
 
 

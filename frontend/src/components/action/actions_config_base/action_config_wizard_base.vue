@@ -16,7 +16,10 @@
           <pre_conditions_config :actions_list=actions_list :action="action"></pre_conditions_config>
         </slot>
         <slot :name="keyStep" v-if="keyStep === 'completion_trigger'">
-          <complete_conditions_config :actions_list=actions_list :action="action"></complete_conditions_config>
+          <complete_conditions_config
+            :project_string_id="project_string_id"
+            :actions_list=actions_list
+            :action="action"></complete_conditions_config>
         </slot>
         <wizard_navigation
           @next="on_next_button_click"
