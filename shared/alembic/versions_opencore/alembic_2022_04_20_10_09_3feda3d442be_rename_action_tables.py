@@ -24,7 +24,7 @@ def create_default_action_templates(session):
         session = session,
         public_name = 'Human Labeling Task',
         description = 'Add tasks to a task template',
-        icon = '',
+        icon = 'https://www.svgrepo.com/show/376121/list-task.svg',
         kind = 'create_task',
         category = None,
         trigger_data = {'trigger_event_name': 'file_uploaded'},
@@ -35,7 +35,7 @@ def create_default_action_templates(session):
         session = session,
         public_name = 'JSON Export',
         description = 'Add tasks to a task template',
-        icon = '',
+        icon = 'https://www.svgrepo.com/show/46774/export.svg',
         kind = 'export',
         category = None,
         trigger_data = {'trigger_event_name': 'task_completed'},
@@ -62,6 +62,14 @@ def upgrade():
     op.add_column('action_template', sa.Column('condition_data', MutableDict.as_mutable(JSONB)))
     op.add_column('action_template', sa.Column('completion_condition_data', MutableDict.as_mutable(JSONB)))
     op.add_column('action_template', sa.Column('is_global', sa.Boolean, default = True))
+
+    op.add_column('action', sa.Column('icon', sa.String, default = ''))
+    op.add_column('action', sa.Column('description', sa.String, default = ''))
+    op.add_column('action', sa.Column('trigger_data', MutableDict.as_mutable(JSONB)))
+    op.add_column('action', sa.Column('config_data', MutableDict.as_mutable(JSONB)))
+    op.add_column('action', sa.Column('condition_data', MutableDict.as_mutable(JSONB)))
+    op.add_column('action', sa.Column('completion_condition_data', MutableDict.as_mutable(JSONB)))
+    op.add_column('action', sa.Column('public_name',  sa.String, default = ''))
 
     # We need to remove old default action templates. Since now we'll init them with new values
     bind = op.get_bind()
@@ -93,7 +101,9 @@ def downgrade():
     ).all()
 
     for temp in result:
+        session.add(temp)
         session.delete(temp)
+    session.commit()
     op.rename_table('workflow', 'action_flow')
     op.rename_table('workflow_run', 'action_flow_event')
     op.rename_table('action_run', 'action_event')
@@ -111,3 +121,10 @@ def downgrade():
     op.drop_column('action_template', 'completion_condition_data')
     op.drop_column('action_template', 'is_global')
 
+    op.drop_column('action', 'icon')
+    op.drop_column('action', 'description')
+    op.drop_column('action', 'trigger_data')
+    op.drop_column('action', 'config_data')
+    op.drop_column('action', 'condition_data')
+    op.drop_column('action', 'completion_condition_data')
+    op.drop_column('action', 'public_name')

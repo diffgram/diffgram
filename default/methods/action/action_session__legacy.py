@@ -521,6 +521,6 @@ class Action_Session():
             kind=self.kind,
             org=self.org,
             member=self.member,
-            flow=self.flow,
+            workflow =self.flow,
             template=self.template
         )

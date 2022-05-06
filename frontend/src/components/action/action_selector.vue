@@ -48,6 +48,8 @@ export default Vue.extend({
         is_open: false,
         loading: false,
         search: '',
+        error: null,
+        actions_template_list: [],
         actions_list: [
           new Action(
             'Human Labeling Task',
@@ -84,9 +86,9 @@ export default Vue.extend({
     computed: {
       actions_list_filtered: function(){
         if(!this.search || this.search === ''){
-          return this.actions_list
+          return this.actions_template_list
         }
-        return this.actions_list.filter(elm => elm.title.toLowerCase().includes(this.search.toLowerCase()))
+        return this.actions_template_list.filter(elm => elm.title.toLowerCase().includes(this.search.toLowerCase()))
       }
     },
     methods: {
@@ -100,9 +102,10 @@ export default Vue.extend({
             template.trigger_data,
             template.condition_data,
             template.description,
-            template.completion_condition
+            template.completion_condition_data
           )
-          this.action_template_list.push(action)
+          action.id = template.id
+          this.actions_template_list.push(action)
         }
       },
       api_action_template_list: async function(){

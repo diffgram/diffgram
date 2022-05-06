@@ -10,8 +10,8 @@
     </v-chip>
     <div class="d-flex flex-column">
       <div class="d-flex">
-        <div class="d-flex align-center">
-          <v-icon x-large color="secondary" class="mr-2">{{ icon }}</v-icon>
+        <div class="d-flex align-center mb-4">
+          <v-img class="ma-2" width="50px" height="50px" :src="icon"></v-img>
           <div class="text-h6">{{ name }}</div>
         </div>
 

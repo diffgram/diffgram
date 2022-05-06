@@ -10,7 +10,7 @@
                   Workflow:
                 </span>
             <span class="secondary--text font-weight-light" v-if="!loading && workflow && !edit_name">
-                  {{workflow.name | truncate(45)}}
+                  {{workflow.name }}
                 </span>
           </h4>
           <tooltip_button
@@ -158,7 +158,7 @@ import action_existing_list from './action_existing_list.vue';
 import action_selector from './action_selector.vue';
 import action_node_box from './action_node_box.vue';
 import action_config_factory from './action_config_factory.vue';
-import {workflow_update, get_workflow, new_workflow} from './../../services/workflowServices';
+import {workflow_update, get_workflow, new_workflow, new_action} from './../../services/workflowServices';
 import upload from '../upload_large.vue';
 import workflow_run_list from './workflow_run_list.vue';
 import {v4 as uuidv4} from 'uuid'
@@ -266,13 +266,21 @@ export default Vue.extend({
       update_workflow_name: function(){
         this.edit_name = false
       },
-      on_add_action_to_workflow: async function (act) {
+      on_add_action_to_workflow: async function (action_template) {
         this.hide_add_action_panel()
         if(!this.workflow.id){
           await this.api_workflow_new()
         }
-        this.workflow.actions_list.push(act)
-        this.on_select_action(act)
+        console.log('action_template_id', action_template)
+        let action = {
+          ...action_template,
+          action_template_id: action_template.id,
+          id: undefined
+
+        }
+        await this.api_action_new(action)
+        this.workflow.actions_list.push(action)
+        this.on_select_action(action)
       },
       on_remove_selection: function () {
         this.selected_action = null
@@ -296,7 +304,7 @@ export default Vue.extend({
         this.loading = true
         this.error = {}
         this.success = false
-        let [result, err] = await new_workflow(this.project_string_id, this.workflow.id, action)
+        let [result, err] = await new_action(this.project_string_id, this.workflow.id, action)
         if(err){
 
           if (err.response.status == 400) {
@@ -308,7 +316,6 @@ export default Vue.extend({
         if(result){
 
           this.workflow = result.workflow;
-          this.workflow_id = this.workflow.id;
           this.success = true
           this.loading = false
         }
@@ -331,7 +338,6 @@ export default Vue.extend({
         if(result){
 
           this.workflow = result.workflow;
-          this.workflow_id = this.workflow.id;
           this.success = true
           this.loading = false
         }

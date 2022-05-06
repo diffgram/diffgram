@@ -3,7 +3,8 @@ from typing import List
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.dialects.postgresql import JSONB
 
-class Action_Template(Base):
+
+class Action_Template(Base, SerializerMixin):
     """
         This represents any of the possible "step" options when building a flow.
         For example:
@@ -32,7 +33,6 @@ class Action_Template(Base):
     condition_data = Column(MutableDict.as_mutable(JSONB))
 
     completion_condition_data = Column(MutableDict.as_mutable(JSONB))
-
 
     # Kind matches Action.kind
     kind = Column(String())
@@ -85,6 +85,11 @@ class Action_Template(Base):
             Action_Template.kind == kind).first()
 
     @staticmethod
+    def get_by_id(session, id):
+        return session.query(Action_Template).filter(
+            Action_Template.id == id).first()
+
+    @staticmethod
     def new(session,
             public_name,
             icon,
@@ -95,7 +100,6 @@ class Action_Template(Base):
             condition_data,
             completion_condition_data,
             is_global = True):
-
         result = Action_Template(
             public_name = public_name,
             kind = kind,

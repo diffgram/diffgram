@@ -6,7 +6,7 @@ from shared.database.action.action_template import Action_Template
 from shared.database.action.action_run import ActionRun
 
 
-@routes.route('/api/v1/project/<string:project_string_id>/action-template/', methods = ['GET'])
+@routes.route('/api/v1/project/<string:project_string_id>/action-template/list', methods = ['GET'])
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
@@ -14,14 +14,7 @@ def api_action_template_list(project_string_id):
     """
         Returns all the available action templates in a project.
     """
-
-    spec_list = []
-
-    log, input, untrusted_input = regular_input.master(request = request,
-                                                       spec_list = spec_list)
-    if len(log["error"].keys()) >= 1:
-        return jsonify(log = log), 400
-
+    log = regular_log.default()
     with sessionMaker.session_scope() as session:
         project = Project.get(session, project_string_id)
 

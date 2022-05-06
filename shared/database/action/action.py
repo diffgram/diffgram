@@ -1,9 +1,11 @@
 from shared.database.common import *
 from shared.database.org.org import Org
 from shared.database.action.action_template import Action_Template
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy_serializer import SerializerMixin
 
 
-class Action(Base):
+class Action(Base, SerializerMixin):
     """
         Each step of a workflow is called an action.
 
@@ -26,27 +28,26 @@ class Action(Base):
     workflow_id = Column(Integer, ForeignKey('workflow.id'))
     workflow = relationship("Workflow", foreign_keys = [workflow_id])
 
+    public_name = Column(String())
+
+    icon = Column(String())
+
+    description = Column(String())
+
+    trigger_data = Column(MutableDict.as_mutable(JSONB))
+
+    config_data = Column(MutableDict.as_mutable(JSONB))
+
+    condition_data = Column(MutableDict.as_mutable(JSONB))
+
+    completion_condition_data = Column(MutableDict.as_mutable(JSONB))
+
     is_root = Column(Boolean)
     root_id = Column(Integer, ForeignKey('action.id'))
 
-    def root(self, session):
-        return Action.get_by_id(session, self.root_id)
-
     parent_id = Column(Integer, ForeignKey('action.id'))
 
-    def parent(self, session):
-        return Action.get_by_id_skip_project_security_check(
-            session, self.parent_id)
-
-    def child_list(self, session):
-        return session.query(Action).filter(
-            Action.parent_id == self.id).all()
-
     child_primary_id = Column(Integer, ForeignKey('action.id'))
-
-    def child_primary(self, session):
-        return Action.get_by_id_skip_project_security_check(
-            session, self.child_primary_id)
 
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")
@@ -132,10 +133,18 @@ class Action(Base):
         session,
         project,
         kind,
-        org,
         member,
-        flow,
-        template
+        workflow,
+        template,
+        trigger_data,
+        icon,
+        description,
+        condition_data,
+        completion_condition_data,
+        public_name,
+        add_to_session = True,
+        flush_session = True
+
     ):
         """
         We default active to True for easier searching
@@ -144,18 +153,28 @@ class Action(Base):
         want to do that for success cases
         """
 
-        if flow is None:
+        if workflow is None:
             return False
 
         action = Action(
             active = True,
             kind = kind,
             project = project,
-            org = org,
             member_created = member,
-            flow = flow,
-            template = template
+            workflow = workflow,
+            template = template,
+            trigger_data = trigger_data,
+            icon = icon,
+            description = description,
+            public_name = public_name,
+            condition_data = condition_data,
+            completion_condition_data = completion_condition_data,
         )
+        if add_to_session:
+            session.add(action)
+
+        if flush_session:
+            session.flush()
 
         return action
 
@@ -170,27 +189,18 @@ class Action(Base):
         Likely a better way so if you know one please speak up!
 
         """
+        data = self.to_dict(rules = (
+            '-template',
+            '-workflow',
+            '-project',
+            '-org',
+            '-count_label_file',
+            '-overlay_label_file',
+            '-overlay_image',
+            '-member_created',
+            '-member_updated'))
 
-        # Do we want to include all this other info by default or?
-
-        # Common start
-        action = {
-            'id': self.id,
-            'kind': self.kind,
-            'active': self.active,
-            'flow_id': self.workflow_id,
-            'project_id': self.project_id,
-            'template_id': self.template_id
-        }
-
-        # Get kind specific attributes
-        kind_specific = self.kind_specific_strategy_operations_serialize.get(self.kind)
-        if kind_specific is None:
-            return "class Action Serialize Error. Error, no kind"
-
-        action[self.kind] = kind_specific(self)
-
-        return action
+        return data
 
     def serialize_file(self):
         pass
@@ -326,3 +336,18 @@ class Action(Base):
 
         return session.query(Action).filter(
             Action.id == id).first()
+
+    def parent(self, session):
+        return Action.get_by_id_skip_project_security_check(
+            session, self.parent_id)
+
+    def child_list(self, session):
+        return session.query(Action).filter(
+            Action.parent_id == self.id).all()
+
+    def child_primary(self, session):
+        return Action.get_by_id_skip_project_security_check(
+            session, self.child_primary_id)
+
+    def root(self, session):
+        return Action.get_by_id(session, self.root_id)

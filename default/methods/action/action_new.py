@@ -15,100 +15,136 @@ from shared.image_tools import imresize
 from imageio import imwrite
 
 
-@routes.route('/api/v1/project/<string:project_string_id>/actions/workflow/<int:project_string_id>/action/new',
-              methods=['POST'])
+@routes.route('/api/v1/project/<string:project_string_id>/actions/workflow/<int:workflow_id>/action',
+              methods = ['POST'])
 @Project_permissions.user_has_project(
-    Roles=["admin", "Editor"],
-    apis_user_list=['api_enabled_builder', 'security_email_verified'])
+    Roles = ["admin", "Editor"],
+    apis_user_list = ['api_enabled_builder', 'security_email_verified'])
 @limiter.limit("20 per day")
-def api_action_new(project_string_id):
+def api_action_new(project_string_id, workflow_id):
     """
     Shared route for update and new
 
     """
 
     spec_list = [
-        {'name': dict},
+        {'public_name': str},
+        {'kind': str},
+        {'icon': str},
         {'trigger_data': dict},
         {'description': str},
-        {'complete_condition': str},
+        {'completion_condition_data': dict},
         {'action_template_id': int},
-        {'condition_data': str}
+        {'workflow_id': int},
+        {'condition_data': dict}
 
     ]
 
-    log, input, untrusted_input = regular_input.master(request=request,
-                                                       spec_list=spec_list)
+    log, input, untrusted_input = regular_input.master(request = request,
+                                                       spec_list = spec_list)
     if len(log["error"].keys()) >= 1:
-        return jsonify(log=log), 400
+        return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
 
-        user = User.get(session=session)
+        user = User.get(session = session)
+        member = get_member(session)
         project = Project.get(session, project_string_id)
 
-        # Caution, declaring as user.member for now.
-        member = user.member
-        action_creation_core(
+        result, log = action_creation_core(
             session = session,
             project = project,
             member = member,
-            name = input['name'],
+            public_name = input['public_name'],
+            kind = input['kind'],
             description = input['description'],
             trigger_data = input['trigger_data'],
             condition_data = input['condition_data'],
             action_template_id = input['action_template_id'],
-            complete_condition = input['complete_condition'],
+            completion_condition_data = input['completion_condition_data'],
+            workflow_id = input['workflow_id'],
+            icon = input['icon'],
+            log = log,
         )
 
-
         # For init errors
-        if len(action_session.log["error"].keys()) >= 1:
-            return jsonify(log=log), 400
-
-        if action_session.mode in ["UPDATE", "ARCHIVE"]:
-
-            action_session.update_mode_init()
-
-            if len(action_session.log["error"].keys()) >= 1:
-                return jsonify(log=log), 400
-
-        action_session.route_kind_using_strategy_pattern()
-
-        log = action_session.log
         if len(log["error"].keys()) >= 1:
-            return jsonify(log=log), 400
+            return jsonify(log = log), 400
+        #
+        # if action_session.mode in ["UPDATE", "ARCHIVE"]:
+        #
+        #     action_session.update_mode_init()
+        #
+        #     if len(action_session.log["error"].keys()) >= 1:
+        #         return jsonify(log=log), 400
+        #
+        # action_session.route_kind_using_strategy_pattern()
+        #
+        # log = action_session.log
+        # if len(log["error"].keys()) >= 1:
+        #     return jsonify(log=log), 400
+        #
+        # action = action_session.action
+        # log['success'] = True
+        #
+        # if action_session.mode == "NEW":
+        #     # Just putting it here for now while
+        #     # Figuring out how we are loading member
+        #     # Probably could be in action_session()
+        #     Event.new(
+        #         session=session,
+        #         kind="new_action",
+        #         member=member,
+        #         success=True,
+        #         project_id=project.id,
+        #         email=user.email
+        #     )
 
-        action = action_session.action
-        log['success'] = True
-
-        if action_session.mode == "NEW":
-            # Just putting it here for now while
-            # Figuring out how we are loading member
-            # Probably could be in action_session()
-            Event.new(
-                session=session,
-                kind="new_action",
-                member=member,
-                success=True,
-                project_id=project.id,
-                email=user.email
-            )
-
-        out = jsonify(action=action.serialize(),
-                      log=log)
+        out = jsonify(action = result,
+                      log = log)
         return out, 200
 
 
 def action_creation_core(session: Session,
                          project: Project,
                          member: Member,
-                         name: str,
+                         public_name: str,
+                         icon: str,
+                         kind: str,
                          description: str,
-                         trigger_data: str,
+                         trigger_data: dict,
                          condition_data: dict,
                          action_template_id: int,
-                         complete_condition: str):
+                         workflow_id: int,
+                         completion_condition_data: dict,
+                         log: dict):
+    workflow = Workflow.get_by_id(session = session, id = workflow_id, project_id = project.id)
+    if workflow is None:
+        log['error']['workflow'] = f'Workflow id {workflow_id} not found'
+        return False, log
+
+    action_template = Action_Template.get_by_id(session = session, id = action_template_id)
+    if action_template is None:
+        log['error']['action_template'] = f'Action template id {action_template_id} not found'
+        return False, log
+    action = Action.new(
+        session = session,
+        project = project,
+        kind = kind,
+        member = member,
+        workflow = workflow,
+        template = action_template,
+        public_name = public_name,
+        icon = icon,
+        completion_condition_data = completion_condition_data,
+        description = description,
+        trigger_data = trigger_data,
+        condition_data = condition_data,
+    )
+
+    res = action.serialize()
+
+    return res, log
 
 
 EMAIL_RE = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
@@ -128,17 +164,15 @@ def validate_email(email):
         return False
 
 
-
-
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
 
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
               '/action/overlay/image',
-              methods=['POST'])
+              methods = ['POST'])
 @Project_permissions.user_has_project(
-    Roles=["admin", "Editor"],
-    apis_user_list=['api_enabled_builder', 'security_email_verified'])
+    Roles = ["admin", "Editor"],
+    apis_user_list = ['api_enabled_builder', 'security_email_verified'])
 @limiter.limit("3 per day")
 def update_overlay_image_api(project_string_id):
     file = request.files.get('file')
@@ -163,28 +197,28 @@ def update_overlay_image_api(project_string_id):
             project = Project.get(session, project_string_id)
 
             action = Action.get_by_id(
-                session=session,
-                id=action_id,
-                project_id=project.id)
+                session = session,
+                id = action_id,
+                project_id = project.id)
 
             with open(file_name, "rb") as file:
                 content_type = "image/" + str(extension)
                 short_file_name = os.path.split(file_name)[1]
 
                 action.overlay_image = process_image_for_overlay(
-                    session=session,
-                    file=file,
-                    file_name=short_file_name,
-                    blob_base="actions/overlay_images/",
-                    content_type=content_type,
-                    extension=extension)
+                    session = session,
+                    file = file,
+                    file_name = short_file_name,
+                    blob_base = "actions/overlay_images/",
+                    content_type = content_type,
+                    extension = extension)
 
                 session.add(action)
 
-            return jsonify(success=True,
-                           action=action.serialize()), 200
+            return jsonify(success = True,
+                           action = action.serialize()), 200
 
-    return jsonify(success=False), 400
+    return jsonify(success = False), 400
 
 
 from shared.database.image import Image
@@ -198,12 +232,12 @@ import shutil
 # Maybe we do...
 
 def process_image_for_overlay(
-        session,
-        file,
-        file_name,
-        content_type,
-        blob_base,
-        extension):
+    session,
+    file,
+    file_name,
+    content_type,
+    blob_base,
+    extension):
     """
 
     In comparison to other methods we want to
@@ -218,7 +252,7 @@ def process_image_for_overlay(
 
     """
 
-    new_image = Image(original_filename=file_name)
+    new_image = Image(original_filename = file_name)
     session.add(new_image)
 
     try:
@@ -229,7 +263,6 @@ def process_image_for_overlay(
 
     image_blob = blob_base + str(new_image.id)
     image_blob_thumb = image_blob + "_thumb"
-
 
     image = imread(file)
 
@@ -247,7 +280,7 @@ def process_image_for_overlay(
         shape_y = int(round(image.shape[1] * ratio))
 
         image = imresize(image,
-                                    (shape_x, shape_y))
+                         (shape_x, shape_y))
 
     # Save File
     temp = tempfile.mkdtemp()
