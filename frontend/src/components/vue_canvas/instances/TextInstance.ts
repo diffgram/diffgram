@@ -59,7 +59,8 @@ export class TextAnnotationInstance extends Instance implements InstanceInterfac
             soft_delete: this.soft_delete,
             creation_ref_id: this.creation_ref_id,
             text_tokenizer: this.text_tokenizer,
-            attribute_groups: this.attribute_groups
+            attribute_groups: this.attribute_groups,
+            get_instance_data: () => {}
         }
         return payload
     }
@@ -119,7 +120,8 @@ export class TextRelationInstance extends Instance  implements InstanceInterface
             soft_delete: this.soft_delete,
             creation_ref_id: this.creation_ref_id,
             text_tokenizer: this.text_tokenizer,
-            attribute_groups: this.attribute_groups
+            attribute_groups: this.attribute_groups,
+            get_instance_data: () => {}
         }
 
         return payload

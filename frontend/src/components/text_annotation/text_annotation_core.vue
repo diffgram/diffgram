@@ -120,6 +120,7 @@
               :cy="selection_rect.y"
               :r="4"
               fill="rgba(46, 204, 113)"
+              style="cursor: grab"
             />
             <rect
               :x="selection_rect.x - 2"
@@ -147,7 +148,9 @@
               :cy="selection_rect.y + 5 + 25"
               :r="4"
               fill="rgba(46, 204, 113)"
+              style="cursor: grab"
             />
+            <div></div>
           </g>
           <g v-if="render_rects.length > 0">
             <rect
@@ -282,6 +285,8 @@ import {
   UpdateInstanceLabelCommand,
   UpdateInstanceAttributeCommand
 } from "../../helpers/command/available_commands"
+import DrawText from "./text_utils/draw_rects"
+import DrawRects from "./text_utils/draw_rects";
 
 export default Vue.extend({
   name: "text_token_core",
@@ -630,9 +635,9 @@ export default Vue.extend({
         this.instance_in_progress = null
         return
       }
-      this.on_select_text(start_token_id, end_token_id)
-      // this.on_start_draw_instance(start_token_id)
-      // this.on_finish_draw_instance(end_token_id)
+      // this.on_select_text(start_token_id, end_token_id)
+      this.on_start_draw_instance(start_token_id)
+      this.on_finish_draw_instance(end_token_id)
       this.instance_in_progress = null
     },
     on_select_text: function(start_token_id, end_token_id, direction = "right") {
@@ -646,6 +651,9 @@ export default Vue.extend({
           start_token_id = start_token_id + 1
         }
       }
+      const draw_text = new DrawText(this.tokens, this.lines, this.new_instance_list)
+      const rects = draw_text.generate_rects(start_token_id, end_token_id, "red")
+      console.log(rects)
       const rect = {
         start_token_id: start_token_id, 
         end_token_id: end_token_id,
@@ -995,6 +1003,10 @@ export default Vue.extend({
     },
     // draw_instance - is only returning rects that have to be drawn
     draw_instance: function (instance) {
+      // const draw_class = new DrawRects(this.tokens, this.lines, this.new_instance_list);
+      // const drawn_rects = draw_class.generate_rects_from_instance(instance)
+      // return drawn_rects
+
       try {
         let starting_token;
         let end_token;
