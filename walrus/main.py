@@ -92,7 +92,6 @@ from methods.task.task_template.task_template_launch_handler import TaskTemplate
 from methods.sync_events.sync_actions_handler import SyncActionsHandlerThread
 from shared.helpers.security import limiter
 from methods.startup.system_startup_checker import WalrusServiceSystemStartupChecker
-from methods.connectors.datasaur_connector import DatasaurSyncManager
 from methods.input.process_media_queue_manager import ProcessMediaQueueManager
 from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueThread
 
