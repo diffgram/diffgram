@@ -48,7 +48,7 @@ export class TextAnnotationInstance extends Instance implements InstanceInterfac
     }
 
     public get_instance_data(): TextInstanceData {
-        const payload: TextInstanceData = {
+        const payload: any = {
             id: this.id || this.creation_ref_id,
             type: this.type,
             selected: this.selected,
@@ -59,8 +59,7 @@ export class TextAnnotationInstance extends Instance implements InstanceInterfac
             soft_delete: this.soft_delete,
             creation_ref_id: this.creation_ref_id,
             text_tokenizer: this.text_tokenizer,
-            attribute_groups: this.attribute_groups,
-            get_instance_data: () => {}
+            attribute_groups: this.attribute_groups
         }
         return payload
     }
@@ -109,7 +108,7 @@ export class TextRelationInstance extends Instance  implements InstanceInterface
     }
 
     public get_instance_data(): TextRelationInstanceData {
-        const payload: TextRelationInstanceData = {
+        const payload: any = {
             id: this.id || this.creation_ref_id,
             type: this.type,
             selected: this.selected,
@@ -120,8 +119,7 @@ export class TextRelationInstance extends Instance  implements InstanceInterface
             soft_delete: this.soft_delete,
             creation_ref_id: this.creation_ref_id,
             text_tokenizer: this.text_tokenizer,
-            attribute_groups: this.attribute_groups,
-            get_instance_data: () => {}
+            attribute_groups: this.attribute_groups
         }
 
         return payload

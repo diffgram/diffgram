@@ -49,7 +49,6 @@ export abstract class Command implements CommandInterface {
     };
 
     protected get_instances_ids(): Array<string | number> {
-        console.log(this.instances[0].get_instance_data())
         const id_list: Array<string | number> = this.instances.map(instance => instance.get_instance_data().id)
         return id_list
     };

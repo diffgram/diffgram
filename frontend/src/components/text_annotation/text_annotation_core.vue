@@ -1003,9 +1003,9 @@ export default Vue.extend({
     },
     // draw_instance - is only returning rects that have to be drawn
     draw_instance: function (instance) {
-      // const draw_class = new DrawRects(this.tokens, this.lines, this.new_instance_list);
-      // const drawn_rects = draw_class.generate_rects_from_instance(instance)
-      // return drawn_rects
+      const draw_class = new DrawRects(this.tokens, this.lines, this.new_instance_list);
+      const drawn_rects = draw_class.generate_rects_from_instance(instance)
+      return drawn_rects
 
       try {
         let starting_token;
