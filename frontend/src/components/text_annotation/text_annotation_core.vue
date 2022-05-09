@@ -114,46 +114,10 @@
               class="unselectable"
             />
           </g>
-          <g v-if="selection_rects">
-            <circle 
-              :cx="selection_rects[0].x - 2"
-              :cy="selection_rects[0].y"
-              :r="4"
-              fill="rgba(46, 204, 113)"
-              style="cursor: grab"
-            />
-            <rect
-              :x="selection_rects[0].x - 2"
-              :y="selection_rects[0].y"
-              :width="1"
-              :height="25"
-              fill="rgba(46, 204, 113)"
-            />
-            <rect
-              v-for="rect in selection_rects"
-              :key="`selection_${rect.x}_${rect.y}_${rect.width}`"
-              :x="rect.x - 2"
-              :y="rect.y + 5"
-              :width="rect.width + 4"
-              :height="20"
-              fill="rgba(46, 204, 113, 0.4)"
-            />
-             <rect
-              :x="selection_rects[selection_rects.length - 1].width + 2 + selection_rects[selection_rects.length - 1].x"
-              :y="selection_rects[selection_rects.length - 1].y + 5"
-              :width="1"
-              :height="25"
-              fill="rgba(46, 204, 113)"
-            />
-            <circle 
-              :cx="selection_rects[selection_rects.length - 1].width + 2 + selection_rects[selection_rects.length - 1].x"
-              :cy="selection_rects[selection_rects.length - 1].y + 5 + 25"
-              :r="4"
-              fill="rgba(46, 204, 113)"
-              style="cursor: grab"
-            />
-            <div></div>
-          </g>
+          <text_selection_svg 
+            v-if="selection_rects"
+            :rects="selection_rects" 
+          />
           <g v-if="render_rects.length > 0">
             <rect
               v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
@@ -271,6 +235,7 @@
 import Vue from "vue";
 import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
+import text_selection_svg from "./render_elements/selection.vue"
 import {CommandManagerAnnotationCore} from "../annotation/annotation_core_command_manager"
 import {CreateInstanceCommand as CreateInstanceCommandLegacy} from "../annotation/commands/create_instance_command";
 import {TextAnnotationInstance, TextRelationInstance} from "../vue_canvas/instances/TextInstance"
@@ -294,7 +259,8 @@ export default Vue.extend({
   name: "text_token_core",
   components: {
     text_toolbar,
-    text_sidebar
+    text_sidebar,
+    text_selection_svg
   },
   props: {
     file: {
@@ -643,29 +609,8 @@ export default Vue.extend({
       this.instance_in_progress = null
     },
     on_select_text: function(start_token_id, end_token_id, direction = "right") {
-      // if (start_token_id < 0 || end_token_id > this.tokens.length + 1) return
-      // let start_token;
-      // while(!start_token) {
-      //   start_token = this.tokens.find(token => token.id == start_token_id)
-      //   if (!start_token && direction === "left") {
-      //     start_token_id = start_token_id - 1
-      //   } else if (!start_token && direction === 'right') {
-      //     start_token_id = start_token_id + 1
-      //   }
-      // }
       const draw_text = new DrawText(this.tokens, this.lines, this.new_instance_list)
       const rects = draw_text.generate_rects(start_token_id, end_token_id, "red")
-      // console.log(rects)
-      // const rect = {
-      //   start_token_id: start_token_id, 
-      //   end_token_id: end_token_id,
-      //   x: start_token.start_x,
-      //   y: this.lines[start_token.line].y + 3,
-      //   line: start_token.line,
-      //   width: start_token.width,
-      //   color: "red"
-      // }
-      console.log(rects)
       this.selection_rects = rects
     },
     on_mount: async function () {
