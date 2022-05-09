@@ -522,6 +522,7 @@ export default Vue.extend({
         this.path = {};
         this.unselectable = false
         this.relation_drawing = false;
+        this.selection_rects = null;
         window.removeEventListener('mousemove', this.draw_relation_listener)
       } else if (e.keyCode === 83) {
         await this.save();
@@ -537,10 +538,10 @@ export default Vue.extend({
         this.search_mode = false;
       } else if (e.keyCode === 66) {
         this.bulk_label = false;
-      } else if (e.keyCode === 37 && this.selection_rect) {
-        this.on_select_text(this.selection_rect.start_token_id - 1, this.selection_rect.start_token_id - 1, "left")
-      } else if (e.keyCode === 39 && this.selection_rect) {
-        this.on_select_text(this.selection_rect.end_token_id + 1, this.selection_rect.end_token_id + 1)
+      } else if (e.keyCode === 37 && this.selection_rects) {
+        this.on_select_text(this.selection_rects[0].start_token_id - 1, this.selection_rects[0].start_token_id - 1, "left")
+      } else if (e.keyCode === 39 && this.selection_rects) {
+        this.on_select_text(this.selection_rects[0].end_token_id + 1, this.selection_rects[0].end_token_id + 1)
       }
     },
     start_autosave: function () {
@@ -607,10 +608,22 @@ export default Vue.extend({
       // this.on_start_draw_instance(start_token_id)
       // this.on_finish_draw_instance(end_token_id)
       this.instance_in_progress = null
+      this.remove_browser_selection()
     },
     on_select_text: function(start_token_id, end_token_id, direction = "right") {
+      if (start_token_id < 0 || end_token_id > this.tokens.length + 1) return
+      let start_token;
+      console.log(start_token_id, end_token_id, direction)
+      while(!start_token) {
+        start_token = this.tokens.find(token => token.id == start_token_id)
+        if (!start_token && direction === "left") {
+          start_token_id = start_token_id - 1
+        } else if (!start_token && direction === 'right') {
+          start_token_id = start_token_id + 1
+        }
+      }
       const draw_text = new DrawText(this.tokens, this.lines, this.new_instance_list)
-      const rects = draw_text.generate_rects(start_token_id, end_token_id, "red")
+      const rects = draw_text.generate_selection_rect(start_token_id, end_token_id, "red")
       this.selection_rects = rects
     },
     on_mount: async function () {
@@ -783,16 +796,19 @@ export default Vue.extend({
         this.new_command_manager.executeCommand(new_command)
         this.has_changed = true
       }
+      this.remove_browser_selection()
+      this.instance_in_progress = null
+    },
+    remove_browser_selection: function() {
       if (window.getSelection) {
-        if (window.getSelection().empty) {  // Chrome
+        if (window.getSelection().empty) {
           window.getSelection().empty();
-        } else if (window.getSelection().removeAllRanges) {  // Firefox
+        } else if (window.getSelection().removeAllRanges) {
           window.getSelection().removeAllRanges();
         }
-      } else if (document.selection) {  // IE?
+      } else if (document.selection) {
         document.selection.empty();
       }
-      this.instance_in_progress = null
     },
     change_instance_label: async function (event) {
       const {instance, label} = event

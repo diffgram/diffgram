@@ -50,8 +50,9 @@ export default class DrawRects {
 
     generate_selection_rect(start_token_id: number, end_token_id: number) {
         const base_rects = this.generate_rects(start_token_id, end_token_id)
+        const selection_rects = base_rects.map(rect => ({...rect, start_token_id, end_token_id }))
 
-        return base_rects
+        return selection_rects
     }
 
     private generate_rects(
