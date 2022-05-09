@@ -114,38 +114,40 @@
               class="unselectable"
             />
           </g>
-          <g v-if="selection_rect">
+          <g v-if="selection_rects">
             <circle 
-              :cx="selection_rect.x - 2"
-              :cy="selection_rect.y"
+              :cx="selection_rects[0].x - 2"
+              :cy="selection_rects[0].y"
               :r="4"
               fill="rgba(46, 204, 113)"
               style="cursor: grab"
             />
             <rect
-              :x="selection_rect.x - 2"
-              :y="selection_rect.y"
+              :x="selection_rects[0].x - 2"
+              :y="selection_rects[0].y"
               :width="1"
               :height="25"
               fill="rgba(46, 204, 113)"
             />
             <rect
-              :x="selection_rect.x - 2"
-              :y="selection_rect.y + 5"
-              :width="selection_rect.width + 4"
+              v-for="rect in selection_rects"
+              :key="`selection_${rect.x}_${rect.y}_${rect.width}`"
+              :x="rect.x - 2"
+              :y="rect.y + 5"
+              :width="rect.width + 4"
               :height="20"
               fill="rgba(46, 204, 113, 0.4)"
             />
              <rect
-              :x="selection_rect.width + 2 + selection_rect.x"
-              :y="selection_rect.y + 5"
+              :x="selection_rects[selection_rects.length - 1].width + 2 + selection_rects[selection_rects.length - 1].x"
+              :y="selection_rects[selection_rects.length - 1].y + 5"
               :width="1"
               :height="25"
               fill="rgba(46, 204, 113)"
             />
             <circle 
-              :cx="selection_rect.width + 2 + selection_rect.x"
-              :cy="selection_rect.y + 5 + 25"
+              :cx="selection_rects[selection_rects.length - 1].width + 2 + selection_rects[selection_rects.length - 1].x"
+              :cy="selection_rects[selection_rects.length - 1].y + 5 + 25"
               :r="4"
               fill="rgba(46, 204, 113)"
               style="cursor: grab"
@@ -360,7 +362,7 @@ export default Vue.extend({
       text_field_heigth: 100,
       text_field_width: '100%',
       re_render_func: undefined,
-      selection_rect: null,
+      selection_rects: null,
       // Command
       command_manager: undefined,
       has_changed: false,
@@ -635,35 +637,36 @@ export default Vue.extend({
         this.instance_in_progress = null
         return
       }
-      // this.on_select_text(start_token_id, end_token_id)
-      this.on_start_draw_instance(start_token_id)
-      this.on_finish_draw_instance(end_token_id)
+      this.on_select_text(start_token_id, end_token_id)
+      // this.on_start_draw_instance(start_token_id)
+      // this.on_finish_draw_instance(end_token_id)
       this.instance_in_progress = null
     },
     on_select_text: function(start_token_id, end_token_id, direction = "right") {
-      if (start_token_id < 0 || end_token_id > this.tokens.length + 1) return
-      let start_token;
-      while(!start_token) {
-        start_token = this.tokens.find(token => token.id == start_token_id)
-        if (!start_token && direction === "left") {
-          start_token_id = start_token_id - 1
-        } else if (!start_token && direction === 'right') {
-          start_token_id = start_token_id + 1
-        }
-      }
+      // if (start_token_id < 0 || end_token_id > this.tokens.length + 1) return
+      // let start_token;
+      // while(!start_token) {
+      //   start_token = this.tokens.find(token => token.id == start_token_id)
+      //   if (!start_token && direction === "left") {
+      //     start_token_id = start_token_id - 1
+      //   } else if (!start_token && direction === 'right') {
+      //     start_token_id = start_token_id + 1
+      //   }
+      // }
       const draw_text = new DrawText(this.tokens, this.lines, this.new_instance_list)
       const rects = draw_text.generate_rects(start_token_id, end_token_id, "red")
+      // console.log(rects)
+      // const rect = {
+      //   start_token_id: start_token_id, 
+      //   end_token_id: end_token_id,
+      //   x: start_token.start_x,
+      //   y: this.lines[start_token.line].y + 3,
+      //   line: start_token.line,
+      //   width: start_token.width,
+      //   color: "red"
+      // }
       console.log(rects)
-      const rect = {
-        start_token_id: start_token_id, 
-        end_token_id: end_token_id,
-        x: start_token.start_x,
-        y: this.lines[start_token.line].y + 3,
-        line: start_token.line,
-        width: start_token.width,
-        color: "red"
-      }
-      this.selection_rect = rect
+      this.selection_rects = rects
     },
     on_mount: async function () {
       let set_words;

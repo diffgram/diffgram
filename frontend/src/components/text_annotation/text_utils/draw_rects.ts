@@ -48,7 +48,11 @@ export default class DrawRects {
         return instance_rects
     }
 
-    generate_selection_rect(start_token_id: number, end_token_id: number) {}
+    generate_selection_rect(start_token_id: number, end_token_id: number) {
+        const base_rects = this.generate_rects(start_token_id, end_token_id)
+
+        return base_rects
+    }
 
     private generate_rects(
         start_token_id: number, 
