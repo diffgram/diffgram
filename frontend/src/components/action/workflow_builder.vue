@@ -159,7 +159,7 @@ import action_existing_list from './action_existing_list.vue';
 import action_selector from './action_selector.vue';
 import action_node_box from './action_node_box.vue';
 import action_config_factory from './action_config_factory.vue';
-import {workflow_update, get_workflow, new_workflow, new_action} from './../../services/workflowServices';
+import {workflow_update, get_workflow, new_workflow, new_action, action_update} from './../../services/workflowServices';
 import upload from '../upload_large.vue';
 import workflow_run_list from './workflow_run_list.vue';
 import {v4 as uuidv4} from 'uuid'
@@ -244,18 +244,15 @@ export default Vue.extend({
     },
 
     watch: {
-      flow_id() {
-        this.api_get_flow()
+      workflow_id() {
+        this.api_get_workflow()
       }
 
 
     },
 
     created() {
-      if (this.$route.params.flow_id) {
-        this.flow_id = this.$route.params.flow_id
-        this.api_get_flow()
-      }
+
     },
     async mounted() {
       if(!this.$props.workflow_id){
@@ -282,16 +279,23 @@ export default Vue.extend({
         if(!this.workflow.id){
           await this.api_workflow_new()
         }
-        console.log('action_template_id', action_template)
         let action = {
           ...action_template,
-          action_template_id: action_template.id,
+          template_id: action_template.id,
           id: undefined
-
         }
-        await this.api_action_new(action)
-        this.workflow.actions_list.push(action)
-        this.on_select_action(action)
+        let new_action  = await this.api_action_new(action)
+        if (!new_action){
+          return
+        }
+
+        this.workflow.actions_list.push(new_action)
+
+        Vue.set(this.workflow.actions_list, this.workflow.actions_list.length - 1, new_action)
+        this.workflow = {
+          ...this.workflow
+        }
+        this.on_select_action(new_action)
       },
       on_remove_selection: function () {
         this.selected_action = null
@@ -318,17 +322,25 @@ export default Vue.extend({
         let [result, err] = await new_action(this.project_string_id, this.workflow.id, action)
         if(err){
 
-          if (err.response.status == 400) {
-            this.error = err.response.data.log.error
-          }
+          this.error = this.$route_api_errors(err)
           this.loading = false
           console.log(err)
+          return false
         }
         if(result){
-
-          this.workflow = result.workflow;
           this.success = true
           this.loading = false
+          let action = new Action(
+            result.action.public_name,
+            result.action.icon,
+            result.action.kind,
+            result.action.trigger_data,
+            result.action.condition_data,
+            result.action.description,
+            result.action.completion_condition_data
+          )
+          action.setFromObject(result.action)
+          return action
         }
 
       },
@@ -347,8 +359,8 @@ export default Vue.extend({
           console.log(err)
         }
         if(result){
-
           this.workflow = result.workflow;
+          this.workflow.actions_list = [];
           this.success = true
           this.loading = false
         }
@@ -371,7 +383,6 @@ export default Vue.extend({
         this.success = false
         let [result, err] = await get_workflow(this.project_string_id, this.workflow_id)
         if(err){
-
           if (err.response.status == 400) {
             this.error = err.response.data.log.error
           }
@@ -400,7 +411,8 @@ export default Vue.extend({
         this.loading = true;
         this.error = {};
         this.success = false;
-        let [result, err] = await action_update(this.project_string_id, this.workflow, "ARCHIVE")
+        console.log('ACT', act)
+        let [result, err] = await action_update(this.project_string_id, this.workflow.id, act)
         if(err){
           if (err.response.status == 400) {
             this.error = err.response.data.log.error
@@ -410,12 +422,8 @@ export default Vue.extend({
           return
         }
         if(result){
-          this.workflow = result.workflow
-
           this.success = true
           this.loading = false
-          let url = `/project/${this.project_string_id}/flow/list`
-          this.$router.push(url)
         }
       },
       api_workflow_archive: async function(act){
@@ -443,7 +451,6 @@ export default Vue.extend({
 
       },
       api_workflow_update: async function (act) {
-        console.log('sasdad21332', act)
         this.loading = true;
         this.error = {};
         this.success = false;

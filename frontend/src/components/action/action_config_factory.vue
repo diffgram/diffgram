@@ -76,7 +76,7 @@ export default Vue.extend({
     },
     methods: {
       on_action_updated: function(act){
-        console.log('on_action_updated FACT')
+        console.log('on_action_updated FACT', act)
         this.$emit('action_updated', act)
       },
       close() {

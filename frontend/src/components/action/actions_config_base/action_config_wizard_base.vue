@@ -37,6 +37,15 @@
             <v-icon color="success" size="256">mdi-check</v-icon>
             <h1>Action Configured Sucessfully.</h1>
           </v-container>
+          <wizard_navigation
+            @next="on_next_button_click"
+            :next_visible="false"
+            :loading_next="loading_steps"
+            :disabled_next="loading_steps"
+            @back="on_prev_button_click"
+            :skip_visible="false">
+
+          </wizard_navigation>
         </slot>
       </v-stepper-content>
 

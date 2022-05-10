@@ -34,7 +34,7 @@ def api_action_new(project_string_id, workflow_id):
         {'trigger_data': dict},
         {'description': str},
         {'completion_condition_data': dict},
-        {'action_template_id': int},
+        {'template_id': int},
         {'workflow_id': int},
         {'condition_data': dict}
 
@@ -60,7 +60,7 @@ def api_action_new(project_string_id, workflow_id):
             description = input['description'],
             trigger_data = input['trigger_data'],
             condition_data = input['condition_data'],
-            action_template_id = input['action_template_id'],
+            template_id = input['template_id'],
             completion_condition_data = input['completion_condition_data'],
             workflow_id = input['workflow_id'],
             icon = input['icon'],
@@ -114,7 +114,7 @@ def action_creation_core(session: Session,
                          description: str,
                          trigger_data: dict,
                          condition_data: dict,
-                         action_template_id: int,
+                         template_id: int,
                          workflow_id: int,
                          completion_condition_data: dict,
                          log: dict):
@@ -123,9 +123,9 @@ def action_creation_core(session: Session,
         log['error']['workflow'] = f'Workflow id {workflow_id} not found'
         return False, log
 
-    action_template = Action_Template.get_by_id(session = session, id = action_template_id)
+    action_template = Action_Template.get_by_id(session = session, id = template_id)
     if action_template is None:
-        log['error']['action_template'] = f'Action template id {action_template_id} not found'
+        log['error']['action_template'] = f'Action template id {template_id} not found'
         return False, log
     action = Action.new(
         session = session,

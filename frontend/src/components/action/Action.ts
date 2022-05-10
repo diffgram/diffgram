@@ -29,7 +29,7 @@ export const initialize_action_list = function(action_list){
       act.description,
       act.completion_condition_data
     )
-    action.id = act.id
+    action.setFromObject(act)
     if(act.config_data){
       action.config_data = act.config_data
     }
@@ -39,6 +39,7 @@ export const initialize_action_list = function(action_list){
 }
 export class Action {
   public id: number;
+  public template_id: number;
   public public_name: string;
   public icon: string;
   public kind: string;
@@ -61,8 +62,22 @@ export class Action {
     this.trigger_data = trigger_data;
     this.condition_data = condition_data;
     this.description = description;
-    this.config_data = {};
+    this.config_data = {} as ConfigData;
     this.completion_condition_data = complete_condition;
+  }
+
+  public setFromObject(action: any){
+    console.log('setFromObject', action)
+    this.config_data = action.config_data ? action.config_data : {};
+    this.id = action.id;
+    this.template_id = action.template_id;
+    this.public_name = action.public_name;
+    this.icon = action.icon;
+    this.kind = action.kind;
+    this.trigger_data = action.trigger_data ? action.trigger_data : {};
+    this.condition_data = action.condition_data;
+    this.description = action.description;
+    this.completion_condition_data = action.completion_condition_data ? action.completion_condition_data : {};
   }
 }
 

@@ -32,9 +32,10 @@ def api_action_update(project_string_id, action_id):
         {'kind': str},
         {'icon': str},
         {'trigger_data': dict},
+        {'config_data': dict},
         {'description': str},
         {'completion_condition_data': dict},
-        {'action_template_id': int},
+        {'template_id': int},
         {'workflow_id': int},
         {'condition_data': dict}
 
@@ -61,7 +62,8 @@ def api_action_update(project_string_id, action_id):
             description = input['description'],
             trigger_data = input['trigger_data'],
             condition_data = input['condition_data'],
-            action_template_id = input['action_template_id'],
+            config_data = input['config_data'],
+            template_id = input['template_id'],
             completion_condition_data = input['completion_condition_data'],
             workflow_id = input['workflow_id'],
             icon = input['icon'],
@@ -86,8 +88,9 @@ def action_update_core(session: Session,
                        kind: str,
                        description: str,
                        trigger_data: dict,
+                       config_data: dict,
                        condition_data: dict,
-                       action_template_id: int,
+                       template_id: int,
                        workflow_id: int,
                        completion_condition_data: dict,
                        log: dict):
@@ -96,7 +99,7 @@ def action_update_core(session: Session,
         log['error']['workflow'] = f'Workflow id {workflow_id} not found'
         return False, log
 
-    action_template = Action_Template.get_by_id(session = session, id = action_template_id)
+    action_template = Action_Template.get_by_id(session = session, id = template_id)
     if action_template is None:
         log['error']['action_template'] = f'Action template id {action_template_id} not found'
         return False, log
@@ -111,8 +114,9 @@ def action_update_core(session: Session,
         'kind': kind,
         'description': description,
         'trigger_data': trigger_data,
+        'config_data': config_data,
         'condition_data': condition_data,
-        'action_template_id': action_template_id,
+        'template_id': template_id,
         'workflow_id': workflow_id,
         'completion_condition_data': completion_condition_data,
         'member_updated_id': member.id,

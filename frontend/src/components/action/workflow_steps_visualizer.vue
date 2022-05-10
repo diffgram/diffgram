@@ -10,7 +10,6 @@
       >
         <v-icon  size="48" v-if="index > 0">mdi-arrow-down</v-icon>
         <action_node_box
-          style="min-width: 300px;"
           @remove="on_remove_action"
           @open_action_selector="on_open_action_selector"
           @add_action_to_workflow="on_add_action_to_workflow"

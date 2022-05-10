@@ -8,7 +8,7 @@
                   class="mr-4"
                   label="Select Task Template to Create tasks On"
                   @change="on_change_job"
-                  :select_this_id="action.job_id"
+                  :select_this_id="action.config_data.task_template_id"
       >
       </job_select>
       <div class="d-flex align-center justify-center">

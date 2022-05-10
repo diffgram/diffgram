@@ -4,7 +4,7 @@
     <div class="d-flex flex-column ml-10 pl-8 pa-4" style="border: 1px solid #e0e0e0; width: 60%">
       <diffgram_select
         :item_list="source_list"
-        v-model="source"
+        v-model="action.config_data.source"
         label="Source"
         :disabled="loading"
       >
@@ -12,18 +12,18 @@
 
 
       <v_directory_list
-        v-if="source == 'directory' "
+        v-if="source === 'directory' "
         :project_string_id="project_string_id"
         :show_new="false"
         :show_update="false"
-        @change_directory="">
+        @change_directory="on_change_directory">
       </v_directory_list>
 
 
       <div class="pl-2 pr-2">
         <job_select
           v-if="source == 'job' "
-          v-model="job"
+          v-model="action.action_config.task_template_id"
           label="Job"
           :loading="loading"
         >
@@ -33,19 +33,19 @@
       <!-- TASK -->
       <v-text-field
         v-if="source == 'task'"
-        v-model="task_id"
+        v-model="action.config_data.task_id"
         label="Task ID">
       </v-text-field>
 
 
       <v-select :items="kind_list"
-                v-model="kind"
+                v-model="action.config_data.kind"
                 label="Kind"
                 item-value="text">
       </v-select>
 
       <div class="pl-4 pr-4">
-        <v-checkbox v-model="ann_is_complete"
+        <v-checkbox v-model="action.config_data.ann_is_complete"
                     data-cy="complete-files-only-checkbox"
                     label="Complete Files Only">
         </v-checkbox>
@@ -76,6 +76,11 @@ export default {
       required: true,
       default: "wizard"
     }
+  },
+  methods: {
+    on_change_directory: function(){
+
+    },
   },
   data: function(){
     return{

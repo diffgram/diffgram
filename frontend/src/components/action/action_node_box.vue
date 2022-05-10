@@ -12,9 +12,9 @@
         <v-icon x-small>mdi-asterisk-circle-outline</v-icon>
         <strong>Trigger</strong>
       </v-chip>
-      <v-card-title class="d-flex">
-        <v-img width="50px" height="50px" :src="action.icon"></v-img>
-        <strong style="width: 80%">{{action.public_name}}</strong>
+      <v-card-title class="d-flex justify-start">
+        <v-img style="width: 20%"  :src="action.icon"></v-img>
+        <h3 style="width: 70%">{{action.public_name}}</h3>
       </v-card-title>
       <v-card-text>
         <div class="d-flex">
@@ -54,7 +54,7 @@ export default {
   },
   props: ['node', 'action', 'actions_list', 'project_string_id'],
   mounted() {
-    console.log('MOUNTED DDDD', this.nodes)
+
   },
   methods: {
     select_action: function(act){
