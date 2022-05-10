@@ -768,12 +768,17 @@ export default Vue.extend({
       this.hover_instance = null
     },
     // function to initialize drawing new instance
-    on_start_draw_instance: function (start_token, end_token) {
+    on_start_draw_instance: function (start_token_id, end_token_id) {
+      let end_token = this.tokens.find(token => token.id === end_token_id)
+
+      if (!end_token) end_token = start_token_id
+      else end_token = end_token_id
+
       this.instance_in_progress = {
         id: this.new_instance_list.get().length,
         type: "text_token",
-        start_token,
-        end_token,
+        start_token: start_token_id,
+        end_token: end_token,
         level: 0
       }
     },
@@ -802,7 +807,6 @@ export default Vue.extend({
         this.has_changed = true
       }
       this.remove_browser_selection()
-      this.instance_in_progress = null
     },
     remove_browser_selection: function() {
       if (window.getSelection) {
@@ -817,8 +821,7 @@ export default Vue.extend({
     },
     on_popup_create_instance: function(label) {
       this.on_finish_draw_instance(label)
-      this.instance_in_progress = null;
-      this.selection_rects = null;
+      this.on_select_text(this.instance_in_progress.end_token + 1, this.instance_in_progress.end_token + 1)
     },
     change_instance_label: async function (event) {
       const {instance, label} = event
