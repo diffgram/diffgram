@@ -65,7 +65,9 @@ export default class DrawRects {
         let width: number;
 
         const start_token = this.token_list.find(token => token.id === start_token_id)
-        const end_token = this.token_list.find(token => token.id === end_token_id)
+        let end_token = this.token_list.find(token => token.id === end_token_id)
+
+        if (!end_token) end_token = start_token
 
         if (start_token.line === end_token.line) {
             if (start_token_id <= end_token_id) {
