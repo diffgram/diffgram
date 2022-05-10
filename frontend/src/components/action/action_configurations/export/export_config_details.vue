@@ -12,7 +12,7 @@
 
 
       <v_directory_list
-        v-if="source === 'directory' "
+        v-if="action.config_data.source === 'directory' "
         :project_string_id="project_string_id"
         :show_new="false"
         :show_update="false"
@@ -22,7 +22,7 @@
 
       <div class="pl-2 pr-2">
         <job_select
-          v-if="source == 'job' "
+          v-if="action.config_data.source === 'job' "
           v-model="action.action_config.task_template_id"
           label="Job"
           :loading="loading"
@@ -32,7 +32,7 @@
 
       <!-- TASK -->
       <v-text-field
-        v-if="source == 'task'"
+        v-if="action.config_data.source === 'task'"
         v-model="action.config_data.task_id"
         label="Task ID">
       </v-text-field>
@@ -68,13 +68,6 @@ export default {
     },
     project_string_id:{
       required: true
-    },
-    actions_list: {
-      required: true
-    },
-    display_mode: {
-      required: true,
-      default: "wizard"
     }
   },
   methods: {
@@ -85,6 +78,7 @@ export default {
   data: function(){
     return{
       loading: false,
+
       source_list: [
         {
           'name': 'directory',
@@ -105,7 +99,6 @@ export default {
           'color': 'purple'
         }
       ],
-      source: "directory",
       kind_list: ["Annotations"],
     }
   },

@@ -2,10 +2,10 @@
   <v-container fluid>
 
     <slot name="triggers">
-      <trigger_config :actions_list=actions_list :action="action"></trigger_config>
+      <trigger_config :project_string_id="project_string_id" :actions_list=actions_list :action="action"></trigger_config>
     </slot>
     <slot name="pre_conditions">
-      <pre_conditions_config :actions_list=actions_list :action="action"></pre_conditions_config>
+      <pre_conditions_config :project_string_id="project_string_id" :actions_list=actions_list :action="action"></pre_conditions_config>
     </slot>
     <slot name="action_config">
 

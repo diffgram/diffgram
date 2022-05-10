@@ -246,6 +246,12 @@ export default Vue.extend({
     watch: {
       workflow_id() {
         this.api_get_workflow()
+      },
+      selected_action: {
+        deep: true,
+        handler: function(new_val, old_val){
+          this.on_action_updated(new_val)
+        }
       }
 
 
@@ -324,7 +330,7 @@ export default Vue.extend({
 
           this.error = this.$route_api_errors(err)
           this.loading = false
-          console.log(err)
+          console.error(err)
           return false
         }
         if(result){
@@ -356,7 +362,7 @@ export default Vue.extend({
             this.error = err.response.data.log.error
           }
           this.loading = false
-          console.log(err)
+          console.error(err)
         }
         if(result){
           this.workflow = result.workflow;
@@ -387,7 +393,7 @@ export default Vue.extend({
             this.error = err.response.data.log.error
           }
           this.loading = false
-          console.log(err)
+          console.error(err)
         }
         if(result){
           this.workflow = result.workflow
@@ -411,14 +417,13 @@ export default Vue.extend({
         this.loading = true;
         this.error = {};
         this.success = false;
-        console.log('ACT', act)
         let [result, err] = await action_update(this.project_string_id, this.workflow.id, act)
         if(err){
           if (err.response.status == 400) {
             this.error = err.response.data.log.error
           }
           this.loading = false
-          console.log(err)
+          console.error(err)
           return
         }
         if(result){
@@ -437,7 +442,7 @@ export default Vue.extend({
             this.error = err.response.data.log.error
           }
           this.loading = false
-          console.log(err)
+          console.error(err)
           return
         }
         if(result){

@@ -9,6 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import orm
 from shared.database.action.action_template import Action_Template
+from shared.database.action.action import Action
 from shared.database.core import MutableDict, JSONEncodedDict
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -34,7 +35,7 @@ def create_default_action_templates(session):
     Action_Template.new(
         session = session,
         public_name = 'JSON Export',
-        description = 'Add tasks to a task template',
+        description = 'Generate JSON Export',
         icon = 'https://www.svgrepo.com/show/46774/export.svg',
         kind = 'export',
         category = None,
@@ -93,6 +94,7 @@ def upgrade():
 def downgrade():
     bind = op.get_bind()
     session = orm.Session(bind = bind)
+    actions = session.query(Action).update({Action.template_id: None}, synchronize_session = False)
     result = session.query(Action_Template).filter(
         Action_Template.kind.in_([
             'create_task',

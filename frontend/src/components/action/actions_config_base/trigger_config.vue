@@ -1,32 +1,54 @@
 <template>
   <div class="mb-4">
     <h2 class="mr-6">1. Trigger When: </h2>
-    <v-select item-text="name" item-value="value" :items="triggers_list" v-model="action.trigger_data.trigger_event_name"></v-select>
+    <v-select item-text="name"
+              @change_directory="$emit('change')"
+              item-value="value"
+              :items="triggers_list"
+              v-model="selected_trigger"></v-select>
     <v_directory_list
       v-model="action.trigger_data.upload_directory_id_list"
       v-if="action.trigger_data.trigger_event_name === 'file_uploaded'"
       :project_string_id="project_string_id"
       :show_new="true"
       :show_update="true"
-      @change_directory="">
+      @change_directory="$emit('change')">
     </v_directory_list>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
+import {Action} from "../Action";
+
 export default Vue.extend({
     name: 'trigger_config',
-    props: ['action', 'project_string_id', 'actions_list', 'triggers_list_prop'],
-
+    props: {
+      action: {
+          type: Action,
+          required: true
+      },
+      project_string_id: {
+        type: String,
+        required: true
+      },
+      actions_list: {
+        required: true
+      },
+      triggers_list_prop: {
+      }
+    },
     mounted() {
-
+      if(!this.action.trigger_data.trigger_event_name){
+        this.action.trigger_data.trigger_event_name = 'action_completed'
+      }
     },
 
     data() {
       return {
         is_open: true,
         search: '',
+        selected_trigger: {},
         default_triggers_list: [
           {
             name: 'File is uploaded',
@@ -41,38 +63,47 @@ export default Vue.extend({
       }
     },
     watch: {
-
+      selected_trigger: function (new_val, old_val) {
+        if (new_val && new_val.value) {
+          this.action.trigger_data.trigger_event_name = new_val.value
+        }
+      }
     },
+    created: function () {
+
+      this.selected_trigger = this.triggers_list.find(elm => elm.value === this.action.trigger_data.trigger_event_name)
+    },
+
     computed: {
-      triggers_list: function(){
-        if(this.triggers_list_prop){
+      triggers_list: function () {
+        if (this.triggers_list_prop) {
           return this.triggers_list_prop;
 
         }
 
-        return this.default_triggers_list.filter( elm => {
-          if(elm.value === 'action_completed' && !this.prev_action){
+        return this.default_triggers_list.filter(elm => {
+          if (elm.value === 'action_completed' && !this.prev_action) {
             return false
           }
           return true
         })
       },
-      prev_action: function(){
-        if(!this.actions_list){
+      prev_action: function () {
+        if (!this.actions_list) {
           return
         }
-        for(let i = 0; i < this.actions_list.length; i++){
+        for (let i = 0; i < this.actions_list.length; i++) {
           let current = this.actions_list[i]
-          if(current === this.action){
-            if(i === 0){
+          if (current === this.action) {
+            if (i === 0) {
               return undefined
             }
-            return this.actions_list[i- 1]
+            return this.actions_list[i - 1]
           }
         }
       },
-      actions_list_filtered: function(){
-        if(!this.search || this.search === ''){
+      actions_list_filtered: function () {
+        if (!this.search || this.search === '') {
           return this.actions_list
         }
         return this.actions_list.filter(elm => elm.node.title.includes(this.search))
@@ -92,7 +123,7 @@ export default Vue.extend({
 
 
 <style>
-code{
+code {
   width: 100%;
   height: 100% !important;
 }

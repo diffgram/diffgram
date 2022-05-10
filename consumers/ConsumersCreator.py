@@ -1,3 +1,5 @@
+import pika
+
 
 
 class ConsumerCreator:
