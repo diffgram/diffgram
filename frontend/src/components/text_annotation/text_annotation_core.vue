@@ -512,6 +512,8 @@ export default Vue.extend({
       this.resizing = true
       this.lines = []
       this.tokens = []
+      this.selection_rects = null
+      this.instance_in_progress = null
       clearTimeout(this.re_render_func);
       this.re_render_func = setTimeout(this.initialize_token_render, 1000)
     },
