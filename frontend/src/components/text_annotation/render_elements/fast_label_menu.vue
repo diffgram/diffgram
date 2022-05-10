@@ -12,11 +12,12 @@
                 <v-text-field
                     label="Start by typing label name"
                     hide-details="auto"
+                    @input="on_search_label"
                 />
             </div>
             <v-list dense>
                 <v-list-item-group>
-                    <v-list-item v-for="(label, index) in label_list" :key="`labl+list_item${index}`">
+                    <v-list-item v-for="(label, index) in search_label" :key="`labl+list_item${index}`">
                         <v-list-item-content>
                             <div class="list-item" :style="`color: ${label.colour.hex}`">
                                 {{ label.label.name }} 
@@ -58,8 +59,19 @@ export default Vue.extend({
         }
     },
     data() {
-        return {}
+        return {
+            search_label: null
+        }
     },
+    mounted() {
+        this.search_label = [...this.label_list]
+    },
+    methods: {
+        on_search_label: function(e) {
+            const to_search = e.toLowerCase()
+            this.search_label = [...this.label_list].filter(label => label.label.name.toLowerCase().includes(to_search))
+        }
+    }
 })
 </script>
 
