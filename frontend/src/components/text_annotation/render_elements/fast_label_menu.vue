@@ -53,9 +53,12 @@ export default Vue.extend({
 
             const top = this.rects[last_element_index].y + 50
             const left = this.rects[last_element_index].x + this.rects[last_element_index].width + 360
+
+            const container_height = this.search_label ? this.search_label.length * 40 + 50 : 0
+
             return {
-                top,
-                left
+                top: top + container_height + 100 < window.innerHeight ? top : top - container_height - 50,
+                left: left + 260 < window.innerWidth ? left : left - 260
             }
         }
     },
