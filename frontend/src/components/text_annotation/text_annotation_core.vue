@@ -57,6 +57,7 @@
         v-if="selection_rects"
         :rects="selection_rects"
         :label_list="label_list"
+        @create_instance="on_popup_create_instance"
       />
       <svg
         ref="initial_svg_element"
@@ -816,6 +817,9 @@ export default Vue.extend({
       } else if (document.selection) {
         document.selection.empty();
       }
+    },
+    on_popup_create_instance: function(label) {
+      console.log("Creating instance with the label", label)
     },
     change_instance_label: async function (event) {
       const {instance, label} = event
