@@ -774,7 +774,6 @@ export default Vue.extend({
         type: "text_token",
         start_token,
         end_token,
-        label_id: this.current_label.id,
         level: 0
       }
     },
