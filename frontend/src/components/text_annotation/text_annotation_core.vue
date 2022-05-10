@@ -613,7 +613,6 @@ export default Vue.extend({
         return
       }
       this.on_select_text(start_token_id, end_token_id)
-      this.on_start_draw_instance(start_token_id, end_token_id)
       this.remove_browser_selection()
     },
     on_select_text: function(start_token_id, end_token_id, direction = "right") {
@@ -630,6 +629,7 @@ export default Vue.extend({
       }
       const draw_text = new DrawText(this.tokens, this.lines, this.new_instance_list)
       const rects = draw_text.generate_selection_rect(start_token.id, end_token_id, "red")
+      this.on_start_draw_instance(start_token_id, end_token_id)
       this.selection_rects = rects
     },
     on_mount: async function () {
