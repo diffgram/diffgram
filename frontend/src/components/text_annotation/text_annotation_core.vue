@@ -613,9 +613,7 @@ export default Vue.extend({
         return
       }
       this.on_select_text(start_token_id, end_token_id)
-      // this.on_start_draw_instance(start_token_id)
-      // this.on_finish_draw_instance(end_token_id)
-      this.instance_in_progress = null
+      this.on_start_draw_instance(start_token_id, end_token_id)
       this.remove_browser_selection()
     },
     on_select_text: function(start_token_id, end_token_id, direction = "right") {
@@ -770,19 +768,19 @@ export default Vue.extend({
       this.hover_instance = null
     },
     // function to initialize drawing new instance
-    on_start_draw_instance: function (start_token) {
+    on_start_draw_instance: function (start_token, end_token) {
       this.instance_in_progress = {
         id: this.new_instance_list.get().length,
         type: "text_token",
         start_token,
+        end_token,
         label_id: this.current_label.id,
         level: 0
       }
     },
     // function to finish drawing instance and remove selection
-    on_finish_draw_instance: async function (end_token) {
+    on_finish_draw_instance: async function (label) {
       if (!this.instance_in_progress.start_token && this.instance_in_progress.start_token !== 0) return
-      this.instance_in_progress.end_token = end_token
       const instance_exists = this.new_instance_list.get().find(instance =>
         instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token && !instance.soft_delete
         ||
@@ -793,7 +791,7 @@ export default Vue.extend({
         created_instance.create_frontend_instance(
           this.instance_in_progress.start_token,
           this.instance_in_progress.end_token,
-          {...this.current_label}
+          {...label}
         )
         this.new_instance_list.push([created_instance])
         const command = new CreateInstanceCommandLegacy(created_instance, this)
@@ -819,7 +817,9 @@ export default Vue.extend({
       }
     },
     on_popup_create_instance: function(label) {
-      console.log("Creating instance with the label", label)
+      this.on_finish_draw_instance(label)
+      this.instance_in_progress = null;
+      this.selection_rects = null;
     },
     change_instance_label: async function (event) {
       const {instance, label} = event
