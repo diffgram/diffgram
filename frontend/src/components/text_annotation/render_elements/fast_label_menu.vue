@@ -12,6 +12,7 @@
                 <v-text-field
                     label="Start by typing label name"
                     hide-details="auto"
+                    v-model="search_value"
                     @input="on_search_label"
                 />
             </div>
@@ -60,16 +61,41 @@ export default Vue.extend({
     },
     data() {
         return {
+            search_value: "",
             search_label: null
         }
     },
     mounted() {
         this.search_label = [...this.label_list]
+        window.removeEventListener("keyup", this.on_apply_label)
+        window.addEventListener("keyup", this.on_apply_label)
+    },
+    beforeDestroy() {
+        window.removeEventListener("keyup", this.on_apply_label)
     },
     methods: {
         on_search_label: function(e) {
             const to_search = e.toLowerCase()
             this.search_label = [...this.label_list].filter(label => label.label.name.toLowerCase().includes(to_search))
+        },
+        on_apply_label: function(e) {
+            let key = Number(e.key)
+            if (key || key === 0) {
+                if (key === 0) key = 9
+                else key = key - 1
+
+                if (this.search_label && this.search_label.length > key) {
+                    const label_to_set = this.search_label[key]
+                    this.$emit('create_instance', label_to_set)
+                }
+            } else {
+                if (e.key.length === 1) {
+                    this.search_value += e.key
+                } else if (e.keyCode === 8) {
+                    this.search_value = this.search_value.slice(0, -1)
+                }
+                this.on_search_label(this.search_value)
+            }
         }
     }
 })
