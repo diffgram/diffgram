@@ -216,27 +216,6 @@ class Event(Base):
             event_id = int(event.id)
             event_kind = event.kind
 
-        # Outside with block because we need to commit the session so walrus can access it.
-        Event.__may_create_ActionTriggerEvent(
-            event_id = event_id,
-            event_kind = event_kind)
-
-    def __may_create_ActionTriggerEvent(
-        event_id: int,
-        event_kind: str):
-
-        if not event_id: return
-
-        if event_kind in workflow_trigger_event_queue.SUPPORTED_ACTION_TRIGGER_EVENT_TYPES:
-            regular_methods.transmit_interservice_request(
-                message = 'new_action_flow_queue_item',
-                logger = logger,
-                service_target = 'walrus',
-                id = event_id,
-                base_class_string = 'Event')
-
-            logger.debug(f"Sent interservice request for Event: {event_id}")
-
     @staticmethod
     def __launch_new_event_threaded(**kwargs):
         t = threading.Thread(

@@ -1,12 +1,5 @@
 from shared.database.common import *
 from shared.database.action.workflow import Workflow
-SUPPORTED_ACTION_TRIGGER_EVENT_TYPES = [
-    'task_completed',
-    'task_created',
-    'task_template_completed',
-    'input_file_uploaded',
-    'input_instance_uploaded'
-]
 
 
 class WorkFlowTriggerEventQueue(Base):

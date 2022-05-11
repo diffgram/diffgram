@@ -12,6 +12,7 @@
 
 
       <v_directory_list
+        v-model="action.config_data.directory_id"
         v-if="action.config_data.source === 'directory' "
         :project_string_id="project_string_id"
         :show_new="false"
@@ -23,9 +24,11 @@
       <div class="pl-2 pr-2">
         <job_select
           v-if="action.config_data.source === 'job' "
-          v-model="action.action_config.task_template_id"
+          v-model="action.config_data.task_template"
+          @change="on_task_template_changed"
           label="Job"
           :loading="loading"
+          :select_this_id="action.config_data.task_template_id"
         >
         </job_select>
       </div>
@@ -71,8 +74,12 @@ export default {
     }
   },
   methods: {
-    on_change_directory: function(){
-
+    on_task_template_changed: function(tt){
+      console.log('change',tt)
+      this.action.config_data.task_template_id = tt.id
+    },
+    on_change_directory: function(dir){
+      this.action.config_data.directory_id = dir.directory_id
     },
   },
   data: function(){
