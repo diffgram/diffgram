@@ -1,7 +1,7 @@
 <template>
     <div 
         class="fast-menu-element"
-        :style="`top: ${position.top}px; left: ${position.left}px`" 
+        :style="`top: ${context_menu.y}px; left: ${context_menu.x}px`" 
     >
         <v-card
             class="mx-auto"
@@ -30,29 +30,14 @@ import Vue from 'vue'
 export default Vue.extend({
     name: "text_context_menu",
     props: {
-        rects: {
-            type: Array,
+        context_menu: {
+            type: Object,
             required: true
-        }
-    },
-    computed: {
-        position: function() {
-            const last_element_index = this.rects.length - 1
-
-            const top = this.rects[last_element_index].y + 50
-            const left = this.rects[last_element_index].x + this.rects[last_element_index].width + 360
-
-            const container_height = this.search_label ? this.search_label.length * 40 + 50 : 0
-
-            return {
-                top: top + container_height + 100 < window.innerHeight ? top : top - container_height - 50,
-                left: left + 260 < window.innerWidth ? left : left - 260
-            }
         }
     },
     methods: {
         on_delete: function() {
-            console.log("delete")
+            this.$emit('delete_instance', this.context_menu.instance)
         }
     }
 })
