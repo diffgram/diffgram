@@ -1,15 +1,16 @@
 <template>
     <g>
         <circle 
-            :cx="rects[0].x - 2"
-            :cy="rects[0].y"
+            :cx="start_border_position.x"
+            :cy="start_border_position.y"
             :r="4"
             :fill="solid_fill"
             class="move-cursor"
+            @mousedown="move_borders('start')"
         />
         <rect
-            :x="rects[0].x - 2"
-            :y="rects[0].y"
+            :x="start_border_position.x"
+            :y="start_border_position.y"
             :width="1"
             :height="25"
             :fill="solid_fill"
@@ -24,18 +25,19 @@
             :fill="transparent_fill"
         />
         <rect
-            :x="rects[last_element].width + 2 + rects[last_element].x"
-            :y="rects[last_element].y + 5"
+            :x="end_border_position.x"
+            :y="end_border_position.y + 5"
             :width="1"
             :height="25"
             :fill="solid_fill"
         />
         <circle 
-            :cx="rects[last_element].width + 2 + rects[last_element].x"
-            :cy="rects[last_element].y + 30"
+            :cx="end_border_position.x"
+            :cy="end_border_position.y + 30"
             :r="4"
             :fill="solid_fill"
             class="move-cursor"
+            @mousedown="move_borders('end')"
         />
     </g>
 </template>
@@ -55,15 +57,59 @@ export default Vue.extend({
         last_element: function() {
             const index = this.rects.length - 1
             return index
+        },
+        end_border_position: function() {
+            if (!this.end_border_moved) return {
+                x: this.rects[this.last_element].width + 2 + this.rects[this.last_element].x,
+                y: this.rects[this.last_element].y
+            }
+
+            return {
+                x: this.end_border_moved.x,
+                y: this.end_border_moved.y
+            }
+        },
+        start_border_position: function() {
+            if (!this.start_border_moved) return {
+                x: this.rects[0].x - 2,
+                y: this.rects[0].y
+            }
+
+            return {
+                x: this.start_border_moved.x,
+                y: this.start_border_moved.y
+            }
         }
     },
     data() {
         return {
             solid_fill: "rgba(76, 139, 245)",
-            transparent_fill: "rgba(76, 139, 245, 0.4)"
+            transparent_fill: "rgba(76, 139, 245, 0.4)",
+            end_border_moved: null,
+            start_border_moved: null
         }
     },
-    methods: {}
+    methods: {
+        move_borders: function(direction) {
+            if (direction === 'start') {
+                window.addEventListener('mousemove', this.start_move_listener)
+            } else {
+                window.addEventListener('mousemove', this.end_move_listener)
+            }
+        },
+        end_move_listener: function(e) {
+            this.end_border_moved = {
+                x: e.clientX - 350,
+                y: e.clientY - 150
+            }
+        },
+        start_move_listener: function(e) {
+            this.start_border_moved = {
+                x: e.clientX - 350,
+                y: e.clientY - 125
+            }
+        },
+    }
 })
 </script>
 
