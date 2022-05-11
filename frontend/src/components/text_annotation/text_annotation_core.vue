@@ -53,11 +53,15 @@
         @on_update_attribute="on_update_attribute"
         @change_instance_label="change_instance_label"
       />
-      <text_fast_label 
+      <!-- <text_fast_label 
         v-if="selection_rects"
         :rects="selection_rects"
         :label_list="label_list"
         @create_instance="on_popup_create_instance"
+      /> -->
+      <text_context_menu
+        v-if="selection_rects"
+        :rects="selection_rects"
       />
       <svg
         ref="initial_svg_element"
@@ -243,6 +247,7 @@ import text_toolbar from "./text_toolbar.vue"
 import text_sidebar from "./text_sidebar.vue"
 import text_selection_svg from "./render_elements/selection.vue"
 import text_fast_label from "./render_elements/fast_label_menu.vue"
+import text_context_menu from "./render_elements/text_context_menu.vue"
 import {CommandManagerAnnotationCore} from "../annotation/annotation_core_command_manager"
 import {CreateInstanceCommand as CreateInstanceCommandLegacy} from "../annotation/commands/create_instance_command";
 import {TextAnnotationInstance, TextRelationInstance} from "../vue_canvas/instances/TextInstance"
@@ -268,7 +273,8 @@ export default Vue.extend({
     text_toolbar,
     text_sidebar,
     text_selection_svg,
-    text_fast_label
+    text_fast_label,
+    text_context_menu
   },
   props: {
     file: {
