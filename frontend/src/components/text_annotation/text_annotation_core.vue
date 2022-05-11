@@ -53,12 +53,12 @@
         @on_update_attribute="on_update_attribute"
         @change_instance_label="change_instance_label"
       />
-      <!-- <text_fast_label 
+      <text_fast_label 
         v-if="selection_rects"
         :rects="selection_rects"
         :label_list="label_list"
         @create_instance="on_popup_create_instance"
-      /> -->
+      />
       <text_context_menu
         v-if="selection_rects"
         :rects="selection_rects"
@@ -138,8 +138,9 @@
               :width="instance.label_file.label.name.length * 8"
               :height="15"
               @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-              @mousedown="() => on_trigger_instance_click(instance.get_instance_data().id)"
+              @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
               @mouseleave="on_instance_stop_hover"
+              @contextmenu="on_open_context_menu"
               style="font-size: 10px; cursor: pointer"
               class="unselectable"
             />
@@ -150,8 +151,9 @@
               :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y - 3"
               :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
               @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-              @mousedown="() => on_trigger_instance_click(instance.get_instance_data().id)"
+              @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
               @mouseleave="on_instance_stop_hover"
+              @contextmenu="on_open_context_menu"
               style="font-size: 10px; cursor: pointer;"
               class="unselectable"
             >
@@ -166,8 +168,9 @@
               :width="1"
               :height="10"
               @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-              @mousedown="() => on_trigger_instance_click(instance.get_instance_data().id)"
+              @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
               @mouseleave="on_instance_stop_hover"
+              @contextmenu="on_open_context_menu"
               style="font-size: 10px; cursor: pointer"
               class="unselectable"
             />
@@ -189,7 +192,7 @@
               :width="1"
               :height="10"
               @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-              @mousedown="() => on_trigger_instance_click(instance.get_instance_data().id)"
+              @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
               @mouseleave="on_instance_stop_hover"
               style="font-size: 10px; cursor: pointer"
               class="unselectable"
@@ -211,6 +214,7 @@
               @mouseenter="() => on_instance_hover(rect.instance_id)"
               @mousedown="() => on_trigger_instance_click(rect.instance_id)"
               @mouseleave="on_instance_stop_hover"
+              @contextmenu="on_open_context_menu"
               :height="rect.instance_type === 'text_token' ? 3 : 1"
               style="cursor: pointer"
               class="unselectable"
@@ -435,6 +439,10 @@ export default Vue.extend({
     }
   },
   methods: {
+    on_open_context_menu: function(e) {
+      e.preventDefault()
+      console.log("here")
+    },
     on_change_label_schema: function(schema){
       this.$emit('change_label_schema', schema)
     },
@@ -707,7 +715,10 @@ export default Vue.extend({
       this.current_label = event
     },
     // function to draw relations between instances
-    on_trigger_instance_click: function (instance_id) {
+    on_trigger_instance_click: function (e, instance_id) {
+      const context = e.ctrlKey && e.button === 0 || e.button === 2
+      if (context) return
+      
       if (this.bulk_label) return this.bulk_labeling(instance_id)
       this.on_draw_relation(instance_id)
     },
