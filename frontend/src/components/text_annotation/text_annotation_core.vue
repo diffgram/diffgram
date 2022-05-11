@@ -60,8 +60,9 @@
         @create_instance="on_popup_create_instance"
       />
       <text_context_menu
-        v-if="selection_rects"
-        :rects="selection_rects"
+        v-if="context_menu"
+        :context_menu="context_menu"
+        @delete_instance="delete_instance"
       />
       <svg
         ref="initial_svg_element"
@@ -140,7 +141,7 @@
               @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
               @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
               @mouseleave="on_instance_stop_hover"
-              @contextmenu="on_open_context_menu"
+              @contextmenu="(e) => on_open_context_menu(e, instance)"
               style="font-size: 10px; cursor: pointer"
               class="unselectable"
             />
@@ -153,7 +154,7 @@
               @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
               @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
               @mouseleave="on_instance_stop_hover"
-              @contextmenu="on_open_context_menu"
+              @contextmenu="(e) => on_open_context_menu(e, instance)"
               style="font-size: 10px; cursor: pointer;"
               class="unselectable"
             >
@@ -170,7 +171,7 @@
               @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
               @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
               @mouseleave="on_instance_stop_hover"
-              @contextmenu="on_open_context_menu"
+              @contextmenu="(e) => on_open_context_menu(e, instance)"
               style="font-size: 10px; cursor: pointer"
               class="unselectable"
             />
@@ -214,7 +215,7 @@
               @mouseenter="() => on_instance_hover(rect.instance_id)"
               @mousedown="() => on_trigger_instance_click(rect.instance_id)"
               @mouseleave="on_instance_stop_hover"
-              @contextmenu="on_open_context_menu"
+              @contextmenu="(e) => on_open_context_menu(e, instance)"
               :height="rect.instance_type === 'text_token' ? 3 : 1"
               style="cursor: pointer"
               class="unselectable"
@@ -347,6 +348,7 @@ export default Vue.extend({
       text_field_width: '100%',
       re_render_func: undefined,
       selection_rects: null,
+      context_menu: null,
       // Command
       command_manager: undefined,
       has_changed: false,
@@ -439,9 +441,13 @@ export default Vue.extend({
     }
   },
   methods: {
-    on_open_context_menu: function(e) {
+    on_open_context_menu: function(e, instance) {
       e.preventDefault()
-      console.log("here")
+      this.context_menu = {
+        x: e.clientX,
+        y: e.clientY - 85,
+        instance
+      }
     },
     on_change_label_schema: function(schema){
       this.$emit('change_label_schema', schema)
@@ -547,6 +553,7 @@ export default Vue.extend({
         this.unselectable = false
         this.relation_drawing = false;
         this.selection_rects = null;
+        this.context_menu = null
         window.removeEventListener('mousemove', this.draw_relation_listener)
       } else if (e.keyCode === 83) {
         await this.save();
