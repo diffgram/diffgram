@@ -18,7 +18,10 @@
             </div>
             <v-list dense>
                 <v-list-item-group>
-                    <v-list-item v-for="(label, index) in search_label" :key="`labl+list_item${index}`">
+                    <v-list-item 
+                        v-for="(label, index) in search_label" :key="`labl+list_item${index}`" 
+                        @click="on_apply_label(label)"
+                    >
                         <v-list-item-content>
                             <div class="list-item" :style="`color: ${label.colour.hex}`">
                                 {{ label.label.name }} 
@@ -70,18 +73,21 @@ export default Vue.extend({
     },
     mounted() {
         this.search_label = [...this.label_list]
-        window.removeEventListener("keyup", this.on_apply_label)
-        window.addEventListener("keyup", this.on_apply_label)
+        window.removeEventListener("keyup", this.on_hotkeys_listener)
+        window.addEventListener("keyup", this.on_hotkeys_listener)
     },
     beforeDestroy() {
-        window.removeEventListener("keyup", this.on_apply_label)
+        window.removeEventListener("keyup", this.on_hotkeys_listener)
     },
     methods: {
         on_search_label: function(e) {
             const to_search = e.toLowerCase()
             this.search_label = [...this.label_list].filter(label => label.label.name.toLowerCase().includes(to_search))
         },
-        on_apply_label: function(e) {
+        on_apply_label: function(label) {
+            this.$emit('create_instance', label)
+        },
+        on_hotkeys_listener: function(e) {
             let key = Number(e.key)
             if (key || key === 0) {
                 if (key === 0) key = 9
@@ -89,7 +95,7 @@ export default Vue.extend({
 
                 if (this.search_label && this.search_label.length > key) {
                     const label_to_set = this.search_label[key]
-                    this.$emit('create_instance', label_to_set)
+                    this.on_apply_label(label_to_set)
                 }
             } else {
                 if (e.key.length === 1) {
