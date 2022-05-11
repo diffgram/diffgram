@@ -59,8 +59,8 @@ export default Vue.extend({
     },
     data() {
         return {
-            solid_fill: "rgba(46, 204, 113)",
-            transparent_fill: "rgba(46, 204, 113, 0.4)"
+            solid_fill: "rgba(76, 139, 245)",
+            transparent_fill: "rgba(76, 139, 245, 0.4)"
         }
     },
     methods: {}

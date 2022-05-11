@@ -864,6 +864,7 @@ export default Vue.extend({
       const new_delete_command = new DeleteInstanceCommand([instance], this.new_instance_list)
       this.new_command_manager.executeCommand(new_delete_command)
       this.has_changed = true
+      this.context_menu = null
     },
     change_label_visibility: async function (label) {
       if (label.is_visible) {
