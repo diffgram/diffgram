@@ -129,6 +129,21 @@ class Action(Base, SerializerMixin):
     overlay_label_file = relationship("File", foreign_keys = [overlay_label_file_id])
 
     @staticmethod
+    def get_triggered_actions(session, trigger_kind: str):
+        from shared.database.action.workflow import Workflow
+        actions = session.query(Action).join(Workflow, Action.workflow_id == Workflow.id).filter(
+            Workflow.active == True,
+            Action.trigger_data.data['trigger_event_name'].astext == trigger_kind
+        ).all()
+        return actions
+
+    def get_runner(self):
+        """
+            Returns actions runner object based on action kind.
+        :return:
+        """
+
+    @staticmethod
     def new(
         session,
         project,

@@ -12,12 +12,14 @@ from shared.queuemanager.QueueManager import QueueManager
 queuemanager = QueueManager()
 logger = get_shared_logger()
 
+
 class ActionTriggerEventTypes(Enum):
     task_completed = 'task_completed'
     task_created = 'task_created'
     task_template_completed = 'task_template_completed'
     input_file_uploaded = 'input_file_uploaded'
     input_instance_uploaded = 'input_instance_uploaded'
+    action_completed = 'action_completed'
 
 
 class EventsConsumer:

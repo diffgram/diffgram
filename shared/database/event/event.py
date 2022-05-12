@@ -85,6 +85,12 @@ class Event(Base):
     file_id = Column(Integer, ForeignKey('file.id'))
     file = relationship("File")
 
+    action_id = Column(Integer, ForeignKey('action.id'))
+    action = relationship("Action")
+
+    workflow_id = Column(Integer, ForeignKey('workflow.id'))
+    workflow = relationship("Workflow")
+
     report_template_id = Column(Integer, ForeignKey('report_template.id'))
     report_template = relationship("ReportTemplate")
 

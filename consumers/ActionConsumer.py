@@ -51,4 +51,7 @@ class ActionsConsumer:
             logger.warning(f'Invalid event kind {kind}')
             return
 
-        actions_list = Act
+        actions_list = Action.get_triggered_actions(trigger_kind = kind)
+
+        for action in actions_list:
+            action_runner = action.get_runner()
