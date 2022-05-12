@@ -72,12 +72,14 @@ export default Vue.extend({
         }
     },
     mounted() {
+        this.$emit('remove_listeners')
         this.search_label = [...this.label_list]
         window.removeEventListener("keyup", this.on_hotkeys_listener)
         window.addEventListener("keyup", this.on_hotkeys_listener)
     },
     beforeDestroy() {
         window.removeEventListener("keyup", this.on_hotkeys_listener)
+        this.$emit('add_listeners')
     },
     methods: {
         on_search_label: function(e) {
