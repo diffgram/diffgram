@@ -103,30 +103,10 @@
           <text x="40">Resizing...</text>
         </g>
         <g ref="main-text-container" transform="translate(0, 23.5)" v-else>
-          <g
+          <relation_in_progress 
             v-if="relation_drawing"
-          >
-            <circle
-              :cx="render_drawing_arrow.marker.x"
-              :cy="render_drawing_arrow.marker.y"
-              :fill="current_label.colour.hex"
-              r="3"
-              class="unselectable"
-            />
-            <path
-              v-if="render_drawing_arrow.path"
-              :stroke="current_label.colour.hex"
-              :d="render_drawing_arrow.path"
-              fill="transparent"
-              class="unselectable"
-            />
-            <path
-              v-if="render_drawing_arrow.arrow"
-              :d="`M ${render_drawing_arrow.arrow.x} ${render_drawing_arrow.arrow.y} l -5, -5 l 10, 0 l -5, 5`"
-              :fill="current_label.colour.hex"
-              class="unselectable"
-            />
-          </g>
+            :render_drawing_arrow="render_drawing_arrow"
+          />
           <g v-if="render_rects.length > 0">
             <rect
               v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
@@ -257,6 +237,7 @@ import text_sidebar from "./text_sidebar.vue"
 import text_selection_svg from "./render_elements/selection.vue"
 import text_fast_label from "./render_elements/fast_label_menu.vue"
 import text_context_menu from "./render_elements/text_context_menu.vue"
+import relation_in_progress from "./render_elements/relation_in_progress.vue"
 import {CommandManagerAnnotationCore} from "../annotation/annotation_core_command_manager"
 import {CreateInstanceCommand as CreateInstanceCommandLegacy} from "../annotation/commands/create_instance_command";
 import {TextAnnotationInstance, TextRelationInstance} from "../vue_canvas/instances/TextInstance"
@@ -283,7 +264,8 @@ export default Vue.extend({
     text_sidebar,
     text_selection_svg,
     text_fast_label,
-    text_context_menu
+    text_context_menu,
+    relation_in_progress
   },
   props: {
     file: {
@@ -787,7 +769,6 @@ export default Vue.extend({
           id: this.new_instance_list.get().length,
           type: "relation",
           start_instance: instance_id,
-          label_id: this.current_label.id,
           level: 0
         }
         window.addEventListener('mousemove', this.draw_relation_listener)
