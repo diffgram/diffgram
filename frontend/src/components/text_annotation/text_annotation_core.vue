@@ -54,7 +54,7 @@
         @change_instance_label="change_instance_label"
       />
       <text_fast_label 
-        v-if="selection_rects"
+        v-if="show_label_selection"
         :rects="selection_rects"
         :label_list="label_list"
         @create_instance="on_popup_create_instance"
@@ -125,10 +125,6 @@
               class="unselectable"
             />
           </g>
-          <text_selection_svg 
-            v-if="selection_rects"
-            :rects="selection_rects" 
-          />
           <g v-if="render_rects.length > 0">
             <rect
               v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
@@ -240,6 +236,12 @@
               {{ token.word }}
             </text>
           </g>
+          <text_selection_svg 
+            v-if="selection_rects"
+            :rects="selection_rects" 
+            @on_change_selection_border="on_change_selection_border"
+            @on_start_moving_borders="on_start_moving_borders"
+          />
         </g>
       </svg>
     </div>
@@ -269,8 +271,8 @@ import {
   UpdateInstanceLabelCommand,
   UpdateInstanceAttributeCommand
 } from "../../helpers/command/available_commands"
-import DrawText from "./text_utils/draw_rects"
 import DrawRects from "./text_utils/draw_rects";
+import closest_token from "./text_utils/closest_token"
 
 export default Vue.extend({
   name: "text_token_core",
@@ -348,6 +350,8 @@ export default Vue.extend({
       text_field_width: '100%',
       re_render_func: undefined,
       selection_rects: null,
+      show_label_selection: false,
+      moving_border: false,
       context_menu: null,
       // Command
       command_manager: undefined,
@@ -441,6 +445,30 @@ export default Vue.extend({
     }
   },
   methods: {
+    on_start_moving_borders: function() {
+      this.show_label_selection = false
+      this.moving_border = true
+    },
+    on_change_selection_border: function(start_coordinates, end_coordinates) {
+      const draw_class = new DrawRects(this.tokens, this.lines, this.new_instance_list)
+      let start_token_id;
+      let end_token_id;
+
+      if (start_coordinates) {
+        start_token_id = closest_token(this.tokens, this.lines, start_coordinates).id
+        end_token_id = this.selection_rects[0].end_token_id
+      }
+
+      if (end_coordinates) {
+        start_token_id = this.selection_rects[0].start_token_id
+        end_token_id = closest_token(this.tokens, this.lines, end_coordinates).id
+      }
+
+      this.selection_rects = draw_class.generate_selection_rect(start_token_id, end_token_id)
+
+      this.show_label_selection = true
+      this.moving_border = false
+    },
     on_open_context_menu: function(e, instance) {
       e.preventDefault()
       this.context_menu = {
@@ -533,6 +561,7 @@ export default Vue.extend({
       this.lines = []
       this.tokens = []
       this.selection_rects = null
+      this.show_label_selection = false
       this.instance_in_progress = null
       clearTimeout(this.re_render_func);
       this.re_render_func = setTimeout(this.initialize_token_render, 1000)
@@ -553,6 +582,7 @@ export default Vue.extend({
         this.unselectable = false
         this.relation_drawing = false;
         this.selection_rects = null;
+        this.show_label_selection = false;
         this.context_menu = null
         window.removeEventListener('mousemove', this.draw_relation_listener)
       } else if (e.keyCode === 83) {
@@ -650,10 +680,11 @@ export default Vue.extend({
           start_token_id = start_token_id + 1
         }
       }
-      const draw_text = new DrawText(this.tokens, this.lines, this.new_instance_list)
-      const rects = draw_text.generate_selection_rect(start_token.id, end_token_id, "red")
+      const draw_text = new DrawRects(this.tokens, this.lines, this.new_instance_list)
+      const rects = draw_text.generate_selection_rect(start_token.id, end_token_id)
       this.on_start_draw_instance(start_token_id, end_token_id)
       this.selection_rects = rects
+      this.show_label_selection = true
     },
     on_mount: async function () {
       let set_words;
