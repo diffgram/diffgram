@@ -464,6 +464,9 @@ export default Vue.extend({
         end_token_id = closest_token(this.tokens, this.lines, end_coordinates).id
       }
 
+      this.instance_in_progress.start_token = start_token_id
+      this.instance_in_progress.end_token = end_token_id
+
       this.selection_rects = draw_class.generate_selection_rect(start_token_id, end_token_id)
 
       this.show_label_selection = true
@@ -619,6 +622,7 @@ export default Vue.extend({
     },
     trigger_mouseup: function (e) {
       if (this.search_mode) return this.search_in_google(e)
+      if (this.selection_rects && !e.target.nodeName.includes('text')) return;
       this.on_draw_text_token(e)
     },
     search_in_google: function (e) {
