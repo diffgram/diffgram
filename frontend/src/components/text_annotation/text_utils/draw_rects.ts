@@ -34,15 +34,15 @@ export default class DrawRects {
         if (instance_type === "relation") {
             const start_instance = this.instance_list.get().find(find_instance => find_instance.get_instance_data().id === from_instance_id)
             start_token_id = this.token_list.find(token => token.id === start_instance["start_token"]).id
-
+            
             const end_instance = this.instance_list.get().find(find_instance => find_instance.get_instance_data().id === to_instance_id)
             end_token_id = this.token_list.find(token => token.id === end_instance["end_token"]).id
         } else {
             start_token_id = start_token;
             end_token_id = end_token;
         }
-
-        const base_rects = this.generate_rects(start_token, end_token)
+        
+        const base_rects = this.generate_rects(start_token_id, end_token_id)
         const instance_rects = base_rects.map(rect => ({...rect, instance_id, instance_type, color }))
 
         return instance_rects
