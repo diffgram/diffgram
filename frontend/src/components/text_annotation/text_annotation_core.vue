@@ -58,6 +58,8 @@
         :rects="selection_rects"
         :label_list="label_list"
         @create_instance="on_popup_create_instance"
+        @remove_listeners="remove_hotkeys_listeners"
+        @add_listeners="add_hotkeys_listeners"
       />
       <text_context_menu
         v-if="context_menu"
@@ -365,9 +367,12 @@ export default Vue.extend({
   },
   mounted() {
     this.on_unload_listener()
-    this.hot_key_listeners()
+    this.remove_hotkeys_listeners()
+    this.add_hotkeys_listeners()
     this.on_mount()
     this.start_autosave()
+
+    window.addEventListener("keyup", this.key_up_unremovable_listeners)
   },
   computed: {
     render_rects: function () {
@@ -549,10 +554,12 @@ export default Vue.extend({
       }
       this.$emit("request_new_task", direction, this.task, assign_to_user);
     },
-    hot_key_listeners: function () {
+    remove_hotkeys_listeners: function() {
       window.removeEventListener("keydown", this.keydown_event_listeners)
-      window.addEventListener("keydown", this.keydown_event_listeners)
       window.removeEventListener("keyup", this.keyup_event_listeners)
+    },
+    add_hotkeys_listeners: function() {
+      window.addEventListener("keydown", this.keydown_event_listeners)
       window.addEventListener("keyup", this.keyup_event_listeners)
     },
     on_unload_listener: function () {
@@ -578,17 +585,7 @@ export default Vue.extend({
       }
     },
     keydown_event_listeners: async function (e) {
-      if (e.keyCode === 27) {
-        this.current_instance = null
-        this.instance_in_progress = null
-        this.path = {};
-        this.unselectable = false
-        this.relation_drawing = false;
-        this.selection_rects = null;
-        this.show_label_selection = false;
-        this.context_menu = null
-        window.removeEventListener('mousemove', this.draw_relation_listener)
-      } else if (e.keyCode === 83) {
+      if (e.keyCode === 83) {
         await this.save();
         await this.save();
       } else if (e.keyCode === 71 && !this.search_mode) {
@@ -602,7 +599,21 @@ export default Vue.extend({
         this.search_mode = false;
       } else if (e.keyCode === 66) {
         this.bulk_label = false;
-      } else if (e.keyCode === 37 && this.selection_rects) {
+      }
+    },
+    key_up_unremovable_listeners: function(e) {
+      if (e.keyCode === 27) {
+        this.current_instance = null
+        this.instance_in_progress = null
+        this.path = {};
+        this.unselectable = false
+        this.relation_drawing = false;
+        this.selection_rects = null;
+        this.show_label_selection = false;
+        this.context_menu = null
+        window.removeEventListener('mousemove', this.draw_relation_listener)
+      }
+      else if (e.keyCode === 37 && this.selection_rects) {
         this.on_select_text(this.selection_rects[0].start_token_id - 1, this.selection_rects[0].start_token_id - 1, "left")
       } else if (e.keyCode === 39 && this.selection_rects) {
         this.on_select_text(this.selection_rects[0].end_token_id + 1, this.selection_rects[0].end_token_id + 1)
