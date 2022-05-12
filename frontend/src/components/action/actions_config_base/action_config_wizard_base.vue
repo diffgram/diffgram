@@ -40,6 +40,7 @@
           <v-container class="d-flex flex-column justify-center align-center">
             <v-icon color="success" size="256">mdi-check</v-icon>
             <h1>Action Configured Sucessfully.</h1>
+            <v-btn color="success"><v-icon>mdi-plus</v-icon>Add Another Action</v-btn>
           </v-container>
           <wizard_navigation
             @next="on_next_button_click"
