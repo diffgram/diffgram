@@ -391,9 +391,9 @@ export default Vue.extend({
           },
           arrow: {
             x: this.path.x - 350,
-            y: this.path.y - top_offset + scroll_y - 23.5
+            y: this.path.y - top_offset + scroll_y - 23.5 + 5
           },
-          path: `M ${x} ${y} Q ${this.path.x - 350} ${this.path.y - top_offset + scroll_y - 23.5} ${this.path.x - 350} ${this.path.y - top_offset + scroll_y - 23.5}`
+          path: `M ${x} ${y} Q ${this.path.x - 350 - 100} ${this.path.y - top_offset + scroll_y - 23.5 - 30} ${this.path.x - 350} ${this.path.y - top_offset + scroll_y - 23.5}`
         }
       }
 
@@ -785,23 +785,24 @@ export default Vue.extend({
         inst.to_instance_id === this.instance_in_progress.end_instance &&
         !inst.soft_delete
       )
-      if (this.instance_in_progress.start_instance !== this.instance_in_progress.end_instance && !relation_already_exists) {
-        const created_instance = new TextRelationInstance();
-        created_instance.create_frontend_instance(
-          this.instance_in_progress.start_instance,
-          this.instance_in_progress.end_instance,
-          {...this.current_label}
-        )
-        this.new_instance_list.push([created_instance])
-        const command = new CreateInstanceCommandLegacy(created_instance, this)
-        this.command_manager.executeCommand(command)
+      // THIS IS FOR CREATING RELATION
+      // if (this.instance_in_progress.start_instance !== this.instance_in_progress.end_instance && !relation_already_exists) {
+      //   const created_instance = new TextRelationInstance();
+      //   created_instance.create_frontend_instance(
+      //     this.instance_in_progress.start_instance,
+      //     this.instance_in_progress.end_instance,
+      //     {...this.current_label}
+      //   )
+      //   this.new_instance_list.push([created_instance])
+      //   const command = new CreateInstanceCommandLegacy(created_instance, this)
+      //   this.command_manager.executeCommand(command)
 
-        //New command pattern
-        const new_command = new CreateInstanceCommand([created_instance], this.new_instance_list)
-        this.new_command_manager.executeCommand(new_command)
+      //   //New command pattern
+      //   const new_command = new CreateInstanceCommand([created_instance], this.new_instance_list)
+      //   this.new_command_manager.executeCommand(new_command)
 
-        this.has_changed = true
-      }
+      //   this.has_changed = true
+      // }
       this.instance_in_progress = null;
       this.path = {};
       window.removeEventListener('mousemove', this.draw_relation_listener)
