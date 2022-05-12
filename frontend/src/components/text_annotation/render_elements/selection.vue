@@ -1,5 +1,5 @@
 <template>
-    <g>
+    <g @click="on_apply_new_border">
         <circle 
             :cx="start_border_position.x"
             :cy="start_border_position.y"
@@ -91,6 +91,7 @@ export default Vue.extend({
     },
     methods: {
         move_borders: function(direction) {
+            this.$emit('on_start_moving_borders')
             if (direction === 'start') {
                 window.addEventListener('mousemove', this.start_move_listener)
             } else {
@@ -109,6 +110,17 @@ export default Vue.extend({
                 y: e.clientY - 125
             }
         },
+        on_apply_new_border: function() {
+            if (!this.end_border_moved && !this.start_border_moved) return
+
+            window.removeEventListener('mousemove', this.start_move_listener)
+            window.removeEventListener('mousemove', this.end_move_listener)
+
+            this.$emit('on_change_selection_border', this.start_border_moved, this.end_border_moved)
+
+            this.end_border_moved = null
+            this.start_border_moved = null
+        }
     }
 })
 </script>
