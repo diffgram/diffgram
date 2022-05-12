@@ -80,11 +80,11 @@ export const workflow_update = async (project_string_id, workflow, mode) => {
     const {data} = await axios.put(
       url,
       {
-        workflow_id: this.workflow.id,
-        name: this.workflow.name,
-        trigger_type: this.workflow.trigger_type,
-        time_window: this.workflow.time_window,
-        active: this.flow.active,
+        workflow_id: workflow.id,
+        name: workflow.name,
+        trigger_type: workflow.trigger_type,
+        time_window: workflow.time_window,
+        active: workflow.active,
         mode: mode
 
       }

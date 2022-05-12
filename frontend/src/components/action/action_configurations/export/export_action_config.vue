@@ -26,6 +26,15 @@
 
         </pre_conditions_config>
       </template>
+      <template v-slot:completion_trigger>
+        <complete_conditions_config
+          :completion_condition_list_prop="completion_condition_list_prop"
+          :project_string_id="project_string_id"
+          :actions_list=actions_list
+          :action="action">
+
+        </complete_conditions_config>
+      </template>
     </action_config_wizard_base>
 
     <action_config_form_base
@@ -67,6 +76,7 @@ import action_config_form_base from '../../actions_config_base/action_config_for
 import Export_config_details from "@/components/action/action_configurations/export/export_config_details";
 import trigger_config from "@/components/action/actions_config_base/trigger_config";
 import pre_conditions_config from "@/components/action/actions_config_base/pre_conditions_config";
+import complete_conditions_config from "@/components/action/actions_config_base/complete_conditions_config";
 export default {
   name: "file_upload_action_config",
   components: {
@@ -75,6 +85,7 @@ export default {
     action_config_form_base,
     trigger_config,
     pre_conditions_config,
+    complete_conditions_config,
     directory_list: directory_list
   },
   props:{
@@ -96,6 +107,12 @@ export default {
   },
   data: function(){
     return{
+      completion_condition_list_prop: [
+        {
+          name: 'Export Finishes Generating',
+          value: 'export_generate_success'
+        }
+      ],
       pre_conditions_list: [
         {
           name: 'All tasks completed.',

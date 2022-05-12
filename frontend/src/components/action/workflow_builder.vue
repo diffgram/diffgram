@@ -75,6 +75,7 @@
               <template v-slot:activator="{ on, attrs }">
                 <div v-on="on" v-bind="attrs">
                   <v-switch
+                    @change="on_change_workflow_active"
                     color="success"
                     v-model="workflow.active"
 
@@ -277,8 +278,13 @@ export default Vue.extend({
     },
     computed: {},
     methods: {
+      on_change_workflow_active: function(value){
+        this.workflow.active = value
+        this.api_workflow_update()
+      },
       update_workflow_name: function(){
         this.edit_name = false
+        this.api_workflow_update()
       },
       on_add_action_to_workflow: async function (action_template) {
         this.hide_add_action_panel()
@@ -369,6 +375,7 @@ export default Vue.extend({
           this.workflow.actions_list = [];
           this.success = true
           this.loading = false
+          this.$router.push(`/project/deepknife/workflow/${this.workflow.id}`)
         }
 
       },
@@ -398,6 +405,9 @@ export default Vue.extend({
         if(result){
           this.workflow = result.workflow
           this.workflow.actions_list = this.initialize_actions(this.workflow.actions_list)
+          if(this.workflow.actions_list.length > 0){
+            this.on_select_action(this.workflow.actions_list[0])
+          }
           this.loading = false
         }
       },
@@ -407,8 +417,8 @@ export default Vue.extend({
       show_add_action_panel: function () {
         this.show_add_action = true
       },
-      archive_action: function(){
-
+      archive_action: async function(){
+        await this.api_workflow_archive()
       },
       on_action_updated: async function(act){
         await this.api_action_update(act)
@@ -431,7 +441,7 @@ export default Vue.extend({
           this.loading = false
         }
       },
-      api_workflow_archive: async function(act){
+      api_workflow_archive: async function(){
         // careful mode is local, not this.mode
         this.loading = true;
         this.error = {};
@@ -450,12 +460,12 @@ export default Vue.extend({
 
           this.success = true
           this.loading = false
-          let url = `/project/${this.project_string_id}/flow/list`
+          let url = `/project/${this.project_string_id}/workflow/list`
           this.$router.push(url)
         }
 
       },
-      api_workflow_update: async function (act) {
+      api_workflow_update: async function () {
         this.loading = true;
         this.error = {};
         this.success = false;

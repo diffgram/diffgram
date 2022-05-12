@@ -133,7 +133,9 @@ export default Vue.extend({
         this.$emit('next_step')
       },
       on_prev_button_click: function(){
-        if(this.step <= Object.keys(this.steps_config).length)
+        if(this.step <= Object.keys(this.steps_config).length){
+          return
+        }
         this.step -= 1
         this.$emit('previous_step')
       }

@@ -186,20 +186,20 @@ class Workflow(Base):
             return query.limit(limit).count()
 
         if return_kind == "objects":
-            return query.limit(limit).all()
+            return query.order_by(Workflow.time_created).limit(limit).all()
 
     @staticmethod
     def update_string_id(
         session,
-        flow):
+        workflow):
 
         # Not super happy with this here...
-        if flow.name is None:
-            flow.name = "Untitled flow"
+        if workflow.name is None:
+            workflow.name = "Untitled flow"
 
-        flow.string_id = safe_name(flow.name)
+        workflow.string_id = safe_name(workflow.name)
 
-        flow.string_id += f"_{create_random_string(length=20)}"
+        workflow.string_id += f"_{create_random_string(length=20)}"
 
 
     def serialize_with_actions(self, session):
