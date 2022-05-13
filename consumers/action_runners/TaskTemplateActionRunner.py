@@ -4,6 +4,8 @@ from shared.database.task.job.job import Job
 from shared.helpers.sessionMaker import session_scope
 from shared.utils import job_dir_sync_utils
 from shared.database.source_control.file import File
+from shared.utils.sync_events_manager import SyncEventManager
+
 logger = get_shared_logger()
 
 
@@ -16,6 +18,7 @@ class TaskTemplateActionRunner(ActionRunner):
             Creates a task from the given file_id in the given task template ID.
         :return:
         """
+        self.event_data['directory_id']
         with session_scope() as session:
             if not self.action.config_data:
                 logger.warning(f'Action has no config data. Stopping execution')
@@ -38,4 +41,27 @@ class TaskTemplateActionRunner(ActionRunner):
                 job = task_template,
                 log = self.log
             )
-            job_sync_manager.create_task_from_file(file)
+            sync_event_manager = SyncEventManager.create_sync_event_and_manager(
+                session = self.session,
+                dataset_source_id = directory_for_job_sync,
+                dataset_destination = None,
+                description = 'Sync file from dataset {} to job {} and create task'.format(
+                    directory_for_job_sync.nickname,
+                    job.name
+                ),
+                file = file,
+                job = job,
+                input_id = file.input_id,
+                project = job.project,
+                event_effect_type = 'create_task',
+                event_trigger_type = 'file_added',
+                status = 'init',
+                member_created = member
+            )
+            job_sync_manager.create_task_from_file(
+                file = file,
+                incoming_directory = dir,
+                job = task_template,
+                create_tasks = True,
+                sync_event_manager = sync_event_manager
+            )

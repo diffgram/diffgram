@@ -92,11 +92,14 @@ def upgrade():
 
     op.add_column('event', sa.Column('action_id', sa.Integer(), sa.ForeignKey('action.id')))
     op.add_column('event', sa.Column('workflow_id', sa.Integer(), sa.ForeignKey('workflow.id')))
+    op.add_column('event', sa.Column('directory_id', sa.Integer(), sa.ForeignKey('working_dir.id')))
 
 
 def downgrade():
     op.drop_column('event', 'action_id')
     op.drop_column('event', 'workflow_id')
+    op.drop_column('event', 'directory_id')
+
     bind = op.get_bind()
     session = orm.Session(bind = bind)
     actions = session.query(Action).update({Action.template_id: None}, synchronize_session = False)

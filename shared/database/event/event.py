@@ -85,6 +85,9 @@ class Event(Base):
     file_id = Column(Integer, ForeignKey('file.id'))
     file = relationship("File")
 
+    directory_id = Column(Integer, ForeignKey('working_dir.id'))
+    directory = relationship("WorkingDir")
+
     action_id = Column(Integer, ForeignKey('action.id'))
     action = relationship("Action")
 
