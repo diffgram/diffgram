@@ -8,7 +8,12 @@ from shared.queuemanager.QueueManager import RoutingKeys, Exchanges, QueueNames
 from shared.shared_logger import get_shared_logger
 from shared.database.action.action import Action
 from shared.database.action.workflow import Workflow
+
 logger = get_shared_logger()
+
+trigger_kinds_with_custom_metadata = {
+    'file_upload': True
+}
 
 
 class ActionsConsumer:
@@ -39,6 +44,30 @@ class ActionsConsumer:
     def start_processing(self):
         self.channel.start_consuming()
 
+    @staticmethod
+    def filter_actions_matching_directory_trigger(actions_list, event_data):
+        """
+            Returns actions that have the matching directory_id from the event_data.
+        :param actions_list:
+        :param event_data:
+        :return:
+        """
+        result = []
+        for a in actions_list:
+            if a.trigger_data.get('directory_id') is None:
+                return
+            if a.trigger_data.get('directory_id') == event_data.get('directory_id'):
+                result.append(a)
+        return result
+
+    def filter_from_trigger_metadata(self, kind, event_data, actions_list):
+        if trigger_kinds_with_custom_metadata.get(kind):
+            if kind == 'file_upload':
+                result = ActionsConsumer.filter_actions_matching_directory_trigger(event_data = event_data,
+                                                                                   actions_list = actions_list)
+                return result
+        return actions_list
+
     def process_trigger_event(self, msg):
         """
             Receives a trigger event a finds any actions matching the event trigger for action
@@ -47,11 +76,12 @@ class ActionsConsumer:
         """
         msg_data = json.loads(msg)
         kind = msg_data.get('kind')
+        project_id = msg_data.get('project_id')
+        if not project_id:
+            logger.warning(f'Invalid project_id {project_id}')
+            return
         if not kind:
             logger.warning(f'Invalid event kind {kind}')
             return
 
-        actions_list = Action.get_triggered_actions(trigger_kind = kind)
-
-        for action in actions_list:
-            action_runner = action.get_runner()
+        actions_list = Action.get_triggered_actions(trigger_kind = kind, project_id = project_id)
