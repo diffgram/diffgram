@@ -3,7 +3,8 @@ from shared.database.org.org import Org
 from shared.database.action.action_template import Action_Template
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy_serializer import SerializerMixin
-
+from consumers.action_runners.TaskTemplateActionRunner import TaskTemplateActionRunner
+from consumers.action_runners.ActionRunner import ActionRunner
 
 class Action(Base, SerializerMixin):
     """
@@ -138,12 +139,19 @@ class Action(Base, SerializerMixin):
         ).all()
         return actions
 
-    def get_runner(self):
+    def get_runner(self, event_data) -> ActionRunner:
         """
             Returns actions runner object based on action kind.
         :return:
         """
+        class_name = None
+        if self.kind == 'create_task':
+            class_name = TaskTemplateActionRunner
+        elif self.kind == 'export':
+            raise NotImplementedError
 
+        runner = class_name(action = self, event_data = event_data)
+        return runner
     @staticmethod
     def new(
         session,

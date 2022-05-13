@@ -85,3 +85,9 @@ class ActionsConsumer:
             return
 
         actions_list = Action.get_triggered_actions(trigger_kind = kind, project_id = project_id)
+
+        actions_list = self.filter_from_trigger_metadata(kind, msg_data, actions_list)
+
+        for action in actions_list:
+            action_runner = action.get_runner(event_data = msg_data)
+            action_runner.run()

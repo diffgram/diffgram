@@ -18,8 +18,13 @@ class ActionRunner:
     def execute_pre_conditions(self, session):
         raise NotImplementedError
 
-    def run(self, session):
+    def execute_action(self):
         raise NotImplementedError
+
+    def run(self):
+        self.execute_pre_conditions()
+        self.execute_action()
+        self.declare_action_complete()
 
     def declare_action_complete(self, session):
         event = Event.new(
