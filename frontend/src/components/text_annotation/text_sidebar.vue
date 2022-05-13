@@ -263,9 +263,11 @@ export default Vue.extend({
 <style scoped>
 .wrapper-element {
     width: 350px; 
+    min-width: 350px;
     border-right: 1px solid #e0e0e0; 
     position: sticky;
     left: 0;
+    overflow: scroll;
 }
 
 .centered-table-items {
