@@ -796,6 +796,8 @@ export default Vue.extend({
 
       if (!is_text_token) return
       this.unselectable = true
+      this.selection_rects = null
+      this.show_label_selection = false
 
       if (!this.relation_drawing) {
         this.relation_drawing = true
