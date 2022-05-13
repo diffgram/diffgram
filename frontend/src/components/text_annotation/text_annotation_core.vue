@@ -56,8 +56,10 @@
       <text_fast_label 
         v-if="show_label_selection"
         :rects="selection_rects"
+        :arrow_position="render_drawing_arrow && render_drawing_arrow.arrow ? render_drawing_arrow.arrow : null"
         :label_list="label_list"
         @create_instance="on_popup_create_instance"
+        @create_relation="create_relation"
         @remove_listeners="remove_hotkeys_listeners"
         @add_listeners="add_hotkeys_listeners"
       />
@@ -379,7 +381,9 @@ export default Vue.extend({
     render_drawing_arrow: function () {
       if (!this.instance_in_progress) return {}
       const scroll_y = window.pageYOffset || document.documentElement.scrollTop
-      const {x, y} = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
+      const inst = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
+      if (!inst) return {}
+      const {x, y} = inst
 
       const top_offset = this.task && this.task.id ? 50 : 100
 
@@ -757,6 +761,35 @@ export default Vue.extend({
       if (this.bulk_label) return this.bulk_labeling(instance_id)
       this.on_draw_relation(instance_id)
     },
+    create_relation: function(label) {
+      const relation_already_exists = this.new_instance_list.get().find(inst =>
+        inst.type === "relation" &&
+        inst.from_instance_id === this.instance_in_progress.start_instance &&
+        inst.to_instance_id === this.instance_in_progress.end_instance &&
+        !inst.soft_delete
+      )
+      if (this.instance_in_progress.start_instance !== this.instance_in_progress.end_instance && !relation_already_exists) {
+        const created_instance = new TextRelationInstance();
+        created_instance.create_frontend_instance(
+          this.instance_in_progress.start_instance,
+          this.instance_in_progress.end_instance,
+          {...label}
+        )
+        this.new_instance_list.push([created_instance])
+        const command = new CreateInstanceCommandLegacy(created_instance, this)
+        this.command_manager.executeCommand(command)
+
+        //New command pattern
+        const new_command = new CreateInstanceCommand([created_instance], this.new_instance_list)
+        this.new_command_manager.executeCommand(new_command)
+
+        this.has_changed = true
+      }
+      this.relation_drawing = false;
+      this.instance_in_progress = null;
+      this.show_label_selection = false
+      this.path = {};
+    },
     on_draw_relation: async function (instance_id) {
       const is_text_token = this.new_instance_list.get().find(instance => instance_id === instance.get_instance_data().id).type === "text_token"
 
@@ -776,35 +809,9 @@ export default Vue.extend({
       }
 
       this.unselectable = false
-
-      this.relation_drawing = false;
       this.instance_in_progress.end_instance = instance_id;
-      const relation_already_exists = this.new_instance_list.get().find(inst =>
-        inst.type === "relation" &&
-        inst.from_instance_id === this.instance_in_progress.start_instance &&
-        inst.to_instance_id === this.instance_in_progress.end_instance &&
-        !inst.soft_delete
-      )
-      // THIS IS FOR CREATING RELATION
-      if (this.instance_in_progress.start_instance !== this.instance_in_progress.end_instance && !relation_already_exists) {
-        const created_instance = new TextRelationInstance();
-        created_instance.create_frontend_instance(
-          this.instance_in_progress.start_instance,
-          this.instance_in_progress.end_instance,
-          {...this.label_list[0]}
-        )
-        this.new_instance_list.push([created_instance])
-        const command = new CreateInstanceCommandLegacy(created_instance, this)
-        this.command_manager.executeCommand(command)
 
-        //New command pattern
-        const new_command = new CreateInstanceCommand([created_instance], this.new_instance_list)
-        this.new_command_manager.executeCommand(new_command)
-
-        this.has_changed = true
-      }
-      this.instance_in_progress = null;
-      this.path = {};
+      this.show_label_selection = true
       window.removeEventListener('mousemove', this.draw_relation_listener)
     },
     draw_relation_listener: function (e) {

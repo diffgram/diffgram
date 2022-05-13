@@ -43,7 +43,11 @@ export default Vue.extend({
     props: {
         rects: {
             type: Array,
-            required: true
+            default: null
+        },
+        arrow_position: {
+            type: Object,
+            default: null
         },
         label_list: {
             type: Array,
@@ -52,16 +56,25 @@ export default Vue.extend({
     },
     computed: {
         position: function() {
-            const last_element_index = this.rects.length - 1
+            if (!this.rects && !this.arrow_position) return;
 
-            const top = this.rects[last_element_index].y + 50
-            const left = this.rects[last_element_index].x + this.rects[last_element_index].width + 360
-
-            const container_height = this.search_label ? this.search_label.length * 40 + 50 : 0
-
-            return {
-                top: top + container_height + 100 < window.innerHeight ? top : top - container_height - 50,
-                left: left + 260 < window.innerWidth ? left : left - 260
+            if (this.rects) {
+                const last_element_index = this.rects.length - 1
+    
+                const top = this.rects[last_element_index].y + 50
+                const left = this.rects[last_element_index].x + this.rects[last_element_index].width + 360
+    
+                const container_height = this.search_label ? this.search_label.length * 40 + 50 : 0
+    
+                return {
+                    top: top + container_height + 100 < window.innerHeight ? top : top - container_height - 50,
+                    left: left + 260 < window.innerWidth ? left : left - 260
+                }
+            } else {
+                return {
+                    top: this.arrow_position.y + 25,
+                    left: this.arrow_position.x + 350,
+                }
             }
         }
     },
@@ -87,7 +100,8 @@ export default Vue.extend({
             this.search_label = [...this.label_list].filter(label => label.label.name.toLowerCase().includes(to_search))
         },
         on_apply_label: function(label) {
-            this.$emit('create_instance', label)
+            if (this.rects) this.$emit('create_instance', label)
+            else this.$emit('create_relation', label)
         },
         on_hotkeys_listener: function(e) {
             let key = Number(e.key)
