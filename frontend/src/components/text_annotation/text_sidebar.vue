@@ -81,9 +81,9 @@
                                             >
                                                 <template slot="content">
                                                     <label_select_only
-                                                    :label_file_list_prop="label_list"
-                                                    :select_this_id_at_load="item.label_file_id"
-                                                    @label_file.stop="$emit('change_instance_label', { label: $event, instance: item })"
+                                                        :label_file_list_prop="label_list"
+                                                        :select_this_id_at_load="item.label_file_id"
+                                                        @label_file="$emit('change_instance_label', { label: $event, instance: item })"
                                                     />
                                                 </template>
                                         </button_with_menu>
