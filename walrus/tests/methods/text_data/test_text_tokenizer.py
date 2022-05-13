@@ -65,7 +65,9 @@ class TestTextTokenizer(testing_setup.DiffgramBaseTestCase):
                           {'value': '.', 'tag': ''},
                           {'value': 'Hello', 'tag': ''},
                           {'value': 'world', 'tag': ''},
-                          {'value': '.', 'tag': ''}]
+                          {'value': '.', 'tag': ''},
+                          {'value': '\n', 'tag': ''},
+                          ]
                          )
 
     def test_tokenize_sentences(self):
