@@ -304,7 +304,7 @@ export default Vue.extend({
     },
     label_schema: {
       type: Object,
-      required: true
+      default: {}
     }
   },
   data() {
