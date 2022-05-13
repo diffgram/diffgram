@@ -1,15 +1,14 @@
 <template>
-    <div :style="`
-        width: 350px; 
-        border-right: 1px solid #e0e0e0; 
-        max-height: calc(100vh - ${toolbar_height});
-        min-height: calc(100vh - ${toolbar_height});
-        position: sticky;
-        left: 0;
-        top: ${toolbar_height}
-        `">
-        <v-expansion-panels multiple style="width: 350px;" accordion :value="[1]">
-            <v-expansion-panel :disabled="!current_instance">
+    <div 
+        class="wrapper-element" 
+        :style="`
+            max-height: calc(100vh - ${toolbar_height});
+            min-height: calc(100vh - ${toolbar_height});
+            top: ${toolbar_height}
+        `"
+    >
+        <v-expansion-panels multiple style="width: 350px;" accordion :value="open_panels">
+            <v-expansion-panel @change="on_change_expansion(0)" :disabled="!current_instance">
                 <v-expansion-panel-header>
                     <strong>Attributes {{ !current_instance ? "(select instance)" : null }}</strong>
                 </v-expansion-panel-header>
@@ -27,90 +26,90 @@
                     />
                 </v-expansion-panel-content>
             </v-expansion-panel>
-        <v-expansion-panel>
-                <v-expansion-panel-header>
-                    <strong>Instances</strong>
-                </v-expansion-panel-header>
-                <v-expansion-panel-content>
-                    <v-data-table
-                        hide-default-footer
-                        :style="`width: 350px; max-height: 100%; overflow-y: scroll`"
-                        :headers="headers"
-                        :items="instance_list"
-                        fixed-header
-                        disable-pagination
-                        single-select
-                    >
-                        <template v-slot:body="{ items }">
-                            <tbody v-if="items.length > 0 && !loading" style="cursor: pointer">
-                            <tr
-                                v-for="item in items"
-                                :key="item.id"
-                                @mouseover="on_hover_item(item)"
-                                @mouseleave="on_stop_hover_item"
-                                @click="on_select_instance(item)"
-                                :style="current_instance && current_instance.id === item.id && 'background-color: #ecf0f1'"
-                            >
-                                <td v-if="$store.state.user.current.is_super_admin == true" class="centered-table-items">
-                                    {{ item.id || 'new' }}
-                                </td>
-                                <td class="centered-table-items">
-                                        <v-icon 
-                                            v-if="item.type === 'relation'"
-                                            :color="item.label_file.colour.hex"
-                                        >
-                                            mdi-relation-one-to-one
-                                        </v-icon>
-                                        <v-icon 
-                                            v-if="item.type === 'text_token'"
-                                            :color="item.label_file.colour.hex"
-                                        >
-                                            mdi-label
-                                        </v-icon>
-                                </td>
-                                <td class="centered-table-items">
-                                    {{ item.label_file.label.name }}
-                                </td>
-                                <td class="centered-table-items">
-                                    <v-layout justify-center>
-                                        <button_with_menu
-                                                tooltip_message="Change Label Template"
-                                                icon="mdi-format-paint"
-                                                color="primary"
-                                                :close_by_button="true"
+            <v-expansion-panel @change="on_change_expansion(1)">
+                    <v-expansion-panel-header>
+                        <strong>Instances</strong>
+                    </v-expansion-panel-header>
+                    <v-expansion-panel-content>
+                        <v-data-table
+                            hide-default-footer
+                            :style="`width: 350px; max-height: 100%; overflow-y: scroll`"
+                            :headers="headers"
+                            :items="instance_list"
+                            fixed-header
+                            disable-pagination
+                            single-select
+                        >
+                            <template v-slot:body="{ items }">
+                                <tbody v-if="items.length > 0 && !loading" style="cursor: pointer">
+                                <tr
+                                    v-for="item in items"
+                                    :key="item.id"
+                                    @mouseover="on_hover_item(item)"
+                                    @mouseleave="on_stop_hover_item"
+                                    @click="on_select_instance(item)"
+                                    :style="current_instance && current_instance.id === item.id && 'background-color: #ecf0f1'"
+                                >
+                                    <td v-if="$store.state.user.current.is_super_admin == true" class="centered-table-items">
+                                        {{ item.id || 'new' }}
+                                    </td>
+                                    <td class="centered-table-items">
+                                            <v-icon 
+                                                v-if="item.type === 'relation'"
+                                                :color="item.label_file.colour.hex"
                                             >
-                                                <template slot="content">
-                                                    <label_select_only
-                                                        :label_file_list_prop="label_list"
-                                                        :select_this_id_at_load="item.label_file_id"
-                                                        @label_file="$emit('change_instance_label', { label: $event, instance: item })"
-                                                    />
-                                                </template>
-                                        </button_with_menu>
-                                        <tooltip_button
-                                            color="primary"
-                                            icon="mdi-delete"
-                                            tooltip_message="Delete instance"
-                                            @click.stop="$emit('delete_instance', item)"
-                                            :icon_style="true"
-                                            :bottom="true"
-                                        />
-                                    </v-layout>
-                                </td>
-                            </tr>
-                            </tbody>
-                            <tbody v-else>
-                                <tr>
-                                    <td :colspan="headers.length" style="text-align: center">
-                                        {{ loading ? "Loading..." : "No instances have been created yet" }}
+                                                mdi-relation-one-to-one
+                                            </v-icon>
+                                            <v-icon 
+                                                v-if="item.type === 'text_token'"
+                                                :color="item.label_file.colour.hex"
+                                            >
+                                                mdi-label
+                                            </v-icon>
+                                    </td>
+                                    <td class="centered-table-items">
+                                        {{ item.label_file.label.name }}
+                                    </td>
+                                    <td class="centered-table-items">
+                                        <v-layout justify-center>
+                                            <button_with_menu
+                                                    tooltip_message="Change Label Template"
+                                                    icon="mdi-format-paint"
+                                                    color="primary"
+                                                    :close_by_button="true"
+                                                >
+                                                    <template slot="content">
+                                                        <label_select_only
+                                                            :label_file_list_prop="label_list"
+                                                            :select_this_id_at_load="item.label_file_id"
+                                                            @label_file="$emit('change_instance_label', { label: $event, instance: item })"
+                                                        />
+                                                    </template>
+                                            </button_with_menu>
+                                            <tooltip_button
+                                                color="primary"
+                                                icon="mdi-delete"
+                                                tooltip_message="Delete instance"
+                                                @click.stop="$emit('delete_instance', item)"
+                                                :icon_style="true"
+                                                :bottom="true"
+                                            />
+                                        </v-layout>
                                     </td>
                                 </tr>
-                            </tbody>
-                        </template>
-                    </v-data-table>
-                </v-expansion-panel-content>
-            </v-expansion-panel>
-        </v-expansion-panels>
+                                </tbody>
+                                <tbody v-else>
+                                    <tr>
+                                        <td :colspan="headers.length" style="text-align: center">
+                                            {{ loading ? "Loading..." : "No instances have been created yet" }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </template>
+                        </v-data-table>
+                    </v-expansion-panel-content>
+                </v-expansion-panel>
+            </v-expansion-panels>
     </div>
 </template>
 
@@ -161,6 +160,11 @@ export default Vue.extend({
         loading: {
             type: Boolean,
             required: true
+        }
+    },
+    data() {
+        return {
+            open_panels: [1]
         }
     },
     computed: {
@@ -217,6 +221,13 @@ export default Vue.extend({
         }
     },
     methods: {
+        on_change_expansion: function(panel_index) {
+            if (!this.open_panels.includes(panel_index)) this.open_panels.push(panel_index)
+            else {
+                const index_to_remove = this.open_panels.indexOf(panel_index)
+                this.open_panels.splice(index_to_remove, 1)
+            }
+        },
         on_hover_item: function(item) {
             this.$emit("on_instance_hover", item.get_instance_data().id)
         },
@@ -250,6 +261,13 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+.wrapper-element {
+    width: 350px; 
+    border-right: 1px solid #e0e0e0; 
+    position: sticky;
+    left: 0;
+}
+
 .centered-table-items {
     vertical-align: middle; 
     text-align: center;
