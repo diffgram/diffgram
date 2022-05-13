@@ -8,18 +8,18 @@ export default class InstanceList {
         if (instances && instances.length > 0) {
             instances.map(instance => {
                 let new_instance: InstanceInterface;
-                const { id, label_file, creation_ref_id } = instance;
+                const { id, label_file, creation_ref_id, attribute_groups } = instance;
 
                 if (instance.type === "text_token") {
                     const { start_token, end_token } = instance
                     new_instance = new TextAnnotationInstance()
-                    new_instance.create_instance(id, start_token, end_token, label_file)
+                    new_instance.create_instance(id, start_token, end_token, label_file, attribute_groups)
                 } 
                 
                 else if (instance.type === "relation") {
                     const { from_instance_id, to_instance_id, soft_delete } = instance
                     new_instance = new TextRelationInstance()
-                    new_instance.create_instance(id, from_instance_id, to_instance_id, label_file, soft_delete)
+                    new_instance.create_instance(id, from_instance_id, to_instance_id, label_file, attribute_groups, soft_delete)
                 }
 
                 else return
