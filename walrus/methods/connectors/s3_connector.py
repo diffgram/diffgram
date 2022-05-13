@@ -298,6 +298,7 @@ class S3Connector(Connector):
             result.append(bucket['Name'])
         return {'result': result}
 
+    @with_connection
     @with_s3_exception_handler
     def __send_export(self, opts):
         spec_list = [{'project_string_id': dict}]
@@ -344,8 +345,8 @@ class S3Connector(Connector):
                 export=export,
                 format=opts['format'],
                 return_type='bytes')
+            result = bytes(result, 'utf-8')
             filename = generate_file_name_from_export(export, session)
-
             if opts['path'] != '':
                 key = f"{opts['path']}{filename}.{opts['format'].lower()}"
             else:
