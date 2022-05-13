@@ -503,10 +503,10 @@ export default Vue.extend({
       })
       if (instance.start_token !== instance.end_token) return;
 
-      const instance_word = this.tokens[instance.start_token].word
+      const instance_word = this.tokens.find(token => token.id === instance.start_token).word
       let same_token_indexes = [];
       this.tokens.map((token, index) => {
-        if (token.word.toLowerCase() === instance_word.toLowerCase()) same_token_indexes.push(index)
+        if (token.word.toLowerCase() === instance_word.toLowerCase() && token.id !== instance.start_token) same_token_indexes.push(index)
       })
 
       const newly_created_instances = [];
