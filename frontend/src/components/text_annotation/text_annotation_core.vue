@@ -382,6 +382,7 @@ export default Vue.extend({
       if (!this.instance_in_progress) return {}
       const scroll_y = window.pageYOffset || document.documentElement.scrollTop
       const inst = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
+      
       if (!inst) return {}
       const {x, y} = inst
 
