@@ -655,6 +655,8 @@ export default Vue.extend({
     },
     on_draw_text_token: function (e) {
       if (this.instance_in_progress && this.instance_in_progress.type === "relation" || !window.getSelection().anchorNode) return
+      this.context_menu = null
+      
       const selection = window.getSelection()
       const start_token_id = parseInt(selection.anchorNode.parentNode.id)
       let end_token_id;
