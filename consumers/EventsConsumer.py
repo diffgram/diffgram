@@ -25,11 +25,11 @@ class ActionTriggerEventTypes(Enum):
 class EventsConsumer:
     num_threads = 2
 
-    def __init__(self, num_threads = 2):
+    def __init__(self, connection, num_threads = 2):
         threading.Thread.__init__(self)
         self.num_threads = num_threads
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters('localhost'))
-        self.channel = self.connection.channel()
+
+        self.channel = connection.channel()
         self.exchange = self.channel.exchange_declare(
             exchange = Exchanges.events.value,
             exchange_type = ExchangeType.direct.value,

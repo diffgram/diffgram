@@ -3,6 +3,7 @@ from pika.exchange_type import ExchangeType
 from shared.utils.singleton import Singleton
 import json
 from enum import Enum
+from shared.settings import settings
 
 
 class QueueNames(Enum):
@@ -24,8 +25,12 @@ class QueueManager(metaclass = Singleton):
     EXCHANGE_NAME_ACTIONS = 'actions'
 
     def __init__(self):
+        print('qweqwe', settings.RABBITMQ_DEFAULT_PASS, settings.RABBITMQ_DEFAULT_USER)
         self.connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host = 'localhost'))
+            pika.ConnectionParameters(host = 'localhost',
+                                      credentials = pika.PlainCredentials(settings.RABBITMQ_DEFAULT_USER,
+                                                                          settings.RABBITMQ_DEFAULT_PASS))
+        )
         self.main_channel = self.connection.channel()
 
         self.main_channel.exchange_declare(exchange = self.EXCHANGE_NAME_ACTIONS,
