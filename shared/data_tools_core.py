@@ -31,8 +31,8 @@ class Data_tools(metaclass = Singleton):
 
     def determine_if_should_regenerate_url(self, object, session, url_signed_expiry=None):
         if not session: return False, None
-        minimum_days_valid = 30 * 12  # this should always be lower then new offset
-        new_offset_days_valid = 30 * 14
+        minimum_days_valid = settings.SIGNED_URL_CACHE_MINIMUM_DAYS_VALID
+        new_offset_days_valid = settings.SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID
         one_day = 86400
         time_to_check = time.time() + (one_day * minimum_days_valid)
         new_offset_in_seconds = one_day * new_offset_days_valid
