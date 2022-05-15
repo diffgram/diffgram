@@ -38,12 +38,12 @@ class Data_tools(metaclass = Singleton):
         new_offset_in_seconds = one_day * new_offset_days_valid
 
         if url_signed_expiry is None:
-            url_signed_expiry = object.url_signed_expiry
+            url_signed_expiry = int(float(object.url_signed_expiry))
 
         if url_signed_expiry is None:
             return True, new_offset_in_seconds
 
-        if url_signed_expiry <= settings.URL_SIGNED_REFRESH + (one_day * minimum_days_valid):
+        if url_signed_expiry <= settings.URL_SIGNED_REFRESH + (one_day * new_offset_days_valid):
             return True, new_offset_in_seconds
 
         if url_signed_expiry <= time_to_check:
