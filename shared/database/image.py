@@ -93,6 +93,7 @@ class Image(Base):
         }
 
     def regenerate_url(self, session):
+        if not self.url_signed_blob_path: return
         should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(self, session)
         if should_regenerate is True:
             self.url_signed = data_tools.build_secure_url(self.url_signed_blob_path, new_offset_in_seconds)
