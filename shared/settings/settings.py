@@ -114,7 +114,7 @@ _ANALYTICS_WRITE_KEY = os.environ.get('_ANALYTICS_WRITE_KEY')
 
 # Other Misc Settings
 SANDBOX_BYPASS_LOGIN = env_adapter.bool(os.getenv('SANDBOX_BYPASS_LOGIN', False))  # True or False
-URL_SIGNED_REFRESH = int(os.getenv('URL_SIGNED_REFRESH', 1548450398))
+URL_SIGNED_REFRESH = int(os.getenv('URL_SIGNED_REFRESH', 1652572935))
 ML_JOB_DIR = "job/"
 
 
