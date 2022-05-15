@@ -80,19 +80,7 @@ class Image(Base):
 
     def serialize_for_source_control(self, session = None):
 
-        if session and self.url_signed_blob_path:
-
-            if self.url_signed_expiry is None or self.url_signed_expiry <= time.time():
-                data_tools.rebuild_secure_urls_image(
-                    session, self)
-
-            if self.url_signed_expiry_force_refresh is None or \
-                self.url_signed_expiry_force_refresh != settings.URL_SIGNED_REFRESH:  # Handle purposefully triggering a reset
-
-                self.url_signed_expiry_force_refresh = settings.URL_SIGNED_REFRESH
-
-                data_tools.rebuild_secure_urls_image(
-                    session, self)
+        self.regenerate_url(session)
 
         return {
             'original_filename': self.original_filename,
@@ -105,19 +93,10 @@ class Image(Base):
         }
 
     def regenerate_url(self, session):
-        if session and self.url_signed_blob_path:
-
-            # We assume a significant delta between minimum days
-            # and new offset (ie at least 10 minutes)
-            minimum_days_valid = 30 * 12  # this should always be lower then new offset
-            new_offset_days_valid = 30 * 14
-            time_to_check = time.time() + (86400 * minimum_days_valid)
-
-            if self.url_signed_expiry is None or self.url_signed_expiry <= time_to_check:
-                new_offset_in_seconds = 86400 * new_offset_days_valid
-
-                self.url_signed = data_tools.build_secure_url(self.url_signed_blob_path, new_offset_in_seconds)
-                self.url_signed_thumb = data_tools.build_secure_url(self.url_signed_thumb_blob_path,
-                                                                    new_offset_in_seconds)
-                self.url_signed_expiry = time.time() + new_offset_in_seconds
-                session.add(self)
+        should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(self, session)
+        if should_regenerate is True:
+            self.url_signed = data_tools.build_secure_url(self.url_signed_blob_path, new_offset_in_seconds)
+            self.url_signed_thumb = data_tools.build_secure_url(self.url_signed_thumb_blob_path,
+                                                                new_offset_in_seconds)
+            self.url_signed_expiry = time.time() + new_offset_in_seconds
+            session.add(self)
