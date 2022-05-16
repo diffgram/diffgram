@@ -14,7 +14,10 @@ export default class DeleteInstanceCommand extends Command {
                     inst.type === "relation" && 
                     (id === from_instance_id || id === to_instance_id)
                     && !inst.soft_delete
-                ) this.deleted_relations.push(index)
+                ) {
+                    inst.soft_delete = true
+                    this.deleted_relations.push(index)
+                }
             })
     }
 

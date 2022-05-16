@@ -1117,6 +1117,7 @@ class Process_Media():
                 file_count_dir)
             logger.error(message)
             self.log['error']['free_tier_limit'] = message
+            self.log['info']['feature_checker'] = feature_checker.log
             self.input.status = 'failed'
             self.input.description = message
             self.input.update_log = self.log
