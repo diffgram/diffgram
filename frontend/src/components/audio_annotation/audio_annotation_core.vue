@@ -27,32 +27,8 @@
     </main_menu>
 
     <div class="d-flex" style="width: 100%; height: 100%">
-      <div style="border-right: 2px solid #e0e0e0">
-        <instance_detail_list_view
-          :style="`width: ${label_settings.left_nav_width}px; ` "
-          ref="instance_detail_list"
-          :instance_list="instance_list"
-          :model_run_list="[]"
-          :label_file_colour_map="label_file_colour_map"
-          :refresh="refresh"
-          @toggle_instance_focus="focus_instance($event)"
-          @show_all="focus_instance_show_all()"
-          @instance_update="instance_update($event)"
-          :task="task"
-          :view_only_mode="view_only_mode"
-          :label_settings = "label_settings"
-          :label_list = "label_list"
-          :global_attribute_groups_list="global_attribute_groups_list"
-          :current_global_instance="current_global_instance"
-          :draw_mode = "draw_mode"
-          :external_requested_index="request_change_current_instance"
-          :trigger_refresh_current_instance="trigger_refresh_current_instance"
-          :current_file="file ? file : task"
-        >
-        </instance_detail_list_view>
-      </div>
+      <audio_sidebar />
       <waveform_selector :audio_file="file"></waveform_selector>
-
     </div>
 
   </div>
@@ -61,13 +37,13 @@
 
 <script>
 import audio_toolbar from './audio_toolbar'
+import audio_sidebar from './audio_sidebar.vue'
 import waveform_selector from './render_elements/waveform_selector.vue'
-import instance_detail_list_view from '../annotation/instance_detail_list_view'
 export default {
   name: "audio_annotation_core",
   components:{
-    instance_detail_list_view,
     audio_toolbar,
+    audio_sidebar,
     waveform_selector
   },
   props: {

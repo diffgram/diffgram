@@ -200,7 +200,7 @@ import {UI_SCHEMA_TASK_MOCK} from "../ui_schema/ui_schema_task_mock";
 import empty_file_editor_placeholder from "./empty_file_editor_placeholder";
 import no_credentials_dialog from '../task/job/no_credentials_dialog';
 import file_manager_sheet from "../source_control/file_manager_sheet";
-import audio_annotation_core from "../annotation/audio_annotation/audio_annotation_core";
+import audio_annotation_core from "../audio_annotation/audio_annotation_core";
 import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import {user_has_credentials} from '../../services/userServices'
 import {get_labels} from '../../services/labelServices';
