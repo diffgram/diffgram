@@ -3,7 +3,7 @@
     <div  id="waveform" class="wave-form-container">
 
     </div>
-    <v-progress-linear indeterminate v-if="loading_audio"></v-progress-linear>
+    <v-progress-linear :playtime-line-width="0.8" indeterminate v-if="loading_audio"></v-progress-linear>
   </div>
 </template>
 
