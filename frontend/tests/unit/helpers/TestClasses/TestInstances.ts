@@ -9,6 +9,7 @@ export default class TestInstance implements InstanceInterface {
     public label_file_id: number;
     public soft_delete: boolean;
     public text_tokenizer: string;
+    public attribute_groups: any;
 
     constructor(id: number, type: string, soft_delete: boolean = false) {
         this.id = id;

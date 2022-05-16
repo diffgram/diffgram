@@ -6,6 +6,8 @@ export interface InstanceData {
     label_file: any;
     label_file_id: number;
     soft_delete: boolean;
+    attribute_groups: Array<any>
+    get_instance_data: Function
 }
 
 export interface TextInstanceData extends InstanceData {

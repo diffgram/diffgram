@@ -5,13 +5,13 @@
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 7.5.x   | :white_check_mark: |
+| Latest   | :white_check_mark: |
 
 
 ## Reporting a Vulnerability
 
 If you find a security vulnerability please email us
-at support@diffgram.com specifying the version where the vulenerability
+at security@diffgram.com specifying the version where the vulenerability
 exists, and a complete report on how to replicate the issue and if possible
 a way to mitigate it.
 

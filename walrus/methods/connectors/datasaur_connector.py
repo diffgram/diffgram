@@ -705,8 +705,8 @@ class DatasaurConnector(Connector):
 
 @dataclass
 class DatasaurSyncManager:
-    thread_sleep_time_min: int = settings.DATASAUR_SYNC_THREAD_SLEEP_TIME_MIN
-    thread_sleep_time_max: int = settings.DATASAUR_SYNC_THREAD_SLEEP_TIME_MAX
+    thread_sleep_time_min: int = 1
+    thread_sleep_time_max: int = 2
     session: any = None
     """
         This class will contain all operations for sending and receiving files from
