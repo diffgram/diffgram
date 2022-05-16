@@ -143,6 +143,18 @@
               </v-text-field>
             </v-col>
           </v-row>
+          <v-row v-if="connection.integration_name && connection_form_specs[connection.integration_name].private_host"
+                 no-gutters>
+            <v-col>
+              <v-text-field
+                label="Private Host"
+                v-model="connection.private_host"
+                @input="has_changes = true"
+                flat
+              >
+              </v-text-field>
+            </v-col>
+          </v-row>
           <v-row v-if="connection.integration_name && connection_form_specs[connection.integration_name].private_id"
                  no-gutters>
             <v-col>
@@ -190,6 +202,18 @@
                 flat
               >
               </v-text-field>
+            </v-col>
+          </v-row>
+          <v-row
+            v-if="connection.integration_name && connection_form_specs[connection.integration_name].disabled_ssl_verify"
+            no-gutters>
+            <v-col>
+              <v-checkbox v-model="connection.disabled_ssl_verify"
+                          label="Disabled SSL Verify"
+                          color="orange"
+                          @change="has_changes = true"
+                          hide-details
+              ></v-checkbox>
             </v-col>
           </v-row>
           <v-row>
@@ -300,7 +324,9 @@
             'integration_name': null,
 
             'private_id': null,
+            'private_host': null,
             'private_secret': null,
+            'disabled_ssl_verify': false,
             'exists_private_secret_hash': null,
             'account_email': null,
             'project_id_external': null
@@ -338,7 +364,14 @@
             'scale_ai': {
               name: true,
               private_secret: true,
-            }
+            },
+            'minio': {
+              name: true,
+              private_host: true,
+              private_id: true,
+              private_secret: true,
+              disabled_ssl_verify: true,
+            },
           },
           // WIP
           google_list: [
@@ -426,6 +459,8 @@
 
             project_string_id: this.project_string_id,
             private_id: this.connection.private_id,
+            private_host: this.connection.private_host ? this.connection.private_host : undefined,
+            disabled_ssl_verify: this.connection.disabled_ssl_verify ? this.connection.disabled_ssl_verify : false,
             private_secret: this.connection.private_secret ? this.connection.private_secret : undefined,
             account_email: this.connection.account_email ? this.connection.account_email : undefined,
             integration_name: this.connection.integration_name ? this.connection.integration_name : undefined,
@@ -536,7 +571,9 @@
                 'integration_name': null,
 
                 'private_id': null,
+                'private_host': null,
                 'private_secret': null,
+                'disabled_ssl_verify': true,
                 'exists_private_secret_hash': null,
                 'account_email': null,
                 'project_id_external': null
