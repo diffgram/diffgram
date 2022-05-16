@@ -61,8 +61,8 @@
 
 <script>
 import audio_toolbar from './audio_toolbar'
-import waveform_selector from './waveform_selector'
-import instance_detail_list_view from '../instance_detail_list_view'
+import waveform_selector from './render_elements/waveform_selector.vue'
+import instance_detail_list_view from '../annotation/instance_detail_list_view'
 export default {
   name: "audio_annotation_core",
   components:{

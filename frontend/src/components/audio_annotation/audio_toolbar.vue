@@ -129,8 +129,8 @@
 <script>
 import Vue from 'vue'
 import audio_hotkeys from "./audio_hotkeys.vue"
-import label_select_annotation from "../../label/label_select_annotation"
-import task_status from "../task_status"
+import label_select_annotation from "../label/label_select_annotation"
+import task_status from "../annotation/task_status"
 
 export default Vue.extend({
   name: "audio_toolbar",
