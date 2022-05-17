@@ -733,6 +733,7 @@ class Task(Base):
         }
         return tasks_stats
 
+    @staticmethod
     def get_by_id(session,
                   task_id):
 

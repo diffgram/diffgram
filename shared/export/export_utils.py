@@ -1,10 +1,11 @@
 # OPENCORE - ADD
 from shared.database.task.job.job import Job
-from shared.database.source_control.working_dir import WorkingDir
 from shared.database.project import Project
 from shared.regular import regular_log
+from shared.shared_logger import get_shared_logger
 import datetime
 
+logger = get_shared_logger()
 
 def generate_file_name_from_export(export, session):
     """
@@ -70,3 +71,74 @@ def check_export_permissions_and_status(export, project_string_id, session):
         return export_completed_result
 
     return regular_log.default()
+
+
+
+def check_export_billing(
+    session,
+    project,
+    directory,
+    member,
+    log):
+    """
+
+    """
+
+    logger.info('Checking Limits for Plan')
+    if settings.ALLOW_STRIPE_BILLING is False:
+        return log
+
+    checker = FeatureChecker(
+        session = session,
+        user = member.user,
+        project = project
+    )
+
+    max_allowed_instances = checker.get_limit_from_plan('MAX_INSTANCES_PER_EXPORT')
+    if max_allowed_instances is None:
+        return log
+
+    # Careful if it's a large project,
+    # And no other areas / no billing ID it can hang here ina funny way
+    # Put limit of 200 as a temp measure for this.
+
+    # Free case, could error or success
+    file_list = WorkingDirFileLink.file_list(
+        session = session,
+        working_dir_id = directory.id,
+        type = "image",
+        exclude_removed = True,
+        limit = 200
+    )
+
+    new_instance_count = 0
+
+    for file in file_list:
+        new_instance_count += Instance.list(
+            session = session,
+            file_id = file.id,
+            exclude_removed = True,
+            return_kind = "count")
+
+    logger.info(f"Checking limits for export with {new_instance_count} instances")
+
+    if max_allowed_instances:
+        if new_instance_count > max_allowed_instances:
+            message = 'Free Tier Limit Reached - Max Instances Allowed: {}. But Export  has {} instances'.format(
+                max_allowed_instances,
+                new_instance_count
+            )
+            log['error']['over_free_plan_limit'] = True
+            log['error']['active_instances'] = new_instance_count
+            log['error']['free_tier_limit'] = message
+
+            Event.new(
+                kind = "export_generation_free_account_over_limit",
+                session = session,
+                member = member,
+                success = False,
+                project_id = project.id
+            )
+
+            return log
+    return log

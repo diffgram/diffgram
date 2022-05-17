@@ -281,6 +281,7 @@ class Job(Base, Caching):
         elif return_kind == 'first':
             return files_to_process.first()
 
+    @staticmethod
     def get_by_id(session, job_id):
         if job_id is None:
             return None

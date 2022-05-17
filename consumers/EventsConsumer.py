@@ -23,17 +23,12 @@ class ActionTriggerEventTypes(Enum):
 
 
 class EventsConsumer:
-    num_threads = 2
 
-    def __init__(self, connection, num_threads = 2):
-        threading.Thread.__init__(self)
-        self.num_threads = num_threads
-
-        self.channel = connection.channel()
+    def __init__(self, channel):
+        self.channel = channel
         self.exchange = self.channel.exchange_declare(
             exchange = Exchanges.events.value,
             exchange_type = ExchangeType.direct.value,
-            durable = True,
             passive = False,
             auto_delete = False
         )
@@ -44,18 +39,21 @@ class EventsConsumer:
             routing_key = RoutingKeys.event_new.value)
         self.channel.basic_qos(prefetch_count = 1)
         self.channel.basic_consume(queue = QueueNames.events_new.value,
-                                   on_message_callback = self.process_trigger_event,
-                                   auto_ack = False)
+                                   on_message_callback = EventsConsumer.process_trigger_event,
+                                   auto_ack = True)
 
-    def start_processing(self):
-        self.channel.start_consuming()
 
-    def process_trigger_event(self, msg):
+    @staticmethod
+    def process_trigger_event(channel, method, properties, msg):
         """
             Receives a trigger event a finds any actions matching the event trigger for action
             execution.
         :return:
         """
+        print('channel', channel)
+        print('method', method)
+        print('properties', properties)
+        print('body', msg)
         msg_data = json.loads(msg)
         logger.info(f'New Event Message: {msg}')
         kind = msg_data.get('kind')

@@ -17,16 +17,12 @@ trigger_kinds_with_custom_metadata = {
 
 
 class ActionsConsumer:
-    num_threads = 2
 
-    def __init__(self, connection, num_threads = 2):
-        threading.Thread.__init__(self)
-        self.num_threads = num_threads
-        self.channel = connection.channel()
+    def __init__(self, channel):
+        self.channel = channel
         self.exchange = self.channel.exchange_declare(
             exchange = Exchanges.actions.value,
             exchange_type = ExchangeType.direct.value,
-            durable = True,
             passive = False,
             auto_delete = False
         )
@@ -38,10 +34,7 @@ class ActionsConsumer:
         self.channel.basic_qos(prefetch_count = 1)
         self.channel.basic_consume(queue = QueueNames.action_triggers.value,
                                    on_message_callback = self.process_trigger_event,
-                                   auto_ack = False)
-
-    def start_processing(self):
-        self.channel.start_consuming()
+                                   auto_ack = True)
 
     @staticmethod
     def filter_actions_matching_directory_trigger(actions_list, event_data):

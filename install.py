@@ -67,10 +67,12 @@ class DiffgramInstallTool:
     local_database = None
     mailgun = None
     mailgun_key = None
-    rabbit_user_name: str = None
-    rabbit_pass: str = None
     email_domain = None
     z_flag = None
+    rabbit_port: int = 5672
+    rabbit_host: str = 'localhost'
+    rabbit_user_name: str = 'admin'
+    rabbit_pass: str = 'admin'
 
     def set_static_storage_option(self, option_number):
         if option_number == 1:
@@ -417,6 +419,8 @@ class DiffgramInstallTool:
 
         env_file += f"RABBITMQ_DEFAULT_USER={self.rabbit_username}\n"
         env_file += f"RABBITMQ_DEFAULT_PASS={self.rabbit_pass}\n"
+        env_file += f"RABBITMQ_HOST={self.rabbit_host}\n"
+        env_file += f"RABBITMQ_PORT={self.rabbit_port}\n"
 
         if self.local_database:
             env_file += "POSTGRES_IMAGE=postgres:12.5\n"
@@ -524,12 +528,21 @@ class DiffgramInstallTool:
 
     def rabbit_config(self):
         config_rabbit = bcolors.inputcolor(
-            'Do you want to set RabbitMQ Credentials (default user - password will be "admin" - "admin"? [Y/n] ')
+            'Do you want to set RabbitMQ Config? \n (default config: localhost:5672 => user - password will be "admin" - "admin"? [Y/n] ')
         if config_rabbit.lower() == 'y' or config_rabbit.lower() == 'yes':
             rabbit_username = bcolors.inputcolor('Please provide the RabbitMQ username: ')
             rabbit_password = bcolors.inputcolor('Please provide the RabbitMQ password: ')
+            rabbit_host = bcolors.inputcolor('Please provide the RabbitMQ host (example: localhost): ')
+            rabbit_port = bcolors.inputcolor('Please provide the RabbitMQ port (example: 5672): ')
             self.rabbit_username = rabbit_username
             self.rabbit_pass = rabbit_password
+            self.rabbit_host = rabbit_host
+            self.rabbit_port = rabbit_port
+        else:
+            self.rabbit_username = 'admin'
+            self.rabbit_pass = 'admin'
+            self.rabbit_host = 'localhost'
+            self.rabbit_port = 5672
 
     def install(self):
         self.print_logo()

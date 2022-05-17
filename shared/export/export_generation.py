@@ -10,7 +10,7 @@ from shared.database.video.sequence import Sequence
 
 from shared.data_tools_core import Data_tools
 import traceback
-from methods.export.export_utils import generate_file_name_from_export
+from shared.export.export_utils import generate_file_name_from_export
 
 data_tools = Data_tools().data_tools
 
