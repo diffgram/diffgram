@@ -33,6 +33,42 @@
 
 <!--      <v-divider vertical></v-divider>-->
 
+      <tooltip_button
+        color="primary"
+        icon="mdi-undo"
+        tooltip_message="Undo (ctrl+z)"
+        ui_schema_name="undo"
+        :disabled="undo_disabled"
+        :icon_style="true"
+        :bottom="true"
+        @click="$emit('undo')"
+      />
+
+      <tooltip_button
+        color="primary"
+        icon="mdi-redo"
+        tooltip_message="Redo (ctrl+y)"
+        ui_schema_name="redo"
+        :disabled="redo_disabled"
+        :icon_style="true"
+        :bottom="true"
+        @click="$emit('redo')"
+      />
+
+      <v-divider vertical></v-divider>
+
+      <div class="pl-2 pr-3 pt-4">
+        <label_schema_selector
+              :project_string_id="project_string_id"
+              :initial_schema="label_schema"
+              @change="$emit('change_label_schema', $event)"
+              @update_label_file_visible="$emit('update_label_file_visibility', $event)"
+            >
+        </label_schema_selector>
+      </div>
+
+      <v-divider vertical></v-divider>
+
       <div style="width: 310px">
         <div class="pl-2 pr-3 pt-4">
           <label_select_annotation
@@ -131,13 +167,15 @@ import Vue from 'vue'
 import audio_hotkeys from "./audio_hotkeys.vue"
 import label_select_annotation from "../label/label_select_annotation"
 import task_status from "../annotation/task_status"
+import label_schema_selector from "../label/label_schema_selector.vue"
 
 export default Vue.extend({
   name: "audio_toolbar",
   components: {
     label_select_annotation,
     audio_hotkeys,
-    task_status
+    task_status,
+    label_schema_selector
   },
   props: {
     undo_disabled: {
