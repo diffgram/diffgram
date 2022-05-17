@@ -175,6 +175,14 @@ IS_OPEN_SOURCE = env_adapter.bool(os.getenv('IS_OPEN_SOURCE', True))
 SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_MINIMUM_DAYS_VALID', 30 * 12))     # this should always be lower then new offset
 SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID', 30 * 14))
 
+
+# Minio Only Allow Expiry time is less than 7 days (value in seconds). 
+# https://github.com/minio/minio/blob/ca69e54cb6e4cff32b39cef6c7231c6d7ee6fca6/cmd/signature-v4-parser.go#L232
+if DIFFGRAM_STATIC_STORAGE_PROVIDER == 'minio':
+    SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = min(SIGNED_URL_CACHE_MINIMUM_DAYS_VALID, 5)
+    SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = min(SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID, 7)
+
+
 print('DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE',DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE)
 
 print("PROCESS_MEDIA_TRY_BLOCK_ON", PROCESS_MEDIA_TRY_BLOCK_ON)
