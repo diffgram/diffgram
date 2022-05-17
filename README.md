@@ -160,6 +160,30 @@ python install.py
 ```
 Read also our [Docker compose commands cheat-sheet](https://diffgram.readme.io/docs/open-core-docker-install-cheatsheet)
 
+## Using Docker Run in local whithout Config Quickstart
+
+Install with Docker and Docker Compose
+
+```bash
+git clone https://github.com/diffgram/diffgram.git
+cd diffgram
+python install_local_without_config.py
+# Follow the installer instruction and 
+# After install:  View the Web UI at: http://localhost:8085
+# After install:  View the Minio UI at: http://host.docker.internal:9000
+#             Minio UI user / password: diffgram / diffgram  
+```
+
+host.docker.internal is 127.0.0.1, If not access, check the hosts file
+
+```
+cat /etc/hosts
+......
+127.0.0.1	host.docker.internal
+```
+
+[https://docs.docker.com/desktop/mac/networking/#i-cannot-ping-my-containers](https://docs.docker.com/desktop/mac/networking/#i-cannot-ping-my-containers)
+
 ## Bugs and Issues
 If you see any missing features, bugs etc please report them 
 ASAP to [diffgram/issues](https://github.com/diffgram/diffgram/issues). 
