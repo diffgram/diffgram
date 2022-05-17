@@ -3,7 +3,8 @@
     <div  id="waveform" class="wave-form-container">
 
     </div>
-    <v-progress-linear :playtime-line-width="0.8" indeterminate v-if="loading_audio"></v-progress-linear>
+    <v-progress-linear @interaction="on_annotate" :playtime-line-width="0.8" indeterminate v-if="loading_audio"></v-progress-linear>
+    <button @click="on_log">Log regions</button>
   </div>
 </template>
 
@@ -11,6 +12,7 @@
 
 import Vue from "vue";
 import WaveSurfer from 'wavesurfer.js';
+import RegionPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions.min.js';
 
 export default Vue.extend({
   name: 'waveform_selector',
@@ -35,30 +37,47 @@ export default Vue.extend({
       container: '#waveform',
       fillParent: true,
       scrollParent: true,
-      waveColor: 'violet',
-      progressColor: 'purple',
+      waveColor: 'grey',
+      progressColor: 'grey',
       normalize: true,
       autoCenter: true,
       mediaControls: true,
       loading_audio: true,
       responsive: true,
       height: 500,
+      plugins: [
+        RegionPlugin.create()
+      ]
     });
+
+    this.wavesurfer.enableDragSelection({
+      color: 'green'
+    })
+
+    this.wavesurfer.on('region-update-end', this.on_log)
+
     this.load_audio();
   },
   methods: {
     load_audio: function(){
       this.loading_audio = true
-      console.log('trying to load')
       if(!this.audio_file || !this.audio_file.audio || !this.audio_file.audio.url_signed){
         return
       }
 
-      console.log('loading...')
       this.wavesurfer.load(this.audio_file.audio.url_signed);
       this.wavesurfer.on('ready', this.on_audio_ready);
       this.wavesurfer.on('error', this.on_audio_error);
 
+    },
+    on_log: function() {
+      const region_keys = Object.keys(this.wavesurfer.regions.list)
+      region_keys.map(key => {
+        console.log(this.wavesurfer.regions.list[key])
+      })
+    },
+    on_annotate: function(e) {
+      console.log(e)
     },
     on_audio_ready: function(){
       this.loading_audio = false;
