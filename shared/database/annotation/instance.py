@@ -471,6 +471,8 @@ class Instance(Base):
             'radius': self.radius,
             'bounds': self.bounds,
             'bounds_lonlat': self.bounds_lonlat,
+            'start_time': self.start_time,
+            'end_time': self.end_time
 
         }
 
