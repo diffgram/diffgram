@@ -33,6 +33,7 @@ def generate_file_name_from_export(export, session):
 
     # Always add timestamps to avoid duplicate names.
     filename += f"_datetime_{datetime.datetime.utcnow().isoformat()}"
+    filename = filename.replace(":", "-")
 
     return filename
 
