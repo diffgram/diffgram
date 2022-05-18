@@ -4,7 +4,6 @@ from shared.database.action.workflow_trigger_event_queue import WorkFlowTriggerE
 from methods.action.workflowexecutor import WorkflowExecutor
 import traceback
 from shared.database.action.workflow import Workflow
-from shared.database.action.workflow_trigger_event_queue import SUPPORTED_ACTION_TRIGGER_EVENT_TYPES
 from shared.regular.regular_methods import commit_with_rollback
 import multiprocessing
 from multiprocessing import Process, get_context
@@ -42,76 +41,75 @@ class ActionFlowTriggerQueueProcess:
         job_id = event.job_id
         input_id = event.input_id
         member_id = event.member_id
-        if event.kind in SUPPORTED_ACTION_TRIGGER_EVENT_TYPES and event.project_id:
-            # Check for supported actions in flow registry
-            action_flows = Workflow.list(session=session,
-                                            project_id=project_id,
-                                            trigger_type=event.kind)
+        # Check for supported actions in flow registry
+        action_flows = Workflow.list(session = session,
+                                     project_id = project_id,
+                                     trigger_type = event.kind)
 
-            for action_flow in action_flows:
-                # If the action flow has a time window configured, we should check if there's a running window first.
-                if action_flow.time_window:
-                    aggregation_trigger_event = WorkFlowTriggerEventQueue.list(
-                        session=session,
-                        has_aggregation_event_running=True,
-                        workflow_id =action_flow.id
-                    )
-                    # If there's an aggregation event running, we do nothing.
-                    if len(aggregation_trigger_event) > 0:
-                        logger.debug('Skipped event enqueue because aggregation event already exists.')
+        for action_flow in action_flows:
+            # If the action flow has a time window configured, we should check if there's a running window first.
+            if action_flow.time_window:
+                aggregation_trigger_event = WorkFlowTriggerEventQueue.list(
+                    session = session,
+                    has_aggregation_event_running = True,
+                    workflow_id = action_flow.id
+                )
+                # If there's an aggregation event running, we do nothing.
+                if len(aggregation_trigger_event) > 0:
+                    logger.debug('Skipped event enqueue because aggregation event already exists.')
+                    continue
+                # Otherwise we enqueue the first event and set the start time of the aggregation.
+                start_time = datetime.datetime.utcnow()
+                if event.kind == 'task_completed':
+                    start_time = event.task.time_completed
+                if event.kind == 'task_created':
+                    start_time = event.task.time_created
+                if event.kind == 'task_template_completed':
+                    start_time = event.job.time_completed
+                if event.kind == 'input_file_uploaded':
+                    start_time = event.input.created_time
+                WorkFlowTriggerEventQueue.enqueue_new_event(
+                    session = session,
+                    add_to_session = True,
+                    type = event.kind,
+                    project_id = project_id,
+                    task_id = task_id,
+                    job_id = job_id,
+                    input_id = input_id,
+                    member_created_id = member_id,
+                    has_aggregation_event_running = True,
+                    aggregation_window_start_time = start_time,
+                    workflow_id = action_flow.id)
+                if commit_per_element:
+                    # We commit right away and add rollback in case a concurrent transaction occurs and
+                    # a Integrity error is raised
+                    # more info here: http://rachbelaid.com/handling-race-condition-insert-with-sqlalchemy/
+                    try:
+                        commit_with_rollback(session)
+                    except:
                         continue
-                    # Otherwise we enqueue the first event and set the start time of the aggregation.
-                    start_time = datetime.datetime.utcnow()
-                    if event.kind == 'task_completed':
-                        start_time = event.task.time_completed
-                    if event.kind == 'task_created':
-                        start_time = event.task.time_created
-                    if event.kind == 'task_template_completed':
-                        start_time = event.job.time_completed
-                    if event.kind == 'input_file_uploaded':
-                        start_time = event.input.created_time
-                    WorkFlowTriggerEventQueue.enqueue_new_event(
-                        session=session,
-                        add_to_session=True,
-                        type=event.kind,
-                        project_id=project_id,
-                        task_id=task_id,
-                        job_id=job_id,
-                        input_id=input_id,
-                        member_created_id=member_id,
-                        has_aggregation_event_running=True,
-                        aggregation_window_start_time=start_time,
-                        workflow_id =action_flow.id)
-                    if commit_per_element:
-                        # We commit right away and add rollback in case a concurrent transaction occurs and
-                        # a Integrity error is raised
-                        # more info here: http://rachbelaid.com/handling-race-condition-insert-with-sqlalchemy/
-                        try:
-                            commit_with_rollback(session)
-                        except:
-                            continue
-                else:
-                    # Enqueue the event with no aggregation configurations.
-                    WorkFlowTriggerEventQueue.enqueue_new_event(
-                        session=session,
-                        add_to_session=True,
-                        type=event.kind,
-                        project_id=project_id,
-                        task_id=task_id,
-                        job_id=job_id,
-                        input_id=input_id,
-                        member_created_id=member_id,
-                        has_aggregation_event_running=None,
-                        aggregation_window_start_time=None,
-                        workflow_id =action_flow.id)
-                    if commit_per_element:
-                        # We commit right away and add rollback in case a concurrent transaction occurs and
-                        # a Integrity error is raised
-                        # more info here: http://rachbelaid.com/handling-race-condition-insert-with-sqlalchemy/
-                        try:
-                            commit_with_rollback(session)
-                        except:
-                            continue
+            else:
+                # Enqueue the event with no aggregation configurations.
+                WorkFlowTriggerEventQueue.enqueue_new_event(
+                    session = session,
+                    add_to_session = True,
+                    type = event.kind,
+                    project_id = project_id,
+                    task_id = task_id,
+                    job_id = job_id,
+                    input_id = input_id,
+                    member_created_id = member_id,
+                    has_aggregation_event_running = None,
+                    aggregation_window_start_time = None,
+                    workflow_id = action_flow.id)
+                if commit_per_element:
+                    # We commit right away and add rollback in case a concurrent transaction occurs and
+                    # a Integrity error is raised
+                    # more info here: http://rachbelaid.com/handling-race-condition-insert-with-sqlalchemy/
+                    try:
+                        commit_with_rollback(session)
+                    except:
+                        continue
         return len(action_flows)
 
     def execute_action_flow_for_event(self, session, action_flow_trigger_event):

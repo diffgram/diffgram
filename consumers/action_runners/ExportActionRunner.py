@@ -1,21 +1,32 @@
-from shared.action_runners.ActionRunner import ActionRunner
+from consumers.action_runners.ActionRunner import ActionRunner
 from shared.shared_logger import get_shared_logger
-from shared.database.task.job.job import Job
-from shared.helpers.sessionMaker import session_scope
-from shared.utils import job_dir_sync_utils
-from shared.database.source_control.file import File
-from shared.utils.sync_events_manager import SyncEventManager
-from shared.database.source_control.working_dir import WorkingDir
-from shared.database.auth.member import Member
 from shared.regular.regular_log import log_has_error
 from shared.export.export_create import create_new_export
-
+from shared.database.action.action import ActionTriggerEventTypes
+from shared.database.task.job.job import Job
 logger = get_shared_logger()
 
 
 class ExportActionRunner(ActionRunner):
-    def execute_pre_conditions(self, session):
-        return
+    def execute_pre_conditions(self, session) -> bool:
+        event_name = self.action.condition_data.get('event_name')
+
+        print('pre conditions', event_name)
+        if event_name is None:
+            return True
+        print('pre conditions', event_name)
+        if event_name == 'all_tasks_completed':
+            prev_action = self.action.get_previous_action(session = session)
+            if prev_action is None:
+                logger.warning(f'Warning no previous action for action ID {self.action.id}')
+            if prev_action.kind == ActionTriggerEventTypes.task_created.value:
+                task_template_id = self.action.config_data.get('task_template_id')
+                task_template = Job.get_by_id(session = session, job_id = task_template_id)
+                if task_template.status == 'complete':
+                    return True
+                else:
+                    return False
+        return False
 
     def execute_action(self, session) -> bool:
         """

@@ -40,6 +40,7 @@ export const initialize_action_list = function(action_list){
 export class Action {
   public id: number;
   public template_id: number;
+  public ordinal: number;
   public public_name: string;
   public icon: string;
   public kind: string;
@@ -76,6 +77,7 @@ export class Action {
     this.kind = action.kind;
     this.trigger_data = action.trigger_data ? action.trigger_data : {};
     this.condition_data = action.condition_data;
+    this.ordinal = action.ordinal;
     this.description = action.description;
     this.completion_condition_data = action.completion_condition_data ? action.completion_condition_data : {};
   }

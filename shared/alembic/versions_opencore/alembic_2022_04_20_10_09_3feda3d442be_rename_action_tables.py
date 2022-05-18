@@ -10,6 +10,8 @@ import sqlalchemy as sa
 from sqlalchemy import orm
 from shared.database.action.action_template import Action_Template
 from shared.database.action.action import Action
+from shared.database.action.workflow import Workflow
+from shared.database.event.event import Event
 from shared.database.core import MutableDict, JSONEncodedDict
 from sqlalchemy.dialects.postgresql import JSONB
 
@@ -28,7 +30,7 @@ def create_default_action_templates(session):
         icon = 'https://www.svgrepo.com/show/376121/list-task.svg',
         kind = 'create_task',
         category = None,
-        trigger_data = {'trigger_event_name': 'file_uploaded'},
+        trigger_data = {'trigger_event_name': 'input_file_uploaded'},
         condition_data = {'event_name': None},
         completion_condition_data = {'event_name': 'task_completed'},
     )
@@ -71,6 +73,7 @@ def upgrade():
     op.add_column('action', sa.Column('condition_data', MutableDict.as_mutable(JSONB)))
     op.add_column('action', sa.Column('completion_condition_data', MutableDict.as_mutable(JSONB)))
     op.add_column('action', sa.Column('public_name',  sa.String, default = ''))
+    op.add_column('action', sa.Column('ordinal',  sa.Integer))
 
     # We need to remove old default action templates. Since now we'll init them with new values
     bind = op.get_bind()
@@ -138,3 +141,4 @@ def downgrade():
     op.drop_column('action', 'condition_data')
     op.drop_column('action', 'completion_condition_data')
     op.drop_column('action', 'public_name')
+    op.drop_column('action', 'ordinal')

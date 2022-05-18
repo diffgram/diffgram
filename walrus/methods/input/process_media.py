@@ -50,6 +50,9 @@ from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
 from methods.text_data.text_tokenizer import TextTokenizer
 from shared.utils.instance.transform_instance_utils import rotate_instance_dict_90_degrees
+from shared.queuemanager.QueueManager import QueueManager
+
+queuemanager = QueueManager()
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
@@ -1196,7 +1199,7 @@ class Process_Media():
         We don't create an image, as we save the data to the video dict.
         In general this is not for previewing an image from front end
         but more for "internal" access.
-        if needed could cache signed urls on front end
+        if needed could cache WORsigned urls on front end
 
         We don't call resize because we assume the video has already been
         resized as required
@@ -1432,11 +1435,13 @@ class Process_Media():
 
         if input.status == "success":
             return
-
+        if input.file_id is None and input.file is not None:
+            input.file_id = input.file.id
         Event.new_deferred(
             session = self.session,
             kind = 'input_file_uploaded',
             project_id = input.project_id,
+            directory_id = input.directory_id,
             input_id = input.id,
             file_id = input.file_id,
             wait_for_commit = True

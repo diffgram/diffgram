@@ -20,9 +20,11 @@ class ConsumerCreator:
                                                                           settings.RABBITMQ_DEFAULT_PASS))
         )
         self.channel = self.connection.channel()
-        self.events_consumer = EventsConsumer(channel = self.channel)
-        self.actions_consumer = ActionsConsumer(channel = self.channel)
+        self.events_consumer = EventsConsumer(channel = self.channel, connection = self.connection)
+        self.actions_consumer = ActionsConsumer(channel = self.channel, connection = self.connection)
+
+    def stop_processing(self):
+        self.channel.stop_consuming()
 
     def start_processing(self):
         self.channel.start_consuming()
-        print('CONSUMINGG')

@@ -44,7 +44,7 @@ export default Vue.extend({
         default_complete_condition_list: [
           {
             name: 'File is uploaded',
-            value: 'file_uploaded'
+            value: 'input_file_uploaded'
           },
           {
             name: 'Task is completed',

@@ -294,7 +294,8 @@ export default Vue.extend({
         let action = {
           ...action_template,
           template_id: action_template.id,
-          id: undefined
+          id: undefined,
+          ordinal: this.workflow.actions_list.length
         }
         let new_action  = await this.api_action_new(action)
         if (!new_action){
@@ -375,7 +376,7 @@ export default Vue.extend({
           this.workflow.actions_list = [];
           this.success = true
           this.loading = false
-          this.$router.push(`/project/deepknife/workflow/${this.workflow.id}`)
+          this.$router.push(`/project/${this.project_string_id}/workflow/${this.workflow.id}`)
         }
 
       },

@@ -52,7 +52,7 @@ export default Vue.extend({
         default_triggers_list: [
           {
             name: 'File is uploaded',
-            value: 'file_uploaded'
+            value: 'input_file_uploaded'
           },
           {
             name: 'Previous Step Completed',

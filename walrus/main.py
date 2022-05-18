@@ -34,7 +34,7 @@ if __name__ == '__main__':
     from methods.input.input_view_detail import input_view_detail_api
 
     from methods.export.export_web import web_export_to_file
-    from methods.export.export_generation import new_external_export
+    from shared.export.export_generation import new_external_export
     from methods.export.export_view import export_list
 
     from methods.video.interpolation import interpolate_all_frames
@@ -100,7 +100,6 @@ if __name__ == '__main__':
     from methods.startup.system_startup_checker import WalrusServiceSystemStartupChecker
     from methods.connectors.datasaur_connector import DatasaurSyncManager
     from methods.input.process_media_queue_manager import ProcessMediaQueueManager
-    from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueProcess
 
     limiter.init_app(app)
 
@@ -126,8 +125,6 @@ if __name__ == '__main__':
 
     print("Startup in", time.time() - start_time)
 
-    # actions_thread = ActionFlowTriggerQueueThread(thread_sleep_time_min=5,
-    actions_thread = ActionFlowTriggerQueueProcess(run_once = False)
     settings.NAME_EQUALS_MAIN = True  # can adjust this for local deferral testing if needed?
     limiter.enabled = False
     # os.environ['test'] = "test_os_environ"

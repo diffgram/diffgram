@@ -22,7 +22,7 @@ class RoutingKeys(Enum):
     event_new = 'events.new'
 
 
-class QueueManager(metaclass = Singleton):
+class QueueManager:
 
     def __init__(self):
         self.connection = pika.BlockingConnection(

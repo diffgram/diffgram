@@ -92,7 +92,7 @@ class Workflow(Base):
 
         Workflow.update_string_id(
             session = session,
-            flow = workflow)
+            workflow = workflow)
 
         session.add(workflow)
         session.flush()

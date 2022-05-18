@@ -6,7 +6,8 @@ import threading
 import requests
 import shared.helpers.sessionMaker as sessionMaker
 from shared.helpers.sessionMaker import AfterCommitAction
-import shared.database.action.workflow_trigger_event_queue as workflow_trigger_event_queue
+from shared.queuemanager.QueueManager import QueueManager, Exchanges, RoutingKeys
+
 
 logger = get_shared_logger()
 # The extra imports are only needed if they haven't already been
@@ -116,6 +117,10 @@ class Event(Base):
             'object_type': self.object_type,
             'page_name': self.page_name,
             'input_id': self.input_id,
+            'project_id': self.project_id,
+            'directory_id': self.directory_id,
+            'action_id': self.action_id,
+            'workflow_id': self.workflow_id,
             'file_id': self.file_id,
             'task_id': self.task_id,
             'job_id': self.job_id,
@@ -165,6 +170,7 @@ class Event(Base):
                      success = None,
                      error_log = None,
                      description = None,
+                     directory_id = None,
                      link = None,
                      project_id = None,
                      task_id = None,
@@ -233,6 +239,12 @@ class Event(Base):
         t.daemon = True  # Allow hot reload to work
         t.start()
 
+    def broadcast(self):
+        queue_mngr = QueueManager()
+        message = self.serialize()
+        queue_mngr.send_message(message = message,
+                                routing_key = RoutingKeys.event_new.value,
+                                exchange = Exchanges.events.value)
     @staticmethod
     def new(session,
             kind = None,
@@ -243,6 +255,7 @@ class Event(Base):
             link = None,
             project_id = None,
             task_id = None,
+            directory_id = None,
             run_time = None,
             page_name = None,
             object_type = None,
@@ -283,7 +296,7 @@ class Event(Base):
             user = member.user
             if user:
                 email = user.email
-
+        print('FILE', file_id)
         event = Event(
             kind = kind,
             member_id = member_id,
@@ -294,6 +307,7 @@ class Event(Base):
             project_id = project_id,
             task_id = task_id,
             job_id = job_id,
+            directory_id = directory_id,
             run_time = run_time,
             object_type = object_type,
             input_id = input_id,
@@ -310,9 +324,9 @@ class Event(Base):
         if flush_session:
             session.flush()
         Event.track_user(event, email)
-
+        logger.info(f'Created event {event.id}')
         event.send_to_eventhub()
-
+        event.broadcast()
         return event
 
     # May want the event in some cases???

@@ -41,6 +41,7 @@ export const new_action = async (project_string_id, workflow_id, action) => {
         public_name: action.public_name,
         kind: action.kind,
         description: action.description,
+        ordinal: action.ordinal,
         workflow_id: workflow_id,
         trigger_data: action.trigger_data,
         condition_data: action.condition_data,

@@ -126,11 +126,11 @@ def task_template_launch_limits(session,
 
     # Files
     task_template.update_file_count_statistic(session=session)
-    attached_dir_list = session.query(JobWorkingDir).filter(
-        JobWorkingDir.job_id == task_template.id
-    ).all()
-    if task_template.file_count_statistic == 0 and len(attached_dir_list) == 0:
-        log['error']['attached_dir_list'] = "Must attach at least 1 file or directory"
+    # attached_dir_list = session.query(JobWorkingDir).filter(
+    #     JobWorkingDir.job_id == task_template.id
+    # ).all()
+    # if task_template.file_count_statistic == 0 and len(attached_dir_list) == 0:
+    #     log['error']['attached_dir_list'] = "Must attach at least 1 file or directory"
 
     if task_template.file_count:
         if task_template.file_count_statistic != task_template.file_count:

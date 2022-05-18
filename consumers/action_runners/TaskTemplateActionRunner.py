@@ -1,4 +1,4 @@
-from shared.action_runners.ActionRunner import ActionRunner
+from consumers.action_runners.ActionRunner import ActionRunner
 from shared.shared_logger import get_shared_logger
 from shared.database.task.job.job import Job
 from shared.helpers.sessionMaker import session_scope
@@ -12,8 +12,8 @@ logger = get_shared_logger()
 
 
 class TaskTemplateActionRunner(ActionRunner):
-    def execute_pre_conditions(self, session):
-        return
+    def execute_pre_conditions(self, session) -> bool:
+        return True
 
     def execute_action(self, session):
         """
@@ -43,14 +43,14 @@ class TaskTemplateActionRunner(ActionRunner):
 
         file = File.get_by_id(session, file_id = file_id)
         job_sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-            session = self.session,
+            session = session,
             job = task_template,
             log = self.log
         )
         directory = WorkingDir.get_by_id(session = session, directory_id = dir_id)
         member = Member.get_by_id(session = session, member_id = member_id)
         sync_event_manager = SyncEventManager.create_sync_event_and_manager(
-            session = self.session,
+            session = session,
             dataset_source_id = directory,
             dataset_destination = None,
             description = 'Sync file from dataset {} to job {} and create task'.format(
@@ -66,6 +66,7 @@ class TaskTemplateActionRunner(ActionRunner):
             status = 'init',
             member_created = member
         )
+
         job_sync_manager.add_file_into_job(
             file = file,
             incoming_directory = directory,
@@ -73,3 +74,5 @@ class TaskTemplateActionRunner(ActionRunner):
             create_tasks = True,
             sync_event_manager = sync_event_manager
         )
+        task_template.update_file_count_statistic(session = session)
+        task_template.refresh_stat_count_tasks(session = session)

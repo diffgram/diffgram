@@ -37,6 +37,7 @@ def api_action_update(project_string_id, action_id):
         {'completion_condition_data': dict},
         {'template_id': int},
         {'workflow_id': int},
+        {'ordinal': int},
         {'condition_data': dict}
 
     ]
@@ -66,6 +67,7 @@ def api_action_update(project_string_id, action_id):
             template_id = input['template_id'],
             completion_condition_data = input['completion_condition_data'],
             workflow_id = input['workflow_id'],
+            ordinal = input['ordinal'],
             icon = input['icon'],
             log = log,
         )
@@ -92,6 +94,7 @@ def action_update_core(session: Session,
                        condition_data: dict,
                        template_id: int,
                        workflow_id: int,
+                       ordinal: int,
                        completion_condition_data: dict,
                        log: dict):
     workflow = Workflow.get_by_id(session = session, id = workflow_id, project_id = project.id)
@@ -118,6 +121,7 @@ def action_update_core(session: Session,
         'condition_data': condition_data,
         'template_id': template_id,
         'workflow_id': workflow_id,
+        'ordinal': ordinal,
         'completion_condition_data': completion_condition_data,
         'member_updated_id': member.id,
     }

@@ -2,7 +2,18 @@ from shared.database.common import *
 from shared.database.org.org import Org
 from shared.database.action.action_template import Action_Template
 from sqlalchemy.dialects.postgresql import JSONB
+from enum import Enum
 from sqlalchemy_serializer import SerializerMixin
+
+
+class ActionTriggerEventTypes(Enum):
+    task_completed = 'task_completed'
+    task_created = 'task_created'
+    task_template_completed = 'task_template_completed'
+    input_file_uploaded = 'input_file_uploaded'
+    input_instance_uploaded = 'input_instance_uploaded'
+    action_completed = 'action_completed'
+
 
 class Action(Base, SerializerMixin):
     """
@@ -40,6 +51,8 @@ class Action(Base, SerializerMixin):
     condition_data = Column(MutableDict.as_mutable(JSONB))
 
     completion_condition_data = Column(MutableDict.as_mutable(JSONB))
+
+    ordinal = Column(Integer)
 
     is_root = Column(Boolean)
     root_id = Column(Integer, ForeignKey('action.id'))
@@ -130,10 +143,12 @@ class Action(Base, SerializerMixin):
     @staticmethod
     def get_triggered_actions(session, trigger_kind: str, project_id = None):
         from shared.database.action.workflow import Workflow
+        print('aaaa trigger_kind', trigger_kind)
+        print('aaaa project_id', project_id)
         actions = session.query(Action).join(Workflow, Action.workflow_id == Workflow.id).filter(
             Workflow.active == True,
             Action.project_id == project_id,
-            Action.trigger_data.data['trigger_event_name'].astext == trigger_kind
+            Action.trigger_data['trigger_event_name'].astext == trigger_kind
         ).all()
         return actions
 
@@ -143,11 +158,12 @@ class Action(Base, SerializerMixin):
         :return:
         """
 
-        from shared.action_runners.ActionRunner import ACTION_RUNNERS_KIND_MAPPER
+        from consumers.action_runners.ActionRunnerMapping import ACTION_RUNNERS_KIND_MAPPER
         class_name = ACTION_RUNNERS_KIND_MAPPER[self.kind]
 
         runner = class_name(action = self, event_data = event_data)
         return runner
+
     @staticmethod
     def new(
         session,
@@ -159,6 +175,7 @@ class Action(Base, SerializerMixin):
         trigger_data,
         icon,
         description,
+        ordinal,
         condition_data,
         completion_condition_data,
         public_name,
@@ -186,6 +203,7 @@ class Action(Base, SerializerMixin):
             trigger_data = trigger_data,
             icon = icon,
             description = description,
+            ordinal = ordinal,
             public_name = public_name,
             condition_data = condition_data,
             completion_condition_data = completion_condition_data,
@@ -196,6 +214,17 @@ class Action(Base, SerializerMixin):
         if flush_session:
             session.flush()
 
+        return action
+
+    def get_previous_action(self, session) -> 'Action':
+        ordinal = self.ordinal
+        if ordinal == 1:
+            return None
+        action = session.query(Action).filter(
+            Action.ordinal == ordinal - 1,
+            Action.workflow_id == self.workflow_id,
+            Action.project_id == self.project_id
+        ).first()
         return action
 
     # WIP WIP WIP
@@ -332,6 +361,7 @@ class Action(Base, SerializerMixin):
                 return query.limit(limit).all()
             else:
                 return query.all()
+
     @staticmethod
     def get_by_id(session,
                   id,
