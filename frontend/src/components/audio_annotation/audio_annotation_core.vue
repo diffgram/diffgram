@@ -40,6 +40,16 @@
 import audio_toolbar from './audio_toolbar'
 import audio_sidebar from './audio_sidebar.vue'
 import waveform_selector from './render_elements/waveform_selector.vue'
+import CommandManager from "../../helpers/command/command_manager"
+import InstanceList from "../../helpers/instance_list"
+import History from "../../helpers/history"
+import {
+  CreateInstanceCommand,
+  DeleteInstanceCommand,
+  UpdateInstanceLabelCommand,
+  UpdateInstanceAttributeCommand
+} from "../../helpers/command/available_commands"
+
 export default {
   name: "audio_annotation_core",
   components:{
@@ -103,7 +113,16 @@ export default {
       save_loading: false,
       trigger_refresh_current_instance: Date.now(),
       refresh: Date.now(),
+      // Command
+      instance_list: undefined,
+      command_manager: undefined,
+      history: undefined,
     }
+  },
+  mounted() {
+      this.history = new History()
+      this.command_manager = new CommandManager(this.new_history)
+      this.instance_list = new InstanceList()
   },
   methods: {
     instance_create: function() {},
@@ -111,7 +130,7 @@ export default {
     insatnce_update_label: function() {},
     insatnce_update_attribute: function() {},
     insatance_delete: function() {},
-    
+
     focus_instance_show_all: function(){
 
     },
