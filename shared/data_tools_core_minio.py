@@ -33,7 +33,7 @@ class DataToolsMinio(DataToolsS3):
             access_key_id = settings.DIFFGRAM_MINIO_ACCESS_KEY_ID,
             secret_access_key = settings.DIFFGRAM_MINIO_ACCESS_KEY_SECRET,
             region_name = settings.DIFFGRAM_S3_BUCKET_REGION,
-            verify = settings.DIFFGRAM_MINIO_DISABLED_SSL_VERIFY,
+            verify = not settings.DIFFGRAM_MINIO_DISABLED_SSL_VERIFY,
             config = config)
 
 

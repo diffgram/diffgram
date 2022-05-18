@@ -390,7 +390,7 @@ class S3Connector(Connector):
             signed_url = self.connection_client.generate_presigned_url('get_object',
                                                        Params = {'Bucket': bucket_name, 'Key': test_file_path},
                                                        ExpiresIn = 3600 * 24 * 6)
-            resp = requests.get(signed_url, verify=False if self.auth_data['disabled_ssl_verify'] else None)
+            resp = requests.get(signed_url, verify=not self.auth_data['disabled_ssl_verify'])
             if resp.status_code != 200:
                 raise Exception(
                     f"Error when accessing presigned URL: Status({resp.status_code}). Error: {resp.text}")
