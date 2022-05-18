@@ -29,7 +29,12 @@
 
     <div class="d-flex" style="width: 100%; height: 100%">
       <audio_sidebar />
-      <waveform_selector v-if="current_label" :current_label="current_label" :audio_file="file"></waveform_selector>
+      <waveform_selector 
+        v-if="current_label" 
+        :current_label="current_label" 
+        :audio_file="file" 
+        @instance_create="instance_create"
+      />
     </div>
 
   </div>
@@ -49,6 +54,7 @@ import {
   UpdateInstanceLabelCommand,
   UpdateInstanceAttributeCommand
 } from "../../helpers/command/available_commands"
+import { AudioAnnotationInstance } from "../vue_canvas/instances/AudioInstance"
 
 export default {
   name: "audio_annotation_core",
@@ -121,11 +127,18 @@ export default {
   },
   mounted() {
       this.history = new History()
-      this.command_manager = new CommandManager(this.new_history)
+      this.command_manager = new CommandManager(this.history)
       this.instance_list = new InstanceList()
   },
   methods: {
-    instance_create: function() {},
+    instance_create: function(audiosurfer_id, start_time, end_time) {
+      const created_instance = new AudioAnnotationInstance()
+      created_instance.create_instance(audiosurfer_id, start_time, end_time, {... this.current_label}, {})
+      this.instance_list.push([created_instance])
+      const command = new CreateInstanceCommand([created_instance], this.instance_list)
+      this.command_manager.executeCommand(command)
+      this.has_changed = true
+    },
     instance_update_region: function() {},
     insatnce_update_label: function() {},
     insatnce_update_attribute: function() {},
