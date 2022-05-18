@@ -1,10 +1,14 @@
 <template>
   <div v-cloak style="width: 100%" >
     <div  id="waveform" class="wave-form-container">
-
     </div>
-    <v-progress-linear @interaction="on_annotate" :playtime-line-width="0.8" indeterminate v-if="loading_audio"></v-progress-linear>
-    <button @click="on_log">Log regions</button>
+
+    <v-progress-linear 
+      :playtime-line-width="0.8" 
+      indeterminate 
+      v-if="loading_audio"
+    />
+
   </div>
 </template>
 
@@ -19,6 +23,10 @@ export default Vue.extend({
   props: {
     audio_file: {
       default: null,
+    },
+    current_label: {
+      type: Object,
+      required: true
     }
   },
   data: function(){
@@ -30,6 +38,14 @@ export default Vue.extend({
   watch:{
     audio_file: function(new_file, old_file){
       this.load_audio();
+    },
+    current_label: function() {
+      this.wavesurfer.disableDragSelection()
+
+      const { r, g, b } = this.current_label.colour.rgba
+      this.wavesurfer.enableDragSelection({
+        color: `rgba(${r}, ${g}, ${b}, 0.5)`
+      })
     }
   },
   mounted() {
@@ -44,14 +60,16 @@ export default Vue.extend({
       mediaControls: true,
       loading_audio: true,
       responsive: true,
-      height: 500,
+      height: 200,
       plugins: [
         RegionPlugin.create()
       ]
     });
 
+    const { r, g, b } = this.current_label.colour.rgba
+
     this.wavesurfer.enableDragSelection({
-      color: 'green'
+      color: `rgba(${r}, ${g}, ${b}, 0.5)`
     })
 
     this.wavesurfer.on('region-update-end', this.on_log)

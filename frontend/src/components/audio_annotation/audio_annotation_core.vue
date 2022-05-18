@@ -10,6 +10,7 @@
           :has_changed="has_changed"
           :save_loading="save_loading"
           :loading="loading"
+          :label_schema="label_schema"
           :project_string_id="project_string_id"
           :label_list="label_list"
           :label_file_colour_map="label_file_colour_map"
@@ -28,7 +29,7 @@
 
     <div class="d-flex" style="width: 100%; height: 100%">
       <audio_sidebar />
-      <waveform_selector :audio_file="file"></waveform_selector>
+      <waveform_selector v-if="current_label" :current_label="current_label" :audio_file="file"></waveform_selector>
     </div>
 
   </div>
@@ -46,16 +47,43 @@ export default {
     audio_sidebar,
     waveform_selector
   },
-  props: {
-    project_string_id:{
-      default: null
+    props: {
+    file: {
+      type: Object,
+      default: undefined
     },
     task: {
-      default: null
+      type: Object,
+      default: undefined
     },
-    file: {
-      default: null
+    job_id: {
+      type: Number,
+      default: undefined
     },
+    label_file_colour_map: {
+      type: Object,
+      required: true
+    },
+    label_list: {
+      type: Array,
+      required: true
+    },
+    project_string_id: {
+      type: String,
+      required: true
+    },
+    global_attribute_groups_list: {
+      type: Array,
+      required: true
+    },
+    per_instance_attribute_groups_list: {
+      type: Array,
+      required: true
+    },
+    label_schema: {
+      type: Object,
+      default: {}
+    }
   },
   data: function(){
     return{
@@ -65,9 +93,9 @@ export default {
       current_global_instance: null,
       request_change_current_instance: null,
       global_attribute_groups_list: [],
-      label_list: [],
       instance_list: [],
       label_file_colour_map: {},
+      current_label: null,
       label_settings: {
         left_nav_width: 450
       },
@@ -90,8 +118,8 @@ export default {
     defer_task: function(){
 
     },
-    change_label_file: function(){
-
+    change_label_file: function(label_file){
+      this.current_label = label_file;
     },
     change_label_visibility: function(){
 
