@@ -72,7 +72,7 @@ export default Vue.extend({
       color: `rgba(${r}, ${g}, ${b}, 0.5)`
     })
 
-    this.wavesurfer.on('region-update-end', this.on_log)
+    this.wavesurfer.on('region-update-end', this.on_annotate)
 
     this.load_audio();
   },
@@ -88,15 +88,9 @@ export default Vue.extend({
       this.wavesurfer.on('error', this.on_audio_error);
 
     },
-    on_log: function(e) {
-      console.log(e)
-      const region_keys = Object.keys(this.wavesurfer.regions.list)
-      region_keys.map(key => {
-        console.log(this.wavesurfer.regions.list[key])
-      })
-    },
     on_annotate: function(e) {
-      console.log(e)
+      const { id, start, end } = e
+      this.$emit('instance_create', id, start, end)
     },
     on_audio_ready: function(){
       this.loading_audio = false;
