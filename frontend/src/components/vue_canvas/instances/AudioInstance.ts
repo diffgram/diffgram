@@ -36,4 +36,29 @@ export class AudioAnnotationInstance extends Instance implements InstanceInterfa
         this.soft_delete = soft_delete;
     }
 
+    public update_instance_start_time(start_time): void {
+        this.start_time = start_time;
+    }
+
+    public update_instance_end_time(end_time): void {
+        this.end_time = end_time;
+    }
+
+    public get_instance_data(): any {
+        const payload: any = {
+            id: this.id || this.creation_ref_id,
+            type: this.type,
+            selected: this.selected,
+            start_time: this.start_time,
+            end_time: this.end_time,
+            label_file: this.label_file,
+            label_file_id: this.label_file_id,
+            soft_delete: this.soft_delete,
+            creation_ref_id: this.creation_ref_id,
+            attribute_groups: this.attribute_groups,
+            audiosurfer_id: this.audiosurfer_id
+        }
+        return payload
+    }
+
 }
