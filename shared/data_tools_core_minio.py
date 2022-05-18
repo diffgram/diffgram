@@ -1,4 +1,3 @@
-# OPEN CORE - ADD
 import boto3
 from shared.settings import settings
 
@@ -8,8 +7,7 @@ from .data_tools_core_s3 import DataToolsS3
 
 class DataToolsMinio(DataToolsS3):
     """
-        Data tools Implementation for Minio S3. Handles Upload and download
-        of blobs from S3 Buckets.
+        Data tools Implementation for Minio S3.
 
         Requires setting the following settings
         - DIFFGRAM_MINIO_ENDPOINT_URL
@@ -22,19 +20,36 @@ class DataToolsMinio(DataToolsS3):
     """
 
     def __init__(self):
-        if settings.IS_DIFFGRAM_S3_V4_SIGNATURE:
-            self.s3_client = boto3.client('s3', config=Config(signature_version='s3v4'),
-                                        endpoint_url=settings.DIFFGRAM_MINIO_ENDPOINT_URL,
-                                        aws_access_key_id=settings.DIFFGRAM_MINIO_ACCESS_KEY_ID,
-                                        aws_secret_access_key=settings.DIFFGRAM_MINIO_ACCESS_KEY_SECRET,
-                                        region_name=settings.DIFFGRAM_S3_BUCKET_REGION,
-                                        verify=settings.DIFFGRAM_MINIO_DISABLED_SSL_VERIFY)
-        else: 
-            self.s3_client = boto3.client('s3',
-                                        endpoint_url=settings.DIFFGRAM_MINIO_ENDPOINT_URL,
-                                        aws_access_key_id=settings.DIFFGRAM_MINIO_ACCESS_KEY_ID,
-                                        aws_secret_access_key=settings.DIFFGRAM_MINIO_ACCESS_KEY_SECRET,
-                                        region_name=settings.DIFFGRAM_S3_BUCKET_REGION,
-                                        verify=settings.DIFFGRAM_MINIO_DISABLED_SSL_VERIFY)
+
         self.s3_bucket_name = settings.DIFFGRAM_S3_BUCKET_NAME
         self.s3_bucket_name_ml = settings.ML__DIFFGRAM_S3_BUCKET_NAME
+
+        config = None
+        if settings.IS_DIFFGRAM_S3_V4_SIGNATURE:
+            config=Config(signature_version='s3v4')
+
+        self.s3_client = DataToolsMinio.get_client(
+            endpoint_url = settings.DIFFGRAM_MINIO_ENDPOINT_URL,
+            access_key_id = settings.DIFFGRAM_MINIO_ACCESS_KEY_ID,
+            secret_access_key = settings.DIFFGRAM_MINIO_ACCESS_KEY_SECRET,
+            region_name = settings.DIFFGRAM_S3_BUCKET_REGION,
+            verify = settings.DIFFGRAM_MINIO_DISABLED_SSL_VERIFY,
+            config = config)
+
+
+    @staticmethod
+    def get_client(endpoint_url,
+                   access_key_id, 
+                   secret_access_key,
+                   region_name = None, 
+                   verify = False,
+                   config = None):
+
+        return boto3.client(
+            's3',
+            endpoint_url = endpoint_url,
+            aws_access_key_id = access_key_id,
+            aws_secret_access_key = secret_access_key,
+            region_name = region_name,
+            verify = verify,
+            config = config)
