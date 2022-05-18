@@ -88,7 +88,8 @@ export default Vue.extend({
       this.wavesurfer.on('error', this.on_audio_error);
 
     },
-    on_log: function() {
+    on_log: function(e) {
+      console.log(e)
       const region_keys = Object.keys(this.wavesurfer.regions.list)
       region_keys.map(key => {
         console.log(this.wavesurfer.regions.list[key])
