@@ -106,13 +106,13 @@ export default {
     }
   },
   methods: {
-    instance_update: function(){
-
-    },
+    instance_create: function() {},
+    instance_update_region: function() {},
+    insatnce_update_label: function() {},
+    insatnce_update_attribute: function() {},
+    insatance_delete: function() {},
+    
     focus_instance_show_all: function(){
-
-    },
-    focus_instance: function(){
 
     },
     defer_task: function(){
