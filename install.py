@@ -481,9 +481,6 @@ class DiffgramInstallTool:
             env_file += "GCP_SERVICE_ACCOUNT_FILE_PATH=/dev/null\n"
 
         fernet_key = base64.urlsafe_b64encode(os.urandom(32))
-        if isinstance(fernet_key, bytes):
-            fernet_key = fernet_key.decode()
-
         env_file += f"FERNET_KEY={fernet_key}\n"
         env_file += f"USER_PASSWORDS_SECRET={create_random_string(10)}\n"
         env_file += f"INTER_SERVICE_SECRET={create_random_string(10)}\n"
