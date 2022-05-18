@@ -104,9 +104,13 @@
           :file="current_file"
           :task="task"
           :job_id="job_id"
+          :label_schema="current_label_schema"
           :label_list="label_list"
           :label_file_colour_map="label_file_colour_map"
           :project_string_id="computed_project_string_id"
+          :global_attribute_groups_list="global_attribute_groups_list"
+          :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+          @change_label_schema="on_change_label_schema"
           @request_file_change="request_file_change"
           @request_new_task="change_task"
         />
