@@ -3,9 +3,13 @@ import boto3
 
 from .s3_connector import regular_log
 from .s3_connector import S3Connector
-
+from shared.data_tools_core_minio import DataToolsMinio
 
 class MinioConnector(S3Connector):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.name = "minio"
 
     def connect(self):
         log = regular_log.default()
@@ -20,13 +24,14 @@ class MinioConnector(S3Connector):
                 log['error']['endpoint_url'] = 'auth_data must provide minio_endpoint_url.'
                 return {'log': log}
 
-            self.connection_client = boto3.client('s3',
-                                                  endpoint_url=self.auth_data['endpoint_url'],
-                                                  aws_access_key_id=self.auth_data['client_id'],
-                                                  aws_secret_access_key=self.auth_data['client_secret'],
-                                                  verify=False if self.auth_data['disabled_ssl_verify'] else None)
+            self.connection_client = DataToolsMinio.get_client(
+                endpoint_url=self.auth_data['endpoint_url'],
+                access_key_id=self.auth_data['client_id'],
+                secret_access_key=self.auth_data['client_secret'],
+                verify=False if self.auth_data['disabled_ssl_verify'] else None)
+            
             return {'result': True}
         except Exception as e:
             log['error'][
-                'auth_credentials'] = 'Error connecting to AWS S3. Please check you private key, email and id are correct.'
+                'auth_credentials'] = 'Error connecting to MinIO. Please check your connection values.'
             return {'log': log}
