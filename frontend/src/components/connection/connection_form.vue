@@ -147,7 +147,7 @@
                  no-gutters>
             <v-col>
               <v-text-field
-                label="Private Host"
+                label="Private Host Endpoint"
                 v-model="connection.private_host"
                 @input="has_changes = true"
                 flat
