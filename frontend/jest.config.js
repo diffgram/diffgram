@@ -7,7 +7,7 @@ module.exports = {
   },
   transformIgnorePatterns: [
     "node_modules/(?!(three"
-    + "|another-z"
+    + "|ol"
     + "|yet-another-module"
     + ")/)",
 

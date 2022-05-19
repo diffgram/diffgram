@@ -587,7 +587,7 @@ class File_Browser():
         media_type = self.metadata.get("media_type", None)
 
         if media_type in ["All", None]:
-            media_type_query = ["image", "video", "text", "sensor_fusion"]
+            media_type_query = ["image", "video", "text", "sensor_fusion", "geospatial"]
 
         if media_type in ['Image', 'image']:
             media_type_query = "image"
@@ -600,6 +600,10 @@ class File_Browser():
 
         if media_type in ['Sensor Fusion', 'sensor_fusion']:
             media_type_query = "sensor_fusion"
+
+        if media_type in ['geospatial']:
+            media_type_query = "geospatial"
+
 
         exclude_removed = True
         if self.metadata['file_view_mode'] in ["changes"]:

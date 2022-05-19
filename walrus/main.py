@@ -71,12 +71,13 @@ if __name__ == '__main__':
     app.config['MAX_CONTENT_LENGTH'] = 250 * 1024 * 1024  # 250 Mb limit
 
 
-    @app.after_request
-    def apply_security_rules(response):
-        response.headers["X-Frame-Options"] = "SAMEORIGIN"
-        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
-        response.headers['X-XSS-Protection'] = '1; mode=block'
-        return response
+app.secret_key = settings.SECRET_KEY
+from methods.task.task_template.task_template_launch_handler import TaskTemplateLauncherThread
+from methods.sync_events.sync_actions_handler import SyncActionsHandlerThread
+from shared.helpers.security import limiter
+from methods.startup.system_startup_checker import WalrusServiceSystemStartupChecker
+from methods.input.process_media_queue_manager import ProcessMediaQueueManager
+from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueThread
 
 
     @app.before_request

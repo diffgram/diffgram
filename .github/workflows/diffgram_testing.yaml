@@ -54,8 +54,24 @@ jobs:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - uses: mdecoleman/pr-branch-name@1.2.0
+        if: "github.event.pull_request != null"
+        id: vars
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo ${{ steps.vars.outputs.branch }}
+        if: "github.event.pull_request != null"
       - name: Check out repository code
+        if: "github.event.pull_request != null"
         uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.vars.outputs.branch }}
+      - name: Check out repository code
+        if: "github.event.pull_request == null"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
+
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: cp -rf . /__w/diffgram
       - run: cd /__w/diffgram
@@ -73,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     # Service containers to run with `container-job`
     container:
-      image: python:3.7
+      image: thinkwhere/gdal-python:3.7-ubuntu
       options: --user root
       env:
         NODE_ENV: development
@@ -90,6 +106,7 @@ jobs:
         DIFFGRAM_VERSION_TAG: ${{ secrets.DIFFGRAM_VERSION_TAG }}
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
+        CRYPTOGRAPHY_DONT_BUILD_RUST: 1
     services:
       # Label used to access the service container
       postgres:
@@ -106,11 +123,31 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/setup-python@v3
+        with:
+          python-version: '3.7'
+      - run: sed -i -re 's/([a-z]{2}.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+      - run: apt-get update && apt-get install -y git libffi-dev
+      - run: pip3 install "pip>=20"
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - uses: mdecoleman/pr-branch-name@1.2.0
+        if: "github.event.pull_request != null"
+        id: vars
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo ${{ steps.vars.outputs.branch }}
+        if: "github.event.pull_request != null"
       - name: Check out repository code
+        if: "github.event.pull_request != null"
         uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.vars.outputs.branch }}
+      - name: Check out repository code
+        if: "github.event.pull_request == null"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: pwd
       - run: cp -rf . /__w/diffgram
@@ -133,8 +170,23 @@ jobs:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
+      - uses: mdecoleman/pr-branch-name@1.2.0
+        if: "github.event.pull_request != null"
+        id: vars
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo ${{ steps.vars.outputs.branch }}
+        if: "github.event.pull_request != null"
       - name: Check out repository code
+        if: "github.event.pull_request != null"
         uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.vars.outputs.branch }}
+      - name: Check out repository code
+        if: "github.event.pull_request == null"
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.ref_name }}
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: cd frontend
       - uses: actions/setup-node@v2

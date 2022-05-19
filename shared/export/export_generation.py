@@ -1,6 +1,5 @@
 # OPENCORE - ADD
 from methods.regular.regular_api import *
-import yaml
 from shared.database.export import Export
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.source_control.file_diff import file_difference
@@ -24,12 +23,12 @@ def try_to_commit(session):
 
 
 def new_external_export(
-    session,
-    project,
-    export_id,
-    version = None,
-    working_dir = None,
-    use_request_context = True):
+        session,
+        project,
+        export_id,
+        version = None,
+        working_dir = None,
+        use_request_context = True):
     """
     Create a new export data file
 
@@ -128,20 +127,8 @@ def new_external_export(
 
     if export.kind == "Annotations":
 
-        export.yaml_blob_name = settings.EXPORT_DIR + \
-                                str(export.id) + filename + '.yaml'
-
         export.json_blob_name = settings.EXPORT_DIR + \
                                 str(export.id) + filename + '.json'
-
-        try:
-            yaml_data = yaml.dump(annotations, default_flow_style = False)
-            data_tools.upload_from_string(export.yaml_blob_name, yaml_data, content_type = 'text/yaml',
-                                          bucket_type = 'ml')
-        except Exception as exception:
-            trace_data = traceback.format_exc()
-            logger.error(f"[Export, YAML] {str(exception)}")
-            logger.error(trace_data)
 
         json_data = json.dumps(annotations)
         data_tools.upload_from_string(export.json_blob_name, json_data, content_type = 'text/json', bucket_type = 'ml')
@@ -225,7 +212,6 @@ def annotation_export_core(
         export_label_map[label_file.id] = label_file.label.name
 
     # TODO masks if not part of TF records is not really handled great right now
-
     # TODO pass export object to track it?
 
     """
@@ -293,9 +279,6 @@ def annotation_export_core(
             session = session,
             project = project)
 
-        # TODO
-        # so I guess the "new" yaml one can do it "on demand"
-        # if you substitute version for working directory?
         for index, file in enumerate(file_list):
 
             # Image URL?
@@ -304,15 +287,6 @@ def annotation_export_core(
                 session = session,
                 file_comparison_mode = export.file_comparison_mode)
 
-            # What about by filename?
-            # Original filename is not gauranteed to be unique
-            # Careful! if this is not unique it will overwrite
-            # on export and difficult to debug
-            # as it looks like its' working (ie file count is there)
-            # but first file is "null"...
-            # Prior we used hash here, but in context of a task
-            # We may not re hash file (something to look at in future, maybe
-            # we do want to hash it...)
             annotations[file.id] = packet
 
             export.percent_complete = (index / export.file_list_length) * 100
@@ -353,6 +327,9 @@ def build_packet(file,
     if file.type == "video":
         return build_video_packet(file, session)
 
+    if file.type == "geospatial":
+        return build_geopacket(file, session, file_comparison_mode)
+
     if file.type == "image":
         return build_image_packet(file, session, file_comparison_mode)
 
@@ -361,6 +338,64 @@ def build_packet(file,
 
     if file.type == "sensor_fusion":
         return build_sensor_fusion_packet(file, session, file_comparison_mode)
+
+def build_geopacket(file, session, file_comparison_mode="latest"):
+    geo_assets = file.get_geo_assets(session = session)
+    assets_serialized = []
+    for asset in geo_assets:
+        asset.regenerate_url(session = session)
+        geo_dict = {
+            'original_filename': asset.original_filename,
+            'signed_expiry': asset.url_signed_expiry,
+            'signed_url': asset.url_signed,
+        }
+        assets_serialized.append(geo_dict)
+
+    instance_dict_list = []
+    relations_list = []
+    if file_comparison_mode == "latest":
+
+        instance_list = Instance.list(
+            session = session,
+            file_id = file.id)
+
+        for instance in instance_list:
+            if instance.type == 'relation':
+                continue
+            instance_dict_list.append(build_instance(instance))
+
+        for relation in instance_list:
+            if relation.type != 'relation':
+                continue
+            relations_list.append(build_relation(relation = relation))
+
+    if file_comparison_mode == "vs_original":
+        # We could use the raw dict of the {'unchanged', 'added', 'deleted'}
+        # sets BUT then it would make the below a little different
+        # TODO review this
+        #
+
+        result, instance_dict = file_difference(
+            session = session,
+            file_id_alpha = file.id,
+            file_id_bravo = file.root_id)
+
+        for change_type in instance_dict.keys():
+            for instance in instance_dict[change_type]:
+                out = build_instance(instance)
+
+                out['change_type'] = change_type
+
+                instance_dict_list.append(out)
+
+    return {'file': {
+        'id': file.id,
+        'created_time': str(file.created_time),
+        'ann_is_complete': file.ann_is_complete,
+        'type': file.type
+    },
+        'geo_assets': assets_serialized,
+        'instance_list': instance_dict_list}
 
 
 def build_video_packet(file, session):
@@ -685,6 +720,11 @@ def build_instance(instance, include_label = False):
         'y_min': instance.y_min,
         'x_max': instance.x_max,
         'y_max': instance.y_max,
+        'lonlat': instance.lonlat,
+        'coords': instance.coords,
+        'radius': instance.radius,
+        'bounds': instance.bounds,
+        'bounds_lonlat': instance.bounds_lonlat,
         'p1': instance.p1,
         'p2': instance.p2,
         'cp': instance.cp,

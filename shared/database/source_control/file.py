@@ -20,6 +20,7 @@ from shared.shared_logger import get_shared_logger
 from shared.database.core import MutableDict
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import UniqueConstraint
+from shared.database.geospatial.geo_asset import GeoAsset
 from shared.helpers.performance import timeit
 
 
@@ -334,8 +335,8 @@ class File(Base, Caching):
 
         if self.type == "text":
             if self.text_file:
-                serialized = self.text_file.serialize_for_source_control(session)
-                return serialized['url_signed']
+                self.text_file.regenerate_url(session)
+                return self.text_file.url_signed
         return None
 
     def get_blob_path(self):
@@ -360,6 +361,19 @@ class File(Base, Caching):
         ).first()
         return file
 
+    def get_geo_assets(self, session) -> list:
+        assets = session.query(GeoAsset).filter(
+            GeoAsset.file_id == self.id
+        ).all()
+        return assets
+
+    def serialize_geospatial_assets(self, session):
+        assets_list = self.get_geo_assets(session)
+        result = []
+        for asset in assets_list:
+            result.append(asset.serialize(session))
+        return result
+
     def serialize_with_type(self,
                             session = None
                             ):
@@ -370,22 +384,25 @@ class File(Base, Caching):
             if self.image:
                 file['image'] = self.image.serialize_for_source_control(session)
 
-        # Do we want to throw an error here? should be pretty rare no image if type image
-
-        if self.type == "video":
+        elif self.type == "video":
             if self.video:
                 file['video'] = self.video.serialize_list_view(session, self.project)
 
-        if self.type == "text":
+        elif self.type == "text":
             if self.text_file:
-                file['text'] = self.text_file.serialize()
+                file['text'] = self.text_file.serialize(session)
 
-        if self.type == "sensor_fusion":
+        elif self.type == "geospatial":
+            file['geospatial'] = {
+                'layers': self.serialize_geospatial_assets(session = session)
+            }
+
+        elif self.type == "sensor_fusion":
             point_cloud_file = self.get_child_point_cloud_file(session = session)
             if point_cloud_file and point_cloud_file.point_cloud:
-                file['point_cloud'] = point_cloud_file.point_cloud.serialize()
+                file['point_cloud'] = point_cloud_file.point_cloud.serialize(session)
 
-        if self.type == "label":
+        elif self.type == "label":
             if session:
                 label = Label.get_by_id(session, self.label_id)
             else:
@@ -437,23 +454,6 @@ class File(Base, Caching):
         return self.serialize_with_type(session)
 
     def serialize_all_labels_in_attached_instance_list(self, session):
-        # For types Image and Video
-        # TODO cache this...
-
-        # QUESTION why do we need colour map again here
-        # if we are passing colour wiht label file itself??
-        # Different contexts I think, ie video needing frame buffer for it
-        # Or Side panel rendering it
-
-        # This is really awkward
-        # But essentially rebuilding label file list based ONLY on the file
-        # Feel like I'm missing something here
-
-        # Part of this is at heart of conflicting views / constraints
-        # wanting to be able to change label files
-        # But also record source / historic thing
-        # AND also have "global" concepts like "car"...
-        # May need to draw some limits here
 
         label_list = []
         label_file_colour_map = {}
@@ -488,29 +488,11 @@ class File(Base, Caching):
             Instance.soft_delete == False
         ).all()
 
-        if self.type in ['image', 'text']:
-            return {
-                'id': self.id,
-                'type': self.type,
-                'hash': self.hash,
-                'state': self.state,
-                'image': self.image.serialize_for_source_control(session) if self.image else None,
-                'text_file': self.text_file.serialize_for_source_control(session) if self.text_file else None,
-                'instance_list': [instance.serialize_with_label() for instance in instance_list]
-            }
-        if self.type == "video":
-            result = self.serialize_with_video(session)
-            result['instance_list'] = [instance.serialize_with_label() for instance in instance_list]
-            return result
-        if self.type == 'sensor_fusion':
-            return {
-                'id': self.id,
-                'type': self.type,
-                'hash': self.hash,
-                'state': self.state,
-                'point_cloud_3d_file': self.point_cloud.serialize(session) if self.point_cloud else None,
-                'instance_list': [instance.serialize_with_label() for instance in instance_list]
-            }
+        file = self.serialize_with_type(session)
+        file['instance_list'] = [instance.serialize_with_label() for instance in instance_list]
+
+        return file
+
 
     def serialize_annotations_only(self):
 

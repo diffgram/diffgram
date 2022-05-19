@@ -15,10 +15,22 @@ describe("Test annotation_core", () => {
 
   beforeEach(() => {
     props = {
+      propsData:{
+        label_schema:{
+          id: 1,
+          name: 'test'
+        },
+        global_attribute_groups_list: [],
+      },
       mocks: {
         $get_sequence_color: () => {
         },
         task: 1,
+        label_schema:{
+          id: 1,
+          name: 'test'
+        },
+        global_attribute_groups_list: [],
         $store: {
           state: {
             annotation_state: {},
