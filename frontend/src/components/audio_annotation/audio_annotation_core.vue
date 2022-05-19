@@ -43,6 +43,7 @@
         :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
         @on_select_instance="on_select_instance"
         @change_instance_label="change_instance_label"
+        @delete_instance="delete_instance"
       />
       <waveform_selector 
         v-if="current_label" 
@@ -191,6 +192,11 @@ export default {
     },
     on_task_annotation_complete_and_save: function(){
 
+    },
+    delete_instance: async function (instance) {
+      const delete_command = new DeleteInstanceCommand([instance], this.instance_list)
+      this.command_manager.executeCommand(delete_command)
+      this.has_changed = true
     },
     change_instance_label: async function (event) {
       const { instance, label } = event
