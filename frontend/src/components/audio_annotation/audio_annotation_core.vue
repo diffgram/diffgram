@@ -34,11 +34,15 @@
     <div class="d-flex" style="width: 100%; height: 100%">
       <audio_sidebar
         :current_instance="current_instance"
+        :label_file_colour_map="label_file_colour_map"
         :schema_id="label_schema.id"
+        :label_list="label_list"
+        :toolbar_height="`${!task ? '100px' : '50px'}`"
         :instance_list="instance_list ? instance_list.get().filter(instance => !instance.soft_delete) : []"
         :attribute_group_list_prop="label_list"
         :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
         @on_select_instance="on_select_instance"
+        @change_instance_label="change_instance_label"
       />
       <waveform_selector 
         v-if="current_label" 
@@ -187,6 +191,13 @@ export default {
     },
     on_task_annotation_complete_and_save: function(){
 
+    },
+    change_instance_label: async function (event) {
+      const { instance, label } = event
+      const command = new UpdateInstanceLabelCommand([instance], this.instance_list)
+      command.set_new_label(label)
+      this.command_manager.executeCommand(command)
+      this.has_changed = true
     },
     on_select_instance: function(instance) {
       this.current_instance = instance
