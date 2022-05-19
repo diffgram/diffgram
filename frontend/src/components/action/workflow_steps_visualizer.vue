@@ -52,6 +52,10 @@
         'workflow': {
           type: Object,
           default: null
+        },
+        'selected_action': {
+          type: Object,
+          default: null
         }
       },
 

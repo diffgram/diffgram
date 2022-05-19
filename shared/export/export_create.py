@@ -41,7 +41,6 @@ def create_new_export(session: Session,
                       ann_is_complete: bool = False,
                       wait_for_export_generation: bool = False,
                       return_type: str = 'data',
-                      use_request_context = True,
                       log: dict = regular_log.default()):
     project_string_id = project.project_string_id
     if source == "task":
@@ -179,6 +178,5 @@ def export_web_core(session,
             project = project,
             export_id = export_id,
             working_dir = export.working_dir,
-            use_request_context = use_request_context,
             member = member
         )

@@ -62,4 +62,4 @@ class ExportActionRunner(ActionRunner):
         if log_has_error(log):
             self.declare_action_failed(session)
             return True
-        logger.info(f'Export Action Executed Export ID: {export_data["export"]["id"]}')
+        logger.info(f'Export: generated successfully.')

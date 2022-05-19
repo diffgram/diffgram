@@ -297,9 +297,7 @@ export default Vue.extend({
           id: undefined,
           ordinal: this.workflow.actions_list.length
         }
-        console.log('first action', action)
         let new_action  = await this.api_action_new(action)
-        console.log('new_action new_action', new_action)
         if (!new_action){
           return
         }
