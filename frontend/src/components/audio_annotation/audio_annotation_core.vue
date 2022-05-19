@@ -34,7 +34,10 @@
     <div class="d-flex" style="width: 100%; height: 100%">
       <audio_sidebar
         :current_instance="current_instance"
+        :schema_id="label_schema.id"
         :instance_list="instance_list ? instance_list.get().filter(instance => !instance.soft_delete) : []"
+        :attribute_group_list_prop="label_list"
+        :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
         @on_select_instance="on_select_instance"
       />
       <waveform_selector 
