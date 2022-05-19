@@ -33,7 +33,9 @@
 
     <div class="d-flex" style="width: 100%; height: 100%">
       <audio_sidebar
+        :current_instance="current_instance"
         :instance_list="instance_list ? instance_list.get().filter(instance => !instance.soft_delete) : []"
+        @on_select_instance="on_select_instance"
       />
       <waveform_selector 
         v-if="current_label" 
@@ -118,6 +120,7 @@ export default {
       instance_list: [],
       label_file_colour_map: {},
       current_label: null,
+      current_instance: null,
       label_settings: {
         left_nav_width: 450
       },
@@ -181,6 +184,9 @@ export default {
     },
     on_task_annotation_complete_and_save: function(){
 
+    },
+    on_select_instance: function(instance) {
+      this.current_instance = instance
     },
     undo: function () {
       if (!this.history.undo_posible) return;
