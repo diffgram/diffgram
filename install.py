@@ -61,6 +61,7 @@ class DiffgramInstallTool:
     bucket_name = None
     bucket_region = None
     gcp_credentials_path = None
+    s3_endpoint_url = None
     s3_access_id = None
     s3_access_secret = None
     is_aws_signature_v4 = None
@@ -80,6 +81,8 @@ class DiffgramInstallTool:
             self.static_storage_provider = 'aws'
         elif option_number == 3:
             self.static_storage_provider = 'azure'
+        elif option_number == 4:
+            self.static_storage_provider = 'minio'
 
     def set_gcp_credentials(self):
         is_valid = False
@@ -240,6 +243,7 @@ class DiffgramInstallTool:
         return True
 
     def validate_s3_connection(self):
+        endpoint_url = self.s3_endpoint_url
         access_id = self.s3_access_id
         access_secret = self.s3_access_secret
         bucket_name = self.bucket_name
@@ -250,10 +254,10 @@ class DiffgramInstallTool:
         bcolors.printcolor('Testing Connection...', bcolors.OKBLUE)
         try:
             if is_aws_signature_v4:
-                client = boto3.client('s3', config=Config(signature_version='s3v4'),
+                client = boto3.client('s3', config=Config(signature_version='s3v4'), endpoint_url=endpoint_url, 
                                       aws_access_key_id=access_id, aws_secret_access_key=access_secret, region_name=bucket_region)
             else:
-                client = boto3.client('s3', aws_access_key_id=access_id, aws_secret_access_key=access_secret, region_name=bucket_region)
+                client = boto3.client('s3', endpoint_url=endpoint_url, aws_access_key_id=access_id, aws_secret_access_key=access_secret, region_name=bucket_region)
             print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Connection To S3 Account")
         except Exception as e:
             print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Connection To S3 Account")
@@ -296,6 +300,61 @@ class DiffgramInstallTool:
         time.sleep(0.5)
         bcolors.printcolor('Connection to S3 Successful!', bcolors.OKGREEN)
         return True
+
+    def set_minio_credentials(self):
+
+        # Ask For Endpoint Url
+        is_valid = False
+        while not is_valid:
+            s3_endpoint_url = bcolors.inputcolor('Please provide the Minio Endpoint Url: ')
+            if s3_endpoint_url == '':
+                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
+                continue
+            else:
+                self.s3_endpoint_url = s3_endpoint_url
+                is_valid = True
+
+        # Ask For Access Key ID
+        is_valid = False
+        while not is_valid:
+            s3_access_id = bcolors.inputcolor('Please provide the Minio Access Key ID: ')
+            if s3_access_id == '':
+                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
+                continue
+            else:
+                self.s3_access_id = s3_access_id
+                is_valid = True
+
+        # Ask For Access Key Secret
+        is_valid = False
+
+        while not is_valid:
+            s3_access_secret = bcolors.inputcolor('Please provide the Minio Access Key Secret: ')
+            if s3_access_secret == '':
+                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
+                continue
+            else:
+                self.s3_access_secret = s3_access_secret
+                is_valid = True
+
+        # Ask for bucket name
+        bucket_name = bcolors.inputcolor('Please provide the Minio S3 Bucket Name [Default is diffgram-storage]: ')
+        if bucket_name == '':
+            self.bucket_name = 'diffgram-storage'
+        else:
+            self.bucket_name = bucket_name
+
+        # Ask for bucket region
+        is_valid = False
+
+        while not is_valid:
+            bucket_region = bcolors.inputcolor('Please provide the Minio S3 Bucket Region: ')
+            if bucket_region == '':
+                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
+                continue
+            else:
+                self.bucket_region = bucket_region
+                is_valid = True
 
     def set_s3_credentials(self):
 
@@ -399,6 +458,16 @@ class DiffgramInstallTool:
             env_file += f"DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
             env_file += f"DIFFGRAM_S3_BUCKET_REGION={self.bucket_region}\n"
             env_file += f"IS_DIFFGRAM_S3_V4_SIGNATURE={self.is_aws_signature_v4}\n"
+            env_file += f"ML__DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
+            env_file += 'SAME_HOST=False\n'
+            env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
+            env_file += "GCP_SERVICE_ACCOUNT_FILE_PATH=/dev/null\n"
+        elif self.static_storage_provider == 'minio':
+            env_file = f"DIFFGRAM_MINIO_ENDPOINT_URL={self.s3_endpoint_url}\n"
+            env_file += f"DIFFGRAM_MINIO_ACCESS_KEY_ID={self.s3_access_id}\n"
+            env_file += f"DIFFGRAM_MINIO_ACCESS_KEY_SECRET={self.s3_access_secret}\n"
+            env_file += f"DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
+            env_file += f"DIFFGRAM_S3_BUCKET_REGION={self.bucket_region}\n"
             env_file += f"ML__DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
             env_file += 'SAME_HOST=False\n'
             env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
@@ -541,11 +610,12 @@ class DiffgramInstallTool:
         print('1. Google Cloud Storage (GCP)')
         print('2. Amazon Web Services S3 (AWS S3)')
         print('3. Microsoft Azure Storage (Azure)')
+        print('4. Minio Web Services Storage (Minio)')
         option_valid = False
         while not option_valid:
-            option = bcolors.inputcolor('Enter 1, 2 or 3. Or write exit to quit the installation: ')
+            option = bcolors.inputcolor('Enter 1, 2, 3 or 4. Or write exit to quit the installation: ')
 
-            if option.isnumeric() and int(option) in [1, 2, 3]:
+            if option.isnumeric() and int(option) in [1, 2, 3, 4]:
                 option_valid = True
                 self.set_static_storage_option(int(option))
             elif option == 'exit':
@@ -553,7 +623,7 @@ class DiffgramInstallTool:
                 print('Thanks for using Diffgram :)')
                 return
             else:
-                print('Invalid option. Please enter either 1,2 or 3. Write exit to quit the installation process.')
+                print('Invalid option. Please enter either 1, 2, 3 or 4. Write exit to quit the installation process.')
 
         if self.static_storage_provider == 'gcp':
             self.set_gcp_credentials()
@@ -567,7 +637,11 @@ class DiffgramInstallTool:
             self.set_azure_credentials()
             if not self.validate_azure_connection():
                 return
-
+        elif self.static_storage_provider == 'minio':
+            self.set_minio_credentials()
+            if not self.validate_s3_connection():
+                return
+            
         self.set_diffgram_version()
         self.database_config()
         self.mailgun_config()

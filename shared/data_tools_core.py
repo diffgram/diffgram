@@ -2,6 +2,7 @@
 from shared.settings import settings
 from shared.data_tools_core_gcp import DataToolsGCP
 from shared.data_tools_core_s3 import DataToolsS3
+from shared.data_tools_core_minio import DataToolsMinio
 from shared.data_tools_core_azure import DataToolsAzure
 from shared.utils.singleton import Singleton
 import time
@@ -25,6 +26,8 @@ class Data_tools(metaclass = Singleton):
             self.data_tools = DataToolsGCP()
         elif provider == 'aws':
             self.data_tools = DataToolsS3()
+        elif provider == 'minio':
+            self.data_tools = DataToolsMinio()
         elif provider == 'azure':
             self.data_tools = DataToolsAzure()
 
