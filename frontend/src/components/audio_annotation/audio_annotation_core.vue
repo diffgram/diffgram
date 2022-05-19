@@ -44,6 +44,7 @@
         @on_select_instance="on_select_instance"
         @change_instance_label="change_instance_label"
         @delete_instance="delete_instance"
+        @on_update_attribute="update_attribute"
       />
       <waveform_selector 
         v-if="current_label" 
@@ -192,6 +193,12 @@ export default {
     },
     on_task_annotation_complete_and_save: function(){
 
+    },
+    update_attribute: function(attribute) {
+      const command = new UpdateInstanceAttributeCommand([this.instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.instance_list)
+      command.set_new_attribute(attribute[0].id, {...attribute[1]})
+      this.command_manager.executeCommand(command)
+      this.has_changed = true
     },
     delete_instance: async function (instance) {
       const delete_command = new DeleteInstanceCommand([instance], this.instance_list)
