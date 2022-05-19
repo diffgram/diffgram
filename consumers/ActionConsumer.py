@@ -79,7 +79,7 @@ class ActionsConsumer:
             execution.
         :return:
         """
-        with sessionMaker.session_scope() as session:
+        with sessionMaker.session_scope_threaded() as session:
             msg_data = json.loads(msg)
             kind = msg_data.get('kind')
             project_id = msg_data.get('project_id')

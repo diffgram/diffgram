@@ -15,7 +15,6 @@ if __name__ == '__main__':
 
     start_time = time.time()
 
-
     # app.app_context()
     sslify = SSLify(app, subdomains = True)
 
@@ -71,15 +70,6 @@ if __name__ == '__main__':
     app.config['MAX_CONTENT_LENGTH'] = 250 * 1024 * 1024  # 250 Mb limit
 
 
-app.secret_key = settings.SECRET_KEY
-from methods.task.task_template.task_template_launch_handler import TaskTemplateLauncherThread
-from methods.sync_events.sync_actions_handler import SyncActionsHandlerThread
-from shared.helpers.security import limiter
-from methods.startup.system_startup_checker import WalrusServiceSystemStartupChecker
-from methods.input.process_media_queue_manager import ProcessMediaQueueManager
-from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueThread
-
-
     @app.before_request
     def handle_chunking():
         """
@@ -93,13 +83,11 @@ from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueThrea
             request.environ["wsgi.input_terminated"] = True
 
 
-
     app.secret_key = settings.SECRET_KEY
     from methods.task.task_template.task_template_launch_handler import TaskTemplateLauncherThread
     from methods.sync_events.sync_actions_handler import SyncActionsHandlerThread
     from shared.helpers.security import limiter
     from methods.startup.system_startup_checker import WalrusServiceSystemStartupChecker
-    from methods.connectors.datasaur_connector import DatasaurSyncManager
     from methods.input.process_media_queue_manager import ProcessMediaQueueManager
 
     limiter.init_app(app)
@@ -120,9 +108,6 @@ from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueThrea
     sync_actions_thread = SyncActionsHandlerThread(thread_sleep_time_min = settings.SYNC_ACTIONS_THREAD_SLEEP_TIME_MIN,
                                                    thread_sleep_time_max = settings.SYNC_ACTIONS_THREAD_SLEEP_TIME_MAX,
                                                    run_once = False)
-    datasaur_sync_manager = DatasaurSyncManager(thread_sleep_time_min = settings.DATASAUR_SYNC_THREAD_SLEEP_TIME_MIN,
-                                                thread_sleep_time_max = settings.DATASAUR_SYNC_THREAD_SLEEP_TIME_MAX)
-    datasaur_sync_manager.start_sync_loop()
 
     print("Startup in", time.time() - start_time)
 
@@ -136,6 +121,7 @@ from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueThrea
 else:
     print("settings.NAME_EQUALS_MAIN", settings.NAME_EQUALS_MAIN)
     import shared.database_setup_supporting
+
     app.debug = False
     # This line is needed in order to run the server behind Gunicorn
     app.wsgi_app = ProxyFix(app.wsgi_app, num_proxies = 2)

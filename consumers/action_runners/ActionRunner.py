@@ -2,13 +2,10 @@ from shared.database.action.action import Action
 from shared.queuemanager.QueueManager import QueueManager, RoutingKeys, Exchanges
 from shared.database.event.event import Event
 from shared.regular import regular_log
-from shared.helpers.sessionMaker import session_scope
-
-mngr = QueueManager()
+from shared.helpers import sessionMaker
 
 
 class ActionRunner:
-
     action: Action
     event_data: dict
     log: dict
@@ -17,6 +14,7 @@ class ActionRunner:
         self.action = action
         self.event_data = event_data
         self.log = regular_log.default()
+        self.mngr = QueueManager()
 
     def execute_pre_conditions(self, session) -> bool:
         raise NotImplementedError
@@ -25,7 +23,7 @@ class ActionRunner:
         raise NotImplementedError
 
     def run(self):
-        with session_scope() as session:
+        with sessionMaker.session_scope_threaded() as session:
             allow = self.execute_pre_conditions(session)
             if not allow:
                 return
@@ -34,7 +32,9 @@ class ActionRunner:
                 self.declare_action_complete(session)
             else:
                 self.declare_action_failed(session)
+
     def declare_action_failed(self, session):
+
         event = Event.new(
             session = session,
             action_id = self.action.id,
@@ -43,11 +43,12 @@ class ActionRunner:
 
         )
         event_data = event.serialize()
-        mngr.send_message(message = event_data,
+        self.mngr.send_message(message = event_data,
                           exchange = Exchanges.actions.value,
                           routing_key = RoutingKeys.action_trigger_event_new.value)
 
     def declare_action_complete(self, session):
+        mngr = QueueManager()
         event = Event.new(
             session = session,
             action_id = self.action.id,
@@ -56,6 +57,6 @@ class ActionRunner:
 
         )
         event_data = event.serialize()
-        mngr.send_message(message = event_data,
+        self.mngr.send_message(message = event_data,
                           exchange = Exchanges.actions.value,
                           routing_key = RoutingKeys.action_trigger_event_new.value)

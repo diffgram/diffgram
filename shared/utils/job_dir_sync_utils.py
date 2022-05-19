@@ -41,7 +41,6 @@ class JobDirectorySyncManager:
         job_obj = self.job
         if job is not None:
             job_obj = job
-        print('job_obj.directoru', job_obj.directory)
         result, log = WorkingDirFileLink.file_link_update(
             session = self.session,
             add_or_remove = 'add',

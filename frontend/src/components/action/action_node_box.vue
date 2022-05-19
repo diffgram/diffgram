@@ -14,7 +14,7 @@
       </v-chip>
       <v-card-title class="d-flex justify-start">
         <v-img style="width: 20%"  :src="action.icon"></v-img>
-        <h3 style="width: 70%">{{action.public_name}}</h3>
+        <h3 style="width: 70%">{{action.ordinal}}. {{action.public_name}}</h3>
       </v-card-title>
       <v-card-text>
         <div class="d-flex">

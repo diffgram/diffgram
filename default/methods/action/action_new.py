@@ -64,7 +64,7 @@ def api_action_new(project_string_id, workflow_id):
             template_id = input['template_id'],
             completion_condition_data = input['completion_condition_data'],
             workflow_id = input['workflow_id'],
-            ordinal = input['workflow_id'],
+            ordinal = input['ordinal'],
             icon = input['icon'],
             log = log,
         )

@@ -1,5 +1,4 @@
-# OPENCORE - ADD
-from methods.regular.regular_api import *
+import json
 from shared.data_tools_core import Data_tools
 from shared.database.export import Export
 from shared.shared_logger import get_shared_logger

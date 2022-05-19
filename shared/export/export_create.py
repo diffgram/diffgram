@@ -8,12 +8,25 @@ from shared.database.export import Export
 from shared.database.source_control.working_dir import WorkingDir
 from shared.regular import regular_log
 from shared.helpers import sessionMaker
+from shared.export.export_generation import new_external_export
 from shared.export.export_utils import check_export_billing, check_export_permissions_and_status
 from flask import copy_current_request_context, jsonify
 from shared.permissions.job_permissions import Job_permissions
 from shared.shared_logger import get_shared_logger
+from shared.export.export_view import export_view_core
+from shared.database.auth.member import Member
 
 logger = get_shared_logger()
+
+
+def export_on_thread(project_string_id, export_id, member_id):
+    with sessionMaker.session_scope_threaded() as session:
+        member = Member.get_by_id(session, member_id)
+        export_web_core(session = session,
+                        project_string_id = project_string_id,
+                        export_id = export_id,
+                        member = member)
+
 
 def create_new_export(session: Session,
                       project: Project,
@@ -21,26 +34,16 @@ def create_new_export(session: Session,
                       task_id: int = None,
                       job_id: int = None,
                       directory_id: int = None,
+                      member_id: int = None,
                       file_comparison_mode: str = None,
                       kind: str = None,
                       masks: str = None,
                       ann_is_complete: bool = False,
                       wait_for_export_generation: bool = False,
                       return_type: str = 'data',
-
+                      use_request_context = True,
                       log: dict = regular_log.default()):
     project_string_id = project.project_string_id
-
-    @copy_current_request_context
-    def export_on_thread(project_string_id, export_id):
-
-        with sessionMaker.session_scope_threaded() as session:
-            export_web_core(session = session,
-                            project_string_id = project_string_id,
-                            export_id = export_id)
-
-        t.cancel()
-
     if source == "task":
 
         task = Task.get_by_id(
@@ -74,7 +77,6 @@ def create_new_export(session: Session,
     if directory is None:
         log["error"]["directory"] = "Invalid directory"
         return False, log
-
     # Caution assumes project.user_primary
     # Billing check
     log = check_export_billing(
@@ -101,7 +103,6 @@ def create_new_export(session: Session,
         ann_is_complete = ann_is_complete,
         working_dir_id = directory.id
     )
-
     if export.kind not in ["Annotations", "TF Records"]:
         log["error"]["kind"] = "Invalid kind"
         return False, log
@@ -111,11 +112,9 @@ def create_new_export(session: Session,
 
     # Long running operation
     if wait_for_export_generation is False:
-
+        export_fn = export_on_thread
         t = threading.Timer(0, export_on_thread, args = (
-            project_string_id, export.id,))
-
-        t.daemon = True
+            project_string_id, export.id, member_id))
         t.start()
         result = {
             'success': True,
@@ -125,10 +124,12 @@ def create_new_export(session: Session,
 
     # Immediate return, ie for mock test data
     else:
+        member = Member.get_by_id(session, member_id)
         export_web_core(
             session = session,
             project_string_id = project_string_id,
-            export_id = export.id)
+            export_id = export.id,
+            member = member)
 
         export_check_result = check_export_permissions_and_status(
             export, project_string_id, session)
@@ -144,10 +145,11 @@ def create_new_export(session: Session,
 
         return result, log
 
+
 def export_web_core(session,
                     project_string_id,
                     export_id,
-                    use_request_context = True
+                    member,
                     ):
     project = Project.get(session, project_string_id)
 
@@ -172,10 +174,11 @@ def export_web_core(session,
     if export.source in ["directory", "job", "task"]:
         # user = User.get(session)
         # TODO why not pass export object?
-        result, data = Export.new_external_export(
+        result, data = new_external_export(
             session = session,
             project = project,
             export_id = export_id,
             working_dir = export.working_dir,
-            use_request_context = use_request_context
+            use_request_context = use_request_context,
+            member = member
         )

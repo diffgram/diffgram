@@ -785,7 +785,6 @@ class WorkingDirFileLink(Base):
             log, updated log
 
         """
-        print('FILE LINK UPDATE', add_or_remove, incoming_directory, directory, file_id)
         if log is None:
             log = regular_log.default_api_log()
 

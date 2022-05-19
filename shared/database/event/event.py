@@ -296,7 +296,6 @@ class Event(Base):
             user = member.user
             if user:
                 email = user.email
-        print('FILE', file_id)
         event = Event(
             kind = kind,
             member_id = member_id,

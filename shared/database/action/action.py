@@ -15,6 +15,11 @@ class ActionTriggerEventTypes(Enum):
     action_completed = 'action_completed'
 
 
+class ActionKinds(Enum):
+    create_task = 'create_task'
+    export = 'export'
+
+
 class Action(Base, SerializerMixin):
     """
         Each step of a workflow is called an action.
@@ -143,8 +148,6 @@ class Action(Base, SerializerMixin):
     @staticmethod
     def get_triggered_actions(session, trigger_kind: str, project_id = None):
         from shared.database.action.workflow import Workflow
-        print('aaaa trigger_kind', trigger_kind)
-        print('aaaa project_id', project_id)
         actions = session.query(Action).join(Workflow, Action.workflow_id == Workflow.id).filter(
             Workflow.active == True,
             Action.project_id == project_id,
@@ -218,7 +221,7 @@ class Action(Base, SerializerMixin):
 
     def get_previous_action(self, session) -> 'Action':
         ordinal = self.ordinal
-        if ordinal == 1:
+        if ordinal == 0:
             return None
         action = session.query(Action).filter(
             Action.ordinal == ordinal - 1,

@@ -26,9 +26,9 @@ def new_external_export(
         session,
         project,
         export_id,
+        member,
         version = None,
-        working_dir = None,
-        use_request_context = True):
+        working_dir = None):
     """
     Create a new export data file
 
@@ -56,19 +56,6 @@ def new_external_export(
 
     export = session.query(Export).filter(
         Export.id == export_id).first()
-
-    member = None
-    if use_request_context:
-        user = User.get(session)
-
-        export.user = user
-
-        if user:
-            member = user.member
-        else:
-            client_id = request.authorization.get('username', None)
-            auth = Auth_api.get(session, client_id)
-            member = auth.member
 
     session.add(export)
 
@@ -807,5 +794,4 @@ def declare_export_failed(
     session.add(export)
 
 
-setattr(Export, "new_external_export", new_external_export)
 setattr(Export, "build_packet", build_packet)
