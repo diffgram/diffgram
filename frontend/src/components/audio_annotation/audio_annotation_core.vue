@@ -7,6 +7,8 @@
     >
       <template slot="second_row">
         <audio_toolbar
+          :undo_disabled="undo_disabled"
+          :redo_disabled="redo_disabled"
           :has_changed="has_changed"
           :save_loading="save_loading"
           :loading="loading"
@@ -23,6 +25,8 @@
           @change_file="change_file"
           @save="save"
           @change_task="trigger_task_change"
+          @undo="undo()"
+          @redo="redo()"
         />
       </template>
     </main_menu>
@@ -127,6 +131,14 @@ export default {
       history: undefined,
     }
   },
+  computed: {
+    undo_disabled: function () {
+      return !this.history || !this.history.undo_posible
+    },
+    redo_disabled: function () {
+      return !this.history || !this.history.redo_posible
+    }
+  },
   mounted() {
       this.history = new History()
       this.command_manager = new CommandManager(this.history)
@@ -169,7 +181,23 @@ export default {
     },
     on_task_annotation_complete_and_save: function(){
 
-    }
+    },
+    undo: function () {
+      if (!this.history.undo_posible) return;
+
+      let undone = this.command_manager.undo();
+      this.current_instance = null
+
+      if (undone) this.has_changed = true;
+    },
+    redo: function () {
+      if (!this.history.redo_posible) return;
+
+      let redone = this.command_manager.redo();
+      this.current_instance = null
+
+      if (redone) this.has_changed = true;
+    },
   }
 }
 </script>
