@@ -131,6 +131,8 @@ jobs:
       DIFFGRAM_MINIO_ACCESS_KEY_ID: ${{secrets.DIFFGRAM_MINIO_ACCESS_KEY_ID}}
       DIFFGRAM_MINIO_ACCESS_KEY_SECRET: ${{secrets.DIFFGRAM_MINIO_ACCESS_KEY_SECRET}}
       DIFFGRAM_MINIO_DISABLED_SSL_VERIFY: ${{secrets.DIFFGRAM_MINIO_DISABLED_SSL_VERIFY}}
+      SIGNED_URL_CACHE_MINIMUM_DAYS_VALID: ${{secrets.SIGNED_URL_CACHE_MINIMUM_DAYS_VALID}}
+      SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID: ${{secrets.SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID}}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - name: Check out repository code
@@ -200,6 +202,8 @@ jobs:
           diffgramSettings.DIFFGRAM_MINIO_ACCESS_KEY_ID: ${{secrets.DIFFGRAM_MINIO_ACCESS_KEY_ID}}
           diffgramSettings.DIFFGRAM_MINIO_ACCESS_KEY_SECRET: ${{secrets.DIFFGRAM_MINIO_ACCESS_KEY_SECRET}}
           diffgramSettings.DIFFGRAM_MINIO_DISABLED_SSL_VERIFY: ${{secrets.DIFFGRAM_MINIO_DISABLED_SSL_VERIFY}}
+          diffgramSettings.SIGNED_URL_CACHE_MINIMUM_DAYS_VALID: ${{secrets.SIGNED_URL_CACHE_MINIMUM_DAYS_VALID}}
+          diffgramSettings.SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID: ${{secrets.SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           walrusService.requests.memory: "16G"
           walrusService.limits.memory: "16G"
