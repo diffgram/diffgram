@@ -28,7 +28,9 @@
     </main_menu>
 
     <div class="d-flex" style="width: 100%; height: 100%">
-      <audio_sidebar />
+      <audio_sidebar
+        :instance_list="instance_list ? instance_list.get().filter(instance => !instance.soft_delete) : []"
+      />
       <waveform_selector 
         v-if="current_label" 
         :current_label="current_label" 
@@ -133,7 +135,7 @@ export default {
   methods: {
     instance_create: function(audiosurfer_id, start_time, end_time) {
       const created_instance = new AudioAnnotationInstance()
-      created_instance.create_instance(audiosurfer_id, start_time, end_time, {... this.current_label}, {})
+      created_instance.create_frontend_instance(audiosurfer_id, start_time, end_time, {... this.current_label}, {})
       this.instance_list.push([created_instance])
       const command = new CreateInstanceCommand([created_instance], this.instance_list)
       this.command_manager.executeCommand(command)

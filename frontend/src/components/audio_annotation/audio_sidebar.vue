@@ -55,16 +55,10 @@
                                     </td>
                                     <td class="centered-table-items">
                                             <v-icon 
-                                                v-if="item.type === 'relation'"
+                                                v-if="item.type === 'audio'"
                                                 :color="item.label_file.colour.hex"
                                             >
-                                                mdi-relation-one-to-one
-                                            </v-icon>
-                                            <v-icon 
-                                                v-if="item.type === 'text_token'"
-                                                :color="item.label_file.colour.hex"
-                                            >
-                                                mdi-label
+                                                mdi-waveform
                                             </v-icon>
                                     </td>
                                     <td class="centered-table-items">
