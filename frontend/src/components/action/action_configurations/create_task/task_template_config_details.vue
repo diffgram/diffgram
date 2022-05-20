@@ -1,7 +1,8 @@
 <template>
   <div class="mb-4">
-    <h2 class="font-weight-light">3. Select Task Template or Create New: </h2>
+    <h2 class="font-weight-light">Select Tasks or Create New: </h2>
     <div  class="d-flex align-center">
+
       <job_select v-model="job_selected"
                   v-if="!show_task_template_wizard"
                   ref="job_select"
@@ -11,7 +12,9 @@
                   :select_this_id="action.config_data.task_template_id"
       >
       </job_select>
+
       <div class="d-flex align-center justify-center">
+
         <v-btn :loading="switch_loading"
                outlined
                small
