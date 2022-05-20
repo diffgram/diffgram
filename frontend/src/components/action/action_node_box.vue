@@ -4,25 +4,34 @@
             @click="select_action(action)"
             style="position: relative">
       <v-btn class="config-btn" color="primary"  icon  x-small @click="open_config_dialog"><v-icon color="primary">mdi-cog</v-icon></v-btn>
-      <v-chip
-        v-if="action.is_trigger"
-        x-small
-        color="warning"
-        style="position: absolute; top: -10px; right: -15px">
-        <v-icon x-small>mdi-asterisk-circle-outline</v-icon>
-        <strong>Trigger</strong>
-      </v-chip>
+
       <v-card-title class="d-flex justify-start">
-        <v-img style="width: 20%"  :src="action.icon"></v-img>
-        <h3 style="width: 70%">{{action.ordinal}}. {{action.public_name}}</h3>
+        <v-img style="width: 10%"  :src="action.icon"></v-img>
+        <h3 style="width: 70%">
+
+          <div v-if="action.kind == 'create_task' && action.config_data">
+            {{action.config_data.task_template_id}}
+          </div>
+
+          <div v-if="action.kind == 'export' && action.config_data">
+            {{action.config_data.directory_id}}
+          </div>
+
+        </h3>
       </v-card-title>
       <v-card-text>
         <div class="d-flex">
+          <!--
+          {{action.ordinal}}
+            -->
 
+          {{action.public_name}}
+          <!--
           <div class="q-py-md" v-html="action.description"/>
-
+          -->
         </div>
       </v-card-text>
+
 
       <v-btn v-if="action.kind !== 'action_start'" color="primary"  icon  x-small @click="remove"><v-icon color="red">mdi-delete</v-icon></v-btn>
 
