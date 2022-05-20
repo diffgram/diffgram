@@ -2,7 +2,7 @@
 
 export const default_steps_config = {
   triggers: {
-    header_title: 'Trigger Config',
+    header_title: 'When',
     number: 1,
     title: 'Configure Step Trigger',
     message: 'Trigger are events that will start the execution of this action.',
@@ -16,14 +16,14 @@ export const default_steps_config = {
     hide: false
   },
   action_config: {
-    header_title: 'Action Step Configuration',
+    header_title: 'Do',
     number: 3,
     title: 'Action Step Configuration',
     message: 'Provide the data for the action step  execution.',
     hide: false
   },
   completion_trigger: {
-    header_title: 'Completion Condition',
+    header_title: 'Next',
     number: 4,
     title: 'Completes When: ',
     message: 'Provide the condition that will make this step complete.',
