@@ -13,7 +13,7 @@
           @remove="on_remove_action"
           @open_action_selector="on_open_action_selector"
           @add_action_to_workflow="on_add_action_to_workflow"
-          @select_action="on_select_action"
+          @select_action="on_select_action($event)"
           :action="action"
           :actions_list="workflow.actions_list"
           :project_string_id="project_string_id"
