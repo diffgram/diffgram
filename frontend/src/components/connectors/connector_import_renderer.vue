@@ -11,6 +11,7 @@
     :video_split_duration="video_split_duration"
     :job_id="job_id"
   ></cloud_storage_searchbar>
+
   <cloud_storage_searchbar
     :max_height="max_height"
     v-else-if="connection && $store.state.connection.connection_list.length > 0 && connection.integration_name === 'amazon_aws'"
@@ -23,6 +24,20 @@
     :video_split_duration="video_split_duration"
     :job_id="job_id"
   ></cloud_storage_searchbar>
+
+  <cloud_storage_searchbar
+    :max_height="max_height"
+    v-else-if="connection && $store.state.connection.connection_list.length > 0 && connection.integration_name === 'minio'"
+    :project_string_id="project_string_id"
+    ref="minio"
+    label="Minio"
+    :connection="connection"
+    @update_bucket_name="update_bucket_name"
+    @update_file_list="update_file_list"
+    :video_split_duration="video_split_duration"
+    :job_id="job_id"
+  ></cloud_storage_searchbar>
+
   <cloud_storage_searchbar
     :max_height="max_height"
     v-else-if="connection && $store.state.connection.connection_list.length > 0 && connection.integration_name === 'microsoft_azure'"
@@ -87,6 +102,9 @@
       determine_current_browser: function(){
         if(!this.$props.connection){
           return
+        }
+        if(this.$props.connection.integration_name === 'minio'){
+          this.current_browser = this.$refs.minio;
         }
         if(this.$props.connection.integration_name === 'amazon_aws'){
           this.current_browser =  this.$refs.amazon_aws;

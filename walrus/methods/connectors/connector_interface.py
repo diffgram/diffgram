@@ -92,6 +92,13 @@ def test_connection_api():
             }
         },
         {
+            'private_host': {
+                'default': None,
+                'kind': str,
+                'required': False,
+            }
+        },
+        {
             'private_id': {
                 'default': None,
                 'kind': str,
@@ -102,6 +109,13 @@ def test_connection_api():
             'private_secret': {
                 'default': None,
                 'kind': str,
+                'required': False,
+            }
+        },
+        {
+            'disabled_ssl_verify': {
+                'default': None,
+                'kind': bool,
                 'required': False,
             }
         },
