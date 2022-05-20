@@ -1,5 +1,9 @@
 <template>
-  <v-stepper  v-model="step" style="height: 100%" @change="on_change_step">
+  <v-stepper v-model="step"
+             style="height: 100%"
+             @change="on_change_step"
+             class="elevation-0"
+             >
     <v-stepper-items style="height: 100%">
       <v_error_multiple :error="error"></v_error_multiple>
 
@@ -55,7 +59,9 @@
       </v-stepper-content>
 
     </v-stepper-items>
-    <v-stepper-header class="ma-0 pl-8 pr-8">
+
+
+    <v-stepper-header class="ma-0 pl-8 pr-8 ">
       <template v-for="(key, index) in Object.keys(visible_steps)">
         <v-stepper-step
           :complete="step > visible_steps[key].number"

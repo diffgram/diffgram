@@ -1,6 +1,6 @@
 <template>
 
-  <v-container fluid class="pt-0">
+  <div>
     <create_task_action_config v-if="action.kind === 'create_task'"
                                :project_string_id="project_string_id"
                                :actions_list="actions_list"
@@ -18,7 +18,7 @@
                           :action="action">
 
     </export_action_config>
-  </v-container>
+  </div>
 </template>
 
 <script lang="ts">
