@@ -70,42 +70,6 @@
           @next_step="go_to_step(steps_configuration['datasets'].number + 1)"
         ></step_attach_directories_task_template>
       </v-stepper-content>
-      <v-stepper-content
-        v-if="!steps_configuration['ui_schema'].hide"
-        :step="steps_configuration['ui_schema'].number">
-        <step_ui_schema_task_template
-          :project_string_id="project_string_id"
-          :job="job"
-          :loading_steps="loading"
-          @previous_step="go_to_step(steps_configuration['ui_schema'].number - 1)"
-          @next_step="go_to_step(steps_configuration['ui_schema'].number + 1)"
-        ></step_ui_schema_task_template>
-      </v-stepper-content>
-
-      <v-stepper-content
-        v-if="!steps_configuration['guides'].hide"
-        :step="steps_configuration['guides'].number">
-        <step_guides_task_template
-          :project_string_id="project_string_id"
-          :job="job"
-          :loading_steps="loading"
-          @previous_step="go_to_step(steps_configuration['guides'].number - 1)"
-          @next_step="go_to_step(steps_configuration['guides'].number + 1)"
-        ></step_guides_task_template>
-      </v-stepper-content>
-
-      <v-stepper-content
-        v-if="!steps_configuration['advanced'].hide"
-        :step="steps_configuration['advanced'].number">
-        <step_advanced_options_task_template
-          :project_string_id="project_string_id"
-          :job="job"
-          :loading_steps="loading"
-          @previous_step="go_to_step(steps_configuration['advanced'].number - 1)"
-          @next_step="go_to_step(steps_configuration['advanced'].number + 1)"
-        ></step_advanced_options_task_template>
-
-      </v-stepper-content>
 
       <v-stepper-content
         v-if="!steps_configuration['credentials'].hide"
@@ -205,7 +169,7 @@ export default Vue.extend({
   data() {
     return {
       step: 1,
-      total_steps: 9,
+      total_steps: 6,
       loading: false,
       steps_configuration: {
         name: {
@@ -237,24 +201,9 @@ export default Vue.extend({
           number: 5,
           hide: false
         },
-        ui_schema: {
-          header_title: 'UI Schema',
-          number: 6,
-          hide: false
-        },
-        guides: {
-          header_title: 'Guides',
-          number: 7,
-          hide: false
-        },
-        advanced: {
-          header_title: 'Advanced Settings',
-          number: 8,
-          hide: false
-        },
         credentials: {
           header_title: 'Credentials',
-          number: 9,
+          number: 6,
           hide: false
         },
       },
