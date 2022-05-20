@@ -1,8 +1,9 @@
 <template>
   <div>
-    <v-card :class="`pa-2 node-card ${action.kind === 'action_start' ? 'action-start' : ''}` "
+    <v-card :class="`pa-2 node-card` "
             @click="select_action(action)"
-            style="position: relative">
+            style="position: relative"
+            >
       <v-btn class="config-btn" color="primary"  icon  x-small @click="open_config_dialog"><v-icon color="primary">mdi-cog</v-icon></v-btn>
 
       <v-card-title class="d-flex justify-start">

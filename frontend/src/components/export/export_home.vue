@@ -1,7 +1,7 @@
 <template>
   <div id="export">
 
-    <v-card>
+    <v-card class="elevation-0">
       <v-container>
 
         <v-card-title>
