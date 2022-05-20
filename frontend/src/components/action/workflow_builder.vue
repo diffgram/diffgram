@@ -9,7 +9,7 @@
                 <span>
                   Workflow:
                 </span>
-            <span class="secondary--text font-weight-light" v-if="!loading && workflow && !edit_name">
+            <span class="secondary--text font-weight-light" v-if="workflow && !edit_name">
                   {{workflow.name }}
                 </span>
           </h4>
@@ -20,7 +20,6 @@
             icon="mdi-pencil"
             :icon_style="true"
             small
-            :disabled="loading"
             color="primary"
             datacy="edit_schema_name_button"
           >
@@ -33,7 +32,6 @@
             v-model="workflow.name"
             @input="has_changes = true"
             @keyup.enter="update_workflow_name"
-            :disabled="loading"
             solo
             flat
             height="35px"
