@@ -13,7 +13,7 @@
         <slot :name="keyStep" v-if="keyStep === 'action_config'">
 
         </slot>
-        <slot :name="keyStep" v-if="keyStep === 'triggers'">
+        <slot :name="keyStep" v-if="keyStep === 'triggers'" >
           <trigger_config :project_string_id="project_string_id"
                           :actions_list=actions_list
                           :action="action">
@@ -66,6 +66,7 @@
         <v-stepper-step
           :complete="step > visible_steps[key].number"
           :step="visible_steps[key].number"
+          editable
         >
           {{ visible_steps[key].header_title }}
         </v-stepper-step>
