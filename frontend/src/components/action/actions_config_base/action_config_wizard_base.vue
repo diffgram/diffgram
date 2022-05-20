@@ -4,7 +4,7 @@
              @change="on_change_step"
              class="elevation-0"
              >
-    <v-stepper-items style="height: 100%">
+    <v-stepper-items style="height: 80%">
       <v_error_multiple :error="error"></v_error_multiple>
 
       <v-stepper-content
@@ -51,6 +51,7 @@
             :next_visible="false"
             :loading_next="loading_steps"
             :disabled_next="loading_steps"
+            :disabled_back="step <= 1"
             @back="on_prev_button_click"
             :skip_visible="false">
 
@@ -61,7 +62,7 @@
     </v-stepper-items>
 
 
-    <v-stepper-header class="ma-0 pl-8 pr-8 ">
+    <v-stepper-header class="ma-0 pl-8 pr-8 " style="height: 20%">
       <template v-for="(key, index) in Object.keys(visible_steps)">
         <v-stepper-step
           :complete="step > visible_steps[key].number"
@@ -141,7 +142,8 @@ export default Vue.extend({
         this.$emit('next_step')
       },
       on_prev_button_click: function(){
-        if(this.step <= Object.keys(this.steps_config).length){
+        console.log('Object.keys(this.steps_config).length', Object.keys(this.steps_config).length, this.step)
+        if(this.step <= 1){
           return
         }
         this.step -= 1

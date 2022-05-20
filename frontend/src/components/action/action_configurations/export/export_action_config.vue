@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid>
+  <v-container fluid style="height: 100%">
     <action_config_wizard_base
       v-if="display_mode === 'wizard'"
       :action="action"

@@ -1,7 +1,7 @@
 <template>
 
   <div class="mb-4">
-    <h2 class="font-weight-light mr-6">2. Add Condition [Optional]: </h2>
+    <h3 class="mr-6">2. Add Condition [Optional]: </h3>
     <v-select item-text="name" item-value="value"
               @change="on_pre_condition_change"
               :items="conditions_list"

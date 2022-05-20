@@ -1,7 +1,7 @@
 <template>
 
   <div class="mb-4">
-    <h2 class="font-weight-light mr-6">4. Completes When: </h2>
+    <h3 class="mr-6">4. Completes When: </h3>
     <v-select item-text="name" item-value="value" :items="completion_condition_list" v-model="action.completion_condition_data.event_name"></v-select>
   </div>
 

@@ -1,6 +1,6 @@
 <template>
   <div class="mb-4">
-    <h2 class="font-weight-light">Select Tasks or Create New: </h2>
+    <h3 class="">Select Tasks or Create New: </h3>
     <div  class="d-flex align-center">
 
       <job_select v-model="job_selected"

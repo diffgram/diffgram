@@ -110,7 +110,7 @@
               @add_action_to_workflow="on_add_action_to_workflow"
               @open_action_selector="show_add_action_panel"
               @remove_selection="on_remove_selection"
-              @select_action="on_select_action($event, 'ongoing_usage')"
+              @select_action="on_select_action($event, 'wizard')"
               :workflow="workflow"
               @newDraggingBlock="on_new_dragging_block"
               :project_string_id="project_string_id">
@@ -121,17 +121,6 @@
         </v-card>
 
         <v-card v-if="selected_action && !show_add_action" class="ml-2 pa-4 steps-container" width="80%" elevation="0">
-          <!-- Name on left panel -->
-          <!-- only relevant if editing --> 
-          <!--
-          <v-card-title v-if="selected_action.kind !== 'action_start'">
-            <h3 class="font-weight-light">
-              <v-icon size="32" color="primary">mdi-pencil</v-icon>
-              Configure: {{ selected_action.name }}
-            </h3>
-            <v-spacer></v-spacer>
-          </v-card-title>
-          -->
           <v-progress-linear
             v-if="add_action_loading"
             height="50"
@@ -146,7 +135,7 @@
                                  :project_string_id="project_string_id"
                                  @action_updated="on_action_updated"
                                  :action="selected_action"
-                                 :display_mode="display_mode">  
+                                 :display_mode="display_mode">
           </action_config_factory>
         </v-card>
         <v-card v-if="show_add_action" class="ml-2 pa-4 steps-container" width="80%" elevation="0">
@@ -208,7 +197,7 @@ export default Vue.extend({
 
     data() {
       return {
-        display_mode: 'ongoing_usage',
+        display_mode: 'wizard',
         selected_action: null,
         trigger_types: [
           {name: 'Task is completed.', value: 'task_completed'},
@@ -332,7 +321,7 @@ export default Vue.extend({
         this.selected_action = null
       },
       on_select_action: function (action, display_mode_functional) {
-        this.display_mode = display_mode_functional 
+        this.display_mode = display_mode_functional
         this.selected_action = action;
         this.hide_add_action_panel();
         this.add_action_loading = false
@@ -427,7 +416,7 @@ export default Vue.extend({
           this.workflow = result.workflow
           this.workflow.actions_list = this.initialize_actions(this.workflow.actions_list)
           if(this.workflow.actions_list.length > 0){
-            this.on_select_action(this.workflow.actions_list[0], 'ongoing_usage')
+            this.on_select_action(this.workflow.actions_list[0], 'wizard')
           }
           this.loading = false
         }

@@ -1,6 +1,6 @@
 <template>
 
-  <div>
+  <div style="height: 100%">
     <create_task_action_config v-if="action.kind === 'create_task'"
                                :project_string_id="project_string_id"
                                :actions_list="actions_list"
