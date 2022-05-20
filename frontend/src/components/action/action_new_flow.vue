@@ -2,7 +2,7 @@
   <div id="">
 
     <v-btn @click="api_flow_new"
-           color="primary"
+           :color="color"
            text
            style="text-transform: none !important;"
            :loading="loading"
@@ -28,6 +28,9 @@
       props: {
         'project_string_id': {
           default: null
+        },
+        color: {
+          default: 'primary'
         }
       },
       data() {

@@ -3,6 +3,7 @@
     <h1>Workflows</h1>
 
     <new_flow
+      color="success"
       :project_string_id="$store.state.project.current.project_string_id">
 
     </new_flow>
@@ -17,14 +18,7 @@
 
       <template slot="item" slot-scope="props">
         <tr>
-          <td>{{ props.item.name }}</td>
-          <td>{{ props.item.trigger_type }}</td>
-          <td>
-            <span v-if="props.item.time_window === '1_minute'">No Time Window</span>
-            <span v-else>{{props.item.time_window}}</span>
-
-          </td>
-
+          <td  @click="route_flow(props.item)"><h3 class="workflow-title"> {{ props.item.name }}</h3></td>
 
           <td>
 
@@ -52,112 +46,103 @@
 
 <script lang="ts">
 
-  import axios from '../../services/customInstance';
-  import new_flow from '../action/action_new_flow.vue'
-  import Vue from "vue";
+import axios from '../../services/customInstance';
+import new_flow from '../action/action_new_flow.vue'
+import Vue from "vue";
 
-  export default Vue.extend({
-      name: 'action_flow_list',
+export default Vue.extend({
+    name: 'action_flow_list',
 
-      props: {
-        'project_string_id': {}
-      },
-      watch: {},
+    props: {
+      'project_string_id': {}
+    },
+    watch: {},
 
-      components: {
-        new_flow : new_flow
-      },
+    components: {
+      new_flow: new_flow
+    },
 
-      mounted() {
+    mounted() {
 
-        this.refresh_list()
+      this.refresh_list()
 
-      },
-      data() {
-        return {
+    },
+    data() {
+      return {
 
-          search: null,
-          loading: false,
+        search: null,
+        loading: false,
 
-          flow_list: [],
+        flow_list: [],
 
-          selected: [],  // would prefer selected_list but vuetify seems to need 'selected'
+        selected: [],  // would prefer selected_list but vuetify seems to need 'selected'
 
-          header_list: [
-            {
-              text: "Name",
-              align: 'left',
-              sortable: true,
-              value: 'name'
-            },
-            {
-              text: "Trigger Event",
-              align: 'left',
-              value: "trigger_type",
+        header_list: [
+          {
+            text: "Name",
+            align: 'left',
+            sortable: true,
+            value: 'name'
+          },
+          {
+            text: "Action",
+            align: 'left',
+            value: "active",
 
-              sortable: false,
-            },
-            {
-              text: "Time Window",
-              align: 'left',
-              value: "time_window",
-
-              sortable: false,
-            },
-            {
-              text: "Action",
-              align: 'left',
-              value: "active",
-
-              sortable: false,
-            }
-          ]
-
-        }
-      },
-
-      methods: {
-
-        refresh_list: function () {
-
-          if (this.project_string_id == null) {
-            return
+            sortable: false,
           }
-
-          var url = null
-          this.loading = true
-
-          url = '/api/v1/project/'
-            + this.project_string_id
-            + '/action/flow/list'
-
-          axios.post(url, {})
-            .then(response => {
-
-              this.flow_list = response.data.flow_list
-              this.loading = false
-
-            })
-            .catch(error => {
-              console.log(error);
-            });
-
-        },
-
-        route_flow: function (flow) {
-
-          let url = '/project/' + this.project_string_id
-            + '/workflow/' + flow.id
-
-          this.$router.push(url)
-
-        }
+        ]
 
       }
+    },
+
+    methods: {
+
+      refresh_list: function () {
+
+        if (this.project_string_id == null) {
+          return
+        }
+
+        var url = null
+        this.loading = true
+
+        url = '/api/v1/project/'
+          + this.project_string_id
+          + '/action/flow/list'
+
+        axios.post(url, {})
+          .then(response => {
+
+            this.flow_list = response.data.flow_list
+            this.loading = false
+
+          })
+          .catch(error => {
+            console.log(error);
+          });
+
+      },
+
+      route_flow: function (flow) {
+
+        let url = '/project/' + this.project_string_id
+          + '/workflow/' + flow.id
+
+        this.$router.push(url)
+
+      }
+
     }
-  ) </script>
-<style scoped>
-  .action_flow_container {
-    padding: 2rem 2rem;
   }
+) </script>
+<style scoped>
+.workflow-title:hover {
+  color: #1565c0;
+  cursor: pointer;
+}
+
+.action_flow_container {
+  padding: 2rem 2rem;
+}
 </style>
