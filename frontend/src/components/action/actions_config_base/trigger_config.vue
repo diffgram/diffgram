@@ -1,11 +1,15 @@
 <template>
   <div class="mb-4">
-    <h2 class="mr-6">1. Trigger When: </h2>
+    <h3 class="mr-6">When:</h3>
+
     <v-select item-text="name"
               @change_directory="$emit('change')"
               item-value="value"
               :items="triggers_list"
-              v-model="selected_trigger"></v-select>
+              v-model="selected_trigger"
+              >
+    </v-select>
+
     <v_directory_list
       v-model="action.trigger_data.upload_directory_id_list"
       v-if="action.trigger_data.trigger_event_name === 'file_uploaded'"
@@ -123,8 +127,12 @@ export default Vue.extend({
 
 
 <style>
-code {
-  width: 100%;
-  height: 100% !important;
-}
+  .v-select__selections input {
+    font-size: 1.6em;
+    line-height: 24px;
+  }
+  .list-item__title input {
+    font-size: 1.6em;
+    line-height: 24px;
+  }
 </style>
