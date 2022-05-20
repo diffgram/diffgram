@@ -1,5 +1,5 @@
 from shared.database.action.action import Action
-from shared.queuemanager.QueueManager import QueueManager, RoutingKeys, Exchanges
+from shared.queueclient.QueueClient import QueueClient, RoutingKeys, Exchanges
 from shared.database.event.event import Event
 from shared.regular import regular_log
 from shared.helpers import sessionMaker
@@ -14,7 +14,7 @@ class ActionRunner:
         self.action = action
         self.event_data = event_data
         self.log = regular_log.default()
-        self.mngr = QueueManager()
+        self.mngr = QueueClient()
 
     def execute_pre_conditions(self, session) -> bool:
         raise NotImplementedError
@@ -48,7 +48,7 @@ class ActionRunner:
                           routing_key = RoutingKeys.action_trigger_event_new.value)
 
     def declare_action_complete(self, session):
-        mngr = QueueManager()
+        mngr = QueueClient()
         event = Event.new(
             session = session,
             action_id = self.action.id,

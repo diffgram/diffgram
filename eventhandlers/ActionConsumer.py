@@ -4,7 +4,7 @@ from pika.exchange_type import ExchangeType
 import pika
 import threading
 from pika.exchange_type import ExchangeType
-from shared.queuemanager.QueueManager import RoutingKeys, Exchanges, QueueNames
+from shared.queueclient.QueueClient import RoutingKeys, Exchanges, QueueNames
 from shared.shared_logger import get_shared_logger
 from shared.database.action.action import Action
 from shared.database.action.workflow import Workflow
@@ -91,9 +91,9 @@ class ActionsConsumer:
                 return
 
             actions_list = Action.get_triggered_actions(session = session, trigger_kind = kind, project_id = project_id)
-            logger.info(f'Matched with {len(actions_list)} actions.')
+            logger.debug(f'Matched with {len(actions_list)} actions.')
             actions_list = ActionsConsumer.filter_from_trigger_metadata(kind, msg_data, actions_list)
-            logger.info(f'Filtered to {len(actions_list)} actions.')
+            logger.debug(f'Filtered to {len(actions_list)} actions.')
             for action in actions_list:
                 action_runner = action.get_runner(event_data = msg_data)
                 action_runner.run()

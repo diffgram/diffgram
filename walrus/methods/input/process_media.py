@@ -51,9 +51,8 @@ from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
 from methods.text_data.text_tokenizer import TextTokenizer
 from shared.utils.instance.transform_instance_utils import rotate_instance_dict_90_degrees
-from shared.queuemanager.QueueManager import QueueManager
 
-queuemanager = QueueManager()
+
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]

@@ -4,10 +4,10 @@ from pika.exchange_type import ExchangeType
 import pika
 import threading
 from pika.exchange_type import ExchangeType
-from shared.queuemanager.QueueManager import RoutingKeys, Exchanges, QueueNames
+from shared.queueclient.QueueClient import RoutingKeys, Exchanges, QueueNames
 from shared.database.action.action import ActionTriggerEventTypes
 from shared.shared_logger import get_shared_logger
-from shared.queuemanager.QueueManager import QueueManager
+from shared.queueclient.QueueClient import QueueClient
 import functools
 
 logger = get_shared_logger()
@@ -51,20 +51,20 @@ class EventsConsumer:
             execution.
         :return:
         """
-        queuemanager = QueueManager()
+        queueclient = QueueClient()
         msg_data = json.loads(msg)
-        logger.info(f'New Event Message: {msg}')
+        logger.debug(f'New Event Message: {msg}')
         kind = msg_data.get('kind')
         if not kind:
-            logger.info(f'Event was discarded. Kind is {kind}')
+            logger.debug(f'Event was discarded. Kind is {kind}')
             return
 
         actions_kinds_list = [k.value for k in ActionTriggerEventTypes]
 
         if kind in actions_kinds_list:
-            logger.info("Event Matched Action Triggers. Publishing Action Trigger Message...")
-            queuemanager.send_message(message = msg_data,
+            logger.debug("Event Matched Action Triggers. Publishing Action Trigger Message...")
+            queueclient.send_message(message = msg_data,
                                       routing_key = RoutingKeys.action_trigger_event_new.value,
                                       exchange = Exchanges.actions.value)
         else:
-            logger.info(f'No matching actions for event. Kind is {kind}')
+            logger.debug(f'No matching actions for event. Kind is {kind}')

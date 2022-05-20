@@ -36,14 +36,14 @@ class ExportActionRunner(ActionRunner):
             Creates a task from the given file_id in the given task template ID.
             :return: True if access was succesfull false in other case.
        """
-        logger.info('Starting export generation action...')
+        logger.debug('Starting export generation action...')
         source = self.action.config_data.get('source')
         task_template_id = self.action.config_data.get('task_template_id')
         directory_id = self.action.config_data.get('directory_id')
         task_id = self.action.config_data.get('task_id')
         kind = self.action.config_data.get('kind')
         ann_is_complete = self.action.config_data.get('ann_is_complete')
-        logger.info(f'Action config is {self.action.config_data}')
+        logger.debug(f'Action config is {self.action.config_data}')
         project = self.action.project
         member_id = self.event_data.get('member_id')
         export_data, log = create_new_export(

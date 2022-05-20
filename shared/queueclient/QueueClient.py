@@ -22,7 +22,7 @@ class RoutingKeys(Enum):
     event_new = 'events.new'
 
 
-class QueueManager:
+class QueueClient:
 
     def __init__(self):
         print('RABBITMQ_DEFAULT_PASS', settings.RABBITMQ_DEFAULT_PASS)

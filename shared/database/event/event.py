@@ -6,7 +6,7 @@ import threading
 import requests
 import shared.helpers.sessionMaker as sessionMaker
 from shared.helpers.sessionMaker import AfterCommitAction
-from shared.queuemanager.QueueManager import QueueManager, Exchanges, RoutingKeys
+from shared.queueclient.QueueClient import QueueClient, Exchanges, RoutingKeys
 
 
 logger = get_shared_logger()
@@ -240,7 +240,7 @@ class Event(Base):
         t.start()
 
     def broadcast(self):
-        queue_mngr = QueueManager()
+        queue_mngr = QueueClient()
         message = self.serialize()
         queue_mngr.send_message(message = message,
                                 routing_key = RoutingKeys.event_new.value,
