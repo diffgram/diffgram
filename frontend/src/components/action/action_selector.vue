@@ -8,10 +8,7 @@
       <action_step_box v-for="action in actions_list_filtered"
                        @add_action_to_workflow="add_action_to_workflow(action)"
                        style="width: 250px; height: 250px"
-                       :icon="action.icon"
-                       :name="action.name"
-                       :description="action.description"
-                       :is_trigger="action.is_trigger"
+                       :action="action"
       >
 
       </action_step_box>
