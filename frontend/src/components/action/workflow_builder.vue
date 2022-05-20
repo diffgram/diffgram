@@ -134,6 +134,7 @@
                                  :actions_list="workflow.actions_list"
                                  :project_string_id="project_string_id"
                                  @action_updated="on_action_updated"
+                                 @open_action_selector="show_add_action_panel"
                                  :action="selected_action"
                                  :display_mode="display_mode">
           </action_config_factory>

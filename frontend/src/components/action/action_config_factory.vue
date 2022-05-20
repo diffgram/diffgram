@@ -6,6 +6,7 @@
                                :actions_list="actions_list"
                                :display_mode="display_mode"
                                @action_updated="on_action_updated"
+                               @open_action_selector="$emit('open_action_selector')"
                                :action="action">
 
     </create_task_action_config>
@@ -15,6 +16,7 @@
                           :actions_list="actions_list"
                           :project_string_id="project_string_id"
                           @action_updated="on_action_updated"
+                          @open_action_selector="$emit('open_action_selector')"
                           :action="action">
 
     </export_action_config>

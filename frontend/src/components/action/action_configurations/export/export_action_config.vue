@@ -4,6 +4,7 @@
       v-if="display_mode === 'wizard'"
       :action="action"
       :actions_list="actions_list"
+      @open_action_selector="$emit('open_action_selector')"
       :project_string_id="project_string_id">
       <template v-slot:triggers>
         <trigger_config
