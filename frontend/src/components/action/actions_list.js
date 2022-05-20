@@ -87,7 +87,7 @@ export const ACTION_TEMPLATE_LIST = [
     },
     node: {
       title: 'Human Tasks',
-      description: 'Add tasks to a task template',
+      description: 'Human Tasks',
     },
   },
   {

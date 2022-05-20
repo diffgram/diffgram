@@ -57,7 +57,7 @@ export default Vue.extend({
               trigger_action_id: null,
             },
             {event_name: null},
-            'Add tasks to a task template',
+              'Human Tasks',
             {event_name: 'task_completed'}
           ),
           new Action(
