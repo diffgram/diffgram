@@ -31,6 +31,13 @@
       </template>
     </action_config_form_base>
 
+    <div v-if="display_mode === 'ongoing_usage'">
+      <job_detail
+          v-if="action.config_data"
+          :job_id="action.config_data.task_template_id">
+      </job_detail>
+    </div>
+
 
 
   </div>

@@ -66,6 +66,13 @@
       </template>
     </action_config_form_base>
 
+    <div v-if="display_mode === 'ongoing_usage'">
+      <v_export_view
+          v-if="action.config_data"
+          :project_string_id="$store.state.project.current.project_string_id">
+      </v_export_view>
+    </div>
+
   </v-container>
 </template>
 
