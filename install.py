@@ -624,7 +624,7 @@ class DiffgramInstallTool:
         else:
             self.rabbit_username = 'admin'
             self.rabbit_pass = 'admin'
-            self.rabbit_host = 'localhost'
+            self.rabbit_host = 'rabbitmq'
             self.rabbit_port = 5672
 
     def install(self):

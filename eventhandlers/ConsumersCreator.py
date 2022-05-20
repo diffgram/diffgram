@@ -1,6 +1,6 @@
 import pika
-from consumers.EventsConsumer import EventsConsumer
-from consumers.ActionConsumer import ActionsConsumer
+from eventhandlers.EventsConsumer import EventsConsumer
+from eventhandlers.ActionConsumer import ActionsConsumer
 from shared.settings import settings
 
 class ConsumerCreator:

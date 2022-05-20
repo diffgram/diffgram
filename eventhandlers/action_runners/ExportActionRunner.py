@@ -1,4 +1,4 @@
-from consumers.action_runners.ActionRunner import ActionRunner
+from eventhandlers.action_runners.ActionRunner import ActionRunner
 from shared.shared_logger import get_shared_logger
 from shared.regular.regular_log import log_has_error
 from shared.export.export_create import create_new_export

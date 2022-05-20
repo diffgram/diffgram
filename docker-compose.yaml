@@ -18,14 +18,15 @@ services:
     expose: [80]
     depends_on:
     - default
-  consumers:
-    image: gcr.io/diffgram-open-core/walrus:${DIFFGRAM_VERSION_TAG}
+  eventhandlers:
+    image: gcr.io/diffgram-open-core/eventhandlers:latest
     ports:
-    - "0.0.0.0:8082:8082"
-    expose: [8082]
+    - "0.0.0.0:8086:8086"
+    expose: [8086]
     depends_on:
     - db
     - default
+    - rabbitmq
     volumes:
     - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
     environment:
@@ -55,6 +56,10 @@ services:
       DIFFGRAM_VERSION_TAG: ${DIFFGRAM_VERSION_TAG}
       DIFFGRAM_HOST_OS: ${DIFFGRAM_HOST_OS}
       DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE: ${DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
       DIFFGRAM_SERVICE_NAME: ${DIFFGRAM_SERVICE_NAME}
     entrypoint: ["python3", "-u", "/app/main.py"]
   walrus:
@@ -65,6 +70,7 @@ services:
     depends_on:
     - db
     - default
+    - rabbitmq
     volumes:
     - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
     environment:
@@ -97,6 +103,10 @@ services:
       DIFFGRAM_VERSION_TAG: ${DIFFGRAM_VERSION_TAG}
       DIFFGRAM_HOST_OS: ${DIFFGRAM_HOST_OS}
       DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE: ${DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
       DIFFGRAM_SERVICE_NAME: ${DIFFGRAM_SERVICE_NAME}
     entrypoint: ["python3", "-u", "/app/main.py"]
 
@@ -144,6 +154,10 @@ services:
       DIFFGRAM_VERSION_TAG: ${DIFFGRAM_VERSION_TAG}
       DIFFGRAM_HOST_OS: ${DIFFGRAM_HOST_OS}
       DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE: ${DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      RABBITMQ_PORT: ${RABBITMQ_PORT}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
       DIFFGRAM_SERVICE_NAME: ${DIFFGRAM_SERVICE_NAME}
     command: ["/app/db-init.sh", "${DATABASE_HOST}", "python3", "-u", "/app/main.py"]
   db:
@@ -163,6 +177,7 @@ services:
     env_file:
       - .env
     container_name: 'rabbitmq'
+    expose: [5672, 15672]
     ports:
         - 5672:5672
         - 15672:15672
