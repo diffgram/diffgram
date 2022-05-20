@@ -58,17 +58,7 @@
           @next_step="go_to_step(steps_configuration['reviewers'].number + 1)"
         ></step_reviewers_selection>
       </v-stepper-content>
-      <v-stepper-content
-        v-if="!steps_configuration['upload'].hide"
-        :step="steps_configuration['upload'].number">
-        <step_upload_files_task_template
-          :project_string_id="project_string_id"
-          :job="job"
-          :loading_steps="loading"
-          @previous_step="go_to_step(steps_configuration['upload'].number - 1)"
-          @next_step="go_to_step(steps_configuration['upload'].number + 1)"
-        ></step_upload_files_task_template>
-      </v-stepper-content>
+
       <v-stepper-content
         v-if="!steps_configuration['datasets'].hide"
         :step="steps_configuration['datasets'].number">
@@ -242,34 +232,29 @@ export default Vue.extend({
           number: 4,
           hide: false
         },
-        upload: {
-          header_title: 'Upload',
-          number: 5,
-          hide: false
-        },
         datasets: {
           header_title: 'Datasets',
-          number: 6,
+          number: 5,
           hide: false
         },
         ui_schema: {
           header_title: 'UI Schema',
-          number: 7,
+          number: 6,
           hide: false
         },
         guides: {
           header_title: 'Guides',
-          number: 8,
+          number: 7,
           hide: false
         },
         advanced: {
           header_title: 'Advanced Settings',
-          number: 9,
+          number: 8,
           hide: false
         },
         credentials: {
           header_title: 'Credentials',
-          number: 10,
+          number: 9,
           hide: false
         },
       },
