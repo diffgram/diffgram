@@ -2,7 +2,7 @@
   <v-stepper v-model="step" style="height: 100%; width: 100%" @change="on_change_step">
 
 
-    <v-stepper-items style="height: 100%">
+    <v-stepper-items style="height: 80%">
       <v_error_multiple :error="error"></v_error_multiple>
       <v-stepper-content
         v-if="!steps_configuration['name'].hide"
@@ -131,7 +131,7 @@
       </v-stepper-content>
     </v-stepper-items>
 
-    <v-stepper-header class="ma-0 pl-8 pr-8">
+    <v-stepper-header style="20%" class="ma-0 pl-8 pr-8">
       <template v-for="(key, index) in Object.keys(steps_configuration)">
         <v-stepper-step
 

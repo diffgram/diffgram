@@ -27,23 +27,27 @@
       </div>
     </div>
     <div v-if="show_task_template_wizard">
-      <task_template_wizard
-        @task_template_launched="on_launch"
-        :redirect_after_launch="false"
-        :project_string_id="project_string_id"
-        mode="new"
-        :job="job_to_create"
-      >
-      </task_template_wizard>
+
     </div>
     <div v-else-if="action.job">
       <job_detail :job_id="action.job.id"></job_detail>
     </div>
+    <task_template_creation_dialog
+      :project_string_id="project_string_id"
+      mode="new"
+      ref="task_template_creation_dialog"
+      :job="job_to_create"
+      @task_template_launched="on_launch"
+      :redirect_after_launch="false"
+    >
+
+    </task_template_creation_dialog>
   </div>
 </template>
 
 <script>
 import task_template_wizard from '../../../task/job/task_template_wizard_creation/task_template_wizard'
+import task_template_creation_dialog from '../../../task/job/task_template_wizard_creation/task_template_creation_dialog'
 import {create_empty_job} from '../../../task/job/empty_job'
 import {Action} from './../../Action'
 import Job_detail from "@/components/task/job/job_detail";
@@ -77,14 +81,16 @@ export default {
   components: {
     Action_config_wizard_base,
     Job_detail,
-    task_template_wizard: task_template_wizard,
+    task_template_creation_dialog: task_template_creation_dialog,
   },
   methods: {
     on_launch: function(job){
+      console.log('task_template_launched', job)
       this.job_selected = job;
       this.$refs.job_select.add_job_to_list(job)
       this.$refs.job_select.select_job(job)
       this.action.config_data.task_template_id = job.id;
+      this.$refs.task_template_creation_dialog.close()
       this.$emit('action_updated', this.action)
 
     },
@@ -99,9 +105,8 @@ export default {
     show_wizard: async function(){
       this.switch_loading = true;
       await this.$nextTick()
-      this.show_task_template_wizard = true;
-      await this.$nextTick()
       this.job_to_create = create_empty_job()
+      this.$refs.task_template_creation_dialog.open()
       this.switch_loading = false
     }
   },
