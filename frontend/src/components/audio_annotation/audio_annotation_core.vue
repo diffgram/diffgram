@@ -72,6 +72,7 @@ import {
   UpdateInstanceAttributeCommand
 } from "../../helpers/command/available_commands"
 import { AudioAnnotationInstance } from "../vue_canvas/instances/AudioInstance"
+import { deferTask, finishTaskAnnotation } from "../../services/tasksServices"
 
 export default {
   name: "audio_annotation_core",
@@ -169,30 +170,52 @@ export default {
     insatnce_update_label: function() {},
     insatnce_update_attribute: function() {},
     insatance_delete: function() {},
-
-    focus_instance_show_all: function(){
-
-    },
-    defer_task: function(){
-
+    focus_instance_show_all: function() {},
+    defer_task: async function () {
+      const defered = await deferTask({
+        task_id: this.task.id,
+        mode: "toggle_deferred"
+      })
+      this.trigger_task_change('next')
     },
     change_label_file: function(label_file){
       this.current_label = label_file;
     },
-    change_label_visibility: function(){
+    change_label_visibility: async function (label) {
+      if (label.is_visible) {
+        this.invisible_labels = this.invisible_labels.filter(label_id => label_id !== label.id)
+      } else {
+        this.invisible_labels.push(label.id)
+      }
+    },
+    change_file(direction, file) {
+      if (direction == "next" || direction == "previous") {
+        this.$emit("request_file_change", direction, file);
+      }
+    },
+    save: async function(){
 
     },
-    change_file: function(){
-
+    trigger_task_change: async function (direction, assign_to_user = false) {
+      if (this.has_changed) {
+        await this.save();
+        await this.save();
+      }
+      this.$emit("request_new_task", direction, this.task, assign_to_user);
     },
-    save: function(){
-
-    },
-    trigger_task_change: function(){
-
-    },
-    on_task_annotation_complete_and_save: function(){
-
+    on_task_annotation_complete_and_save: async function () {
+      await this.save();
+      await this.save();
+      const response = await finishTaskAnnotation(this.task.id);
+      const new_status = response.data.task.status;
+      this.task.status = new_status;
+      if (new_status !== "complete") {
+        this.submitted_to_review = true;
+      }
+      if (this.$props.task && this.$props.task.id) {
+        this.save_loading_image = false;
+        this.trigger_task_change("next", this.$props.task, true);
+      }
     },
     update_attribute: function(attribute) {
       const command = new UpdateInstanceAttributeCommand([this.instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.instance_list)
