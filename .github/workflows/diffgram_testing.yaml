@@ -138,6 +138,14 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      # Label used to access the service container
+      rabbitmq:
+        # Docker Hub image
+        image: rabbitmq
+        # Provide the password for postgres
+        env:
+          RABBITMQ_DEFAULT_USER: "diffgram"
+          RABBITMQ_DEFAULT_PASS: "diffgram"
     steps:
       - uses: actions/setup-python@v3
         with:
