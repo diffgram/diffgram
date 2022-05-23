@@ -1857,7 +1857,7 @@ class Process_Media():
         else:
             self.input.status = "failed"
             self.input.status_text = f"""Extension: {self.input.extension} not supported yet. 
-                Try adding an accepted extension [.jpg, .jpeg, .png, .bmp, .tif, .tiff] or no extension at all if from cloud soruce and response header content-type is set correctly."""
+                Try adding an accepted extension [.jpg, .jpeg, .png, .bmp, .tif, .tiff] or no extension at all if from cloud source and response header content-type is set correctly."""
             return
 
         try:
