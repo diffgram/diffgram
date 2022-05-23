@@ -27,6 +27,10 @@ export default Vue.extend({
     current_label: {
       type: Object,
       required: true
+    },
+    instance_list: {
+      type: Array,
+      required: true
     }
   },
   data: function(){
@@ -36,6 +40,20 @@ export default Vue.extend({
     }
   },
   watch:{
+    instance_list: function() {
+      const region_keys = Object.keys(this.wavesurfer.regions.list)
+      region_keys.map(key => {
+        const instance = this.instance_list.find(inst => inst.audiosurfer_id === key)
+        if (instance) {
+          const { r, g, b } = instance.label_file.colour.rgba
+          const region_to_update = this.wavesurfer.regions.list[key]
+          region_to_update.color = `rgba(${r}, ${g}, ${b}, 0.5)`
+          region_to_update.updateRender()
+        } else {
+          this.wavesurfer.regions.list[key].remove()
+        }
+      })
+    },
     audio_file: function(new_file, old_file){
       this.load_audio();
     },

@@ -47,7 +47,8 @@
         @on_update_attribute="update_attribute"
       />
       <waveform_selector 
-        v-if="current_label" 
+        v-if="current_label && instance_list" 
+        :instance_list="instance_list.get()"
         :current_label="current_label" 
         :audio_file="file" 
         @instance_create_update="instance_create_update"
