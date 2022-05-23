@@ -196,7 +196,6 @@ export default Vue.extend({
 
     data() {
       return {
-        display_mode: 'wizard',
         selected_action: null,
         trigger_types: [
           {name: 'Task is completed.', value: 'task_completed'},
@@ -281,7 +280,16 @@ export default Vue.extend({
       }
 
     },
-    computed: {},
+    computed: {
+      display_mode: function(){
+        if(this.workflow.active){
+          return "ongoing_usage"
+        }
+        else{
+          return "wizard"
+        }
+      }
+    },
     methods: {
       on_change_workflow_active: function(value){
         this.workflow.active = value
@@ -314,13 +322,12 @@ export default Vue.extend({
         this.workflow = {
           ...this.workflow
         }
-        this.on_select_action(new_action, 'wizard')
+        this.on_select_action(new_action)
       },
       on_remove_selection: function () {
         this.selected_action = null
       },
-      on_select_action: function (action, display_mode_functional) {
-        this.display_mode = display_mode_functional
+      on_select_action: function (action) {
         this.selected_action = action;
         this.hide_add_action_panel();
         this.add_action_loading = false
