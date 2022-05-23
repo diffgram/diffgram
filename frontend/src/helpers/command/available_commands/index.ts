@@ -4,6 +4,7 @@ import DeleteInstanceCommand from "./delete"
 import UpdateInstanceLabelCommand from "./update_label"
 import UpdateInstanceGeoCoordinatesCommand from "./update_geo_coordinates"
 import UpdateInstanceAttributeCommand from "./update_attribute"
+import UpdateInstanceAudioCoordinatesCommand from "./update_audio_coordinates"
 
 export {
     CreateInstanceCommand,
@@ -11,5 +12,6 @@ export {
     DeleteInstanceCommand,
     UpdateInstanceLabelCommand,
     UpdateInstanceGeoCoordinatesCommand,
-    UpdateInstanceAttributeCommand
+    UpdateInstanceAttributeCommand,
+    UpdateInstanceAudioCoordinatesCommand
 };

@@ -90,7 +90,7 @@ export default Vue.extend({
     },
     on_annotate: function(e) {
       const { id, start, end } = e
-      this.$emit('instance_create', id, start, end)
+      this.$emit('instance_create_update', id, start, end)
     },
     on_audio_ready: function(){
       this.loading_audio = false;
