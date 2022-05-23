@@ -42,6 +42,20 @@ export default Vue.extend({
   watch:{
     instance_list: function() {
       const region_keys = Object.keys(this.wavesurfer.regions.list)
+      const instances_to_add = this.instance_list.filter(inst => !region_keys.includes(inst.audiosurfer_id))
+
+      instances_to_add.map(inst => {
+        const { r, g, b } = inst.label_file.colour.rgba
+
+        this.wavesurfer.addRegion({
+          start: inst.start_time,
+          end: inst.end_time,
+          color: `rgba(${r}, ${g}, ${b}, 0.5)`
+        })
+
+        console.log("g")
+      })
+
       region_keys.map(key => {
         const instance = this.instance_list.find(inst => inst.audiosurfer_id === key)
         if (instance) {
