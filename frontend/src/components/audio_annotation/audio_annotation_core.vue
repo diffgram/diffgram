@@ -50,7 +50,7 @@
         v-if="current_label" 
         :current_label="current_label" 
         :audio_file="file" 
-        @instance_create="instance_create"
+        @instance_create_update="instance_create_update"
       />
     </div>
 
@@ -69,7 +69,8 @@ import {
   CreateInstanceCommand,
   DeleteInstanceCommand,
   UpdateInstanceLabelCommand,
-  UpdateInstanceAttributeCommand
+  UpdateInstanceAttributeCommand,
+  UpdateInstanceAudioCoordinatesCommand
 } from "../../helpers/command/available_commands"
 import { AudioAnnotationInstance } from "../vue_canvas/instances/AudioInstance"
 import { deferTask, finishTaskAnnotation } from "../../services/tasksServices"
@@ -158,11 +159,21 @@ export default {
       this.instance_list = new InstanceList()
   },
   methods: {
-    instance_create: function(audiosurfer_id, start_time, end_time) {
-      const created_instance = new AudioAnnotationInstance()
-      created_instance.create_frontend_instance(audiosurfer_id, start_time, end_time, {... this.current_label}, {})
-      this.instance_list.push([created_instance])
-      const command = new CreateInstanceCommand([created_instance], this.instance_list)
+    instance_create_update: function(audiosurfer_id, start_time, end_time) {
+      let instance;
+      let command;
+
+      const instance_already_exists = this.instance_list.get().find(inst => inst.audiosurfer_id === audiosurfer_id)
+
+      if (!instance_already_exists) {
+        instance = new AudioAnnotationInstance()
+        instance.create_frontend_instance(audiosurfer_id, start_time, end_time, {... this.current_label}, {})
+        this.instance_list.push([instance])
+        command = new CreateInstanceCommand([instance], this.instance_list)
+      } else {
+        command = new UpdateInstanceAudioCoordinatesCommand([instance_already_exists], this.instance_list)
+        command.set_new_geo_coords(start_time, end_time)
+      }
       this.command_manager.executeCommand(command)
       this.has_changed = true
     },
