@@ -53,7 +53,13 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
+      rabbitmq:
+        # Docker Hub image
+        image: rabbitmq:3.10-rc-management-alpine
+        # Provide the password for postgres
+        env:
+          RABBITMQ_DEFAULT_USER: "diffgram"
+          RABBITMQ_DEFAULT_PASS: "diffgram"
     steps:
       - uses: actions/setup-python@v3
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
@@ -134,7 +140,7 @@ jobs:
       # Label used to access the service container
       rabbitmq:
         # Docker Hub image
-        image: rabbitmq
+        image: rabbitmq:3.10-rc-management-alpine
         # Provide the password for postgres
         env:
           RABBITMQ_DEFAULT_USER: "diffgram"

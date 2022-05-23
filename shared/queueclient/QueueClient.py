@@ -1,6 +1,5 @@
 import pika
 from pika.exchange_type import ExchangeType
-from shared.utils.singleton import Singleton
 import json
 from enum import Enum
 from shared.settings import settings
@@ -25,10 +24,6 @@ class RoutingKeys(Enum):
 class QueueClient:
 
     def __init__(self):
-        print('RABBITMQ_DEFAULT_PASS', settings.RABBITMQ_DEFAULT_PASS)
-        print('RABBITMQ_DEFAULT_USER', settings.RABBITMQ_DEFAULT_USER)
-        print('RABBITMQ_HOST', settings.RABBITMQ_HOST)
-        print('RABBITMQ_PORT', settings.RABBITMQ_PORT)
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host = settings.RABBITMQ_HOST,
                                       port = settings.RABBITMQ_PORT,
