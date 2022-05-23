@@ -52,8 +52,6 @@ export default Vue.extend({
           end: inst.end_time,
           color: `rgba(${r}, ${g}, ${b}, 0.5)`
         })
-
-        console.log("g")
       })
 
       region_keys.map(key => {
