@@ -8,6 +8,7 @@ from shared.queueclient.QueueClient import RoutingKeys, Exchanges, QueueNames
 from shared.shared_logger import get_shared_logger
 from shared.database.action.action import Action
 from shared.database.action.workflow import Workflow
+from action_runners.runners_mapping import get_runner
 from shared.helpers import sessionMaker
 logger = get_shared_logger()
 
@@ -95,5 +96,5 @@ class ActionsConsumer:
             actions_list = ActionsConsumer.filter_from_trigger_metadata(kind, msg_data, actions_list)
             logger.debug(f'Filtered to {len(actions_list)} actions.')
             for action in actions_list:
-                action_runner = action.get_runner(event_data = msg_data)
+                action_runner = get_runner(action = action, event_data = msg_data)
                 action_runner.run()

@@ -1,5 +1,5 @@
 from shared.shared_logger import get_shared_logger
-from eventhandlers.ConsumersCreator import ConsumerCreator
+from ConsumersCreator import ConsumerCreator
 from shared.settings import settings
 from shared.database_setup_supporting import *
 import traceback

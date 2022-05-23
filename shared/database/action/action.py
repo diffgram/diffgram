@@ -155,17 +155,6 @@ class Action(Base, SerializerMixin):
         ).all()
         return actions
 
-    def get_runner(self, event_data) -> 'ActionRunner':
-        """
-            Returns actions runner object based on action kind.
-        :return:
-        """
-
-        from eventhandlers.action_runners.ActionRunnerMapping import ACTION_RUNNERS_KIND_MAPPER
-        class_name = ACTION_RUNNERS_KIND_MAPPER[self.kind]
-
-        runner = class_name(action = self, event_data = event_data)
-        return runner
 
     @staticmethod
     def new(
