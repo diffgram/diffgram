@@ -2,36 +2,17 @@
   <div>
     <v-card :class="`pa-2 node-card` "
             @click="select_action(action)"
-            style="position: relative"
+            style="position: relative; width: 250px"
             >
       <v-btn class="config-btn" color="primary"  icon  x-small @click="open_config_dialog"><v-icon color="primary">mdi-cog</v-icon></v-btn>
 
       <v-card-title class="d-flex justify-start">
         <v-img style="width: 10%"  :src="action.icon"></v-img>
-        <h3 style="width: 70%">
-
-          <div v-if="action.kind == 'create_task' && action.config_data">
-            {{action.config_data.task_template_id}}
-          </div>
-
-          <div v-if="action.kind == 'export' && action.config_data">
-            {{action.config_data.directory_id}}
-          </div>
-
-        </h3>
-      </v-card-title>
-      <v-card-text>
-        <div class="d-flex">
-          <!--
-          {{action.ordinal}}
-            -->
-
+        <h4 class="ml-4" style="width: 80%">
           {{action.public_name}}
-          <!--
-          <div class="q-py-md" v-html="action.description"/>
-          -->
-        </div>
-      </v-card-text>
+        </h4>
+      </v-card-title>
+
 
 
       <v-btn v-if="action.kind !== 'action_start'" color="primary"  icon  x-small @click="remove"><v-icon color="red">mdi-delete</v-icon></v-btn>

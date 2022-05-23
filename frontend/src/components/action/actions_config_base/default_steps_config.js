@@ -9,10 +9,10 @@ export const default_steps_config = {
     hide: false
   },
   pre_conditions: {
-    header_title: 'Execution Conditions',
+    header_title: 'Check Conditions',
     number: 2,
-    title: 'Configure Execution Conditions',
-    message: 'Additional conditions to check for the execution of the step..',
+    title: 'Configure Conditions',
+    message: 'Additional conditions to checks for the execution of the step..',
     hide: false
   },
   action_config: {
@@ -29,4 +29,10 @@ export const default_steps_config = {
     message: 'Provide the condition that will make this step complete.',
     hide: false
   },
+}
+
+export const get_default_config = () =>{
+  return  {
+    ...default_steps_config
+  }
 }

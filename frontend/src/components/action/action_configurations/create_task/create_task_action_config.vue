@@ -4,6 +4,7 @@
       v-if="display_mode === 'wizard'"
       :action="action"
       :actions_list="actions_list"
+      :steps_config_prop="steps_config"
       @open_action_selector="$emit('open_action_selector')"
       :project_string_id="project_string_id">
       <template v-slot:action_config>
@@ -74,9 +75,19 @@ export default {
     this.steps_config = {
       ...default_steps_config
     }
-    this.steps_config.pre_conditions.hide = true
-    this.steps_config.action_config.number = 2
-    this.steps_config.completion_trigger.number = 3
+    this.steps_config.pre_conditions = {
+      ...this.steps_config.pre_conditions,
+      hide: true,
+      number: -1,
+    }
+    this.steps_config.action_config = {
+      ...this.steps_config.action_config,
+      number: 2,
+    }
+    this.steps_config.completion_trigger = {
+      ...this.steps_config.completion_trigger,
+      number: 3,
+    }
   },
   data: function(){
     return{

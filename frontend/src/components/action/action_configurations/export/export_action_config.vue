@@ -86,7 +86,7 @@ import trigger_config from "@/components/action/actions_config_base/trigger_conf
 import pre_conditions_config from "@/components/action/actions_config_base/pre_conditions_config";
 import complete_conditions_config from "@/components/action/actions_config_base/complete_conditions_config";
 export default {
-  name: "file_upload_action_config",
+  name: "export_action_config",
   components: {
     Export_config_details,
     action_config_wizard_base,
