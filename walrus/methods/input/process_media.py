@@ -1621,14 +1621,9 @@ class Process_Media():
 
         """
 
-        # Question, why would we need a default extension?
-        # self.input.extension = ".jpg"
 
         result = self.read_raw_file()
         if result is False: return False
-
-        # Why is content_type needed here?
-        # self.content_type = "image/" + str(self.input.extension)
 
         # Image() subclass
         self.new_image = Image(
@@ -1638,8 +1633,7 @@ class Process_Media():
 
         self.try_to_commit()
 
-        if self.project:  # TODO would like more clarity on option to start
-            # with either object or id... this assumes we don't have project_id set.
+        if self.project:
             self.project_id = self.project.id
 
         ### Main
