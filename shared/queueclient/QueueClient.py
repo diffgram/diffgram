@@ -24,6 +24,8 @@ class RoutingKeys(Enum):
 class QueueClient:
 
     def __init__(self):
+        if settings.DIFFGRAM_SYSTEM_MODE == 'testing':
+            return
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host = settings.RABBITMQ_HOST,
                                       port = settings.RABBITMQ_PORT,

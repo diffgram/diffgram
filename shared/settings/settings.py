@@ -175,6 +175,7 @@ IS_OPEN_SOURCE = env_adapter.bool(os.getenv('IS_OPEN_SOURCE', True))
 RABBITMQ_DEFAULT_USER = os.getenv('RABBITMQ_DEFAULT_USER')
 RABBITMQ_DEFAULT_PASS = os.getenv('RABBITMQ_DEFAULT_PASS')
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST')      # without port
+USE_RABBIT_MQ = env_adapter.bool(os.getenv('USE_RABBIT_MQ', True))
 RABBITMQ_PORT = int(os.getenv('RABBITMQ_PORT', 5672))
 
 

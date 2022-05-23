@@ -240,6 +240,8 @@ class Event(Base):
         t.start()
 
     def broadcast(self):
+        if settings.DIFFGRAM_SYSTEM_MODE == 'testing':
+            return
         queue_mngr = QueueClient()
         message = self.serialize()
         queue_mngr.send_message(message = message,

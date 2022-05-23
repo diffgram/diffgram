@@ -34,10 +34,6 @@ jobs:
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
         CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
         ML__CLOUD_STORAGE_BUCKET: ${{ secrets.ML__CLOUD_STORAGE_BUCKET }}
-        RABBITMQ_DEFAULT_USER: "diffgram"
-        RABBITMQ_DEFAULT_PASS: "diffgram"
-        RABBITMQ_HOST: "rabbitmq"
-        RABBITMQ_PORT: 5672
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
     services:
       # Label used to access the service container
@@ -53,13 +49,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      rabbitmq:
-        # Docker Hub image
-        image: rabbitmq:3.10-rc-management-alpine
-        # Provide the password for postgres
-        env:
-          RABBITMQ_DEFAULT_USER: "diffgram"
-          RABBITMQ_DEFAULT_PASS: "diffgram"
     steps:
       - uses: actions/setup-python@v3
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
@@ -117,10 +106,6 @@ jobs:
         DIFFGRAM_VERSION_TAG: ${{ secrets.DIFFGRAM_VERSION_TAG }}
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
-        RABBITMQ_DEFAULT_USER: "diffgram"
-        RABBITMQ_DEFAULT_PASS: "diffgram"
-        RABBITMQ_HOST: "rabbitmq"
-        RABBITMQ_PORT: 5672
         CRYPTOGRAPHY_DONT_BUILD_RUST: 1
 
     services:
@@ -137,14 +122,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      # Label used to access the service container
-      rabbitmq:
-        # Docker Hub image
-        image: rabbitmq:3.10-rc-management-alpine
-        # Provide the password for postgres
-        env:
-          RABBITMQ_DEFAULT_USER: "diffgram"
-          RABBITMQ_DEFAULT_PASS: "diffgram"
+
     steps:
       - uses: actions/setup-python@v3
         with:
