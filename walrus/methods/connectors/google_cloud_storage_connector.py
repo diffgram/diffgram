@@ -15,7 +15,7 @@ from shared.regular import regular_input
 from shared.regular import regular_log
 from methods.export.export_view import export_view_core
 from shared.database.export import Export
-from methods.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
+from shared.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.database.project import Project
 from shared.database.event.event import Event
 from shared.database.auth.member import Member

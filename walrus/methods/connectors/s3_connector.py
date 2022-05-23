@@ -14,7 +14,7 @@ from methods.input import packet
 from pathlib import Path
 from methods.export.export_view import export_view_core
 from shared.database.export import Export
-from methods.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
+from shared.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.regular import regular_log
 
 from shared.data_tools_core_s3 import DataToolsS3
