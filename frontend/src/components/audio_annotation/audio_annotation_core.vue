@@ -48,6 +48,7 @@
       />
       <waveform_selector 
         v-if="current_label && instance_list" 
+        :force_watch_trigger="force_watch_trigger"
         :instance_list="instance_list.get()"
         :current_label="current_label" 
         :audio_file="file" 
@@ -140,6 +141,7 @@ export default {
       save_loading: false,
       trigger_refresh_current_instance: Date.now(),
       refresh: Date.now(),
+      force_watch_trigger: 0,
       // Command
       instance_list: undefined,
       command_manager: undefined,
@@ -160,11 +162,14 @@ export default {
       this.instance_list = new InstanceList()
   },
   methods: {
+    update_trigger: function() {
+      this.force_watch_trigger += 1
+    },
     instance_create_update: function(audiosurfer_id, start_time, end_time) {
       let instance;
       let command;
 
-      const instance_already_exists = this.instance_list.get().find(inst => inst.audiosurfer_id === audiosurfer_id)
+      const instance_already_exists = this.instance_list.get().find(inst => inst.audiosurfer_id === audiosurfer_id && !inst.soft_delete)
 
       if (!instance_already_exists) {
         instance = new AudioAnnotationInstance()
@@ -177,18 +182,15 @@ export default {
       }
       this.command_manager.executeCommand(command)
       this.has_changed = true
+      this.update_trigger()
     },
-    instance_update_region: function() {},
-    insatnce_update_label: function() {},
-    insatnce_update_attribute: function() {},
-    insatance_delete: function() {},
-    focus_instance_show_all: function() {},
     defer_task: async function () {
-      const defered = await deferTask({
+      await deferTask({
         task_id: this.task.id,
         mode: "toggle_deferred"
       })
       this.trigger_task_change('next')
+      this.update_trigger()
     },
     change_label_file: function(label_file){
       this.current_label = label_file;
@@ -234,11 +236,13 @@ export default {
       command.set_new_attribute(attribute[0].id, {...attribute[1]})
       this.command_manager.executeCommand(command)
       this.has_changed = true
+      this.update_trigger()
     },
     delete_instance: async function (instance) {
       const delete_command = new DeleteInstanceCommand([instance], this.instance_list)
       this.command_manager.executeCommand(delete_command)
       this.has_changed = true
+      this.update_trigger()
     },
     change_instance_label: async function (event) {
       const { instance, label } = event
@@ -246,6 +250,7 @@ export default {
       command.set_new_label(label)
       this.command_manager.executeCommand(command)
       this.has_changed = true
+      this.update_trigger()
     },
     on_select_instance: function(instance) {
       this.current_instance = instance
@@ -254,6 +259,7 @@ export default {
       if (!this.history.undo_posible) return;
 
       let undone = this.command_manager.undo();
+      this.update_trigger()
       this.current_instance = null
 
       if (undone) this.has_changed = true;
@@ -262,6 +268,7 @@ export default {
       if (!this.history.redo_posible) return;
 
       let redone = this.command_manager.redo();
+      this.update_trigger()
       this.current_instance = null
 
       if (redone) this.has_changed = true;
