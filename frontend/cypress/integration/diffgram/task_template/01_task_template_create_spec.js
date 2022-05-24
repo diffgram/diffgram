@@ -77,18 +77,6 @@ describe('Task Template Creation', () => {
       cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
     })
 
-    it('Correctly Shows Upload Step', () => {
-      cy.get('[data-cy="upload_button"]').should('be.visible')
-
-    })
-
-    it('Correctly Goes from upload step to next step', () => {
-      cy.intercept(url).as('update_job')
-      cy.get('[data-cy="task-template-upload-step"] [data-cy="wizard_navigation_next"]').click({force: true});
-      cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
-
-    })
-
     it('Correctly Shows Dataset Attachment Step', () => {
       cy.get('[data-cy="task-template-dataset-step"]').should('be.visible')
       cy.get('[data-cy="task-template-dataset-step-title"]').should('be.visible')
@@ -109,41 +97,10 @@ describe('Task Template Creation', () => {
 
     })
 
-    it('Correctly Shows UI Schema Select Step', () => {
-      cy.get('[data-cy="task-template-ui-schema-step"]').should('be.visible')
-      cy.get('[data-cy="task-template-ui-schema-step-title"]').should('be.visible')
-      cy.get('[data-cy="ui-schema-selector"]').should('be.visible')
-    })
 
-    it('Correctly goes from ui schema step to next step', () => {
-      cy.intercept(url).as('update_job')
-      cy.get('[data-cy="task-template-ui-schema-step"] [data-cy="wizard_navigation_next"]').click({force: true});
-      cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
-    })
-
-    it('Correctly Shows Guide Select Step', () => {
-      cy.get('[data-cy="task-template-guide-step"]').should('be.visible')
-      cy.get('[data-cy="task-template-guide-step-title"]').should('be.visible')
-      cy.get('[data-cy="task-template-guide-step-subtitle"]').should('be.visible')
-      cy.get('[data-cy="guide-selector"]').should('be.visible')
-    })
-
-    it('Correctly goes from Guide step to next step', () => {
-      cy.intercept(url).as('update_job')
-      cy.get('[data-cy="task-template-guide-step"] [data-cy="wizard_navigation_next"]').click({force: true});
-      cy.wait('@update_job').its('response').should('have.property', 'statusCode', 200)
-    })
-
-    it('Correctly Shows Advanced Options Step', () => {
-      cy.get('[data-cy="task-template-advanced-options-step"]').should('be.visible')
-      cy.get('[data-cy="task-template-advanced-options-step-title"]').should('be.visible')
-      cy.get('[data-cy="userscrips-select"]').should('be.visible')
-      cy.get('[data-cy="file-handling-select"]').should('be.visible')
-    })
 
     it('Correctly Goes from Advanced Options to Credentials Step', () => {
-      cy.get('[data-cy="task-template-advanced-options-step"] [data-cy="wizard_navigation_next"]').click({force: true})
-      .get('[data-cy="task-template-credentials-step"]').should('be.visible')
+      cy.get('[data-cy="task-template-credentials-step"]').should('be.visible')
       .get('[data-cy="credentials-step-title"]').should('be.visible')
       .get('[data-cy="open-create-credential"]').should('be.visible')
       .get('[data-cy="open-create-credential"]').click()

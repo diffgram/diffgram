@@ -794,7 +794,7 @@ class Annotation_Update():
             return True
 
         if self.instance.type == "global":
-            self.instance.label_file_id = None      # Ensure is None for Security
+            self.instance.label_file_id = None  # Ensure is None for Security
             return True
 
         self.log['error']['valid_label_file'] = "Permission issue with " + \
