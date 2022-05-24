@@ -52,6 +52,7 @@
         :instance_list="instance_list.get()"
         :current_label="current_label" 
         :audio_file="file" 
+        @asign_wavesurfer_id="asign_wavesurfer_id"
         @instance_create_update="instance_create_update"
       />
     </div>
@@ -196,6 +197,13 @@ export default {
     update_trigger: function() {
       this.force_watch_trigger += 1
     },
+    asign_wavesurfer_id: function(instance_id, audiosurfer_id) {
+      this.instance_list.get_all().map(instance => {
+        if (instance.id === instance_id) {
+            instance.audiosurfer_id = audiosurfer_id
+        }
+      })
+    },
     instance_create_update: function(audiosurfer_id, start_time, end_time) {
       let instance;
       let command;
@@ -258,7 +266,6 @@ export default {
         }
       })
       this.save_loading = false
-      console.log("Saved")
     },
     trigger_task_change: async function (direction, assign_to_user = false) {
       if (this.has_changed) {
