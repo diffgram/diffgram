@@ -1212,21 +1212,6 @@
   dependencies:
     "@hapi/hoek" "^8.3.0"
 
-"@hipsjs/flowy-vue@^1.0.13":
-  version "1.0.13"
-  resolved "https://registry.yarnpkg.com/@hipsjs/flowy-vue/-/flowy-vue-1.0.13.tgz#162cea9d2ed025ce0be500a5bd3cb143e06c0d47"
-  integrity sha512-bAFYGwNYtbN1LA1lCVEZs7gRvTXyliMJniLcIUr04DsQ3sQ9ZseSym8091jnMv1H7UlgRP/a7Zv7CLoKA3v70Q==
-  dependencies:
-    "@hipsjs/shopify-draggable-vue" "^1.0.7"
-    lodash "^4.17.15"
-
-"@hipsjs/shopify-draggable-vue@^1.0.7":
-  version "1.0.7"
-  resolved "https://registry.yarnpkg.com/@hipsjs/shopify-draggable-vue/-/shopify-draggable-vue-1.0.7.tgz#2046a7738387372371a9fed433717ad358c23f43"
-  integrity sha512-iEPAL4XOln0wIE+URQ5iBgdZF0bv6cKzHue3FibCnrfDGaVlKw6gwmVcuLxrwy54lQ16UE5ZRh+wc6SZ3zzI0Q==
-  dependencies:
-    "@shopify/draggable" "^1.0.0-beta.8"
-
 "@intervolga/optimize-cssnano-plugin@^1.0.5":
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/@intervolga/optimize-cssnano-plugin/-/optimize-cssnano-plugin-1.0.6.tgz#be7c7846128b88f6a9b1d1261a0ad06eb5c0fdf8"
@@ -1771,11 +1756,6 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@protobufjs/utf8/-/utf8-1.1.0.tgz#a777360b5b39a1a2e5106f8e858f2fd2d060c570"
   integrity sha1-p3c2C1s5oaLlEG+OhY8v0tBgxXA=
-
-"@shopify/draggable@^1.0.0-beta.8":
-  version "1.0.0-beta.8"
-  resolved "https://registry.yarnpkg.com/@shopify/draggable/-/draggable-1.0.0-beta.8.tgz#2eb3c2f72298ce3e53fe16f34ab124cc495cd4fc"
-  integrity sha512-9IeBPQM93Ad4qFKUopwuTClzoST/1OId4MaSd/8FB5ScCL2tl25UaOGNR8E2hjiL7xK4LN5+I1Ews6amS7YAiA==
 
 "@sindresorhus/is@^0.14.0":
   version "0.14.0"
@@ -5909,10 +5889,10 @@ cypress-wait-until@^1.7.1:
   resolved "https://registry.yarnpkg.com/cypress-wait-until/-/cypress-wait-until-1.7.2.tgz#7f534dd5a11c89b65359e7a0210f20d3dfc22107"
   integrity sha512-uZ+M8/MqRcpf+FII/UZrU7g1qYZ4aVlHcgyVopnladyoBrpoaMJ4PKZDrdOJ05H5RHbr7s9Tid635X3E+ZLU/Q==
 
-cypress@9.5.4:
-  version "9.5.4"
-  resolved "https://registry.yarnpkg.com/cypress/-/cypress-9.5.4.tgz#49d9272f62eba12f2314faf29c2a865610e87550"
-  integrity sha512-6AyJAD8phe7IMvOL4oBsI9puRNOWxZjl8z1lgixJMcgJ85JJmyKeP6uqNA0dI1z14lmJ7Qklf2MOgP/xdAqJ/Q==
+cypress@9.7.0:
+  version "9.7.0"
+  resolved "https://registry.yarnpkg.com/cypress/-/cypress-9.7.0.tgz#bf55b2afd481f7a113ef5604aa8b693564b5e744"
+  integrity sha512-+1EE1nuuuwIt/N1KXRR2iWHU+OiIt7H28jJDyyI4tiUftId/DrXYEwoDa5+kH2pki1zxnA0r6HrUGHV5eLbF5Q==
   dependencies:
     "@cypress/request" "^2.88.10"
     "@cypress/xvfb" "^1.2.4"

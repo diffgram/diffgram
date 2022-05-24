@@ -35,6 +35,10 @@ jobs:
         RUNNER_ALLOW_RUNASROOT: true
         RUNNER_TOOL_CACHE: /opt/hostedtoolcache
         AGENT_TOOLSDIRECTORY: /opt/hostedtoolcache
+        RABBITMQ_HOST: rabbitmq
+        RABBITMQ_PORT: 5672
+        RABBITMQ_DEFAULT_USER: diffgram
+        RABBITMQ_DEFAULT_PASS: diffgram
     services:
       # Label used to access the service container
       postgres:
@@ -49,6 +53,13 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      rabbitmq:
+        image: rabbitmq:3.10-rc-management-alpine
+        env:
+          RABBITMQ_DEFAULT_USER: diffgram
+          RABBITMQ_DEFAULT_PASS: diffgram
+        ports:
+          - 5672
     steps:
 
     - uses: actions/setup-node@v2
