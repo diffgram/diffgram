@@ -31,6 +31,10 @@ export default Vue.extend({
     instance_list: {
       type: Array,
       required: true
+    },
+    force_watch_trigger: {
+      type: Number,
+      required: true
     }
   },
   data: function(){
@@ -40,7 +44,8 @@ export default Vue.extend({
     }
   },
   watch:{
-    instance_list: function() {
+    force_watch_trigger: function() {
+      console.log("here")
       const region_keys = Object.keys(this.wavesurfer.regions.list)
       const instances_to_add = this.instance_list.filter(inst => !region_keys.includes(inst.audiosurfer_id))
 
@@ -48,6 +53,7 @@ export default Vue.extend({
         const { r, g, b } = inst.label_file.colour.rgba
 
         this.wavesurfer.addRegion({
+          id: inst.audiosurfer_id,
           start: inst.start_time,
           end: inst.end_time,
           color: `rgba(${r}, ${g}, ${b}, 0.5)`
@@ -57,9 +63,12 @@ export default Vue.extend({
       region_keys.map(key => {
         const instance = this.instance_list.find(inst => inst.audiosurfer_id === key)
         if (instance) {
+          const { start_time, end_time } = instance
           const { r, g, b } = instance.label_file.colour.rgba
           const region_to_update = this.wavesurfer.regions.list[key]
           region_to_update.color = `rgba(${r}, ${g}, ${b}, 0.5)`
+          region_to_update.start = start_time
+          region_to_update.end = end_time
           region_to_update.updateRender()
         } else {
           this.wavesurfer.regions.list[key].remove()
