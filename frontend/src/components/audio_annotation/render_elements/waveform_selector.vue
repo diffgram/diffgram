@@ -45,34 +45,7 @@ export default Vue.extend({
   },
   watch:{
     force_watch_trigger: function() {
-      const region_keys = Object.keys(this.wavesurfer.regions.list)
-      const instances_to_add = this.instance_list.filter(inst => !region_keys.includes(inst.audiosurfer_id))
-
-      instances_to_add.map(inst => {
-        const { r, g, b } = inst.label_file.colour.rgba
-
-        this.wavesurfer.addRegion({
-          id: inst.audiosurfer_id,
-          start: inst.start_time,
-          end: inst.end_time,
-          color: `rgba(${r}, ${g}, ${b}, 0.5)`
-        })
-      })
-
-      region_keys.map(key => {
-        const instance = this.instance_list.find(inst => inst.audiosurfer_id === key)
-        if (instance) {
-          const { start_time, end_time } = instance
-          const { r, g, b } = instance.label_file.colour.rgba
-          const region_to_update = this.wavesurfer.regions.list[key]
-          region_to_update.color = `rgba(${r}, ${g}, ${b}, 0.5)`
-          region_to_update.start = start_time
-          region_to_update.end = end_time
-          region_to_update.updateRender()
-        } else {
-          this.wavesurfer.regions.list[key].remove()
-        }
-      })
+      this.update_render()
     },
     audio_file: function(new_file, old_file){
       this.load_audio();
@@ -113,8 +86,39 @@ export default Vue.extend({
     this.wavesurfer.on('region-update-end', this.on_annotate)
 
     this.load_audio();
+    this.update_render()
   },
   methods: {
+    update_render: function() {
+      const region_keys = Object.keys(this.wavesurfer.regions.list)
+      const instances_to_add = this.instance_list.filter(inst => !inst.audiosurfer_id || !region_keys.includes(inst.audiosurfer_id))
+
+      instances_to_add.map(inst => {
+        const { r, g, b } = inst.label_file.colour.rgba
+
+        this.wavesurfer.addRegion({
+          id: inst.audiosurfer_id,
+          start: inst.start_time,
+          end: inst.end_time,
+          color: `rgba(${r}, ${g}, ${b}, 0.5)`
+        })
+      })
+
+      region_keys.map(key => {
+        const instance = this.instance_list.find(inst => inst.audiosurfer_id === key)
+        if (instance) {
+          const { start_time, end_time } = instance
+          const { r, g, b } = instance.label_file.colour.rgba
+          const region_to_update = this.wavesurfer.regions.list[key]
+          region_to_update.color = `rgba(${r}, ${g}, ${b}, 0.5)`
+          region_to_update.start = start_time
+          region_to_update.end = end_time
+          region_to_update.updateRender()
+        } else {
+          this.wavesurfer.regions.list[key].remove()
+        }
+      })
+    },
     load_audio: function(){
       this.loading_audio = true
       if(!this.audio_file || !this.audio_file.audio || !this.audio_file.audio.url_signed){

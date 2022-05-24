@@ -158,13 +158,41 @@ export default {
     }
   },
   mounted() {
-      this.history = new History()
-      this.command_manager = new CommandManager(this.history)
-      this.instance_list = new InstanceList()
+    this.history = new History()
+    this.command_manager = new CommandManager(this.history)
+    this.instance_list = new InstanceList()
 
-      this.start_autosave()
+    this.initialize_interface_data()
+    this.start_autosave()
   },
   methods: {
+    initialize_interface_data: async function() {
+            let url;
+            let payload;
+            if (this.task && this.task.id) {
+                url = `/api/v1/task/${this.task.id}/annotation/list`;
+                payload = {
+                    directory_id: this.$store.state.project.current_directory.directory_id,
+                    job_id: this.job_id,
+                    attached_to_job: this.task.file.attached_to_job,
+                }
+            } else {
+                url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
+                payload = {}
+            }
+            const raw_instance_list = await getInstanceList(url, payload)
+            // Get instances from teh backend and render them
+            const initial_instances = raw_instance_list.map(instance_object => {
+              const { id, start_time, end_time, label_file, attribute_groups } = instance_object
+              const instance = new AudioAnnotationInstance();
+              instance.create_instance(id, start_time, end_time, label_file, attribute_groups)
+
+              return instance
+            })
+
+            this.instance_list.push(initial_instances)
+            this.update_trigger()
+        },
     update_trigger: function() {
       this.force_watch_trigger += 1
     },
