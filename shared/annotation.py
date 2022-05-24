@@ -184,7 +184,9 @@ class Annotation_Update():
                                   'keypoints',
                                   'cuboid_3d',
                                   'global',
-                                  'relation']
+                                  'relation',
+                                  'audio'
+                                  ]
         }
         },
         {'rating': {
@@ -1496,7 +1498,9 @@ class Annotation_Update():
                                   'geo_polygon',
                                   'geo_box',
                                   "relation",
-                                  "token"]:
+                                  "token",
+                                  "audio"
+                                  ]:
             return
 
         min_coords = self.get_min_coordinates_instance(self.instance)
