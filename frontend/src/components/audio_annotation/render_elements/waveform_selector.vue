@@ -96,12 +96,13 @@ export default Vue.extend({
       instances_to_add.map(inst => {
         const { r, g, b } = inst.label_file.colour.rgba
 
-        this.wavesurfer.addRegion({
-          id: inst.audiosurfer_id,
-          start: inst.start_time,
-          end: inst.end_time,
-          color: `rgba(${r}, ${g}, ${b}, 0.5)`
-        })
+        const added_region = this.wavesurfer.addRegion({
+            id: inst.audiosurfer_id,
+            start: inst.start_time,
+            end: inst.end_time,
+            color: `rgba(${r}, ${g}, ${b}, 0.5)`
+          })
+        this.$emit('asign_wavesurfer_id', inst.id, added_region.id)
       })
 
       region_keys.map(key => {
