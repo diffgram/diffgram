@@ -45,7 +45,6 @@ export default Vue.extend({
   },
   watch:{
     force_watch_trigger: function() {
-      console.log("here")
       const region_keys = Object.keys(this.wavesurfer.regions.list)
       const instances_to_add = this.instance_list.filter(inst => !region_keys.includes(inst.audiosurfer_id))
 
