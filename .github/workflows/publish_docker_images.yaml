@@ -130,8 +130,8 @@ jobs:
         docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/eventhandlers
 
         docker build . -t gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/eventhandlers -f default/Dockerfile.newrelic
-        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/eventhandlers:newrelic-${{ env.diffgram_version }}
-        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/default --all-tags
+        docker tag gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/eventhandlers gcr.io/${{ secrets.GOOGLE_PROJECT_NAME }}/eventhandlers:newrelic-${{ env.diffgram_version }}
+        docker push gcr.io/${{secrets.GOOGLE_PROJECT_NAME}}/eventhandlers --all-tags
 
   Publish-Walrus-Docker-Image:
     runs-on: ubuntu-latest
