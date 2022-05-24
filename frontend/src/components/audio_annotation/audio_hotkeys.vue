@@ -1,11 +1,13 @@
 <template>
-  <div v-cloak id="hotkeys-text">
-    <v-layout column>
-      <h2> Audio UI Hotkeys: </h2>
+<div v-cloak id="hotkeys-text">
+<v-layout column>
+  <h2> General </h2>
+  
+  <p> <kbd>S</kbd> Save </p>
 
-    </v-layout>
+</v-layout>
 
-  </div>
+</div>
 </template>
 
 <script lang="ts">
