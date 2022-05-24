@@ -165,6 +165,7 @@ export default {
 
     this.initialize_interface_data()
     this.start_autosave()
+    this.hot_key_listeners()
   },
   methods: {
     initialize_interface_data: async function() {
@@ -339,6 +340,15 @@ export default {
     detect_is_ok_to_save: async function () {
       if (this.has_changed) {
         await this.save();
+      }
+    },
+    hot_key_listeners: function() {
+      window.removeEventListener("keydown", this.keydown_event_listeners)
+      window.addEventListener("keydown", this.keydown_event_listeners)
+    },
+    keydown_event_listeners: async function(e) {
+      if (e.keyCode === 83) {
+        await this.save()
       }
     },
   }

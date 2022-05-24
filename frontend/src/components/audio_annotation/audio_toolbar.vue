@@ -152,7 +152,7 @@
         :close_by_button="true"
       >
         <template slot="content">
-          <text_hotkeys />
+          <audio_hotkeys />
         </template>
       </button_with_menu>
 
