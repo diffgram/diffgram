@@ -115,7 +115,7 @@ if __name__ == '__main__':
     limiter.enabled = False
     # os.environ['test'] = "test_os_environ"
 
-    app.run(host = '0.0.0.0', port = 8082, debug = True, use_reloader = True)
+    app.run(host = '0.0.0.0', port = 8082, debug = False, use_reloader = True)
     # CAUTION . app.run() is BLOCKING
     # code below app.run will not execute!!!
 else:
