@@ -76,6 +76,7 @@ import {
 } from "../../helpers/command/available_commands"
 import { AudioAnnotationInstance } from "../vue_canvas/instances/AudioInstance"
 import { deferTask, finishTaskAnnotation } from "../../services/tasksServices"
+import { getInstanceList, postInstanceList } from "../../services/instanceList";
 
 export default {
   name: "audio_annotation_core",
@@ -160,6 +161,8 @@ export default {
       this.history = new History()
       this.command_manager = new CommandManager(this.history)
       this.instance_list = new InstanceList()
+
+      this.start_autosave()
   },
   methods: {
     update_trigger: function() {
@@ -208,7 +211,26 @@ export default {
       }
     },
     save: async function(){
+      this.has_changed = false
+      this.save_loading = true
+      let url;
+      if (this.task && this.task.id) {
+        url = `/api/v1/task/${this.task.id}/annotation/update`;
+      } else {
+        url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
+      }
 
+      const res = await postInstanceList(url, this.instance_list.get_all())
+      const { added_instances } = res
+      this.instance_list.get_all().map(instance => {
+        const instance_uuid = instance.creation_ref_id
+        const updated_instance = added_instances.find(added_instance => added_instance.creation_ref_id === instance_uuid)
+        if (updated_instance) {
+            instance.id = updated_instance.id
+        }
+      })
+      this.save_loading = false
+      console.log("Saved")
     },
     trigger_task_change: async function (direction, assign_to_user = false) {
       if (this.has_changed) {
@@ -272,6 +294,17 @@ export default {
       this.current_instance = null
 
       if (redone) this.has_changed = true;
+    },
+    start_autosave: function () {
+      this.interval_autosave = setInterval(
+        this.detect_is_ok_to_save,
+          15 * 1000
+        );
+    },
+    detect_is_ok_to_save: async function () {
+      if (this.has_changed) {
+        await this.save();
+      }
     },
   }
 }

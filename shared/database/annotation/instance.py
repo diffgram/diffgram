@@ -380,6 +380,8 @@ class Instance(Base):
             self.radius,
             self.bounds,
             self.bounds_lonlat,
+            self.start_time,
+            self.end_time
         ]
 
 
