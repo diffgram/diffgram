@@ -8,7 +8,7 @@
         `"
     >
         <v-expansion-panels multiple style="width: 350px;" accordion :value="open_panels">
-            <v-expansion-panel @change="on_change_expansion(0)" :disabled="!current_instance">
+            <!-- <v-expansion-panel @change="on_change_expansion(0)" :disabled="!current_instance">
                 <v-expansion-panel-header>
                     <strong>Attributes {{ !current_instance ? "(select instance)" : null }}</strong>
                 </v-expansion-panel-header>
@@ -25,7 +25,7 @@
                         key="attribute_groups_list"
                     />
                 </v-expansion-panel-content>
-            </v-expansion-panel>
+            </v-expansion-panel> -->
             <v-expansion-panel @change="on_change_expansion(1)">
                     <v-expansion-panel-header>
                         <strong>Instances</strong>
@@ -158,7 +158,7 @@ export default Vue.extend({
     },
     data() {
         return {
-            open_panels: [1]
+            open_panels: [0]
         }
     },
     computed: {
