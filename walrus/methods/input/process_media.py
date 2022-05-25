@@ -1671,14 +1671,9 @@ class Process_Media():
 
         """
 
-        # Question, why would we need a default extension?
-        # self.input.extension = ".jpg"
 
         result = self.read_raw_file()
         if result is False: return False
-
-        # Why is content_type needed here?
-        # self.content_type = "image/" + str(self.input.extension)
 
         # Image() subclass
         self.new_image = Image(
@@ -1688,8 +1683,7 @@ class Process_Media():
 
         self.try_to_commit()
 
-        if self.project:  # TODO would like more clarity on option to start
-            # with either object or id... this assumes we don't have project_id set.
+        if self.project:
             self.project_id = self.project.id
 
         ### Main
@@ -1905,8 +1899,11 @@ class Process_Media():
             new_temp_filename = f"{self.input.temp_dir}/resized_{str(time.time())}.png"
             imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level = 3)
         else:
-            raise NotImplementedError(f"Extension: {self.input.extension} not supported yet.")
-            pass
+            self.input.status = "failed"
+            self.input.status_text = f"""Extension: {self.input.extension} not supported yet. 
+                Try adding an accepted extension [.jpg, .jpeg, .png, .bmp, .tif, .tiff] or no extension at all if from cloud source and response header content-type is set correctly."""
+            self.log['error']['extension'] = self.input.status_text
+            return
 
         try:
             data_tools.upload_to_cloud_storage(
