@@ -41,6 +41,8 @@
         :instance_list="instance_list ? instance_list.get().filter(instance => !instance.soft_delete) : []"
         :attribute_group_list_prop="label_list"
         :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+        :loading="loading"
+        :project_string_id="project_string_id"
         @on_select_instance="on_select_instance"
         @change_instance_label="change_instance_label"
         @delete_instance="delete_instance"
@@ -132,9 +134,7 @@ export default {
       draw_mode: false,
       current_global_instance: null,
       request_change_current_instance: null,
-      global_attribute_groups_list: [],
       instance_list: [],
-      label_file_colour_map: {},
       current_label: null,
       current_instance: null,
       label_settings: {
