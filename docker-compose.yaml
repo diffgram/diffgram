@@ -19,7 +19,7 @@ services:
     depends_on:
     - default
   eventhandlers:
-    image: gcr.io/diffgram-open-core/eventhandlers:latest
+    image: gcr.io/diffgram-open-core/eventhandlers:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8086:8086"
     expose: [8086]
