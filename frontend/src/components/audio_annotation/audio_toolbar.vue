@@ -443,6 +443,10 @@ export default Vue.extend({
     file: {
       type: Object,
       default: undefined
+    },
+    label_schema: {
+      type: Object,
+      required: true
     }
   }
 })
