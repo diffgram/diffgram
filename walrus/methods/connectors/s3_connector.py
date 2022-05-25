@@ -17,6 +17,9 @@ from shared.database.export import Export
 from methods.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.regular import regular_log
 
+from shared.data_tools_core_s3 import DataToolsS3
+
+
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
 allowed_content_types_images = [
@@ -37,9 +40,6 @@ def with_s3_exception_handler(f):
         try:
             return f(*args)
         except Exception as e:
-            log['error']['auth_s3_credentials'] = 'Error connecting to AWS S3. Please ' \
-                                                  'check you private secret and id are correct, ' \
-                                                  'and that you have the correct pemirssions over your buckets.'
             log['error']['exception_details'] = str(e)
             return {'log': log}
 
@@ -47,6 +47,10 @@ def with_s3_exception_handler(f):
 
 
 class S3Connector(Connector):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.name = "amazon_aws"
 
     def connect(self):
         log = regular_log.default()
@@ -58,9 +62,10 @@ class S3Connector(Connector):
                 log['error']['client_secret'] = 'auth_data must provide aws_access_key_id and aws_secret_access_key .'
                 return {'log': log}
 
-            self.connection_client = boto3.client('s3',
-                                                  aws_access_key_id=self.auth_data['client_id'],
-                                                  aws_secret_access_key=self.auth_data['client_secret'])
+            self.connection_client = DataToolsS3.get_client(
+                aws_access_key_id=self.auth_data['client_id'],
+                aws_secret_access_key=self.auth_data['client_secret'])
+
             return {'result': True}
         except Exception as e:
             log['error'][
@@ -385,7 +390,7 @@ class S3Connector(Connector):
             signed_url = self.connection_client.generate_presigned_url('get_object',
                                                        Params = {'Bucket': bucket_name, 'Key': test_file_path},
                                                        ExpiresIn = 3600 * 24 * 6)
-            resp = requests.get(signed_url)
+            resp = requests.get(signed_url, verify=not self.auth_data['disabled_ssl_verify'])
             if resp.status_code != 200:
                 raise Exception(
                     f"Error when accessing presigned URL: Status({resp.status_code}). Error: {resp.text}")

@@ -305,7 +305,7 @@
           default: false
         },
         'features_filters': {
-          default: {}
+          default: null
         },
         'project_string_id': {
           default: null
@@ -366,6 +366,9 @@
             },
             'microsoft_azure': {
               'image': 'https://dz2cdn1.dzone.com/storage/temp/12165862-azurelogo-1.png',
+            },
+            'minio': {
+              'image': 'https://min.io/resources/img/logo/MINIO_Bird.png',
             }
           },
         }
@@ -419,6 +422,9 @@
         connection_list() {
           const conn_list = this.$store.state.connection.connection_list.filter(connection => {
             const filterRes = []
+            if (!this.features_filters) {
+              this.features_filters = {}
+            }
             for (const [key, value] of Object.entries(this.features_filters)) {
               filterRes.push(connection.supported_features[key] === value)
             }
