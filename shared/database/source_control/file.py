@@ -6,6 +6,7 @@ from shared.database.attribute.attribute_template_group import Attribute_Templat
 from werkzeug.exceptions import Forbidden
 from shared.database.text_file import TextFile
 from shared.database.point_cloud.point_cloud import PointCloud
+from shared.database.audio.audio_file import AudioFile
 from shared.database.source_control import working_dir as working_dir_database_models
 from shared.database.annotation.instance import Instance
 from shared.database.labels.label import Label
@@ -116,6 +117,10 @@ class File(Base, Caching):
 
     text_file_id = Column(Integer, ForeignKey('text_file.id'))
     text_file = relationship(TextFile, foreign_keys = [text_file_id])
+
+    audio_file_id = Column(Integer, ForeignKey('audio_file.id'))
+    audio_file = relationship(AudioFile, foreign_keys=[audio_file_id])
+
 
     original_filename = Column(String())
 
@@ -396,6 +401,10 @@ class File(Base, Caching):
             file['geospatial'] = {
                 'layers': self.serialize_geospatial_assets(session = session)
             }
+            
+        if self.type == "audio":
+            if self.audio_file:
+                file['audio'] = self.audio_file.serialize()
 
         elif self.type == "sensor_fusion":
             point_cloud_file = self.get_child_point_cloud_file(session = session)
@@ -826,23 +835,24 @@ class File(Base, Caching):
 
     @staticmethod
     def new(session,
-            working_dir_id = None,
-            project_id = None,
-            file_type = None,
-            image_id = None,
-            point_cloud_id = None,
-            text_file_id = None,
-            video_id = None,
-            frame_number = None,
-            label_id = None,
-            colour = None,
-            original_filename = None,
-            video_parent_file = None,
-            text_tokenizer = None,
-            input_id = None,
-            parent_id = None,
-            task = None,
-            file_metadata = None
+            working_dir_id=None,
+            project_id=None,
+            file_type=None,
+            image_id=None,
+            point_cloud_id=None,
+            text_file_id=None,
+            audio_file_id=None,
+            video_id=None,
+            frame_number=None,
+            label_id=None,
+            colour=None,
+            original_filename=None,
+            video_parent_file=None,
+            text_tokenizer=None,
+            input_id=None,
+            parent_id=None,
+            task=None,
+            file_metadata=None
             ):
         """
         "file_added" case
@@ -874,23 +884,24 @@ class File(Base, Caching):
             video_parent_file_id = video_parent_file.id
 
         file = File(
-            original_filename = original_filename,
-            image_id = image_id,
-            point_cloud_id = point_cloud_id,
-            state = "added",
-            type = file_type,
-            project_id = project_id,
-            label_id = label_id,
-            text_file_id = text_file_id,
-            video_id = video_id,
-            video_parent_file_id = video_parent_file_id,
-            frame_number = frame_number,
-            colour = colour,
-            input_id = input_id,
-            parent_id = parent_id,
-            task = task,
-            file_metadata = file_metadata,
-            text_tokenizer = text_tokenizer
+            original_filename=original_filename,
+            image_id=image_id,
+            point_cloud_id=point_cloud_id,
+            state="added",
+            type=file_type,
+            project_id=project_id,
+            label_id=label_id,
+            audio_file_id=audio_file_id,
+            text_file_id=text_file_id,
+            video_id=video_id,
+            video_parent_file_id=video_parent_file_id,
+            frame_number=frame_number,
+            colour=colour,
+            input_id=input_id,
+            parent_id=parent_id,
+            task=task,
+            file_metadata=file_metadata,
+            text_tokenizer=text_tokenizer
         )
 
         File.new_file_new_frame(file, video_parent_file)

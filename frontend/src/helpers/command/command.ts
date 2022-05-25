@@ -1,5 +1,6 @@
 import { GeoCircle, GeoPoint, GeoPoly } from "../../components/vue_canvas/instances/GeoInstance";
 import { TextAnnotationInstance, TextRelationInstance } from "../../components/vue_canvas/instances/TextInstance";
+import { AudioAnnotationInstance } from "../../components/vue_canvas/instances/AudioInstance";
 import InstanceList from "../instance_list";
 import { CommandInterface } from "../interfaces/Command";
 import { InstanceInterface } from "../interfaces/InstanceData";
@@ -20,6 +21,10 @@ export abstract class Command implements CommandInterface {
     protected _copyInstance(instance: InstanceInterface): InstanceInterface {
         let initializedInstance;
         let newInstance = instance.get_instance_data();
+
+        if (instance.type === "audio") {
+            initializedInstance = new AudioAnnotationInstance()
+        }
 
         if (instance.type === "text_token") {
             initializedInstance = new TextAnnotationInstance()
