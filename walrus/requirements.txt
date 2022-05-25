@@ -39,3 +39,4 @@ markupsafe==2.0.1
 GDAL==2.2.3
 gdal-utils
 pika
+azure-ai-textanalytics

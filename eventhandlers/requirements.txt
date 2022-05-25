@@ -26,4 +26,3 @@ SQLAlchemy-serializer==1.4.1
 newrelic
 markupsafe==2.0.1
 pika
-azure-ai-textanalytics
