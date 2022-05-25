@@ -23,6 +23,7 @@
           @change_label_file="change_label_file"
           @change_label_visibility="change_label_visibility"
           @change_file="change_file"
+          @change_label_schema="on_change_label_schema"
           @save="save"
           @change_task="trigger_task_change"
           @undo="undo()"
@@ -353,6 +354,9 @@ export default {
       if (e.keyCode === 83) {
         await this.save()
       }
+    },
+    on_change_label_schema: function(schema){
+      this.$emit('change_label_schema', schema)
     },
   }
 }
