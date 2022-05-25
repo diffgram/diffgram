@@ -50,6 +50,13 @@ Named Entity Recognition, Part of Speech Tagging, Coreference Resolution, Depend
 
 ![Diffgram Text Interface](./github_assets/diffgram_text_interface.png)
 
+## Audio
+[Audio Labeling docs](https://diffgram.readme.io/docs/audio-annotation-guide)
+
+Annotate Audio Regions, Audios Transcription (coming soon)
+
+![Diffgram Audio Interface](./github_assets/diffgram_audio_interface.png)
+
 ## Geospatial & Tiled Imagery
 Support for COG (Cloud Optimized GeoTIFF), streaming, multi-layer, standard and cloud-optimized.
 
