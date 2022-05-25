@@ -216,15 +216,15 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
     def test_route_based_on_media_type(self):
         log = regular_log.default()
         # Test PNG Files
-        with tempfile.NamedTemporaryFile(dir = "/tmp", suffix = '.png', delete = False) as temp:
-            with open(temp.name, 'wb') as f:
+        with tempfile.NamedTemporaryFile(dir = "/tmp", suffix = '.png', delete = False) as temp2:
+            with open(temp2.name, 'wb') as f:
                 f.seek(63)
                 f.write(b'\x01')
             input_obj = data_mocking.create_input(
                 {
                     'project_id': self.project.id,
                     'extension': '.png',
-                    'temp_dir_path_and_filename': temp.name,
+                    'temp_dir_path_and_filename': temp2.name,
                     'temp_dir': '/tmp'
                 },
                 session = self.session)
@@ -299,7 +299,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
     def test_save_raw_audio_file(self):
         log = regular_log.default()
         # Test PNG Files
-        with tempfile.NamedTemporaryFile(dir="/tmp", suffix = '.png', delete = False) as temp:
+        with tempfile.NamedTemporaryFile(dir="/tmp", suffix = '.mp3', delete = False) as temp:
             with open(temp.name, 'wb') as f:
                 f.seek(63)
                 f.write(b'\x01')
