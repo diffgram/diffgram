@@ -88,3 +88,15 @@ class AzureTextAnalyticsSentimentAction(ActionRunner):
                 commit_input=True,
                 mode="update")
         
+    def create_action_template():
+        Action_Template.new(
+            session = session,
+            public_name = 'Azure Text Analytics',
+            description = 'Azure Text Analytics',
+            icon = 'https://www.svgrepo.com/show/46774/export.svg',
+            kind = 'AzureTextAnalyticsSentimentAction',
+            category = None,
+            #trigger_data = {'trigger_event_name': 'task_completed'},
+            #condition_data = {'event_name': 'all_tasks_completed'},
+            #completion_condition_data = {'event_name': 'prediction_success'},
+        )
