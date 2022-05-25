@@ -1,13 +1,16 @@
 <template>
-  <div v-cloak style="width: 100%" >
-    <div  id="waveform" class="wave-form-container">
+  <div v-cloak style="width: 100%; padding: 20px" >
+    <div id="waveform" class="wave-form-container">
+      <v-subheader>Zoom</v-subheader>
+      <v-slider
+        v-model="zoom"
+        hint="Drag to change display scale"
+        max="1000"
+        min="0"
+        append-icon="mdi-magnify-plus-outline"
+        prepend-icon="mdi-magnify-minus-outline"
+      />
     </div>
-
-    <v-progress-linear 
-      :playtime-line-width="0.8" 
-      indeterminate 
-      v-if="loading_audio"
-    />
 
   </div>
 </template>
@@ -40,10 +43,14 @@ export default Vue.extend({
   data: function(){
     return{
       loading_audio: false,
-      wavesurfer: null
+      wavesurfer: null,
+      zoom: 0
     }
   },
   watch:{
+    zoom: function() {
+      this.wavesurfer.zoom(this.zoom)
+    },
     force_watch_trigger: function() {
       this.update_render()
     },
@@ -65,13 +72,14 @@ export default Vue.extend({
       fillParent: true,
       scrollParent: true,
       waveColor: 'grey',
-      progressColor: 'grey',
+      progressColor: '#595959',
       normalize: true,
       autoCenter: true,
       mediaControls: true,
       loading_audio: true,
       responsive: true,
-      height: 200,
+      height: 300,
+      backend: 'MediaElement',
       plugins: [
         RegionPlugin.create()
       ]
@@ -84,6 +92,11 @@ export default Vue.extend({
     })
 
     this.wavesurfer.on('region-update-end', this.on_annotate)
+
+    this.wavesurfer.on('region-click', function(region, e) {
+        e.stopPropagation();
+        region.wavesurfer.play(region.start, region.end);
+    });
 
     this.load_audio();
     this.update_render()
@@ -150,8 +163,6 @@ export default Vue.extend({
 
 .wave-form-container{
   width: 100%;
-  height: 100%;
-
 }
 
 </style>
