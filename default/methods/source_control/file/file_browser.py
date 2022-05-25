@@ -585,7 +585,9 @@ class File_Browser():
             has_some_machine_made_instances = False
 
         media_type = self.metadata.get("media_type", "all")
-        media_type_query = media_type.lower()
+        media_type_query = None
+        if media_type:
+            media_type_query = media_type.lower()
         if media_type in ["All", None]:
             media_type_query = ["image", "video", "text", "sensor_fusion", "geospatial", "audio"]
 
