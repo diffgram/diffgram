@@ -117,7 +117,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
     def test_save_raw_image_file(self):
         log = regular_log.default()
         # Test PNG Files
-        temp = tempfile.NamedTemporaryFile(suffix = '.png')
+        temp = tempfile.NamedTemporaryFile(dir="/tmp", suffix = '.png')
         with open(temp.name, 'wb') as f:
             f.seek(63)
             f.write(b'\x01')
@@ -149,7 +149,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
                                          content_type = "image/jpg")
 
         # Test JPG Files
-        temp = tempfile.NamedTemporaryFile(suffix = '.jpg')
+        temp = tempfile.NamedTemporaryFile(dir="/tmp", suffix = '.png')
         with open(temp.name, 'wb') as f:
             f.seek(63)
             f.write(b'\x01')
@@ -216,7 +216,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
     def test_route_based_on_media_type(self):
         log = regular_log.default()
         # Test PNG Files
-        temp = tempfile.NamedTemporaryFile(suffix = '.png')
+        temp = tempfile.NamedTemporaryFile(dir="/tmp", suffix = '.png')
         with open(temp.name, 'wb') as f:
             f.seek(63)
             f.write(b'\x01')
@@ -267,7 +267,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
     def test_process_one_audio_file(self):
         log = regular_log.default()
         # Test PNG Files
-        temp = tempfile.NamedTemporaryFile(suffix = '.png')
+        temp = tempfile.NamedTemporaryFile(dir="/tmp", suffix = '.png')
         with open(temp.name, 'wb') as f:
             f.seek(63)
             f.write(b'\x01')
@@ -299,7 +299,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
     def test_save_raw_audio_file(self):
         log = regular_log.default()
         # Test PNG Files
-        temp = tempfile.NamedTemporaryFile(suffix = '.png')
+        temp = tempfile.NamedTemporaryFile(dir="/tmp", suffix = '.png')
         with open(temp.name, 'wb') as f:
             f.seek(63)
             f.write(b'\x01')
