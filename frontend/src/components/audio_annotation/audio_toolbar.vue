@@ -134,6 +134,7 @@
                       :loading="loading"
                       :request_refresh_from_project="true"
                       :show_visibility_toggle="true"
+                      :schema_id="label_schema.id"
                       @change="$emit('change_label_file', $event)"
                       @update_label_file_visible="$emit('change_label_visibility', $event)"
                     />
@@ -303,6 +304,7 @@
             :label_file_list="label_list"
             :label_file_colour_map="label_file_colour_map"
             :loading="loading"
+            :schema_id="label_schema.id"
             :request_refresh_from_project="true"
             :show_visibility_toggle="true"
             @change="$emit('change_label_file', $event)"
