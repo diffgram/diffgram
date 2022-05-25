@@ -4,21 +4,20 @@ from shared.database.task.job.job import Job
 from shared.helpers.sessionMaker import session_scope
 from shared.utils import job_dir_sync_utils
 from shared.database.source_control.file import File
-from shared.utils.sync_events_manager import SyncEventManager
-from shared.database.source_control.working_dir import WorkingDir
-from shared.database.auth.member import Member
-from azure.core.credentials import AzureKeyCredential
-from azure.ai.textanalytics import TextAnalyticsClient
 from methods.input.packet import enqueue_packet
 
 logger = get_shared_logger()
 
 
-class AzureTextAnalyticsAction(ActionRunner):
+class AzureTextAnalyticsSentimentAction(ActionRunner):
     def execute_pre_conditions(self, session) -> bool:
         return True
 
-    def execute_action(self, session):
+
+    def test_execute_action(self, session, file_id, connection_id):
+        pass
+
+    def execute_action(self, session, do_save_annotations=True):
         """
                    Creates a task from the given file_id in the given task template ID.
                :return:
@@ -36,6 +35,14 @@ class AzureTextAnalyticsAction(ActionRunner):
         documents = [raw_text]
 
         # Actual Prediction
+
+        connection_mock : {
+            endpoint : private_host
+            }
+
+        # or   with connection:  "
+        text_analytics_client = connection.get_client()
+
         response = text_analytics_client.analyze_sentiment(documents, language="en")
         result = [doc for doc in response if not doc.is_error]
 
@@ -70,13 +77,26 @@ class AzureTextAnalyticsAction(ActionRunner):
                 'attribute_groups': mock_external_map[doc.sentiment]
             })
 
-        # For tracking and flexbility 
-        enqueue_packet(
-            session=session,
-            media_url=None,
-            media_type='text',
-            file_id=file.id,
-            instance_list=instance_list,
-            commit_input=True,
-            mode="update")
+        if do_save_annotations is True:
+            # For tracking and flexbility 
+            enqueue_packet(
+                session=session,
+                media_url=None,
+                media_type='text',
+                file_id=file.id,
+                instance_list=instance_list,
+                commit_input=True,
+                mode="update")
         
+    def create_action_template():
+        Action_Template.new(
+            session = session,
+            public_name = 'Azure Text Analytics',
+            description = 'Azure Text Analytics',
+            icon = 'https://www.svgrepo.com/show/46774/export.svg',
+            kind = 'AzureTextAnalyticsSentimentAction',
+            category = None,
+            #trigger_data = {'trigger_event_name': 'task_completed'},
+            #condition_data = {'event_name': 'all_tasks_completed'},
+            #completion_condition_data = {'event_name': 'prediction_success'},
+        )

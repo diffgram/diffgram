@@ -34,7 +34,6 @@ class Connector(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def get_meta_data(self):
         """
             This method should bring a dict for all the metadata specific to the connector.
@@ -42,7 +41,6 @@ class Connector(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def fetch_data(self, opts):
         """
             This function fetches an object from the data source an returns the
@@ -52,7 +50,6 @@ class Connector(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
     def put_data(self, opts):
         """
             This function puts an object from diffgram to the source

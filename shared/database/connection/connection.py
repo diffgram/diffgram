@@ -15,6 +15,9 @@ INTEGRATION_VENDORS_SUPPORTED_FEATURES = {
         'files_import': True,
         'files_export': True
     },
+    'microsoft_azure_text_analytics': {
+        'predict': True,
+    },
     'labelbox': {
         'labeling_interface': True,
         'project_migration': True,
