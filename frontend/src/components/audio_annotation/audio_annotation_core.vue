@@ -50,7 +50,7 @@
         @on_update_attribute="update_attribute"
       />
       <waveform_selector 
-        v-if="current_label && instance_list" 
+        v-if="instance_list" 
         :force_watch_trigger="force_watch_trigger"
         :instance_list="instance_list.get()"
         :current_label="current_label" 
