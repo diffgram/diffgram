@@ -159,6 +159,9 @@ export default Vue.extend({
       console.error(error_str)
     }
   },
+  beforeDestroy: function () {
+    this.wavesurfer.destroy()
+  }
 })
 
 </script>
