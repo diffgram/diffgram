@@ -52,6 +52,7 @@
         :instance_list="instance_list.get()"
         :current_label="current_label" 
         :audio_file="task ? task.file : file" 
+        :invisible_labels="invisible_labels"
         @asign_wavesurfer_id="asign_wavesurfer_id"
         @instance_create_update="instance_create_update"
       />
@@ -144,6 +145,7 @@ export default {
       trigger_refresh_current_instance: Date.now(),
       refresh: Date.now(),
       force_watch_trigger: 0,
+      invisible_labels: [],
       // Command
       instance_list: undefined,
       command_manager: undefined,
@@ -241,6 +243,7 @@ export default {
       } else {
         this.invisible_labels.push(label.id)
       }
+      this.update_trigger()
     },
     change_file(direction, file) {
       if (direction == "next" || direction == "previous") {
