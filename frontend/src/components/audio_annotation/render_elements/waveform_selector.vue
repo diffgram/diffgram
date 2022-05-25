@@ -62,12 +62,14 @@ export default Vue.extend({
       this.load_audio();
     },
     current_label: function() {
-      this.wavesurfer.disableDragSelection()
-
-      const { r, g, b } = this.current_label.colour.rgba
-      this.wavesurfer.enableDragSelection({
-        color: `rgba(${r}, ${g}, ${b}, 0.5)`
-      })
+      if (this.current_label) {
+        this.wavesurfer.disableDragSelection()
+  
+        const { r, g, b } = this.current_label.colour.rgba
+        this.wavesurfer.enableDragSelection({
+          color: `rgba(${r}, ${g}, ${b}, 0.5)`
+        })
+      }
     }
   },
   mounted() {
@@ -88,12 +90,6 @@ export default Vue.extend({
         RegionPlugin.create()
       ]
     });
-
-    const { r, g, b } = this.current_label.colour.rgba
-
-    this.wavesurfer.enableDragSelection({
-      color: `rgba(${r}, ${g}, ${b}, 0.5)`
-    })
 
     this.wavesurfer.on('region-update-end', this.on_annotate)
 
