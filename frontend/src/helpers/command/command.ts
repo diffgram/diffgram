@@ -3,6 +3,7 @@ import { TextAnnotationInstance, TextRelationInstance } from "../../components/v
 import InstanceList from "../instance_list";
 import { CommandInterface } from "../interfaces/Command";
 import { InstanceInterface } from "../interfaces/InstanceData";
+import { Instance } from "../../components/vue_canvas/instances/Instance";
 
 export abstract class Command implements CommandInterface {   
     protected instances: Array<InstanceInterface>;
@@ -20,6 +21,10 @@ export abstract class Command implements CommandInterface {
     protected _copyInstance(instance: InstanceInterface): InstanceInterface {
         let initializedInstance;
         let newInstance = instance.get_instance_data();
+
+        if (instance.type === "global") {
+            initializedInstance = new Instance()
+        }
 
         if (instance.type === "text_token") {
             initializedInstance = new TextAnnotationInstance()
