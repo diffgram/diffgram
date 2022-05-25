@@ -51,7 +51,7 @@
         :force_watch_trigger="force_watch_trigger"
         :instance_list="instance_list.get()"
         :current_label="current_label" 
-        :audio_file="file" 
+        :audio_file="task ? task.file : file" 
         @asign_wavesurfer_id="asign_wavesurfer_id"
         @instance_create_update="instance_create_update"
       />
