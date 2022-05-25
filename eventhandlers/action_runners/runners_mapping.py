@@ -1,5 +1,5 @@
-from eventhandlers.action_runners.ExportActionRunner import ExportActionRunner
-from eventhandlers.action_runners.TaskTemplateActionRunner import TaskTemplateActionRunner
+from action_runners.ExportActionRunner import ExportActionRunner
+from action_runners.TaskTemplateActionRunner import TaskTemplateActionRunner
 from action_runners.ActionRunner import ActionRunner
 from shared.database.action.action import Action
 
