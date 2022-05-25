@@ -1,4 +1,4 @@
-from eventhandlers.action_runners.ActionRunner import ActionRunner
+from action_runners.ActionRunner import ActionRunner
 from shared.shared_logger import get_shared_logger
 from shared.database.task.job.job import Job
 from shared.helpers.sessionMaker import session_scope
