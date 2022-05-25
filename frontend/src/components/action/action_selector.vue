@@ -112,6 +112,34 @@ export default Vue.extend({
           return
         }
         if(result){
+          result.action_template_list.push(
+            {
+              description: "Add prelabeled data to text files using aws textract",
+              kind: "temp_action",
+              public_name: "Add Labels with AWS Texttract",
+
+              icon: "https://a0.awsstatic.com/libra-css/images/logos/aws_logo_smile_1200x630.png"
+
+            },
+            {
+              description: "Add prelabeled data to text files using Azure Text Analytics",
+              kind: "temp_action",
+              public_name: "Add Labels with Azure Text Analytics",
+              icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fa/Microsoft_Azure.svg/1200px-Microsoft_Azure.svg.png"
+            },
+            {
+              description: "Add Labels with Vertex AI",
+              kind: "temp_action",
+              public_name: "Human Labeling Task",
+              icon: "https://techcrunch.com/wp-content/uploads/2021/05/VertexAI-512-color.png"
+            },
+            {
+              description: "Do an HTTP Request",
+              kind: "temp_action",
+              public_name: "Human Labeling Task",
+              icon: "https://www.integromat.com/en/academy/wp-content/uploads/2020/08/Screen_Shot_2020-08-03_at_10.38.48_AM-426x394.png"
+            }
+          )
           this.build_actions_list(result.action_template_list)
         }
 

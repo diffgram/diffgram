@@ -4,8 +4,8 @@
     <div class="d-flex flex-column">
       <div class="d-flex">
         <div class="d-flex align-center mb-4">
-          <v-img class="ma-2" width="50px" height="50px" :src="action.icon"></v-img>
-          <div class="text-h6">{{ action.name }}</div>
+          <v-img class="ma-2" width="75px" height="75px" :src="action.icon"></v-img>
+          <div class="text-h6">{{ action.public_name }}</div>
         </div>
 
         <div>
