@@ -39,14 +39,24 @@ connection_spec_list = [
         'required': False
     }
     },
-
+    {"private_host": {
+        'default': None,
+        'kind': str,
+        'required': False
+    }
+    },
     {"private_secret": {
         'default': None,
         'kind': str,
         'required': False
     }
     },
-
+    {"disabled_ssl_verify": {
+        'default': None,
+        'kind': bool,
+        'required': False
+    }
+    },
     # WIP... We assume for new we want to update it, otherwise
     # assume we don't. May be cases where we do wish to do so
     # because of encryption though we don't know on the front
@@ -354,6 +364,8 @@ class Connection_Operations():
             self.connection.permission_scope.lower()
         self.connection.archived = metadata.get('archived')
         self.connection.integration_name = metadata.get('integration_name')
+        self.connection.private_host = metadata.get('private_host')
+        self.connection.disabled_ssl_verify = bool(metadata.get('disabled_ssl_verify', False))
         self.connection.private_id = metadata.get('private_id')
         self.connection.account_email = metadata.get('account_email')
         self.connection.project_id_external = metadata.get('project_id_external')
