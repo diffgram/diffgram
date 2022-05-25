@@ -35,12 +35,9 @@ from shared.database.export import Export
 from shared.database.video.sequence import Sequence
 from shared.database.task.job.user_to_job import User_To_Job
 from shared.database.input import Input
-<<<<<<< HEAD
 from shared.database.project_migration.project_migration import ProjectMigration
-
-=======
 from shared.database.audio.audio_file import AudioFile
->>>>>>> 8de2c128beb18a8fa3a00ccf4a6eccec6985a9bb
+
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
 if settings.DIFFGRAM_SYSTEM_MODE != 'testing':
@@ -62,7 +59,6 @@ def register_member(user, session):
     return new_member
 
 
-<<<<<<< HEAD
 def create_label_schema(schema_data, session):
     schema = LabelSchema(
         name = schema_data.get('name'),
@@ -108,7 +104,6 @@ def create_project_migration(migration_data, session):
     session.commit()
     return p_migration
 
-=======
 def create_audio_file(audio_data: dict, session: Session) -> AudioFile:
     audio = AudioFile(
         original_filename = audio_data.get('original_filename'),
@@ -123,7 +118,7 @@ def create_audio_file(audio_data: dict, session: Session) -> AudioFile:
     session.add(audio)
     session.commit()
     return audio
->>>>>>> 8de2c128beb18a8fa3a00ccf4a6eccec6985a9bb
+
 
 def register_user(user_data: dict, session):
     """
