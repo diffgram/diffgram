@@ -117,7 +117,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
     def test_save_raw_image_file(self):
         log = regular_log.default()
         # Test PNG Files
-        temp = open("/tmp/myfile2.png", "w")
+        temp = open("myfile2.png", "w")
         with open(temp.name, 'wb') as f:
             f.seek(63)
             f.write(b'\x01')
@@ -149,7 +149,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
                                          content_type = "image/jpg")
 
         # Test JPG Files
-        temp = open("/tmp/myfile3.png", "w")
+        temp = open("myfile3.png", "w")
         with open(temp.name, 'wb') as f:
             f.seek(63)
             f.write(b'\x01')
@@ -182,7 +182,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
 
         # Test BMP, TIF, TTF
         for file_extension in ['.bmp', '.tif', '.tiff']:
-            temp = open("/tmp/myfile4.png", "w")
+            temp = open("myfile4.png", "w")
             with open(temp.name, 'wb') as f:
                 f.seek(63)
                 f.write(b'\x01')
@@ -216,7 +216,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
     def test_route_based_on_media_type(self):
         log = regular_log.default()
         # Test PNG Files
-        temp = open("/tmp/myfile.png", "w")
+        temp = open("myfile.png", "w")
         with open(temp.name, 'wb') as f:
             f.seek(63)
             f.write(b'\x01')
@@ -267,7 +267,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
     def test_process_one_audio_file(self):
         log = regular_log.default()
         # Test PNG Files
-        temp = open("/tmp/myfile.mp3", "w")
+        temp = open("myfile.mp3", "w")
         with open(temp.name, 'wb') as f:
             f.seek(63)
             f.write(b'\x01')
@@ -299,7 +299,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
     def test_save_raw_audio_file(self):
         log = regular_log.default()
         # Test PNG Files
-        temp = open("/tmp/myfile.png", "w")
+        temp = open("myfile.png", "w")
         with open(temp.name, 'wb') as f:
             f.seek(63)
             f.write(b'\x01')
