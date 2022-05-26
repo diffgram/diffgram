@@ -124,9 +124,10 @@ jobs:
           --health-retries 5
 
     steps:
+      - uses: actions/checkout@v3
       - uses: actions/setup-python@v3
         with:
-          python-version: '3.9'
+          python-version: '3.7'
       - run: sed -i -re 's/([a-z]{2}.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
       - run: apt-get update && apt-get install -y git libffi-dev
       - run: pip3 install "pip>=20"
