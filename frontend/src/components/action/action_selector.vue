@@ -76,7 +76,6 @@ export default Vue.extend({
         ],
       }
     },
-
     watch: {
 
     },
