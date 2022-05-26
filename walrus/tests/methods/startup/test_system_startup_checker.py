@@ -26,6 +26,7 @@ class TestWalrusServiceSystemStartupChecker(testing_setup.DiffgramBaseTestCase):
         self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
         self.member = self.auth_api.member
 
+
     def test_execute_startup_checks(self):
         checker = WalrusServiceSystemStartupChecker()
         with patch.object(checker, 'execute_startup_checks') as mock_1:
