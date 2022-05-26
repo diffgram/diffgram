@@ -1547,21 +1547,8 @@ class Process_Media():
             self.save_text_tokens(raw_text, self.input.file)
             # Set success state for input.
             if self.input.media_type == 'text':
-
-                if self.input.status != "failed":  # if we haven't already set a status
-                    # May need this on video too
-                    # Context of for example the packet for instances attached to it
-                    # Not loading successfully
-                    # We default this to init so 'failed' string instead of None
-                    self.input.status = "success"
-                    self.input.percent_complete = 100
-                    self.input.time_completed = datetime.datetime.utcnow()
-
-                # Question, could we just call close() on temp_dir_path_and_filename instead here?
-                # TODO review this usage vs say https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-                # basically, if the default is that delete=True on close, hmmm
-
-                # allow_csv is True by default but gets set to False by process csv...
+                if self.input.status != "failed":
+                    self.declare_success(self.input)
                 try:
                     shutil.rmtree(self.input.temp_dir)  # delete directory
                 except OSError as exc:

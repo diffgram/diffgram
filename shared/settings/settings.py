@@ -46,7 +46,7 @@ FERNET_KEY = os.getenv('FERNET_KEY', 'NeL_RED6zZ1XF3XT7Yd1hzFPYyebrg6UdkECTOLHEd
 # INFO = 20
 # DEBUG = 10
 # NOTSET = 0
-SANDBOX_LOGGER_TYPE =  os.getenv('SANDBOX_LOGGER_TYPE', logging.INFO)
+SANDBOX_LOGGER_TYPE = int(os.getenv('SANDBOX_LOGGER_TYPE', logging.INFO))
 
 
 # AWS Settings

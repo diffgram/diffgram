@@ -325,7 +325,7 @@ class Event(Base):
         if flush_session:
             session.flush()
         Event.track_user(event, email)
-        logger.info(f'Created event {event.id}')
+        logger.info(f'Created event {event.id}:{event.kind}')
         event.send_to_eventhub()
         event.broadcast()
         return event
