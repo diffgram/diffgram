@@ -131,7 +131,6 @@ jobs:
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
-      - run: mkdir /tmp
       - uses: mdecoleman/pr-branch-name@1.2.0
         if: "github.event.pull_request != null"
         id: vars
