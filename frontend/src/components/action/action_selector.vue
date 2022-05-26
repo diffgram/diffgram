@@ -20,6 +20,7 @@
 
 </template>
 
+
 <script lang="ts">
 import Vue from "vue";
 import axios from '../../services/customInstance';
