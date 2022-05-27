@@ -189,6 +189,8 @@ class Instance(Base):
 
     text_tokenizer = Column('text_tokenizer', String(), default = 'nltk')
 
+    score = Column(Float())
+
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
@@ -474,7 +476,8 @@ class Instance(Base):
             'bounds': self.bounds,
             'bounds_lonlat': self.bounds_lonlat,
             'start_time': self.start_time,
-            'end_time': self.end_time
+            'end_time': self.end_time,
+            'score': self.score
 
         }
 
@@ -525,7 +528,8 @@ class Instance(Base):
             'previous_id': self.previous_id,
             'next_id': self.next_id,
             'root_id': self.root_id,
-            'version': self.version
+            'version': self.version,
+            'score': self.score
         }
 
     # TODO revist in context of new instance structure
@@ -560,20 +564,6 @@ class Instance(Base):
     def serialize_for_sequence_preview(self, session):
         data_tools = data_tools_core.Data_tools().data_tools
         """
-        preview_image_url = Column(String())
-        preview_image_blob_dir = Column(String())
-        preview_image_url_expiry = Column(Integer)
-
-        TODO feel like this should be a more regular pattern...
-        Since we have signed URL in other stuff...
-
-        Feb 7, 2020
-        add check for preview_image_blob_dir
-        because if it's None it will hit the fail everytime
-        and this route can get heavy enough as is 
-        just a little thing as saw a bunch of print statments repeating
-
-        Also bug fix if it suceeds to update time properly.
         """
 
         if self.preview_image_blob_dir:
