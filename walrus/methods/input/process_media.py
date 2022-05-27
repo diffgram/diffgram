@@ -33,6 +33,7 @@ from shared.data_tools_core import Data_tools
 global Update_Input
 from methods.input.input_update import Update_Input
 from shared.database.model.model_run import ModelRun
+from shared.database.audio.audio_file import AudioFile
 from shared.database.model.model import Model
 from shared.utils import job_dir_sync_utils
 from shared.database.task.job.job import Job
@@ -60,6 +61,7 @@ sensor_fusion_allowed_extensions = [".json"]
 geo_tiff_allowed_extensions = [".tiff", ".tif"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
 text_allowed_file_names = [".txt"]
+audio_allowed_file_names = [".mp3", ".wav", ".flac"]
 csv_allowed_file_names = [".csv"]
 existing_instances_allowed_file_names = [".json"]
 
@@ -1131,6 +1133,7 @@ class Process_Media():
         strategy_operations = {
             "image": self.process_one_image_file,
             "text": self.process_one_text_file,
+            "audio": self.process_one_audio_file,
             "frame": self.process_frame,
             "sensor_fusion": self.process_sensor_fusion_json,
             "geo_tiff": self.process_geo_tiff_file,
@@ -1504,6 +1507,53 @@ class Process_Media():
             video_file_id = self.input.parent_file_id,
             regenerate_preview_images = True)
 
+    def process_one_audio_file(self):
+        try:
+            logger.debug(f"Started processing audio file from input: {self.input_id}")
+
+            self.new_audio_file = AudioFile(original_filename = self.input.original_filename)
+            self.session.add(self.new_audio_file)
+            self.session.flush()
+
+            self.try_to_commit()
+
+            if self.project:
+                # with either object or id... this assumes we don't have project_id set.
+                self.project_id = self.project.id
+
+            ### Main
+            self.save_raw_audio_file()
+
+            self.input.file = File.new(
+                session = self.session,
+                working_dir_id = self.working_dir_id,
+                file_type = "audio",
+                audio_file_id = self.new_audio_file.id,
+                original_filename = self.input.original_filename,
+                project_id = self.project_id,
+                input_id = self.input.id,
+                file_metadata = self.input.file_metadata,
+            )
+
+            if self.input.status != "failed":
+                self.input.status = "success"
+                self.input.percent_complete = 100
+                self.input.time_completed = datetime.datetime.utcnow()
+
+            try:
+                shutil.rmtree(self.input.temp_dir)  # delete directory
+            except OSError as exc:
+                logger.error("shutil error")
+                pass
+        except Exception as e:
+            message = traceback.format_exc()
+            logger.error(message)
+            self.log['error']['text_file_upload'] = message
+            self.input.status = 'failed'
+            self.input.description = message
+            self.input.update_log = self.log
+
+        return True
     def process_one_text_file(self):
         """
             This function will process a single text file and Create a Row in Table
@@ -1611,14 +1661,9 @@ class Process_Media():
 
         """
 
-        # Question, why would we need a default extension?
-        # self.input.extension = ".jpg"
 
         result = self.read_raw_file()
         if result is False: return False
-
-        # Why is content_type needed here?
-        # self.content_type = "image/" + str(self.input.extension)
 
         # Image() subclass
         self.new_image = Image(
@@ -1628,8 +1673,7 @@ class Process_Media():
 
         self.try_to_commit()
 
-        if self.project:  # TODO would like more clarity on option to start
-            # with either object or id... this assumes we don't have project_id set.
+        if self.project:
             self.project_id = self.project.id
 
         ### Main
@@ -1845,8 +1889,11 @@ class Process_Media():
             new_temp_filename = f"{self.input.temp_dir}/resized_{str(time.time())}.png"
             imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level = 3)
         else:
-            raise NotImplementedError(f"Extension: {self.input.extension} not supported yet.")
-            pass
+            self.input.status = "failed"
+            self.input.status_text = f"""Extension: {self.input.extension} not supported yet. 
+                Try adding an accepted extension [.jpg, .jpeg, .png, .bmp, .tif, .tiff] or no extension at all if from cloud source and response header content-type is set correctly."""
+            self.log['error']['extension'] = self.input.status_text
+            return
 
         try:
             data_tools.upload_to_cloud_storage(
@@ -1893,6 +1940,25 @@ class Process_Media():
             self.new_text_file.tokens_url_signed_expiry)
         logger.info(f"Saved Tokens on: {self.new_text_file.tokens_url_signed_blob_path}")
 
+    def save_raw_audio_file(self):
+        offset = 2592000
+        self.new_audio_file.url_signed_expiry = int(time.time() + offset)  # 1 month
+
+        self.new_audio_file.url_signed_blob_path = '{}{}/{}'.format(settings.PROJECT_TEXT_FILES_BASE_DIR,
+                                                                   str(self.project_id),
+                                                                   str(self.new_audio_file.id))
+
+        # TODO: Please review. On image there's a temp directory for resizing. But I don't feel the need for that here.
+        logger.debug(f"Uploading text file from {self.input.temp_dir_path_and_filename}")
+
+        data_tools.upload_to_cloud_storage(
+            temp_local_path = self.input.temp_dir_path_and_filename,
+            blob_path = self.new_audio_file.url_signed_blob_path,
+            content_type = "text/plain",
+        )
+
+        self.new_audio_file.url_signed = data_tools.build_secure_url(self.new_audio_file.url_signed_blob_path,
+                                                                    offset)
     def save_raw_text_file(self):
         offset = 2592000
         self.new_text_file.url_signed_expiry = int(time.time() + offset)  # 1 month
@@ -2332,6 +2398,9 @@ class Process_Media():
 
         if extension in text_allowed_file_names:
             return 'text'
+
+        if extension in audio_allowed_file_names:
+            return 'audio'
 
         if extension in csv_allowed_file_names:
 
