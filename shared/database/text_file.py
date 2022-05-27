@@ -67,9 +67,10 @@ class TextFile(Base):
         }
         return text
 
-    def serialize(self):
+    def serialize(self, session):
 
-        keyframe = False
+        self.regenerate_url(session)
+
         text = {
             'original_filename': self.original_filename,
             'soft_delete': self.soft_delete,
@@ -82,51 +83,18 @@ class TextFile(Base):
         }
         return text
 
-    def serialize_for_source_control(self, session = None):
 
-        if session:
-
-            # TODO not a fan of how many conditions we are checking here...
-            if self.url_signed_expiry is None or self.url_signed_expiry <= time.time():
-                data_tools.rebuild_secure_urls_image(session, self)
-
-            if self.url_signed_expiry_force_refresh is None or \
-                self.url_signed_expiry_force_refresh != settings.URL_SIGNED_REFRESH:  # Handle purposefully triggering a reset
-
-                self.url_signed_expiry_force_refresh = settings.URL_SIGNED_REFRESH
-
-                data_tools.rebuild_secure_urls_image(
-                    session, self)
-
-        return {
-            'original_filename': self.original_filename,
-            'soft_delete': self.soft_delete,
-            'url_signed': self.url_signed,
-            'tokens_url_signed': self.tokens_url_signed,
-            'annotation_status': self.annotation_status
-        }
-
-    def regenerate_tokens_urls(self, session):
+    def regenerate_tokens_urls(self, session, new_offset_in_seconds):
         """
             Refresh signed URL for tokens Blob of the text file.
         :param session:
         :return:
         """
-        if session and self.tokens_url_signed_blob_path:
-
-            # We assume a significant delta between minimum days
-            # and new offset (ie at least 10 minutes)
-            minimum_days_valid = 30 * 12  # this should always be lower then new offset
-            new_offset_days_valid = 30 * 14
-            time_to_check = time.time() + (86400 * minimum_days_valid)
-            print('aalala', type(self.tokens_url_signed_expiry), type(time_to_check))
-            if self.tokens_url_signed_expiry is None or float(self.tokens_url_signed_expiry) <= time_to_check:
-                new_offset_in_seconds = 86400 * new_offset_days_valid
-
-                self.tokens_url_signed = data_tools.build_secure_url(self.tokens_url_signed_blob_path,
-                                                                     new_offset_in_seconds)
-                self.tokens_url_signed_expiry = time.time() + new_offset_in_seconds
-                session.add(self)
+        if self.tokens_url_signed_blob_path:
+            self.tokens_url_signed = data_tools.build_secure_url(self.tokens_url_signed_blob_path,
+                                                                    new_offset_in_seconds)
+            #self.tokens_url_signed_expiry = time.time() + new_offset_in_seconds
+            session.add(self)
 
     def regenerate_url(self, session):
         """
@@ -134,19 +102,10 @@ class TextFile(Base):
         :param session:
         :return:
         """
-        if session and self.url_signed_blob_path:
+        should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(self, session)
+        if should_regenerate is True:
+            self.url_signed = data_tools.build_secure_url(self.url_signed_blob_path, new_offset_in_seconds)
+            self.url_signed_expiry = time.time() + new_offset_in_seconds
+            session.add(self)
 
-            # We assume a significant delta between minimum days
-            # and new offset (ie at least 10 minutes)
-            minimum_days_valid = 30 * 12  # this should always be lower then new offset
-            new_offset_days_valid = 30 * 14
-            time_to_check = time.time() + (86400 * minimum_days_valid)
-
-            if self.url_signed_expiry is None or self.url_signed_expiry <= time_to_check:
-                new_offset_in_seconds = 86400 * new_offset_days_valid
-
-                self.url_signed = data_tools.build_secure_url(self.url_signed_blob_path, new_offset_in_seconds)
-                self.url_signed_expiry = time.time() + new_offset_in_seconds
-                session.add(self)
-
-        self.regenerate_tokens_urls(session)
+            self.regenerate_tokens_urls(session, new_offset_in_seconds)
