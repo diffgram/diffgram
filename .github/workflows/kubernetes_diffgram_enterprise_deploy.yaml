@@ -285,6 +285,8 @@ jobs:
       ALLOW_EVENTHUB: ${{ secrets.ALLOW_EVENTHUB }}
       IS_OPEN_SOURCE: ${{ secrets.IS_OPEN_SOURCE }}
       ALLOW_STRIPE_BILLING: ${{ secrets.ALLOW_STRIPE_BILLING }}
+      RABBITMQ_DEFAULT_USER: ${{ secrets.RABBITMQ_DEFAULT_USER }}
+      RABBITMQ_DEFAULT_PASS: ${{ secrets.RABBITMQ_DEFAULT_PASS }}
     steps:
       - uses: xt0rted/pull-request-comment-branch@v1
         if: "github.event.issue.pull_request"
