@@ -34,4 +34,24 @@ describe("Closes token search, closest_token.ts", () => {
         const token = closest_token(tokens, lines, coordinates)
         expect(token).toBeTruthy()
     })
+
+    it("Should return previous token if x values falls out of token coordinates", () => {
+        const test_token = tokens[0]
+        const coordinates = {
+            x: test_token.start_x + test_token.width + 1,
+            y: 5
+        }
+        const token = closest_token(tokens, lines, coordinates)
+        expect(token).toEqual(test_token)
+    })
+
+    it("Should return current token if x value is within token coordinates", () => {
+        const test_token = tokens[0]
+        const coordinates = {
+            x: test_token.start_x + test_token.width - 1,
+            y: 5
+        }
+        const token = closest_token(tokens, lines, coordinates)
+        expect(token).toEqual(test_token)
+    })
 })
