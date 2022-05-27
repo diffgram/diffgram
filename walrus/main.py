@@ -92,7 +92,6 @@ from methods.task.task_template.task_template_launch_handler import TaskTemplate
 from methods.sync_events.sync_actions_handler import SyncActionsHandlerThread
 from shared.helpers.security import limiter
 from methods.startup.system_startup_checker import WalrusServiceSystemStartupChecker
-from methods.connectors.datasaur_connector import DatasaurSyncManager
 from methods.input.process_media_queue_manager import ProcessMediaQueueManager
 from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueThread
 
@@ -114,9 +113,6 @@ job_launcher_thread = TaskTemplateLauncherThread(
 sync_actions_thread = SyncActionsHandlerThread(thread_sleep_time_min=settings.SYNC_ACTIONS_THREAD_SLEEP_TIME_MIN,
                                                thread_sleep_time_max=settings.SYNC_ACTIONS_THREAD_SLEEP_TIME_MAX,
                                                run_once = False)
-datasaur_sync_manager = DatasaurSyncManager(thread_sleep_time_min=settings.DATASAUR_SYNC_THREAD_SLEEP_TIME_MIN,
-                                            thread_sleep_time_max=settings.DATASAUR_SYNC_THREAD_SLEEP_TIME_MAX)
-datasaur_sync_manager.start_sync_loop()
 
 actions_thread = ActionFlowTriggerQueueThread(thread_sleep_time_min=settings.ACTION_THREAD_SLEEP_TIME_MIN,
                                               thread_sleep_time_max=settings.ACTION_THREAD_SLEEP_TIME_MAX,

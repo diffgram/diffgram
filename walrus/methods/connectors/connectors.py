@@ -15,7 +15,8 @@ class ConnectorManager:
         'amazon_aws': 'S3Connector',
         'labelbox': 'LabelboxConnector',
         'datasaur': 'DatasaurConnector',
-        'scale_ai': 'ScaleAIConnector'
+        'scale_ai': 'ScaleAIConnector',
+        'minio': 'MinioConnector'
     }
 
     def __init__(self, connection=None, session=None, integration_name=None):

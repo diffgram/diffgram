@@ -20,10 +20,13 @@ class TextTokenizer:
         }
 
     def __tokenize_word_nltk(self, text) -> list:
-        tokens = word_tokenize(text)
+        paragraphs = [p for p in text.split('\n') if p]
         result = []
-        for token in tokens:
-            result.append({'value': token, 'tag': ''})
+        for paragraph in paragraphs:
+            tokens = word_tokenize(paragraph)
+            for token in tokens:
+                result.append({'value': token, 'tag': ''})
+            result.append({'value': '\n', 'tag': ''})
         return result
 
     def __tokenize_sentence_nltk(self, text) -> list:

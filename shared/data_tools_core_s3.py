@@ -4,6 +4,7 @@ from io import BytesIO
 from shared.settings import settings
 import boto3
 import mimetypes
+from botocore.config import Config
 
 from imageio import imread
 
@@ -22,13 +23,32 @@ class DataToolsS3:
     """
 
     def __init__(self):
-
-        self.s3_client = boto3.client('s3',
-                                      aws_access_key_id = settings.DIFFGRAM_AWS_ACCESS_KEY_ID,
-                                      aws_secret_access_key = settings.DIFFGRAM_AWS_ACCESS_KEY_SECRET,
-                                      region_name = settings.DIFFGRAM_S3_BUCKET_REGION)
         self.s3_bucket_name = settings.DIFFGRAM_S3_BUCKET_NAME
         self.s3_bucket_name_ml = settings.ML__DIFFGRAM_S3_BUCKET_NAME
+
+        config = None
+        if settings.IS_DIFFGRAM_S3_V4_SIGNATURE:
+            config=Config(signature_version='s3v4')
+
+        self.s3_client = DataToolsS3.get_client(
+            aws_access_key_id = settings.DIFFGRAM_AWS_ACCESS_KEY_ID,
+            aws_secret_access_key = settings.DIFFGRAM_AWS_ACCESS_KEY_SECRET,
+            region_name = settings.DIFFGRAM_S3_BUCKET_REGION,
+            config = config)
+
+
+    @staticmethod
+    def get_client(aws_access_key_id, 
+                   aws_secret_access_key, 
+                   region_name=None, 
+                   config=None):
+
+        return boto3.client(
+            's3',
+            aws_access_key_id = aws_access_key_id,
+            aws_secret_access_key = aws_secret_access_key,
+            region_name = region_name,
+            config = config)
 
     def create_resumable_upload_session(
         self,
