@@ -15,6 +15,10 @@ _________________
 •
 [Twitter](https://twitter.com/diffgram)
 
+# Support & Community
+1. [Open an issue](https://github.com/diffgram/diffgram/issues) (Technical, bugs, etc)
+2. 😍 [Join us on slack!](https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg)
+
 
 # Open Source Training Data Platform
 
@@ -50,6 +54,14 @@ Named Entity Recognition, Part of Speech Tagging, Coreference Resolution, Depend
 
 ![Diffgram Text Interface](./github_assets/diffgram_text_interface.png)
 
+## Audio
+[Audio Labeling docs](https://diffgram.readme.io/docs/audio-annotation-guide)
+
+Annotate Audio Regions available now, 
+Audios Transcription (coming soon)
+
+![Diffgram Audio Interface](./github_assets/diffgram_audio_interface.png)
+
 ## Geospatial & Tiled Imagery
 Support for COG (Cloud Optimized GeoTIFF), streaming, multi-layer, standard and cloud-optimized.
 
@@ -59,9 +71,6 @@ Alpha Release: [Geospatial labeling docs](https://diffgram.readme.io/docs/geospa
 
 ## Documents
 
-
-## Audio
-Coming May 2022
 
 ### More
 Build your own UI or [contact us](https://diffgram.com/main/contact). Our intent is to build and cover all major media types in 2022, including timeseries, DICOM, and more.
@@ -103,7 +112,7 @@ Diffgram is multiple training data tools in one single application.
 1. [Ingest](#Ingest) - Magic Mapping Wizard, High QPS Ingest, All-Cloud File Browser, and More.
 2. [Store](#Store) - Source of Truth for Training Data, Query at the Source
 3. [Workflow](#Workflow) - Human Tasks, Many Many QA Features.
-4. [Annotation](#Annotation) - Image, Video, [3D Labeling](https://diffgram.readme.io/docs/3d-lidar-annotation-guide), Text Available Now. Audio & More Coming Soon.
+4. [Annotation](#Annotation) - Image, Video, [3D Labeling](https://diffgram.readme.io/docs/3d-lidar-annotation-guide), Text, Geo, Audio. More Coming.
 5. [Annotation Automation](#Annotation-Automation) - Customizable, Powerful
 6. [Stream to Training](#Stream-to-Training) - Direct to PyTorch & Tensorflow Memory
 7. [Explore](#Explore) - Query & Visually See Annotations
@@ -135,11 +144,6 @@ with one single integrated application.
 ![](./github_assets/diffgram_solution.PNG)
 
 Enterprise Questions? Please [contact us](https://diffgram.com/contact).
-
-# Support & Community
-1. [Open an issue](https://github.com/diffgram/diffgram/issues) (Technical, bugs, etc)
-2. 😍 [Join us on slack!](https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg)
-3. Forum (Coming Soon)
 
 Security issues: Do not create a public issue. Email security@diffgram.com with the details.
 [Docs](https://diffgram.readme.io/docs)

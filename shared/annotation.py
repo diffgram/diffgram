@@ -184,7 +184,9 @@ class Annotation_Update():
                                   'keypoints',
                                   'cuboid_3d',
                                   'global',
-                                  'relation']
+                                  'relation',
+                                  'audio'
+                                  ]
         }
         },
         {'rating': {
@@ -242,6 +244,18 @@ class Annotation_Update():
             'default': None,
             'kind': int
         }
+        },
+        {
+            'start_time': {
+                'default': None,
+                'kind': float
+            }
+        },
+        {
+            'end_time': {
+                'default': None,
+                'kind': float
+            }
         },
         {'sentence': {
             'default': None,
@@ -1101,6 +1115,8 @@ class Annotation_Update():
                 end_sentence = input['end_sentence'],
                 start_token = input['start_token'],
                 end_token = input['end_token'],
+                start_time = input['start_time'],
+                end_time = input['end_time'],
                 sentence = input['sentence'],
                 creation_ref_id = input['creation_ref_id'],
                 machine_made = input['machine_made'],
@@ -1272,6 +1288,8 @@ class Annotation_Update():
                         end_sentence = None,
                         start_token = None,
                         end_token = None,
+                        start_time = None,
+                        end_time = None,
                         sentence = None,
                         creation_ref_id = None,
                         model_id = None,
@@ -1309,7 +1327,7 @@ class Annotation_Update():
                         coords = None,
                         radius = None,
                         bounds = None,
-                        bounds_lonlat = None,
+                        bounds_lonlat = None
                         ):
         """
         Assumes a "system" level context
@@ -1378,6 +1396,8 @@ class Annotation_Update():
             'end_sentence': end_sentence,
             'start_token': start_token,
             'end_token': end_token,
+            'start_time': start_time,
+            'end_time': end_time,
             'sentence': sentence,
             'creation_ref_id': creation_ref_id,
             'model_id': model_id,
@@ -1496,7 +1516,9 @@ class Annotation_Update():
                                   'geo_polygon',
                                   'geo_box',
                                   "relation",
-                                  "token"]:
+                                  "token",
+                                  "audio"
+                                  ]:
             return
 
         min_coords = self.get_min_coordinates_instance(self.instance)

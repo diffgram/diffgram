@@ -482,7 +482,9 @@ jobs:
           cluster-name: ${{ secrets.AKS_CLUSTER_NAME }}
           resource-group: ${{ secrets.AKS_CLUSTER_RESOURCE_GROUP }}
 
-
+      - name: helm version
+        run: helm version
+        
       - name: Upgrade Diffgram with Helm
         run: |
           kubectl create namespace diffgram-staging-${{ env.diffgram_domain_slug }}ns --dry-run=client -o yaml | kubectl apply -f -
