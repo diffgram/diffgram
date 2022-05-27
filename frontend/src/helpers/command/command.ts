@@ -25,7 +25,8 @@ export abstract class Command implements CommandInterface {
 
         if (instance.type === "global") {
             initializedInstance = new Instance()
-          
+        }
+
         if (instance.type === "audio") {
             initializedInstance = new AudioAnnotationInstance()
         }
