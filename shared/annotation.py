@@ -402,6 +402,10 @@ class Annotation_Update():
             'kind': list,
             'required': False
         }},
+        {'score': {
+            'kind': float,
+            'required': False
+        }},
 
     ])
 
@@ -1156,6 +1160,7 @@ class Annotation_Update():
                 radius = input['radius'],
                 bounds = input['bounds'],
                 bounds_lonlat = input['bounds_lonlat'],
+                score = input['score'],
             )
 
     def get_min_coordinates_instance(self, instance):
@@ -1327,7 +1332,8 @@ class Annotation_Update():
                         coords = None,
                         radius = None,
                         bounds = None,
-                        bounds_lonlat = None
+                        bounds_lonlat = None,
+                        score: None
                         ):
         """
         Assumes a "system" level context
@@ -1428,6 +1434,7 @@ class Annotation_Update():
             'radius': radius,
             'bounds': bounds,
             'bounds_lonlat': bounds_lonlat,
+            'score' : score
         }
         if overwrite_existing_instances and id is not None:
             self.instance = self.session.query(Instance).filter(Instance.id == id).first()
