@@ -1,8 +1,10 @@
+import { GlobalAnnotationInstance } from "../components/vue_canvas/instances/GlobalInstance";
 import { TextAnnotationInstance, TextRelationInstance } from "../components/vue_canvas/instances/TextInstance";
 import { InstanceInterface } from "./interfaces/InstanceData";
 
 export default class InstanceList {
     private instance_list: Array<InstanceInterface> = [];
+    private global_instance: InstanceInterface;
 
     constructor(instances?: Array<any>) {
         if (instances && instances.length > 0) {
@@ -22,6 +24,12 @@ export default class InstanceList {
                     new_instance.create_instance(id, from_instance_id, to_instance_id, label_file, attribute_groups, soft_delete)
                 }
 
+                else if (instance.typq === "global") {
+                    const global_instance = new GlobalAnnotationInstance()
+                    global_instance.create_instance(id, creation_ref_id, attribute_groups)
+                    this.global_instance = global_instance
+                }
+
                 else return
 
                 new_instance.creation_ref_id = creation_ref_id
@@ -35,8 +43,16 @@ export default class InstanceList {
         return non_deleted
     }
 
+    public get_global_instance(): InstanceInterface {
+        return this.global_instance
+    }
+
     public get_all(): Array<InstanceInterface> {
         return this.instance_list
+    }
+
+    public get_for_save(): Array<InstanceInterface> {
+        return [...this.instance_list, this.global_instance]
     }
 
     public push(instances: Array<InstanceInterface>) {
