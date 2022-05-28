@@ -12,12 +12,12 @@
           <v-expansion-panel @change="on_change_expansion(0)">
               <global_attributes_list
                   v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
-                    :global_attribute_groups_list="global_attribute_groups_list"
-                    :current_global_instance="current_global_instance"
-                    :schema_id="schema_id"
-                    :view_only_mode="false"
-                    @attribute_change="attribute_change($event)"
-              />
+                :global_attribute_groups_list="global_attribute_groups_list"
+                :current_global_instance="current_global_instance"
+                :schema_id="schema_id"
+                :view_only_mode="false"
+                @attribute_change="attribute_change($event, true)"
+              ></global_attributes_list>
           </v-expansion-panel>
 
             <v-expansion-panel @change="on_change_expansion(1)" :disabled="!current_instance">
@@ -133,6 +133,7 @@ import button_with_menu from '../regular/button_with_menu.vue';
 import label_select_only from '../label/label_select_only.vue'
 import attribute_group_list from '../attribute/attribute_group_list.vue'
 import global_attributes_list from '../attribute/global_attributes_list.vue'
+
 
 export default Vue.extend({
     name: "text_sidepanel",
@@ -274,7 +275,11 @@ export default Vue.extend({
         return attr_group_list;
 
       },
-      attribute_change: function(event) {
+      attribute_change: function(event, is_global = false) {
+          if (is_global) {
+              console.log("Update global")
+              return
+          }
           this.$emit('on_update_attribute', event)
       },
     }

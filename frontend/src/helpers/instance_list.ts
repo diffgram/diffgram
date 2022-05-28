@@ -1,12 +1,16 @@
 import { GlobalAnnotationInstance } from "../components/vue_canvas/instances/GlobalInstance";
 import { TextAnnotationInstance, TextRelationInstance } from "../components/vue_canvas/instances/TextInstance";
 import { InstanceInterface } from "./interfaces/InstanceData";
+import { v4 as uuidv4 } from 'uuid'
 
 export default class InstanceList {
     private instance_list: Array<InstanceInterface> = [];
-    private global_instance: InstanceInterface;
+    private global_instance: InstanceInterface = new GlobalAnnotationInstance();
 
     constructor(instances?: Array<any>) {
+        this.global_instance.type = "global"
+        this.global_instance.creation_ref_id = uuidv4();
+
         if (instances && instances.length > 0) {
             instances.map(instance => {
                 let new_instance: InstanceInterface;

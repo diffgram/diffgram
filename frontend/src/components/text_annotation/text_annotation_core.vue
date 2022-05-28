@@ -47,7 +47,7 @@
         :attribute_group_list_prop="label_list"
         :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
         :global_attribute_groups_list="global_attribute_groups_list"
-        :current_global_instance="current_global_instance"
+        :current_global_instance="new_instance_list && new_instance_list.get_global_instance().get_instance_data()"
         @on_select_instance="on_select_instance"
         @delete_instance="delete_instance"
         @on_instance_hover="on_instance_hover"
@@ -953,7 +953,7 @@ export default Vue.extend({
         url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
       }
       if (!this.instance_in_progress) {
-        const res = await postInstanceList(url, this.new_instance_list.get_all())
+        const res = await postInstanceList(url, this.new_instance_list.get_for_save())
         const {added_instances} = res
         added_instances.map(add_instance => {
           const old_instance = this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_instance.creation_ref_id)
