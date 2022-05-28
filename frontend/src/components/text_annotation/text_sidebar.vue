@@ -276,11 +276,7 @@ export default Vue.extend({
 
       },
       attribute_change: function(event, is_global = false) {
-          if (is_global) {
-              console.log("Update global")
-              return
-          }
-          this.$emit('on_update_attribute', event)
+          this.$emit('on_update_attribute', event, is_global)
       },
     }
 })

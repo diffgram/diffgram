@@ -47,7 +47,7 @@
         :attribute_group_list_prop="label_list"
         :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
         :global_attribute_groups_list="global_attribute_groups_list"
-        :current_global_instance="new_instance_list && new_instance_list.get_global_instance().get_instance_data()"
+        :current_global_instance="new_instance_list && new_instance_list.get_global_instance() && new_instance_list.get_global_instance().get_instance_data()"
         @on_select_instance="on_select_instance"
         @delete_instance="delete_instance"
         @on_instance_hover="on_instance_hover"
@@ -256,7 +256,8 @@ import {
   CreateInstanceCommand,
   DeleteInstanceCommand,
   UpdateInstanceLabelCommand,
-  UpdateInstanceAttributeCommand
+  UpdateInstanceAttributeCommand,
+  UpdateGlobalAttributeCommand
 } from "../../helpers/command/available_commands"
 import DrawRects from "./text_utils/draw_rects";
 import closest_token from "./text_utils/closest_token"
@@ -956,6 +957,7 @@ export default Vue.extend({
         const res = await postInstanceList(url, this.new_instance_list.get_for_save())
         const {added_instances} = res
         added_instances.map(add_instance => {
+          if (add_instance.type === "global") return
           const old_instance = this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_instance.creation_ref_id)
           const old_id = old_instance.get_instance_data().id
           this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_instance.creation_ref_id).id = add_instance.id
@@ -1074,9 +1076,14 @@ export default Vue.extend({
     on_select_instance: function(instance) {
       this.current_instance = instance
     },
-    on_update_attribute: function(event) {
+    on_update_attribute: function(event, is_global) {
       const attribute = event
-      const command = new UpdateInstanceAttributeCommand([this.new_instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.new_instance_list)
+      let command
+      if (is_global) {
+        command = new UpdateGlobalAttributeCommand([this.new_instance_list.get_global_instance()], this.new_instance_list, true)
+      } else {
+        command = new UpdateInstanceAttributeCommand([this.new_instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.new_instance_list)
+      }
       command.set_new_attribute(attribute[0].id, {...attribute[1]})
       this.new_command_manager.executeCommand(command)
       this.has_changed = true

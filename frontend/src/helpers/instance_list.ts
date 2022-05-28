@@ -28,10 +28,11 @@ export default class InstanceList {
                     new_instance.create_instance(id, from_instance_id, to_instance_id, label_file, attribute_groups, soft_delete)
                 }
 
-                else if (instance.typq === "global") {
+                else if (instance.type === "global") {
                     const global_instance = new GlobalAnnotationInstance()
                     global_instance.create_instance(id, creation_ref_id, attribute_groups)
                     this.global_instance = global_instance
+                    return 
                 }
 
                 else return
@@ -40,6 +41,10 @@ export default class InstanceList {
                 this.instance_list.push(new_instance)
             })
         }
+    }
+
+    public set_global_instance(new_global_instance: InstanceInterface): void {
+        this.global_instance = new_global_instance
     }
     
     public get(): Array<InstanceInterface> {
