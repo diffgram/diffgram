@@ -312,13 +312,14 @@ const integration_spec_list_template = [
     'image-icon': 'https://uploads-ssl.webflow.com/5f07389521600425ba513006/5f1750e39c67ad3dd7c69015_logo_scale.png',
   },
   {
-    'display_name': 'Diffgram (Default)',
-    'name': 'diffgram',
-    'image-icon': 'https://res-4.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_170,w_170,f_auto,b_white,q_auto:eco/okhxici7vjqqznihxezz',
-  },
-  {
    'display_name': 'Microsoft Azure',
    'name': 'microsoft_azure',
+   'icon': 'mdi-microsoft-azure',
+   'color': 'blue'
+  },
+  {
+   'display_name': 'Microsoft Azure Text Analytics',
+   'name': 'microsoft_azure_text_analytics',
    'icon': 'mdi-microsoft-azure',
    'color': 'blue'
   },
@@ -326,12 +327,7 @@ const integration_spec_list_template = [
     'display_name': 'Minio',
     'name': 'minio',
     'image-icon': 'https://min.io/resources/img/logo/MINIO_Bird.png',
-  },
-  // {'display_name': 'ScaleAI',
-  //  'name': 'sacle_ai',
-  //  'icon': 'mdi-domain',
-  //  'color': 'purple'
-  // }
+  }
 ]
 
 export const connection = {
@@ -346,7 +342,7 @@ export const connection = {
   },
   mutations: {
 
-    init_constant() {
+    init_constant(state) {
       state.integration_spec_list = integration_spec_list_template
     },
 

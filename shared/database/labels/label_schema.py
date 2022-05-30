@@ -2,6 +2,7 @@ from shared.database.common import *
 from shared.shared_logger import get_shared_logger
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm.session import Session
+from shared.database.annotation.instance_template import InstanceTemplate
 
 
 class LabelSchema(Base, SerializerMixin):
@@ -139,7 +140,7 @@ class LabelSchemaLink(Base, SerializerMixin):
     schema = relationship("LabelSchema", foreign_keys = [schema_id])
 
     instance_template_id = Column(Integer, ForeignKey('instance_template.id'))
-    instance_template = relationship("InstanceTemplate", foreign_keys = [instance_template_id])
+    instance_template = relationship(InstanceTemplate, foreign_keys = [instance_template_id])
 
     attribute_template_group_id = Column(Integer, ForeignKey('attribute_template_group.id'))
     attribute_template_group = relationship("Attribute_Template_Group", foreign_keys = [attribute_template_group_id])

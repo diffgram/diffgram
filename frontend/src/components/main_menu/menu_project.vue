@@ -202,7 +202,7 @@
           </v-flex>
           -->
 
-          
+
           <v-flex>
             <v-btn color="primary"
                     text
@@ -230,9 +230,9 @@
             <v-btn color="primary"
                    text
                    style="text-transform: none !important;"
-                   @click="$router.push('/project/' + $store.state.project.current.project_string_id + '/flow/list')">
-              <v-icon left>mdi-playlist-check</v-icon>
-              Email Alerts & Webhooks
+                   @click="$router.push('/project/' + $store.state.project.current.project_string_id + '/workflow/list')">
+              <v-icon left>mdi-lan</v-icon>
+              My WorkFlows
             </v-btn>
 
           </v-flex>

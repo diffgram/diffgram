@@ -53,6 +53,7 @@ from shared.utils.singleton import Singleton
 from methods.text_data.text_tokenizer import TextTokenizer
 from shared.utils.instance.transform_instance_utils import rotate_instance_dict_90_degrees
 
+
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
@@ -1233,7 +1234,7 @@ class Process_Media():
         We don't create an image, as we save the data to the video dict.
         In general this is not for previewing an image from front end
         but more for "internal" access.
-        if needed could cache signed urls on front end
+        if needed could cache WORsigned urls on front end
 
         We don't call resize because we assume the video has already been
         resized as required
@@ -1469,11 +1470,13 @@ class Process_Media():
 
         if input.status == "success":
             return
-
+        if input.file_id is None and input.file is not None:
+            input.file_id = input.file.id
         Event.new_deferred(
             session = self.session,
             kind = 'input_file_uploaded',
             project_id = input.project_id,
+            directory_id = input.directory_id,
             input_id = input.id,
             file_id = input.file_id,
             wait_for_commit = True
@@ -1594,21 +1597,8 @@ class Process_Media():
             self.save_text_tokens(raw_text, self.input.file)
             # Set success state for input.
             if self.input.media_type == 'text':
-
-                if self.input.status != "failed":  # if we haven't already set a status
-                    # May need this on video too
-                    # Context of for example the packet for instances attached to it
-                    # Not loading successfully
-                    # We default this to init so 'failed' string instead of None
-                    self.input.status = "success"
-                    self.input.percent_complete = 100
-                    self.input.time_completed = datetime.datetime.utcnow()
-
-                # Question, could we just call close() on temp_dir_path_and_filename instead here?
-                # TODO review this usage vs say https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-                # basically, if the default is that delete=True on close, hmmm
-
-                # allow_csv is True by default but gets set to False by process csv...
+                if self.input.status != "failed":
+                    self.declare_success(self.input)
                 try:
                     shutil.rmtree(self.input.temp_dir)  # delete directory
                 except OSError as exc:

@@ -123,8 +123,8 @@ const routerOptions = [
   // must come before flow id one (otherwise it will try
   // to pass it as prop
   {
-    path: '/project/:project_string_id/flow/list',
-    component: 'action/action_flow_list',
+    path: '/project/:project_string_id/workflow/list',
+    component: 'action/workflow_list',
     props: true,
     meta: {requiresAuth: true}
   },
@@ -133,6 +133,13 @@ const routerOptions = [
     // :flow_id is optional?
     path: '/project/:project_string_id/flow/:flow_id?',
     component: 'action/action_flow',
+    props: true,
+    meta: {requiresAuth: true}
+  },
+  {
+    // :flow_id is optional?
+    path: '/project/:project_string_id/workflow/:workflow_id?',
+    component: 'action/workflow_builder',
     props: true,
     meta: {requiresAuth: true}
   },
@@ -158,7 +165,7 @@ const routerOptions = [
   },
 
   {
-    path: '/project/:project_string_id/flow/:flow_id/event/:flow_event_id',
+    path: '/project/:project_string_id/workflow/:workflow_id/run/:workflow_run_id',
     component: 'action/action_event_list',
     props: true,
     meta: {requiresAuth: true}

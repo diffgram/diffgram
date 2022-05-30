@@ -347,6 +347,11 @@
               private_secret: true,
               private_secret_label: 'Connection String',
             },
+            'microsoft_azure_text_analytics': {
+              name: true,
+              private_secret: true,
+              private_host: true,
+            },
             'amazon_aws': {
               name: true,
               private_id: true,

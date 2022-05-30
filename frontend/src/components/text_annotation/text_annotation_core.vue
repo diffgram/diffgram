@@ -46,6 +46,8 @@
         :current_instance="current_instance"
         :attribute_group_list_prop="label_list"
         :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+        :global_attribute_groups_list="global_attribute_groups_list"
+        :current_global_instance="new_instance_list && new_instance_list.get_global_instance() && new_instance_list.get_global_instance().get_instance_data()"
         @on_select_instance="on_select_instance"
         @delete_instance="delete_instance"
         @on_instance_hover="on_instance_hover"
@@ -254,10 +256,13 @@ import {
   CreateInstanceCommand,
   DeleteInstanceCommand,
   UpdateInstanceLabelCommand,
-  UpdateInstanceAttributeCommand
+  UpdateInstanceAttributeCommand,
+  UpdateGlobalAttributeCommand
 } from "../../helpers/command/available_commands"
 import DrawRects from "./text_utils/draw_rects";
 import closest_token from "./text_utils/closest_token"
+import { Instance } from "../vue_canvas/instances/Instance";
+import { v4 as uuidv4 } from 'uuid'
 
 export default Vue.extend({
   name: "text_token_core",
@@ -339,6 +344,10 @@ export default Vue.extend({
       show_label_selection: false,
       moving_border: false,
       context_menu: null,
+
+      current_global_instance: null,
+      instance_list_global: [],
+
       // Command
       command_manager: undefined,
       has_changed: false,
@@ -917,6 +926,7 @@ export default Vue.extend({
     initialize_instance_list: async function () {
       let url;
       let payload;
+      this.current_global_instance = null // reset
       if (this.task && this.task.id) {
         url = `/api/v1/task/${this.task.id}/annotation/list`;
         payload = {
@@ -928,8 +938,10 @@ export default Vue.extend({
         url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
         payload = {}
       }
-      const instance_list = await getInstanceList(url, payload)
-      // New command patterm
+      let instance_list = await getInstanceList(url, payload)
+      instance_list = this.get_and_set_global_instance(instance_list)
+
+      // New command pattern
       this.new_instance_list = new InstanceList(instance_list)
     },
     save: async function () {
@@ -942,14 +954,15 @@ export default Vue.extend({
         url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
       }
       if (!this.instance_in_progress) {
-        const res = await postInstanceList(url, this.new_instance_list.get_all())
+        const res = await postInstanceList(url, this.new_instance_list.get_for_save())
         const {added_instances} = res
-        added_instances.map(add_insatnce => {
-          const old_instance = this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id)
+        added_instances.map(add_instance => {
+          if (add_instance.type === "global") return
+          const old_instance = this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_instance.creation_ref_id)
           const old_id = old_instance.get_instance_data().id
-          this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_insatnce.creation_ref_id).id = add_insatnce.id
+          this.new_instance_list.get_all().find(instance => instance.creation_ref_id === add_instance.creation_ref_id).id = add_instance.id
           if (this.instance_in_progress) {
-            this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_insatnce.id : this.instance_in_progress.start_instance
+            this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_instance.id : this.instance_in_progress.start_instance
           }
           this.new_instance_list.get_all()
             .filter(instance => {
@@ -958,8 +971,8 @@ export default Vue.extend({
             })
             .map(instance => {
               const {from_instance_id} = instance.get_instance_data()
-              if (from_instance_id === old_id) instance.from_instance_id = add_insatnce.id
-              else instance.to_instance_id = add_insatnce.id
+              if (from_instance_id === old_id) instance.from_instance_id = add_instance.id
+              else instance.to_instance_id = add_instance.id
             })
         })
       }
@@ -1063,12 +1076,45 @@ export default Vue.extend({
     on_select_instance: function(instance) {
       this.current_instance = instance
     },
-    on_update_attribute: function(attribute) {
-      const command = new UpdateInstanceAttributeCommand([this.new_instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.new_instance_list)
+    on_update_attribute: function(event, is_global) {
+      const attribute = event
+      let command
+      if (is_global) {
+        command = new UpdateGlobalAttributeCommand([this.new_instance_list.get_global_instance()], this.new_instance_list, true)
+      } else {
+        command = new UpdateInstanceAttributeCommand([this.new_instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.new_instance_list)
+      }
       command.set_new_attribute(attribute[0].id, {...attribute[1]})
       this.new_command_manager.executeCommand(command)
       this.has_changed = true
-    }
+    },
+    get_and_set_global_instance: function (instance_list) {
+      if(!this.global_attribute_groups_list){
+        return instance_list
+      }
+      if(this.global_attribute_groups_list.length === 0){
+        return instance_list
+      }
+      let existing_global_instance = instance_list.find(inst => inst.type === 'global');
+      if(existing_global_instance){
+        this.current_global_instance = existing_global_instance;
+      }
+      else{
+        this.current_global_instance = this.new_global_instance();
+        instance_list.push(this.current_global_instance)
+      }
+
+      return instance_list
+
+    },
+    new_global_instance: function () {
+
+      let new_instance = new Instance();
+      new_instance.type = 'global'
+      new_instance.creation_ref_id = uuidv4();
+      return new_instance
+
+    },
   }
 })
 </script>

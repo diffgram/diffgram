@@ -36,7 +36,9 @@
       :skip_visible="false"
     >
     </wizard_navigation>
-    <label_manager_dialog :schema="job.label_schema"
+    <label_manager_dialog
+                          v-if="job.label_schema"
+                          :schema="job.label_schema"
                           :project_string_id="project_string_id"
                           ref="label_manager_dialog">
 

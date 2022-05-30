@@ -4,7 +4,7 @@ from shared.tests.test_utils import common_actions, data_mocking
 from unittest.mock import patch
 import analytics
 import requests
-from walrus.methods.export import export_generation
+from shared.export import export_generation
 
 class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
     """
@@ -61,7 +61,7 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
                 export_id = export.id,
                 version = None,
                 working_dir = source_directory,
-                use_request_context = False
+                member = self.member
             )
             mock_1.asser_called_once()
             print('ressss', export_data)
@@ -134,7 +134,9 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
                 session = self.session,
                 project = self.project,
                 export_id = export.id,
-                use_request_context = False
+                member = self.member,
+                working_dir = None
+
             )
 
             mock_1.assert_called_once()
