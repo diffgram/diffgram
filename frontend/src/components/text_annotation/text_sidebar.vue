@@ -8,7 +8,20 @@
         `"
     >
         <v-expansion-panels multiple style="width: 350px;" accordion :value="open_panels">
-            <v-expansion-panel @change="on_change_expansion(0)" :disabled="!current_instance">
+
+          <v-expansion-panel @change="on_change_expansion(0)">
+              <global_attributes_list
+                  v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
+                :global_attribute_groups_list="global_attribute_groups_list"
+                :current_global_instance="current_global_instance"
+                :schema_id="schema_id"
+                :view_only_mode="false"
+                @attribute_change="attribute_change($event, true)"
+              ></global_attributes_list>
+          </v-expansion-panel>
+
+            <v-expansion-panel @change="on_change_expansion(1)" :disabled="!current_instance">
+
                 <v-expansion-panel-header>
                     <strong>Attributes {{ !current_instance ? "(select instance)" : null }}</strong>
                 </v-expansion-panel-header>
@@ -26,7 +39,7 @@
                     />
                 </v-expansion-panel-content>
             </v-expansion-panel>
-            <v-expansion-panel @change="on_change_expansion(1)">
+            <v-expansion-panel @change="on_change_expansion(2)">
                     <v-expansion-panel-header>
                         <strong>Instances</strong>
                     </v-expansion-panel-header>
@@ -119,6 +132,8 @@ import instance_detail_list_view from "../annotation/instance_detail_list_view.v
 import button_with_menu from '../regular/button_with_menu.vue';
 import label_select_only from '../label/label_select_only.vue'
 import attribute_group_list from '../attribute/attribute_group_list.vue'
+import global_attributes_list from '../attribute/global_attributes_list.vue'
+
 
 export default Vue.extend({
     name: "text_sidepanel",
@@ -126,7 +141,8 @@ export default Vue.extend({
         instance_detail_list_view,
         button_with_menu,
         label_select_only,
-        attribute_group_list
+        attribute_group_list,
+        global_attributes_list
     },
     props: {
         project_string_id: {
@@ -160,11 +176,17 @@ export default Vue.extend({
         loading: {
             type: Boolean,
             required: true
+        },
+        global_attribute_groups_list: {
+            type: Array,
+            default: null
+        },
+        current_global_instance: {
         }
     },
     data() {
         return {
-            open_panels: [1]
+            open_panels: [0, 1]
         }
     },
     computed: {
@@ -253,9 +275,9 @@ export default Vue.extend({
         return attr_group_list;
 
       },
-      attribute_change: function(attribute) {
-          this.$emit('on_update_attribute', attribute)
-      }
+      attribute_change: function(event, is_global = false) {
+          this.$emit('on_update_attribute', event, is_global)
+      },
     }
 })
 </script>

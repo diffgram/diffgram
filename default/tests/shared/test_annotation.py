@@ -1772,6 +1772,4 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
 
         ann_update.main()
 
-        print('AAAA', ann_update.log['error'])
-
         self.assertEqual(len(ann_update.log['error'].keys()), 0)

@@ -91,6 +91,7 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(len(data['instance_template_list']), 3)
 
     def test_list_instance_template_core(self):
+        schema = data_mocking.create_label_schema({'name': 'test'}, self.session)
         instance_template = data_mocking.create_instance_template({
             'name': 'test template',
             'project_id': self.project.id,

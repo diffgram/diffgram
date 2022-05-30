@@ -46,7 +46,7 @@ FERNET_KEY = os.getenv('FERNET_KEY', 'NeL_RED6zZ1XF3XT7Yd1hzFPYyebrg6UdkECTOLHEd
 # INFO = 20
 # DEBUG = 10
 # NOTSET = 0
-SANDBOX_LOGGER_TYPE =  os.getenv('SANDBOX_LOGGER_TYPE', logging.INFO)
+SANDBOX_LOGGER_TYPE = int(os.getenv('SANDBOX_LOGGER_TYPE', logging.INFO))
 
 
 # AWS Settings
@@ -170,6 +170,13 @@ EMAIL_REPLY_TO = os.getenv('EMAIL_REPLY_TO', 'support@diffgram.com')
 
 # Plans Features
 IS_OPEN_SOURCE = env_adapter.bool(os.getenv('IS_OPEN_SOURCE', True))
+
+# System Info
+RABBITMQ_DEFAULT_USER = os.getenv('RABBITMQ_DEFAULT_USER')
+RABBITMQ_DEFAULT_PASS = os.getenv('RABBITMQ_DEFAULT_PASS')
+RABBITMQ_HOST = os.getenv('RABBITMQ_HOST')      # without port
+USE_RABBIT_MQ = env_adapter.bool(os.getenv('USE_RABBIT_MQ', True))
+RABBITMQ_PORT = int(os.getenv('RABBITMQ_PORT', 5672))
 
 
 SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_MINIMUM_DAYS_VALID', 30 * 12))     # this should always be lower then new offset

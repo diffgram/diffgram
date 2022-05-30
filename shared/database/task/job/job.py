@@ -4,6 +4,7 @@ from shared.database.task.job.user_to_job import User_To_Job
 from shared.database.source_control.working_dir import WorkingDirFileLink, WorkingDir
 from shared.database.external.external import ExternalMap
 from shared.database.task.job.job_working_dir import JobWorkingDir
+from shared.database.ui_schema.ui_schema import UI_Schema
 from shared.database.source_control.file import File
 from shared.database.user import User
 from shared.database.event.event import Event
@@ -281,6 +282,7 @@ class Job(Base, Caching):
         elif return_kind == 'first':
             return files_to_process.first()
 
+    @staticmethod
     def get_by_id(session, job_id):
         if job_id is None:
             return None
@@ -746,6 +748,10 @@ class Job(Base, Caching):
         if self.label_schema_id:
             schema = LabelSchema.get_by_id(session = session, id = self.label_schema_id)
             schema_data = schema.serialize()
+        ui_schema_data = None
+        if self.ui_schema_id:
+            ui_schema = UI_Schema.get_by_id(session = session, id = self.label_schema_id)
+            ui_schema_data = ui_schema.serialize()
         return {
             'id': self.id,
             'name': self.name,
@@ -758,6 +764,7 @@ class Job(Base, Caching):
             'reviewer_list_ids': reviewer_list_ids,
             'status': self.status,
             'label_schema': schema_data,
+            'ui_schema': ui_schema_data,
             'label_schema_id': self.label_schema_id,
             'time_created': self.time_created,
             'time_completed': self.time_completed,
@@ -988,7 +995,7 @@ class Job(Base, Caching):
         the file doesn't get remove properly from the job...
 
         """
-
+        print('update_file_count_statistic')
         self.file_count_statistic = WorkingDirFileLink.file_list(
             session = session,
             working_dir_id = self.directory_id,

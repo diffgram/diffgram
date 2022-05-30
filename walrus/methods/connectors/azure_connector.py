@@ -18,7 +18,7 @@ from methods.input import packet
 from pathlib import Path
 from methods.export.export_view import export_view_core
 from shared.database.export import Export
-from methods.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
+from shared.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.regular import regular_log
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]

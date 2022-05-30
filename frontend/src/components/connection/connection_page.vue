@@ -23,12 +23,6 @@
 <script lang="ts">
 
 
-  /*  Caution, re adding new select controls
-   *    expects  @change="has_changes = true"  otherwise won't "save"
-   *
-   *
-   */
-
   import connection_form from './connection_form';
 
   import Vue from "vue";
@@ -51,61 +45,7 @@
       data() {
         return {
 
-          success_loading_existing: false,
-          success_saved: false,
-          success_run: false,
-
-          name: null,
-
-          request_time: null,
-
-          /*
-           *
-           */
-          connection: {
-            'name': 'My Connection',
-            'archived': false,
-            'permission_scope': 'project',
-            'id': null,
-            'integration_name': null,
-
-            'private_id': null,
-            'private_secret': null,
-            'exists_private_secret_hash': null,
-            'account_email': null,
-            'project_id_external': null
-
-          },
-
-
-          // WIP
-          google_list: [
-            {
-              'display_name': 'Cloud storage',
-              'name': 'instance',
-              'icon': 'mdi-google',
-              'color': 'green'
-            },
-            {
-              'display_name': 'AutoML',
-              'name': 'instance',
-              'icon': 'mdi-google',
-              'color': 'green'
-            },
-          ],
-          // WIP
-
-          loading: false,
-          error: {},
-          result: null,
-
-          auth: {},
-          show_auth: false,
-
-          has_changes: false,
-
-          permission_level_list: ['Editor', 'Viewer'],
-          permission_level: 'Editor',
+          
 
         }
       },

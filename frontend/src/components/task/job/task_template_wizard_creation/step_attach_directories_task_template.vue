@@ -1,6 +1,6 @@
 <template>
   <v-container fluid data-cy="task-template-dataset-step">
-    <div class="d-flex mb-8 justify-space-between">
+    <div class="d-flex justify-space-between">
       <h1 data-cy="task-template-dataset-step-title" class="font-weight-medium text--primary mr-4">
         What datasets are these tasks for?
       </h1>
@@ -19,8 +19,8 @@
       Select The Datasets to attach to your task template
     </p>
 
-    <v-row class="d-flex justify-space-between">
-      <v-col cols="6">
+    <v-row class="d-flex pa-0 justify-space-between">
+      <v-col cols="6" class="pa-0 ">
         <job_file_routing
           :job="job"
           style="border-right: 2px solid #e6e6e6"
@@ -32,7 +32,7 @@
         ></job_file_routing>
 
       </v-col>
-      <v-col cols="6">
+      <v-col class="pa-0 " cols="6">
         <job_pipeline_mxgraph v-if="show_graph" ref="job_pipeline" :job_object="job"></job_pipeline_mxgraph>
       </v-col>
     </v-row>
@@ -40,8 +40,7 @@
     <wizard_navigation
       @next="on_next_button_click"
       :loading_next="loading_steps"
-      :disabled_next="loading_steps ||
-                      job.attached_directories_dict.attached_directories_list.length === 0"
+      :disabled_next="loading_steps"
       @back="$emit('previous_step')"
       :skip_visible="false"
     >

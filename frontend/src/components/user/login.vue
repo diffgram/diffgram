@@ -2,7 +2,7 @@
 <template>
   <div class="d-flex align-center justify-center screen-height" v-cloak>
 
-    <v-flex xs6 center v-if="$store.state.user.logged_in != true">
+    <v-flex class="flex-column" xs6 center v-if="$store.state.user.logged_in != true">
       <v_error_multiple :error="error_login"></v_error_multiple>
       <div class="pa-4 ma-auto text-center" style="width: 100%">
         <img

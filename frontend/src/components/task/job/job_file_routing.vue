@@ -1,7 +1,7 @@
 <template>
-  <v-container class="ma-0" data-cy="job-file-routing">
-    <v-row>
-      <v-col cols="12">
+  <v-container fluid class="ma-0" data-cy="job-file-routing">
+    <v-row class="pa-0 ">
+      <v-col cols="12" class="pa-0 ">
 
         <v-card-title>
             1. Choose Diffgram Datasets for Tasks
@@ -42,8 +42,8 @@
       </v-col>
     </v-row>
 
-    <v-row>
-      <v-col cols="12">
+    <v-row class="pa-0 ">
+      <v-col  class="pa-0 " cols="12">
         <v-card-title>
           2. After Tasks are Completed (Optional)
         </v-card-title>
