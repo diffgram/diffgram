@@ -45,7 +45,7 @@ describe("Closes token search, closest_token.ts", () => {
         expect(token).toEqual(test_token)
     })
 
-    it("Token should belong to line 0 if the y is 0", () => {
+    it("Should return token that belongs to line 0 if the y is 0", () => {
         const test_token = tokens[0]
         const coordinates = {
             x: test_token.start_x + test_token.width - 1,
@@ -55,12 +55,30 @@ describe("Closes token search, closest_token.ts", () => {
         expect(token.line).toEqual(0)
     })
 
-    it("Token should not exist if the line falls of text space", () => {
+    it("Should return token that does not exist if the line falls of text space", () => {
         const coordinates = {
             x: 50,
             y: 400
         }
         const token = closest_token(tokens, lines, coordinates)
         expect(token).toBeUndefined()
+    })
+
+    it("Should return token from the previous like if it's closer to it", () => {
+        const coordinates = {
+            x: 50,
+            y: 6
+        }
+        const token = closest_token(tokens, lines, coordinates)
+        expect(token.line).toEqual(0)
+    })
+
+    it("Should return token from the next like if it's closer to it", () => {
+        const coordinates = {
+            x: 50,
+            y: 44
+        }
+        const token = closest_token(tokens, lines, coordinates)
+        expect(token.line).toEqual(1)
     })
 })
