@@ -15,6 +15,8 @@ from shared.database.source_control.working_dir import WorkingDir
 from shared.permissions.project_permissions import Project_permissions
 
 from shared.helpers import sessionMaker
+from shared.database.labels.label_schema import LabelSchema
+from shared.regular import regular_log
 
 
 # ADDING new view functions here?
@@ -40,7 +42,7 @@ def web_build_name_to_file_id_dict(project_string_id):
         or None / failure case
 
     """
-    log = {"success": False, "errors": []}
+    log = regular_log.default()
     schema_id = request.args.get('schema_id')
     directory_id = request.headers.get('directory_id', None)
     if directory_id is None:
@@ -57,31 +59,47 @@ def web_build_name_to_file_id_dict(project_string_id):
             log["success"] = False
             return jsonify(log = log), 200
 
-        name_to_file_id, result = build_name_to_file_id_dict(session = session,
-                                                             project = project,
-                                                             directory_id = directory_id,
-                                                             schema_id = schema_id)
-        if result == True:
+        name_to_file_id, log = build_name_to_file_id_dict(session = session,
+                                                          project = project,
+                                                          directory_id = directory_id,
+                                                          schema_id = schema_id,
+                                                          log = log)
+        if regular_log.log_has_error(log):
+            return jsonify(log), 400
+        else:
             log["success"] = True
 
     return jsonify(log = log,
                    name_to_file_id = name_to_file_id), 200
 
 
-def build_name_to_file_id_dict(session, project, directory_id, schema_id = None):
+def build_name_to_file_id_dict(session, project, directory_id, log, schema_id = None):
     directory_id = int(directory_id)
 
     sub_query = WorkingDirFileLink.get_sub_query(session = session,
                                                  working_dir_id = directory_id,
                                                  type = "label")
+    if schema_id is None:
+        schema = project.get_default_schema()
+        schema_id = schema.id
+    else:
+        schema = LabelSchema.get_by_id(session = session, id = schema_id)
+        if not schema:
+            log['error']['schema'] = 'Label Schema not found'
+            return None, log
+        if schema.project_id != project.id:
+            log['error']['schema'] = 'Schema does not belong to project.'
+            return None, log
 
-    file_list = session.query(File).filter(
-        File.id == sub_query.c.file_id,
-        File.state != "removed").all()
+    dir = WorkingDir.get_by_id(session = session, directory_id = directory_id)
+
+    label_file_list = project.get_label_list(session = session,
+                                             directory = dir,
+                                             schema_id = schema_id)
 
     out = {}
 
-    for file in file_list:
-        out[file.label.name] = file.id
+    for elm in label_file_list:
+        out[elm['label']['name']] = elm['id']
 
-    return out, True
+    return out, log
