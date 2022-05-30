@@ -89,6 +89,12 @@ def upgrade():
     ).all()
 
     for temp in result:
+        actions = session.query(Action).filter(
+            Action.template_id == temp.id
+        ).all()
+        for act in actions:
+            act.template_id = None
+            session.add(act)
         session.delete(temp)
 
     create_default_action_templates(session)
