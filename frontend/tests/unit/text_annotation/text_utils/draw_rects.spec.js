@@ -1,7 +1,7 @@
 import DrawRects from "../../../../src/components/text_annotation/text_utils/draw_rects"
 import { tokens, lines, instance_list } from "../text_test_data"
 
-describe("Test DrawRects class (draw_rects.ts)", () => {
+describe("Test DrawRects class's generate_rects function (draw_rects.ts)", () => {
     let draw_rects;
 
     beforeEach(() => {
@@ -79,6 +79,22 @@ describe("Test DrawRects class (draw_rects.ts)", () => {
 
         expect(end_line_rect.x).toEqual(third_line_start_token.start_x)
         expect(end_line_rect.width).toEqual(start_token.start_x + start_token.width - third_line_start_token.start_x)
+    })
+})
 
+describe("Test DrawRects class's generate_selection_rect function (draw_rects.ts)", () => {
+    let draw_rects;
+
+    beforeEach(() => {
+        draw_rects = new DrawRects(tokens, lines, instance_list)
+    })
+
+    it("Should return array of rects with added start_token_id and end_token_id in the array elements", () => {
+        const rects = draw_rects.generate_selection_rect(tokens[0].id, tokens[0].id)
+
+        expect(rects[0]).toMatchObject({
+            start_token_id: expect.any(Number),
+            end_token_id: expect.any(Number)
+        })
     })
 })
