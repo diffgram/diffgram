@@ -58,9 +58,10 @@ Named Entity Recognition, Part of Speech Tagging, Coreference Resolution, Depend
 [Audio Labeling docs](https://diffgram.readme.io/docs/audio-annotation-guide)
 
 Annotate Audio Regions available now, 
-Audios Transcription (coming soon)
 
 ![Diffgram Audio Interface](./github_assets/diffgram_audio_interface.png)
+
+Audios Transcription (coming soon)
 
 ## Geospatial & Tiled Imagery
 Support for COG (Cloud Optimized GeoTIFF), streaming, multi-layer, standard and cloud-optimized.
@@ -124,7 +125,7 @@ Diffgram is Open Source and optionally Client Installed. **[Quickstart](#Quickst
 * [Who is Diffgram for?](#Who-is-Diffgram-for)
 * [Why Diffgram?](#Why-Diffgram)
 * [What are Diffgram's competitive advantages?](#What-are-Diffgrams-competitive-advantages)
-* [Roadmap](#Roadmap)
+* [Roadmap](https://diffgram.readme.io/docs/roadmap)
 * [Features](#Features)
 * [Standard Features](#Standard-Features)
 * [Built for Extreme Scale](#Built-for-Extreme-Scale)
@@ -197,39 +198,13 @@ V7 Labs (Darwin), BasicAI, SuperbAI, Kili-Technology, Cord, HastyAI, Dataloop, K
 Please see the roadmap and talk with us if you see a missing feature.
 
 ### How much does this cost? What's your business model?
-If you have less than 20 people and manage your own Diffgram instance there is **no licensing cost**. 
-You can install Diffgram and use it with hundreds of thousands of annotations for free.
-
-For more detail [Compare Diffgram Versions](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise)
+[Compare Diffgram Versions](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise)
 
 ### Premium Support
 [Learn more.](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise#premium-licenses-with-open-source)
 
 ### Enterprise
 [Enterprise Edition](https://diffgram.com/main/enterprise).
-For companies and teams with 20+ users.
-This is our best level of support, Enterprise focused features, SLAs, and More.
-
-If you are planning to do millions, billions, or even a trillion+ annotations then Diffgram Enterprise is for you! 
-Diffgram Enterprise can help you scale every aspect of your training data. 
-
-## Roadmap
-2022: 
-1. New Interfaces: Geo, Timeseries, Document 2.0, Audio
-2. Process Manager (Workflow 2.0)
-3. Save on labeling costs by only labeling most relevant data.
-4. Save QA costs by using model to debug humans. Explore V2
-5. Save on labeling costs by using interactive automations. Userscripts V2
-
-2023:
-Scale: Support for up to 1,000+ QPS and up to 10 Billion annotations per install.
-
-2024:
-Scale: Support for up to 10,000+ QPS and up to 500+ Billion annotations.
-![Roadmap](./github_assets/roadmap.PNG)
-
-We welcome you to create issues, join our slack channel, and help shape our roadmap.
-Are you an Enterprise customer? Talk to us about priority implementations.
 
 
 ## Built for Extreme Scale
