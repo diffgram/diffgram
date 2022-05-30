@@ -42,6 +42,7 @@ export class Action {
   public template_id: number;
   public ordinal: number;
   public public_name: string;
+  public archived: boolean;
   public icon: string;
   public kind: string;
   public trigger_data: TriggerData;
@@ -68,13 +69,13 @@ export class Action {
   }
 
   public setFromObject(action: any){
-    console.log('setFromObject', action)
     this.config_data = action.config_data ? action.config_data : {};
     this.id = action.id;
     this.template_id = action.template_id;
     this.public_name = action.public_name;
     this.icon = action.icon;
     this.kind = action.kind;
+    this.archived = action.archived;
     this.trigger_data = action.trigger_data ? action.trigger_data : {};
     this.condition_data = action.condition_data;
     this.ordinal = action.ordinal;

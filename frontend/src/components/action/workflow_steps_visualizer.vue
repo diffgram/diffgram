@@ -94,8 +94,7 @@
           this.$emit('newDraggingBlock', null)
         },
         on_remove_action: function(act){
-          console.log('on_remove_node', act)
-          this.$emit('remove_selection')
+          this.$emit('remove_action', act)
         }
 
       }

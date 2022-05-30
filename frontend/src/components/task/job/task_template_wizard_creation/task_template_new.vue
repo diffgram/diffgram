@@ -1,5 +1,5 @@
 <template>
-  <div id="">
+  <div class="task-template-new-container">
     <main_menu> </main_menu>
     <v-toolbar
       class="mt-4 d-flex justify-space-between"
@@ -161,3 +161,9 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style>
+.task-template-new-container{
+  height: 100%;
+}
+</style>

@@ -14,9 +14,18 @@
       </v-card-title>
 
 
-
-      <v-btn v-if="action.kind !== 'action_start'" color="primary"  icon  x-small @click="remove"><v-icon color="red">mdi-delete</v-icon></v-btn>
-
+      <button_with_confirm
+        v-if="action.kind !== 'action_start'"
+        tooltip_message="Archive Workflow"
+        button_message="Archive Workflow"
+        @confirm_click="remove"
+        icon="mdi-delete"
+        button_color="error"
+        :icon_style="true"
+        datacy_confirm="archive_schema_button_confirm"
+        datacy="archive_schema_button"
+      >
+      </button_with_confirm>
       <div v-if="is_last_node" class=" last-step-arrow d-flex flex-column justify-center align-center">
         <v-icon size="46">mdi-arrow-down</v-icon>
         <v-btn @click="open_action_selector" x-large icon color="secondary" ><v-icon>mdi-plus</v-icon></v-btn>

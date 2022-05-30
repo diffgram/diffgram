@@ -86,7 +86,7 @@
             <button_with_confirm
               tooltip_message="Archive Workflow"
               button_message="Archive Workflow"
-              @confirm_click="archive_action"
+              @confirm_click="archive_workflow"
               icon="mdi-delete"
               :disabled="loading && !workflow"
               button_color="error"
@@ -108,6 +108,7 @@
               @add_action_to_workflow="on_add_action_to_workflow"
               @open_action_selector="show_add_action_panel"
               @remove_selection="on_remove_selection"
+              @remove_action="remove_action"
               @select_action="on_select_action($event, 'wizard')"
               :workflow="workflow"
               @newDraggingBlock="on_new_dragging_block"
@@ -291,6 +292,20 @@ export default Vue.extend({
       }
     },
     methods: {
+      remove_action: async function(action){
+        action.archived = true
+        await this.api_action_update(action)
+        this.workflow.actions_list = this.workflow.actions_list.filter(act => action.id != act.id).sort((a, b) => {
+          return a.position- b.position;
+        })
+        this.workflow.actions_list = this.workflow.actions_list.map((elm, index) => {
+          return {
+            ...elm,
+            ordinal: index
+          }
+        })
+
+      },
       on_change_workflow_active: function(value){
         this.workflow.active = value
         this.api_workflow_update()
@@ -433,7 +448,7 @@ export default Vue.extend({
       show_add_action_panel: function () {
         this.show_add_action = true
       },
-      archive_action: async function(){
+      archive_workflow: async function(){
         await this.api_workflow_archive()
       },
       on_action_updated: async function(act){
