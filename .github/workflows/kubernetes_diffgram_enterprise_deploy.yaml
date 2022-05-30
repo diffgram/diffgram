@@ -135,6 +135,7 @@ jobs:
       SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID: ${{secrets.SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID}}
       RABBITMQ_DEFAULT_USER: ${{secrets.RABBITMQ_DEFAULT_USER}}
       RABBITMQ_DEFAULT_PASS: ${{secrets.RABBITMQ_DEFAULT_PASS}}
+      ERLANG_COOKIE: ${{secrets.ERLANG_COOKIE}}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
       - name: Check out repository code
@@ -209,6 +210,7 @@ jobs:
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           rabbitmq.auth.username: ${{secrets.RABBITMQ_DEFAULT_USER}}
           rabbitmq.auth.password: ${{secrets.RABBITMQ_DEFAULT_PASS}}
+          rabbitmq.auth.erlangCookie: ${{secrets.ERLANG_COOKIE}}
           walrusService.requests.memory: "16G"
           walrusService.limits.memory: "16G"
           walrusService.requests.cpu: "4"
