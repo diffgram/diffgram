@@ -25,7 +25,7 @@ const line_search = (lines: Array<Line>, y: number): Line => {
     const prev_delta: number = start_line.y - y;
     const next_delta: number = finish_line.y - y;
 
-    return prev_delta > next_delta ? finish_line : start_line
+    return Math.abs(prev_delta) > Math.abs(next_delta) ? finish_line : start_line
 }
 
 const token_search = (tokens: Array<Token>, x: number): Token => {
