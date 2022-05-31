@@ -507,6 +507,13 @@ class Project(Base, Caching):
 
         return attribute_groups_serialized_list
 
+    def get_default_schema(self, session):
+        schema = session.query(LabelSchema).filter(
+            LabelSchema.project_id == self.id,
+            LabelSchema.name == 'Default Schema'
+        ).first()
+        return schema
+
     def get_label_list(self, session, directory, schema_id = None):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory.id,
