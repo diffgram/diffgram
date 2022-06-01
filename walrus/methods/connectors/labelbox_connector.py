@@ -338,10 +338,15 @@ class LabelboxConnector(Connector):
             if existing_attribute is None:
                 # Create the attribute
                 logger.info(f'Creating attribute "{attr_name}"')
+                schema = LabelSchema.get_by_id(
+                    session = session, 
+                    id = project_migration.schema_id, 
+                    project_id = diffgram_project.id)
                 existing_attribute = Attribute_Template_Group.new(
                     session = session,
                     project = diffgram_project,
-                    member = member
+                    member = member,
+                    schema = schema
                 )
             else:
                 logger.info(f'Attribute "{attr_name}" already exists.')
@@ -417,13 +422,20 @@ class LabelboxConnector(Connector):
             )
             if label_file is None:
 
+                schema = LabelSchema.get_by_id(
+                    self.session, 
+                    id = project_migration.schema_id, 
+                    project_id = diffgram_project.id)
+
                 label_file = File.new_label_file(
                     session = session,
                     name = name,
                     working_dir_id = diffgram_project.directory_default_id,
                     project = diffgram_project,
                     colour = color_dict,
-                    log = log
+                    log = log,
+                    schema = schema,
+                    member = member
                 )
                 logger.info(f'Created Label: "{name}"')
             else:

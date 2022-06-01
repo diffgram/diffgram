@@ -61,13 +61,15 @@ class Attribute_Template_Group(Base):
     @staticmethod
     def new(session,
             project,
-            member):
+            member,
+            schema):
 
-        # Singleton ish concept, only ever 1 new() one to return
-        # (that hasn't been modified, so seperate drafts are still
-        # allowed
+        if schema is None:
+            raise Exception("schema Required")
 
-        # If we have an existing one
+        if member is None:
+            raise Exception("member Required")
+
         attribute_template_group = session.query(Attribute_Template_Group).filter(
             Attribute_Template_Group.is_new == True,
             Attribute_Template_Group.archived == False,
@@ -77,17 +79,16 @@ class Attribute_Template_Group(Base):
         if attribute_template_group:
             return attribute_template_group
 
-        # Else create a new one
         attribute_template_group = Attribute_Template_Group(
             project = project,
             member_created = member)
 
-        # Not sure if fan of forcing adding to session here
-        # BUT since we potentialy return an existing object it would
-        # Be strange to require it after
-
         session.add(attribute_template_group)
         session.flush()
+
+        schema.add_attribute_group(session = session,
+                                   attribute_group_id = attribute_template_group.id,
+                                   member_created_id = member.id)
 
         return attribute_template_group
 

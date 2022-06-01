@@ -70,7 +70,7 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
     if not colour:
         colour = default_color()
 
-    project = Project.get(session, project_string_id)
+    schema = LabelSchema.get_by_id(session, schema_id,  project.id)
 
     label_file = File.new_label_file(
         session=session,
@@ -79,15 +79,12 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
         project=project,
         colour=colour,
         log=log,
+        schema = schema,
+        member = member
     )
 
     if not label_file:
         return None
-
-    schema = LabelSchema.get_by_id(session, schema_id,  project.id)
-    schema.add_label_file(session = session, label_file_id = label_file.id, member_created_id = member.id)
-
-    member = get_member(session = session)
 
     Event.new(
         session = session,

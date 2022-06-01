@@ -277,7 +277,7 @@ class DiffgramDataMocker:
 
     def generate_sample_label_files(self, project, schema_id = None):
         if schema_id is None:
-            schema = self.session.query(LabelSchema).filter(LabelSchema.project_id == project.id).first()
+            schema = LabelSchema.get_default(session = self.session, project_id = project.id)
         else:
             schema = LabelSchema.get_by_id(self.session, id = schema_id, project_id = project.id)
         NUM_LABELS = 3
@@ -330,10 +330,10 @@ class DiffgramDataMocker:
                 working_dir_id = default_dir.id,
                 name = label_name,
                 colour = colour,
-                project = project
+                project = project,
+                schema = schema,
+                member = member
             )
-            schema.add_label_file(session = self.session, label_file_id = label_file.id, member_created_id = member.id)
-
             if project.directory_default.label_file_colour_map is None:
                 project.directory_default.label_file_colour_map = {}
 
