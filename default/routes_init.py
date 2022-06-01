@@ -70,6 +70,7 @@ def do_routes_importing():
     from methods.task.guide.guide_attach_to_job import guide_attach_to_job_api
 
     from methods.auth.api.auth_api_new import auth_api_credential_new_from_api
+    from methods.auth.oidc.oidc_auth_callback import api_oidc_callback
 
     from methods.user.account.account_new import user_new_api
     from methods.user.account.account_verify import redeem_verify_via_email_api

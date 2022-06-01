@@ -9,4 +9,8 @@ class KeycloakDiffgramClient:
         self.keycloak = KeycloakOpenID(server_url = settings.OIDC_PROVIDER_HOST,
                                        client_id = settings.OIDC_PROVIDER_CLIENT_ID,
                                        realm_name = settings.OIDC_PROVIDER_REALM,
-                                       client_secret_key = settings.OIDC_PROVIDER_SECRET)
+                                       client_secret_key = 'fPgFGua2uXUkYlvKRSIchOCEZly4Qld8')
+
+    def get_access_token_with_code_grant(self, code):
+        token = self.keycloak.token(grant_type = 'authorization_code', code = code)
+        return token

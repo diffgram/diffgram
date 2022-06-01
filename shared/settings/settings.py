@@ -20,7 +20,7 @@ except Exception as e:
 # Main Settings
 DIFFGRAM_SYSTEM_MODE = os.environ.get('DIFFGRAM_SYSTEM_MODE', 'sandbox')
 DIFFGRAM_STATIC_STORAGE_PROVIDER = os.environ.get('DIFFGRAM_STATIC_STORAGE_PROVIDER')
-URL_BASE = os.getenv('URL_BASE', "http://127.0.0.1:8085/")
+URL_BASE = os.getenv('URL_BASE', "http://localhost:8085/")
 RUNNING_LOCALLY = env_adapter.bool(os.environ.get('RUNNING_LOCALLY', False))
 NAME_EQUALS_MAIN = os.getenv('NAME_EQUALS_MAIN', False)  # Assumed to be running locally. Default when going to production is False
 
@@ -186,7 +186,7 @@ SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFF
 USE_OIDC = True
 OIDC_PROVIDER_HOST = 'http://localhost:8099/auth/'
 OIDC_PROVIDER_CLIENT_ID = 'diffgram'
-OIDC_PROVIDER_SECRET = ''
+OIDC_PROVIDER_SECRET = 'fPgFGua2uXUkYlvKRSIchOCEZly4Qld8'
 OIDC_PROVIDER_REALM = 'mydiffgramrealm'
 
 # Minio Only Allow Expiry time is less than 7 days (value in seconds).
