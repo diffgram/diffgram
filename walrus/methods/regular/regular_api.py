@@ -58,6 +58,8 @@ from memory_profiler import profile
 from shared.database.task.job.job import Job
 from shared.database.task.task import Task
 
+from shared.database.labels.label_schema import LabelSchema
+
 from shared.utils.logging import DiffgramLogger
 
 walrus_abstract_logger = DiffgramLogger('walrus')

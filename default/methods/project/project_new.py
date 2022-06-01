@@ -82,7 +82,8 @@ def project_new_api():
             session = session,
             name = 'Default Schema',
             project_id = project.id,
-            member_created_id = member.id
+            member_created_id = member.id,
+            is_default = True
         )
 
         log['success'] = True
