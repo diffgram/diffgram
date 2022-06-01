@@ -77,7 +77,6 @@ def label_schema_update_core(session: Session,
         session = session,
         id = schema_id,
         project_id = project.id)
-    )
     if schema is None:
         log['error']['project_id'] = 'Schema Does not belong to given project.'
         return None, log

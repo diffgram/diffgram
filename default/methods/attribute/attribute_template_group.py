@@ -27,7 +27,7 @@ def new_attribute_template_group_factory_api(project_string_id):
     with sessionMaker.session_scope() as session:
         user = User.get(session)
         project = Project.get(session, project_string_id)
-        schema = LabelSchema.get_by_id(session, input['schema_id'], project_id = project.id))
+        schema = LabelSchema.get_by_id(session, input['schema_id'], project_id = project.id)
         if schema.project_id != project.id:
             log['error']['schema_id'] = 'Schema does not belong to project'
             return jsonify(log = log), 400

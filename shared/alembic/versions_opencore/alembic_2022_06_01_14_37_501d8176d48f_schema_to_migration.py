@@ -18,7 +18,7 @@ depends_on = None
 
 def upgrade():
     op.add_column('project_migration', sa.Column('label_schema_id', sa.Integer, sa.ForeignKey('label_schema.id')))
-    op.add_column('label_schema', sa.Column('is_default', sa.Boolean), default = False)
+    op.add_column('label_schema', sa.Column('is_default', sa.Boolean, default = False))
 
 
 def downgrade():
