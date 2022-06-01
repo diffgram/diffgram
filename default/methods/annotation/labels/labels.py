@@ -195,27 +195,6 @@ def label_edit(project_string_id):
         if existing_file is None:
             return jsonify("No file"), 400
 
-        if existing_file.committed is True:
-            return jsonify("File committed"), 400
-
-            # TODO # WIP WIP
-            new_file = File.copy_file_from_existing(
-                session,
-                working_dir,
-                existing_file)
-
-
-            label_file = File.new_label_file(
-                session = session,
-                name = name_proposed,
-                working_dir_id = project.directory_default_id,
-                project = project,
-                colour = colour_proposed,
-                log = log,
-                existing_file=new_file
-            )
-        # WIP
-
         if existing_file.committed is not True:
 
             project = Project.get(session, project_string_id)
