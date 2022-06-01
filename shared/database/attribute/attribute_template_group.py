@@ -259,7 +259,7 @@ class Attribute_Template_Group(Base):
             query = query.filter(Attribute_Template_Group.is_root == is_root)
 
         if schema_id:
-            schema = LabelSchema.get_by_id(session, schema_id)
+            schema = LabelSchema.get_by_id(session, schema_id, project_id)
             attr_group_list = schema.get_attribute_groups(session)
             group_ids = [g.id for g in attr_group_list]
             query = query.filter(

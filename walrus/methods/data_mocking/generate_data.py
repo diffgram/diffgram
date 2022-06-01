@@ -279,7 +279,7 @@ class DiffgramDataMocker:
         if schema_id is None:
             schema = self.session.query(LabelSchema).filter(LabelSchema.project_id == project.id).first()
         else:
-            schema = LabelSchema.get_by_id(self.session, id = schema_id)
+            schema = LabelSchema.get_by_id(self.session, id = schema_id, project_id == project.id)
         NUM_LABELS = 3
         label_files = []
         default_dir = self.session.query(WorkingDir).filter(WorkingDir.nickname == 'Default',

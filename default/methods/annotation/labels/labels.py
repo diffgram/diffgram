@@ -84,7 +84,7 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
     if not label_file:
         return None
 
-    schema = LabelSchema.get_by_id(session, schema_id)
+    schema = LabelSchema.get_by_id(session, schema_id,  project.id)
     schema.add_label_file(session = session, label_file_id = label_file.id, member_created_id = member.id)
 
     member = get_member(session = session)
@@ -114,9 +114,9 @@ def api_get_labels(project_string_id):
 
         project = Project.get_project(session, project_string_id)
         directory = project.directory_default
-        schema = LabelSchema.get_by_id(session = session, id = schema_id)
-        if schema and schema.project_id != project.id:
-            log['error']['project'] = 'Schema does not belong to this project'
+        schema = LabelSchema.get_by_id(session = session, id = schema_id, project_id = project.id)
+        if schema is None:
+            log['error']['project'] = 'Schema does not exist or does not belong to this project'
             return jsonify(log), 400
         labels_out = project.get_label_list(session, directory = directory, schema_id = schema_id)
         

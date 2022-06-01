@@ -64,7 +64,7 @@ class TestLabelSchema(testing_setup.DiffgramBaseTestCase):
             member_created_id = self.member.id
         )
 
-        fetched_schema = LabelSchema.get_by_id(session = self.session, id = schema.id)
+        fetched_schema = LabelSchema.get_by_id(session = self.session, id = schema.id, project_id = self.project.id)
 
         self.assertEqual(fetched_schema.id, schema.id)
         self.assertEqual(fetched_schema.name, schema.name)
