@@ -6,18 +6,22 @@
     <connection_select
       @change="on_connection_changed"
       :project_string_id="project_string_id"
-      :features_filters="{project_migration: true}"
+      :features_filters="features_filters"
       ref="connection_select"
       :hide_if_empty="true">
 
     </connection_select>
     <v-container class="d-flex justify-center align-center flex-column"
-                 v-if="(!$store.state.connection.connection_list || $store.state.connection.connection_list.length === 0)">
+                 v-if="!filted_connection_list">
       <v-icon size="200">mdi-archive</v-icon>
-      <h2>
-        No Connections Available
-      </h2>
-      <v-btn class="mt-6" x-large color="primary"  @click="$router.push('/connection/new')">
+      <v-btn class="mt-6" color="primary"  @click="$router.push('/connection/new')">
+        <v-icon>mdi-plus</v-icon>
+        Create new Connection
+      </v-btn>
+    </v-container>
+    <v-container v-else >
+      or
+      <v-btn color="primary" @click="$router.push('/connection/new')">
         <v-icon>mdi-plus</v-icon>
         Create new Connection
       </v-btn>
@@ -56,10 +60,15 @@ export default Vue.extend( {
       loading_steps: false,
       connection: null,
       global_progress: 0,
+      filted_connection_list: [],
+      feature_filters: {'project_migration': true}
     }
   },
   computed: {
 
+  },
+  created () {
+     this.refresh_connection_list()
   },
   methods: {
     on_next_button_click: function(){
@@ -68,8 +77,20 @@ export default Vue.extend( {
     on_connection_changed: function(conn){
       this.connection = conn;
       this.$emit('connection_changed', conn)
+    },
+    refresh_connection_list: function(){
+      this.filted_connection_list = this.$store.state.connection.connection_list.filter(connection => {
+        const filterRes = []
+        if (!this.features_filters) {
+          this.features_filters = {}
+        }
+        for (const [key, value] of Object.entries(this.features_filters)) {
+          filterRes.push(connection.supported_features[key] === value)
+        }
+        return filterRes.reduce((a, b) => a && b, true);
+      });
     }
-  }
+}
 }
 
 ) </script>
