@@ -300,7 +300,16 @@ class LabelboxConnector(Connector):
             logger.info(f'Tree View data Created successfully. ID is {existing_attribute_group.id}')
             logger.info(f'Tree Data: {tree_view_data}')
 
-    def __add_attributes_to_label_file(self, session, label_file, diffgram_project, member, tool, is_global = False):
+
+    def __add_attributes_to_label_file(
+            self, 
+            session, 
+            label_file, 
+            diffgram_project, 
+            member, 
+            tool,
+            project_migration,
+            is_global = False):
         """
             Creates all the classifications from the given labelbox tool as attributes in diffgram.
             If the attribute name and type already exists, it will update the options of the attribute.
@@ -340,7 +349,7 @@ class LabelboxConnector(Connector):
                 logger.info(f'Creating attribute "{attr_name}"')
                 schema = LabelSchema.get_by_id(
                     session = session, 
-                    id = project_migration.schema_id, 
+                    id = project_migration.label_schema_id, 
                     project_id = diffgram_project.id)
                 existing_attribute = Attribute_Template_Group.new(
                     session = session,
@@ -423,8 +432,8 @@ class LabelboxConnector(Connector):
             if label_file is None:
 
                 schema = LabelSchema.get_by_id(
-                    self.session, 
-                    id = project_migration.schema_id, 
+                    session = session, 
+                    id = project_migration.label_schema_id, 
                     project_id = diffgram_project.id)
 
                 label_file = File.new_label_file(
@@ -446,7 +455,8 @@ class LabelboxConnector(Connector):
                                                     session = session,
                                                     diffgram_project = diffgram_project,
                                                     member = member,
-                                                    tool = tool)
+                                                    tool = tool,
+                                                    project_migration = project_migration)
 
     def __determine_instance_type(self, object):
 
@@ -777,6 +787,7 @@ class LabelboxConnector(Connector):
         labels = data_row.labels()
         instance_list = []
         for label in labels:
+            print(label.label, label)
             label_data = json.loads(label.label)
             label_objects = label_data.get('objects')
             if not label_objects:
@@ -971,6 +982,7 @@ class LabelboxConnector(Connector):
                                             diffgram_project = diffgram_project,
                                             member = member,
                                             tool = ontology,
+                                            project_migration = project_migration,
                                             is_global = True)
 
     def __import_ontology_to_project(self, session,

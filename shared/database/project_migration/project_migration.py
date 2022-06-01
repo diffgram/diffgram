@@ -41,7 +41,6 @@ class ProjectMigration(Base, SerializerMixin):
     import_schema = Column(Boolean, default = True)
     import_files = Column(Boolean, default = False)
 
-    # context of say a video file
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project", foreign_keys = [project_id])
 
@@ -130,7 +129,8 @@ class ProjectMigration(Base, SerializerMixin):
             '-member_updated',
             '-project',
             '-connection',
-            '-external_mapping_project'))
+            '-external_mapping_project',
+            '-label_schema'))
 
         if self.connection:
             data['connection'] = self.connection.serialize()
