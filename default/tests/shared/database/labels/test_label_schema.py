@@ -193,7 +193,7 @@ class TestLabelSchema(testing_setup.DiffgramBaseTestCase):
         results = LabelSchema.list(session = self.session, project_id = self.project.id, is_default=False)
         results2 = LabelSchema.list(session = self.session, project_id = self.project2.id, is_default=False)
 
-        self.assertEqual(len(results), 3)
+        self.assertEqual(len(results), 4)
         self.assertEqual(len(results2), 1)
         for elm in results:
             self.assertTrue(elm.id in id_list)
