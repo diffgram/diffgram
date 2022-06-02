@@ -196,15 +196,10 @@ class Connection_Operations():
         self.permission_scope = permission_scope
 
         if permission_scope == "project":
-            # Validate project
-            # July 1, 2020,
-            # only Admin because even seeing the list view of storage
-            # objects may be considered sensitive
 
             project_role_list = ["admin"]
 
-            Project_permissions.check_permissions(
-                session = self.session,
+            Project_permissions.by_project_core(
                 project_string_id = project_string_id,
                 Roles = project_role_list)
 

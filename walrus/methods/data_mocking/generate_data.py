@@ -245,7 +245,7 @@ class DiffgramDataMocker:
             # In this case we need to for process_media to finish uploading to that file_list query below return files.
             # This is not a best practice, but this is only for testing mock data so its not that important.
             time.sleep(10)
-            self.session.commit()
+            regular_methods.commit_with_rollback(self.session)
         elif num_files > self.NUM_IMAGES:
             self.generate_test_data_on_dataset(dataset = mock_dataset, num_files = num_files)
 
@@ -277,9 +277,9 @@ class DiffgramDataMocker:
 
     def generate_sample_label_files(self, project, schema_id = None):
         if schema_id is None:
-            schema = self.session.query(LabelSchema).filter(LabelSchema.project_id == project.id).first()
+            schema = LabelSchema.get_default(session = self.session, project_id = project.id)
         else:
-            schema = LabelSchema.get_by_id(self.session, id = schema_id)
+            schema = LabelSchema.get_by_id(self.session, id = schema_id, project_id = project.id)
         NUM_LABELS = 3
         label_files = []
         default_dir = self.session.query(WorkingDir).filter(WorkingDir.nickname == 'Default',
@@ -330,10 +330,10 @@ class DiffgramDataMocker:
                 working_dir_id = default_dir.id,
                 name = label_name,
                 colour = colour,
-                project = project
+                project = project,
+                schema = schema,
+                member = member
             )
-            schema.add_label_file(session = self.session, label_file_id = label_file.id, member_created_id = member.id)
-
             if project.directory_default.label_file_colour_map is None:
                 project.directory_default.label_file_colour_map = {}
 

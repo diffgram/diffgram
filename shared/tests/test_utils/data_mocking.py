@@ -303,7 +303,7 @@ def create_instance_template(instance_template_data, session):
             )
             session.add(rel)
     if instance_template_data.get('schema_id'):
-        schema = LabelSchema.get_by_id(session, instance_template_data.get('schema_id'))
+        schema = LabelSchema.get_by_id(session, instance_template_data.get('schema_id'), project_id = instance_template_data.get('project_id'))
         schema.add_instance_template(session = session,
                                      instance_template_id = instance_template.id,
                                      member_created_id = schema.member_created_id)
@@ -799,7 +799,7 @@ def create_project_with_context(context_data, session):
         name = project_name,
         project_string_id = project_string_id,
         goal = 'Test stuff',
-        member_created = None,
+        member_created = member,
         user = user
     )
     user_list = []

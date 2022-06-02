@@ -83,7 +83,7 @@ def build_name_to_file_id_dict(session, project, directory_id, log, schema_id = 
         schema = project.get_default_schema(session = session)
         schema_id = schema.id
     else:
-        schema = LabelSchema.get_by_id(session = session, id = schema_id)
+        schema = LabelSchema.get_by_id(session = session, id = schema_id, project_id = project.id)
         if not schema:
             log['error']['schema'] = 'Label Schema not found'
             return None, log

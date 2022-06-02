@@ -14,7 +14,7 @@
                v-on="on"
                text
         >
-          <v-icon left>mdi-brush</v-icon>
+          <v-icon left>mdi-account-multiple</v-icon>
           Tasks
           <v-icon right> mdi-chevron-down</v-icon>
         </v-btn>
@@ -57,7 +57,7 @@
               style="text-transform: none !important;"
               :disabled="!$store.state.project.current.project_string_id"
               @click="$router.push('/job/list')">
-              <v-icon left>mdi-brush</v-icon>
+              <v-icon left>mdi-account-multiple</v-icon>
               Tasks List
             </v-btn>
           </v-flex>

@@ -113,7 +113,7 @@ class ExternalMap(Base):
         if file_id is not None:
             file = File.get_by_id(session, file_id=file_id)
             session.add(file)
-        print('new with grouo', attribute_template_group_id)
+
         external_map = ExternalMap(
             type=type,
             external_id=external_id,

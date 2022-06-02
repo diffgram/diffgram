@@ -37,7 +37,8 @@ def api_label_schema_list(project_string_id: str):
 def label_schema_list_core(session: Session,
                            project: Project,
                            member: Member,
-                           log = regular_log.default()) -> [list, dict]:
+                           log = regular_log.default(),
+                           is_default = None) -> [list, dict]:
     """
         Lists all the label schemas of the given project.
     :param session:
@@ -50,7 +51,8 @@ def label_schema_list_core(session: Session,
 
     schema_list = LabelSchema.list(
         session = session,
-        project_id = project.id
+        project_id = project.id,
+        is_default = is_default
     )
 
     result = [s.serialize() for s in schema_list]
