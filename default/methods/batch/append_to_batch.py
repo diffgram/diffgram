@@ -65,7 +65,7 @@ def save_pre_labeled_data_to_db(batch_id):
             if batch.data_temp_dir:
                 batch.download_status_pre_labeled_data = 'downloading'
                 session.add(batch)
-                session.commit()
+                regular_methods.commit_with_rollback(session)
                 json_str = data_tools.get_string_from_blob(batch.data_temp_dir)
                 json_data = json.loads(json_str)
                 batch.pre_labeled_data = json_data

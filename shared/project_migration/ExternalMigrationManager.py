@@ -8,6 +8,7 @@ import threading
 import traceback
 logger = get_shared_logger()
 import json
+from shared.regular import regular_methods
 
 class ExternalMigrationManager:
     project_migration: ProjectMigration
@@ -68,7 +69,7 @@ class ExternalMigrationManager:
         result = None
         try:
             self.project_migration.status = 'in_progress'
-            self.session.commit()
+            regular_methods.commit_with_rollback(self.session)
             result = connector.fetch_data(
                 {
                     'action_type': 'import_project',

@@ -159,7 +159,7 @@ def new_project_migration_core(session,
         description = f'Labelbox Project ID: {labelbox_project_id}',
         label_schema_id = label_schema_id
     )
-    session.commit()
+    regular_methods.commit_with_rollback(session)
     initialize_migration_threaded(project_migration.id)
 
     project_migration_data = project_migration.serialize()

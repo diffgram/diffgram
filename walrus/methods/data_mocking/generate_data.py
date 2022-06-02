@@ -245,7 +245,7 @@ class DiffgramDataMocker:
             # In this case we need to for process_media to finish uploading to that file_list query below return files.
             # This is not a best practice, but this is only for testing mock data so its not that important.
             time.sleep(10)
-            self.session.commit()
+            regular_methods.commit_with_rollback(self.session)
         elif num_files > self.NUM_IMAGES:
             self.generate_test_data_on_dataset(dataset = mock_dataset, num_files = num_files)
 
