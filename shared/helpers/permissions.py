@@ -11,15 +11,11 @@ from shared.settings import settings
 from shared.shared_logger import get_shared_logger
 
 logger = get_shared_logger()
+
+
 # True means has permission, False means doesn't.
 
 def LoggedIn():
-    # TODO review this
-    # Kind of silly to run the hash check just to check if they are logged in
-    # Maybe rather just check if the 'user_id' cookie exists
-    # Also concerned this may be confusing that you think you are checking a permission
-    # When really just testing if the cookie exists
-    print('LOGEED INNNN')
     if settings.USE_OIDC:
         jwt = login_session.get('jwt')
         access_token = jwt.get('access_token')
@@ -37,7 +33,7 @@ def LoggedIn():
             logger.error(err_data)
             return False
         print('OIDC JWT IS', jwt)
-        
+
     else:
         if login_session.get('user_id', None) is not None:
             out = hashing_functions.check_secure_val(login_session['user_id'])
