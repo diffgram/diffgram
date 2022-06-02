@@ -165,6 +165,14 @@ class Project(Base, Caching):
 
         session.flush()
 
+        schema = LabelSchema.new(
+            session = session,
+            name = 'Default Schema',
+            project_id = project.id,
+            member_created_id = member_created.id,
+            is_default = True
+        )
+
         member_id = user.member_id
 
         Event.new(

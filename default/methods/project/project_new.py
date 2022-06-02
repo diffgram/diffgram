@@ -78,15 +78,7 @@ def project_new_api():
             member_created=user.member
         )
 
-        schema = LabelSchema.new(
-            session = session,
-            name = 'Default Schema',
-            project_id = project.id,
-            member_created_id = member.id,
-            is_default = True
-        )
-
         log['success'] = True
         return jsonify(log=log,
-                       schema = schema.serialize(),
+                       schema = project.get_default_schema(session).serialize(),
                        project=project.serialize()), 200
