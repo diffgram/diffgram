@@ -26,8 +26,16 @@
           :value="props.item.percent_complete">
           <strong class="white--text">{{props.item.percent_complete.toFixed(1)}}</strong>
         </v-progress-linear>
-        <v-icon v-else-if="props.item.status === 'success'" color="success">mdi-check-decagram</v-icon>
         <v-icon v-else-if="props.item.status === 'failed'" color="error">mdi-alert</v-icon>
+
+        <tooltip_icon
+            v-if="props.item.status === 'success'"
+            tooltip_message="Migration Success. Data may still be processing, see import table for details."
+            icon="mdi-check-decagram"
+            :icon_style="true"
+            color="success">
+        </tooltip_icon>
+
       </template>
       <template slot="details" slot-scope="props">
           <div class="d-flex flex-column">
@@ -38,7 +46,6 @@
                    :href="`/studio/annotate/${project_string_id}?dataset=${props.item.external_mapping.dataset_id}`" target="_blank">
                   View Dataset
                 </a>
-                 
               </li>
               <li >
                 <a class="secondary--text" :href="`/connection/${props.item.connection_id}`" target="_blank">
@@ -50,28 +57,28 @@
           </div>
       </template>
       <template slot="actions" slot-scope="props">
-        <v-btn x-small
-               :loading="migration_retry_loading[props.item.id]"
-               @click="retry_migration(props.item)"
-               v-if="['in_progress', 'failed'].includes(props.item.status)" color="warning">
-          <v-icon>mdi-refresh</v-icon>
-          Retry
-        </v-btn>
 
-        <v-btn x-small
-               @click="display_error_log(props.item)"
-               v-if="['failed'].includes(props.item.status)"
-               color="primary">
-          <v-icon>mdi-format-list-group</v-icon>
-          Error Log
-        </v-btn>
-        <v-btn x-small
-               @click="display_error_log(props.item)"
-               v-if="!['failed'].includes(props.item.status)"
-               color="primary">
-          <v-icon>mdi-format-list-group</v-icon>
-          Log
-        </v-btn>
+        <v-layout>
+          <tooltip_button
+              :loading="migration_retry_loading[props.item.id]"
+              @click="retry_migration(props.item)"
+              v-if="['in_progress', 'failed'].includes(props.item.status)" 
+              color="warning"
+              icon="mdi-refresh"
+              tooltip_message="Retry"
+              :icon_style="true"
+                        >
+          </tooltip_button>
+
+          <tooltip_button
+              @click="display_error_log(props.item)"
+              color="primary"
+              icon="mdi-format-list-group"
+              tooltip_message="Logs"
+              :icon_style="true"
+                        >
+          </tooltip_button>
+        </v-layout>
 
 
       </template>

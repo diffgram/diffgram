@@ -5,7 +5,8 @@
       <v-card-title>Log:</v-card-title>
       <v-card-text v-if="project_migration">
        <v_error_multiple :error="project_migration.error_log"></v_error_multiple>
-       <v_info_multiple :info="project_migration.migration_log"></v_info_multiple>
+       <v_info_multiple :info="project_migration.migration_log"
+                        :dismissible="false"></v_info_multiple>
       </v-card-text>
     </v-card>
   </v-dialog>
@@ -32,7 +33,6 @@ export default Vue.extend({
 
     methods: {
       close() {
-        this.input = undefined;
         this.is_open = false;
       },
       open() {
