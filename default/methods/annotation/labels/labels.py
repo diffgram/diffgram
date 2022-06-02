@@ -111,24 +111,31 @@ def api_get_labels(project_string_id):
 
         project = Project.get_project(session, project_string_id)
         directory = project.directory_default
-        schema = LabelSchema.get_by_id(session = session, id = schema_id, project_id = project.id)
-        if schema is None:
-            log['error']['project'] = 'Schema does not exist or does not belong to this project'
-            return jsonify(log), 400
-        labels_out = project.get_label_list(session, directory = directory, schema_id = schema_id)
+        if schema_id:
+            schema = LabelSchema.get_by_id(session = session, id = schema_id, project_id = project.id)
+            if schema is None:
+                log['error']['project'] = 'Schema does not exist or does not belong to this project'
+                return jsonify(log), 400
+        else:
+            schema = LabelSchema.get_default(session = session, project_id = project.id)
+
+        labels_out = project.get_label_list(session, directory = directory, schema_id = schema.id)
         
         global_attribute_groups_serialized_list = project.get_global_attributes(
-            session = session, schema_id = schema_id)
+            session = session, schema_id = schema.id)
 
-        attribute_groups_serialized_list = project.get_attributes(session = session, schema_id = schema_id)
+        attribute_groups_serialized_list = project.get_attributes(session = session, schema_id = schema.id)
         
         # Assume can't easily sort this in sql because it's the label which is one layer below
         # labels_out.sort(key=lambda x: x['label']['name'])
+        
+        log['info']['schema'] = schema.serialize()
 
         return jsonify(labels_out = labels_out,
                        label_file_colour_map = directory.label_file_colour_map,
                        global_attribute_groups_list = global_attribute_groups_serialized_list,
-                       attribute_groups = attribute_groups_serialized_list
+                       attribute_groups = attribute_groups_serialized_list,
+                       log = log
                        ), 200
 
 
