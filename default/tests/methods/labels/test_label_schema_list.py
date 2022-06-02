@@ -93,7 +93,8 @@ class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
         result, log = label_schema_list_core(
             session = self.session,
             project = self.project,
-            member = self.member
+            member = self.member,
+            is_default = False
         )
 
         self.assertTrue(len(log['error'].keys()) == 0)

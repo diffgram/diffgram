@@ -113,11 +113,13 @@ class LabelSchema(Base, SerializerMixin):
         return rel
 
     @staticmethod
-    def list(session: Session, project_id: int):
+    def list(session: Session, project_id: int, is_default: bool = None):
         query = session.query(LabelSchema).filter(
             LabelSchema.project_id == project_id,
             LabelSchema.archived == False
         )
+        if is_default:
+            query = query.filter(LabelSchema.is_default == is_default)
         result = query.all()
         return result
 
