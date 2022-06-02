@@ -135,4 +135,7 @@ class ProjectMigration(Base, SerializerMixin):
         if self.connection:
             data['connection'] = self.connection.serialize()
 
+        if self.external_mapping_project:
+            data['external_mapping'] = self.external_mapping_project.serialize()
+
         return data
