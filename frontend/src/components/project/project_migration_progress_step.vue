@@ -19,7 +19,7 @@
     <div style="width: 100%" v-else-if="progress_percentage >= 100" class="d-flex flex-column align-center justify-center">
       <v-icon size="256" color="success">mdi-check-decagram</v-icon>
       <h1 class="ma-8">Data Succesfully Migrated into Diffgram.</h1>
-      <v-btn x-large @click="$router.push(`/project/${project_string_id}/labels`)" color="primary">
+      <v-btn x-large @click="$router.push(`/project/${project_string_id}/labels?schema_id=${project_migration.label_schema_id}`)" color="primary">
         <v-icon>mdi-format-list-bulleted</v-icon>
         View Migrated Labels
       </v-btn>
