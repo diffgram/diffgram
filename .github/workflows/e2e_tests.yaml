@@ -3,6 +3,9 @@ on:
   workflow_dispatch:
   pull_request:
     types: [ready_for_review]
+  push:
+    branches:
+      - master
 jobs:
   E2E-Tests:
     runs-on: k8s-diffgram-runner
