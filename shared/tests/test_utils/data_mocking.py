@@ -799,7 +799,7 @@ def create_project_with_context(context_data, session):
         name = project_name,
         project_string_id = project_string_id,
         goal = 'Test stuff',
-        member_created = None,
+        member_created = member,
         user = user
     )
     user_list = []
