@@ -65,8 +65,12 @@ class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.json), 3)
+        ids_list = []
         for elm in response.json:
-            self.assertTrue(elm['id'] in [schema1.id, schema2.id])
+            ids_list.append(elm['id'])
+
+        for id in [schema1.id, schema2.id]:
+            self.assertTrue(id in ids_list)
 
     def test_label_schema_list_core(self):
         result, log = label_schema_list_core(
@@ -108,4 +112,4 @@ class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
         non_archived_len_expected = 2
         self.assertEqual(len(result), existing_len + non_archived_len_expected)
         for elm in result:
-            self.assertTrue(elm['id'] in [schema1.id, schema2.id])
+            self.assertTrue(elm['id'] != schema3.id)
