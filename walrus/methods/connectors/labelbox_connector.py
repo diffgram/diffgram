@@ -242,7 +242,7 @@ class LabelboxConnector(Connector):
             tree_view_data = []
             in_root = True
 
-        logger.info(f'Creating Tree View Type Attribute data: {existing_attribute_group.name} - {existing_attribute_group.id}')
+        logger.debug(f'Creating Tree View Type Attribute data: {existing_attribute_group.name} - {existing_attribute_group.id}')
         for option in clsf.options:
             type_opt = option.__class__.__name__
             display_name = option.name if type_opt == 'Classification' else option.label
@@ -287,7 +287,7 @@ class LabelboxConnector(Connector):
                 regular_methods.commit_with_rollback(session)
                 logger.info(f'Created external map labelbox_feature_schema_id {existing_attr.id} => {option.feature_schema_id}')
             else:
-                logger.info(f'Tree View option {display_name} already exists.')
+                logger.debug(f'Tree View option {display_name} already exists.')
 
             if option.options and len(option.options) > 0:
                 self.__set_treeview_attribute_data(
@@ -297,7 +297,7 @@ class LabelboxConnector(Connector):
                     member = member,
                     existing_attr_parent_id = existing_attr.id,
                 )
-                logger.info(f'Created Tree View Data Attribute Option: {display_name}')
+                logger.debug(f'Handled Tree View Data Attribute Option: {display_name}')
         if in_root is True:
             logger.info(f'Tree View data Created successfully. ID is {existing_attribute_group.id}')
             logger.info(f'Tree Data: {tree_view_data}')
@@ -464,7 +464,7 @@ class LabelboxConnector(Connector):
                     session = session, 
                     label_file_id = label_file.id, 
                     member_created_id = member.id)
-                log_info = f'Label File "{name}" already exists. Adding to Schema'
+                log_info = f'Label File "{name}" already exists. Checked relation to Schema.'
                 logger.debug(log_info)
                 self.log['info']['labels'][str(time.time())] = log_info
 
@@ -662,6 +662,8 @@ class LabelboxConnector(Connector):
         """
         result = {}
         root_classification = None
+        self.log['info']['attribute'] = {}
+
         for tool in ontology.tools():
             for clsf in tool.classifications:
                 if classification['schemaId'] == clsf.feature_schema_id:
@@ -672,8 +674,8 @@ class LabelboxConnector(Connector):
             return
 
         tree_attribute_schema_ids, allowed_names = self.__get_tree_attribute_allowed_schemas(root_classification)
-        logger.info(f'Allowed schema IDs {tree_attribute_schema_ids}')
-        logger.info(f'Allowed schema Names {allowed_names}')
+        logger.debug(f'Allowed schema IDs {tree_attribute_schema_ids}')
+        logger.debug(f'Allowed schema Names {allowed_names}')
         for classification_objs in all_classifications:
             list_classification = [classification_objs]
             if type(classification_objs) == list:
@@ -710,7 +712,10 @@ class LabelboxConnector(Connector):
                                                                                      name = ans['title'],
                                                                                      parent_id = attr_template_parent_id)
                         if not attr_template:
-                            logger.warning(f'Attribute template for {ans["title"]} not found. Skipping...')
+                            attr_template_warning = f'Attribute template for {ans["title"]} not found. Skipping...'
+                            logger.debug(attr_template_warning)
+                            self.log['info']['attribute'][str(time.time())] = attr_template_warning
+                            self.log['info']['attribute']['info'] = "This may occur if the files contain annotations not in the labelbox Schema attached to the project."
                             continue
                         result[attr_template.id] = {'selected': True, 'name': attr_template.name}
 
@@ -924,10 +929,11 @@ class LabelboxConnector(Connector):
             current_count += 1
             project_migration.percent_complete = current_count / total_count * 100
             self.log['info']['data_rows_current_count'] = current_count
+            project_migration.migration_log = self.log
             regular_methods.commit_with_rollback(session)
 
-            logger.info(f'Progress {project_migration.percent_complete}')
-            logger.info(f'Data Row {data_row.uid} {i}/{total_dataset_count} enqueued successfully to Diffgram')
+            logger.debug(f'Progress {project_migration.percent_complete}')
+            logger.debug(f'Data Row {data_row.uid} {i}/{total_dataset_count} enqueued successfully to Diffgram')
             i += 1
 
     def __create_diffgram_dataset(self,
@@ -967,8 +973,8 @@ class LabelboxConnector(Connector):
             self.log['info']['dataset description'] = dataset_description
         else:
             diffgram_dataset = WorkingDir.get_by_id(session, diffgram_dataset_link.working_dir_id)
-            logger.info(f'Dataset {lb_dataset.name} already exists.')
-            logger.info(f'Using {diffgram_dataset.nickname} with ID {diffgram_dataset.id}')
+            logger.debug(f'Dataset {lb_dataset.name} already exists.')
+            logger.debug(f'Using {diffgram_dataset.nickname} with ID {diffgram_dataset.id}')
 
         project_migration.external_mapping_project.dataset_id = diffgram_dataset.id
 
