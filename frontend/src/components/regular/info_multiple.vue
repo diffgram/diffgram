@@ -4,7 +4,7 @@
     <v-alert type="info"
              v-if="Object.keys(info).length"
              @input="$emit('input')"
-             dismissible
+             :dismissible="dismissible"
              >
     <!-- TODO, this loses event info which may be bad-->
       <ul>
@@ -47,6 +47,9 @@ export default Vue.extend( {
   props: {
     'info': {
       default: {}
+    },
+    'dismissible': {
+      default: true
     }
   },
   data() {
