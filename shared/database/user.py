@@ -76,11 +76,14 @@ class User(Base):
     # query on class Image() every time we get user
     # Not sure if it's worth it to do it this way
     profile_image_url = Column(String())
+
     profile_image_blob = Column(String())  # blob dir
     profile_image_expiry = Column(Integer)
 
     profile_image_thumb_url = Column(String())
     profile_image_thumb_blob = Column(String())
+
+    oidc_id = Column(String())  # Open ID Connect (External Users references)
 
     created_time = Column(DateTime, default = datetime.datetime.utcnow)
 
@@ -237,7 +240,17 @@ class User(Base):
             'permission_level': permission_level,
             'member_kind': 'human'
         }
-    
+
+    @staticmethod
+    def get_user_by_oidc_id(session, oidc_id):
+        user = session.query(User).filter(
+            User.oidc_id == oidc_id
+        ).first()
+
+        return user
+
+
+
 
     def serialize_with_permission_only(self, project_string_id):
         return self.permissions_projects.get(project_string_id, None)
