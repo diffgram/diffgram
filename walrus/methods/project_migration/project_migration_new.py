@@ -12,9 +12,7 @@ from shared.connection.connection_operations import Connection_Operations
 @limiter.limit("300 per second")
 @Project_permissions.user_has_project(["admin"])
 def api_new_project_migration(project_string_id):
-    """
-        Creates a new eventhub entry on based on the POST params.
-    """
+
     spec_list = [
         {"labelbox_project_id": {
             'kind': str,
