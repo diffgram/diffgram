@@ -48,9 +48,10 @@ def with_labelbox_exception_handler(f):
 
 class LabelboxConnector(Connector):
 
+
     @with_labelbox_exception_handler
     def connect(self):
-        log = regular_log.default()
+        self.log = regular_log.default()
         self.connection_client = labelbox.Client(self.auth_data['client_secret'])
         return {'result': True}
 
@@ -407,7 +408,14 @@ class LabelboxConnector(Connector):
             elif existing_attribute.kind == 'text':
                 continue
 
-    def __import_labels_to_project(self, session, ontology, diffgram_project, member, project_migration, log):
+    def __import_labels_to_project(
+            self, 
+            session, 
+            ontology, 
+            diffgram_project,
+            member, 
+            project_migration
+            ):
 
         label_tools = ontology.tools()
         logger.info(f'Importing labels from ontology "{ontology.name}"')
@@ -430,26 +438,35 @@ class LabelboxConnector(Connector):
                 label_name = name,
                 project_id = diffgram_project.id
             )
+
+            schema = LabelSchema.get_by_id(
+                session = session, 
+                id = project_migration.label_schema_id, 
+                project_id = diffgram_project.id)
+
+            self.log['info']['labels'] = {}
             if label_file is None:
-
-                schema = LabelSchema.get_by_id(
-                    session = session, 
-                    id = project_migration.label_schema_id, 
-                    project_id = diffgram_project.id)
-
                 label_file = File.new_label_file(
                     session = session,
                     name = name,
                     working_dir_id = diffgram_project.directory_default_id,
                     project = diffgram_project,
                     colour = color_dict,
-                    log = log,
+                    log = self.log,
                     schema = schema,
                     member = member
                 )
-                logger.info(f'Created Label: "{name}"')
+                log_info = f'Created Label: "{name}"'
+                logger.debug(log_info)
+                self.log['info']['labels'][str(time.time())] = log_info
             else:
-                logger.info(f'Label File "{name}" already exists.')
+                schema.add_label_file(
+                    session = session, 
+                    label_file_id = label_file.id, 
+                    member_created_id = member.id)
+                log_info = f'Label File "{name}" already exists. Adding to Schema'
+                logger.debug(log_info)
+                self.log['info']['labels'][str(time.time())] = log_info
 
             if tool.classifications and len(tool.classifications) > 0:
                 self.__add_attributes_to_label_file(label_file = label_file,
@@ -458,6 +475,10 @@ class LabelboxConnector(Connector):
                                                     member = member,
                                                     tool = tool,
                                                     project_migration = project_migration)
+
+        project_migration.migration_log = self.log
+        regular_methods.commit_with_rollback(session)
+
 
     def __determine_instance_type(self, object):
 
@@ -784,10 +805,23 @@ class LabelboxConnector(Connector):
                     logger.info(f'Added Attribute {attr_group["name"]} {attr_group["kind"]}')
         return diffgram_instance
 
+
+    def defensive_wrapper(self, gen):
+        self.log['info']['count_exceptions'] = 0
+        while True:
+            try:
+                yield next(gen)
+            except StopIteration:
+                break
+            except Exception as e:
+                self.log['info'][str(time.time())] = str(e)
+                self.log['info']['count_exceptions'] += 1
+
+
     def __create_instance_list_for_file(self, session, data_row, ontology, diffgram_dataset):
-        labels = data_row.labels()
+        labels_iterator = data_row.labels()
         instance_list = []
-        for label in labels:
+        for label in self.defensive_wrapper(labels_iterator):
             if not label.label:
                 continue
             try:
@@ -845,7 +879,11 @@ class LabelboxConnector(Connector):
                                   lb_dataset):
         total_dataset_count = lb_dataset.row_count
         i = 0
-        for data_row in lb_dataset.data_rows():
+        self.log['info']['data_rows_total_count'] = total_count
+
+        data_row_iterator = lb_dataset.data_rows()
+
+        for data_row in self.defensive_wrapper(data_row_iterator):
 
             mime_type = data_row.media_attributes.get('mimeType')
             if not mime_type:
@@ -885,6 +923,7 @@ class LabelboxConnector(Connector):
                                             member = member)
             current_count += 1
             project_migration.percent_complete = current_count / total_count * 100
+            self.log['info']['data_rows_current_count'] = current_count
             regular_methods.commit_with_rollback(session)
 
             logger.info(f'Progress {project_migration.percent_complete}')
@@ -923,11 +962,15 @@ class LabelboxConnector(Connector):
                 nickname = lb_dataset.name
             )
             diffgram_project.set_cache_key_dirty('directory_list')
-            logger.info(f'Created dataset {diffgram_dataset.nickname} with ID {diffgram_dataset.id}')
+            dataset_description = f'Created dataset {diffgram_dataset.nickname} with ID {diffgram_dataset.id}'
+            logger.debug(dataset_description)
+            self.log['info']['dataset description'] = dataset_description
         else:
             diffgram_dataset = WorkingDir.get_by_id(session, diffgram_dataset_link.working_dir_id)
             logger.info(f'Dataset {lb_dataset.name} already exists.')
             logger.info(f'Using {diffgram_dataset.nickname} with ID {diffgram_dataset.id}')
+
+        project_migration.external_mapping_project.dataset_id = diffgram_dataset.id
 
         logger.info(f'Creating files for dataset: {lb_dataset.name} ')
 
@@ -956,8 +999,7 @@ class LabelboxConnector(Connector):
                                     labelbox_project,
                                     diffgram_project,
                                     project_migration,
-                                    member,
-                                    log):
+                                    member):
 
         ontology = labelbox_project.ontology()
         total_file_count = 0
@@ -982,8 +1024,7 @@ class LabelboxConnector(Connector):
                                               ontology,
                                               diffgram_project,
                                               project_migration,
-                                              member,
-                                              log):
+                                              member):
 
         self.__add_attributes_to_label_file(label_file = None,
                                             session = session,
@@ -997,8 +1038,7 @@ class LabelboxConnector(Connector):
                                      labelbox_project,
                                      diffgram_project,
                                      project_migration,
-                                     member,
-                                     log):
+                                     member):
         logger.info(f'Starting ontolgy import for project {diffgram_project.project_string_id}')
         logger.info(f'Labelbox project  {labelbox_project.uid}')
 
@@ -1007,16 +1047,14 @@ class LabelboxConnector(Connector):
                                         ontology = ontology,
                                         diffgram_project = diffgram_project,
                                         project_migration = project_migration,
-                                        member = member,
-                                        log = log)
+                                        member = member)
 
         self.__import_global_attributes_to_project(
             session = session,
             ontology = ontology,
             diffgram_project = diffgram_project,
             project_migration = project_migration,
-            member = member,
-            log = log
+            member = member
         )
 
     def __import_project_to_diffgram(self, opts):
@@ -1024,7 +1062,7 @@ class LabelboxConnector(Connector):
         diffgram_project_string_id = opts['project_string_id']
         project_migration_id = opts['project_migration_id']
         member_id = opts['member_id']
-        log = regular_log.default()
+        self.log = regular_log.default()
 
         with sessionMaker.session_scope_threaded() as session:
             member = Member.get_by_id(session, member_id = member_id)
@@ -1037,16 +1075,19 @@ class LabelboxConnector(Connector):
                 labelbox_project = labelbox_project,
                 diffgram_project = diffgram_project,
                 project_migration = project_migration,
-                member = member,
-                log = log)
+                member = member)
 
             if project_migration.import_files:
                 self.__import_files_and_datasets(session = session,
                                                  labelbox_project = labelbox_project,
                                                  diffgram_project = diffgram_project,
                                                  project_migration = project_migration,
-                                                 member = member, log = log)
-        return True, log
+                                                 member = member)
+                project_migration.migration_log = self.log
+                regular_methods.commit_with_rollback(session)
+
+        self.log['success'] = True
+        return True, self.log
 
     @with_labelbox_exception_handler
     @with_connection
@@ -1177,7 +1218,7 @@ class LabelboxConnector(Connector):
     @with_connection
     def put_data(self, opts):
         """
-            This function routes any action_type to the correct S3 connector actions.
+            This function routes any action_type to the correct connector actions.
         :return: Object
         """
         action_type = opts.pop('action_type')
