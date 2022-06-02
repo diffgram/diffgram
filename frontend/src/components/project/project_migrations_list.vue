@@ -32,9 +32,17 @@
       <template slot="details" slot-scope="props">
           <div class="d-flex flex-column">
             <ul>
+              <li v-if="props.item.external_mapping">
+                
+                <a class="secondary--text"
+                   :href="`/studio/annotate/${project_string_id}?dataset=${props.item.external_mapping.dataset_id}`" target="_blank">
+                  View Dataset
+                </a>
+                 
+              </li>
               <li >
                 <a class="secondary--text" :href="`/connection/${props.item.connection_id}`" target="_blank">
-                  Connection Name: <strong>{{props.item.connection.name}}</strong>
+                  View Connection <strong>{{props.item.connection.name}}</strong>
                 </a>
               </li>
               <li v-if="props.item.description">{{props.item.description}}</li>
@@ -56,6 +64,13 @@
                color="primary">
           <v-icon>mdi-format-list-group</v-icon>
           Error Log
+        </v-btn>
+        <v-btn x-small
+               @click="display_error_log(props.item)"
+               v-if="!['failed'].includes(props.item.status)"
+               color="primary">
+          <v-icon>mdi-format-list-group</v-icon>
+          Log
         </v-btn>
 
 
