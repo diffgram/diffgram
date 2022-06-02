@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="d-flex flex-column" style="min-height: 600px">
+  <v-container fluid class="d-flex flex-column">
     <h1 class="font-weight-light">Project Migrator Tool</h1>
     <h4>Please select a connection to start with</h4>
 

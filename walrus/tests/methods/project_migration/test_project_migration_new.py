@@ -46,7 +46,7 @@ class TestProjectMigrationNew(testing_setup.DiffgramBaseTestCase):
                         'labelbox_project_id': 'test123',
                         'connection_id': conn.id,
                         'import_schema': True,
-                        'import_files': True,
+                        'import_files': True,                  
                     }
                 ),
                 headers = {
@@ -55,7 +55,6 @@ class TestProjectMigrationNew(testing_setup.DiffgramBaseTestCase):
                 }
             )
             data = response.json
-            print('AAAA', response.data)
             self.assertEqual(response.status_code, 200)
             self.assertIsNotNone(data['id'])
             self.assertEqual(data['connection_id'], conn.id)
