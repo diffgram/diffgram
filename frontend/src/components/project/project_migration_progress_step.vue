@@ -2,8 +2,10 @@
   <v-container fluid class="d-flex flex-column align-center justify-center" style="min-height: 600px">
 
     <div v-if="progress_percentage < 100 && status === 'in_progress'" class="d-flex flex-column align-center justify-center" style="width: 100%">
-      <h1>Importing Project Data...</h1>
-      <p>This may take several minutes. Please be patient.</p>
+      <h1 class="pa-4">Importing...</h1>
+      <p>You may close this window without effecting the import.
+         This may take several minutes.
+         This screen will automatically update, or you can view the status on the list page. </p>
       <v-progress-linear
         color="secondary"
         striped

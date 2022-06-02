@@ -67,17 +67,6 @@ def check_integrations_support(session, task_template, log):
             if files_count == 0:
                 log['error']['file_count'] = 'Datasets must contains at least 1 file to launch.'
 
-    if connection.integration_name == 'datasaur':
-        if task_template.instance_type not in ['text_tokens']:
-            log['error'][
-                'labelbox_interface'] = 'Cannot use instance type {} for Datasaur UI please choose one of: [{}]'.format(
-                task_template.instance_type, '"text_tokens".')
-        # Now check that attached dataset have appropriate files.
-        files = task_template.get_attached_files(session=session, type='text', return_kind='count')
-        if files == 0:
-            log['error']['file_count'] = 'Datasets must contains at least 1 text file to launch with Datasaur.'
-
-
     return log
 
 

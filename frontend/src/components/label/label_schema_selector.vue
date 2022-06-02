@@ -1,7 +1,7 @@
 <template>
   <div>
     <v-autocomplete
-      label="Select Schema"
+      :label="label"
       return-object
 
       data-cy="label_schema_selector"
@@ -33,6 +33,9 @@ export default {
     },
     initial_schema:{
       default: undefined
+    },
+    label: {
+      default: 'Select Schema'
     }
   },
   async mounted() {
