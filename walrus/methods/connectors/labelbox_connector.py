@@ -25,6 +25,7 @@ from shared.database.batch.batch import InputBatch
 from shared.database.project_migration.project_migration import ProjectMigration
 import colorsys
 import uuid
+from shared.regular import regular_methods
 
 SUPPORTED_IMAGE_MIMETYPES = ['image/jpg', 'image/png', 'image/jpeg', 'image/webp', 'image/svg', 'image/tiff',
                              'image/tif']
@@ -282,7 +283,7 @@ class LabelboxConnector(Connector):
                     attribute_template_group = existing_attribute_group
                 )
                 session.add(map)
-                session.commit()
+                regular_methods.commit_with_rollback(session)
                 logger.info(f'Created external map labelbox_feature_schema_id {existing_attr.id} => {option.feature_schema_id}')
             else:
                 logger.info(f'Tree View option {display_name} already exists.')
@@ -787,8 +788,15 @@ class LabelboxConnector(Connector):
         labels = data_row.labels()
         instance_list = []
         for label in labels:
-            print(label.label, label)
-            label_data = json.loads(label.label)
+            if not label.label:
+                continue
+            try:
+                label_data = json.loads(label.label)
+            except:
+                try:
+                    label_data = json.loads(label.label.decode("utf-8"))
+                except:
+                    continue
             label_objects = label_data.get('objects')
             if not label_objects:
                 continue
@@ -877,7 +885,7 @@ class LabelboxConnector(Connector):
                                             member = member)
             current_count += 1
             project_migration.percent_complete = current_count / total_count * 100
-            session.commit()
+            regular_methods.commit_with_rollback(session)
 
             logger.info(f'Progress {project_migration.percent_complete}')
             logger.info(f'Data Row {data_row.uid} {i}/{total_dataset_count} enqueued successfully to Diffgram')
