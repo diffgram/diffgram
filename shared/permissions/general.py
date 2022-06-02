@@ -56,7 +56,7 @@ class General_permissions():
                 # api_user_list so even for "normal_users" we want to check their permissions
 
                 with sessionMaker.session_scope() as s:
-                    user = s.query(User).filter(User.id == getUserID()).one()
+                    user = s.query(User).filter(User.id == getUserID(session = s)).one()
 
                     if user.is_super_admin == True:
                         return func(*args, **kwds)

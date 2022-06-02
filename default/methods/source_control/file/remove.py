@@ -28,7 +28,7 @@ def remove_file(project_string_id):
 		existing_file = session.query(File).filter(File.id == file_id).first()
 
 		project = Project.get(session, project_string_id)
-		user_requesting = session.query(User).filter(User.id == getUserID()).one()
+		user_requesting = session.query(User).filter(User.id == getUserID(session = session)).one()
 
 		working_dir = project.directory_default
 

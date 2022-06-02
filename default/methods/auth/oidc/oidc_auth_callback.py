@@ -10,8 +10,16 @@ def api_oidc_callback():
         OIDC Callback
     :return:
     """
+    oidc_spec_list = [
+        {"code": {
+            'kind': str
+        }},
+    ]
 
-    code = request.data.get('code')
+    log, input, untrusted_input = regular_input.master(
+        request = request,
+        spec_list = oidc_spec_list)
+    code = input.get('code')
     log = regular_log.default()
     with sessionMaker.session_scope() as session:
         keycloak = KeycloakDiffgramClient()

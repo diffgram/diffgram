@@ -301,13 +301,15 @@ class User(Base):
 
         return session.query(User).filter(User.username == username_string).first()
 
+    @staticmethod
     def get_current_user(session):
 
-        return session.query(User).filter_by(id = getUserID()).first()
+        return session.query(User).filter_by(id = getUserID(session = session)).first()
 
+    @staticmethod
     def get(session):
 
-        return session.query(User).filter_by(id = getUserID()).first()
+        return session.query(User).filter_by(id = getUserID(session = session)).first()
 
     def get_by_member_id(
         session,

@@ -1,13 +1,16 @@
 # OPENCORE - ADD
+import traceback
 from flask import session as login_session
 from flask import request, redirect, url_for, flash
 from shared.helpers import sessionMaker
 from shared.database import hashing_functions
 import sys, os
-
+from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
 from shared.settings import settings
 
+from shared.shared_logger import get_shared_logger
 
+logger = get_shared_logger()
 # True means has permission, False means doesn't.
 
 def LoggedIn():
@@ -16,8 +19,24 @@ def LoggedIn():
     # Maybe rather just check if the 'user_id' cookie exists
     # Also concerned this may be confusing that you think you are checking a permission
     # When really just testing if the cookie exists
+    print('LOGEED INNNN')
     if settings.USE_OIDC:
         jwt = login_session.get('jwt')
+        access_token = jwt.get('access_token')
+        refresh_token = jwt.get('refresh_token')
+        if jwt is None:
+            return False
+        kc_client = KeycloakDiffgramClient()
+        try:
+            user = kc_client.get_user(access_token)
+            if not user:
+                return False
+            return True
+        except Exception as e:
+            err_data = traceback.format_exc()
+            logger.error(err_data)
+            return False
+        print('OIDC JWT IS', jwt)
         
     else:
         if login_session.get('user_id', None) is not None:
@@ -31,11 +50,25 @@ def LoggedIn():
 
 
 # Maybe this should be in User class?
-def getUserID():
-    if login_session.get('user_id', None) is not None:
-        out = hashing_functions.check_secure_val(login_session['user_id'])
-        if out is not None:
-            return out
+def getUserID(session):
+    from shared.database.user import User
+    if settings.USE_OIDC:
+        kc_client = KeycloakDiffgramClient()
+        jwt = login_session.get('jwt')
+        access_token = jwt.get('access_token')
+        oidc_user = kc_client.get_user(access_token = access_token)
+        if not oidc_user:
+            return None
+        diffgram_user = User.get_user_by_oidc_id(session = session,
+                                                 oidc_id = oidc_user.get('sub'))
+        if not diffgram_user:
+            return None
+        return diffgram_user.id
+    else:
+        if login_session.get('user_id', None) is not None:
+            out = hashing_functions.check_secure_val(login_session['user_id'])
+            if out is not None:
+                return out
     return None
 
 
@@ -53,7 +86,7 @@ def set_jwt_in_session(token_data):
 
 
 def get_current_version(session):
-    user = session.query(User).filter_by(id = getUserID()).first()
+    user = session.query(User).filter_by(id = getUserID(session = session)).first()
     project = session.query(Project).filter_by(id = user.project_id_current).first()
     version = session.query(Version).filter_by(id = project.version_id_current).first()
 

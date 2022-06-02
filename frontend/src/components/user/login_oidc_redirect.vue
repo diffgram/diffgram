@@ -1,6 +1,7 @@
 
 <template>
-  <div class="d-flex align-center justify-center screen-height" v-cloak>
+  <div class="d-flex align-center justify-center screen-height flex-column" v-cloak>
+    <v_error_multiple :error="error_login"></v_error_multiple>
     <div>
       <v-progress-linear
         height="10"
@@ -51,6 +52,8 @@ export default Vue.extend({
       }
     }
 
+    await this.oidc_login(this.$route.query.code)
+
   },
   destroyed() {
 
@@ -59,7 +62,7 @@ export default Vue.extend({
     route_account_new: function () {
       this.$router.push("/user/new");
     },
-    login: async function (code) {
+    oidc_login: async function (code) {
       this.loading = true;
       try{
         const response = await axios.post(`/api/v1/auth/oidc-login`, {

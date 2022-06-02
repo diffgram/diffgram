@@ -650,8 +650,9 @@ class Project(Base, Caching):
         return session.query(Project).filter(
             Project.project_string_id == project_string_id).first()
 
+    @staticmethod
     def get_users_current_project(session):
-        user = session.query(User).filter_by(id = getUserID()).first()
+        user = session.query(User).filter_by(id = getUserID(session = session)).first()
         return session.query(Project).filter_by(id = user.current_project_string_id).first()
 
     @staticmethod

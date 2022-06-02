@@ -27,3 +27,4 @@ newrelic
 markupsafe==2.0.1
 pika
 python-keycloak
+jwt
