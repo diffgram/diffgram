@@ -69,6 +69,13 @@ class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
             self.assertTrue(elm['id'] in [schema1.id, schema2.id])
 
     def test_label_schema_list_core(self):
+        result, log = label_schema_list_core(
+            session = self.session,
+            project = self.project,
+            member = self.member,
+            is_default = False
+        )
+        existing_len = len(result)
         schema1 = LabelSchema.new(
             session = self.session,
             name = 'test',
@@ -98,6 +105,7 @@ class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
         )
 
         self.assertTrue(len(log['error'].keys()) == 0)
-        self.assertEqual(len(result), 2)
+        non_archived_len_expected = 2
+        self.assertEqual(len(result), existing_len + non_archived_len_expected)
         for elm in result:
             self.assertTrue(elm['id'] in [schema1.id, schema2.id])
