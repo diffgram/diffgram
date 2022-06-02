@@ -64,7 +64,7 @@ class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
             }
         )
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json), 2)
+        self.assertEqual(len(response.json), 3)
         for elm in response.json:
             self.assertTrue(elm['id'] in [schema1.id, schema2.id])
 
