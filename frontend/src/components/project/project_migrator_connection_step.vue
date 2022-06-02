@@ -1,5 +1,5 @@
 <template>
-  <v-container fluid class="d-flex flex-column">
+  <v-container fluid class="d-flex flex-column" style="min-height: 600px">
     <h1 class="font-weight-light">Project Migrator Tool</h1>
     <h4>Please select a connection to start with</h4>
 
@@ -31,6 +31,7 @@
       @next="on_next_button_click"
       :loading_next="loading_steps"
       :disabled_next="loading_steps"
+      :back_visible="false"
       @back="$emit('previous_step')"
       :skip_visible="false"
     >
