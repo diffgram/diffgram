@@ -64,7 +64,7 @@ class TestLabelSchema(testing_setup.DiffgramBaseTestCase):
             member_created_id = self.member.id
         )
 
-        fetched_schema = LabelSchema.get_by_id(session = self.session, id = schema.id)
+        fetched_schema = LabelSchema.get_by_id(session = self.session, id = schema.id, project_id = self.project.id)
 
         self.assertEqual(fetched_schema.id, schema.id)
         self.assertEqual(fetched_schema.name, schema.name)
@@ -190,15 +190,21 @@ class TestLabelSchema(testing_setup.DiffgramBaseTestCase):
             member_created_id = self.member.id
         )
         id_list = [schema1.id, schema2.id, schema3.id]
-        results = LabelSchema.list(session = self.session, project_id = self.project.id)
-        results2 = LabelSchema.list(session = self.session, project_id = self.project2.id)
+        results = LabelSchema.list(session = self.session, project_id = self.project.id, is_default=False)
+        results2 = LabelSchema.list(session = self.session, project_id = self.project2.id, is_default=False)
 
-        self.assertEqual(len(results), 3)
-        self.assertEqual(len(results2), 1)
+        self.assertEqual(len(results), 4)
+        self.assertEqual(len(results2), 2)
+        available_ids = []
         for elm in results:
-            self.assertTrue(elm.id in id_list)
+            available_ids.append(elm.id)
+        for id in id_list:
+            self.assertTrue(id in available_ids)
+        found = False
         for elm in results2:
-            self.assertTrue(elm.id in [schema4.id])
+            if elm.id == schema4.id:
+                found = True
+        self.assertTrue(found is True)
 
 
 class TestLabelSchemaLink(testing_setup.DiffgramBaseTestCase):

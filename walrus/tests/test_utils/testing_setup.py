@@ -25,7 +25,7 @@ def create_walrus_testing_app():
     from methods.input.input_view import input_list_web
     from methods.input.input_update import api_input_update
     from methods.export.export_web import web_export_to_file
-    from methods.export.export_generation import new_external_export
+    from shared.export.export_generation import new_external_export
     from methods.export.export_view import export_list
     from methods.video.interpolation import interpolate_all_frames
     from methods.project_migration.project_migration_list import api_project_migration_list

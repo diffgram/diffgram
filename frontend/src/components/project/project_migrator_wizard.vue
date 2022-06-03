@@ -2,8 +2,64 @@
   <v-card elevation="0">
     <v-card-text>
       <v_error_multiple :error="error"></v_error_multiple>
-      <v-stepper v-model="step" :non-linear="true" style="height: 100%;" @change="on_change_step">
-        <v-stepper-header class="ma-0 pl-8 pr-8">
+      <v-stepper v-model="step" :non-linear="true" style="height: 100%; min-height: 600px" @change="on_change_step">
+
+        <v-progress-linear
+          color="secondary"
+          striped
+          value="global_progress"
+          height="12"
+        >
+        </v-progress-linear>
+
+        <v-stepper-items style="height: 80%">
+          <v-stepper-content step="1" style="min-height: 600px">
+
+            <project_migrator_connection_step
+              @next_step="go_to_step(2)"
+              @connection_changed="set_connection"
+              :project_string_id="project_string_id">
+
+            </project_migrator_connection_step>
+
+          </v-stepper-content>
+
+          <v-stepper-content step="2" style="min-height: 600px">
+            <project_migrator_config_step
+              @next_step="go_to_step(3)"
+              @previous_step="go_back_a_step()"
+              :project_migration_data="project_migration_data" :project_string_id="project_string_id">
+            </project_migrator_config_step>
+
+          </v-stepper-content>
+
+          <v-stepper-content step="3" style="min-height: 600px">
+
+            <project_migrator_confirm_step
+              v-if="!migrating"
+              @start_migration="on_start_migration"
+              @previous_step="go_back_a_step()"
+              :project_migration_data="project_migration_data"
+              :project_string_id="project_string_id">
+            </project_migrator_confirm_step>
+            <project_migration_progress_step
+                v-if="project_migration_id && migrating"
+                :project_string_id="project_string_id"
+                :project_migration_id="project_migration_id"
+                @migration_finished="finish_migration"
+                @retry_migration="on_start_migration"
+            >
+            </project_migration_progress_step>
+          </v-stepper-content>
+
+        </v-stepper-items>
+
+        <v-stepper-header
+            class="ma-0 pl-8 pr-8, elevation-0"
+            editable
+            style="height: 20%"
+                          >
+
           <v-stepper-step
             :complete="step > 1"
             step="1"
@@ -27,56 +83,7 @@
             Start
           </v-stepper-step>
         </v-stepper-header>
-        <v-progress-linear
-          color="secondary"
-          striped
-          value="global_progress"
-          height="12"
-        >
-        </v-progress-linear>
 
-        <v-stepper-items style="height: 100%">
-          <v-stepper-content step="1" style="height: 100%">
-
-            <project_migrator_connection_step
-              @next_step="go_to_step(2)"
-              @previous_step="go_back_a_step()"
-              @connection_changed="set_connection"
-              :project_string_id="project_string_id">
-
-            </project_migrator_connection_step>
-
-          </v-stepper-content>
-
-          <v-stepper-content step="2" style="height: 100%">
-            <project_migrator_config_step
-              @next_step="go_to_step(3)"
-              @previous_step="go_back_a_step()"
-              :project_migration_data="project_migration_data" :project_string_id="project_string_id">
-            </project_migrator_config_step>
-
-          </v-stepper-content>
-
-          <v-stepper-content step="3" style="height: 100%">
-
-            <project_migrator_confirm_step
-              v-if="!migrating"
-              @start_migration="on_start_migration"
-              @previous_step="go_back_a_step()"
-              :project_migration_data="project_migration_data"
-              :project_string_id="project_string_id">
-            </project_migrator_confirm_step>
-            <project_migration_progress_step
-                v-if="project_migration_id && migrating"
-                :project_string_id="project_string_id"
-                :project_migration_id="project_migration_id"
-                @migration_finished="finish_migration"
-                @retry_migration="on_start_migration"
-            >
-            </project_migration_progress_step>
-          </v-stepper-content>
-
-        </v-stepper-items>
 
       </v-stepper>
 

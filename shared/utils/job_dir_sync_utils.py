@@ -20,7 +20,7 @@ class JobDirectorySyncManager:
     directory: any = None
     file: File = None  # WIP maybe more clear to do this, although there are cases with multiple files...
 
-    def __add_file_into_job(
+    def add_file_into_job(
         self,
         file: File,
         incoming_directory: WorkingDir,
@@ -41,7 +41,6 @@ class JobDirectorySyncManager:
         job_obj = self.job
         if job is not None:
             job_obj = job
-
         result, log = WorkingDirFileLink.file_link_update(
             session = self.session,
             add_or_remove = 'add',
@@ -145,7 +144,7 @@ class JobDirectorySyncManager:
                 member_created = member
             )
 
-            self.__add_file_into_job(
+            self.add_file_into_job(
                 file,
                 file_link_dir,
                 job = job,
@@ -330,7 +329,7 @@ class JobDirectorySyncManager:
                         member_created = member
                     )
                     logger.debug(f"Created sync_event {sync_event_manager.sync_event.id}")
-                    result, log = self.__add_file_into_job(
+                    result, log = self.add_file_into_job(
                         file,
                         directory,
                         create_tasks = create_tasks,
@@ -362,7 +361,7 @@ class JobDirectorySyncManager:
                 member_created = member
             )
             logger.debug(f"Created sync_event {sync_event_manager.sync_event.id}")
-            result, log = self.__add_file_into_job(
+            result, log = self.add_file_into_job(
                 file_to_link,
                 file_to_link_dataset,
                 create_tasks = create_tasks,

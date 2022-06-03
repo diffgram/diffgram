@@ -1,6 +1,6 @@
 <template>
   <v-container fluid data-cy="task-template-credentials-step" v-if="job">
-    <div class="d-flex flex-column mb-8 justify-space-between">
+    <div class="d-flex flex-column justify-space-between">
       <div class="d-flex flex-column">
         <h2 class="font-weight-medium text--primary mr-4" data-cy="credentials-step-title">
           Credentials:

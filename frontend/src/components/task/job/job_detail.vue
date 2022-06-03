@@ -89,7 +89,7 @@
       </v-tab>
       <v-tabs-items v-model="tab">
         <v-tab-item class="pt-2">
-          <stats_panel />
+          <stats_panel/>
           <v_job_detail_builder
             v-if="$store.state.builder_or_trainer.mode == 'builder'"
             :job_id="job_id"
@@ -118,9 +118,9 @@
         </v-tab-item>
 
         <v-tab-item>
-        <job_edit_schema :job_id="job_id" :project_string_id="$store.state.project.current.project_string_id">
+          <job_edit_schema :job_id="job_id" :project_string_id="$store.state.project.current.project_string_id">
 
-        </job_edit_schema>
+          </job_edit_schema>
         </v-tab-item>
 
         <v-tab-item>
@@ -133,13 +133,23 @@
         </v-tab-item>
 
         <v-tab-item>
-          <!-- Settings -->
-          <v_info_multiple :info="info"> </v_info_multiple>
+          <v-container fluid>
 
+
+            <task_template_ui_schema_editor
+              :project_string_id="project_string_id"
+              :job_id="job_id">
+
+            </task_template_ui_schema_editor>
+          </v-container>
+        </v-tab-item>
+        <v-tab-item>
+          <!-- Settings -->
+          <v_info_multiple :info="info"></v_info_multiple>
 
 
           <v-layout>
-            <v-spacer> </v-spacer>
+            <v-spacer></v-spacer>
 
             <!-- output_dir_action -->
             <icon_from_regular_list
@@ -173,7 +183,8 @@
         </v-tab-item>
       </v-tabs-items>
     </v-tabs>
-    <no_credentials_dialog ref="no_credentials_dialog" :missing_credentials="missing_credentials"></no_credentials_dialog>
+    <no_credentials_dialog ref="no_credentials_dialog"
+                           :missing_credentials="missing_credentials"></no_credentials_dialog>
     <v-snackbar v-model="no_task_snackbar" color="red">
       No tasks available
     </v-snackbar>
@@ -186,6 +197,7 @@ import job_edit_schema from "./job_edit_schema";
 import no_credentials_dialog from "./no_credentials_dialog";
 import v_job_cancel_actions_button_container from "./job_cancel_actions_button_container";
 import v_job_detail_trainer from "./job_detail_trainer";
+
 import task_template_discussions from "../../discussions/task_template_discussions";
 import job_pipeline_mxgraph from "./job_pipeline_mxgraph";
 import label_select_only from "../../label/label_select_only.vue";
@@ -193,11 +205,13 @@ import {user_has_credentials} from '../../../services/userServices'
 import axios from "../../../services/customInstance";
 import job_type from "./job_type";
 import stats_panel from "../../stats/stats_panel.vue";
-import { nextTask } from "../../../services/tasksServices";
+import {nextTask} from "../../../services/tasksServices";
 
 import Vue from "vue";
 import No_credentials_dialog from "./no_credentials_dialog.vue";
+import task_template_ui_schema_editor from "./task_template_ui_schema_editor.vue";
 import Label_schema_selector from "../../label/label_schema_selector.vue";
+
 export default Vue.extend({
   name: "job_detail",
   props: ["job_id"],
@@ -207,6 +221,7 @@ export default Vue.extend({
     job_edit_schema,
     v_job_detail_builder,
     v_job_cancel_actions_button_container,
+    task_template_ui_schema_editor,
     no_credentials_dialog,
     task_template_discussions,
     v_job_detail_trainer,
@@ -221,12 +236,13 @@ export default Vue.extend({
       tab: null,
       no_task_snackbar: false,
       items: [
-        { text: "Oveview", icon: "mdi-view-dashboard" },
-        { text: "Discussions", icon: "mdi-comment-multiple" },
-        { text: "Insights", icon: "mdi-chart-areaspline" },
-        { text: "Schema", icon: "mdi-format-paint" },
-        { text: "Pipeline", icon: "mdi-folder-network" },
-        { text: "Settings", icon: "mdi-cog" },
+        {text: "Oveview", icon: "mdi-view-dashboard"},
+        {text: "Discussions", icon: "mdi-comment-multiple"},
+        {text: "Insights", icon: "mdi-chart-areaspline"},
+        {text: "Schema", icon: "mdi-format-paint"},
+        {text: "Pipeline", icon: "mdi-folder-network"},
+        {text: "UI Schema", icon: "mdi-puzzle-edit"},
+        {text: "Credentials & Settings", icon: "mdi-cog"},
       ],
       update_label_file_list: null,
       has_changes: false,
@@ -237,6 +253,8 @@ export default Vue.extend({
       edit_name: false,
 
       job_name: undefined,
+      ui_schema_id: undefined,
+
 
       info: {},
       error: {},
@@ -289,7 +307,7 @@ export default Vue.extend({
     }
     await this.check_credentials();
     this.show_job = this.has_credentials_or_admin();
-    if(!this.show_job){
+    if (!this.show_job) {
       this.show_missing_credentials_dialog()
     }
     this.reset_local_info();
@@ -303,45 +321,46 @@ export default Vue.extend({
     );
   },
   computed: {
-
+    project_string_id: function () {
+      return this.$store.state.project.current.project_string_id;
+    }
   },
   beforeDestroy() {
     this.job_current_watcher();
   },
   methods: {
-    has_credentials_or_admin: function(){
+    has_credentials_or_admin: function () {
       let project_string_id = this.$store.state.project.current.project_string_id;
-      if( this.$store.state.user.current.is_super_admin){
+      if (this.$store.state.user.current.is_super_admin) {
         return true
       }
-      if(this.user_has_credentials){
+      if (this.user_has_credentials) {
         return true
       }
       let roles = this.$store.getters.get_project_roles(project_string_id);
-      if(roles && roles.includes('admin')){
+      if (roles && roles.includes('admin')) {
         return true
       }
       return false
     },
-    show_missing_credentials_dialog: function(){
-      if(this.$refs.no_credentials_dialog){
+    show_missing_credentials_dialog: function () {
+      if (this.$refs.no_credentials_dialog) {
         this.$refs.no_credentials_dialog.open()
       }
     },
-    check_credentials: async function(){
+    check_credentials: async function () {
       let project_string_id = this.$store.state.project.current.project_string_id;
       let user_id = this.$store.state.user.current.id;
       let [result, error] = await user_has_credentials(
         project_string_id,
         user_id,
         this.job_id,
-
       )
-      if(error){
+      if (error) {
         this.error = this.$route_api_errors(error)
         return
       }
-      if(result){
+      if (result) {
         this.user_has_credentials = result.has_credentials;
         this.missing_credentials = result.missing_credentials;
       }
@@ -365,7 +384,7 @@ export default Vue.extend({
       }
       this.next_task_loading = false;
     },
-    api_update_job: function () {
+    api_update_job: async function () {
       /*
        * Assumes one job at a time
        *
@@ -377,31 +396,31 @@ export default Vue.extend({
       this.loading = true;
       this.error = {};
       this.info = {};
-
-      axios
-        .post(
+      try {
+        const response = await axios.post(
           "/api/v1/project/" +
-            this.$store.state.project.current.project_string_id +
-            "/job/update",
+          this.$store.state.project.current.project_string_id +
+          "/job/update",
           {
             job_id: parseInt(this.job_id),
             label_file_list: this.update_label_file_list, // see assumptions on null in note above
             name: this.job_name,
+            ui_schema_id: this.ui_schema_id,
           }
         )
-        .then((response) => {
-          this.loading = false;
-          this.info = response.data.log.info;
-          this.edit_name = false;
-          this.has_changes = false;
-          this.update_label_file_list = null;
-          this.$store.commit("set_job", response.data.job);
-          this.set_document_title();
-        })
-        .catch((error) => {
-          this.loading = false;
-          this.error = this.$route_api_errors(error);
-        });
+        this.loading = false;
+        this.info = response.data.log.info;
+        this.edit_name = false;
+        this.has_changes = false;
+        this.update_label_file_list = null;
+        this.$store.commit("set_job", response.data.job);
+        this.set_document_title();
+        return true
+      } catch (e) {
+        this.loading = false;
+        this.error = this.$route_api_errors(e);
+        return false
+      }
     },
   },
 });

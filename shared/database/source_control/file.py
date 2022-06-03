@@ -800,8 +800,16 @@ class File(Base, Caching):
         colour = None,
         project = None,
         log = None,
-        existing_file = None
+        existing_file = None,
+        schema = None,
+        member = None
     ):
+        if schema is None:
+            raise Exception("schema Required")
+
+        if member is None:
+            raise Exception("member Required")
+
         label = Label.new(
             session = session,
             name = name)
@@ -817,6 +825,11 @@ class File(Base, Caching):
                             project_id = project.id
                             )
         session.flush()
+
+        schema.add_label_file(
+            session = session, 
+            label_file_id = file.id, 
+            member_created_id = member.id)
 
         # In the future this could handle other label caching
         # Things beyond id, so for now just hit this?

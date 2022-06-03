@@ -107,7 +107,6 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
 
             for file in files_to_process:
                 files_to_process_by_id[str(file.id)] = file
-            print('files_to_process_by_id', files_to_process_by_id)
             result = self.create_datasaur_project(connector, label_set, files_to_process)
             logger.debug(f"Create datasaur Project result: {result}")
             if 'result' in result:

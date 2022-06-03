@@ -2,6 +2,7 @@ from shared.database.common import *
 from shared.shared_logger import get_shared_logger
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.orm.session import Session
+from shared.database.annotation.instance_template import InstanceTemplate
 
 
 class LabelSchema(Base, SerializerMixin):
@@ -21,6 +22,8 @@ class LabelSchema(Base, SerializerMixin):
 
     archived = Column(Boolean(), default = False)
 
+    is_default = Column(Boolean(), default = False)
+
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
@@ -31,19 +34,42 @@ class LabelSchema(Base, SerializerMixin):
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
     @staticmethod
-    def get_by_id(session: Session, id: int) -> 'LabelSchema':
+    def get_by_id(session: Session, id: int, project_id: int) -> 'LabelSchema':
         result = session.query(LabelSchema).filter(
-            LabelSchema.id == id
+            LabelSchema.id == id,
+            LabelSchema.project_id == project_id
         ).first()
         return result
 
+    def get_default(session, project_id):
+
+        schema = session.query(LabelSchema).filter(
+            LabelSchema.project_id == project_id,
+            LabelSchema.name == 'Default Schema'
+        ).first()
+        if schema is None:
+            schema = session.query(LabelSchema).filter(
+                LabelSchema.project_id == project_id,
+                LabelSchema.is_default == True
+            ).first()
+        if schema is None:
+            schema = session.query(LabelSchema).filter(
+            LabelSchema.project_id == project_id).first()
+        return schema
+
     @staticmethod
-    def new(session: Session, name: str, project_id: int, member_created_id: int) -> 'LabelSchema':
+    def new(session: Session, 
+            name: str, 
+            project_id: int, 
+            member_created_id: int, 
+            is_default: bool = False) -> 'LabelSchema':
+
         schema = LabelSchema(
             name = name,
             project_id = project_id,
             member_created_id = member_created_id,
             archived = False,
+            is_default = is_default
         )
 
         session.add(schema)
@@ -87,11 +113,13 @@ class LabelSchema(Base, SerializerMixin):
         return rel
 
     @staticmethod
-    def list(session: Session, project_id: int):
+    def list(session: Session, project_id: int, is_default: bool = None):
         query = session.query(LabelSchema).filter(
             LabelSchema.project_id == project_id,
             LabelSchema.archived == False
         )
+        if is_default:
+            query = query.filter(LabelSchema.is_default == is_default)
         result = query.all()
         return result
 
@@ -139,7 +167,7 @@ class LabelSchemaLink(Base, SerializerMixin):
     schema = relationship("LabelSchema", foreign_keys = [schema_id])
 
     instance_template_id = Column(Integer, ForeignKey('instance_template.id'))
-    instance_template = relationship("InstanceTemplate", foreign_keys = [instance_template_id])
+    instance_template = relationship(InstanceTemplate, foreign_keys = [instance_template_id])
 
     attribute_template_group_id = Column(Integer, ForeignKey('attribute_template_group.id'))
     attribute_template_group = relationship("Attribute_Template_Group", foreign_keys = [attribute_template_group_id])

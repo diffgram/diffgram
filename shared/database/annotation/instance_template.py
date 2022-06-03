@@ -5,7 +5,6 @@ from shared.database.annotation.instance import Instance
 import shared.data_tools_core as data_tools_core
 import hashlib
 import json
-from shared.database.labels.label_schema import LabelSchema
 
 class InstanceTemplate(Base):
     """
@@ -51,7 +50,7 @@ class InstanceTemplate(Base):
     def list(
         session,
         project,
-        schema: LabelSchema = None,
+        schema: 'LabelSchema' = None,
         status = 'active'
     ):
         """

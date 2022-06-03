@@ -165,6 +165,14 @@ class Project(Base, Caching):
 
         session.flush()
 
+        schema = LabelSchema.new(
+            session = session,
+            name = 'Default Schema',
+            project_id = project.id,
+            member_created_id = member_created.id,
+            is_default = True
+        )
+
         member_id = user.member_id
 
         Event.new(
@@ -507,6 +515,9 @@ class Project(Base, Caching):
 
         return attribute_groups_serialized_list
 
+    def get_default_schema(self, session):
+        return LabelSchema.get_default(session=session, project_id=self.id)
+
     def get_label_list(self, session, directory, schema_id = None):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory.id,
@@ -520,7 +531,7 @@ class Project(Base, Caching):
             File.id == working_dir_sub_query.c.file_id)
 
         if schema_id is not None:
-            schema = LabelSchema.get_by_id(session = session, id = schema_id)
+            schema = LabelSchema.get_by_id(session = session, id = schema_id, project_id = self.id)
             link_file_id_list = schema.get_label_files(session = session, ids_only = True)
             working_dir_file_list_query = working_dir_file_list_query.filter(
                 File.id.in_(link_file_id_list)

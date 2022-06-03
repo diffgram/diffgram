@@ -67,3 +67,4 @@ from shared.database.system_events.system_events import SystemEvents
 from shared.database.ui_schema.ui_schema import UI_Schema
 from shared.database.task.task_event import TaskEvent
 from shared.database.task.task_user import TaskUser
+from shared.database.labels.label_schema import LabelSchema, LabelSchemaLink

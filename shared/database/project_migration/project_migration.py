@@ -28,6 +28,9 @@ class ProjectMigration(Base, SerializerMixin):
     external_mapping_project_id = Column(Integer, ForeignKey('external_map.id'))
     external_mapping_project = relationship("ExternalMap", foreign_keys = [external_mapping_project_id])
 
+    label_schema_id = Column(Integer, ForeignKey('label_schema.id'))
+    label_schema = relationship("LabelSchema", foreign_keys = [label_schema_id])
+
     connection_id = Column(Integer, ForeignKey('connection_base.id'))
     connection = relationship("Connection", foreign_keys = [connection_id])
 
@@ -38,7 +41,6 @@ class ProjectMigration(Base, SerializerMixin):
     import_schema = Column(Boolean, default = True)
     import_files = Column(Boolean, default = False)
 
-    # context of say a video file
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project", foreign_keys = [project_id])
 
@@ -65,7 +67,8 @@ class ProjectMigration(Base, SerializerMixin):
         retry_count = None,
         member_created_id = None,
         add_to_session = True,
-        flush_session = True
+        flush_session = True,
+        label_schema_id = None
     ):
         """
             Creates a new project migration object to track progress of a project migration from an external source.
@@ -93,6 +96,7 @@ class ProjectMigration(Base, SerializerMixin):
             external_mapping_project_id = external_mapping_project_id,
             retry_count = retry_count,
             member_created_id = member_created_id,
+            label_schema_id = label_schema_id
         )
         if add_to_session:
             session.add(project_migration)
@@ -125,9 +129,13 @@ class ProjectMigration(Base, SerializerMixin):
             '-member_updated',
             '-project',
             '-connection',
-            '-external_mapping_project'))
+            '-external_mapping_project',
+            '-label_schema'))
 
         if self.connection:
             data['connection'] = self.connection.serialize()
+
+        if self.external_mapping_project:
+            data['external_mapping'] = self.external_mapping_project.serialize()
 
         return data

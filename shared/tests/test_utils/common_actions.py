@@ -1,10 +1,10 @@
-# OPENCORE - ADD
 from shared.database.auth.api import Auth_api
 from shared.database.auth.member import Member
 from shared.database.project import Project
 import random
 import string
 from shared.database import hashing_functions
+from shared.regular import regular_methods
 
 def create_random_string(length):
     return ''.join(random.choice(string.ascii_lowercase + \
@@ -44,7 +44,5 @@ def create_project_auth(project, session, role = "Editor"):
 
     auth.project_id = project.id
 
-    # Careful we are placing this in the member not the auth
-    # for now...
-    session.commit()
+    regular_methods.commit_with_rollback(session)
     return auth

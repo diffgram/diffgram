@@ -95,7 +95,6 @@ class TeseInstanceTemplateNew(testing_setup.DiffgramBaseTestCase):
                                                                        reference_width,
                                                                        schema_id = schema.id,
                                                                        log = regular_log.default())
-        print('AAA', log)
         self.assertEqual(len(log['error'].keys()), 0)
         self.assertTrue('instance_list' in result)
         self.assertTrue('name' in result)

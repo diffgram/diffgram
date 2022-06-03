@@ -137,7 +137,8 @@ class Export(Base):
         docs_low_level = "https://diffgram.com/docs/understanding-diffgrams-json-file-format"
         docs_coordinate_system = "https://diffgram.com/docs/export#coordinate-system"
         support = "support@diffgram.com"
-        sdk = "https://github.com/diffgram/diffgram"
+        open_source = "https://github.com/diffgram/diffgram"
+        python_sdk = "https://github.com/diffgram/python-sdk"
         new_to_diffgram = "Create a free account to play with: https://diffgram.com/user/data_platform/new"
 
         share_request = None
@@ -149,7 +150,8 @@ class Export(Base):
             'docs_low_level': docs_low_level,
             'docs_coordinate_system': docs_coordinate_system,
             'support': support,
-            'sdk': sdk,
+            'open_source': open_source,
+            'python_sdk': python_sdk,
             'new_to_diffgram': new_to_diffgram,
             'share_request': share_request,
             'diffgram': "Diffgram: https://diffgram.com. Data Annotation & Training Data Software"

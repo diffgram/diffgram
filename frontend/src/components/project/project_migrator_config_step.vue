@@ -1,7 +1,6 @@
 <template>
   <v-container fluid class="d-flex flex-column">
-    <h1 class="font-weight-light">2. Configure Migration</h1>
-    <h4>Set the migration parameters</h4>
+    <h1 class="font-weight-light">Configure </h1>
 
     <migration_config_labelbox
       ref="labelbox_config"
@@ -11,6 +10,12 @@
       v-if="project_migration_data.connection && project_migration_data.connection.integration_name === 'labelbox'">
     </migration_config_labelbox>
 
+    <label_schema_selector
+      :project_string_id="project_string_id"
+      label="Select Diffgram Label Schema"
+      @change="change_label_schema($event)"
+    >
+    </label_schema_selector>
 
     <wizard_navigation
       @next="on_next_button_click"
@@ -27,12 +32,15 @@
 <script lang="ts">
 
 import migration_config_labelbox from './migration_config_labelbox';
+import label_schema_selector from '../label/label_schema_selector.vue';
+import {get_schemas} from "../../services/labelServices";
 
 import Vue from "vue";
 export default Vue.extend( {
   name: 'project_migrator_config_step',
   components:{
-    migration_config_labelbox
+    migration_config_labelbox,
+    label_schema_selector
   },
   props:{
     project_string_id:{
@@ -40,16 +48,20 @@ export default Vue.extend( {
     },
     project_migration_data:{
       default: null
-    }
+    },
   },
   data() {
     return {
       step: 2,
       loading_steps: false,
+      current_label_schema: null
     }
   },
   computed: {
 
+  },
+  async mounted () {
+    await this.fetch_schemas()
   },
   watch:{
     project_migration_data:{
@@ -73,6 +85,24 @@ export default Vue.extend( {
       }
 
     },
+
+    fetch_schemas: async function(){
+      let [result, error] = await get_schemas(this.project_string_id);
+      if(error){
+        this.error = this.$route_api_errors(error)
+      }
+      if(result){
+        this.label_schema_list = result;
+      }
+    },
+
+    change_label_schema: function (schema) {
+
+      this.project_migration_data.label_schema_id = schema.id
+      console.log(schema)
+      this.current_label_schema = schema;
+    },
+
     on_next_button_click: function(){
       this.$emit('next_step');
     }

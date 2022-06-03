@@ -6,7 +6,8 @@ import threading
 import requests
 import shared.helpers.sessionMaker as sessionMaker
 from shared.helpers.sessionMaker import AfterCommitAction
-import shared.database.action.action_flow_trigger_event as action_flow_trigger_event
+from shared.queueclient.QueueClient import QueueClient, Exchanges, RoutingKeys
+
 
 logger = get_shared_logger()
 # The extra imports are only needed if they haven't already been
@@ -85,13 +86,20 @@ class Event(Base):
     file_id = Column(Integer, ForeignKey('file.id'))
     file = relationship("File")
 
+    directory_id = Column(Integer, ForeignKey('working_dir.id'))
+    directory = relationship("WorkingDir")
+
+    action_id = Column(Integer, ForeignKey('action.id'))
+    action = relationship("Action")
+
+    workflow_id = Column(Integer, ForeignKey('workflow.id'))
+    workflow = relationship("Workflow")
+
     report_template_id = Column(Integer, ForeignKey('report_template.id'))
     report_template = relationship("ReportTemplate")
 
     report_template_data = Column(MutableDict.as_mutable(JSONEncodedDict))
     report_data = Column(MutableDict.as_mutable(JSONEncodedDict))
-    # WIP idea from call for tracking flow, maybe as soon as enqueued / passed off to other tracking or something
-    # action_flow_requests_enqueued = Column()
 
     install_fingerprint = Column(String)
 
@@ -109,6 +117,10 @@ class Event(Base):
             'object_type': self.object_type,
             'page_name': self.page_name,
             'input_id': self.input_id,
+            'project_id': self.project_id,
+            'directory_id': self.directory_id,
+            'action_id': self.action_id,
+            'workflow_id': self.workflow_id,
             'file_id': self.file_id,
             'task_id': self.task_id,
             'job_id': self.job_id,
@@ -158,6 +170,7 @@ class Event(Base):
                      success = None,
                      error_log = None,
                      description = None,
+                     directory_id = None,
                      link = None,
                      project_id = None,
                      task_id = None,
@@ -218,27 +231,6 @@ class Event(Base):
             event_id = int(event.id)
             event_kind = event.kind
 
-        # Outside with block because we need to commit the session so walrus can access it.
-        Event.__may_create_ActionTriggerEvent(
-            event_id = event_id,
-            event_kind = event_kind)
-
-    def __may_create_ActionTriggerEvent(
-        event_id: int,
-        event_kind: str):
-
-        if not event_id: return
-
-        if event_kind in action_flow_trigger_event.SUPPORTED_ACTION_TRIGGER_EVENT_TYPES:
-            regular_methods.transmit_interservice_request(
-                message = 'new_action_flow_queue_item',
-                logger = logger,
-                service_target = 'walrus',
-                id = event_id,
-                base_class_string = 'Event')
-
-            logger.debug(f"Sent interservice request for Event: {event_id}")
-
     @staticmethod
     def __launch_new_event_threaded(**kwargs):
         t = threading.Thread(
@@ -247,6 +239,14 @@ class Event(Base):
         t.daemon = True  # Allow hot reload to work
         t.start()
 
+    def broadcast(self):
+        if settings.DIFFGRAM_SYSTEM_MODE == 'testing':
+            return
+        queue_mngr = QueueClient()
+        message = self.serialize()
+        queue_mngr.send_message(message = message,
+                                routing_key = RoutingKeys.event_new.value,
+                                exchange = Exchanges.events.value)
     @staticmethod
     def new(session,
             kind = None,
@@ -257,6 +257,7 @@ class Event(Base):
             link = None,
             project_id = None,
             task_id = None,
+            directory_id = None,
             run_time = None,
             page_name = None,
             object_type = None,
@@ -265,6 +266,8 @@ class Event(Base):
             member = None,
             input_id = None,
             file_id = None,
+            action_id = None,
+            workflow_id = None,
             report_data = None,
             report_template_id = None,
             report_template_data = None,
@@ -295,7 +298,6 @@ class Event(Base):
             user = member.user
             if user:
                 email = user.email
-
         event = Event(
             kind = kind,
             member_id = member_id,
@@ -306,10 +308,13 @@ class Event(Base):
             project_id = project_id,
             task_id = task_id,
             job_id = job_id,
+            directory_id = directory_id,
             run_time = run_time,
             object_type = object_type,
             input_id = input_id,
             file_id = file_id,
+            action_id = action_id,
+            workflow_id = workflow_id,
             report_data = report_data,
             report_template_id = report_template_id,
             report_template_data = report_template_data,
@@ -320,9 +325,9 @@ class Event(Base):
         if flush_session:
             session.flush()
         Event.track_user(event, email)
-
+        logger.info(f'Created event {event.id}:{event.kind}')
         event.send_to_eventhub()
-
+        event.broadcast()
         return event
 
     # May want the event in some cases???
