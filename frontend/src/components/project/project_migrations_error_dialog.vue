@@ -4,7 +4,8 @@
     <v-card elevation="1">
       <v-card-title>Log:</v-card-title>
       <v-card-text v-if="project_migration">
-       <v_error_multiple :error="project_migration.error_log"></v_error_multiple>
+       <v_error_multiple v-if="project_migration.error_log"
+                         :error="project_migration.error_log.error"></v_error_multiple>
        <v_info_multiple :info="project_migration.migration_log"
                         :dismissible="false"></v_info_multiple>
       </v-card-text>

@@ -662,7 +662,6 @@ class LabelboxConnector(Connector):
         """
         result = {}
         root_classification = None
-        self.log['info']['attribute'] = {}
 
         for tool in ontology.tools():
             for clsf in tool.classifications:
@@ -672,6 +671,9 @@ class LabelboxConnector(Connector):
         if not root_classification:
             logger.warning(f'Cannot find root classification for {classification}')
             return
+
+        time_attempted = str(time.time())
+        self.log['info']['attribute'][time_attempted] = {}
 
         tree_attribute_schema_ids, allowed_names = self.__get_tree_attribute_allowed_schemas(root_classification)
         logger.debug(f'Allowed schema IDs {tree_attribute_schema_ids}')
@@ -707,15 +709,23 @@ class LabelboxConnector(Connector):
                     if type(answer_obj) == list:
                         answers_list = answer_obj
                     for ans in answers_list:
-                        attr_template = Attribute_Template.get_by_name_and_parent_id(session = session,
-                                                                                     attr_template_group = attr_group,
-                                                                                     name = ans['title'],
-                                                                                     parent_id = attr_template_parent_id)
+                        name = None
+                        try:
+                            name = ans['title']
+                        except Exception as e:
+                            name = ans
+                            self.log['info']['attribute'][time_attempted][str(time.time())] = "Value: " + str(ans) + " Exception: " + str(e)
+                        if name and type(name) is str:
+                            attr_template = Attribute_Template.get_by_name_and_parent_id(
+                                session = session,
+                                attr_template_group = attr_group,
+                                name = name,
+                                parent_id = attr_template_parent_id)
                         if not attr_template:
-                            attr_template_warning = f'Attribute template for {ans["title"]} not found. Skipping...'
+                            attr_template_warning = f'Attribute template for {name} not found. Skipping...'
                             logger.debug(attr_template_warning)
-                            self.log['info']['attribute'][str(time.time())] = attr_template_warning
-                            self.log['info']['attribute']['info'] = "This may occur if the files contain annotations not in the labelbox Schema attached to the project."
+                            self.log['info']['attribute'][time_attempted][str(time.time())] = attr_template_warning
+                            self.log['info']['attribute'][time_attempted]['info'] = "This may occur if the files contain annotations not in the labelbox Schema attached to the project. Or the annotations format has changed."
                             continue
                         result[attr_template.id] = {'selected': True, 'name': attr_template.name}
 
@@ -731,6 +741,8 @@ class LabelboxConnector(Connector):
                                             diffgram_project):
         if diffgram_instance.get('attribute_groups') is None:
             diffgram_instance['attribute_groups'] = {}
+
+        self.log['info']['attribute'] = {}
         for classification_elm in classifications:
             logger.info(f'Processing Attribute {classification_elm}....')
             if type(classification_elm) == dict:
@@ -1073,6 +1085,9 @@ class LabelboxConnector(Connector):
         with sessionMaker.session_scope_threaded() as session:
             member = Member.get_by_id(session, member_id = member_id)
             project_migration = ProjectMigration.get_by_id(session = session, id = project_migration_id)
+
+            project_migration.error_log = regular_log.default()
+
             diffgram_project = Project.get_by_string_id(session = session,
                                                         project_string_id = diffgram_project_string_id)
             labelbox_project = self.connection_client.get_project(project_id = label_box_project_id)
