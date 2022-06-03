@@ -220,7 +220,6 @@ Cypress.Commands.add('registerDataPlatformTestUser', function () {
   cy.get('.v-list.v-select-list div').contains('Other').click({force: true})
   cy.get('[data-cy=company]').click();
   cy.get('[data-cy=company]').type('Diffgram');
-  cy.get('[data-cy=demo_select]').parent().click()
   cy.get('.v-list.v-select-list div').contains('Not yet.').click({force: true})
   cy.get('.v-slider__tick:nth-child(2)').click();
   cy.get('[data-cy=finish_signup_button]').click();
