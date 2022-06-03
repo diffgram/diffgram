@@ -667,7 +667,7 @@
             console.log(e)
             if (e.response.data.log &&
               e.response.data.log.error.free_tier_limit) {
-              this.message_free_tier_limit = 'The invite failed because you reached your one of the in the free tier of Diffgram.'
+              this.message_free_tier_limit = 'The invite failed because you reached a limit in the free tier of Diffgram.com hosted version. Upgrade or self-install.'
               this.details_free_tier_limit = e.response.data.log.error.free_tier_limit;
               this.$refs.free_tier_limit_dialog.open();
             }

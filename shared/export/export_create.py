@@ -76,13 +76,14 @@ def create_new_export(session: Session,
     if directory is None:
         log["error"]["directory"] = "Invalid directory"
         return False, log
-    # Caution assumes project.user_primary
-    # Billing check
+    
+    member = Member.get_by_id(session, member_id)
+
     log = check_export_billing(
         session = session,
         project = project,
         directory = directory,
-        member = project.user_primary.member,
+        member = member,
         log = log)
 
     if len(log["error"].keys()) >= 1:

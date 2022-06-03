@@ -271,7 +271,7 @@ import Vue from "vue"; export default Vue.extend( {
 
         } else {
           if(response['data']['errors']['free_tier_limit']){
-            this.message_free_tier_limit = 'The invite failed because you reached your one of the in the free tier of Diffgram.'
+            this.message_free_tier_limit = 'The invite failed because you reached a limit in the free tier of Diffgram.com hosted version. Upgrade or self-install.'
             this.details_free_tier_limit = response['data']['errors']['free_tier_limit']
             this.$refs.free_tier_limit_dialog.open();
           }
@@ -292,7 +292,7 @@ import Vue from "vue"; export default Vue.extend( {
             if(error.response.data &&
               error.response.data.log &&
               error.response.data.log.error.free_tier_limit){
-              this.message_free_tier_limit = 'The invite failed because you reached your one of the in the free tier of Diffgram.'
+              this.message_free_tier_limit = 'The invite failed because you reached a limit in the free tier of Diffgram.com hosted version. Upgrade or self-install.'
               this.details_free_tier_limit = error.response.data.log.error.free_tier_limit;
               this.$refs.free_tier_limit_dialog.open();
             }
