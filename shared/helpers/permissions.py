@@ -25,9 +25,10 @@ def LoggedIn():
         kc_client = KeycloakDiffgramClient()
         try:
             user = kc_client.get_user(access_token)
-            print('USE IS', user)
             if not user:
                 return False
+            new_token = kc_client.refresh_token(refresh_token)
+            login_session['jwt'] = new_token
             return True
         except Exception as e:
             err_data = traceback.format_exc()

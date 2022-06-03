@@ -6,6 +6,7 @@ from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.account.plan import Plan
 
+
 class User(Base):
     __tablename__ = 'userbase'
 
@@ -156,6 +157,11 @@ class User(Base):
     default_plan = relationship(Plan,
                                 foreign_keys = [default_plan_id])
 
+    def bind_to_oidc_login(self, session, oidc_id):
+        self.oidc_id = oidc_id
+        session.add(self)
+        return self
+
     def get_profile_image_url(self):
         if (self.profile_image_expiry is None or self.profile_image_expiry <= time.time()) and self.profile_image_blob:
             self.profile_image_url = data_tools.build_secure_url(blob_name = self.profile_image_blob)
@@ -248,9 +254,6 @@ class User(Base):
         ).first()
 
         return user
-
-
-
 
     def serialize_with_permission_only(self, project_string_id):
         return self.permissions_projects.get(project_string_id, None)

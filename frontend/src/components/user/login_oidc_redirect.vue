@@ -22,6 +22,7 @@ import axios from "../../services/customInstance";
 import { is_mailgun_set } from "../../services/configService";
 
 import Vue from "vue";
+import {auth_redirect} from "./account/auth_redirect";
 export default Vue.extend({
   name: "user_login",
   props: {
@@ -69,7 +70,23 @@ export default Vue.extend({
           code: code
         })
         this.loading = false;
+        if(response.data.new_user_created){
+          if (response.data.user) {
+            this.$store.commit('set_current_user', response.data.user)
+          }
 
+          // careful must return after matching
+          // routing condition otherwise goes to next value one...
+
+          if (this.user_kind == "annotator_signup") {
+            this.$router.push('/user/trainer/signup')
+            return
+          }
+
+          let auth = response.data.log.auth
+
+          auth_redirect(auth, response.data.project_string_id, this.$router, this.$store)
+        }
         this.do_login(response);
 
       }

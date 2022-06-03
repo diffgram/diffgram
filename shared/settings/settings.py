@@ -183,12 +183,13 @@ SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_MINIMUM_DA
 SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID', 30 * 14))
 
 # Keycloak / OIDC Settings
-USE_OIDC = True
-OIDC_PROVIDER_HOST = 'http://localhost:8099/auth/'
-OIDC_PROVIDER_CLIENT_ID = 'diffgram'
-OIDC_PROVIDER_PUBLIC_KEY = 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiCJUq6FdiNavZRynGDjtz6ZSH9UgbogVfsbr8VPsAs6sTZchGLCk/IJG5tS8RavKFVDYoZvb+O+BTJ9i0NHOY9bxnZsb2QJ9AKwXzHI2Kiyzc5eP7kjuFtD5agR7ntm+dct6qBUkXCw9bsxJssbYuit6gMFtb4UuL0oplwn2Q6weVUchh4ta27D6cu4ByIoTwkCB/AGYToDu2b7ysklTFvkhPvDVafnMpGVZ6/0mVq4UlfwsSXJUCu4cxyFtwWH4zbP2l89KcAA5g+4Eg5at2UvoA7sxko3wuYa2LAOHDZPQ+Ybq5raJWfHAEW05jBsGahzsDue4aTeNtuTYvKT1uwIDAQAB'
-OIDC_PROVIDER_SECRET = 'fPgFGua2uXUkYlvKRSIchOCEZly4Qld8'
-OIDC_PROVIDER_REALM = 'mydiffgramrealm'
+USE_OIDC = env_adapter.bool(os.getenv('USE_OIDC', False))
+OIDC_PROVIDER_HOST = os.getenv('OIDC_PROVIDER_HOST', 'http://localhost:8099/auth/')
+OIDC_PROVIDER_CLIENT_ID = os.getenv('OIDC_PROVIDER_CLIENT_ID', 'diffgram')
+OIDC_PROVIDER_PUBLIC_KEY = os.getenv('OIDC_PROVIDER_PUBLIC_KEY', 'diffgram_public_key')
+OIDC_PROVIDER_SECRET = os.getenv('OIDC_PROVIDER_SECRET', 'diffgram_secret_key')
+OIDC_PROVIDER_REALM = os.getenv('OIDC_PROVIDER_REALM', 'mydiffgramrealm')
+
 
 # Minio Only Allow Expiry time is less than 7 days (value in seconds).
 # https://github.com/minio/minio/blob/ca69e54cb6e4cff32b39cef6c7231c6d7ee6fca6/cmd/signature-v4-parser.go#L232

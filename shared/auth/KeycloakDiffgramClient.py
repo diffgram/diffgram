@@ -18,6 +18,9 @@ class KeycloakDiffgramClient:
                                        realm_name = settings.OIDC_PROVIDER_REALM,
                                        client_secret_key = 'fPgFGua2uXUkYlvKRSIchOCEZly4Qld8')
 
+    def refresh_token(self, token):
+        return self.keycloak.refresh_token(refresh_token = token)
+
     def logout(self, refresh_token):
         self.keycloak.logout(refresh_token)
 
