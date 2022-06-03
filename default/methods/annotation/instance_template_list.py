@@ -54,7 +54,7 @@ def list_instance_templates_core(session,
     :return:
     """
     result = None
-    schema = LabelSchema.get_by_id(session, schema_id)
+    schema = LabelSchema.get_by_id(session, schema_id, project.id)
     if schema.project_id != project.id:
         log['error']['schema_id'] = 'Schema does not belong to project'
         return None, log

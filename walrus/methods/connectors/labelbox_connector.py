@@ -25,6 +25,7 @@ from shared.database.batch.batch import InputBatch
 from shared.database.project_migration.project_migration import ProjectMigration
 import colorsys
 import uuid
+from shared.regular import regular_methods
 
 SUPPORTED_IMAGE_MIMETYPES = ['image/jpg', 'image/png', 'image/jpeg', 'image/webp', 'image/svg', 'image/tiff',
                              'image/tif']
@@ -47,9 +48,10 @@ def with_labelbox_exception_handler(f):
 
 class LabelboxConnector(Connector):
 
+
     @with_labelbox_exception_handler
     def connect(self):
-        log = regular_log.default()
+        self.log = regular_log.default()
         self.connection_client = labelbox.Client(self.auth_data['client_secret'])
         return {'result': True}
 
@@ -240,7 +242,7 @@ class LabelboxConnector(Connector):
             tree_view_data = []
             in_root = True
 
-        logger.info(f'Creating Tree View Type Attribute data: {existing_attribute_group.name} - {existing_attribute_group.id}')
+        logger.debug(f'Creating Tree View Type Attribute data: {existing_attribute_group.name} - {existing_attribute_group.id}')
         for option in clsf.options:
             type_opt = option.__class__.__name__
             display_name = option.name if type_opt == 'Classification' else option.label
@@ -282,10 +284,10 @@ class LabelboxConnector(Connector):
                     attribute_template_group = existing_attribute_group
                 )
                 session.add(map)
-                session.commit()
+                regular_methods.commit_with_rollback(session)
                 logger.info(f'Created external map labelbox_feature_schema_id {existing_attr.id} => {option.feature_schema_id}')
             else:
-                logger.info(f'Tree View option {display_name} already exists.')
+                logger.debug(f'Tree View option {display_name} already exists.')
 
             if option.options and len(option.options) > 0:
                 self.__set_treeview_attribute_data(
@@ -295,12 +297,21 @@ class LabelboxConnector(Connector):
                     member = member,
                     existing_attr_parent_id = existing_attr.id,
                 )
-                logger.info(f'Created Tree View Data Attribute Option: {display_name}')
+                logger.debug(f'Handled Tree View Data Attribute Option: {display_name}')
         if in_root is True:
             logger.info(f'Tree View data Created successfully. ID is {existing_attribute_group.id}')
             logger.info(f'Tree Data: {tree_view_data}')
 
-    def __add_attributes_to_label_file(self, session, label_file, diffgram_project, member, tool, is_global = False):
+
+    def __add_attributes_to_label_file(
+            self, 
+            session, 
+            label_file, 
+            diffgram_project, 
+            member, 
+            tool,
+            project_migration,
+            is_global = False):
         """
             Creates all the classifications from the given labelbox tool as attributes in diffgram.
             If the attribute name and type already exists, it will update the options of the attribute.
@@ -338,10 +349,15 @@ class LabelboxConnector(Connector):
             if existing_attribute is None:
                 # Create the attribute
                 logger.info(f'Creating attribute "{attr_name}"')
+                schema = LabelSchema.get_by_id(
+                    session = session, 
+                    id = project_migration.label_schema_id, 
+                    project_id = diffgram_project.id)
                 existing_attribute = Attribute_Template_Group.new(
                     session = session,
                     project = diffgram_project,
-                    member = member
+                    member = member,
+                    schema = schema
                 )
             else:
                 logger.info(f'Attribute "{attr_name}" already exists.')
@@ -392,7 +408,14 @@ class LabelboxConnector(Connector):
             elif existing_attribute.kind == 'text':
                 continue
 
-    def __import_labels_to_project(self, session, ontology, diffgram_project, member, project_migration, log):
+    def __import_labels_to_project(
+            self, 
+            session, 
+            ontology, 
+            diffgram_project,
+            member, 
+            project_migration
+            ):
 
         label_tools = ontology.tools()
         logger.info(f'Importing labels from ontology "{ontology.name}"')
@@ -415,26 +438,47 @@ class LabelboxConnector(Connector):
                 label_name = name,
                 project_id = diffgram_project.id
             )
-            if label_file is None:
 
+            schema = LabelSchema.get_by_id(
+                session = session, 
+                id = project_migration.label_schema_id, 
+                project_id = diffgram_project.id)
+
+            self.log['info']['labels'] = {}
+            if label_file is None:
                 label_file = File.new_label_file(
                     session = session,
                     name = name,
                     working_dir_id = diffgram_project.directory_default_id,
                     project = diffgram_project,
                     colour = color_dict,
-                    log = log
+                    log = self.log,
+                    schema = schema,
+                    member = member
                 )
-                logger.info(f'Created Label: "{name}"')
+                log_info = f'Created Label: "{name}"'
+                logger.debug(log_info)
+                self.log['info']['labels'][str(time.time())] = log_info
             else:
-                logger.info(f'Label File "{name}" already exists.')
+                schema.add_label_file(
+                    session = session, 
+                    label_file_id = label_file.id, 
+                    member_created_id = member.id)
+                log_info = f'Label File "{name}" already exists. Checked relation to Schema.'
+                logger.debug(log_info)
+                self.log['info']['labels'][str(time.time())] = log_info
 
             if tool.classifications and len(tool.classifications) > 0:
                 self.__add_attributes_to_label_file(label_file = label_file,
                                                     session = session,
                                                     diffgram_project = diffgram_project,
                                                     member = member,
-                                                    tool = tool)
+                                                    tool = tool,
+                                                    project_migration = project_migration)
+
+        project_migration.migration_log = self.log
+        regular_methods.commit_with_rollback(session)
+
 
     def __determine_instance_type(self, object):
 
@@ -618,6 +662,7 @@ class LabelboxConnector(Connector):
         """
         result = {}
         root_classification = None
+
         for tool in ontology.tools():
             for clsf in tool.classifications:
                 if classification['schemaId'] == clsf.feature_schema_id:
@@ -627,9 +672,12 @@ class LabelboxConnector(Connector):
             logger.warning(f'Cannot find root classification for {classification}')
             return
 
+        time_attempted = str(time.time())
+        self.log['info']['attribute'][time_attempted] = {}
+
         tree_attribute_schema_ids, allowed_names = self.__get_tree_attribute_allowed_schemas(root_classification)
-        logger.info(f'Allowed schema IDs {tree_attribute_schema_ids}')
-        logger.info(f'Allowed schema Names {allowed_names}')
+        logger.debug(f'Allowed schema IDs {tree_attribute_schema_ids}')
+        logger.debug(f'Allowed schema Names {allowed_names}')
         for classification_objs in all_classifications:
             list_classification = [classification_objs]
             if type(classification_objs) == list:
@@ -661,12 +709,23 @@ class LabelboxConnector(Connector):
                     if type(answer_obj) == list:
                         answers_list = answer_obj
                     for ans in answers_list:
-                        attr_template = Attribute_Template.get_by_name_and_parent_id(session = session,
-                                                                                     attr_template_group = attr_group,
-                                                                                     name = ans['title'],
-                                                                                     parent_id = attr_template_parent_id)
+                        name = None
+                        try:
+                            name = ans['title']
+                        except Exception as e:
+                            name = ans
+                            self.log['info']['attribute'][time_attempted][str(time.time())] = "Value: " + str(ans) + " Exception: " + str(e)
+                        if name and type(name) is str:
+                            attr_template = Attribute_Template.get_by_name_and_parent_id(
+                                session = session,
+                                attr_template_group = attr_group,
+                                name = name,
+                                parent_id = attr_template_parent_id)
                         if not attr_template:
-                            logger.warning(f'Attribute template for {ans["title"]} not found. Skipping...')
+                            attr_template_warning = f'Attribute template for {name} not found. Skipping...'
+                            logger.debug(attr_template_warning)
+                            self.log['info']['attribute'][time_attempted][str(time.time())] = attr_template_warning
+                            self.log['info']['attribute'][time_attempted]['info'] = "This may occur if the files contain annotations not in the labelbox Schema attached to the project. Or the annotations format has changed."
                             continue
                         result[attr_template.id] = {'selected': True, 'name': attr_template.name}
 
@@ -682,6 +741,8 @@ class LabelboxConnector(Connector):
                                             diffgram_project):
         if diffgram_instance.get('attribute_groups') is None:
             diffgram_instance['attribute_groups'] = {}
+
+        self.log['info']['attribute'] = {}
         for classification_elm in classifications:
             logger.info(f'Processing Attribute {classification_elm}....')
             if type(classification_elm) == dict:
@@ -761,11 +822,32 @@ class LabelboxConnector(Connector):
                     logger.info(f'Added Attribute {attr_group["name"]} {attr_group["kind"]}')
         return diffgram_instance
 
+
+    def defensive_wrapper(self, gen):
+        self.log['info']['count_exceptions'] = 0
+        while True:
+            try:
+                yield next(gen)
+            except StopIteration:
+                break
+            except Exception as e:
+                self.log['info'][str(time.time())] = str(e)
+                self.log['info']['count_exceptions'] += 1
+
+
     def __create_instance_list_for_file(self, session, data_row, ontology, diffgram_dataset):
-        labels = data_row.labels()
+        labels_iterator = data_row.labels()
         instance_list = []
-        for label in labels:
-            label_data = json.loads(label.label)
+        for label in self.defensive_wrapper(labels_iterator):
+            if not label.label:
+                continue
+            try:
+                label_data = json.loads(label.label)
+            except:
+                try:
+                    label_data = json.loads(label.label.decode("utf-8"))
+                except:
+                    continue
             label_objects = label_data.get('objects')
             if not label_objects:
                 continue
@@ -814,7 +896,11 @@ class LabelboxConnector(Connector):
                                   lb_dataset):
         total_dataset_count = lb_dataset.row_count
         i = 0
-        for data_row in lb_dataset.data_rows():
+        self.log['info']['data_rows_total_count'] = total_count
+
+        data_row_iterator = lb_dataset.data_rows()
+
+        for data_row in self.defensive_wrapper(data_row_iterator):
 
             mime_type = data_row.media_attributes.get('mimeType')
             if not mime_type:
@@ -854,10 +940,12 @@ class LabelboxConnector(Connector):
                                             member = member)
             current_count += 1
             project_migration.percent_complete = current_count / total_count * 100
-            session.commit()
+            self.log['info']['data_rows_current_count'] = current_count
+            project_migration.migration_log = self.log
+            regular_methods.commit_with_rollback(session)
 
-            logger.info(f'Progress {project_migration.percent_complete}')
-            logger.info(f'Data Row {data_row.uid} {i}/{total_dataset_count} enqueued successfully to Diffgram')
+            logger.debug(f'Progress {project_migration.percent_complete}')
+            logger.debug(f'Data Row {data_row.uid} {i}/{total_dataset_count} enqueued successfully to Diffgram')
             i += 1
 
     def __create_diffgram_dataset(self,
@@ -892,11 +980,15 @@ class LabelboxConnector(Connector):
                 nickname = lb_dataset.name
             )
             diffgram_project.set_cache_key_dirty('directory_list')
-            logger.info(f'Created dataset {diffgram_dataset.nickname} with ID {diffgram_dataset.id}')
+            dataset_description = f'Created dataset {diffgram_dataset.nickname} with ID {diffgram_dataset.id}'
+            logger.debug(dataset_description)
+            self.log['info']['dataset description'] = dataset_description
         else:
             diffgram_dataset = WorkingDir.get_by_id(session, diffgram_dataset_link.working_dir_id)
-            logger.info(f'Dataset {lb_dataset.name} already exists.')
-            logger.info(f'Using {diffgram_dataset.nickname} with ID {diffgram_dataset.id}')
+            logger.debug(f'Dataset {lb_dataset.name} already exists.')
+            logger.debug(f'Using {diffgram_dataset.nickname} with ID {diffgram_dataset.id}')
+
+        project_migration.external_mapping_project.dataset_id = diffgram_dataset.id
 
         logger.info(f'Creating files for dataset: {lb_dataset.name} ')
 
@@ -925,8 +1017,7 @@ class LabelboxConnector(Connector):
                                     labelbox_project,
                                     diffgram_project,
                                     project_migration,
-                                    member,
-                                    log):
+                                    member):
 
         ontology = labelbox_project.ontology()
         total_file_count = 0
@@ -951,22 +1042,21 @@ class LabelboxConnector(Connector):
                                               ontology,
                                               diffgram_project,
                                               project_migration,
-                                              member,
-                                              log):
+                                              member):
 
         self.__add_attributes_to_label_file(label_file = None,
                                             session = session,
                                             diffgram_project = diffgram_project,
                                             member = member,
                                             tool = ontology,
+                                            project_migration = project_migration,
                                             is_global = True)
 
     def __import_ontology_to_project(self, session,
                                      labelbox_project,
                                      diffgram_project,
                                      project_migration,
-                                     member,
-                                     log):
+                                     member):
         logger.info(f'Starting ontolgy import for project {diffgram_project.project_string_id}')
         logger.info(f'Labelbox project  {labelbox_project.uid}')
 
@@ -975,16 +1065,14 @@ class LabelboxConnector(Connector):
                                         ontology = ontology,
                                         diffgram_project = diffgram_project,
                                         project_migration = project_migration,
-                                        member = member,
-                                        log = log)
+                                        member = member)
 
         self.__import_global_attributes_to_project(
             session = session,
             ontology = ontology,
             diffgram_project = diffgram_project,
             project_migration = project_migration,
-            member = member,
-            log = log
+            member = member
         )
 
     def __import_project_to_diffgram(self, opts):
@@ -992,11 +1080,14 @@ class LabelboxConnector(Connector):
         diffgram_project_string_id = opts['project_string_id']
         project_migration_id = opts['project_migration_id']
         member_id = opts['member_id']
-        log = regular_log.default()
+        self.log = regular_log.default()
 
         with sessionMaker.session_scope_threaded() as session:
             member = Member.get_by_id(session, member_id = member_id)
             project_migration = ProjectMigration.get_by_id(session = session, id = project_migration_id)
+
+            project_migration.error_log = regular_log.default()
+
             diffgram_project = Project.get_by_string_id(session = session,
                                                         project_string_id = diffgram_project_string_id)
             labelbox_project = self.connection_client.get_project(project_id = label_box_project_id)
@@ -1005,16 +1096,19 @@ class LabelboxConnector(Connector):
                 labelbox_project = labelbox_project,
                 diffgram_project = diffgram_project,
                 project_migration = project_migration,
-                member = member,
-                log = log)
+                member = member)
 
             if project_migration.import_files:
                 self.__import_files_and_datasets(session = session,
                                                  labelbox_project = labelbox_project,
                                                  diffgram_project = diffgram_project,
                                                  project_migration = project_migration,
-                                                 member = member, log = log)
-        return True, log
+                                                 member = member)
+                project_migration.migration_log = self.log
+                regular_methods.commit_with_rollback(session)
+
+        self.log['success'] = True
+        return True, self.log
 
     @with_labelbox_exception_handler
     @with_connection
@@ -1145,7 +1239,7 @@ class LabelboxConnector(Connector):
     @with_connection
     def put_data(self, opts):
         """
-            This function routes any action_type to the correct S3 connector actions.
+            This function routes any action_type to the correct connector actions.
         :return: Object
         """
         action_type = opts.pop('action_type')

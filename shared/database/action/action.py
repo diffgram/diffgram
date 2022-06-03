@@ -1,14 +1,28 @@
 from shared.database.common import *
 from shared.database.org.org import Org
 from shared.database.action.action_template import Action_Template
+from sqlalchemy.dialects.postgresql import JSONB
+from enum import Enum
+from sqlalchemy_serializer import SerializerMixin
 
-class Action(Base):
+
+class ActionTriggerEventTypes(Enum):
+    task_completed = 'task_completed'
+    task_created = 'task_created'
+    task_template_completed = 'task_template_completed'
+    input_file_uploaded = 'input_file_uploaded'
+    input_instance_uploaded = 'input_instance_uploaded'
+    action_completed = 'action_completed'
+
+
+class ActionKinds(Enum):
+    create_task = 'create_task'
+    export = 'export'
+
+
+class Action(Base, SerializerMixin):
     """
-
-    Instance of an action.
-    A flow has many actions.
-    An action has many (Action) Events
-
+        Each step of a workflow is called an action.
 
     """
 
@@ -26,30 +40,31 @@ class Action(Base):
     template_id = Column(Integer, ForeignKey('action_template.id'))
     template = relationship(Action_Template, foreign_keys = [template_id])
 
-    flow_id = Column(Integer, ForeignKey('action_flow.id'))
-    flow = relationship("Action_Flow", foreign_keys = [flow_id])
+    workflow_id = Column(Integer, ForeignKey('workflow.id'))
+    workflow = relationship("Workflow", foreign_keys = [workflow_id])
+
+    public_name = Column(String())
+
+    icon = Column(String())
+
+    description = Column(String())
+
+    trigger_data = Column(MutableDict.as_mutable(JSONB))
+
+    config_data = Column(MutableDict.as_mutable(JSONB))
+
+    condition_data = Column(MutableDict.as_mutable(JSONB))
+
+    completion_condition_data = Column(MutableDict.as_mutable(JSONB))
+
+    ordinal = Column(Integer)
 
     is_root = Column(Boolean)
     root_id = Column(Integer, ForeignKey('action.id'))
 
-    def root(self, session):
-        return Action.get_by_id(session, self.root_id)
-
     parent_id = Column(Integer, ForeignKey('action.id'))
 
-    def parent(self, session):
-        return Action.get_by_id_skip_project_security_check(
-            session, self.parent_id)
-
-    def child_list(self, session):
-        return session.query(Action).filter(
-            Action.parent_id == self.id).all()
-
     child_primary_id = Column(Integer, ForeignKey('action.id'))
-
-    def child_primary(self, session):
-        return Action.get_by_id_skip_project_security_check(
-            session, self.child_primary_id)
 
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")
@@ -131,14 +146,34 @@ class Action(Base):
     overlay_label_file = relationship("File", foreign_keys = [overlay_label_file_id])
 
     @staticmethod
+    def get_triggered_actions(session, trigger_kind: str, project_id = None):
+        from shared.database.action.workflow import Workflow
+        actions = session.query(Action).join(Workflow, Action.workflow_id == Workflow.id).filter(
+            Workflow.active == True,
+            Action.project_id == project_id,
+            Action.trigger_data['trigger_event_name'].astext == trigger_kind
+        ).all()
+        return actions
+
+
+    @staticmethod
     def new(
         session,
         project,
         kind,
-        org,
         member,
-        flow,
-        template
+        workflow,
+        template,
+        trigger_data,
+        icon,
+        description,
+        ordinal,
+        condition_data,
+        completion_condition_data,
+        public_name,
+        add_to_session = True,
+        flush_session = True
+
     ):
         """
         We default active to True for easier searching
@@ -147,19 +182,41 @@ class Action(Base):
         want to do that for success cases
         """
 
-        if flow is None:
+        if workflow is None:
             return False
 
         action = Action(
             active = True,
             kind = kind,
             project = project,
-            org = org,
             member_created = member,
-            flow = flow,
-            template = template
+            workflow = workflow,
+            template = template,
+            trigger_data = trigger_data,
+            icon = icon,
+            description = description,
+            ordinal = ordinal,
+            public_name = public_name,
+            condition_data = condition_data,
+            completion_condition_data = completion_condition_data,
         )
+        if add_to_session:
+            session.add(action)
 
+        if flush_session:
+            session.flush()
+
+        return action
+
+    def get_previous_action(self, session) -> 'Action':
+        ordinal = self.ordinal
+        if ordinal == 0:
+            return None
+        action = session.query(Action).filter(
+            Action.ordinal == ordinal - 1,
+            Action.workflow_id == self.workflow_id,
+            Action.project_id == self.project_id
+        ).first()
         return action
 
     # WIP WIP WIP
@@ -173,27 +230,18 @@ class Action(Base):
         Likely a better way so if you know one please speak up!
 
         """
+        data = self.to_dict(rules = (
+            '-template',
+            '-workflow',
+            '-project',
+            '-org',
+            '-count_label_file',
+            '-overlay_label_file',
+            '-overlay_image',
+            '-member_created',
+            '-member_updated'))
 
-        # Do we want to include all this other info by default or?
-
-        # Common start
-        action = {
-            'id': self.id,
-            'kind': self.kind,
-            'active': self.active,
-            'flow_id': self.flow_id,
-            'project_id': self.project_id,
-            'template_id': self.template_id
-        }
-
-        # Get kind specific attributes
-        kind_specific = self.kind_specific_strategy_operations_serialize.get(self.kind)
-        if kind_specific is None:
-            return "class Action Serialize Error. Error, no kind"
-
-        action[self.kind] = kind_specific(self)
-
-        return action
+        return data
 
     def serialize_file(self):
         pass
@@ -284,7 +332,7 @@ class Action(Base):
         """
 
         query = session.query(Action).filter(
-            Action.flow_id == flow_id,
+            Action.workflow_id == flow_id,
             Action.project_id == project_id,
             Action.archived == archived
         )
@@ -296,10 +344,15 @@ class Action(Base):
         query = query.order_by(Action.id)
 
         if return_kind == "count":
-            return query.limit(limit).count()
-
+            if limit:
+                return query.limit(limit).count()
+            else:
+                return query.count()
         if return_kind == "objects":
-            return query.limit(limit).all()
+            if limit:
+                return query.limit(limit).all()
+            else:
+                return query.all()
 
     @staticmethod
     def get_by_id(session,
@@ -329,3 +382,18 @@ class Action(Base):
 
         return session.query(Action).filter(
             Action.id == id).first()
+
+    def parent(self, session):
+        return Action.get_by_id_skip_project_security_check(
+            session, self.parent_id)
+
+    def child_list(self, session):
+        return session.query(Action).filter(
+            Action.parent_id == self.id).all()
+
+    def child_primary(self, session):
+        return Action.get_by_id_skip_project_security_check(
+            session, self.child_primary_id)
+
+    def root(self, session):
+        return Action.get_by_id(session, self.root_id)

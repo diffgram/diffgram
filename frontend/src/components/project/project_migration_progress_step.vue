@@ -2,8 +2,10 @@
   <v-container fluid class="d-flex flex-column align-center justify-center" style="min-height: 600px">
 
     <div v-if="progress_percentage < 100 && status === 'in_progress'" class="d-flex flex-column align-center justify-center" style="width: 100%">
-      <h1>Importing Project Data...</h1>
-      <p>This may take several minutes. Please be patient.</p>
+      <h1 class="pa-4">Importing...</h1>
+      <p>You may close this window without effecting the import.
+         This may take several minutes.
+         This screen will automatically update, or you can view the status on the list page. </p>
       <v-progress-linear
         color="secondary"
         striped
@@ -17,7 +19,7 @@
     <div style="width: 100%" v-else-if="progress_percentage >= 100" class="d-flex flex-column align-center justify-center">
       <v-icon size="256" color="success">mdi-check-decagram</v-icon>
       <h1 class="ma-8">Data Succesfully Migrated into Diffgram.</h1>
-      <v-btn x-large @click="$router.push(`/project/${project_string_id}/labels`)" color="primary">
+      <v-btn x-large @click="$router.push(`/project/${project_string_id}/labels?schema_id=${project_migration.label_schema_id}`)" color="primary">
         <v-icon>mdi-format-list-bulleted</v-icon>
         View Migrated Labels
       </v-btn>

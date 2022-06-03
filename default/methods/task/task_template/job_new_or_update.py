@@ -472,6 +472,12 @@ def job_update_core(session, job, project, input: dict, log: dict):
         if input.get('label_schema_id'):
             job.label_schema_id =input['label_schema_id']
             session.add(job)
+        if input.get('ui_schema_id'):
+            job.ui_schema_id =input['ui_schema_id']
+            session.add(job)
+        else:
+            job.ui_schema_id = None
+            session.add(job)
 
         if input['name']:
             job.name = input['name']
@@ -783,6 +789,7 @@ def new_or_update_core(session,
         'interface_connection_id': interface_connection_id,
         'pro_network': pro_network,
     }
+
     for field_key, field_val in fields_to_process.items():
         if is_updating and getattr(job, field_key) != field_val:
             setattr(job, field_key, field_val)

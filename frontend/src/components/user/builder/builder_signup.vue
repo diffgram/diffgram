@@ -124,7 +124,8 @@
                 </v-text-field>
               </v-flex>
 
-
+              <!-- Disable until event hub is re-setup in open source and if sales context warrants it -->
+              <!--
               <div style="width: 10px" />
 
               <diffgram_select
@@ -136,6 +137,7 @@
                   :disabled="loading"
                   >
               </diffgram_select>
+              -->
 
             </v-layout>
 

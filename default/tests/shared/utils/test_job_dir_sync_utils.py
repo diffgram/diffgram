@@ -54,7 +54,7 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
             log=log,
             job=job
         )
-        sync_manager._JobDirectorySyncManager__add_file_into_job(
+        sync_manager.add_file_into_job(
             file,
             directory,
             create_tasks=True
@@ -74,7 +74,7 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
         self.session.add(job)
         commit_with_rollback(self.session)
 
-        sync_manager._JobDirectorySyncManager__add_file_into_job(
+        sync_manager.add_file_into_job(
             file,
             directory,
             create_tasks=True
@@ -86,7 +86,7 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
         commit_with_rollback(self.session)
         # Retest for case of an existing file/task.
         mngr = SyncEventManager.create_sync_event_and_manager(session=self.session, status='started')
-        sync_manager._JobDirectorySyncManager__add_file_into_job(
+        sync_manager.add_file_into_job(
             file,
             directory,
             create_tasks=True,

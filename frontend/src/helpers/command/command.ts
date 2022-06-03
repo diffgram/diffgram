@@ -4,23 +4,33 @@ import { AudioAnnotationInstance } from "../../components/vue_canvas/instances/A
 import InstanceList from "../instance_list";
 import { CommandInterface } from "../interfaces/Command";
 import { InstanceInterface } from "../interfaces/InstanceData";
+import { Instance } from "../../components/vue_canvas/instances/Instance";
+import { GlobalAnnotationInstance } from "../../components/vue_canvas/instances/GlobalInstance";
 
 export abstract class Command implements CommandInterface {   
     protected instances: Array<InstanceInterface>;
     protected instance_list: InstanceList;
     protected replacement_indexes: Array<number> = [];
 
-    constructor(received_instances: Array<InstanceInterface>, instance_list: InstanceList) {
-        this.instances = received_instances.map(inst => {
-            this.replacement_indexes.push(instance_list.get_all().indexOf(inst))
-            return this._copyInstance(inst)
-        })
+    constructor(received_instances: Array<InstanceInterface>, instance_list: InstanceList, is_global: Boolean = false) {
+        if (is_global) {
+            this.instances = [...received_instances]
+        } else {
+            this.instances = received_instances.map(inst => {
+                this.replacement_indexes.push(instance_list.get_all().indexOf(inst))
+                return this._copyInstance(inst)
+            })
+        }
         this.instance_list = instance_list
     }
 
     protected _copyInstance(instance: InstanceInterface): InstanceInterface {
         let initializedInstance;
         let newInstance = instance.get_instance_data();
+
+        if (instance.type === "global") {
+            initializedInstance = new Instance()
+        }
 
         if (instance.type === "audio") {
             initializedInstance = new AudioAnnotationInstance()
@@ -47,6 +57,10 @@ export abstract class Command implements CommandInterface {
             instance.type === "geo_box"
         ) {
             initializedInstance = new GeoPoly(instance.type)
+        }
+
+        if (instance.type === "global") {
+            initializedInstance = new GlobalAnnotationInstance()
         }
 
         initializedInstance.populate_from_instance_obj(newInstance)

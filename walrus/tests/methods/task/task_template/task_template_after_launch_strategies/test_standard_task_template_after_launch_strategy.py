@@ -1,12 +1,10 @@
 from walrus.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
-from walrus.methods.task.task_template import task_template_launch_handler
 from walrus.methods.task.task_template.task_template_after_launch_strategies.standard_task_template_after_launch_strategy import \
     StandardTaskTemplateAfterLaunchStrategy
-from shared.database.task.job.job import Job
 from shared.database.task.task import Task
 from shared.regular import regular_log
-from shared.database.task.job.job_working_dir import JobWorkingDir
+
 
 class TestStandardTaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTestCase):
     """
@@ -49,9 +47,9 @@ class TestStandardTaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTest
             ]
         }, self.session)
         strategy = StandardTaskTemplateAfterLaunchStrategy(
-            task_template=job,
-            session=self.session,
-            log=regular_log.default()
+            task_template = job,
+            session = self.session,
+            log = regular_log.default()
         )
         strategy.execute_after_launch_strategy()
         self.session.commit()

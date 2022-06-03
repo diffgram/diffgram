@@ -125,10 +125,7 @@ def upgrade():
     op.create_index('index_label_schema_link_schema_id', 'label_schema_link', ['schema_id'])
     op.create_index('index_label_schema_link_label_file_id', 'label_schema_link', ['label_file_id'])
 
-    try:
-        op.create_index('index_attribute_template_project_id', 'attribute_template', ['project_id'])
-    except:
-        print("Already exists")
+    # op.create_index('index_attribute_template_project_id', 'attribute_template', ['project_id'])
     op.add_column('job', sa.Column('label_schema_id', sa.Integer, sa.ForeignKey('label_schema.id')))
     add_schemas_to_projects(op)
 

@@ -2,7 +2,8 @@
 from methods.regular.regular_api import *
 from shared.data_tools_core import Data_tools
 from shared.database.export import Export
-from methods.export.export_utils import check_export_permissions_and_status
+from shared.export.export_utils import check_export_permissions_and_status
+from shared.export.export_view import export_view_core
 from shared.regular import regular_log
 
 data_tools = Data_tools().data_tools
@@ -92,64 +93,6 @@ def export_link(project_string_id):
             return_type=input['return_type'])
 
         return jsonify(result), 200
-
-
-# CAUTION this is a private method - call check_export_permissions_and_status() in many cases
-def export_view_core(
-        export,
-        format="JSON",
-        return_type="url"
-):
-    """
-
-    class {Export} object
-
-    returns error message
-
-    else on success
-        returns json_data or URL to file
-
-    """
-
-    # TODO format string validation?
-
-    if export.kind == "Annotations":
-
-        if format == "JSON":
-            blob_name = export.json_blob_name
-
-        if format == "YAML":
-            blob_name = export.yaml_blob_name
-
-    if export.kind == "TF Records":
-        blob_name = export.tf_records_blob_name
-
-    expiration_offset = 60 * 5  # seconds
-
-    # TODO not clear what we want this flag to be...
-    # I think it should be seperate from format maybe?
-    # ie a new attribute like "return_kind" or something?
-    if return_type in ['data', 'bytes']:
-        # Caution this is in Bytes
-        blob_data = data_tools.get_string_from_blob(blob_name)
-
-        if return_type == 'bytes':
-            return blob_data
-
-        # We don't seem to need decode with json.loads()
-        # blob_data = blob_data.decode()
-
-        json_data = json.loads(blob_data)
-
-        return json_data
-
-    # Default case URL
-    url = data_tools.build_secure_url(
-        blob_name,
-        expiration_offset,
-        bucket="ml")
-    return url
-
 
 @routes.route('/api/walrus/project/<string:project_string_id>' +
               '/export/<int:export_id>/status',

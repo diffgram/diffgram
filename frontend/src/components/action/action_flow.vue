@@ -3,11 +3,6 @@
 
     <v-card>
       <v-container>
-
-        <!-- Flow level info -- >
-
-       <!-- email to send to (defaults to user email) -->
-
         <v-layout class="d-flex flex-column">
           <v-row class="d-flex justify-end align-center">
             <v-col cols="1" v-if="flow_id">
@@ -148,12 +143,12 @@
         </v-alert>
         -->
 
-        <flow_event_list
+        <workflow_run_list
           v-if="flow_id"
           :project_string_id="project_string_id"
           :flow_id="flow_id"
         >
-        </flow_event_list>
+        </workflow_run_list>
 
 
 
@@ -169,7 +164,7 @@
   import axios from '../../services/customInstance';
   import action_existing_list from './action_existing_list.vue';
   import upload from '../upload_large.vue';
-  import flow_event_list from './action_flow_event_list.vue';
+  import workflow_run_list from './workflow_run_list.vue';
 
 
   import Vue from "vue";
@@ -181,7 +176,7 @@
       components: {
         action_existing_list: action_existing_list,
         upload: upload,
-        flow_event_list: flow_event_list
+        workflow_run_list: workflow_run_list
       },
       props: {
         'project_string_id': {
@@ -262,7 +257,7 @@
 
           axios.post(
             '/api/v1/project/' + this.project_string_id +
-            '/action/flow/new',
+            '/actions/workflow/new',
             {
               name: this.flow.name,
               trigger_type: this.flow.trigger_type,
@@ -288,7 +283,7 @@
         change_trigger_type: function () {
 
         },
-        api_get_flow: function () {
+        api_get_workflow: function () {
 
           if (!this.flow_id) { return }
 
@@ -330,7 +325,7 @@
 
           axios.post(
             '/api/v1/project/' + this.project_string_id +
-            '/action/flow/update',
+            '/actions/workflow/update',
             {
               flow_id: this.flow_id ? Number(this.flow_id) : undefined,
               name: this.flow.name,

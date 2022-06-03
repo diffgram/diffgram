@@ -70,7 +70,7 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
     if not colour:
         colour = default_color()
 
-    project = Project.get(session, project_string_id)
+    schema = LabelSchema.get_by_id(session, schema_id,  project.id)
 
     label_file = File.new_label_file(
         session=session,
@@ -79,15 +79,12 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
         project=project,
         colour=colour,
         log=log,
+        schema = schema,
+        member = member
     )
 
     if not label_file:
         return None
-
-    schema = LabelSchema.get_by_id(session, schema_id)
-    schema.add_label_file(session = session, label_file_id = label_file.id, member_created_id = member.id)
-
-    member = get_member(session = session)
 
     Event.new(
         session = session,
@@ -114,24 +111,31 @@ def api_get_labels(project_string_id):
 
         project = Project.get_project(session, project_string_id)
         directory = project.directory_default
-        schema = LabelSchema.get_by_id(session = session, id = schema_id)
-        if schema and schema.project_id != project.id:
-            log['error']['project'] = 'Schema does not belong to this project'
-            return jsonify(log), 400
-        labels_out = project.get_label_list(session, directory = directory, schema_id = schema_id)
+        if schema_id:
+            schema = LabelSchema.get_by_id(session = session, id = schema_id, project_id = project.id)
+            if schema is None:
+                log['error']['project'] = 'Schema does not exist or does not belong to this project'
+                return jsonify(log), 400
+        else:
+            schema = LabelSchema.get_default(session = session, project_id = project.id)
+
+        labels_out = project.get_label_list(session, directory = directory, schema_id = schema.id)
         
         global_attribute_groups_serialized_list = project.get_global_attributes(
-            session = session, schema_id = schema_id)
+            session = session, schema_id = schema.id)
 
-        attribute_groups_serialized_list = project.get_attributes(session = session, schema_id = schema_id)
+        attribute_groups_serialized_list = project.get_attributes(session = session, schema_id = schema.id)
         
         # Assume can't easily sort this in sql because it's the label which is one layer below
         # labels_out.sort(key=lambda x: x['label']['name'])
+        
+        log['info']['schema'] = schema.serialize()
 
         return jsonify(labels_out = labels_out,
                        label_file_colour_map = directory.label_file_colour_map,
                        global_attribute_groups_list = global_attribute_groups_serialized_list,
-                       attribute_groups = attribute_groups_serialized_list
+                       attribute_groups = attribute_groups_serialized_list,
+                       log = log
                        ), 200
 
 
@@ -194,27 +198,6 @@ def label_edit(project_string_id):
 
         if existing_file is None:
             return jsonify("No file"), 400
-
-        if existing_file.committed is True:
-            return jsonify("File committed"), 400
-
-            # TODO # WIP WIP
-            new_file = File.copy_file_from_existing(
-                session,
-                working_dir,
-                existing_file)
-
-
-            label_file = File.new_label_file(
-                session = session,
-                name = name_proposed,
-                working_dir_id = project.directory_default_id,
-                project = project,
-                colour = colour_proposed,
-                log = log,
-                existing_file=new_file
-            )
-        # WIP
 
         if existing_file.committed is not True:
 
