@@ -577,6 +577,7 @@ def new_web(project_string_id):
             instance_type=input['instance_type'],
             launch_datetime=input['launch_datetime'],
             file_count=input['file_count'],
+            label_schema_id = input['label_schema_id'],
             label_file_list=input['label_file_list'],
             file_handling=input['file_handling'],
             job_type=input['type'],
