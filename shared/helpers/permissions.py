@@ -25,6 +25,7 @@ def LoggedIn():
         kc_client = KeycloakDiffgramClient()
         try:
             user = kc_client.get_user(access_token)
+            print('USE IS', user)
             if not user:
                 return False
             return True
@@ -32,7 +33,7 @@ def LoggedIn():
             err_data = traceback.format_exc()
             logger.error(err_data)
             return False
-        print('OIDC JWT IS', jwt)
+     
 
     else:
         if login_session.get('user_id', None) is not None:
@@ -45,21 +46,28 @@ def LoggedIn():
             return False
 
 
-# Maybe this should be in User class?
-def getUserID(session):
+def get_user_from_oidc(session):
     from shared.database.user import User
+    kc_client = KeycloakDiffgramClient()
+    jwt = login_session.get('jwt')
+    if jwt is None:
+        return None
+    access_token = jwt.get('access_token')
+    if access_token is None:
+        return None
+    oidc_user = kc_client.get_user(access_token = access_token)
+    if not oidc_user:
+        return None
+    diffgram_user = User.get_user_by_oidc_id(session = session,
+                                             oidc_id = oidc_user.get('sub'))
+    if not diffgram_user:
+        return None
+    return diffgram_user.id
+
+
+def getUserID(session):
     if settings.USE_OIDC:
-        kc_client = KeycloakDiffgramClient()
-        jwt = login_session.get('jwt')
-        access_token = jwt.get('access_token')
-        oidc_user = kc_client.get_user(access_token = access_token)
-        if not oidc_user:
-            return None
-        diffgram_user = User.get_user_by_oidc_id(session = session,
-                                                 oidc_id = oidc_user.get('sub'))
-        if not diffgram_user:
-            return None
-        return diffgram_user.id
+        return get_user_from_oidc(session = session)
     else:
         if login_session.get('user_id', None) is not None:
             out = hashing_functions.check_secure_val(login_session['user_id'])

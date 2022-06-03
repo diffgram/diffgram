@@ -277,6 +277,7 @@ export default Vue.extend({
     const { use_oidc, login_url } = await is_oidc_set();
     if(use_oidc){
       window.location.replace(login_url);
+      return
     }
     this.render_default_login = true;
     this.mailgun = mailgun;

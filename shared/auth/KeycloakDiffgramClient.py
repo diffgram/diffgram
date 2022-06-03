@@ -18,6 +18,9 @@ class KeycloakDiffgramClient:
                                        realm_name = settings.OIDC_PROVIDER_REALM,
                                        client_secret_key = 'fPgFGua2uXUkYlvKRSIchOCEZly4Qld8')
 
+    def logout(self, refresh_token):
+        self.keycloak.logout(refresh_token)
+
     def get_login_url(self):
         return self.keycloak.auth_url(redirect_uri = REDIRECT_URI_DIFFGRAM)
 
