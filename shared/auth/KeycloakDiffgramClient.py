@@ -16,7 +16,7 @@ class KeycloakDiffgramClient:
         self.keycloak = KeycloakOpenID(server_url = settings.OIDC_PROVIDER_HOST,
                                        client_id = settings.OIDC_PROVIDER_CLIENT_ID,
                                        realm_name = settings.OIDC_PROVIDER_REALM,
-                                       client_secret_key = 'fPgFGua2uXUkYlvKRSIchOCEZly4Qld8')
+                                       client_secret_key = settings.OIDC_PROVIDER_SECRET)
 
     def refresh_token(self, token):
         return self.keycloak.refresh_token(refresh_token = token)
