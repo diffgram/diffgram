@@ -55,6 +55,10 @@ describe("text_sidebar.vue", () => {
     })
 
     it("Should successfully change state of open panels", () => {
+        wrapper.setData({
+            open_panels: [1]
+        })
+        
         wrapper.vm.on_change_expansion(0)
         expect(wrapper.vm.open_panels).toContain(0)
         wrapper.vm.on_change_expansion(0)
