@@ -261,19 +261,19 @@ export default Vue.extend({
         },
         attribute_group_list_prop: function () {
 
-        if (!this.label_list
-          || !this.current_instance
-          || !this.per_instance_attribute_groups_list
-          || !this.current_instance.label_file) {
-          return []
-        }
+            if (!this.label_list
+                || !this.current_instance
+                || !this.per_instance_attribute_groups_list
+                || !this.current_instance.label_file) {
+                    return []
+            }
 
-        let attr_group_list = this.per_instance_attribute_groups_list.filter(elm =>{
-          let file_id_list = elm.label_file_list.map(label_file => label_file.id)
-          return file_id_list.includes(this.current_instance.label_file.id)
-        })
-        return attr_group_list;
+            let attr_group_list = this.per_instance_attribute_groups_list.filter(elm =>{
+                let file_id_list = elm.label_file_list.map(label_file => label_file.id)
+                return file_id_list.includes(this.current_instance.label_file.id)
+            })
 
+            return attr_group_list;
       },
       attribute_change: function(event, is_global = false) {
           this.$emit('on_update_attribute', event, is_global)

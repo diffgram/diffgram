@@ -535,7 +535,6 @@ export default Vue.extend({
         }
       })
 
-
       if (newly_created_instances.length > 0) {
         this.new_instance_list.push(newly_created_instances)
         const new_command = new CreateInstanceCommand(newly_created_instances, this.new_instance_list)
