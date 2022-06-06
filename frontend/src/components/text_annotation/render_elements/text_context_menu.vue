@@ -18,7 +18,7 @@
             </div>
             <v-list dense>
                 <v-list-item-group>
-                    <v-list-item @click="on_delete">
+                    <v-list-item id="delete_item" @click="on_delete">
                         <v-list-item-content>
                             <div class="list-item">
                                 Delete
