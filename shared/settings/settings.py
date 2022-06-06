@@ -189,6 +189,8 @@ OIDC_PROVIDER_CLIENT_ID = os.getenv('OIDC_PROVIDER_CLIENT_ID', 'diffgram')
 OIDC_PROVIDER_PUBLIC_KEY = os.getenv('OIDC_PROVIDER_PUBLIC_KEY', 'diffgram_public_key')
 OIDC_PROVIDER_SECRET = os.getenv('OIDC_PROVIDER_SECRET', 'diffgram_secret_key')
 OIDC_PROVIDER_REALM = os.getenv('OIDC_PROVIDER_REALM', 'mydiffgramrealm')
+KEY_CLOAK_USER = os.getenv('KEY_CLOAK_USER', 'admin')
+KEY_CLOAK_PASSWORD = os.getenv('KEY_CLOAK_PASSWORD', 'admin')
 
 
 # Minio Only Allow Expiry time is less than 7 days (value in seconds).
