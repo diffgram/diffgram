@@ -84,7 +84,8 @@ def web_export_to_file(project_string_id):
             ann_is_complete = input['ann_is_complete'],
             wait_for_export_generation = input['wait_for_export_generation'],
             return_type = input['return_type'],
-            log = log
+            log = log,
+            member_id = get_member(session = session).id
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400

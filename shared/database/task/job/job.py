@@ -746,7 +746,7 @@ class Job(Base, Caching):
         schema_data = None
 
         if self.label_schema_id:
-            schema = LabelSchema.get_by_id(session = session, id = self.label_schema_id)
+            schema = LabelSchema.get_by_id(session = session, id = self.label_schema_id, project_id = self.project_id)
             schema_data = schema.serialize()
         ui_schema_data = None
         if self.ui_schema_id:
@@ -813,7 +813,7 @@ class Job(Base, Caching):
         schema_data = None
 
         if self.label_schema_id:
-            schema = LabelSchema.get_by_id(session = session, id = self.label_schema_id)
+            schema = LabelSchema.get_by_id(session = session, id = self.label_schema_id, project_id = self.project_id)
             schema_data = schema.serialize()
         if session:
             member_list_ids = self.get_with_cache(
@@ -926,7 +926,7 @@ class Job(Base, Caching):
                 session = session,
                 miss_function_args = {'session': session})
             if self.label_schema_id:
-                schema = LabelSchema.get_by_id(session, self.label_schema_id)
+                schema = LabelSchema.get_by_id(session, self.label_schema_id, project_id = self.project_id)
                 label_schema_data = schema.serialize()
         return {
             'id': self.id,

@@ -76,7 +76,8 @@ def label_schema_new_core(session: Session,
         session = session,
         project_id = project.id,
         name = name,
-        member_created_id = member.id
+        member_created_id = member.id,
+        is_default = False
     )
 
     result = schema.serialize()

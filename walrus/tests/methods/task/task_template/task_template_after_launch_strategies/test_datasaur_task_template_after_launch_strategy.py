@@ -34,6 +34,12 @@ class TestScaleAITaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTestC
         self.project = self.project_data['project']
 
     def test_execute_after_launch_strategy(self):
+
+
+        return
+        # we can use this test as a reference
+        # if we want to build a "migrate from datasaur" thing
+
         file = data_mocking.create_file({'project_id': self.project.id, 'type': 'text'}, self.session)
         label = data_mocking.create_label({
             'name': 'mylabel',
