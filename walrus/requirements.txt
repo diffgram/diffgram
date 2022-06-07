@@ -41,3 +41,4 @@ gdal-utils
 pika
 azure-ai-textanalytics
 python-keycloak
+pyjwt
