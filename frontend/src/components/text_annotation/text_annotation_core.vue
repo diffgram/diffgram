@@ -212,6 +212,7 @@
               v-for="(token, token_index) in tokens.filter(token => token.line === index)"
               :id="token.id"
               :key="`line_${index}token_${token_index}`"
+              :data-cy="`token_${token_index}_line_${index}`"
               :x="token.start_x"
               :fill="hover_instance &&
                             (

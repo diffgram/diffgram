@@ -18,10 +18,11 @@ describe('Annotation Text Interface display', () => {
 
     it('Displays a Text file', () => {
       cy.upload_text_file(testUser.project_string_id);
-    //   cy.get('[data-cy="3d-editor-container"]').should('be.visible');
+      cy.get('[data-cy="token_1_line_1"]').should('be.visible');
+      cy.wait(200)
+      cy.get('[data-cy="token_1_line_1"]').click()
     //   cy.get('[data-cy="sidebar-left-container"]').should('be.visible');
     //   cy.get('[data-cy="secondary_3d_canvas_container"]').should('be.visible');
-    //   cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
     })
 
     // it('Displays Mini Cameras for 3D Scene', () =>{
