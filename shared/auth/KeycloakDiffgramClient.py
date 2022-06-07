@@ -1,6 +1,6 @@
 from keycloak import KeycloakOpenID
 from keycloak.keycloak_admin import KeycloakAdmin
-
+from enum import Enum
 from shared.settings import settings
 import jwt
 from shared.shared_logger import get_shared_logger
@@ -10,16 +10,17 @@ logger = get_shared_logger()
 
 REDIRECT_URI_DIFFGRAM = f'{settings.URL_BASE}user/oidc-login'
 
-DEFAULT_PROJECT_ROLES = [
-    "admin",
-    "viewer",
-    "editor"
-]
 
-DEFAULT_GLOBAL_ROLES = [
-    "normal_user",
-    "super_admin",
-]
+class DefaultProjectRoles(Enum):
+    admin = 'admin'
+    viewer = 'viewer'
+    editor = 'editor'
+
+
+class DefaultGlobalRoles(Enum):
+    normal_user = 'normal_user'
+    super_admin = 'super_admin'
+
 
 class KeycloakDiffgramClient:
     keycloak: KeycloakOpenID
@@ -29,6 +30,9 @@ class KeycloakDiffgramClient:
                                        client_id = settings.OIDC_PROVIDER_CLIENT_ID,
                                        realm_name = settings.OIDC_PROVIDER_REALM,
                                        client_secret_key = settings.OIDC_PROVIDER_SECRET)
+        self.keycloak_admin_master = KeycloakAdmin(server_url = settings.OIDC_PROVIDER_HOST,
+                                                   username = settings.KEY_CLOAK_MASTER_USER,
+                                                   password = settings.KEY_CLOAK_MASTER_PASSWORD)
 
     def setup_keycloak_diffgram_install(self):
         """
@@ -37,18 +41,89 @@ class KeycloakDiffgramClient:
         :return:
         """
         # Create a new Realm
-        keycloak_admin = KeycloakAdmin(server_url = settings.OIDC_PROVIDER_HOST,
-                                       username = settings.KEY_CLOAK_USER,
-                                       password = settings.KEY_CLOAK_PASSWORD,
-                                       realm_name = settings.OIDC_PROVIDER_REALM,
-                                       client_secret_key = settings.OIDC_PROVIDER_SECRET,
-                                       verify = True)
-        keycloak_admin.create_realm(payload = {"realm": settings.OIDC_PROVIDER_REALM}, skip_exists = True)
-        keycloak_admin.create_client(payload = {"realm-name": settings.OIDC_PROVIDER_REALM}, skip_exists = True)
+        self.__create_diffgram_default_realm()
 
-        for role_name in DEFAULT_PROJECT_ROLES:
-            keycloak_admin.create_client_role(client_role_id = settings.OIDC_PROVIDER_CLIENT_ID,
-                                              payload = {'name': 'roleName', 'clientRole': True})
+        # Create diffgram realm user
+        user_id = self.__create_admin_user()
+
+        # Create diffgram keycloak client.
+        client_id = self.__create_default_diffgram_client()
+
+        # Create default roles
+        global_roles = self.__create_default_global_roles(client_id = client_id)
+        logger.info(f'Added global roles: {global_roles}')
+
+        # keycloak_admin.add_composite_client_roles_to_role()
+        normal_user_role_name = DefaultGlobalRoles.normal_user.value
+        project_roles = self.__create_default_project_roles(normal_user_role = normal_user_role_name,
+                                                            client_id = client_id)
+        logger.info(f'Added project roles: {project_roles}')
+
+    def __create_diffgram_default_realm(self) -> str:
+        realm_id = self.keycloak_admin_master.create_realm(
+            payload = {"realm": settings.OIDC_PROVIDER_REALM, 'enabled': True},
+            skip_exists = True)
+        return realm_id
+
+    def __create_admin_user(self) -> str:
+
+        self.keycloak_admin_master.realm_name = settings.OIDC_PROVIDER_REALM
+        user_id = self.keycloak_admin_master.create_user(payload = {
+            'username': settings.KEY_CLOAK_DIFFGRAM_USER,
+            'enabled': True,
+        },
+            exist_ok = True)
+        logger.info(f'Fetched Keycloak Admin User {user_id}')
+        self.keycloak_admin_master.set_user_password(user_id = user_id,
+                                                     password = settings.KEY_CLOAK_DIFFGRAM_PASSWORD,
+                                                     temporary = False)
+        return user_id
+
+    def __create_default_diffgram_client(self) -> str:
+        logger.info(f'Creating client {settings.OIDC_PROVIDER_CLIENT_ID}')
+        client_id = self.keycloak_admin_master.create_client(
+            payload = {'name': settings.OIDC_PROVIDER_CLIENT_ID,
+                       'id': settings.OIDC_PROVIDER_CLIENT_ID},
+            skip_exists = True)
+        self.keycloak_admin_master.update_client(client_id,
+                                                 {'authorizationServicesEnabled': True,
+                                                  'serviceAccountsEnabled': True,
+                                                  'redirectUris': [REDIRECT_URI_DIFFGRAM],
+                                                  })
+        logger.info(f'Fetched Keycloak Client for Diffgram:  {client_id}')
+        return client_id
+
+    def __create_default_global_roles(self, client_id) -> list:
+        created_role_ids = []
+        for enum_item in DefaultGlobalRoles:
+            res = self.keycloak_admin_master.create_client_role(client_role_id = client_id,
+                                                                payload = {'name': enum_item.value,
+                                                                           'clientRole': True},
+                                                                skip_exists = True)
+            created_role_ids.append(res)
+        return created_role_ids
+
+    def __create_default_project_roles(self, normal_user_role, client_id) -> list:
+        created_role_ids = []
+        role = self.keycloak_admin_master.get_client_role(
+            client_id = client_id,
+            role_name = normal_user_role
+        )
+        for enum_item in DefaultProjectRoles:
+            res = self.keycloak_admin_master.create_client_role(client_role_id = client_id,
+                                                                payload = {'name': enum_item.value,
+                                                                           'clientRole': True},
+                                                                skip_exists = True)
+            created_role = self.keycloak_admin_master.get_client_role(
+                client_id = client_id,
+                role_name = enum_item.value
+            )
+            res = self.keycloak_admin_master.add_composite_client_roles_to_role(client_role_id = client_id,
+                                                                                role_name = enum_item.value,
+                                                                                roles = [{'name': normal_user_role,
+                                                                                          "id": role.get('id')}])
+            created_role_ids.append(res)
+        return created_role_ids
 
     def refresh_token(self, token):
         return self.keycloak.refresh_token(refresh_token = token)

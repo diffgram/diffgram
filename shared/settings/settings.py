@@ -184,13 +184,17 @@ SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFF
 
 # Keycloak / OIDC Settings
 USE_OIDC = env_adapter.bool(os.getenv('USE_OIDC', False))
+USE_KEYCLOAK_AUTHORIZATION = env_adapter.bool(os.getenv('USE_KEYCLOAK_AUTHORIZATION', False))
 OIDC_PROVIDER_HOST = os.getenv('OIDC_PROVIDER_HOST', 'http://localhost:8099/auth/')
 OIDC_PROVIDER_CLIENT_ID = os.getenv('OIDC_PROVIDER_CLIENT_ID', 'diffgram')
 OIDC_PROVIDER_PUBLIC_KEY = os.getenv('OIDC_PROVIDER_PUBLIC_KEY', 'diffgram_public_key')
 OIDC_PROVIDER_SECRET = os.getenv('OIDC_PROVIDER_SECRET', 'diffgram_secret_key')
-OIDC_PROVIDER_REALM = os.getenv('OIDC_PROVIDER_REALM', 'mydiffgramrealm')
-KEY_CLOAK_USER = os.getenv('KEY_CLOAK_USER', 'admin')
-KEY_CLOAK_PASSWORD = os.getenv('KEY_CLOAK_PASSWORD', 'admin')
+OIDC_PROVIDER_REALM = os.getenv('OIDC_PROVIDER_REALM', 'diffgram-realm')
+KEY_CLOAK_MASTER_USER = os.getenv('KEY_CLOAK_MASTER_USER', 'admin')
+KEY_CLOAK_MASTER_PASSWORD = os.getenv('KEY_CLOAK_MASTER_PASSWORD', 'admin')
+
+KEY_CLOAK_DIFFGRAM_USER = os.getenv('KEY_CLOAK_DIFFGRAM_USER', 'diffgram')
+KEY_CLOAK_DIFFGRAM_PASSWORD = os.getenv('KEY_CLOAK_DIFFGRAM_PASSWORD', 'diffgram')
 
 
 # Minio Only Allow Expiry time is less than 7 days (value in seconds).
