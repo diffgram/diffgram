@@ -1333,7 +1333,7 @@ class Annotation_Update():
                         radius = None,
                         bounds = None,
                         bounds_lonlat = None,
-                        score: None
+                        score = None
                         ):
         """
         Assumes a "system" level context
