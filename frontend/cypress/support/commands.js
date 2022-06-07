@@ -796,7 +796,7 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
 
 });
 
-Cypress.Commands.add('upload_text_file', function (project_string_id, file_name = `${uuidv4()}.json`) {
+Cypress.Commands.add('upload_text_file', function (project_string_id, file_name = `${uuidv4()}.txt`) {
   cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`);
   cy.get('[data-cy=start_upload_wizard]').click({force: true});
   cy.wait(700);
@@ -809,7 +809,7 @@ Cypress.Commands.add('upload_text_file', function (project_string_id, file_name 
   cy.get('[data-cy=with_no_pre_labels_button]').click({force: true});
   const fileFixture = {
     filePath: './test-text/text_sample.txt',
-    fileName: `text_sample.txt`,
+    fileName: file_name,
   }
   cy.get('.dz-hidden-input').attachFile(fileFixture)
   cy.wait(1000);
