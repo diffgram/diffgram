@@ -10,14 +10,12 @@ from shared.annotation import Annotation_Update
 import hmac
 import hashlib
 from shared.database.external.external import ExternalMap
-from shared.database.task.job.job import Job
 from shared.database.task.job.job_working_dir import JobWorkingDir
 from shared.utils.task import task_complete
-from methods.connectors.connectors import ConnectorManager
+from shared.connection.connection_strategy import ConnectionStrategy
 from methods.input.packet import enqueue_packet
 from shared.regular.regular_log import result_has_error
 from shared.regular import regular_log
-from shared.database.auth.member import Member
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.attribute.attribute_template import Attribute_Template
 from shared.database.attribute.attribute_template_group_to_file import Attribute_Template_Group_to_File
@@ -1864,8 +1862,7 @@ def labelbox_web_hook_manager():
             if task_template:
                 connection = task_template.interface_connection
                 logger.debug(f"Connection for labelbox: {connection}")
-                connector_manager = ConnectorManager(connection = connection, session = session)
-                connector = connector_manager.get_connector_instance()
+                connector = ConnectionStrategy(connection=connection, session=session).get_connector()
                 connector.connect()
                 sync_manager = LabelBoxSyncManager(
                     session = session,

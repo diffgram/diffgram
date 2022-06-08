@@ -2,7 +2,7 @@
 from methods.regular.regular_api import *
 from methods.task.task_template.task_template_after_launch_strategies.task_template_after_launch_strategy import \
     TaskTemplateAfterLaunchStrategy
-from methods.connectors.connectors import ConnectorManager
+from shared.connection.connection_strategy import ConnectionStrategy
 from methods.connectors.labelbox_connector import LabelBoxSyncManager
 from methods.task.task_template.task_template_after_launch_strategies.standard_task_template_after_launch_strategy import \
     StandardTaskTemplateAfterLaunchStrategy
@@ -211,8 +211,7 @@ class LabelboxTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
             # Otherwise, we would need request context here, which we don't have.
             connection = self.task_template.interface_connection
             logger.debug(f"Connection for labelbox: {connection}")
-            connector_manager = ConnectorManager(connection=connection, session=self.session)
-            connector = connector_manager.get_connector_instance()
+            connector, success = ConnectionStrategy(connection=connection, session=self.session).get_connector()
             connector.connect()
 
             # First we create a project

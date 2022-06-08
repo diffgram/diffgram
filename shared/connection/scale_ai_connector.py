@@ -5,7 +5,7 @@ import requests
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from shared.regular import regular_log
 from shared.permissions.task_permissions import Permission_Task
-from methods.connectors.connectors import ConnectorManager
+from shared.connection.connection_strategy import ConnectionStrategy
 from shared.database.task.job.job import Job
 from shared.database.external.external import ExternalMap
 from methods.input.packet import enqueue_packet
@@ -472,8 +472,7 @@ def send_task_to_scale_ai():
             task_template = task.job
             connection = task_template.interface_connection
             logger.debug(f"Connection for ScaleAI: {connection}")
-            connector_manager = ConnectorManager(connection=connection, session=session)
-            connector = connector_manager.get_connector_instance()
+            connector = ConnectionStrategy(connection=connection, session=self.session).get_connector()
             connector.connect()
 
             scale_ai_sync_manager = ScaleAISyncManager(

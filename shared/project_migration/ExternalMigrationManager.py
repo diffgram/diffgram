@@ -57,7 +57,9 @@ class ExternalMigrationManager:
     def __start_labelbox_project_migration(self):
         labelbox_project_id = self.project_migration.external_mapping_project.external_id
         logger.info(f'Starting project migration from labelbox external project: {labelbox_project_id}')
-        connector, success = get_connector(session = self.session, connector_id = self.project_migration.connection_id, check_perms = False)
+        connector, success = ConnectionStrategy(connection=connection, session=self.session).get_connector(
+            connector_id = self.project_migration.connection_id, 
+            check_perms = False)
         if not success:
             message = f'Failed to get Connector for ID {self.project_migration.connection_id}'
             self.__set_migration_failure('connector_creation', message)
