@@ -24,13 +24,13 @@ class ConnectionStrategy:
 
 
     def set_class():
-        if self.connection_class:
-            return
-
         # The Context is that for some of the storage ones with similar patterns we use the strategy pattern
         # For other classes we still want to follow the connection and test pattern
         # But Already know the class so can just pass it at setup
         # This also removes need to add all to strategy mapping unless good reason like with storage where pattern is so similar
+
+        if self.connection_class:
+            return
 
         if self.integration_name:
             self.connector_class = CONNECTIONS_MAPPING[self.integration_name]
@@ -44,7 +44,7 @@ class ConnectionStrategy:
             member=None,
             connection_id=connector_id
         )
-        self.connection = connection_operations.get_existing_connection(connector_id)
+        self.connection = self.connection_operations.get_existing_connection(connector_id)
         if check_perms:
             self.connection_operations.validate_existing_connection_id_permissions()
 
