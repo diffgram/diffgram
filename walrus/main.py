@@ -36,8 +36,6 @@ from shared.export.export_generation import new_external_export
 from methods.export.export_view import export_list
 
 from methods.video.interpolation import interpolate_all_frames
-from methods.connectors.labelbox_connector import labelbox_web_hook_manager
-from methods.connectors.scale_ai_connector import send_task_to_scale_ai, task_completed_scaleai
 
 from methods.interservice.interservice_receive_api import interservice_receive_api
 from methods.data_mocking.generate_data import generate_data_api

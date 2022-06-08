@@ -3,7 +3,6 @@ from methods.regular.regular_api import *
 from methods.task.task_template.task_template_after_launch_strategies.task_template_after_launch_strategy import \
     TaskTemplateAfterLaunchStrategy
 from shared.connection.connection_strategy import ConnectionStrategy
-from methods.connectors.labelbox_connector import LabelBoxSyncManager
 from methods.task.task_template.task_template_after_launch_strategies.standard_task_template_after_launch_strategy import \
     StandardTaskTemplateAfterLaunchStrategy
 from shared.database.external.external import ExternalMap
