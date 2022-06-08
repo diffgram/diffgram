@@ -2,7 +2,8 @@ from shared.database.project_migration.project_migration import ProjectMigration
 from shared.helpers.sessionMaker import session_scope_threaded
 from sqlalchemy.orm.session import Session
 from shared.shared_logger import get_shared_logger
-from methods.connectors.connector_interface_utils import get_connector
+from shared.connection.connection_strategy import ConnectionStrategy
+from shared.connection.labelbox_connector import LabelboxConnector
 from shared.helpers import sessionMaker
 import threading
 import traceback
@@ -57,7 +58,11 @@ class ExternalMigrationManager:
     def __start_labelbox_project_migration(self):
         labelbox_project_id = self.project_migration.external_mapping_project.external_id
         logger.info(f'Starting project migration from labelbox external project: {labelbox_project_id}')
-        connector, success = ConnectionStrategy(connection=connection, session=self.session).get_connector(
+        connection_strategy = ConnectionStrategy(
+            connection_class = LabelboxConnector, 
+            connection = connection, 
+            session = self.session)
+        connector, success = connection_strategy.get_connector(
             connector_id = self.project_migration.connection_id, 
             check_perms = False)
         if not success:

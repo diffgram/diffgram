@@ -30,6 +30,7 @@ class ConnectionStrategy:
         # The Context is that for some of the storage ones with similar patterns we use the strategy pattern
         # For other classes we still want to follow the connection and test pattern
         # But Already know the class so can just pass it at setup
+        # This also removes need to add all to strategy mapping unless good reason like with storage where pattern is so similar
 
         if self.integration_name:
             self.connector_class = CONNECTIONS_MAPPING[self.integration_name]
