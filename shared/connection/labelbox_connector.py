@@ -1829,56 +1829,58 @@ class LabelBoxSyncManager:
                 self.add_files_to_labelbox_dataset(diffgram_files = file_list, labelbox_dataset = labelbox_dataset)
 
 
+
 # Deprecated
-@routes.route('/api/walrus/v1/webhooks/labelbox-webhook', methods = ['POST'])
-def labelbox_web_hook_manager():
-    """
-        Webhook for receiving data on Diffgram once finished on labelbox.
-        # NOTE: Labelbox does not supportText or dropdown classifications in export for videos.
-    :return:
-    """
-    # First check if secret is correct
-    payload = request.data
-    secret = settings.LABEL_BOX_SECRET
-    log = regular_log.default()
-    computed_signature = hmac.new(bytearray(secret.encode('utf-8')), msg = payload,
-                                  digestmod = hashlib.sha1).hexdigest()
-    if request.headers['X-Hub-Signature'] != f"sha1={computed_signature}":
-        error = 'Error: computed_signature does not match signature provided in the headers'
-        logger.error('Error: computed_signature does not match signature provided in the headers')
-        return error
-    with sessionMaker.session_scope() as session:
-        labelbox_event = request.headers['X-Labelbox-Event']
-        payload = request.json
-        logger.debug(f"Payload for labelbox webhooks: {payload}")
-        labelbox_project_id = payload['project']['id']
-        project_external_mapping = ExternalMap.get(
-            session = session,
-            external_id = labelbox_project_id,
-            type = 'labelbox',
-            diffgram_class_string = 'task_template'
-        )
-        if project_external_mapping:
-            task_template = Job.get_by_id(session, project_external_mapping.job_id)
-            if task_template:
-                connection = task_template.interface_connection
-                logger.debug(f"Connection for labelbox: {connection}")
-                connector = ConnectionStrategy(connection_class = LabelboxConnector,
-                                               connection=connection, 
-                                               session=session).get_connector()
-                connector.connect()
-                sync_manager = LabelBoxSyncManager(
-                    session = session,
-                    task_template = task_template,
-                    labelbox_project = None,
-                    log = log,
-                    labelbox_connector = connector
-                )
-                sync_manager.handle_task_creation_hook(payload)
-                return jsonify({'message': 'OK.'})
-            else:
-                log['error']['task_template'] = 'Task template not found.'
-                return jsonify(log)
-        else:
-            log['error']['labelbox_project'] = 'Labelbox external mapping not found.'
-            return jsonify(log)
+# This would belong in a different area if we brought it back not in connector which is in shared now
+#@routes.route('/api/walrus/v1/webhooks/labelbox-webhook', methods = ['POST'])
+#def labelbox_web_hook_manager():
+#    """
+#        Webhook for receiving data on Diffgram once finished on labelbox.
+#        # NOTE: Labelbox does not supportText or dropdown classifications in export for videos.
+#    :return:
+#    """
+#    # First check if secret is correct
+#    payload = request.data
+#    secret = settings.LABEL_BOX_SECRET
+#    log = regular_log.default()
+#    computed_signature = hmac.new(bytearray(secret.encode('utf-8')), msg = payload,
+#                                  digestmod = hashlib.sha1).hexdigest()
+#    if request.headers['X-Hub-Signature'] != f"sha1={computed_signature}":
+#        error = 'Error: computed_signature does not match signature provided in the headers'
+#        logger.error('Error: computed_signature does not match signature provided in the headers')
+#        return error
+#    with sessionMaker.session_scope() as session:
+#        labelbox_event = request.headers['X-Labelbox-Event']
+#        payload = request.json
+#        logger.debug(f"Payload for labelbox webhooks: {payload}")
+#        labelbox_project_id = payload['project']['id']
+#        project_external_mapping = ExternalMap.get(
+#            session = session,
+#            external_id = labelbox_project_id,
+#            type = 'labelbox',
+#            diffgram_class_string = 'task_template'
+#        )
+#        if project_external_mapping:
+#            task_template = Job.get_by_id(session, project_external_mapping.job_id)
+#            if task_template:
+#                connection = task_template.interface_connection
+#                logger.debug(f"Connection for labelbox: {connection}")
+#                connector = ConnectionStrategy(connection_class = LabelboxConnector,
+#                                               connection=connection, 
+#                                               session=session).get_connector()
+#                connector.connect()
+#                sync_manager = LabelBoxSyncManager(
+#                    session = session,
+#                    task_template = task_template,
+#                    labelbox_project = None,
+#                    log = log,
+#                    labelbox_connector = connector
+#                )
+#                sync_manager.handle_task_creation_hook(payload)
+#                return jsonify({'message': 'OK.'})
+#            else:
+#                log['error']['task_template'] = 'Task template not found.'
+#                return jsonify(log)
+#        else:
+#            log['error']['labelbox_project'] = 'Labelbox external mapping not found.'
+#            return jsonify(log)
