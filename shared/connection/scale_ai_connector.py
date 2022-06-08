@@ -1,6 +1,6 @@
 # OPENCORE - ADD
 import scaleapi
-from methods.regular.regular_api import *
+from shared.regular.regular_api import *
 import requests
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from shared.regular import regular_log

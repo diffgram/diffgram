@@ -6,6 +6,7 @@ import mimetypes
 import requests
 import traceback
 
+from shared.regular.regular_api import *
 from azure.storage.blob import BlobBlock, BlobServiceClient, ContentSettings, StorageStreamDownloader
 from azure.storage.blob._models import BlobSasPermissions
 from azure.storage.blob._shared_access_signature import BlobSharedAccessSignature
@@ -15,7 +16,7 @@ from shared.database.auth.member import Member
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from methods.input import packet
 from pathlib import Path
-from methods.export.export_view import export_view_core
+from shared.export.export_view import export_view_core
 from shared.database.export import Export
 from shared.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.regular import regular_log

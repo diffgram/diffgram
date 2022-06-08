@@ -1,5 +1,6 @@
 # OPENCORE - ADD
-from shared.database.auth.member import Member
+from shared.regular.regular_api import *
+
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from shared.regular import regular_log
 from dataclasses import dataclass
