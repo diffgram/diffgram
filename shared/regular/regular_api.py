@@ -9,7 +9,7 @@ from typing import Any
 from shared.settings import settings
 from shared.helpers import sessionMaker
 
-
+from shared.database.auth.member import Member
 from shared.database.user import User
 from shared.database.project import Project
 from shared.database.source_control.working_dir import WorkingDir
@@ -43,3 +43,9 @@ from shared.database.task.job.job import Job
 from shared.database.task.task import Task
 
 from shared.database.labels.label_schema import LabelSchema
+from shared.utils.logging import DiffgramLogger
+
+abstract_logger = DiffgramLogger('shared')
+abstract_logger.configure_concrete_logger(
+	system_mode = settings.DIFFGRAM_SYSTEM_MODE)
+logger = abstract_logger.get_concrete_logger()
