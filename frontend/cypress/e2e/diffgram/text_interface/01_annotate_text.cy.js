@@ -37,5 +37,13 @@ describe('Annotation Text Interface display', () => {
       cy.realType("3");
       cy.get('[data-cy="text_label_2"]').should('be.visible')
     })
+
+    it('Deletes instance from the context menu', () => {
+      cy.wait(500) 
+      cy.get('[data-cy="text_label_0"]').rightclick({force: true})
+      cy.get('[data-cy="delete-instance-from-context"]').click({force: true})
+      cy.get('[data-cy="text_label_1"]').should('not.exist')
+      cy.get('[data-cy="text_label_2"]').should('not.exist')
+    })
   })
 })
