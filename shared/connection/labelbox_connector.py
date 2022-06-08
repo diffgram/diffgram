@@ -1,5 +1,5 @@
 # OPENCORE - ADD
-from methods.regular.regular_api import *
+from shared.database.auth.member import Member
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from shared.regular import regular_log
 from dataclasses import dataclass
@@ -12,7 +12,6 @@ import hashlib
 from shared.database.external.external import ExternalMap
 from shared.database.task.job.job_working_dir import JobWorkingDir
 from shared.utils.task import task_complete
-from shared.connection.connection_strategy import ConnectionStrategy
 from methods.input.packet import enqueue_packet
 from shared.regular.regular_log import result_has_error
 from shared.regular import regular_log
@@ -1208,7 +1207,7 @@ class LabelboxConnector(Connector):
     @with_connection
     def fetch_data(self, opts):
         """
-            This function routes any action_type to the correct S3 connector actions.
+            This function routes any action_type to the correct connector actions.
         :return: Object
         """
         if 'action_type' not in opts:

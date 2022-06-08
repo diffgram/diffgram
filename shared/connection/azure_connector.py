@@ -6,7 +6,6 @@ import mimetypes
 import requests
 import traceback
 
-from methods.regular.regular_api import *
 from azure.storage.blob import BlobBlock, BlobServiceClient, ContentSettings, StorageStreamDownloader
 from azure.storage.blob._models import BlobSasPermissions
 from azure.storage.blob._shared_access_signature import BlobSharedAccessSignature

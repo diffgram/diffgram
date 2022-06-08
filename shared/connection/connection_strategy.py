@@ -1,3 +1,5 @@
+import datetime
+from shared.database.user import User
 
 from shared.connection.connection_operations import Connection_Operations
 
@@ -5,6 +7,7 @@ from shared.connection.google_cloud_storage_connector import GoogleCloudStorageC
 from shared.connection.azure_connector import AzureConnector
 from shared.connection.s3_connector import S3Connector
 from shared.connection.minio_connector import MinioConnector
+from shared.connection.labelbox_connector import LabelboxConnector
 
 
 CONNECTIONS_MAPPING = {
@@ -12,18 +15,19 @@ CONNECTIONS_MAPPING = {
     'microsoft_azure': AzureConnector,
     'amazon_aws': S3Connector,
     'minio': MinioConnector,
+    'labelbox': LabelboxConnector
 }
 
 class ConnectionStrategy:
 
-    def __init__(self, connection_class = None, connection=None, session=None, integration_name=None):
+    def __init__(self, session=None, connection_class = None, connection=None, integration_name=None):
         self.connection = connection
         self.session = session
         self.integration_name = integration_name
         self.connection_class = connection_class
 
 
-    def set_class():
+    def set_class(self):
         # The Context is that for some of the storage ones with similar patterns we use the strategy pattern
         # For other classes we still want to follow the connection and test pattern
         # But Already know the class so can just pass it at setup
@@ -33,9 +37,9 @@ class ConnectionStrategy:
             return
 
         if self.integration_name:
-            self.connector_class = CONNECTIONS_MAPPING[self.integration_name]
+            self.connection_class = CONNECTIONS_MAPPING[self.integration_name]
         else:
-            self.connector_class = CONNECTIONS_MAPPING[connection.integration_name]
+            self.connection_class = CONNECTIONS_MAPPING[self.connection.integration_name]
 
 
     def set_connection(self, connector_id, check_perms):
@@ -54,13 +58,26 @@ class ConnectionStrategy:
             self.integration_name = input.get('integration_name')
 
         auth_data = {
-            'endpoint_url': input.get('private_host') if input.get('private_host') is not None else self.connection.private_host,
-            'client_email':  input.get('account_email') if input.get('account_email') is not None else self.connection.account_email,
-            'client_id': input.get('private_id') if input.get('private_id') is not None else self.connection.private_id,
-            'client_secret': input.get('private_secret') if input.get('private_secret') is not None else self.connection_operations.get_secret(),
-            'disabled_ssl_verify': input.get('disabled_ssl_verify') if input.get('disabled_ssl_verify') is not None else self.connection.disabled_ssl_verify,
-            'project_id': input.get('project_id_external') if input.get('project_id_external') is not None else self.connection.project_id_external,
+            'endpoint_url': self.connection.private_host,
+            'client_email':  self.connection.account_email,
+            'client_id': self.connection.private_id,
+            'client_secret': self.connection_operations.get_secret(),
+            'disabled_ssl_verify': self.connection.disabled_ssl_verify,
+            'project_id': self.connection.project_id_external,
         }
+        auth_data_to_input = {
+            'endpoint_url' : 'private_host',
+            'client_email' : 'account_email',
+            'client_id' : 'private_id',
+            'client_secret' : 'private_secret',
+            'project_id' : 'project_id_external'
+        }
+        if input:
+            for key, value in auth_data.items():
+                input_value = input.get(auth_data_to_input.get(key))
+                if input_value:
+                    auth_data[value] = input_value
+
         return auth_data
 
 
@@ -86,7 +103,7 @@ class ConnectionStrategy:
         config_data = {'project_string_id': self.connection.project.project_string_id}
         
         self.set_class()
-        connector_instance = self.connector_class(auth_data=auth_data, config_data=config_data)
+        connector_instance = self.connection_class(auth_data=auth_data, config_data=config_data)
 
         return connector_instance, True
 

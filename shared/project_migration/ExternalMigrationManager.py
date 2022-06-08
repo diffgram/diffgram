@@ -59,8 +59,7 @@ class ExternalMigrationManager:
         labelbox_project_id = self.project_migration.external_mapping_project.external_id
         logger.info(f'Starting project migration from labelbox external project: {labelbox_project_id}')
         connection_strategy = ConnectionStrategy(
-            connection_class = LabelboxConnector, 
-            connection = connection, 
+            connection_class = LabelboxConnector,
             session = self.session)
         connector, success = connection_strategy.get_connector(
             connector_id = self.project_migration.connection_id, 
