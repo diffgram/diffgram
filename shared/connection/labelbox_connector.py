@@ -1829,6 +1829,7 @@ class LabelBoxSyncManager:
                 self.add_files_to_labelbox_dataset(diffgram_files = file_list, labelbox_dataset = labelbox_dataset)
 
 
+# Deprecated
 @routes.route('/api/walrus/v1/webhooks/labelbox-webhook', methods = ['POST'])
 def labelbox_web_hook_manager():
     """
@@ -1862,7 +1863,9 @@ def labelbox_web_hook_manager():
             if task_template:
                 connection = task_template.interface_connection
                 logger.debug(f"Connection for labelbox: {connection}")
-                connector = ConnectionStrategy(connection=connection, session=session).get_connector()
+                connector = ConnectionStrategy(connection_class = LabelboxConnector,
+                                               connection=connection, 
+                                               session=session).get_connector()
                 connector.connect()
                 sync_manager = LabelBoxSyncManager(
                     session = session,

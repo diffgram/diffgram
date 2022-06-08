@@ -71,7 +71,7 @@ class GoogleCloudStorageConnector(Connector):
     def connect(self):
         log = regular_log.default()
         if 'project_id' not in self.auth_data or \
-                (self.auth_data['project_id'] is '' or self.auth_data['project_id'] is None):
+                (self.auth_data['project_id'] == '' or self.auth_data['project_id'] is None):
             log['error']['client_project'] = "ValueError: Client project not set: pass an explicit project."
             return {'log': log}
 

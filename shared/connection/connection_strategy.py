@@ -4,29 +4,33 @@ from shared.connection.connection_operations import Connection_Operations
 from shared.connection.google_cloud_storage_connector import GoogleCloudStorageConnector
 from shared.connection.azure_connector import AzureConnector
 from shared.connection.s3_connector import S3Connector
-from shared.connection.minio import MinioConnector
-from shared.connection.labelbox_connector import LabelboxConnector
-from shared.connection.microsoft_azure_text_analytics import AzureConnectorTextAnalytics
+from shared.connection.minio_connector import MinioConnector
 
 
 CONNECTIONS_MAPPING = {
     'google_gcp': GoogleCloudStorageConnector,
     'microsoft_azure': AzureConnector,
     'amazon_aws': S3Connector,
-    'labelbox': LabelboxConnector, 
     'minio': MinioConnector,
-    'microsoft_azure_text_analytics': AzureConnectorTextAnalytics,
 }
 
 class ConnectionStrategy:
 
-    def __init__(self, connection=None, session=None, integration_name=None):
+    def __init__(self, connection_class = None, connection=None, session=None, integration_name=None):
         self.connection = connection
         self.session = session
         self.integration_name = integration_name
+        self.connection_class = connection_class
 
 
     def set_class():
+        if self.connection_class:
+            return
+
+        # The Context is that for some of the storage ones with similar patterns we use the strategy pattern
+        # For other classes we still want to follow the connection and test pattern
+        # But Already know the class so can just pass it at setup
+
         if self.integration_name:
             self.connector_class = CONNECTIONS_MAPPING[self.integration_name]
         else:
