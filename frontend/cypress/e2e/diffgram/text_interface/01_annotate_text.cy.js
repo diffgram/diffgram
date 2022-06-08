@@ -45,5 +45,12 @@ describe('Annotation Text Interface display', () => {
       cy.get('[data-cy="text_label_1"]').should('not.exist')
       cy.get('[data-cy="text_label_2"]').should('not.exist')
     })
+
+    it('Successfully undo delete command', () => {
+      cy.wait(500)
+      cy.get('[data-cy="undo"]').click({force: true})
+      cy.get('[data-cy="text_label_1"]').should('be.visible')
+      cy.get('[data-cy="text_label_2"]').should('be.visible')
+    })
   })
 })
