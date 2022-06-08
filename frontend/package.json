@@ -34,6 +34,7 @@
     "chart.js": "^2.9.4",
     "codemirror": "^5.60.0",
     "cypress": "^10.0.3",
+    "cypress-real-events": "^1.7.0",
     "debounce": "^1.2.0",
     "filesize": "^6.3.0",
     "highlight.js": "^11.5.0",

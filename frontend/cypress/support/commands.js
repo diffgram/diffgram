@@ -31,6 +31,7 @@ import 'cypress-wait-until';
 import labelsForAttributes from "../fixtures/labelsForAttributes.json";
 import {get_transformed_coordinates} from './utils'
 import testLabels from "../fixtures/labels.json";
+import "cypress-real-events/support";
 
 Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   cy.document().then((doc) => {
