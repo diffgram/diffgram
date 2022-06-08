@@ -219,22 +219,10 @@ class AfterLaunchControl:
             interface_connection = self.task_template.interface_connection
             logger.debug(f"integration name is {interface_connection.integration_name}")
             # If task template has an integration with labelbox. Change the after launch strategy.
-            if interface_connection.integration_name == 'labelbox':
-                strategy = LabelboxTaskTemplateAfterLaunchStrategy(
-                    session=self.session,
-                    task_template=self.task_template,
-                    log=self.log
-                )
-            if interface_connection.integration_name == 'datasaur':
-                strategy = DatasaurTaskTemplateAfterLaunchStrategy(
-                    session=self.session,
-                    task_template=self.task_template,
-                    log=self.log
-                )
-            if interface_connection.integration_name == 'scale_ai':
-                strategy = ScaleAITaskTemplateAfterLaunchStrategy(
-                    session=self.session,
-                    task_template=self.task_template,
-                    log=self.log
-                )
+            #if interface_connection.integration_name == 'scale_ai':
+            #    strategy = ScaleAITaskTemplateAfterLaunchStrategy(
+            #        session=self.session,
+            #        task_template=self.task_template,
+            #        log=self.log
+            #    )
         return strategy
