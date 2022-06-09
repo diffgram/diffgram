@@ -12,6 +12,7 @@ def do_routes_importing():
     from methods.action.workflow_update import api_workflow_update
     from methods.action.action_list import api_action_list
     from methods.action.action_template_list import api_action_template_list
+    from methods.action.action_manual import api_action_manual
 
     from methods.project.project_update import api_project_update
     from methods.source_control.file.file_update import api_file_update

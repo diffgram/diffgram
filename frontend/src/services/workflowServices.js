@@ -32,6 +32,23 @@ export const action_update = async (project_string_id, workflow_id, action) => {
   }
 }
 
+export const action_manual_trigger = async (project_string_id, action) => {
+  let url = `/api/v1/project/${project_string_id}/actions/${action.id}/`;
+  let req_data = {
+    ...action
+  }
+  try {
+    const {data} = await axios.put(
+      url,
+      req_data
+    )
+    return [data, null]
+  } catch (e) {
+    console.error(e)
+    return [null, e]
+  }
+}
+
 export const new_action = async (project_string_id, workflow_id, action) => {
   let url = `/api/v1/project/${project_string_id}/actions/workflow/${workflow_id}/action`;
   try {
