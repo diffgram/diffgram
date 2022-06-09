@@ -7,7 +7,7 @@ from shared.regular import regular_log
 from shared.database.external.external import ExternalMap
 from shared.regular.regular_methods import commit_with_rollback
 from unittest.mock import patch
-from methods.connectors.labelbox_connector import LabelBoxSyncManager
+from shared.connection.labelbox_connector import LabelBoxSyncManager
 
 
 class LabelboxProjectMock(object):

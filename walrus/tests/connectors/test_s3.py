@@ -1,4 +1,4 @@
-from methods.connectors.s3_connector import S3Connector
+from shared.connection.s3_connector import S3Connector
 from tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from shared.ingest import packet

@@ -1,5 +1,5 @@
 from methods.regular.regular_api import *
-from methods.connectors.google_cloud_storage_connector import GoogleCloudStorageConnector
+from shared.connection.google_cloud_storage_connector import GoogleCloudStorageConnector
 from shared.database.input import Input
 from walrus.tests.test_utils import testing_setup
 from shared.tests.test_utils import data_mocking
