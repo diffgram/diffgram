@@ -1,5 +1,14 @@
 <template>
   <div class="d-flex flex-column" style="height: 100%">
+
+    <tooltip_button
+        tooltip_message="Manual Trigger"
+        @click="move_frame"
+        icon="help"
+        :text_style="true"
+        color="primary">
+    </tooltip_button>
+
     <action_config_wizard_base
       v-if="display_mode === 'wizard'"
       :action="action"
@@ -8,7 +17,7 @@
       @open_action_selector="$emit('open_action_selector')"
       :project_string_id="project_string_id">
       <template v-slot:action_config>
-    
+
       </template>
     </action_config_wizard_base>
 
@@ -41,9 +50,11 @@ import {Action} from './../../Action'
 import Action_config_wizard_base from "@/components/action/actions_config_base/action_config_wizard_base";
 import action_config_form_base from "@/components/action/actions_config_base/action_config_form_base";
 import {default_steps_config} from "@/components/action/actions_config_base/default_steps_config";
+import {action_manual_trigger} from '@/services/workflowServices';
+
 
 export default {
-  name: "create_task_action_config",
+  name: "AzureTextAnalyticsSentimentAction",
   props:{
     action:{
       required: true,
