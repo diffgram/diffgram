@@ -17,7 +17,9 @@ describe('Annotation Audio Interface', () => {
         })
 
         it('Creates audio token instances', () => {
-            cy.upload_audio_file(testUser.project_string_id);    
+            cy.upload_audio_file(testUser.project_string_id);
+            cy.wait(500)
+            cy.get('[data-cy="waveform"]').should('be.visible')
         })
     })
 })
