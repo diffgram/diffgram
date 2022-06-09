@@ -66,6 +66,7 @@
           <tooltip_button
             color="primary"
             icon="mdi-redo"
+            datacy="redo"
             tooltip_message="Redo (ctrl+y)"
             ui_schema_name="redo"
             :disabled="redo_disabled"
@@ -246,6 +247,7 @@
         icon="mdi-redo"
         tooltip_message="Redo (ctrl+y)"
         ui_schema_name="redo"
+        datacy="redo"
         :disabled="redo_disabled"
         :icon_style="true"
         :bottom="true"
