@@ -11,7 +11,7 @@ from shared.helpers import sessionMaker
 from shared.database.project import Project
 from shared.database.auth.member import Member
 from shared.connection.connectors.connectors_base import Connector, with_connection
-from methods.input import packet
+from shared.ingest import packet
 from pathlib import Path
 from shared.export.export_view import export_view_core
 from shared.database.export import Export

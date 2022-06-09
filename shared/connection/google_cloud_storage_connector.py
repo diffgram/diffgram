@@ -11,7 +11,7 @@ from shared.connection.connectors.connectors_base import Connector, with_connect
 from google.cloud import storage
 from google.oauth2 import service_account
 from shared.helpers import sessionMaker
-from methods.input import packet
+from shared.ingest import packet
 from pathlib import Path
 from shared.regular import regular_input
 from shared.regular import regular_log

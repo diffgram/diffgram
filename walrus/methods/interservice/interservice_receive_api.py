@@ -2,7 +2,7 @@ from methods.regular.regular_api import *
 from methods.task.task_template.task_template_launch_handler import TaskTemplateLauncherThread
 from methods.sync_events.sync_actions_handler import SyncActionsHandlerThread
 from methods.action.action_flow_trigger_queue import ActionFlowTriggerQueueProcess
-from methods.input.packet import enqueue_packet
+from shared.ingest.packet import enqueue_packet
 
 
 @routes.route('/api/walrus/v1/interservice/receive',

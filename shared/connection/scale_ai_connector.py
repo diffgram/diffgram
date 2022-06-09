@@ -8,7 +8,7 @@ from shared.permissions.task_permissions import Permission_Task
 from shared.connection.connection_strategy import ConnectionStrategy
 from shared.database.task.job.job import Job
 from shared.database.external.external import ExternalMap
-from methods.input.packet import enqueue_packet
+from shared.ingest.packet import enqueue_packet
 
 
 def with_scale_ai_exception_handler(f):

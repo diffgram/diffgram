@@ -13,7 +13,7 @@ import hashlib
 from shared.database.external.external import ExternalMap
 from shared.database.task.job.job_working_dir import JobWorkingDir
 from shared.utils.task import task_complete
-from methods.input.packet import enqueue_packet
+from shared.ingest import packet
 from shared.regular.regular_log import result_has_error
 from shared.regular import regular_log
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
@@ -919,7 +919,7 @@ class LabelboxConnector(Connector):
                 'height': data_row.media_attributes.get('height')
             }
 
-            diffgram_input = enqueue_packet(project_string_id = diffgram_dataset.project.project_string_id,
+            diffgram_input = packet.enqueue_packet(project_string_id = diffgram_dataset.project.project_string_id,
                                             session = session,
                                             media_url = data_row.row_data,
                                             media_type = media_type,
@@ -1352,7 +1352,7 @@ class LabelBoxSyncManager:
                 instance_list.append(diffgram_label_instance)
             count += 1
         if instance_list and video_data is None:
-            enqueue_packet(project_string_id = self.task_template.project.project_string_id,
+            packet.enqueue_packet(project_string_id = self.task_template.project.project_string_id,
                            session = self.session,
                            media_url = None,
                            media_type = 'image',
@@ -1387,7 +1387,7 @@ class LabelBoxSyncManager:
                                                                       diffgram_task,
                                                                       video_data = video_data,
                                                                       frame_packet_map = frame_packet_map)
-        enqueue_packet(project_string_id = self.task_template.project.project_string_id,
+        packet.enqueue_packet(project_string_id = self.task_template.project.project_string_id,
                        session = self.session,
                        media_url = None,
                        media_type = 'video',

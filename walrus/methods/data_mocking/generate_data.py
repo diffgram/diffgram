@@ -4,7 +4,7 @@ from shared.database.source_control.working_dir import WorkingDir
 from dataclasses import dataclass
 from shared.database.task.job.job_working_dir import JobWorkingDir
 from sqlalchemy.orm import Session
-from methods.input.packet import enqueue_packet
+from shared.ingest.packet import enqueue_packet
 from shared.database.input import Input
 from shared.database.labels.label import Label
 from shared.database.labels.label_schema import LabelSchema

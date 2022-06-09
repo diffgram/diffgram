@@ -1,7 +1,7 @@
 from methods.connectors.s3_connector import S3Connector
 from tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
-from methods.input import packet
+from shared.ingest import packet
 from shared.database.input import Input
 import json
 from base64 import b64encode

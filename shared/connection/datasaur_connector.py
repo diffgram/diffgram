@@ -1,5 +1,5 @@
 # OPENCORE - ADD
-from methods.regular.regular_api import *
+from shared.regular.regular_api import *
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from dataclasses import dataclass
 from functools import wraps
@@ -12,7 +12,7 @@ from shared.database.task.job.job_working_dir import JobWorkingDir
 from google.cloud import storage
 import os
 import shutil
-from methods.input.packet import enqueue_packet
+from shared.ingest.packet import enqueue_packet
 from shared.database.connection.connection import Connection
 from shared.utils.task.task_complete import task_complete
 import random
