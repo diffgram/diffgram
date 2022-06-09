@@ -20,11 +20,20 @@ CONNECTIONS_MAPPING = {
 
 class ConnectionStrategy:
 
-    def __init__(self, session=None, connection_class = None, connection=None, integration_name=None):
+    def __init__(self, 
+                 session=None, 
+                 connection_class = None, 
+                 connection=None, 
+                 connector_id=None,
+                 integration_name=None):
+
         self.connection = connection
         self.session = session
         self.integration_name = integration_name
         self.connection_class = connection_class
+
+        if connector_id:
+            self.set_connection(connector_id=connector_id, check_perms=False)
 
 
     def set_class(self):
@@ -42,7 +51,20 @@ class ConnectionStrategy:
             self.connection_class = CONNECTIONS_MAPPING[self.connection.integration_name]
 
 
-    def set_connection(self, connector_id, check_perms):
+    def get_client(self):
+        if not self.connection:
+            raise Exception("connection object or connector_id must be supplied at init")
+
+        connector, success = self.get_connector()
+
+        connector.connect()
+
+        return connector.get_client()
+
+
+    def set_connection(self, connector_id=None, check_perms=None):
+        if not connector_id: return
+
         self.connection_operations = Connection_Operations(
             session=self.session,
             member=None,

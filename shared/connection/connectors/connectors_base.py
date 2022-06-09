@@ -37,8 +37,14 @@ class Connector(ABC):
     @abstractmethod
     def test_connection(self):
         """
-            This function checks if there is a succseful connecction to the source
+            This function checks if there is a successful connection to the source
         :return: True/False
+        """
+        raise NotImplementedError
+
+    def get_client(self):
+        """
+            Returns client relevant to connection
         """
         raise NotImplementedError
 
