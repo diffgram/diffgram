@@ -9,10 +9,15 @@ from shared.database.source_control.working_dir import WorkingDir
 from shared.database.video.video import Video
 
 if settings.DIFFGRAM_SERVICE_NAME == 'walrus':
-    from walrus.methods.input.process_media import PrioritizedItem
-    from walrus.methods.input.process_media import add_item_to_queue
-    from walrus.methods.input.upload import Upload
-   
+    try:
+        from walrus.methods.input.process_media import PrioritizedItem
+        from walrus.methods.input.process_media import add_item_to_queue
+        from walrus.methods.input.upload import Upload
+    except:
+        from methods.input.process_media import PrioritizedItem
+        from methods.input.process_media import add_item_to_queue
+        from methods.input.upload import Upload
+
 
 def enqueue_packet(project_string_id,
                    session,
