@@ -285,13 +285,6 @@ class Event(Base):
         having a kind, etc...
 
         """
-
-        # TODO handle if account is none? / check? hmmm
-
-        # This allows smoother handling if we pass a member
-        # Object... I guess that's better then it determining it?
-
-        # Careful this overrides stuff effectively
         if member:
             member_id = member.id
 
@@ -330,8 +323,7 @@ class Event(Base):
         event.broadcast()
         return event
 
-    # May want the event in some cases???
-    # return True
+
 
     def send_to_eventhub(self):
         """
@@ -351,7 +343,6 @@ class Event(Base):
             if result.status_code == 200:
                 logger.info(f"Sent event: {self.id} to Diffgram Eventhub")
             else:
-                # print(result, result.text)
                 logger.error(
                     "Error sending {} to Diffgram Eventhub. Status Code: ".format(self.id, result.status_code))
         except Exception as e:

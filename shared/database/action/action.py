@@ -219,7 +219,7 @@ class Action(Base, SerializerMixin):
         ).first()
         return action
 
-    # WIP WIP WIP
+
     def serialize(self):
         """
         pattern is that the kind specific thing gets inserted as a dict
