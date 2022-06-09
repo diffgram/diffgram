@@ -10,7 +10,7 @@ class ActionRunner:
     event_data: dict
     log: dict
 
-    def __init__(self, action, event_data: dict):
+    def __init__(self, action=None, event_data: dict = None):
         self.action = action
         self.event_data = event_data
         self.log = regular_log.default()
@@ -20,6 +20,9 @@ class ActionRunner:
         raise NotImplementedError
 
     def execute_action(self, session):
+        raise NotImplementedError
+
+    def register(session):
         raise NotImplementedError
 
     def run(self):
@@ -48,7 +51,6 @@ class ActionRunner:
                           routing_key = RoutingKeys.action_trigger_event_new.value)
 
     def declare_action_complete(self, session):
-        mngr = QueueClient()
         event = Event.new(
             session = session,
             action_id = self.action.id,

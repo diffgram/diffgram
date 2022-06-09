@@ -4,6 +4,8 @@ from shared.regular.regular_log import log_has_error
 from shared.export.export_create import create_new_export
 from shared.database.action.action import ActionKinds
 from shared.database.task.job.job import Job
+from shared.database.action.action_template import Action_Template
+
 logger = get_shared_logger()
 
 
@@ -63,3 +65,18 @@ class ExportActionRunner(ActionRunner):
             self.declare_action_failed(session)
             return True
         logger.info(f'Export: generated successfully.')
+
+
+    def register(session):
+
+        Action_Template.register(
+            session = session,
+            public_name = 'JSON Export',
+            description = 'Generate JSON Export',
+            icon = 'https://www.svgrepo.com/show/46774/export.svg',
+            kind = 'export',
+            category = None,
+            trigger_data = {'trigger_event_name': 'task_completed'},
+            condition_data = {'event_name': 'all_tasks_completed'},
+            completion_condition_data = {'event_name': 'export_generate_success'},
+        )

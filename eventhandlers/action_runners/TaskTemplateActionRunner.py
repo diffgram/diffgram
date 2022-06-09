@@ -7,6 +7,7 @@ from shared.database.source_control.file import File
 from shared.utils.sync_events_manager import SyncEventManager
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.auth.member import Member
+from shared.database.action.action_template import Action_Template
 
 logger = get_shared_logger()
 
@@ -76,3 +77,18 @@ class TaskTemplateActionRunner(ActionRunner):
         )
         task_template.update_file_count_statistic(session = session)
         task_template.refresh_stat_count_tasks(session = session)
+
+
+    def register(session):
+
+        Action_Template.register(
+            session = session,
+            public_name = 'Human Labeling Tasks',
+            description = 'Add tasks to a task template',
+            icon = 'https://www.svgrepo.com/show/376121/list-task.svg',
+            kind = 'create_task',
+            category = None,
+            trigger_data = {'trigger_event_name': 'input_file_uploaded'},
+            condition_data = {'event_name': None},
+            completion_condition_data = {'event_name': 'task_completed'},
+        )

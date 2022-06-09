@@ -1,4 +1,8 @@
+from shared.regular.regular_api import *
+
 from action_runners.ActionRunner import ActionRunner
+from shared.database.action.action_template import Action_Template
+
 from shared.shared_logger import get_shared_logger
 from shared.database.task.job.job import Job
 from shared.helpers.sessionMaker import session_scope
@@ -8,7 +12,9 @@ from shared.database.source_control.file import File
 from shared.connection.connection_strategy import ConnectionStrategy
 from shared.connection.microsoft_azure_text_analytics import AzureConnectorTextAnalytics
 
-# from methods.input.packet import enqueue_packet
+from shared.ingest import packet
+
+
 
 logger = get_shared_logger()
 
@@ -41,10 +47,6 @@ class AzureTextAnalyticsSentimentAction(ActionRunner):
     
         # Actual Prediction
     
-        connection_mock : {
-            endpoint : private_host
-            }
-    
         connection_strategy = ConnectionStrategy(
             connection_class = AzureConnectorTextAnalytics,
             connector_id = connector_id,
@@ -54,6 +56,7 @@ class AzureTextAnalyticsSentimentAction(ActionRunner):
 
     
         response = text_analytics_client.analyze_sentiment(documents, language="en")
+
         result = [doc for doc in response if not doc.is_error]
     
         # Save annotations
@@ -88,8 +91,7 @@ class AzureTextAnalyticsSentimentAction(ActionRunner):
             })
     
         if do_save_annotations is True:
-            # For tracking and flexbility
-            enqueue_packet(
+            packet.enqueue_packet(
                 session=session,
                 media_url=None,
                 media_type='text',
@@ -97,9 +99,14 @@ class AzureTextAnalyticsSentimentAction(ActionRunner):
                 instance_list=instance_list,
                 commit_input=True,
                 mode="update")
+
+            return True
     
-    def create_action_template():
-        Action_Template.new(
+
+    @staticmethod
+    def register(session):
+
+        Action_Template.register(
             session = session,
             public_name = 'Azure Text Analytics',
             description = 'Azure Text Analytics',
@@ -110,3 +117,5 @@ class AzureTextAnalyticsSentimentAction(ActionRunner):
             #condition_data = {'event_name': 'all_tasks_completed'},
             #completion_condition_data = {'event_name': 'prediction_success'},
         )
+
+

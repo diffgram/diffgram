@@ -89,8 +89,26 @@ class Action_Template(Base, SerializerMixin):
         return session.query(Action_Template).filter(
             Action_Template.id == id).first()
 
+
     @staticmethod
-    def new(session,
+    def register(
+            session,
+            public_name,
+            icon,
+            description,
+            kind,
+            category,
+            trigger_data = None,
+            condition_data = None,
+            completion_condition_data = None,
+            update=False):
+
+        if update == False:
+            existing = Action_Template.get_by_kind(session, kind)
+            if existing: return True
+
+        Action_Template.new(
+            session,
             public_name,
             icon,
             description,
@@ -98,8 +116,21 @@ class Action_Template(Base, SerializerMixin):
             category,
             trigger_data,
             condition_data,
-            completion_condition_data,
+            completion_condition_data)
+
+
+    @staticmethod
+    def new(session,
+            public_name,
+            icon,
+            description,
+            kind,
+            category,
+            trigger_data = None,
+            condition_data = None,
+            completion_condition_data = None,
             is_global = True):
+
         result = Action_Template(
             public_name = public_name,
             kind = kind,
