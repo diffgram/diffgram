@@ -825,6 +825,34 @@ Cypress.Commands.add('upload_text_file', function (project_string_id, file_name 
   cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
 });
 
+Cypress.Commands.add('upload_audio_file', function (project_string_id, file_name = `${uuidv4()}.mp3`) {
+  cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`);
+  cy.get('[data-cy=start_upload_wizard]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=upload_new_data]').click({force: true});
+  cy.wait(1200);
+  cy.get('[data-cy=set_dataset_button]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=from_local_button]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=with_no_pre_labels_button]').click({force: true});
+  const fileFixture = {
+    filePath: './test-audio/audio_sample.mp3',
+    fileName: file_name,
+  }
+  cy.get('.dz-hidden-input').attachFile(fileFixture)
+  cy.wait(1000);
+  cy.get('[data-cy=continue_upload_step]').click();
+  cy.wait(700);
+  cy.get('[data-cy=start_files_upload_button]').click();
+  cy.wait(3000);
+  cy.get('[data-cy=close_wizard_button]', {timeout: 15000}).click();
+  cy.wait(3000);
+  cy.get('[data-cy=refresh-input-icon]').click();
+  cy.wait(3000);
+  cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
+});
+
 
 Cypress.Commands.add('draw_cuboid_3d', function (x, y, width, height, canvas_wrapper = 'main_screen') {
   cy.window().then(window => {
