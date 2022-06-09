@@ -63,7 +63,7 @@ describe('Annotation Text Interface display', () => {
     it('Should update instance label', () => {
       cy.wait(500)
       cy.get('[data-cy="instance-expansion-panel"]').realClick()
-      const initial_label_name = cy.get('[data-cy="label_name_0"]').invoke("text")
+      cy.get('[data-cy="label_name_0"]').invoke("text")
       cy.get('[data-cy="change_label_0"]').click({force: true})
       cy.get('[data-cy="select_text_label"]').click({force: true})
       cy.wait(500)
