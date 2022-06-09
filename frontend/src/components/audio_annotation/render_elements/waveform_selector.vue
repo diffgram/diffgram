@@ -29,7 +29,7 @@ export default Vue.extend({
     },
     current_label: {
       type: Object,
-      required: true
+      default: null
     },
     instance_list: {
       type: Array,
