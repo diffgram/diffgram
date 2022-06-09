@@ -31,13 +31,28 @@ def api_action_new(project_string_id, workflow_id):
         {'public_name': str},
         {'kind': str},
         {'icon': str},
-        {'trigger_data': dict},
         {'description': str},
-        {'completion_condition_data': dict},
         {'template_id': int},
         {'workflow_id': int},
         {'ordinal': int},
-        {'condition_data': dict}
+        {'condition_data': 
+            {
+            'default': None,
+            'kind': dict
+            }
+        },
+        {'trigger_data': 
+            {
+            'default': None,
+            'kind': dict
+            }
+        },
+        {'completion_condition_data': 
+            {
+            'default': None,
+            'kind': dict
+            }
+        }
 
     ]
 

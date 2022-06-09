@@ -23,7 +23,6 @@ from imageio import imwrite
 @limiter.limit("20 per day")
 def api_action_update(project_string_id, action_id):
     """
-    Shared route for update and new
 
     """
 
@@ -31,15 +30,30 @@ def api_action_update(project_string_id, action_id):
         {'public_name': str},
         {'kind': str},
         {'icon': str},
-        {'trigger_data': dict},
         {'config_data': dict},
         {'description': str},
-        {'completion_condition_data': dict},
         {'template_id': int},
         {'workflow_id': int},
         {'ordinal': int},
         {'archived': bool},
-        {'condition_data': dict}
+        {'condition_data': 
+            {
+            'default': None,
+            'kind': dict
+            }
+        },
+        {'trigger_data': 
+            {
+            'default': None,
+            'kind': dict
+            }
+        },
+        {'completion_condition_data': 
+            {
+            'default': None,
+            'kind': dict
+            }
+        }
 
     ]
 
