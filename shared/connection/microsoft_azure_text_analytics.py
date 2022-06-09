@@ -1,8 +1,9 @@
-from methods.regular.regular_api import *
+from shared.regular.regular_api import *
 from shared.regular import regular_log
 from azure.ai.textanalytics import TextAnalyticsClient
 from shared.connection.connectors.connectors_base import Connector
 from azure.core.credentials import AzureKeyCredential
+
 
 
 def with_azure_exception_handler(f):
