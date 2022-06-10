@@ -10,6 +10,11 @@ jest.mock('axios');
 describe("login.vue", () => {
   it("Rendered login page has form component", () => {
     const wrapper = shallowMount(login, {
+      data: function(){
+        return{
+          render_default_login: true
+        }
+      },
       mocks: {
         $store: {
           state: {
@@ -28,6 +33,11 @@ describe("login.vue", () => {
   it("Displays 'Already Logged In.' message to logged in users", () => {
     const message = "Already Logged In.";
     const wrapper = shallowMount(login, {
+      data: function(){
+        return{
+          render_default_login: true
+        }
+      },
       mocks: {
         $store: {
           state: {
@@ -39,12 +49,13 @@ describe("login.vue", () => {
       },
       localVue
     });
+    wrapper.setData({render_default_login: true})
     const showedMessage = wrapper.text();
     expect(showedMessage).toMatch(message);
   });
 
   // FROM VITALII: I'm not sure why what is the purse of thie test, cu we didn;t call get method on the creation
-  // so I'm just commenting it out 
+  // so I'm just commenting it out
 
   // it("It has to invoke axios get function on the creation", () => {
   //   shallowMount(login, {
@@ -65,9 +76,11 @@ describe("login.vue", () => {
 
   it("It should not include magic link option when Mailgun is not set", () => {
     const wrapper = shallowMount(login, {
+
       data: function() {
         return {
           mailgun: false,
+          render_default_login: true,
           mode: "password"
         }
       },
@@ -82,7 +95,6 @@ describe("login.vue", () => {
       },
       localVue
     });
-
     expect(wrapper.text().toLowerCase()).not.toContain("magic link")
   })
 
@@ -91,6 +103,7 @@ describe("login.vue", () => {
       data: function() {
         return {
           mailgun: true,
+          render_default_login: true,
           mode: "magic_auth"
         }
       },
@@ -105,7 +118,6 @@ describe("login.vue", () => {
       },
       localVue
     });
-
     expect(wrapper.text().toLowerCase()).toContain("magic link")
   })
 

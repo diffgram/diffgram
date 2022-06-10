@@ -84,7 +84,7 @@
 </template>
 
 <script lang="ts">
-import Vue from "vue"; 
+import Vue from "vue";
 import { logout } from "../../services/userServices"
 
 export default Vue.extend( {
@@ -99,6 +99,7 @@ export default Vue.extend( {
   },
   methods: {
     logout: async function () {
+      console.log('LOGOUTTT')
       await logout()
     },
     edit: function () {

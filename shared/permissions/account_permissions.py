@@ -43,7 +43,7 @@ class Permission_Account():
             return inner
 
         return wrapper
-
+    @staticmethod
     def permissions(session,
                     account_id):
         # TODO handle for API member calls
@@ -53,7 +53,7 @@ class Permission_Account():
             raise Forbidden("No access.")
 
         # TODO review
-        user_id = getUserID()
+        user_id = getUserID(session = session)
         if user_id is None:
             raise Unauthorized("Please login.")
 

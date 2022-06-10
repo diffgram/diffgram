@@ -9,7 +9,7 @@
             height="60px"
           />
         </div>
-        
+
         <v-card-title primary-title>
           <div>
             <h3 class="headline mb-0">Create your free Diffgram account</h3>
@@ -106,6 +106,7 @@
 
   import axios from '../../../services/customInstance';
   import {getProject} from '../../../services/projectServices'
+  import {auth_redirect} from './auth_redirect'
   import Vue from "vue";
 
   export default Vue.extend( {
@@ -230,41 +231,7 @@
 
           let auth = response.data.log.auth
 
-          // TODO review more general use for this, as may be builder or trainer...
-          if (auth) {
-            if (auth.type == "invite_to_org") {
-
-              if(["Admin"].includes(auth.user_permission_level)) {
-
-                this.$router.push('/user/builder/signup');
-              }
-
-              if(auth.user_permission_level == "Annotator") {
-
-                this.$router.push('/user/trainer/signup');
-              }
-            }
-            if (auth.type == "add_to_project") {
-              //this.$router.push('/studio/annotate/' + response.data.project_string_id);
-              if(this.project_string_id){
-                this.$router.push(`/user/builder/signup?project_string_id=${this.project_string_id}&role=${auth.user_permission_level}`);
-              }
-              else{
-                this.$router.push(`/user/builder/signup?role=${auth.user_permission_level}`);
-              }
-
-
-            }
-
-            return
-          }
-
-          if (response.data.project_string_id == null) {
-            this.$router.push('/user/builder/signup');
-          } else {
-            this.$router.push('/project/' + response.data.project_string_id);
-            this.$store.commit('set_project_string_id', response.data.user.project_string_id)
-          }
+          auth_redirect(auth, response.data.project_string_id, this.$router, this.$store)
         }
         catch(e){
           console.error(e)

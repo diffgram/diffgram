@@ -128,7 +128,8 @@
               class="unselectable"
             />
             <text
-              v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
+              v-for="(instance, instance_index) in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
+              :data-cy="`text_label_${instance_index}`"
               :key="`instance_${instance.get_instance_data().id}`"
               :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x + 2"
               :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y - 3"
@@ -212,6 +213,7 @@
               v-for="(token, token_index) in tokens.filter(token => token.line === index)"
               :id="token.id"
               :key="`line_${index}token_${token_index}`"
+              :data-cy="`token_${token_index}_line_${index}`"
               :x="token.start_x"
               :fill="hover_instance &&
                             (

@@ -18,7 +18,7 @@ import logging
 import sys
 import re
 from shared.database import hashing_functions
-from shared.helpers.permissions import setSecureCookie
+from shared.helpers.permissions import setSecureCookie, set_jwt_in_session
 import pyotp
 from datetime import timedelta
 from flask_limiter.util import get_remote_address
@@ -137,7 +137,8 @@ def login():
 
 def first_stage_login_success(log,
                               session,
-                              user):
+                              user,
+                              jwt = None):
     """
 
     Assumes initial login success
@@ -173,7 +174,10 @@ def first_stage_login_success(log,
                        otp_current_session = user.otp_current_session), 200
 
     if user.otp_enabled is None or user.otp_enabled is False:
-        setSecureCookie(user)
+        if settings.USE_OIDC:
+            set_jwt_in_session(jwt)
+        else:
+            setSecureCookie(user)
 
         return jsonify(log = log,
                        user = user.serialize(),

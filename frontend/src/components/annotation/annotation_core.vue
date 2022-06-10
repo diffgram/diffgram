@@ -517,7 +517,15 @@
             >
             </ghost_canvas_available_alert>
 
+            <div v-if="file_cant_be_accessed && !loading">
+              <v_error_multiple :error="{ 
+                error: 'Error fetching file', 
+                descriptive: 'Diffgarm wasn`t able to access your file. Make you sure you have permissions to access it'
+              }"> </v_error_multiple>
+            </div>
+
             <canvas
+              v-else
               data-cy="canvas"
               ref="canvas"
               v-show="!show_place_holder"
@@ -1194,6 +1202,8 @@ export default Vue.extend({
       z_key: false,
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
+
+      file_cant_be_accessed: false,
 
       current_global_instance: null,
       instance_list_global: [],
@@ -7781,6 +7791,7 @@ export default Vue.extend({
 
 
         } catch (error) {
+          this.file_cant_be_accessed = true
           console.error(error);
         }
       }

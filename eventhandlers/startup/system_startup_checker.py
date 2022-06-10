@@ -1,13 +1,15 @@
 from shared.database.system_events.system_events import SystemEvents
 from shared.system_startup.system_startup_base import SystemStartupBase
-from methods.regular.regular_api import logger
-from shared.settings import settings
+from shared.shared_logger import get_shared_logger
 from shared.queueclient.QueueClient import QueueClient
+from shared.settings import settings
 from shared.auth.KeycloakDiffgramClient import check_keycloak_setup
 import traceback
 
+logger = get_shared_logger()
 
-class DefaultServiceSystemStartupChecker(SystemStartupBase):
+
+class EventHandlerSystemStartupChecker(SystemStartupBase):
 
     def __init__(self):
         self.service_name = settings.DIFFGRAM_SERVICE_NAME
@@ -24,7 +26,7 @@ class DefaultServiceSystemStartupChecker(SystemStartupBase):
             logger.error(data)
             logger.error(f'Error connecting to rabbit MQ')
             raise (Exception('Error connecting to RabbitMQ'))
+        if not result:
+            raise Exception('System Startup Check Failed.')
 
         check_keycloak_setup()
-
-        return result

@@ -11,6 +11,17 @@ export const is_mailgun_set = async () => {
     }
 }
 
+export const is_oidc_set = async () => {
+  try {
+    const { data } = await axios.get('/api/configs/is-oidc-set')
+    return data
+  } catch(e) {
+    return {
+      use_oidc: false
+    }
+  }
+}
+
 export const get_install_info = async () => {
     try {
         const { data } = await axios.get('/api/v1/admin/install/info')

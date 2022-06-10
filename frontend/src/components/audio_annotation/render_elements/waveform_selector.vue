@@ -1,6 +1,6 @@
 <template>
   <div v-cloak style="width: 100%; padding: 20px" >
-    <div id="waveform" class="wave-form-container">
+    <div id="waveform" data-cy="waveform" class="wave-form-container">
       <v-subheader>Zoom</v-subheader>
       <v-slider
         v-model="zoom"
@@ -29,7 +29,7 @@ export default Vue.extend({
     },
     current_label: {
       type: Object,
-      required: true
+      default: null
     },
     instance_list: {
       type: Array,

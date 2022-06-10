@@ -66,7 +66,7 @@ class Job_permissions():
                     if LoggedIn() != True:
                         raise Unauthorized("Login again.")
 
-                    user = session.query(User).filter(User.id == getUserID()).first()
+                    user = session.query(User).filter(User.id == getUserID(session = session)).first()
 
                     if user is None:
                         raise Unauthorized("Login again.")
