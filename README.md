@@ -94,6 +94,7 @@ Diffgram is the most customizable training data platform.
 
 ## Cybersecurity
 How secure is your training data? [Learn more about Cybersecurity for Training Data](https://diffgram.readme.io/docs/cybersecurity-101)   
+[Security Policies](https://diffgram.readme.io/docs/security-policies)
 
 # Migration
 ## Labelbox to Diffgram
@@ -143,11 +144,11 @@ Enterprise Questions? Please [contact us](https://diffgram.com/contact).
 Security issues: Do not create a public issue. Email security@diffgram.com with the details.
 [Docs](https://diffgram.readme.io/docs)
 
-# Quickstart
+# Online Playground
 [Try Diffgram Online](https://diffgram.com/user/data_platform/new) (Hosted Service, No Setup.)
 
-### Install
-[Install Diffgram](https://diffgram.readme.io/docs/install)
+# Install
+### [Install Diffgram](https://diffgram.readme.io/docs/install)
 
 - [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
 - [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
@@ -286,7 +287,7 @@ create the highest quality models. Because these features are fully integrated w
 * Automatic error highlighting (Coming Soon)
 
 ## Secure and Private
-* Runs on your local system or cloud. Less lag, more secure, more control. [Security and Privacy](https://diffgram.com/secure)
+* Runs on your local system or cloud. Less lag, more secure, more control.
 * Enforce PII & RBAC automatically across life-cycle of
  training data from ingest to dataset to model predictions and back again
 
@@ -314,15 +315,10 @@ Fully integrated automatic test suite, with comprehensive [End to End](https://m
 Latest AI + More
 * [Examples](https://diffgram.readme.io/docs/userscript-examples)
 * [Userscripts Overview](https://diffgram.readme.io/docs/userscripts-overview)
-![](./github_assets/userscript_diagram.png)
+* Workflow
 
 # Ecosystem
 [Ecosystem](https://diffgram.readme.io/docs/ecosystem)
-
-![](./github_assets/levels_of_integrations.PNG)
-
-Note for initial open core release Actions Hooks are not yet available. 
-Please see Diffgram.com and use them there if needed.
 
 # Contributing
 We welcome contributions! Please see our [contributing documentation](https://diffgram.readme.io/docs/contributing-guide).
