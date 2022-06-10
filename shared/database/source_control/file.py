@@ -706,6 +706,8 @@ class File(Base, Caching):
         file.project_id = existing_file.project_id
 
         file.image_id = existing_file.image_id
+        file.text_file_id = existing_file.text_file_id
+        file.audio_file_id = existing_file.audio_file_id
         file.label_id = existing_file.label_id
         file.video_id = existing_file.video_id
         file.global_frame_number = existing_file.global_frame_number
