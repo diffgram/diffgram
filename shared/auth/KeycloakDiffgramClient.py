@@ -12,6 +12,23 @@ logger = get_shared_logger()
 REDIRECT_URI_DIFFGRAM = f'{settings.URL_BASE}user/oidc-login'
 
 
+def check_keycloak_setup():
+    """
+        Initializes Keylcoak client for startup check purposes.
+    :return: True if init was successful.
+    """
+    if settings.USE_OIDC:
+        logger.info('Testing Keycloak setup...')
+        try:
+            client = KeycloakDiffgramClient()
+        except Exception as e:
+            data = traceback.format_exc()
+            logger.error(data)
+            logger.error(f'Error connecting setting up Keycloak')
+            return None
+    return True
+
+
 class DefaultProjectRoles(Enum):
     admin = 'admin'
     viewer = 'viewer'
@@ -70,7 +87,6 @@ class KeycloakDiffgramClient(metaclass = Singleton):
         scopes = self.keycloak_admin_master.get_client_scopes()
         for s in scopes:
             if s.get('name') and s.get('name') in ['roles']:
-                print('update', s)
                 self.keycloak_admin_master.update_client_scope(client_scope_id = s.get('id'),
                                                                payload = {'attributes': {
                                                                    'display.on.consent.screen': True,
@@ -149,7 +165,7 @@ class KeycloakDiffgramClient(metaclass = Singleton):
                                                                                 role_name = enum_item.value,
                                                                                 roles = [{'name': normal_user_role,
                                                                                           "id": role.get('id')}])
-            created_role_ids.append(res)
+            created_role_ids.append(enum_item.value)
         return created_role_ids
 
     def refresh_token(self, token):

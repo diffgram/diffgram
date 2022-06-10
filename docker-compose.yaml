@@ -60,7 +60,7 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-      DIFFGRAM_SERVICE_NAME: ${DIFFGRAM_SERVICE_NAME}
+      DIFFGRAM_SERVICE_NAME: eventhandlers
     entrypoint: ["python3", "-u", "/app/main.py"]
   walrus:
     image: gcr.io/diffgram-open-core/walrus:${DIFFGRAM_VERSION_TAG}
@@ -107,7 +107,7 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-      DIFFGRAM_SERVICE_NAME: ${DIFFGRAM_SERVICE_NAME}
+      DIFFGRAM_SERVICE_NAME: walrus
     entrypoint: ["python3", "-u", "/app/main.py"]
 
   default:
@@ -158,7 +158,7 @@ services:
       RABBITMQ_PORT: ${RABBITMQ_PORT}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-      DIFFGRAM_SERVICE_NAME: ${DIFFGRAM_SERVICE_NAME}
+      DIFFGRAM_SERVICE_NAME: default
     command: ["/app/db-init.sh", "${DATABASE_HOST}", "python3", "-u", "/app/main.py"]
   db:
     image: ${POSTGRES_IMAGE}
