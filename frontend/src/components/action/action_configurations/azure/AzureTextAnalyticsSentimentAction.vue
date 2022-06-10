@@ -1,6 +1,8 @@
 <template>
   <div class="d-flex flex-column" style="height: 100%">
 
+    <!-- WIP to call `action_manual_trigger` service
+         Also probably not right spot for it maybe should be inside wizard etc-->
     <tooltip_button
         tooltip_message="Manual Trigger"
         @click="move_frame"

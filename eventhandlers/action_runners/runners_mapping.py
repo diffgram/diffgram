@@ -17,7 +17,6 @@ def register_all():
     with sessionMaker.session_scope() as session:
         for key, value in ACTION_RUNNERS_KIND_MAPPER.items():
             value.register(session=session)
-            print("Registered")
 
 register_all()
 
