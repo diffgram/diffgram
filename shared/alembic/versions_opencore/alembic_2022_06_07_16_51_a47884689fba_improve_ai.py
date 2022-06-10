@@ -1,7 +1,7 @@
 """improve ai
 
 Revision ID: a47884689fba
-Revises: 501d8176d48f
+Revises: aee673edee0d
 Create Date: 2022-06-07 16:51:02.670055
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = 'a47884689fba'
-down_revision = '501d8176d48f'
+down_revision = 'aee673edee0d'
 branch_labels = None
 depends_on = None
 
