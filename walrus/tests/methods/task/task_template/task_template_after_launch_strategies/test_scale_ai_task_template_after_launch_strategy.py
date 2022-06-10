@@ -7,7 +7,7 @@ from shared.regular import regular_log
 from shared.database.external.external import ExternalMap
 from unittest.mock import patch
 from shared.regular.regular_methods import commit_with_rollback
-from unittest import SkipTest
+from unittest import skip
 
 
 class TestScaleAITaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTestCase):
@@ -35,7 +35,7 @@ class TestScaleAITaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTestC
         self.project = self.project_data['project']
 
 
-    @SkipTest("Deprecated. Pending update to test in new migration context")
+    @skip("Deprecated. Pending update to test in new migration context")
     def test_execute_after_launch_strategy(self):
         file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         attach_dir1 = data_mocking.create_directory({
