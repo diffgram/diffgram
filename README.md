@@ -82,7 +82,9 @@ Manage multiple Schemas, Users, Datasets, Process, and so much more.
 ## Process Manager
 Organize and surface your machine learning processes. 
 From start, through pre-label ingestion, multiple task stages, training, and back again.
-Process Manager coming May 2022.
+Event driven backed by AMQP (RabbitMQ).
+Preview available now [Workflow](https://diffgram.readme.io/docs/workflows)
+Example Actions coming June 2022.
 
 ## Customize Everything
 With Diffgram you can get the exact branded experience you want through the what-you-see-is-what-you-get editor.
@@ -92,7 +94,6 @@ Diffgram is the most customizable training data platform.
 
 ## Cybersecurity
 How secure is your training data? [Learn more about Cybersecurity for Training Data](https://diffgram.readme.io/docs/cybersecurity-101)   
-
 
 # Migration
 ## Labelbox to Diffgram
@@ -111,15 +112,7 @@ Training Data is the art of supervising machines through data. This includes the
 
 # What is Diffgram?
 Diffgram is multiple training data tools in one single application.
-1. [Ingest](#Ingest) - Magic Mapping Wizard, High QPS Ingest, All-Cloud File Browser, and More.
-2. [Store](#Store) - Source of Truth for Training Data, Query at the Source
-3. [Workflow](#Workflow) - Human Tasks, Many Many QA Features.
-4. [Annotation](#Annotation) - Image, Video, [3D Labeling](https://diffgram.readme.io/docs/3d-lidar-annotation-guide), Text, Geo, Audio. More Coming.
-5. [Annotation Automation](#Annotation-Automation) - Customizable, Powerful
-6. [Stream to Training](#Stream-to-Training) - Direct to PyTorch & Tensorflow Memory
-7. [Explore](#Explore) - Query & Visually See Annotations
-8. [Debug](#Debug) - Compare Models & More
-9. [Secure and Private](#Secure-and-Private)
+[What is Diffgram](https://diffgram.readme.io/docs/what-is-diffgram)
 
 Diffgram is Open Source and optionally Client Installed. **[Quickstart](#Quickstart)**
 
@@ -132,7 +125,7 @@ Diffgram is Open Source and optionally Client Installed. **[Quickstart](#Quickst
 * [Built for Scale](https://diffgram.readme.io/docs/scale)
 
 ### Who is Diffgram for?
-Data Scientists, Machine Learning Leaders, AI Experts, Software Engineers, 
+Data Engineers, Machine Learning Leaders, AI Experts, Software Engineers, Data Scientists, 
 Data Annotators and Subject Matter Experts.
 
 ### New to Training Data?
@@ -151,19 +144,15 @@ Security issues: Do not create a public issue. Email security@diffgram.com with 
 [Docs](https://diffgram.readme.io/docs)
 
 # Quickstart
-
 [Try Diffgram Online](https://diffgram.com/user/data_platform/new) (Hosted Service, No Setup.)
 
-### Diffgram Dev Installer Quickstart
-Install with Docker and Docker Compose
-```
-git clone https://github.com/diffgram/diffgram.git
-cd diffgram
-pip install -r requirements.txt
-python install.py
-# Follow the installer instruction and 
-# After install:  View the Web UI at: http://localhost:8085
-```
+### Install
+[Install Diffgram](https://diffgram.readme.io/docs/install)
+
+- [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
+- [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
+- [Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)
+
 Read also our [Docker compose commands cheat-sheet](https://diffgram.readme.io/docs/open-core-docker-install-cheatsheet)
 
 ## Bugs and Issues
@@ -177,7 +166,7 @@ See [Contribution Guide](https://diffgram.readme.io/docs/developer-contribution-
 ### Cloud
 ![Cloud logos](./github_assets/cloud_logos.png)
 
-Full support for Amazon AWS, Google Cloud, and Microsoft Azure.
+Full support for Amazon AWS, Google Cloud, Microsoft Azure, and MinIO.
 
 Run Diffgram on and access data from any of the clouds.
 
@@ -187,10 +176,6 @@ Run Diffgram on and access data from any of the clouds.
 - [AWS Full Kubernetes Guide](https://get.diffgram.com/kubernetes-install-guide-aws-amazon-elastic-kubernetes-service-k8s-helm-install-vpc-on-premise/)
 - [Helm Chart for Kubernetes Clusters](https://github.com/diffgram/diffgram-helm)
 
-### Other Getting Started Docs:
-- [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
-- [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
-- [Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)
 
 ### What is Diffgram a drop in replacement for?
 Diffgram is a drop in replacement for the following systems: 
