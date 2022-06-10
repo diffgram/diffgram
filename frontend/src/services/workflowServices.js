@@ -33,7 +33,7 @@ export const action_update = async (project_string_id, workflow_id, action) => {
 }
 
 export const action_manual_trigger = async (project_string_id, action) => {
-  let url = `/api/v1/project/${project_string_id}/actions/${action.id}/`;
+  let url = `/api/v1/project/${project_string_id}/actions/${action.id}/manual_trigger`;
   let req_data = {
     ...action
   }
