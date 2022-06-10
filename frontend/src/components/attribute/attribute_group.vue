@@ -565,7 +565,7 @@
           error: {},
           success: false,
 
-          internal_selected: null,
+          internal_selected: [],
 
           kind_list: [
 
@@ -832,7 +832,7 @@
            */
 
           // reset
-          this.internal_selected = null
+          this.internal_selected = []
 
           // set existing if applicable
           if (!this.current_instance) {
