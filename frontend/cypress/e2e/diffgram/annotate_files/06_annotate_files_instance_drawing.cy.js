@@ -1,4 +1,4 @@
-import testUser from '../../../fixtures/users.json';
+ import testUser from '../../../fixtures/users.json';
 import testLabels from '../../../fixtures/labels.json';
 import {get_transformed_coordinates} from '../../../support/utils'
 
@@ -321,20 +321,20 @@ describe('Annotate Files Tests', () => {
 
       it('Correctly Saves The edited instances', () => {
         cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
-        cy.window().then((window) => {
+        .wait(5000)
+        .window().then((window) => {
           window.AnnotationCore.has_changed = true;
-
         })
-          .then(() => {
-            cy.get('[data-cy="save_button"]').click({force: true})
-              .wait('@annotation_update', {timeout: 10000})
-              .should(({request, response}) => {
-                expect(request.method).to.equal('POST')
-                // it is a good practice to add assertion messages
-                // as the 2nd argument to expect()
-                expect(response.statusCode, 'response status').to.eq(200)
-              })
-          })
+        .then(() => {
+          cy.get('[data-cy="save_button"]').click({force: true})
+            .wait('@annotation_update', {timeout: 10000})
+            .should(({request, response}) => {
+              expect(request.method).to.equal('POST')
+              // it is a good practice to add assertion messages
+              // as the 2nd argument to expect()
+              expect(response.statusCode, 'response status').to.eq(200)
+            })
+        })
 
       })
     })

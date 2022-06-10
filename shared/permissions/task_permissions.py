@@ -69,7 +69,7 @@ class Permission_Task():
 
                 # For testing we may want to pass a user id
                 if not user_id:
-                    user_id = getUserID()
+                    user_id = getUserID(session = session)
                     if user_id is None:
                         raise Unauthorized("Please login [No user_id].")
 

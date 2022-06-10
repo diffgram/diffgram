@@ -34,3 +34,5 @@ stripe==2.33.2
 newrelic
 markupsafe==2.0.1
 pika
+python-keycloak
+pyjwt

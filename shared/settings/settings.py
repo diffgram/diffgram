@@ -20,7 +20,7 @@ except Exception as e:
 # Main Settings
 DIFFGRAM_SYSTEM_MODE = os.environ.get('DIFFGRAM_SYSTEM_MODE', 'sandbox')
 DIFFGRAM_STATIC_STORAGE_PROVIDER = os.environ.get('DIFFGRAM_STATIC_STORAGE_PROVIDER')
-URL_BASE = os.getenv('URL_BASE', "http://127.0.0.1:8085/")
+URL_BASE = os.getenv('URL_BASE', "http://localhost:8085/")
 RUNNING_LOCALLY = env_adapter.bool(os.environ.get('RUNNING_LOCALLY', False))
 NAME_EQUALS_MAIN = os.getenv('NAME_EQUALS_MAIN', False)  # Assumed to be running locally. Default when going to production is False
 
@@ -182,8 +182,21 @@ RABBITMQ_PORT = int(os.getenv('RABBITMQ_PORT', 5672))
 SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_MINIMUM_DAYS_VALID', 30 * 12))     # this should always be lower then new offset
 SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID', 30 * 14))
 
+# Keycloak / OIDC Settings
+USE_OIDC = env_adapter.bool(os.getenv('USE_OIDC', False))
+USE_KEYCLOAK_AUTHORIZATION = env_adapter.bool(os.getenv('USE_KEYCLOAK_AUTHORIZATION', False))
+OIDC_PROVIDER_HOST = os.getenv('OIDC_PROVIDER_HOST', 'http://localhost:8099/auth/')
+OIDC_PROVIDER_CLIENT_ID = os.getenv('OIDC_PROVIDER_CLIENT_ID', 'diffgram')
+OIDC_PROVIDER_PUBLIC_KEY = os.getenv('OIDC_PROVIDER_PUBLIC_KEY', 'diffgram_public_key')
+OIDC_PROVIDER_REALM = os.getenv('OIDC_PROVIDER_REALM', 'diffgram-realm')
+KEY_CLOAK_MASTER_USER = os.getenv('KEY_CLOAK_MASTER_USER', 'admin')
+KEY_CLOAK_MASTER_PASSWORD = os.getenv('KEY_CLOAK_MASTER_PASSWORD', 'admin')
 
-# Minio Only Allow Expiry time is less than 7 days (value in seconds). 
+KEY_CLOAK_DIFFGRAM_USER = os.getenv('KEY_CLOAK_DIFFGRAM_USER', 'diffgram')
+KEY_CLOAK_DIFFGRAM_PASSWORD = os.getenv('KEY_CLOAK_DIFFGRAM_PASSWORD', 'diffgram')
+
+
+# Minio Only Allow Expiry time is less than 7 days (value in seconds).
 # https://github.com/minio/minio/blob/ca69e54cb6e4cff32b39cef6c7231c6d7ee6fca6/cmd/signature-v4-parser.go#L232
 if DIFFGRAM_STATIC_STORAGE_PROVIDER == 'minio':
     SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = min(SIGNED_URL_CACHE_MINIMUM_DAYS_VALID, 5)

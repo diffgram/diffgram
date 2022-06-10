@@ -2,7 +2,7 @@
 from methods.regular.regular_api import *
 
 import re
-from shared.helpers.permissions import setSecureCookie
+from shared.helpers.permissions import setSecureCookie, set_jwt_in_session
 from shared.database.user import Signup_code
 from shared.database.auth.member import Member
 
@@ -11,6 +11,7 @@ from methods.user.account import account_verify
 from methods.user.account import auth_code  # TODO rename this / put in Auth() class
 from shared.database import hashing_functions
 from shared.database.account.account import Account
+
 
 @routes.route('/api/v1/user/pro/new',
               methods = ['POST'])
@@ -57,15 +58,10 @@ def user_pro_new_api():
 
         email = input['email'].lower()
 
-        log = validate_email_and_existing_from_raw(
-            email = email,
-            session = session,
-            log = log)
+        new_user, log = user_new_core(session = session, email = email, log = log)
 
-        if len(log["error"].keys()) >= 1: return jsonify(log = log), 400
-
-        new_user = user_new_core(session = session,
-                                 email = email)
+        if regular_log.log_has_error(log = log):
+            return jsonify(log = log), 400
 
         setSecureCookie(new_user)
 
@@ -130,6 +126,23 @@ def validate_existing_user_from_raw(
     return log
 
 
+def set_password_and_login_history(session, new_user, password, token_data = None):
+    if settings.USE_OIDC:
+        set_jwt_in_session(token_data = token_data)
+    setSecureCookie(new_user)
+
+    User.new_login_history(session = session,
+                           success = True,
+                           otp_success = None,
+                           remote_address = request.remote_addr,
+                           user_id = new_user.id)
+
+    new_user.password_hash = hashing_functions.make_password_hash(
+        new_user.email,
+        password
+    )
+
+
 @routes.route('/api/v1/user/new',
               methods = ['POST'])
 @limiter.limit("500 per day")  # May have some errors so a few chances
@@ -176,15 +189,9 @@ def user_new_api():
 
         email = input['email'].lower()
 
-        log = validate_email_and_existing_from_raw(
-            email = email,
-            session = session,
-            log = log)
-
-        if len(log["error"].keys()) >= 1: return jsonify(log = log), 400
-
-        new_user = user_new_core(session = session,
-                                 email = email)
+        new_user, log = user_new_core(session = session, email = email, log = log)
+        if regular_log.log_has_error(log = log):
+            return jsonify(log = log), 400
 
         user_signup_code = input['signup_code']
 
@@ -214,22 +221,9 @@ def user_new_api():
                 # careful this is permission_level in signupcode/auth
                 # and user_permission_level  (add 'user' in trainer org permissions)
                 log['auth']['user_permission_level'] = auth.permission_level
-
         ### AUTH CODE end
 
-        setSecureCookie(new_user)
-
-        User.new_login_history(session = session,
-                               success = True,
-                               otp_success = None,
-                               remote_address = request.remote_addr,
-                               user_id = new_user.id)
-
-        new_user.password_hash = hashing_functions.make_password_hash(
-            new_user.email,
-            input['password']
-        )
-
+        set_password_and_login_history(session = session, new_user = new_user, password = input['password'])
         log['success'] = True
 
         return jsonify(log = log,
@@ -240,7 +234,8 @@ def user_new_api():
 
 def user_new_core(session,
                   email,
-                  user_signup_code = None):
+                  user_signup_code = None,
+                  log = regular_log.default()):
     """
     Goals:
         Blindly creates a new user and accepts signup code
@@ -257,6 +252,14 @@ def user_new_core(session,
         project_string_id, string project id (future maybe just return class Project() object?)
 
     """
+
+    log = validate_email_and_existing_from_raw(
+        email = email,
+        session = session,
+        log = log)
+    if regular_log.log_has_error(log):
+        return None, log
+
     member = Member()
     session.add(member)
     member.kind = "human"
@@ -317,7 +320,7 @@ def user_new_core(session,
         email = new_user.email
     )
 
-    return new_user
+    return new_user, log
 
 
 # Define error handling functions for user creation

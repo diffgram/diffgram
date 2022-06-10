@@ -3,7 +3,9 @@ from shared.system_startup.system_startup_base import SystemStartupBase
 from methods.regular.regular_api import logger
 from shared.queueclient.QueueClient import QueueClient
 from shared.settings import settings
-import  traceback
+from shared.auth.KeycloakDiffgramClient import check_keycloak_setup
+import traceback
+
 
 class WalrusServiceSystemStartupChecker(SystemStartupBase):
 
@@ -24,3 +26,5 @@ class WalrusServiceSystemStartupChecker(SystemStartupBase):
             raise (Exception('Error connecting to RabbitMQ'))
         if not result:
             raise Exception('System Startup Check Failed.')
+
+        check_keycloak_setup()
