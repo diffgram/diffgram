@@ -8,6 +8,7 @@ from shared.database.external.external import ExternalMap
 from shared.regular.regular_methods import commit_with_rollback
 from unittest.mock import patch
 from shared.connection.labelbox_connector import LabelBoxSyncManager
+from unittest import SkipTest
 
 
 class LabelboxProjectMock(object):
@@ -38,7 +39,10 @@ class TestLabelboxTaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTest
         )
         self.project = self.project_data['project']
 
+    @SkipTest("Deprecated. Pending update to test in new migration context")
     def test_execute_after_launch_strategy(self):
+
+
         file = data_mocking.create_file({'project_id': self.project.id, 'type': 'text'}, self.session)
         label = data_mocking.create_label({
             'name': 'mylabel',
