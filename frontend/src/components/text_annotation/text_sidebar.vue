@@ -39,7 +39,7 @@
                     />
                 </v-expansion-panel-content>
             </v-expansion-panel>
-            <v-expansion-panel @change="on_change_expansion(2)">
+            <v-expansion-panel data-cy="instance-expansion-panel" @change="on_change_expansion(2)">
                     <v-expansion-panel-header>
                         <strong>Instances</strong>
                     </v-expansion-panel-header>
@@ -56,7 +56,7 @@
                             <template v-slot:body="{ items }">
                                 <tbody v-if="items.length > 0 && !loading" style="cursor: pointer">
                                 <tr
-                                    v-for="item in items"
+                                    v-for="(item, item_index) in items"
                                     :key="item.id"
                                     @mouseover="on_hover_item(item)"
                                     @mouseleave="on_stop_hover_item"
@@ -80,7 +80,7 @@
                                                 mdi-label
                                             </v-icon>
                                     </td>
-                                    <td class="centered-table-items">
+                                    <td :data-cy="`label_name_${item_index}`" class="centered-table-items">
                                         {{ item.label_file.label.name }}
                                     </td>
                                     <td class="centered-table-items">
@@ -89,12 +89,14 @@
                                                     tooltip_message="Change Label Template"
                                                     icon="mdi-format-paint"
                                                     color="primary"
+                                                    :datacy="`change_label_${item_index}`"
                                                     :close_by_button="true"
                                                 >
                                                     <template slot="content">
                                                         <label_select_only
                                                             :label_file_list_prop="label_list"
                                                             :select_this_id_at_load="item.label_file_id"
+                                                            datacy="select_text_label"
                                                             @label_file="$emit('change_instance_label', { label: $event, instance: item })"
                                                         />
                                                     </template>

@@ -19,7 +19,7 @@
             <v-list dense>
                 <v-list-item-group>
                     <v-list-item id="delete_item" @click="on_delete">
-                        <v-list-item-content>
+                        <v-list-item-content data-cy="delete-instance-from-context">
                             <div class="list-item">
                                 Delete
                                 <v-icon> mdi-delete </v-icon>
