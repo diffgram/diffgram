@@ -4,10 +4,10 @@ from shared.database.task.job.job import Job
 from shared.helpers.sessionMaker import session_scope
 from shared.utils import job_dir_sync_utils
 from shared.database.source_control.file import File
+from shared.ingest import packet
 
 from transformers import pipeline
 
-# from methods.input.packet import enqueue_packet
 
 logger = get_shared_logger()
 
@@ -83,7 +83,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
     
         if do_save_annotations is True:
             # For tracking and flexbility
-            enqueue_packet(
+            packet.enqueue_packet(
                 session=session,
                 media_url=None,
                 media_type='text',
