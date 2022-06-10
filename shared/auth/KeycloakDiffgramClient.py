@@ -5,6 +5,7 @@ from shared.settings import settings
 import jwt
 from shared.shared_logger import get_shared_logger
 import traceback
+from shared.utils.singleton import Singleton
 
 logger = get_shared_logger()
 
@@ -22,24 +23,28 @@ class DefaultGlobalRoles(Enum):
     super_admin = 'super_admin'
 
 
-class KeycloakDiffgramClient:
+class KeycloakDiffgramClient(metaclass = Singleton):
     keycloak: KeycloakOpenID
+    installed: bool
+    client_secret: str
 
     def __init__(self):
+        self.setup_keycloak_diffgram_install()
         self.keycloak = KeycloakOpenID(server_url = settings.OIDC_PROVIDER_HOST,
                                        client_id = settings.OIDC_PROVIDER_CLIENT_ID,
                                        realm_name = settings.OIDC_PROVIDER_REALM,
-                                       client_secret_key = settings.OIDC_PROVIDER_SECRET)
-        self.keycloak_admin_master = KeycloakAdmin(server_url = settings.OIDC_PROVIDER_HOST,
-                                                   username = settings.KEY_CLOAK_MASTER_USER,
-                                                   password = settings.KEY_CLOAK_MASTER_PASSWORD)
+                                       client_secret_key = self.client_secret)
 
     def setup_keycloak_diffgram_install(self):
         """
             Creates diffgram realm and client for diffgram install as well as the default diffgram
-            client roles.
+            client roles. This is function is used at startup to check that keycloak has all the data
+            for diffgram to work correctly with it.
         :return:
         """
+        self.keycloak_admin_master = KeycloakAdmin(server_url = settings.OIDC_PROVIDER_HOST,
+                                                   username = settings.KEY_CLOAK_MASTER_USER,
+                                                   password = settings.KEY_CLOAK_MASTER_PASSWORD)
         # Create a new Realm
         self.__create_diffgram_default_realm()
 
@@ -48,7 +53,9 @@ class KeycloakDiffgramClient:
 
         # Create diffgram keycloak client.
         client_id = self.__create_default_diffgram_client()
+        self.__get_client_secret()
 
+        self.__setup_scopes_and_mappers()
         # Create default roles
         global_roles = self.__create_default_global_roles(client_id = client_id)
         logger.info(f'Added global roles: {global_roles}')
@@ -58,6 +65,26 @@ class KeycloakDiffgramClient:
         project_roles = self.__create_default_project_roles(normal_user_role = normal_user_role_name,
                                                             client_id = client_id)
         logger.info(f'Added project roles: {project_roles}')
+
+    def __setup_scopes_and_mappers(self):
+        scopes = self.keycloak_admin_master.get_client_scopes()
+        for s in scopes:
+            if s.get('name') and s.get('name') in ['roles']:
+                print('update', s)
+                self.keycloak_admin_master.update_client_scope(client_scope_id = s.get('id'),
+                                                               payload = {'attributes': {
+                                                                   'display.on.consent.screen': True,
+                                                                   'include.in.token.scope': True
+                                                               }})
+        # self.keycloak_admin_master.get_client_scope()
+
+        return self.client_secret
+
+    def __get_client_secret(self):
+        client = self.keycloak_admin_master.get_client(settings.OIDC_PROVIDER_CLIENT_ID)
+        secret = self.keycloak_admin_master.get_client_secrets(client_id = client.get('id'))
+        self.client_secret = secret.get('value')
+        return self.client_secret
 
     def __create_diffgram_default_realm(self) -> str:
         realm_id = self.keycloak_admin_master.create_realm(
