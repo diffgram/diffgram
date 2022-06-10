@@ -449,94 +449,97 @@ class ScaleAISyncManager:
             return False, self.log
 
 
-@routes.route('/api/walrus/v1/connections/send-task-to-scale-ai', methods=['POST'])
-@General_permissions.grant_permission_for(['normal_user'])
-@Permission_Task.by_task_id(apis_user_list=["builder_or_trainer"])
-def send_task_to_scale_ai():
-    """
-        Webhook for receiving data on Diffgram once finished on labelbox.
-        # NOTE: Labelbox does not supportText or dropdown classifications in export for videos.
-    :return:
-    """
-    # First check if secret is correct
-    spec_list = [{'task_id': dict}, {'project_string_id': str}]
+## Why Commented out
+## Pending enhancement as a new feature of Migration Scale -> Diffgram 
+## OR new action feature that takes this context into consideration
+## Either way it should go in an API service now that the connector code itself is in shared
 
-    log, input_data, untrusted_input = regular_input.master(request=request,
-                                                            spec_list=spec_list)
+#@routes.route('/api/walrus/v1/connections/send-task-to-scale-ai', methods=['POST'])
+#@General_permissions.grant_permission_for(['normal_user'])
+#@Permission_Task.by_task_id(apis_user_list=["builder_or_trainer"])
+#def send_task_to_scale_ai():
+#    """
+#    :return:
+#    """
+#    # First check if secret is correct
+#    spec_list = [{'task_id': dict}, {'project_string_id': str}]
 
-    log = regular_log.default()
-    with sessionMaker.session_scope() as session:
-        task_id = input_data['task_id']
-        task = Task.get_by_id(session, task_id=task_id)
-        if task:
-            task_template = task.job
-            connection = task_template.interface_connection
-            logger.debug(f"Connection for ScaleAI: {connection}")
-            connector = ConnectionStrategy(connection=connection, session=self.session).get_connector()
-            connector.connect()
+#    log, input_data, untrusted_input = regular_input.master(request=request,
+#                                                            spec_list=spec_list)
 
-            scale_ai_sync_manager = ScaleAISyncManager(
-                task_template=task_template,
-                scale_ai_connector=connector,
-                log=log,
-                session=session
+#    log = regular_log.default()
+#    with sessionMaker.session_scope() as session:
+#        task_id = input_data['task_id']
+#        task = Task.get_by_id(session, task_id=task_id)
+#        if task:
+#            task_template = task.job
+#            connection = task_template.interface_connection
+#            logger.debug(f"Connection for ScaleAI: {connection}")
+#            connector = ConnectionStrategy(connection=connection, session=self.session).get_connector()
+#            connector.connect()
 
-            )
+#            scale_ai_sync_manager = ScaleAISyncManager(
+#                task_template=task_template,
+#                scale_ai_connector=connector,
+#                log=log,
+#                session=session
 
-            scale_ai_task, log = scale_ai_sync_manager.send_diffgram_task(task)
-            logger.debug(f"Scale AI create result: {scale_ai_task} || {log}")
-            if not scale_ai_task:
-                return jsonify(log=log), 400
+#            )
 
-            return jsonify({'message': 'OK.', 'scale_ai_task_id': scale_ai_task.id})
-        else:
-            log['error']['task_id'] = 'Task not found.'
-            return jsonify(log)
+#            scale_ai_task, log = scale_ai_sync_manager.send_diffgram_task(task)
+#            logger.debug(f"Scale AI create result: {scale_ai_task} || {log}")
+#            if not scale_ai_task:
+#                return jsonify(log=log), 400
+
+#            return jsonify({'message': 'OK.', 'scale_ai_task_id': scale_ai_task.id})
+#        else:
+#            log['error']['task_id'] = 'Task not found.'
+#            return jsonify(log)
 
 
-from methods.regular.regular_api import *
+#from methods.regular.regular_api import *
 
 
-@routes.route('/api/walrus/v1/webhooks/scale-ai',
-              methods=['POST'])
-def task_completed_scaleai():
-    spec_list = [{'status': str},
-                 {'task': {
-                     'task_id': str,
-                     'completed_at': str,
-                     'response': dict,
-                     'created_at': str,
-                     'callback_url': str,
-                     'type': str,
-                     'status': str,
-                     'instruction': str,
-                     'params': dict,
-                     'metadata': dict,
+#@routes.route('/api/walrus/v1/webhooks/scale-ai',
+#              methods=['POST'])
+#def task_completed_scaleai():
+#    spec_list = [{'status': str},
+#                 {'task': {
+#                     'task_id': str,
+#                     'completed_at': str,
+#                     'response': dict,
+#                     'created_at': str,
+#                     'callback_url': str,
+#                     'type': str,
+#                     'status': str,
+#                     'instruction': str,
+#                     'params': dict,
+#                     'metadata': dict,
 
-                 }},
-                 {'response': dict},
-                 {'task_id': str},
+#                 }},
+#                 {'response': dict},
+#                 {'task_id': str},
 
-                 ]
+#                 ]
 
-    log, input, untrusted_input = regular_input.master(request=request,
-                                                       spec_list=spec_list)
-    annotations = input['response']['annotations']
-    with sessionMaker.session_scope() as session:
-        external_map_task = ExternalMap.get(
-            session=session,
-            external_id=input['task']['task_id'],
-            type="scale_ai_task"
-        )
-        task = external_map_task.task
-        task_template = task.job
-        scale_ai_sync_manager = ScaleAISyncManager(
-            session=session,
-            task_template=task_template,
-            log=log,
-            scale_ai_connector=None
-        )
+#    log, input, untrusted_input = regular_input.master(request=request,
+#                                                       spec_list=spec_list)
+#    annotations = input['response']['annotations']
+#    with sessionMaker.session_scope() as session:
+#        external_map_task = ExternalMap.get(
+#            session=session,
+#            external_id=input['task']['task_id'],
+#            type="scale_ai_task"
+#        )
+#        task = external_map_task.task
+#        task_template = task.job
+#        scale_ai_sync_manager = ScaleAISyncManager(
+#            session=session,
+#            task_template=task_template,
+#            log=log,
+#            scale_ai_connector=None
+#        )
 
-        scale_ai_sync_manager.enqueue_scale_ai_annotations(task, annotations)
+#        scale_ai_sync_manager.enqueue_scale_ai_annotations(task, annotations)
 
-        return jsonify({})
+#        return jsonify({})
