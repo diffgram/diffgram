@@ -1,6 +1,6 @@
 
 <template>
-  <div class="d-flex align-center justify-center screen-height" v-cloak>
+  <div class="d-flex align-center justify-center screen-height" v-cloak v-if="render_default_login">
 
     <v-flex class="flex-column" xs6 center v-if="$store.state.user.logged_in != true">
       <v_error_multiple :error="error_login"></v_error_multiple>
@@ -204,7 +204,7 @@
 
 <script lang="ts">
 import axios from "../../services/customInstance";
-import { is_mailgun_set } from "../../services/configService";
+import { is_mailgun_set, is_oidc_set } from "../../services/configService";
 
 import Vue from "vue";
 export default Vue.extend({
@@ -220,6 +220,7 @@ export default Vue.extend({
   data() {
     return {
       loading: false,
+      render_default_login: false,
 
       e1: true,
 
@@ -273,6 +274,12 @@ export default Vue.extend({
 
     window.addEventListener("keyup", this.keyboard_events);
     const { mailgun } = await is_mailgun_set();
+    const { use_oidc, login_url } = await is_oidc_set();
+    if(use_oidc){
+      window.location.replace(login_url);
+      return
+    }
+    this.render_default_login = true;
     this.mailgun = mailgun;
     this.mode = mailgun ? "magic_auth" : "password";
 

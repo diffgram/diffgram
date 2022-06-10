@@ -603,6 +603,14 @@ const routerOptions = [
     })
   },
   {
+    path: '/user/oidc-login/',
+    component: 'user/login_oidc_redirect',
+    props: true,
+    meta: (route) => ({
+      title: "Login"
+    })
+  },
+  {
     path: '/user/account/password/set',
     component: 'user/account/user_password',
     meta: {requiresAuth: true}
