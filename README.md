@@ -221,8 +221,9 @@ Collaboration across teams between machine learning, product, ops, managers, and
 * Integrates with your tools and 3rd party workforces. [Integrations](#integrations)
 It's a database for your training data, both metadata and access of raw BLOB data (over top of your storage choice).
 
-## Workflow
+## QA & Human Tasks
 Manage Annotation Workflow, Tasks, Quality Assurance and more.
+Task features can be used as modules within [Workflow](https://diffgram.readme.io/docs/workflows)
 
 QA Features including:
 
@@ -245,11 +246,7 @@ to existing partially annotated sets.
 
 
 ## Annotation
-Fully featured data annotation tool for images and video to create, update, and maintain high quality training datasets.
-* [Image and Video Annotation.](https://diffgram.com/software)
-* [Semantic Segmentation Focus](https://diffgram.com/segmentation) Autobordering, turbo mode and more
-* [Video Annotation](https://diffgram.com/video) High resolution, high frame rate, multiple sequences.
-* [3D Annotation (e.g. LiDAR)](https://diffgram.readme.io/docs/3d-lidar-annotation-guide)
+[Annotation Docs](https://diffgram.readme.io/docs/annotation)
 
 Schema (Ontology): Diffgram supports all popular [attributes](https://diffgram.readme.io/docs/attributes-1) and spatial types including *[Custom Spatial types](https://diffgram.readme.io/docs/custom-spatial-templates-user-defined-shapes)*.
 (Best Data Annotation for AI/ML)
@@ -291,7 +288,7 @@ create the highest quality models. Because these features are fully integrated w
 ## Secure and Private
 * Runs on your local system or cloud. Less lag, more secure, more control. [Security and Privacy](https://diffgram.com/secure)
 * Enforce PII & RBAC automatically across life-cycle of
- training data from ingest to dataset to model predictions and back again (Coming Soon)
+ training data from ingest to dataset to model predictions and back again
 
 
 ## Tested and Stable Core
@@ -311,14 +308,7 @@ Fully integrated automatic test suite, with comprehensive [End to End](https://m
 
 
 # Vision
-1. Application: Support all popular media types for raw data; all popular schema, label, and attribute needs; and all annotation assist speed up approaches
-2. Support all popular training data management and organizational needs
-3. Integrate with all popular 3rd party applications and related offerings
-4. Support modification of source code
-5. Run on any hardware, any cloud, and anywhere
-
-[Technical Direction - Long Term](https://diffgram.readme.io/docs/direction)
-
+[Vision](https://diffgram.readme.io/docs/vision)
 
 # Speed Ups & AI
 Latest AI + More
@@ -326,18 +316,9 @@ Latest AI + More
 * [Userscripts Overview](https://diffgram.readme.io/docs/userscripts-overview)
 ![](./github_assets/userscript_diagram.png)
 
+# Ecosystem
+[Ecosystem](https://diffgram.readme.io/docs/ecosystem)
 
-# Integrations
-
-* [Diffgram Python SDK](https://github.com/diffgram/python-sdk)
-* [Diffgram API](https://diffgram.readme.io/reference) Any language
-* [AWS - Amazon Storage](https://diffgram.readme.io/docs/amazon-web-services-connection-requirements)
-* [GCP Google Storage](https://diffgram.readme.io/docs/google-connection-requirements)
-* Azure - Now available
-* [Scale AI](https://diffgram.readme.io/docs/scale-ai)
-* [Labelbox](https://diffgram.readme.io/docs/labelbox-integration)
-* Submit a pull request! We want your integration here too
- 
 ![](./github_assets/levels_of_integrations.PNG)
 
 Note for initial open core release Actions Hooks are not yet available. 
@@ -349,6 +330,3 @@ We welcome contributions! Please see our [contributing documentation](https://di
 # Architecture & Design Docs
 We plan to release more internal architecture docs over time. Please see the [general docs](https://diffgram.readme.io/docs) in the mean time.
 
-
-##### Comparison Disclaimer
-IMPORTANT Disclaimer: Our opinions based on how we define the above categories. Subject to change. A vendor may offer something in one of these categories that doesn’t meet our definition of the category. Some Diffgram checkmarks include items coming soon. 
