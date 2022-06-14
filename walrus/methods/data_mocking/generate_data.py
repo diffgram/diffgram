@@ -474,12 +474,23 @@ class DiffgramDataMocker:
                               )
         self.generate_test_data_for_task_templates(project, structure = '1_pass')
 
-    def generate_test_data_for_task_templates(self, project, structure = '1_pass', num_files = NUM_IMAGES, reviews = {
-        "allow_reviews": False,
-        "review_chance": 0
-    }, member = None, name = 'Sample Task Template [Diffgram]') -> Job:
+    def generate_test_data_for_task_templates(
+            self, 
+            project, 
+            structure = '1_pass', 
+            num_files = NUM_IMAGES, 
+            reviews = None, 
+            member = None, 
+            name = 'Sample Task Template [Diffgram]') -> Job:
+
+        if reviews is None:
+            reviews = {
+                "allow_reviews": False,
+                "review_chance": 0
+            }
 
         if structure == '1_pass':
+
             task_template = self.__create_sample_task_template(name, project, reviews, member)
             # Try to get the default dataset.
             input_dir, input_dir_exists = self.generate_sample_dataset(f"Pending [1st pass] {str(time.time())[-5:]}", project=project)
