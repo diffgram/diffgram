@@ -1,4 +1,4 @@
-from eventhandlers.action_runners.ActionRunner import ActionRunner
+from eventhandlers.action_runners.base.ActionRunner import ActionRunner
 from deepchecks.vision.checks import ImagePropertyOutliers
 from deepchecks.vision import VisionData
 from deepchecks.vision.datasets.detection.coco import load_dataset

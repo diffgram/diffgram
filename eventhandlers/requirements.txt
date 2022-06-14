@@ -1,4 +1,5 @@
 grpcio==1.37.0
+python-dateutil==2.8.2
 Flask==2.1
 six==1.15.0
 sqlalchemy==1.3.23
@@ -16,7 +17,6 @@ Flask-SSLify==0.1.5
 requests==2.25.1
 imageio==2.9.0
 analytics-python==1.2.9
-python-dateutil==2.6.0
 cryptography==3.4.7
 colorlog==4.2.1
 boto3==1.16.4
@@ -28,7 +28,7 @@ markupsafe==2.0.1
 pika
 python-keycloak
 pyjwt
-python-date-util==2.8.1
+
 opencv-python==4.5.5.64
 deepchecks
 deepchecks[vision]==0.7

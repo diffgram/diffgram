@@ -1,6 +1,6 @@
 from shared.regular.regular_api import *
 
-from action_runners.ActionRunner import ActionRunner
+from action_runners.base.ActionRunner import ActionRunner
 from shared.database.action.action_template import Action_Template
 
 from shared.shared_logger import get_shared_logger
