@@ -25,6 +25,7 @@ class ActionRunner:
     trigger_data: dict
     condition_data: dict
     completion_condition_data: dict
+    action_run: ActionRun
 
     def __init__(self, action = None, event_data: dict = None):
         self.action = action
@@ -32,10 +33,10 @@ class ActionRunner:
         self.log = regular_log.default()
         self.mngr = QueueClient()
 
-    def execute_pre_conditions(self, session: Session, action_run: ActionRun) -> bool:
+    def execute_pre_conditions(self, session: Session) -> bool:
         raise NotImplementedError
 
-    def execute_action(self, session: Session, action_run: ActionRun) -> None:
+    def execute_action(self, session: Session) -> None:
         raise NotImplementedError
 
     def verify_registration_data(self) -> None:
@@ -50,7 +51,7 @@ class ActionRunner:
         self.verify_registration_data()
         Action_Template.register(
             session = session,
-            public_name = 'Azure Text Analytics',
+            public_name = self.public_name,
             description = 'Azure Text Analytics',
             icon = 'https://www.svgrepo.com/show/46774/export.svg',
             kind = 'AzureTextAnalyticsSentimentAction',
@@ -62,7 +63,7 @@ class ActionRunner:
 
     def run(self) -> None:
         with sessionMaker.session_scope_threaded() as session:
-            action_run = ActionRun.new(
+            self.action_run = ActionRun.new(
                 session = session,
                 workflow_id = self.action.workflow_id,
                 action_id = self.action.id,
@@ -72,13 +73,13 @@ class ActionRunner:
             allow = self.execute_pre_conditions(session)
             if not allow:
                 return
-            success = self.execute_action(session, action_run)
+            success = self.execute_action(session)
             if success:
-                self.declare_action_complete(session, action_run)
+                self.declare_action_complete(session)
             else:
-                self.declare_action_failed(session, action_run)
+                self.declare_action_failed(session)
 
-    def declare_action_failed(self, session: Session, action_run: ActionRun) -> None:
+    def declare_action_failed(self, session: Session) -> None:
 
         event = Event.new(
             session = session,
@@ -92,7 +93,7 @@ class ActionRunner:
                                exchange = Exchanges.actions.value,
                                routing_key = RoutingKeys.action_trigger_event_new.value)
 
-    def declare_action_complete(self, session: Session, action_run: ActionRun) -> None:
+    def declare_action_complete(self, session: Session) -> None:
         event = Event.new(
             session = session,
             action_id = self.action.id,

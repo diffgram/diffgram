@@ -61,7 +61,7 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
     completion_condition_data = {
         'event_name': 'action_completed'}  # What options are available to declare the actions as completed?
 
-    def execute_pre_conditions(self, session) -> bool:
+    def execute_pre_conditions(self, session, action) -> bool:
         # Return true if no pre-conditions are needed.
         return True
 
