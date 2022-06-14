@@ -6,7 +6,9 @@ from shared.helpers import sessionMaker
 from shared.database.action.action_template import Action_Template
 from shared.shared_logger import get_shared_logger
 
+
 logger = get_shared_logger()
+
 
 class ActionRegistrationError(Exception):
     pass

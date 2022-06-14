@@ -47,7 +47,7 @@ import export_action_config from "./action_configurations/export/export_action_c
 import AzureTextAnalyticsSentimentAction from "./action_configurations/azure/AzureTextAnalyticsSentimentAction";
 export default Vue.extend({
 
-    name: 'action_config_factory',
+    name: 'image_properties_outliers_action_config',
     components: {
       action_step_box,
       create_task_action_config,
