@@ -1095,6 +1095,9 @@ export default Vue.extend({
     finish_annotation_show: function (val) {
       if (val) this.annotation_show_on = false;
     },
+    global_attribute_groups_list: function() {
+      this.get_and_set_global_instance(this.instance_list)
+    },
     canvas_scale_global: function (newVal, oldVal) {
       this.on_canvas_scale_global_changed(newVal);
     },
