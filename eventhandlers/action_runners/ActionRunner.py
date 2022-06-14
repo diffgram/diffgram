@@ -5,8 +5,8 @@ from shared.regular import regular_log
 from shared.helpers import sessionMaker
 from shared.database.action.action_template import Action_Template
 from shared.shared_logger import get_shared_logger
-
-
+from shared.database.action.action_run import ActionRun
+from sqlalchemy.orm.session import Session
 logger = get_shared_logger()
 
 
@@ -32,13 +32,13 @@ class ActionRunner:
         self.log = regular_log.default()
         self.mngr = QueueClient()
 
-    def execute_pre_conditions(self, session) -> bool:
+    def execute_pre_conditions(self, session: Session, action_run: ActionRun) -> bool:
         raise NotImplementedError
 
-    def execute_action(self, session):
+    def execute_action(self, session: Session, action_run: ActionRun) -> None:
         raise NotImplementedError
 
-    def verify_registration_data(self):
+    def verify_registration_data(self) -> None:
         fields = ['public_name', 'icon', 'kind', 'trigger_data', 'condition_data', 'completion_condition_data']
         for field in fields:
             if self.__getattribute__(field) is None:
@@ -46,7 +46,7 @@ class ActionRunner:
                 logger.error(msg)
                 raise ActionRegistrationError(msg)
 
-    def register(self, session):
+    def register(self, session) -> None:
         self.verify_registration_data()
         Action_Template.register(
             session = session,
@@ -60,18 +60,25 @@ class ActionRunner:
             # completion_condition_data = {'event_name': 'prediction_success'},
         )
 
-    def run(self):
+    def run(self) -> None:
         with sessionMaker.session_scope_threaded() as session:
+            action_run = ActionRun.new(
+                session = session,
+                workflow_id = self.action.workflow_id,
+                action_id = self.action.id,
+                project_id = self.action.project_id,
+            )
+
             allow = self.execute_pre_conditions(session)
             if not allow:
                 return
-            success = self.execute_action(session)
+            success = self.execute_action(session, action_run)
             if success:
-                self.declare_action_complete(session)
+                self.declare_action_complete(session, action_run)
             else:
-                self.declare_action_failed(session)
+                self.declare_action_failed(session, action_run)
 
-    def declare_action_failed(self, session):
+    def declare_action_failed(self, session: Session, action_run: ActionRun) -> None:
 
         event = Event.new(
             session = session,
@@ -85,7 +92,7 @@ class ActionRunner:
                                exchange = Exchanges.actions.value,
                                routing_key = RoutingKeys.action_trigger_event_new.value)
 
-    def declare_action_complete(self, session):
+    def declare_action_complete(self, session: Session, action_run: ActionRun) -> None:
         event = Event.new(
             session = session,
             action_id = self.action.id,

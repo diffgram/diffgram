@@ -28,6 +28,7 @@ markupsafe==2.0.1
 pika
 python-keycloak
 pyjwt
+python-date-util==2.8.1
 opencv-python==4.5.5.64
-deepchecks[vision]
 deepchecks
+deepchecks[vision]==0.7

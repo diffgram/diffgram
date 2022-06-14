@@ -4,6 +4,7 @@ from deepchecks.vision import VisionData
 from deepchecks.vision.datasets.detection.coco import load_dataset
 from skimage import io, transform
 from sqlalchemy.orm import Session
+from torch.utils.data import DataLoader
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.helpers.sessionMaker import session_scope
@@ -14,15 +15,14 @@ from shared.data_tools_core import Data_tools
 data_tools = Data_tools().data_tools
 
 
-class DiffgramImageData(VisionData):
+class DiffgramVisionDataset(VisionData):
     session: Session
     diffgram_dir_id: int
     diffgram_dir: WorkingDir
 
-    def __init__(self, session, project_id, diffgram_dir_id):
+    def __init__(self, session, diffgram_dir_id):
         self.session = session
         self.diffgram_dir_id = diffgram_dir_id
-        self.project = Project.get_by_id(session = session, id = project_id)
         query, count = WorkingDirFileLink.file_list(
             session = self.session,
             working_dir_id = self.diffgram_dir_id,
@@ -42,11 +42,8 @@ class DiffgramImageData(VisionData):
         file = self.file_list[idx]
         file.image.regenerate_url(session = self.session)
         bytes_img = data_tools.download_bytes()
-        image = io.imread(img_name)
-        landmarks = self.landmarks_frame.iloc[idx, 1:]
-        landmarks = np.array([landmarks])
-        landmarks = landmarks.astype('float').reshape(-1, 2)
-        sample = {'image': image, 'landmarks': landmarks}
+        image = io.imread(bytes_img)
+        sample = {'image': image}
 
         if self.transform:
             sample = self.transform(sample)
@@ -70,8 +67,9 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
 
     def execute_action(self, session):
         # Your core Action logic will go here.
+        vision_ds = DiffgramVisionDataset(session = session, diffgram_dir_id = 1)
+        dataset_loader = DataLoader(batch_size = 1000, num_workers = 2, dataset = D)
         # TODO: Load and transform diffgram dataset
         train_data = load_dataset(train = True, object_type = 'VisionData')
         check = ImagePropertyOutliers()
         result = check.run(train_data)
-        result
