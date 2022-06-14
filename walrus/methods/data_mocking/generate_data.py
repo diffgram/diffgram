@@ -441,8 +441,9 @@ class DiffgramDataMocker:
         task_template.stat_count_complete = 0
         task_template.allow_reviews = reviews['allow_reviews']
         task_template.review_chance = reviews['review_chance']
-        schema = self.session.query(LabelSchema).filter(LabelSchema.project_id == project.id,
-                                                        LabelSchema.name == 'Default Schema').first()
+
+        schema = LabelSchema.get_default(session = self.session, project_id = project.id)
+
         task_template.label_schema_id = schema.id
         directory = WorkingDir.new_blank_directory(session = self.session)
         task_template.directory = directory
