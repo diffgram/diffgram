@@ -189,7 +189,7 @@ def label_edit(project_string_id):
             return json.dumps("no label id"), 400, {'ContentType': 'application/json'}
 
         # WIP...
-        user_id = getUserID()
+        user_id = getUserID(session = session)
 
         existing_file = File.get_by_id_untrusted(session,
                                                  user_id,
