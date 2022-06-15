@@ -1212,7 +1212,7 @@ export default Vue.extend({
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
 
-      file_cant_be_accessed: false,
+      file_cant_be_accessed: null,
       file_cant_be_accessed_error: null,
 
       current_global_instance: null,
@@ -7788,7 +7788,7 @@ export default Vue.extend({
           frame_count: 0,
           current_frame: 0,
         };
-        this.file_cant_be_accessed = false
+        this.file_cant_be_accessed = null
         this.file_cant_be_accessed_error = null
         // maybe this.current_file should store width/height? ...
         try {
