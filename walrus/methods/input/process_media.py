@@ -1994,12 +1994,6 @@ class Process_Media():
 
         imwrite(new_temp_filename, thumbnail_image, quality = 95)
 
-        # Build URL
-        url_signed_thumb = data_tools.build_secure_url(self.new_image.url_signed_thumb_blob_path,
-                                                       self.new_image.url_signed_expiry)
-
-        self.new_image.url_signed_thumb = url_signed_thumb
-
         data_tools.upload_to_cloud_storage(
             temp_local_path = new_temp_filename,
             blob_path = self.new_image.url_signed_thumb_blob_path,
