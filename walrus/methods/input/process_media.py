@@ -1862,8 +1862,6 @@ class Process_Media():
 
     def save_raw_image_file(self):
 
-        self.new_image.url_signed_expiry = int(time.time() + 2592000)  # 1 month
-
         self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
                                               str(self.project_id) + "/" + str(self.new_image.id)
 
