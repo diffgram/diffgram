@@ -246,7 +246,6 @@ class DataToolsS3:
             one_day = 86400
             expiration_offset = settings.SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID * one_day
 
-        expiration_time = expiration_offset
 
         if bucket == "web":
             bucket_name = self.s3_bucket_name
@@ -261,7 +260,7 @@ class DataToolsS3:
                                                                'Bucket': bucket_name,
                                                                'ResponseContentDisposition': f"attachment; filename={filename}",
                                                                'Key': blob_name},
-                                                           ExpiresIn = int(expiration_time))
+                                                           ExpiresIn = int(expiration_offset))
         return signed_url
 
     def get_string_from_blob(self, blob_name: str):
