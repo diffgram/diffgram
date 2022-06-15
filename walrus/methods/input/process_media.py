@@ -1902,8 +1902,6 @@ class Process_Media():
                 content_type = "image/jpg",
             )
 
-            self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
-                                                                    self.new_image.url_signed_expiry)
         except Exception as e:
             message = f'Error uploading to cloud storage: {traceback.format_exc()}'
             logger.error(message)
@@ -1995,12 +1993,6 @@ class Process_Media():
         new_temp_filename = f"{self.input.temp_dir}/resized.jpg"
 
         imwrite(new_temp_filename, thumbnail_image, quality = 95)
-
-        # Build URL
-        url_signed_thumb = data_tools.build_secure_url(self.new_image.url_signed_thumb_blob_path,
-                                                       self.new_image.url_signed_expiry)
-
-        self.new_image.url_signed_thumb = url_signed_thumb
 
         data_tools.upload_to_cloud_storage(
             temp_local_path = new_temp_filename,
