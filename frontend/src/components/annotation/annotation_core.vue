@@ -7805,13 +7805,7 @@ export default Vue.extend({
         } catch (error) {
           this.file_cant_be_accessed = true
           console.error(error);
-          if (error.response) {
-              this.file_cant_be_accessed_error = error.response
-          } else if (error.request) {
-              this.file_cant_be_accessed_error = error.request
-          } else if (error.message) {
-              this.file_cant_be_accessed_error = error.message
-          }
+          this.file_cant_be_accessed_error = this.$route_api_errors(error)
 
         }
       }
