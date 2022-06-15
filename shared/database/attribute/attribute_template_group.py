@@ -70,15 +70,6 @@ class Attribute_Template_Group(Base):
         if member is None:
             raise Exception("member Required")
 
-        attribute_template_group = session.query(Attribute_Template_Group).filter(
-            Attribute_Template_Group.is_new == True,
-            Attribute_Template_Group.archived == False,
-            Attribute_Template_Group.member_created == member,
-            Attribute_Template_Group.project == project).first()
-
-        if attribute_template_group:
-            return attribute_template_group
-
         attribute_template_group = Attribute_Template_Group(
             project = project,
             member_created = member)
