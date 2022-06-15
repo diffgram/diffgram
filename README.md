@@ -82,7 +82,9 @@ Manage multiple Schemas, Users, Datasets, Process, and so much more.
 ## Process Manager
 Organize and surface your machine learning processes. 
 From start, through pre-label ingestion, multiple task stages, training, and back again.
-Process Manager coming May 2022.
+Event driven backed by AMQP (RabbitMQ).
+Preview available now [Workflow](https://diffgram.readme.io/docs/workflows)
+Example Actions coming June 2022.
 
 ## Customize Everything
 With Diffgram you can get the exact branded experience you want through the what-you-see-is-what-you-get editor.
@@ -92,7 +94,7 @@ Diffgram is the most customizable training data platform.
 
 ## Cybersecurity
 How secure is your training data? [Learn more about Cybersecurity for Training Data](https://diffgram.readme.io/docs/cybersecurity-101)   
-
+[Security Policies](https://diffgram.readme.io/docs/security-policies)
 
 # Migration
 ## Labelbox to Diffgram
@@ -111,15 +113,7 @@ Training Data is the art of supervising machines through data. This includes the
 
 # What is Diffgram?
 Diffgram is multiple training data tools in one single application.
-1. [Ingest](#Ingest) - Magic Mapping Wizard, High QPS Ingest, All-Cloud File Browser, and More.
-2. [Store](#Store) - Source of Truth for Training Data, Query at the Source
-3. [Workflow](#Workflow) - Human Tasks, Many Many QA Features.
-4. [Annotation](#Annotation) - Image, Video, [3D Labeling](https://diffgram.readme.io/docs/3d-lidar-annotation-guide), Text, Geo, Audio. More Coming.
-5. [Annotation Automation](#Annotation-Automation) - Customizable, Powerful
-6. [Stream to Training](#Stream-to-Training) - Direct to PyTorch & Tensorflow Memory
-7. [Explore](#Explore) - Query & Visually See Annotations
-8. [Debug](#Debug) - Compare Models & More
-9. [Secure and Private](#Secure-and-Private)
+[What is Diffgram](https://diffgram.readme.io/docs/what-is-diffgram)
 
 Diffgram is Open Source and optionally Client Installed. **[Quickstart](#Quickstart)**
 
@@ -132,7 +126,7 @@ Diffgram is Open Source and optionally Client Installed. **[Quickstart](#Quickst
 * [Built for Scale](https://diffgram.readme.io/docs/scale)
 
 ### Who is Diffgram for?
-Data Scientists, Machine Learning Leaders, AI Experts, Software Engineers, 
+Data Engineers, Machine Learning Leaders, AI Experts, Software Engineers, Data Scientists, 
 Data Annotators and Subject Matter Experts.
 
 ### New to Training Data?
@@ -150,20 +144,16 @@ Enterprise Questions? Please [contact us](https://diffgram.com/contact).
 Security issues: Do not create a public issue. Email security@diffgram.com with the details.
 [Docs](https://diffgram.readme.io/docs)
 
-# Quickstart
-
+# Online Playground
 [Try Diffgram Online](https://diffgram.com/user/data_platform/new) (Hosted Service, No Setup.)
 
-### Diffgram Dev Installer Quickstart
-Install with Docker and Docker Compose
-```
-git clone https://github.com/diffgram/diffgram.git
-cd diffgram
-pip install -r requirements.txt
-python install.py
-# Follow the installer instruction and 
-# After install:  View the Web UI at: http://localhost:8085
-```
+# Install
+### [Install Diffgram](https://diffgram.readme.io/docs/install)
+
+- [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
+- [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
+- [Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)
+
 Read also our [Docker compose commands cheat-sheet](https://diffgram.readme.io/docs/open-core-docker-install-cheatsheet)
 
 ## Bugs and Issues
@@ -177,7 +167,7 @@ See [Contribution Guide](https://diffgram.readme.io/docs/developer-contribution-
 ### Cloud
 ![Cloud logos](./github_assets/cloud_logos.png)
 
-Full support for Amazon AWS, Google Cloud, and Microsoft Azure.
+Full support for Amazon AWS, Google Cloud, Microsoft Azure, and MinIO.
 
 Run Diffgram on and access data from any of the clouds.
 
@@ -187,10 +177,6 @@ Run Diffgram on and access data from any of the clouds.
 - [AWS Full Kubernetes Guide](https://get.diffgram.com/kubernetes-install-guide-aws-amazon-elastic-kubernetes-service-k8s-helm-install-vpc-on-premise/)
 - [Helm Chart for Kubernetes Clusters](https://github.com/diffgram/diffgram-helm)
 
-### Other Getting Started Docs:
-- [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
-- [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
-- [Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)
 
 ### What is Diffgram a drop in replacement for?
 Diffgram is a drop in replacement for the following systems: 
@@ -236,8 +222,9 @@ Collaboration across teams between machine learning, product, ops, managers, and
 * Integrates with your tools and 3rd party workforces. [Integrations](#integrations)
 It's a database for your training data, both metadata and access of raw BLOB data (over top of your storage choice).
 
-## Workflow
+## QA & Human Tasks
 Manage Annotation Workflow, Tasks, Quality Assurance and more.
+Task features can be used as modules within [Workflow](https://diffgram.readme.io/docs/workflows)
 
 QA Features including:
 
@@ -260,11 +247,7 @@ to existing partially annotated sets.
 
 
 ## Annotation
-Fully featured data annotation tool for images and video to create, update, and maintain high quality training datasets.
-* [Image and Video Annotation.](https://diffgram.com/software)
-* [Semantic Segmentation Focus](https://diffgram.com/segmentation) Autobordering, turbo mode and more
-* [Video Annotation](https://diffgram.com/video) High resolution, high frame rate, multiple sequences.
-* [3D Annotation (e.g. LiDAR)](https://diffgram.readme.io/docs/3d-lidar-annotation-guide)
+[Annotation Docs](https://diffgram.readme.io/docs/annotation)
 
 Schema (Ontology): Diffgram supports all popular [attributes](https://diffgram.readme.io/docs/attributes-1) and spatial types including *[Custom Spatial types](https://diffgram.readme.io/docs/custom-spatial-templates-user-defined-shapes)*.
 (Best Data Annotation for AI/ML)
@@ -304,9 +287,9 @@ create the highest quality models. Because these features are fully integrated w
 * Automatic error highlighting (Coming Soon)
 
 ## Secure and Private
-* Runs on your local system or cloud. Less lag, more secure, more control. [Security and Privacy](https://diffgram.com/secure)
+* Runs on your local system or cloud. Less lag, more secure, more control.
 * Enforce PII & RBAC automatically across life-cycle of
- training data from ingest to dataset to model predictions and back again (Coming Soon)
+ training data from ingest to dataset to model predictions and back again
 
 
 ## Tested and Stable Core
@@ -326,37 +309,16 @@ Fully integrated automatic test suite, with comprehensive [End to End](https://m
 
 
 # Vision
-1. Application: Support all popular media types for raw data; all popular schema, label, and attribute needs; and all annotation assist speed up approaches
-2. Support all popular training data management and organizational needs
-3. Integrate with all popular 3rd party applications and related offerings
-4. Support modification of source code
-5. Run on any hardware, any cloud, and anywhere
-
-[Technical Direction - Long Term](https://diffgram.readme.io/docs/direction)
-
+[Vision](https://diffgram.readme.io/docs/vision)
 
 # Speed Ups & AI
 Latest AI + More
 * [Examples](https://diffgram.readme.io/docs/userscript-examples)
 * [Userscripts Overview](https://diffgram.readme.io/docs/userscripts-overview)
-![](./github_assets/userscript_diagram.png)
+* Workflow
 
-
-# Integrations
-
-* [Diffgram Python SDK](https://github.com/diffgram/python-sdk)
-* [Diffgram API](https://diffgram.readme.io/reference) Any language
-* [AWS - Amazon Storage](https://diffgram.readme.io/docs/amazon-web-services-connection-requirements)
-* [GCP Google Storage](https://diffgram.readme.io/docs/google-connection-requirements)
-* Azure - Now available
-* [Scale AI](https://diffgram.readme.io/docs/scale-ai)
-* [Labelbox](https://diffgram.readme.io/docs/labelbox-integration)
-* Submit a pull request! We want your integration here too
- 
-![](./github_assets/levels_of_integrations.PNG)
-
-Note for initial open core release Actions Hooks are not yet available. 
-Please see Diffgram.com and use them there if needed.
+# Ecosystem
+[Ecosystem](https://diffgram.readme.io/docs/ecosystem)
 
 # Contributing
 We welcome contributions! Please see our [contributing documentation](https://diffgram.readme.io/docs/contributing-guide).
@@ -364,6 +326,3 @@ We welcome contributions! Please see our [contributing documentation](https://di
 # Architecture & Design Docs
 We plan to release more internal architecture docs over time. Please see the [general docs](https://diffgram.readme.io/docs) in the mean time.
 
-
-##### Comparison Disclaimer
-IMPORTANT Disclaimer: Our opinions based on how we define the above categories. Subject to change. A vendor may offer something in one of these categories that doesn’t meet our definition of the category. Some Diffgram checkmarks include items coming soon. 
