@@ -105,7 +105,7 @@ export function route_errors (error) {
       return result
     }
 
-    if (error.response.status == 503) {
+    else if (error.response.status == 503) {
 
       let result = { server : "503. Service unavailable. Are all services up?"}
       if (error.response.data && typeof error.response.data === 'object') {
