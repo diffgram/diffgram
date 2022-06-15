@@ -243,7 +243,8 @@ class DataToolsS3:
         """
 
         if expiration_offset is None:
-            expiration_offset = 40368000
+            one_day = 86400
+            expiration_offset = settings.SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID * one_day
 
         expiration_time = expiration_offset
 

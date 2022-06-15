@@ -1902,8 +1902,6 @@ class Process_Media():
                 content_type = "image/jpg",
             )
 
-            self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
-                                                                    self.new_image.url_signed_expiry)
         except Exception as e:
             message = f'Error uploading to cloud storage: {traceback.format_exc()}'
             logger.error(message)
