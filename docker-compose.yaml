@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.9"
 services:
   dispatcher:
     image: gcr.io/diffgram-open-core/local_dispatcher:latest
@@ -24,9 +24,12 @@ services:
     - "0.0.0.0:8086:8086"
     expose: [8086]
     depends_on:
-    - db
-    - default
-    - rabbitmq
+      db:
+        condition: service_healthy
+      default:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     volumes:
     - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
     environment:
@@ -68,9 +71,12 @@ services:
     - "0.0.0.0:8082:8082"
     expose: [8082]
     depends_on:
-    - db
-    - default
-    - rabbitmq
+      db:
+        condition: service_healthy
+      default:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
     volumes:
     - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
     environment:
@@ -116,8 +122,12 @@ services:
     - "0.0.0.0:8080:8080"
     expose: [8080]
     depends_on:
-    - db
-    - rabbitmq
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      db_migration:
+        condition: service_completed_successfully
     volumes:
     - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
     environment:
@@ -159,11 +169,32 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
       DIFFGRAM_SERVICE_NAME: default
-    command: ["/app/db-init.sh", "${DATABASE_HOST}", "python3", "-u", "/app/main.py"]
+    command: ["python3", "-u", "/app/main.py"]
+  db_migration:
+    image: gcr.io/diffgram-open-core/default:${DIFFGRAM_VERSION_TAG}
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASS: ${DATABASE_PASS}
+      PYTHONPATH: "/app/"
+    command: ["/app/db-init.sh", "${DATABASE_HOST}"]
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
   db:
     image: ${POSTGRES_IMAGE}
     hostname: db
     restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "db_prod" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
     environment:
     - POSTGRES_HOST_AUTH_METHOD=trust
     - POSTGRES_DB=diffgram
@@ -176,6 +207,11 @@ services:
     image: rabbitmq:3.10-rc-management-alpine
     env_file:
       - .env
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
     container_name: 'rabbitmq'
     expose: [5672, 15672]
     ports:
