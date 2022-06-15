@@ -1,0 +1,1 @@
+fs.inotify.max_user_watches=250000000 /etc/sysctl.d/local.conf

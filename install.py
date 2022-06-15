@@ -496,6 +496,10 @@ class DiffgramInstallTool:
         env_file += f"DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE={True}\n"
 
         install_fingerprint = self.gen_install_finger_print()
+        env_file += f"DIFFGRAM_SYSTEM_MODE=sandbox\n"
+        env_file += f"SERVICE_ACCOUNT_FULL_PATH=/gcp/gcp-service-account.json\n"
+        env_file += f"GOOGLE_APPLICATION_CREDENTIALS=/gcp/gcp-service-account.json\n"
+        env_file += f"PYTHONPATH=/gcp/gcp-service-account.json\n"
         env_file += f"DIFFGRAM_INSTALL_FINGERPRINT={install_fingerprint}\n"
         env_file += f"DIFFGRAM_VERSION_TAG={self.diffgram_version}\n"
         env_file += f"DIFFGRAM_HOST_OS={self.get_system_os()}\n"
