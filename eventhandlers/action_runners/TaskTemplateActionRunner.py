@@ -1,4 +1,4 @@
-from action_runners.ActionRunner import ActionRunner
+from action_runners.base.ActionRunner import ActionRunner
 from shared.shared_logger import get_shared_logger
 from shared.database.task.job.job import Job
 from shared.helpers.sessionMaker import session_scope
@@ -8,15 +8,16 @@ from shared.utils.sync_events_manager import SyncEventManager
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.auth.member import Member
 from shared.database.action.action_template import Action_Template
-
+from sqlalchemy.orm.session import Session
+from shared.database.action.action_run import ActionRun
 logger = get_shared_logger()
 
 
 class TaskTemplateActionRunner(ActionRunner):
-    def execute_pre_conditions(self, session) -> bool:
+    def execute_pre_conditions(self, session: Session, action_run: ActionRun) -> bool:
         return True
 
-    def execute_action(self, session):
+    def execute_action(self, session: Session, action_run: ActionRun):
         """
                    Creates a task from the given file_id in the given task template ID.
                :return:
@@ -78,8 +79,7 @@ class TaskTemplateActionRunner(ActionRunner):
         task_template.update_file_count_statistic(session = session)
         task_template.refresh_stat_count_tasks(session = session)
 
-
-    def register(session):
+    def register(self, session):
 
         Action_Template.register(
             session = session,

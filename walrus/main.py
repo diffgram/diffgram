@@ -1,5 +1,5 @@
 # WALRUS service
-from werkzeug.contrib.fixers import ProxyFix  # needed for get_remote_address to get right ip
+from werkzeug.middleware.proxy_fix import ProxyFix # needed for get_remote_address to get right ip
 import time
 from flask import Flask, request
 import logging

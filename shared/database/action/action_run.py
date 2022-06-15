@@ -68,28 +68,31 @@ class ActionRun(Base):
 
     @staticmethod
     def new(session,
-            flow_event_id,
-            flow_id,
+            workflow_run_id,
+            workflow_id,
             action_id,
             file_id,
             project_id = None,
             org = None,
-            link = None,
-            member = None,
             kind = None
             ):
         """
-        objects vs ids here...
-
-        Not using member yet.
-
+            Creates a new Action run.
+        :param session:
+        :param workflow_run_id:
+        :param workflow_id:
+        :param action_id:
+        :param file_id:
+        :param project_id:
+        :param org:
+        :param link:
+        :param member:
+        :param kind:
+        :return:
         """
-        if flow_event_id is None:
-            return
-
-        action_event = WofklowRun(
-            flow_event_id = flow_event_id,
-            flow_id = flow_id,
+        action_run = ActionRun(
+            workflow_id = workflow_id,
+            workflow_run_id = workflow_run_id,
             action_id = action_id,
             file_id = file_id,
             project_id = project_id,
@@ -97,8 +100,9 @@ class ActionRun(Base):
             kind = kind
         )
 
-        session.add(action_event)
-        return action_event
+        session.add(action_run)
+        session.flush()
+        return action_run
 
     @staticmethod
     def list(

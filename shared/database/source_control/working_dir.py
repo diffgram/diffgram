@@ -28,19 +28,19 @@ class WorkingDir(Base):
 
     """
     __tablename__ = 'working_dir'
-    id = Column(Integer, primary_key=True)
-    created_time = Column(DateTime, default=datetime.datetime.utcnow)
+    id = Column(Integer, primary_key = True)
+    created_time = Column(DateTime, default = datetime.datetime.utcnow)
 
-    archived = Column(Boolean) # (similar to soft_delete)
+    archived = Column(Boolean)  # (similar to soft_delete)
 
     has_changes = Column(Boolean)
 
     # Added string instead  of boolean since we can expand this to new types if needed in the future.
     type = Column(String())  # ["project_default", "standard"]
 
-    nickname = Column(String()) 
+    nickname = Column(String())
 
-    count_changes = Column(Integer, default=0)
+    count_changes = Column(Integer, default = 0)
     # TODO
     # Option to share a working directory?
     # Feel like lose some of advantages though...
@@ -53,7 +53,7 @@ class WorkingDir(Base):
     # check it 1000 times for 1000 sequential uploads
 
     project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship("Project", foreign_keys=[project_id])
+    project = relationship("Project", foreign_keys = [project_id])
 
     export_list = relationship("Export")
 
@@ -61,25 +61,25 @@ class WorkingDir(Base):
     # As it's building up a map that we can use
     # ie for video to reduce db calls by large amount.
     label_file_colour_map = Column(MutableDict.as_mutable(JSONEncodedDict),
-                                   default={})
+                                   default = {})
 
-    jobs_to_sync = Column(MutableDict.as_mutable(JSONEncodedDict), default={'job_ids': []})
+    jobs_to_sync = Column(MutableDict.as_mutable(JSONEncodedDict), default = {'job_ids': []})
 
     # External ID's for referencing on integrations like Labelbox, Supervisely, etc.
     default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))  # TODO: add to production
     default_external_map = relationship("ExternalMap",
-                                        uselist=False,
-                                        foreign_keys=[default_external_map_id])
+                                        uselist = False,
+                                        foreign_keys = [default_external_map_id])
 
     @staticmethod
     def new_user_working_dir(
-            session,
-            branch,  # branch is sorta deprecated...
-            project,
-            user,
-            latest_version=None,
-            prior_working_dir_id=None,
-            project_default_dir=False
+        session,
+        branch,  # branch is sorta deprecated...
+        project,
+        user,
+        latest_version = None,
+        prior_working_dir_id = None,
+        project_default_dir = False
     ):
         """
         Create a new working dir for user for a project
@@ -110,7 +110,7 @@ class WorkingDir(Base):
         if prior_working_dir_id:
             file_list = WorkingDirFileLink.file_list(session,
                                                      prior_working_dir_id,
-                                                     limit=None)
+                                                     limit = None)
 
             for file in file_list:
 
@@ -138,21 +138,21 @@ class WorkingDir(Base):
 
     @staticmethod
     def list(
-            session,
-            project_id,
-            exclude_archived=True,
-            limit=100,
-            return_kind="objects",
-            date_to = None,     # datetime
-            date_from = None,   # datetime
-            date_to_string: str = None,
-            date_from_string: str = None,
-            nickname: str = None,
-            nickname_match_type: str = "ilike",  # substring and helps if case Aa is off
-            order_by_class_and_attribute = None,
-            order_by_direction = desc,
+        session,
+        project_id,
+        exclude_archived = True,
+        limit = 100,
+        return_kind = "objects",
+        date_to = None,  # datetime
+        date_from = None,  # datetime
+        date_to_string: str = None,
+        date_from_string: str = None,
+        nickname: str = None,
+        nickname_match_type: str = "ilike",  # substring and helps if case Aa is off
+        order_by_class_and_attribute = None,
+        order_by_direction = desc,
 
-        ):
+    ):
         """
 
         """
@@ -181,11 +181,11 @@ class WorkingDir(Base):
                 query = query.filter(WorkingDir.created_time <= date_to)
         else:
             query = regular_methods.regular_query(
-                query=query,
-                date_from_string=date_from_string,
-                date_to_string=date_to_string,
-                base_class=WorkingDir,
-                created_time_string='created_time'
+                query = query,
+                date_from_string = date_from_string,
+                date_to_string = date_to_string,
+                base_class = WorkingDir,
+                created_time_string = 'created_time'
             )
 
         # Must call order by before limit / offset?
@@ -194,12 +194,15 @@ class WorkingDir(Base):
                 order_by_direction(order_by_class_and_attribute))
 
         if return_kind == "count":
-            return query.limit(limit).count()
-
+            if limit is not None:
+                return query.limit(limit).count()
+            else:
+                query.count()
         if return_kind == "objects":
-            return query.limit(limit).all()
-
-
+            if limit is not None:
+                return query.limit(limit).all()
+            else:
+                query.all()
 
     # TODO is this still right?
     # Deprecated maybe since label_file_list is gone
@@ -237,7 +240,7 @@ class WorkingDir(Base):
 
         return {
             'id': self.id,
-            'directory_id': self.id,    # hack to remove at some point
+            'directory_id': self.id,  # hack to remove at some point
             'nickname': self.nickname,
             'jobs_to_sync': self.jobs_to_sync,
             # 'branch' : branch,
@@ -287,29 +290,28 @@ class WorkingDir(Base):
 
     @staticmethod
     def get(
-            session,
-            directory_id,
-            project_id):
+        session,
+        directory_id,
+        project_id):
 
         directory = session.query(WorkingDir).filter(
             WorkingDir.project_id == project_id,
             WorkingDir.id == directory_id).first()
         return directory
 
-
     @staticmethod
     def get_by_id(
-            session,
-            directory_id):
+        session,
+        directory_id):
 
         directory = session.query(WorkingDir).filter(WorkingDir.id == directory_id).first()
         return directory
 
     @staticmethod
     def get_with_fallback(
-            session,
-            project,
-            directory_id=None):
+        session,
+        project,
+        directory_id = None):
         """
         If none, uses project default
 
@@ -334,9 +336,9 @@ class WorkingDir(Base):
         else:
 
             directory = WorkingDir.get(
-                session=session,
-                directory_id=directory_id,
-                project_id=project.id)
+                session = session,
+                directory_id = directory_id,
+                project_id = project.id)
 
             if directory is None:
                 print('[get_with_fallback] bad project & directory combo')
@@ -346,13 +348,13 @@ class WorkingDir(Base):
 
     @staticmethod
     def new_blank_directory(session,
-                            project=None, # deprecated arg pending removal
-                            user=None,
-                            latest_version=None,
-                            prior_working_dir_id=None,
-                            nickname=None,
-                            project_id=None,
-                            project_default=False
+                            project = None,  # deprecated arg pending removal
+                            user = None,
+                            latest_version = None,
+                            prior_working_dir_id = None,
+                            nickname = None,
+                            project_id = None,
+                            project_default = False
                             ):
         """
         Create a new directory
@@ -367,9 +369,9 @@ class WorkingDir(Base):
         start_time = time.time()
 
         working_dir = WorkingDir(
-            nickname=nickname,
-            project_id=project_id,
-            type='standard'
+            nickname = nickname,
+            project_id = project_id,
+            type = 'standard'
         )
         if project_default:
             working_dir.type = 'project_default'
@@ -396,8 +398,8 @@ class WorkingDirFileLink(Base):
 
     """
 
-    working_dir_id = Column(Integer, ForeignKey('working_dir.id'), primary_key=True)
-    file_id = Column(Integer, ForeignKey('file.id'), primary_key=True)
+    working_dir_id = Column(Integer, ForeignKey('working_dir.id'), primary_key = True)
+    file_id = Column(Integer, ForeignKey('file.id'), primary_key = True)
 
     file = relationship("File")
 
@@ -407,8 +409,8 @@ class WorkingDirFileLink(Base):
 
     count = Column(Integer)
 
-    created_time = Column(DateTime, default=datetime.datetime.utcnow)
-    last_time = Column(DateTime, onupdate=datetime.datetime.utcnow)
+    created_time = Column(DateTime, default = datetime.datetime.utcnow)
+    last_time = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
     # This is more for adding stuff
     # Not for getting file directly
@@ -427,10 +429,10 @@ class WorkingDirFileLink(Base):
     def add(session, working_dir_id, file):
         # need full file object
         # for type and committed
-        file_link = WorkingDirFileLink(working_dir_id=working_dir_id,
-                                       file_id=file.id,
-                                       type=file.type,
-                                       committed=file.committed)
+        file_link = WorkingDirFileLink(working_dir_id = working_dir_id,
+                                       file_id = file.id,
+                                       type = file.type,
+                                       committed = file.committed)
         session.add(file_link)
 
     def commit(session, working_dir_id, file):
@@ -442,9 +444,9 @@ class WorkingDirFileLink(Base):
     # to only have "list" as extra thing
     # CAREFUL LIST  see above
     def get_list_sub_query(
-            session,
-            directory_id_list: list,  # assumes integer ids
-            type=None):
+        session,
+        directory_id_list: list,  # assumes integer ids
+        type = None):
 
         # CAREFUL LIST
         query = session.query(WorkingDirFileLink).filter(
@@ -456,7 +458,7 @@ class WorkingDirFileLink(Base):
         return query.filter(WorkingDirFileLink.type == type).subquery(
             'file_link_sub_query')
 
-    def get_sub_query(session, working_dir_id, type=None):
+    def get_sub_query(session, working_dir_id, type = None):
 
         if working_dir_id is None:
             return False
@@ -465,17 +467,14 @@ class WorkingDirFileLink(Base):
             WorkingDirFileLink.working_dir_id == working_dir_id)
 
         if type is None:
-
             return query.subquery('file_link_sub_query')
 
         # TODO not clear benefit of doing this here
         if isinstance(type, str):
-
             return query.filter(WorkingDirFileLink.type == type).subquery(
                 'file_link_sub_query')
 
         if isinstance(type, list):
-
             return query.filter(WorkingDirFileLink.type.in_(type)).subquery(
                 'file_link_sub_query')
 
@@ -487,29 +486,29 @@ class WorkingDirFileLink(Base):
     # def file list
     @staticmethod
     def file_list(session,
-                  working_dir_id=None,
-                  root_files_only=False,
-                  limit=25,
-                  type=None,
-                  ann_is_complete=None,
-                  counts_only=False,
-                  exclude_removed=True,
-                  date_from=None,
-                  date_to=None,
-                  issues_filter=None,
-                  directory_list=None,
-                  time_kind="created",
-                  has_some_machine_made_instances=None,
-                  order_by_class_and_attribute=None,  # File.original_filename
-                  order_by_direction=asc,
-                  offset=None,
-                  return_mode=None,
-                  job_id=None,
-                  count_before_limit=False,
-                  file_view_mode=False,
-                  ignore_id_list=None,
-                  original_filename=None,
-                  original_filename_match_type="ilike"  # Set to None to get exact match
+                  working_dir_id = None,
+                  root_files_only = False,
+                  limit = 25,
+                  type = None,
+                  ann_is_complete = None,
+                  counts_only = False,
+                  exclude_removed = True,
+                  date_from = None,
+                  date_to = None,
+                  issues_filter = None,
+                  directory_list = None,
+                  time_kind = "created",
+                  has_some_machine_made_instances = None,
+                  order_by_class_and_attribute = None,  # File.original_filename
+                  order_by_direction = asc,
+                  offset = None,
+                  return_mode = None,
+                  job_id = None,
+                  count_before_limit = False,
+                  file_view_mode = False,
+                  ignore_id_list = None,
+                  original_filename = None,
+                  original_filename_match_type = "ilike"  # Set to None to get exact match
                   ):
         """
 
@@ -529,7 +528,6 @@ class WorkingDirFileLink(Base):
         # TODO is it save to have .state != removed here?
 
         # Assumes working dir....
-
 
         if job_id:
             if not order_by_class_and_attribute:
@@ -616,8 +614,8 @@ class WorkingDirFileLink(Base):
             file_list_ids = [file.id for file in file_list]
 
             issue_rels_query = session.query(DiscussionRelation).join(Discussion, DiscussionRelation.issue).filter(
-                    DiscussionRelation.file_id.in_(file_list_ids)
-                )
+                DiscussionRelation.file_id.in_(file_list_ids)
+            )
             if issues_filter == 'issues':
                 issue_rels = issue_rels_query.all()
 
@@ -699,14 +697,14 @@ class WorkingDirFileLink(Base):
             return query.all()
 
     def image_file_list_from_video(
-            session,
-            video_parent_file_id,
-            limit=None,
-            start=None,
-            end=None,
-            order_by_frame=True,  # bool
-            has_count_instances_changed=False,
-            return_mode="objects"
+        session,
+        video_parent_file_id,
+        limit = None,
+        start = None,
+        end = None,
+        order_by_frame = True,  # bool
+        has_count_instances_changed = False,
+        return_mode = "objects"
     ):
         """
         Work in progress
@@ -767,7 +765,7 @@ class WorkingDirFileLink(Base):
                          directory,
                          file_id,
                          job,
-                         log=None
+                         log = None
                          ):
         """
         Constructs or removes basic file directory link
