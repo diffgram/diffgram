@@ -116,4 +116,11 @@ export function route_errors (error) {
       return result
     }
   }
+
+  else if (error && error.request) {
+      return error.request
+  }
+  else if (error && error.message) {
+      return error.message
+  }
 }
