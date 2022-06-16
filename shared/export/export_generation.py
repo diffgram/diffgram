@@ -755,6 +755,11 @@ def build_instance(instance, include_label = False):
         out['end_sentence'] = instance.end_sentence
         out['sentence'] = instance.sentence
 
+    if instance.type == 'keypoints':
+        out['nodes'] = instance.nodes
+        out['edges'] = instance.edges
+
+
     if instance.type == 'cuboid_3d':
         out['rotation_euler_angles'] = instance.rotation_euler_angles
         out['position_3d'] = instance.position_3d
