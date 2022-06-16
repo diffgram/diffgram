@@ -695,7 +695,10 @@
           this.move_to_next_step();
           this.hide_geotiff_prompt();
           await this.$nextTick();
-          this.$refs.myVueDropzone.dropzone.files = this.file_list_to_upload
+          // may be using connections
+          if (this.$refs.myVueDropzone) {
+            this.$refs.myVueDropzone.dropzone.files = this.file_list_to_upload
+          }
         },
         upload_raw_media: async function (file_list) {
           this.$emit('upload_in_progress')
@@ -733,8 +736,6 @@
         move_to_next_step: function () {
           const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');
           let file_types = this.file_list_to_upload.map(f => f.type)
-          if(this.$refs.myVueDropzone){
-          }
 
           const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
           const export_files = this.file_list_to_upload.filter(f => f.data_type === 'Diffgram Export');
