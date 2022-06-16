@@ -7,6 +7,9 @@ from shared.database.action.action_template import Action_Template
 from shared.shared_logger import get_shared_logger
 from shared.database.action.action_run import ActionRun
 from sqlalchemy.orm.session import Session
+from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
+from eventhandlers.action_runners.base.ActionCondition import ActionCondition
+from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 logger = get_shared_logger()
 
 
@@ -22,9 +25,10 @@ class ActionRunner:
     icon: str
     kind: str
     category: str
-    trigger_data: dict
-    condition_data: dict
-    completion_condition_data: dict
+    description: str
+    trigger_data: ActionTrigger
+    condition_data: ActionCondition
+    completion_condition_data: ActionCompleteCondition
     action_run: ActionRun
 
     def __init__(self, action = None, event_data: dict = None):
@@ -40,7 +44,7 @@ class ActionRunner:
         raise NotImplementedError
 
     def verify_registration_data(self) -> None:
-        fields = ['public_name', 'icon', 'kind', 'trigger_data', 'condition_data', 'completion_condition_data']
+        fields = ['public_name', 'description', 'icon', 'kind', 'trigger_data', 'condition_data', 'completion_condition_data']
         for field in fields:
             if self.__getattribute__(field) is None:
                 msg = f'Error registering {self.__class__}. Provide f{field}'
@@ -52,13 +56,13 @@ class ActionRunner:
         Action_Template.register(
             session = session,
             public_name = self.public_name,
-            description = 'Azure Text Analytics',
-            icon = 'https://www.svgrepo.com/show/46774/export.svg',
-            kind = 'AzureTextAnalyticsSentimentAction',
+            description = self.description,
+            icon = self.icon,
+            kind = self.kind,
             category = None,
-            # trigger_data = {'trigger_event_name': 'task_completed'},
-            # condition_data = {'event_name': 'all_tasks_completed'},
-            # completion_condition_data = {'event_name': 'prediction_success'},
+            trigger_data = self.trigger_data.build_trigger_data(),
+            condition_data = self.condition_data.build_trigger_data(),
+            completion_condition_data = self.completion_condition_data.build_trigger_data(),
         )
 
     def run(self) -> None:

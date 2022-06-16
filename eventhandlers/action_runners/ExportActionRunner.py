@@ -7,11 +7,22 @@ from shared.database.task.job.job import Job
 from shared.database.action.action_template import Action_Template
 from sqlalchemy.orm import Session
 from shared.database.action.action_run import ActionRun
+from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
+from eventhandlers.action_runners.base.ActionCondition import ActionCondition
+from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 
 logger = get_shared_logger()
 
 
 class ExportActionRunner(ActionRunner):
+    public_name = 'JSON Export'
+    description = 'Generate JSON Export'
+    icon = 'https://www.svgrepo.com/show/46774/export.svg'
+    kind = 'export'
+    trigger_data = ActionTrigger(default_event = 'task_completed', event_list = [])
+    condition_data = ActionCondition(default_event = 'all_tasks_completed', event_list = [])
+    completion_condition_data = ActionCompleteCondition(default_event = 'export_generate_success', event_list = [])
+
     def execute_pre_conditions(self, session: Session, action_run: ActionRun) -> bool:
         event_name = self.action.condition_data.get('event_name')
         if event_name is None:
@@ -69,17 +80,3 @@ class ExportActionRunner(ActionRunner):
             self.declare_action_failed(session)
             return True
         logger.info(f'Export: generated successfully.')
-
-    def register(self, session):
-
-        Action_Template.register(
-            session = session,
-            public_name = 'JSON Export',
-            description = 'Generate JSON Export',
-            icon = 'https://www.svgrepo.com/show/46774/export.svg',
-            kind = 'export',
-            category = None,
-            trigger_data = {'trigger_event_name': 'task_completed'},
-            condition_data = {'event_name': 'all_tasks_completed'},
-            completion_condition_data = {'event_name': 'export_generate_success'},
-        )

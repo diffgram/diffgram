@@ -10,10 +10,22 @@ from shared.database.auth.member import Member
 from shared.database.action.action_template import Action_Template
 from sqlalchemy.orm.session import Session
 from shared.database.action.action_run import ActionRun
+from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
+from eventhandlers.action_runners.base.ActionCondition import ActionCondition
+from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
+
 logger = get_shared_logger()
 
 
 class TaskTemplateActionRunner(ActionRunner):
+    public_name = 'Human Labeling Tasks'
+    description = 'Add tasks to a task template'
+    icon = 'https://www.svgrepo.com/show/376121/list-task.svg'
+    kind = 'create_task'
+    trigger_data = ActionTrigger(default_event = 'input_file_upload', event_list = [])
+    condition_data = ActionCondition(default_event = None, event_list = [])
+    completion_condition_data = ActionCompleteCondition(default_event = 'task_completed', event_list = [])
+
     def execute_pre_conditions(self, session: Session, action_run: ActionRun) -> bool:
         return True
 
@@ -78,17 +90,3 @@ class TaskTemplateActionRunner(ActionRunner):
         )
         task_template.update_file_count_statistic(session = session)
         task_template.refresh_stat_count_tasks(session = session)
-
-    def register(self, session):
-
-        Action_Template.register(
-            session = session,
-            public_name = 'Human Labeling Tasks',
-            description = 'Add tasks to a task template',
-            icon = 'https://www.svgrepo.com/show/376121/list-task.svg',
-            kind = 'create_task',
-            category = None,
-            trigger_data = {'trigger_event_name': 'input_file_uploaded'},
-            condition_data = {'event_name': None},
-            completion_condition_data = {'event_name': 'task_completed'},
-        )

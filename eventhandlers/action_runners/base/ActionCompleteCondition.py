@@ -6,7 +6,7 @@ class ActionCompleteCondition:
         self.default_event = default_event
         self.event_list = event_list
 
-    def build_trigger_data(self):
+    def build_trigger_data(self) -> dict:
         return {
             'event_name': self.default_event,
             'event_list': self.event_list,
