@@ -210,16 +210,14 @@ def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEU
 def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
     from methods.input.process_media_queue_manager import process_media_queue_manager
-    if item.media_type and item.media_type in ["frame", "image", "text", "csv_url"]:
-
+    if item.media_type and item.media_type == "video":
+        process_media_queue_manager.VIDEO_QUEUE.put(item)
+    else:
         wait_until_queue_pressure_is_lower(
             queue = process_media_queue_manager.FRAME_QUEUE,
             limit = process_media_queue_manager.frame_threads * 2,
             check_interval = 1)
         process_media_queue_manager.FRAME_QUEUE.put(item)
-
-    else:
-        process_media_queue_manager.VIDEO_QUEUE.put(item)
 
 
 def wait_until_queue_pressure_is_lower(queue, limit, check_interval = 1):
@@ -2075,7 +2073,7 @@ class Process_Media():
                 row_input.url = row[0]
                 row_input.allow_csv = False
                 row_input.type = "from_url"
-                row_input.media_type = "csv_url"
+                row_input.media_type = None
                 self.try_to_commit()
 
                 # Spawn a new instance for each url
@@ -2084,7 +2082,6 @@ class Process_Media():
                 item = PrioritizedItem(
                     priority = 100,
                     input_id = row_input.id)
-                item.media_type = 'csv_url'
                 add_item_to_queue(item)
 
         # TODO how to handle removing from directory
@@ -2242,6 +2239,7 @@ class Process_Media():
                         self.input.status_text = f"Invalid Extension{str(content_type)}"
                         self.log['error']['status_text'] = self.input.status_text
                         return
+
             if self.input.media_type is None:
                 self.input.media_type = self.determine_media_type(
                     extension = self.input.extension,
