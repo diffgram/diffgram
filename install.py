@@ -551,9 +551,7 @@ class DiffgramInstallTool:
     def set_diffgram_version(self):
         version = bcolors.inputcolor('Enter diffgram version: [Or Press Enter to Get The Latest Version]: ')
         if version == "":
-            response = requests.get("https://api.github.com/repos/diffgram/diffgram/releases/latest")
-            latest_release = response.json()['tag_name']
-            self.diffgram_version = latest_release
+            self.diffgram_version = 'latest'
         else:
             self.diffgram_version = version
 
