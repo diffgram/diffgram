@@ -486,7 +486,7 @@ class DiffgramInstallTool:
             env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
             env_file += "GCP_SERVICE_ACCOUNT_FILE_PATH=/dev/null\n"
 
-        fernet_key = base64.urlsafe_b64encode(os.urandom(32))
+        fernet_key = base64.urlsafe_b64encode(os.urandom(32)).decode("utf-8")
         env_file += f"FERNET_KEY={fernet_key}\n"
         env_file += f"USER_PASSWORDS_SECRET={create_random_string(10)}\n"
         env_file += f"INTER_SERVICE_SECRET={create_random_string(10)}\n"
