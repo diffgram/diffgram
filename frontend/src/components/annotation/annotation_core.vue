@@ -519,9 +519,15 @@
 
             <div v-if="file_cant_be_accessed && !loading">
               <v_error_multiple :error="{ 
-                error: 'Error fetching file', 
-                descriptive: 'Diffgarm wasn`t able to access your file. Make you sure you have permissions to access it'
+                error: 'Storage error. Error accessing BLOB', 
+                descriptive: 'You may not have permissions. If you are an Admin, check storage config and signed URL settings.'
               }"> </v_error_multiple>
+
+              <div v-if="file && file.image">
+                URL Attempted To be Used: {{file.image.url_signed}}
+              </div>
+
+               {{file_cant_be_accessed_error}}
             </div>
 
             <canvas
@@ -1206,7 +1212,8 @@ export default Vue.extend({
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
 
-      file_cant_be_accessed: false,
+      file_cant_be_accessed: null,
+      file_cant_be_accessed_error: null,
 
       current_global_instance: null,
       instance_list_global: [],
@@ -7781,6 +7788,8 @@ export default Vue.extend({
           frame_count: 0,
           current_frame: 0,
         };
+        this.file_cant_be_accessed = null
+        this.file_cant_be_accessed_error = null
         // maybe this.current_file should store width/height? ...
         try {
           const new_image = await this.addImageProcess(file.image.url_signed);
@@ -7796,6 +7805,8 @@ export default Vue.extend({
         } catch (error) {
           this.file_cant_be_accessed = true
           console.error(error);
+          this.file_cant_be_accessed_error = this.$route_api_errors(error)
+
         }
       }
       if (file.type === "video") {
