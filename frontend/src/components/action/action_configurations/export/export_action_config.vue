@@ -85,8 +85,11 @@ import Export_config_details from "@/components/action/action_configurations/exp
 import trigger_config from "@/components/action/actions_config_base/trigger_config";
 import pre_conditions_config from "@/components/action/actions_config_base/pre_conditions_config";
 import complete_conditions_config from "@/components/action/actions_config_base/complete_conditions_config";
+import action_config_mixin from "../action_config_mixin";
+
 export default {
   name: "export_action_config",
+  mixins: [action_config_mixin],
   components: {
     Export_config_details,
     action_config_wizard_base,
@@ -97,21 +100,7 @@ export default {
     directory_list: directory_list
   },
   props:{
-    prev_action: {
-      default: null
-    },
-    action:{
-      required: true
-    },
-    project_string_id:{
-      required: true
-    },
-    actions_list: {
-      required: true
-    },
-    display_mode: {
-      default: "wizard"
-    }
+
   },
   data: function(){
     return{
@@ -182,14 +171,9 @@ export default {
   },
 
   computed:{
-    on_directories_updated: function(){
 
-    }
   },
   methods: {
-    on_action_updated: function(){
-      this.$emit('action_updated', this.action)
-    },
 
   }
 }

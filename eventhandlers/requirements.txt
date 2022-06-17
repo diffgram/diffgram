@@ -29,6 +29,6 @@ pika
 python-keycloak
 pyjwt
 opencv-python==4.5.5.64
-torch==4.1.1
+torch==1.11.0
 transformers==4.20.0
 deepchecks[vision]

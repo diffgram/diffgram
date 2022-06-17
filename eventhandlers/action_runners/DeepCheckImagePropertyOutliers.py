@@ -2,6 +2,7 @@ import cv2
 from eventhandlers.action_runners.base.ActionRunner import ActionRunner
 from deepchecks.vision.checks import ImagePropertyOutliers
 from deepchecks.vision import VisionData
+from deepchecks.core.serialization.check_result.html import CheckResultSerializer as CheckResultHtmlSerializer
 
 from skimage import io, transform
 from sqlalchemy.orm import Session
@@ -81,3 +82,10 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
         vision_ds = DiffgramVisionDataset(data_loader = dataloader)
         check = ImagePropertyOutliers()
         result = check.run(vision_ds)
+        result.save_as_html()
+        html = CheckResultHtmlSerializer(result).serialize(
+            output_id = None,
+            full_html = True,
+            include_requirejs = True,
+            include_plotlyjs = True
+        )

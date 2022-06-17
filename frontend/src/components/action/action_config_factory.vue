@@ -1,40 +1,14 @@
 <template>
 
   <div style="height: 100%">
-    <create_task_action_config v-if="action.kind === 'create_task'"
-                               :project_string_id="project_string_id"
-                               :actions_list="actions_list"
-                               :display_mode="display_mode"
-                               @action_updated="on_action_updated"
-                               @open_action_selector="$emit('open_action_selector')"
-                               :action="action">
-
-    </create_task_action_config>
-    <export_action_config v-if="action.kind === 'export'"
-                          :prev_action="prev_action"
-                          :display_mode="display_mode"
-                          :actions_list="actions_list"
-                          :project_string_id="project_string_id"
-                          @action_updated="on_action_updated"
-                          @open_action_selector="$emit('open_action_selector')"
-                          :action="action">
-
-    </export_action_config>
-
-    {{action.kind }}
-
-    <AzureTextAnalyticsSentimentAction
-                  v-if="action.kind === 'AzureTextAnalyticsSentimentAction'"
-                  :prev_action="prev_action"
-                  :display_mode="display_mode"
-                  :actions_list="actions_list"
-                  :project_string_id="project_string_id"
-                  @action_updated="on_action_updated"
-                  @open_action_selector="$emit('open_action_selector')"
-                  :action="action">
-
-    </AzureTextAnalyticsSentimentAction>
-
+    <component :is="selected_action_config"
+               :project_string_id="project_string_id"
+               :actions_list="actions_list"
+               :display_mode="display_mode"
+               @action_updated="on_action_updated"
+               @open_action_selector="$emit('open_action_selector')"
+               :action="action"
+    ></component>
   </div>
 </template>
 
@@ -45,6 +19,15 @@ import action_step_box from "./action_step_box.vue";
 import create_task_action_config from "./action_configurations/create_task/create_task_action_config";
 import export_action_config from "./action_configurations/export/export_action_config";
 import AzureTextAnalyticsSentimentAction from "./action_configurations/azure/AzureTextAnalyticsSentimentAction";
+
+
+export const COMPONENTS_KIND_MAPPING = {
+  'AzureTextAnalyticsSentimentAction': AzureTextAnalyticsSentimentAction,
+  'export': export_action_config,
+  'create_task': create_task_action_config
+}
+
+
 export default Vue.extend({
 
     name: 'image_properties_outliers_action_config',
@@ -58,18 +41,25 @@ export default Vue.extend({
     props: ['action', 'project_string_id', 'actions_list', 'display_mode'],
 
     mounted() {
-
+      this.set_action_config_component()
     },
 
     data() {
       return {
+
         is_open: true,
         search: '',
+        selected_action_config: null
 
       }
     },
     watch: {
-
+      action:{
+        deep: true,
+        handler: function(){
+          this.set_action_config_component()
+        }
+      }
     },
     computed: {
       prev_action: function(){
@@ -94,6 +84,9 @@ export default Vue.extend({
       }
     },
     methods: {
+      set_action_config_component: function(){
+        this.selected_action_config = COMPONENTS_KIND_MAPPING[this.action.kind]
+      },
       on_action_updated: function(act){
         this.$emit('action_updated', act)
       },
