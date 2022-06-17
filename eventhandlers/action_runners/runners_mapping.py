@@ -22,11 +22,18 @@ try:
 except:
     print("deep_checks__image_properties_outliers is not avalible on your installation")
 
+try:
+    from action_runners.HuggingFaceZeroShot import HuggingFaceZeroShotAction
+    ACTION_RUNNERS_KIND_MAPPER["HuggingFaceZeroShotAction"] = HuggingFaceZeroShotAction
+except:
+    print("HuggingFaceZeroShotAction is not avalible on your installation")
+
 logger = get_shared_logger()
 
 def register_all():
     with sessionMaker.session_scope() as session:
         for key, value in ACTION_RUNNERS_KIND_MAPPER.items():
+            print(f'Register {key} event')
             logger.info(f'Registering: {key}')
             runner = value(action = None, event_data = None)
             runner.register(session = session)

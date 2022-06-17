@@ -1,11 +1,13 @@
 from action_runners.base.ActionRunner import ActionRunner
+from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
+from eventhandlers.action_runners.base.ActionCondition import ActionCondition
+from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 from shared.shared_logger import get_shared_logger
 from shared.database.task.job.job import Job
 from shared.helpers.sessionMaker import session_scope
 from shared.utils import job_dir_sync_utils
 from shared.database.source_control.file import File
 from shared.ingest import packet
-
 from transformers import pipeline
 
 
@@ -13,14 +15,27 @@ logger = get_shared_logger()
 
 
 class HuggingFaceZeroShotAction(ActionRunner):
+    public_name = 'Zero Shot Classification (Hugging Face)'
+    description = 'Performs Zero Shot Classification for the text file'
+    icon = 'https://www.svgrepo.com/svg/401953/hugging-face'
+    kind = 'hugging_face_zero_shot'
+    trigger_data = ActionTrigger(default_event='', event_list = ['task_created', 'input_file_uploaded'])
+    condition_data = ActionCondition(default_event = 'action_completed',
+                                     event_list = ['action_completed'])
+
+    completion_condition_data = ActionCompleteCondition(default_event = 'action_completed',
+                                                        event_list = ['action_completed'])
+    category = 'nlp'
+
     def execute_pre_conditions(self, session) -> bool:
         return True
-
 
     def test_execute_action(self, session, file_id, connection_id):
         pass
 
     def execute_action(self, session, do_save_annotations=True):
+        print("Hugging face has been executed")
+        return
         """
                     Creates a task from the given file_id in the given task template ID.
                 :return:
