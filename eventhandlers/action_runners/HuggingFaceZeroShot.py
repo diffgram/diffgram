@@ -15,10 +15,10 @@ logger = get_shared_logger()
 
 
 class HuggingFaceZeroShotAction(ActionRunner):
-    public_name = 'Zero Shot Classification (Hugging Face)'
+    public_name = 'Zero Shot Classification (Hugging Face) '
     description = 'Performs Zero Shot Classification for the text file'
-    icon = 'https://www.svgrepo.com/svg/401953/hugging-face'
-    kind = 'hugging_face_zero_shot'
+    icon = 'https://www.svgrepo.com/show/401953/hugging-face.svg'
+    kind = 'hf_zero_shot'
     trigger_data = ActionTrigger(default_event='', event_list = ['task_created', 'input_file_uploaded'])
     condition_data = ActionCondition(default_event = 'action_completed',
                                      event_list = ['action_completed'])
