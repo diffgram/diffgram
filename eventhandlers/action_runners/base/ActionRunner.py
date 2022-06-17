@@ -51,6 +51,16 @@ class ActionRunner:
                 logger.error(msg)
                 raise ActionRegistrationError(msg)
 
+    def update(self, session) -> None:
+        self.verify_registration_data()
+        payload = {
+            "public_name": self.public_name,
+            "description": self.description,
+            "icon": self.icon,
+            "category": None
+        }
+        Action_Template.update_by_kind(session, self.kind, payload)
+
     def register(self, session) -> None:
         self.verify_registration_data()
         Action_Template.register(

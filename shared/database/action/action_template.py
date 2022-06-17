@@ -2,6 +2,7 @@ from shared.database.common import *
 from typing import List
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import load_only
 
 
 class Action_Template(Base, SerializerMixin):
@@ -66,7 +67,15 @@ class Action_Template(Base, SerializerMixin):
             Returns all Action templates available in the installation.
         """
 
-        return session.query(Action_Template).all()
+        return session.query(Action_Template).filter_by(is_available=True).all()
+
+    @staticmethod
+    def list_avalible_kinds(session) -> List[str]:
+        """
+            Returns all Action templates available in the installation.
+        """
+
+        return session.query(Action_Template).filter_by(is_available=True).options(load_only('kind')).all()
 
     @staticmethod
     def get_by_kind(session,
@@ -89,6 +98,16 @@ class Action_Template(Base, SerializerMixin):
         return session.query(Action_Template).filter(
             Action_Template.id == id).first()
 
+    @staticmethod
+    def unregister_by_kind(session, kind):
+        to_make_unavalible = Action_Template.get_by_kind(session, kind)
+        to_make_unavalible.is_available = False
+
+    @staticmethod
+    def update_by_kind(session, kind, payload):
+        to_update = Action_Template.get_by_kind(session, kind)
+        for key in payload:
+            setattr(to_update, key, payload[key])
 
     @staticmethod
     def register(
@@ -106,6 +125,7 @@ class Action_Template(Base, SerializerMixin):
         if update == False:
             existing = Action_Template.get_by_kind(session, kind)
             if existing: return True
+
 
         Action_Template.new(
             session,
