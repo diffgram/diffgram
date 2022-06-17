@@ -131,18 +131,14 @@ class Connection_Operations():
 
     def init_cryptography(self):
         """
-        Context we have seen this fail is if fernet key is invalid.
         """
 
-        try:
-            self.fernet = Fernet(settings.FERNET_KEY)
+        self.fernet = Fernet(settings.FERNET_KEY)
 
-            if self.fernet is None:
-                raise Exception('Fernet not defined.')
+        if self.fernet is None:
+            raise Exception('Fernet not defined.')
 
-        except Exception as exception:
-            print('[init_cryptography] ', exception)
-            return False
+   
 
     def get_existing_connection(self, connection_id):
         """
@@ -255,6 +251,24 @@ class Connection_Operations():
                 member = self.member,
                 project = project)
 
+
+    def self_test(self):
+
+        self.init_cryptography()
+
+        message = "attack at dawn"
+        encrypted_message = self.encrypt_secret(message)
+        
+        if message == encrypted_message:
+            raise Exception("Encryption failed")
+
+        clear_text = self.decrypt_secret(encrypted_message)
+        if message != clear_text:
+            raise Exception("Decryption failed")
+
+        logger.info("init_cryptography() self test success")
+
+
     def encrypt_secret(self, secret) -> str:
         """
         https://pypi.org/project/cryptography/
@@ -262,8 +276,13 @@ class Connection_Operations():
         but we assume secret will be a string
 
         """
+        if not secret:
+            raise Exception("Must supply secret")
+
         if not self.fernet:
             self.init_cryptography()
+        if not self.fernet:
+            return False
 
         return self.fernet.encrypt(secret.encode())
 
