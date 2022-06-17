@@ -5,6 +5,7 @@ from shared.settings import settings
 from shared.queueclient.QueueClient import QueueClient
 from shared.auth.KeycloakDiffgramClient import check_keycloak_setup
 import traceback
+from shared.connection.connection_operations import Connection_Operations
 
 
 class DefaultServiceSystemStartupChecker(SystemStartupBase):
@@ -26,5 +27,17 @@ class DefaultServiceSystemStartupChecker(SystemStartupBase):
             raise (Exception('Error connecting to RabbitMQ'))
 
         check_keycloak_setup()
+        DefaultServiceSystemStartupChecker.connection_operations_self_tests()
 
         return result
+
+
+    def connection_operations_self_tests():
+
+        Connection_Operations(session=None).self_test()
+
+
+
+
+
+
