@@ -30,40 +30,21 @@ from shared.regular import regular_log
     ["admin", "Editor", "Viewer", "allow_if_project_is_public"])
 def web_build_name_to_file_id_dict(project_string_id):
     """
-    Given we know a label_name, and where we are working,
-    return the label_file_id
-
-    Arguments:
-        project_string_id, integer
-        working_dir_id, integer
-
-    Returns:
-        dict of label files
-        or None / failure case
-
     """
+
     log = regular_log.default()
     schema_id = request.args.get('schema_id')
-    directory_id = request.headers.get('directory_id', None)
-    if directory_id is None:
-        log["errors"].append("'directory_id' not supplied")
-        return jsonify(log), 200
 
     with sessionMaker.session_scope() as session:
 
         project = Project.get(session, project_string_id)
-        verify_result = WorkingDir.verify_directory_in_project(
-            session, project, directory_id)
-        if verify_result is False:
-            log["errors"].append("Invalid directory id")
-            log["success"] = False
-            return jsonify(log = log), 200
 
-        name_to_file_id, log = build_name_to_file_id_dict(session = session,
-                                                          project = project,
-                                                          directory_id = directory_id,
-                                                          schema_id = schema_id,
-                                                          log = log)
+        name_to_file_id, log = build_name_to_file_id_dict(
+            session = session,
+            project = project,
+            schema_id = schema_id,
+            log = log)
+
         if regular_log.log_has_error(log):
             return jsonify(log), 400
         else:
@@ -73,12 +54,13 @@ def web_build_name_to_file_id_dict(project_string_id):
                    name_to_file_id = name_to_file_id), 200
 
 
-def build_name_to_file_id_dict(session, project, directory_id, log, schema_id = None):
-    directory_id = int(directory_id)
+def build_name_to_file_id_dict(
+        session, 
+        project, 
+        log, 
+        schema_id = None):
 
-    sub_query = WorkingDirFileLink.get_sub_query(session = session,
-                                                 working_dir_id = directory_id,
-                                                 type = "label")
+
     if schema_id is None:
         schema = project.get_default_schema(session = session)
         schema_id = schema.id
@@ -91,11 +73,10 @@ def build_name_to_file_id_dict(session, project, directory_id, log, schema_id = 
             log['error']['schema'] = 'Schema does not belong to project.'
             return None, log
 
-    dir = WorkingDir.get_by_id(session = session, directory_id = directory_id)
-
-    label_file_list = project.get_label_list(session = session,
-                                             directory = dir,
-                                             schema_id = schema_id)
+    label_file_list = project.get_label_list(
+        session = session,
+        directory = project.directory_default,
+        schema_id = schema_id)
 
     out = {}
 
