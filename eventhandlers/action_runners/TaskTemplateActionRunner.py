@@ -26,10 +26,10 @@ class TaskTemplateActionRunner(ActionRunner):
     condition_data = ActionCondition(default_event = None, event_list = [])
     completion_condition_data = ActionCompleteCondition(default_event = 'task_completed', event_list = [])
 
-    def execute_pre_conditions(self, session: Session, action_run: ActionRun) -> bool:
+    def execute_pre_conditions(self, session: Session) -> bool:
         return True
 
-    def execute_action(self, session: Session, action_run: ActionRun):
+    def execute_action(self, session: Session):
         """
                    Creates a task from the given file_id in the given task template ID.
                :return:

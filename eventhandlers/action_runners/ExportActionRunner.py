@@ -23,7 +23,7 @@ class ExportActionRunner(ActionRunner):
     condition_data = ActionCondition(default_event = 'all_tasks_completed', event_list = [])
     completion_condition_data = ActionCompleteCondition(default_event = 'export_generate_success', event_list = [])
 
-    def execute_pre_conditions(self, session: Session, action_run: ActionRun) -> bool:
+    def execute_pre_conditions(self, session: Session) -> bool:
         event_name = self.action.condition_data.get('event_name')
         if event_name is None:
             return True
