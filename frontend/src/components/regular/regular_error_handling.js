@@ -51,6 +51,7 @@ export function route_errors (error) {
     }
 
   }
+
   if (error && error.response) {
 
     if (error.response.status == 400) {
@@ -61,7 +62,7 @@ export function route_errors (error) {
         return { "Please try again later." : "[Technical] .log could not be found."}
     }
 
-    if (error.response.status == 403) {
+    else if (error.response.status == 403) {
         /* replace dict
           * if just do key doesn't seem to actually work
           * unless key already happens to exist
@@ -80,19 +81,19 @@ export function route_errors (error) {
 
     }
 
-    if (error.response.status == 429) {
+    else if (error.response.status == 429) {
 
      return { rate_limit : "Too many requests, please try again later."}
 
     }
 
-    if (error.response.status == 405) {
+    else if (error.response.status == 405) {
 
      return { method_not_allowed : "Please Try Again Later (405, Method Not Allowed)"}
 
     }
 
-    if (error.response.status == 500) {
+    else if (error.response.status == 500) {
 
       let result = { server : "Please try again later. Contact us if this persists."}
       if (error.response.data && typeof error.response.data === 'object') {
@@ -104,7 +105,7 @@ export function route_errors (error) {
       return result
     }
 
-    if (error.response.status == 503) {
+    else if (error.response.status == 503) {
 
       let result = { server : "503. Service unavailable. Are all services up?"}
       if (error.response.data && typeof error.response.data === 'object') {
@@ -115,5 +116,27 @@ export function route_errors (error) {
       }
       return result
     }
+
+    else {
+      if (error.response.data && typeof error.response.data === 'object') {
+        result = {
+          ...error.response.data,
+          ...result
+        }
+      }
+      return result
+
+    }
+  }
+
+  else if (error && error.request) {
+      return error.request
+  }
+  else if (error && error.message) {
+      return error.message
+  }
+  else {
+    // if we could not process it otherwise
+    return error
   }
 }

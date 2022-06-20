@@ -74,6 +74,7 @@ export class CanvasMouseTools {
     if (canvas_element) {
       this.canvas_rectangle = canvas_element.getBoundingClientRect()
     }
+    if (!this.canvas_rectangle) { return }
 
     let x_raw = (event.clientX - this.canvas_rectangle.left)
     let y_raw = (event.clientY - this.canvas_rectangle.top)

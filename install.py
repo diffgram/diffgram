@@ -486,7 +486,7 @@ class DiffgramInstallTool:
             env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
             env_file += "GCP_SERVICE_ACCOUNT_FILE_PATH=/dev/null\n"
 
-        fernet_key = base64.urlsafe_b64encode(os.urandom(32))
+        fernet_key = base64.urlsafe_b64encode(os.urandom(32)).decode("utf-8")
         env_file += f"FERNET_KEY={fernet_key}\n"
         env_file += f"USER_PASSWORDS_SECRET={create_random_string(10)}\n"
         env_file += f"INTER_SERVICE_SECRET={create_random_string(10)}\n"
@@ -496,6 +496,10 @@ class DiffgramInstallTool:
         env_file += f"DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE={True}\n"
 
         install_fingerprint = self.gen_install_finger_print()
+        env_file += f"DIFFGRAM_SYSTEM_MODE=sandbox\n"
+        env_file += f"SERVICE_ACCOUNT_FULL_PATH=/gcp/gcp-service-account.json\n"
+        env_file += f"GOOGLE_APPLICATION_CREDENTIALS=/gcp/gcp-service-account.json\n"
+        env_file += f"PYTHONPATH=/gcp/gcp-service-account.json\n"
         env_file += f"DIFFGRAM_INSTALL_FINGERPRINT={install_fingerprint}\n"
         env_file += f"DIFFGRAM_VERSION_TAG={self.diffgram_version}\n"
         env_file += f"DIFFGRAM_HOST_OS={self.get_system_os()}\n"

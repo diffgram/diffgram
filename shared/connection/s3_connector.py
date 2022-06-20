@@ -173,18 +173,19 @@ class S3Connector(Connector):
             kwargs = {'Bucket': opts['bucket_name'], 'Prefix': current_path}
             while True:
                 resp = self.connection_client.list_objects_v2(**kwargs)
-                for obj in resp['Contents']:
-                    if not obj['Key'].endswith('/'):
-                        opts_fetch_object = {}
-                        opts_fetch_object.update(opts)
-                        new_opts = {
-                            'path': obj['Key'],
-                            'directory_id': opts.get('directory_id'),
-                            'batch_id': opts.get('batch_id'),
-                            'bucket_name': opts.get('bucket_name'),
-                        }
-                        opts_fetch_object.update(new_opts)
-                        self.__fetch_object(opts_fetch_object)
+                if resp.get('Contents'):
+                    for obj in resp['Contents']:
+                        if not obj['Key'].endswith('/'):
+                            opts_fetch_object = {}
+                            opts_fetch_object.update(opts)
+                            new_opts = {
+                                'path': obj['Key'],
+                                'directory_id': opts.get('directory_id'),
+                                'batch_id': opts.get('batch_id'),
+                                'bucket_name': opts.get('bucket_name'),
+                            }
+                            opts_fetch_object.update(new_opts)
+                            self.__fetch_object(opts_fetch_object)
                 try:
                     kwargs['ContinuationToken'] = resp['NextContinuationToken']
                 except KeyError:

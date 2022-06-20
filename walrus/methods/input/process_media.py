@@ -210,16 +210,14 @@ def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEU
 def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
     from methods.input.process_media_queue_manager import process_media_queue_manager
-    if item.media_type and item.media_type in ["frame", "image", "text", "csv_url"]:
-
+    if item.media_type and item.media_type == "video":
+        process_media_queue_manager.VIDEO_QUEUE.put(item)
+    else:
         wait_until_queue_pressure_is_lower(
             queue = process_media_queue_manager.FRAME_QUEUE,
             limit = process_media_queue_manager.frame_threads * 2,
             check_interval = 1)
         process_media_queue_manager.FRAME_QUEUE.put(item)
-
-    else:
-        process_media_queue_manager.VIDEO_QUEUE.put(item)
 
 
 def wait_until_queue_pressure_is_lower(queue, limit, check_interval = 1):
@@ -1862,8 +1860,6 @@ class Process_Media():
 
     def save_raw_image_file(self):
 
-        self.new_image.url_signed_expiry = int(time.time() + 2592000)  # 1 month
-
         self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
                                               str(self.project_id) + "/" + str(self.new_image.id)
 
@@ -1902,8 +1898,6 @@ class Process_Media():
                 content_type = "image/jpg",
             )
 
-            self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
-                                                                    self.new_image.url_signed_expiry)
         except Exception as e:
             message = f'Error uploading to cloud storage: {traceback.format_exc()}'
             logger.error(message)
@@ -1996,12 +1990,6 @@ class Process_Media():
 
         imwrite(new_temp_filename, thumbnail_image, quality = 95)
 
-        # Build URL
-        url_signed_thumb = data_tools.build_secure_url(self.new_image.url_signed_thumb_blob_path,
-                                                       self.new_image.url_signed_expiry)
-
-        self.new_image.url_signed_thumb = url_signed_thumb
-
         data_tools.upload_to_cloud_storage(
             temp_local_path = new_temp_filename,
             blob_path = self.new_image.url_signed_thumb_blob_path,
@@ -2085,7 +2073,7 @@ class Process_Media():
                 row_input.url = row[0]
                 row_input.allow_csv = False
                 row_input.type = "from_url"
-                row_input.media_type = "csv_url"
+                row_input.media_type = None
                 self.try_to_commit()
 
                 # Spawn a new instance for each url
@@ -2094,7 +2082,6 @@ class Process_Media():
                 item = PrioritizedItem(
                     priority = 100,
                     input_id = row_input.id)
-                item.media_type = 'csv_url'
                 add_item_to_queue(item)
 
         # TODO how to handle removing from directory
@@ -2252,6 +2239,7 @@ class Process_Media():
                         self.input.status_text = f"Invalid Extension{str(content_type)}"
                         self.log['error']['status_text'] = self.input.status_text
                         return
+
             if self.input.media_type is None:
                 self.input.media_type = self.determine_media_type(
                     extension = self.input.extension,
