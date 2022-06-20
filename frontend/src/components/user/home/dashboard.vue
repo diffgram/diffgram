@@ -23,7 +23,7 @@
                            outlined
                            color="primary"
                            @click="route_builder_signup()">
-                      Finish Onboarding
+                      Resume Onboarding
                     </v-btn>
                   </div>
 
@@ -43,8 +43,11 @@
       <v-card
         v-if="$store.state.user.current.security_email_verified != true">
         <v-card-title>
-          Please verify your email. Some actions may be restricted until verification.
+          <h3 class="font-weight-light ml-4">
+              Please verify your email: {{$store.state.user.current.email}}</h3>
         </v-card-title>
+
+        <p>Actions are restricted until verification.</p>
 
         <v-card-actions>
           <v_resend_verify_email />
@@ -85,7 +88,12 @@
         <v-card-actions>
           <v-btn large
                 color="primary"
-                :disabled="!$store.state.project.current.project_string_id && $store.state.user.current.security_email_verified != true"
+                @click="$router.push('/welcome')">
+            Resume Onboarding
+          </v-btn>
+
+          <v-btn large
+                color="primary"
                 @click="$router.push('/a/project/new')">
             New Project
           </v-btn>

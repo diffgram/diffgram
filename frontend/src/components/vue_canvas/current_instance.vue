@@ -164,8 +164,8 @@ export default Vue.extend({
           ctx.setLineDash([0])
 
           ctx.ellipse(
-            instance.x_min,
-            instance.y_min,
+            instance.center_x,
+            instance.center_y,
             instance.width,
             instance.height,
             0,

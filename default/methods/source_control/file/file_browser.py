@@ -172,8 +172,6 @@ def get_annotations_common(
 
     """
 
-    print("HERE WE ARE FETCHING DATA IN LOAD")
-
     if file_id is None or file_id == "undefined":
         return jsonify("No file_id"), 400
 
@@ -506,6 +504,7 @@ class File_Browser():
         query_creator = QueryCreator(session = self.session, project = self.project, member = self.member, directory = self.directory)
         diffgram_query_obj = query_creator.create_query(query_string = query_string)
         if len(query_creator.log['error'].keys()) > 0:
+            logger.error(f'Error making query {query_creator.log}')
             return False, query_creator.log, None
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
         sql_alchemy_query, execution_log = executor.execute_query()
@@ -585,10 +584,12 @@ class File_Browser():
         if self.metadata['machine_made_setting'] == "Human only":
             has_some_machine_made_instances = False
 
-        media_type = self.metadata.get("media_type", None)
-
+        media_type = self.metadata.get("media_type", "all")
+        media_type_query = None
+        if media_type:
+            media_type_query = media_type.lower()
         if media_type in ["All", None]:
-            media_type_query = ["image", "video", "text", "sensor_fusion"]
+            media_type_query = ["image", "video", "text", "sensor_fusion", "geospatial", "audio"]
 
         if media_type in ['Image', 'image']:
             media_type_query = "image"
@@ -601,6 +602,12 @@ class File_Browser():
 
         if media_type in ['Sensor Fusion', 'sensor_fusion']:
             media_type_query = "sensor_fusion"
+
+        if media_type in ['geospatial']:
+            media_type_query = "geospatial"
+
+        if media_type in ['audio']:
+            media_type_query = 'audio'
 
         exclude_removed = True
         if self.metadata['file_view_mode'] in ["changes"]:
@@ -675,7 +682,7 @@ class File_Browser():
                 self.metadata['prev_page'] = self.metadata['page'] - 1
             else:
                 self.metadata['prev_page'] = None
-
+        print('working_dir_file_list', working_dir_file_list, len(working_dir_file_list))
         if mode == "serialize":
             for index_file, file in enumerate(working_dir_file_list):
                 if self.metadata['file_view_mode'] == 'explorer':

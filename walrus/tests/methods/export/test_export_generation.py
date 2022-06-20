@@ -4,7 +4,7 @@ from shared.tests.test_utils import common_actions, data_mocking
 from unittest.mock import patch
 import analytics
 import requests
-from walrus.methods.export import export_generation
+from shared.export import export_generation
 
 class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
     """
@@ -61,7 +61,7 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
                 export_id = export.id,
                 version = None,
                 working_dir = source_directory,
-                use_request_context = False
+                member = self.member
             )
             mock_1.asser_called_once()
             print('ressss', export_data)
@@ -76,6 +76,11 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             self.assertEqual(export_data[file.id]['instance_list'][0]['x_max'], 10)
             self.assertEqual(export_data[file.id]['instance_list'][0]['y_min'], 1)
             self.assertEqual(export_data[file.id]['instance_list'][0]['y_max'], 10)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['lonlat'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['coords'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['radius'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['bounds'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['bounds_lonlat'], None)
             self.assertEqual(export_data[file.id]['instance_list'][0]['label_file_id'], label_file.id)
 
 
@@ -129,7 +134,9 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
                 session = self.session,
                 project = self.project,
                 export_id = export.id,
-                use_request_context = False
+                member = self.member,
+                working_dir = None
+
             )
 
             mock_1.assert_called_once()
@@ -148,5 +155,10 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             self.assertEqual(export_data[file.id]['instance_list'][0]['x_max'], 10)
             self.assertEqual(export_data[file.id]['instance_list'][0]['y_min'], 1)
             self.assertEqual(export_data[file.id]['instance_list'][0]['y_max'], 10)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['lonlat'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['coords'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['radius'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['bounds'], None)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['bounds_lonlat'], None)
             self.assertEqual(export_data[file.id]['instance_list'][0]['label_file_id'], label_file.id)
 

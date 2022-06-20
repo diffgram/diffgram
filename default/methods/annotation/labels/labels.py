@@ -9,14 +9,14 @@ from google.cloud import storage
 from shared.database.user import UserbaseProject
 from shared.database.image import Image
 from shared.database.annotation.instance import Instance
-from shared.database.label import Label
+from shared.database.labels.label import Label
 
 from shared.database.video.sequence import Sequence
 from shared.database.video.video import Video
 
 from shared.helpers.permissions import getUserID
 from shared.helpers.permissions import get_gcs_service_account
-
+from shared.database.labels.label_schema import LabelSchema, LabelSchemaLink
 from shared.database.source_control.working_dir import WorkingDirFileLink
 
 
@@ -35,11 +35,9 @@ def api_label_new(project_string_id):
     spec_list = [
         {'name': str},
         {'colour': None},
-        {"default_sequences_to_single_frame": {
-            'default': False,
-            'kind': bool
-        }
-        }
+        {'schema_id': {"type": int, "required": True}},
+
+
     ]
 
     log, input, untrusted_input = regular_input.master(request = request,
@@ -48,8 +46,8 @@ def api_label_new(project_string_id):
         return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
-
-        label_file = new_label_file_object_core(session, input, project_string_id, log)
+        member = get_member(session)
+        label_file = new_label_file_object_core(session, input, project_string_id, input['schema_id'], member, log)
 
         if not label_file:
             return jsonify(log = log), 400
@@ -57,33 +55,36 @@ def api_label_new(project_string_id):
         return jsonify(log = log, label = label_file.serialize_with_label_and_colour(session)), 200
 
 
-def new_label_file_object_core(session, input, project_string_id, log):
+def new_label_file_object_core(session, input, project_string_id, schema_id, member, log):
     """
     Creates Label File specific to this project
     """
     project = Project.get_project(session, project_string_id)
+
+    if not schema_id:
+        log['error']['schema_id'] = 'Provide Schema_id'
+        return None
 
     colour = input['colour']
 
     if not colour:
         colour = default_color()
 
-    project = Project.get(session, project_string_id)
+    schema = LabelSchema.get_by_id(session, schema_id,  project.id)
 
     label_file = File.new_label_file(
         session=session,
         name=input['name'],
-        default_sequences_to_single_frame=input['default_sequences_to_single_frame'],
         working_dir_id=project.directory_default_id,
         project=project,
         colour=colour,
         log=log,
+        schema = schema,
+        member = member
     )
 
     if not label_file:
         return None
-
-    member = get_member(session = session)
 
     Event.new(
         session = session,
@@ -98,47 +99,44 @@ def new_label_file_object_core(session, input, project_string_id, log):
     return label_file
 
 
-# Rename labels view?
-
-@routes.route('/api/project/<string:project_string_id>' +
-              '/labels/refresh',
-              methods = ['GET'])
+@routes.route('/api/project/<string:project_string_id>/labels', methods = ['GET'])
 @Project_permissions.user_has_project(["admin", "Editor", "Viewer", "allow_if_project_is_public"])
-def labelRefresh(project_string_id):
+def api_get_labels(project_string_id):
     """
-    Get labels from project
-
-    In future we could get this from a provided directory,
-    but for now labels all rest in project default directory
-
-    In the past we got this from a individual user's directory but that doesn't
-    make sense in new context Of projects knowing all their directories,
-    sharing work, and even simply using API keys instead of just users logging in
-
     """
 
-    # TODO pull different labels from different places depending on project
-    # Here is in context of a user editing...
-    # Need to know what branch / version...
-    # ie to get from project's master branch
-    # version = project.master_branch.latest_version
-
+    schema_id = request.args.get('schema_id')
+    log = regular_log.default()
     with sessionMaker.session_scope() as session:
 
         project = Project.get_project(session, project_string_id)
         directory = project.directory_default
+        if schema_id:
+            schema = LabelSchema.get_by_id(session = session, id = schema_id, project_id = project.id)
+            if schema is None:
+                log['error']['project'] = 'Schema does not exist or does not belong to this project'
+                return jsonify(log), 400
+        else:
+            schema = LabelSchema.get_default(session = session, project_id = project.id)
 
-        labels_out = project.get_label_list(session, directory = directory)
+        labels_out = project.get_label_list(session, directory = directory, schema_id = schema.id)
         
         global_attribute_groups_serialized_list = project.get_global_attributes(
-            session = session)
+            session = session, schema_id = schema.id)
+
+        attribute_groups_serialized_list = project.get_attributes(session = session, schema_id = schema.id)
         
         # Assume can't easily sort this in sql because it's the label which is one layer below
         # labels_out.sort(key=lambda x: x['label']['name'])
+        
+        log['info']['schema'] = schema.serialize()
 
         return jsonify(labels_out = labels_out,
                        label_file_colour_map = directory.label_file_colour_map,
-                       global_attribute_groups_list = global_attribute_groups_serialized_list), 200
+                       global_attribute_groups_list = global_attribute_groups_serialized_list,
+                       attribute_groups = attribute_groups_serialized_list,
+                       log = log
+                       ), 200
 
 
 @routes.route('/api/project/<string:project_string_id>' +
@@ -191,7 +189,7 @@ def label_edit(project_string_id):
             return json.dumps("no label id"), 400, {'ContentType': 'application/json'}
 
         # WIP...
-        user_id = getUserID()
+        user_id = getUserID(session = session)
 
         existing_file = File.get_by_id_untrusted(session,
                                                  user_id,
@@ -200,28 +198,6 @@ def label_edit(project_string_id):
 
         if existing_file is None:
             return jsonify("No file"), 400
-
-        if existing_file.committed is True:
-            return jsonify("File committed"), 400
-
-            # TODO # WIP WIP
-            new_file = File.copy_file_from_existing(
-                session,
-                working_dir,
-                existing_file)
-
-
-            label_file = File.new_label_file(
-                session = session,
-                name = name_proposed,
-                default_sequences_to_single_frame = None,
-                working_dir_id = project.directory_default_id,
-                project = project,
-                colour = colour_proposed,
-                log = log,
-                existing_file=new_file
-            )
-        # WIP
 
         if existing_file.committed is not True:
 
@@ -232,13 +208,6 @@ def label_edit(project_string_id):
 
             colour_proposed = label_file.get("colour", None)
 
-            # Caution note, 'label_proposed' not file
-            default_sequences_to_single_frame_proposed = label_proposed.get(
-                "default_sequences_to_single_frame")
-
-            if default_sequences_to_single_frame_proposed is None:
-                default_sequences_to_single_frame_proposed = False
-
             # Caution
             # We need this because we are trying to
             # maintain unique labels...
@@ -246,8 +215,7 @@ def label_edit(project_string_id):
             # (Which we already have).
             label = Label.new(
                 session,
-                name=name_proposed,
-                default_sequences_to_single_frame=default_sequences_to_single_frame_proposed)
+                name=name_proposed)
 
             existing_file.label_id = label.id
             existing_file.colour = colour_proposed

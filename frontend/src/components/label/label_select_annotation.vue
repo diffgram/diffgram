@@ -3,7 +3,7 @@
     <v-layout >
 
 
-      <v-select :items="label_list_with_limit"
+      <v-autocomplete :items="label_list_with_limit"
                 v-model="selected"
                 :label="label_prompt"
                 return-object
@@ -14,6 +14,9 @@
                 data-cy="label_select"
                 ref="label_select"
                 class="ma-0"
+                :filter="on_filter_labels"
+                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+                @blur="$store.commit('set_user_is_typing_or_menu_open')"
                 >
 
         <template v-slot:item="data">
@@ -33,13 +36,6 @@
           <div style="color: grey">
             {{label_list.indexOf(data.item) + 1}}</div>
           -->
-
-          <tooltip_icon
-            v-if="data.item.label.default_sequences_to_single_frame"
-            tooltip_message="Video Defaults to Single Frame"
-            icon="mdi-flag-checkered"
-            color="black">
-          </tooltip_icon>
 
 
           <div v-if="show_visibility_toggle
@@ -91,21 +87,21 @@
               flag
             </v-icon>
 
-            <v-icon v-if="data.item.label.default_sequences_to_single_frame"
-                    color="black">
-              mdi-flag-checkered
-            </v-icon>
-
             {{ label_name_truncated(data.item.label.name) }}
           </div>
 
         </template>
 
         <template v-slot:no-data>
-          No Labels Templates Created.
-          <v-btn color="primary" small @click="$router.push(`/project/${computed_project_string_id}/labels`)">Create Label Templates</v-btn>
+          <div class="d-flex flex-column align-center justify-center">
+            No Labels Templates Created.
+            <v-btn color="primary" small @click="$router.push(`/project/${computed_project_string_id}/labels`)">
+              <v-icon>mdi-plus</v-icon>
+              Create New
+            </v-btn>
+          </div>
         </template>
-      </v-select>
+      </v-autocomplete>
 
     </v-layout>
 
@@ -119,6 +115,7 @@
 <script lang="ts">
 
   import axios from '../../services/customInstance';
+  import {get_labels} from '../../services/labelServices';
 
   import Vue from "vue";
 
@@ -148,13 +145,18 @@
         'show_visibility_toggle': {
           default: false
         },
+        'schema_id': {
+          default: undefined
+        },
         'select_this_id_at_load': {},
       },
 
       watch: {
-
+        schema_id: function(){
+          this.get_label_list_from_project()
+        },
         request_refresh_from_project: function () {
-          this.refresh_label_list_from_project()
+          this.get_label_list_from_project()
         },
 
       },
@@ -164,7 +166,7 @@
           this.label_list = this.label_file_list_prop
           this.selected = this.label_file_list_prop[0]
         } else {
-          this.refresh_label_list_from_project()
+          this.get_label_list_from_project()
         }
 
         if (this.select_this_id_at_load) {
@@ -209,6 +211,7 @@
         return {
 
           label_refresh_loading: false,
+          error: null,
 
           selected: {},
 
@@ -231,7 +234,10 @@
       },
 
       methods: {
+        on_filter_labels: function(item, query_text, item_text){
+          return item.label.name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())
 
+        },
         label_name_truncated: function(name) {
           let max_size = 23
           let default_selector_size = 290 // feels pretty brittle
@@ -257,25 +263,21 @@
         },
 
 
-        refresh_label_list_from_project: function () {
+        get_label_list_from_project: async function () {
 
           var url = null
           this.label_refresh_loading = true
-          url = '/api/project/' + this.computed_project_string_id
-            + '/labels/refresh'
-
-          axios.get(url, {})
-            .then(response => {
-
-              this.label_list = response.data.labels_out
-              this.selected = this.label_list[0]
-              this.emit_selected()
-              this.label_refresh_loading = false
-
-            })
-            .catch(error => {
-              console.error(error);
-            });
+          let [result, error] = await get_labels(this.computed_project_string_id, this.$props.schema_id)
+          if(error){
+            this.error = this.$route_api_errors(error)
+            return
+          }
+          if(result){
+            this.label_list = result.labels_out
+            this.selected = this.label_list[0]
+            this.emit_selected()
+            this.label_refresh_loading = false
+          }
 
         },
 
@@ -288,7 +290,8 @@
         },
 
         emit_selected: function () {
-          this.$emit('change', this.selected)
+          this.$emit('change', this.selected);
+          this.$refs.label_select.blur()
         },
 
         keyboard_events_window: function (event) {

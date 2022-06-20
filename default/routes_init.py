@@ -4,10 +4,14 @@ def do_routes_importing():
     from methods.attribute.attribute import api_attribute_update_or_new
     from methods.attribute.attribute_template_group_update import api_attribute_template_group_update
 
-    from methods.action.action import api_action_update_or_new
-    from methods.action.action_flow import new_flow_factory_api
-    from methods.action.action_flow_update import api_flow_update
+    from methods.action.action_new import api_action_new
+    from methods.action.action_update import api_action_update
+    from methods.action.action_validate_config import api_action_validate
+    from methods.action.workflow import new_workflow_factory_api
+    from methods.action.workflow import workflow_view_api
+    from methods.action.workflow_update import api_workflow_update
     from methods.action.action_list import api_action_list
+    from methods.action.action_template_list import api_action_template_list
 
     from methods.project.project_update import api_project_update
     from methods.source_control.file.file_update import api_file_update
@@ -66,6 +70,7 @@ def do_routes_importing():
     from methods.task.guide.guide_attach_to_job import guide_attach_to_job_api
 
     from methods.auth.api.auth_api_new import auth_api_credential_new_from_api
+    from methods.auth.oidc.oidc_auth_callback import api_oidc_callback
 
     from methods.user.account.account_new import user_new_api
     from methods.user.account.account_verify import redeem_verify_via_email_api
@@ -82,7 +87,7 @@ def do_routes_importing():
     from methods.share.share import share_member_project_api
 
     from methods.annotation.annotation import annotation_update_via_project_api
-    from methods.annotation.labels.labels import api_label_new
+    from methods.annotation.labels.labels import api_label_new, api_get_labels
     from methods.annotation.labels.view import web_build_name_to_file_id_dict
     from methods.annotation.flags import ann_is_complete_toggle
 
@@ -146,6 +151,7 @@ def do_routes_importing():
     from methods.ui_schema.ui_schema import ui_schema_new_api
 
     from methods.configs.mailgun_is_set import mailgun_is_set
+    from methods.configs.oidc_is_set import oidc_is_set
     from methods.configs.admin_install_info import api_admin_install_info
     from methods.configs.is_open_source import api_is_open_source
 
@@ -161,3 +167,9 @@ def do_routes_importing():
     from methods.task.exam.exam_pass import exam_pass_api
 
     from methods.user.user_has_credentials import api_user_has_credentials
+
+    from methods.task.task_template.task_template_member_list import task_template_members_list_api
+
+    from methods.labels.label_schema_list import api_label_schema_list
+    from methods.labels.label_schema_new import api_label_schema_new
+    from methods.labels.label_schema_update import api_label_schema_update

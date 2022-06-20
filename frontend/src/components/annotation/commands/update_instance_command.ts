@@ -100,7 +100,6 @@ export class UpdateInstanceCommand {
       );
       initializedInstance.remove_edges();
 
-      console.log('end inistialized', initializedInstance)
       return initializedInstance;
     }
     else{

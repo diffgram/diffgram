@@ -12,11 +12,19 @@
       <v_footer v-if="get_meta($route).external_page == true">
 
       </v_footer>
-
+      <v-snackbar :color="$store.state.snackbar.color"
+                  timeout="4000"
+                  top
+                  v-model="$store.state.snackbar.show_snackbar"
+                  v-if="$store.state.snackbar.show_snackbar">
+        {{$store.state.snackbar.text}}
+      </v-snackbar>
+      <v-snackbar color="warning" timeout="5000" v-model="network_error" v-if="!!network_error">
+        <strong> Network Issue Detected: Check your Connection to the Services.</strong>
+      </v-snackbar>
     </v-app>
-    <v-snackbar color="warning" timeout="5000" v-model="network_error" v-if="!!network_error">
-     <strong> Network Issue Detected: Check your Connection to the Services.</strong>
-    </v-snackbar>
+
+
   </div>
 </template>
 

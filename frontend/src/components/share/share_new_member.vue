@@ -18,17 +18,39 @@
         <v-spacer>
         </v-spacer>
 
+        <tooltip_button
+            v-if="enable_view_existing"
+            tooltip_message="View Existing"
+            @click="view_existing_open = true"
+            icon="mdi-account-multiple"
+            :icon_style="true"
+            color="primary">
+        </tooltip_button>
+
         <!-- All this button does is toggle the member_kind
             instead of user having to "know" to do it in select.
             -->
-         <v-btn v-if="member_kind == 'User' && show_sdk_share"
-               color="primary"
-               outlined
-                :loading="loading"
-                @click="member_kind = 'Developer Authentication (API/SDK)'"
-                :disabled="loading">
-            Developer Authentication (API/SDK)
-        </v-btn>
+        <tooltip_button
+          v-if="member_kind == 'User' && show_sdk_share"
+          tooltip_message="Developer Authentication (API/SDK)"
+          @click="member_kind = 'Developer Authentication (API/SDK)'"
+          icon="mdi-key-plus"
+          :icon_style="true"
+          color="primary"
+          :disabled="loading"
+                        >
+        </tooltip_button>
+
+        <tooltip_button
+          v-if="member_kind != 'User'"
+          tooltip_message="Invite User"
+          @click="member_kind = 'User'"
+          icon="mdi-account"
+          :icon_style="true"
+          color="primary"
+          :disabled="loading"
+                        >
+        </tooltip_button>
 
       </v-card-title>
 
@@ -38,20 +60,53 @@
           {{errors}}
         </v-alert>
 
-        <h2> <v-icon color="primary">mdi-plus</v-icon> Add members </h2>
 
-        <v-select :items="member_kind_list"
+        <v-select v-if="member_kind == 'Developer Authentication (API/SDK)'"
+                  :items="member_kind_list"
                   v-model="member_kind"
                   label="Member type"
                   item-value="text"
                   :disabled="loading"
                   prepend-icon="mdi-security-account"></v-select>
 
+        <v-dialog v-model="view_existing_open"
+                  id="view_existing_members"                  
+                  v-if="enable_view_existing"
+                  width="800px">
+          <v-card>
+            <v-container>
+
+              <v-card-title>
+                Existing
+
+                <v-spacer></v-spacer>
+                <tooltip_button
+                  tooltip_message="Close"
+                  @click="view_existing_open = !view_existing_open"
+                  icon="mdi-close"
+                  :icon_style="true"
+                  color="primary"
+                  :bottom="true"
+                  datacy="close-view_existing_open"
+                  class="text-right"
+                >
+                </tooltip_button>
+              </v-card-title>
+
+              <v_collaborate_list_existing :project_string_id="project_string_id">
+              </v_collaborate_list_existing>
+
+              Invited users not shown.
+
+            </v-container>
+          </v-card>
+        </v-dialog>
+
         <div v-if="member_kind=='Developer Authentication (API/SDK)'">
 
           <auth_api_new :project_string_id="project_string_id"></auth_api_new>
 
-        </div>
+        </div> 
         <div v-else>
           <v-text-field label="Email"
                         v-model="email"
@@ -61,12 +116,24 @@
                         :disabled="loading">
           </v-text-field>
 
-          <v-select :items="permission_type_list"
-                    v-model="permission_type"
-                    label="Select permission"
-                    item-value="text"
-                    :disabled="loading"
-                    prepend-icon="security"></v-select>
+          <v-layout>
+            <v-select :items="permission_type_list"
+                      v-model="permission_type"
+                      label="Select permission"
+                      item-value="text"
+                      :disabled="loading"
+                      prepend-icon="security"></v-select>
+
+            <tooltip_button
+                tooltip_message="Help"
+                href="https://diffgram.readme.io/docs/project#project-roles"
+                target="_blank"
+                icon="help"
+                :icon_style="true"
+                color="primary">
+            </tooltip_button>
+
+          </v-layout>
 
           <v-layout>
             <v-text-field label="Optional: Include a personal message..."
@@ -132,7 +199,10 @@ import Vue from "vue"; export default Vue.extend( {
     },
     'elevation':{
       default: 1
-    }
+    },
+    'enable_view_existing':{
+      default: true
+    },
   },
   data() {
     return {
@@ -142,6 +212,8 @@ import Vue from "vue"; export default Vue.extend( {
       errors: null,
       note: null,
       result: null,
+
+      view_existing_open: false,
 
       notify: true,
 
@@ -198,9 +270,8 @@ import Vue from "vue"; export default Vue.extend( {
           this.$emit('member_invited')
 
         } else {
-          console.log('response', response)
           if(response['data']['errors']['free_tier_limit']){
-            this.message_free_tier_limit = 'The invite failed because you reached your one of the in the free tier of Diffgram.'
+            this.message_free_tier_limit = 'The invite failed because you reached a limit in the free tier of Diffgram.com hosted version. Upgrade or self-install.'
             this.details_free_tier_limit = response['data']['errors']['free_tier_limit']
             this.$refs.free_tier_limit_dialog.open();
           }
@@ -221,7 +292,7 @@ import Vue from "vue"; export default Vue.extend( {
             if(error.response.data &&
               error.response.data.log &&
               error.response.data.log.error.free_tier_limit){
-              this.message_free_tier_limit = 'The invite failed because you reached your one of the in the free tier of Diffgram.'
+              this.message_free_tier_limit = 'The invite failed because you reached a limit in the free tier of Diffgram.com hosted version. Upgrade or self-install.'
               this.details_free_tier_limit = error.response.data.log.error.free_tier_limit;
               this.$refs.free_tier_limit_dialog.open();
             }

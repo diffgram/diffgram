@@ -2,6 +2,10 @@ from shared.database.system_events.system_events import SystemEvents
 from shared.system_startup.system_startup_base import SystemStartupBase
 from methods.regular.regular_api import logger
 from shared.settings import settings
+from shared.queueclient.QueueClient import QueueClient
+from shared.auth.KeycloakDiffgramClient import check_keycloak_setup
+import traceback
+from shared.connection.connection_operations import Connection_Operations
 
 
 class DefaultServiceSystemStartupChecker(SystemStartupBase):
@@ -13,7 +17,27 @@ class DefaultServiceSystemStartupChecker(SystemStartupBase):
         logger.info(f"[{self.service_name}] Performing System Checks...")
         self.check_settings_values_validity()
         result = SystemEvents.system_startup_events_check(self.service_name)
-        if not result:
-            raise Exception('System Startup Check Failed.')
+        # Make Connection to Queue
+        try:
+            client = QueueClient()
+        except Exception as e:
+            data = traceback.format_exc()
+            logger.error(data)
+            logger.error(f'Error connecting to rabbit MQ')
+            raise (Exception('Error connecting to RabbitMQ'))
+
+        check_keycloak_setup()
+        DefaultServiceSystemStartupChecker.connection_operations_self_tests()
 
         return result
+
+
+    def connection_operations_self_tests():
+
+        Connection_Operations(session=None).self_test()
+
+
+
+
+
+

@@ -4,6 +4,7 @@ from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.input import Input
 from shared.database.source_control.file import File
 from shared.database.task.job.job_working_dir import JobWorkingDir
+from shared.database.task.job.job import Job
 
 def rebuild_label_map(label_file_list):
     colour_map = {}
@@ -92,7 +93,7 @@ def job_launch_limits_with_permission_check(
 
 
 def task_template_launch_limits(session,
-                                task_template,
+                                task_template: Job,
                                 log):
     """
 
@@ -120,13 +121,16 @@ def task_template_launch_limits(session,
     if task_template.status not in ['draft']:
         log['error']['job_status'] = "Job already launched."
 
+    if task_template.label_schema_id is None:
+        log['error']['job_status'] = "Job must have a label schema"
+
     # Files
     task_template.update_file_count_statistic(session=session)
-    attached_dir_list = session.query(JobWorkingDir).filter(
-        JobWorkingDir.job_id == task_template.id
-    ).all()
-    if task_template.file_count_statistic == 0 and len(attached_dir_list) == 0:
-        log['error']['attached_dir_list'] = "Must attach at least 1 file or directory"
+    # attached_dir_list = session.query(JobWorkingDir).filter(
+    #     JobWorkingDir.job_id == task_template.id
+    # ).all()
+    # if task_template.file_count_statistic == 0 and len(attached_dir_list) == 0:
+    #     log['error']['attached_dir_list'] = "Must attach at least 1 file or directory"
 
     if task_template.file_count:
         if task_template.file_count_statistic != task_template.file_count:

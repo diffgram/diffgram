@@ -6,12 +6,14 @@ from shared.database.source_control.working_dir import WorkingDir, WorkingDirFil
 from shared.permissions.project_permissions import Project_permissions
 from shared.database.source_control.file import File
 from shared.database.annotation.instance import Instance
-from shared.database.label import Label
+from shared.database.labels.label import Label
+from shared.database.labels.label_schema import LabelSchema
 from shared.database.event.event import Event
 from shared.settings import settings
 from shared.database.task.task import Task
 import random
 import string
+from sqlalchemy.orm.session import Session
 from shared.database.sync_events.sync_event import SyncEvent
 from shared.database.task.job.job import Job
 from shared.database.system_events.system_events import SystemEvents
@@ -25,6 +27,7 @@ from shared.database.task.task_event import TaskEvent
 import datetime
 from shared.database.auth.member import Member
 from shared.database.annotation.instance_template import InstanceTemplate
+from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.annotation.instance_template_relation import InstanceTemplateRelation
 from shared.database.video.video import Video
 from shared.database.image import Image
@@ -32,6 +35,8 @@ from shared.database.export import Export
 from shared.database.video.sequence import Sequence
 from shared.database.task.job.user_to_job import User_To_Job
 from shared.database.input import Input
+from shared.database.project_migration.project_migration import ProjectMigration
+from shared.database.audio.audio_file import AudioFile
 
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
@@ -52,6 +57,67 @@ def register_member(user, session):
     session.add(new_member)
     regular_methods.commit_with_rollback(session)
     return new_member
+
+
+def create_label_schema(schema_data, session):
+    schema = LabelSchema(
+        name = schema_data.get('name'),
+        project_id = schema_data.get('project_id'),
+        member_created_id = schema_data.get('member_created_id'),
+        member_updated_id = schema_data.get('member_updated_id'),
+        archived = schema_data.get('archived'),
+    )
+    session.add(schema)
+    session.commit()
+    return schema
+
+
+def create_attribute_template_group(group_data, session):
+    group = Attribute_Template_Group(
+        **group_data
+    )
+    session.add(group)
+    session.commit()
+    return group
+
+
+def create_project_migration(migration_data, session):
+    p_migration = ProjectMigration(
+        created_time = migration_data.get('created_time'),
+        time_completed = migration_data.get('time_completed'),
+        time_updated = migration_data.get('time_updated'),
+        time_last_attempted = migration_data.get('time_last_attempted'),
+        type = migration_data.get('type'),
+        status = migration_data.get('status'),
+        percent_complete = migration_data.get('percent_complete'),
+        description = migration_data.get('description'),
+        external_mapping_project_id = migration_data.get('external_mapping_project_id'),
+        connection_id = migration_data.get('connection_id'),
+        error_log = migration_data.get('error_log'),
+        import_schema = migration_data.get('import_schema'),
+        project_id = migration_data.get('project_id'),
+        migration_log = migration_data.get('migration_log'),
+        member_created_id = migration_data.get('member_created_id'),
+        member_updated_id = migration_data.get('member_updated_id'),
+    )
+    session.add(p_migration)
+    session.commit()
+    return p_migration
+
+def create_audio_file(audio_data: dict, session: Session) -> AudioFile:
+    audio = AudioFile(
+        original_filename = audio_data.get('original_filename'),
+        description = audio_data.get('description'),
+        soft_delete = audio_data.get('soft_delete'),
+        url_public = audio_data.get('url_public'),
+        url_signed = audio_data.get('url_signed'),
+        url_signed_blob_path = audio_data.get('url_signed_blob_path'),
+        url_signed_expiry = audio_data.get('url_signed_expiry'),
+        url_signed_expiry_force_refresh = audio_data.get('url_signed_expiry_force_refresh'),
+    )
+    session.add(audio)
+    session.commit()
+    return audio
 
 
 def register_user(user_data: dict, session):
@@ -236,6 +302,11 @@ def create_instance_template(instance_template_data, session):
                 instance_id = new_instance.id
             )
             session.add(rel)
+    if instance_template_data.get('schema_id'):
+        schema = LabelSchema.get_by_id(session, instance_template_data.get('schema_id'), project_id = instance_template_data.get('project_id'))
+        schema.add_instance_template(session = session,
+                                     instance_template_id = instance_template.id,
+                                     member_created_id = schema.member_created_id)
     regular_methods.commit_with_rollback(session)
     return instance_template
 
@@ -277,6 +348,9 @@ def create_file(file_data, session):
         regular_methods.commit_with_rollback(session)
         file.image = image
         file.image_id = image.id
+    elif file.type == 'label':
+        label = create_label({'name': 'test_label'}, session)
+        file.label_id = label.id
     session.add(file)
     regular_methods.commit_with_rollback(session)
     return file
@@ -725,7 +799,7 @@ def create_project_with_context(context_data, session):
         name = project_name,
         project_string_id = project_string_id,
         goal = 'Test stuff',
-        member_created = None,
+        member_created = member,
         user = user
     )
     user_list = []

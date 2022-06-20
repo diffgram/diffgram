@@ -182,10 +182,6 @@ class Share_Project():
 
     def check_free_tier_member_limits(self):
 
-        if self.user_who_made_request.is_super_admin is True:
-            if settings.IS_OPEN_SOURCE  == False:
-                return True
-
         existing_members = self.project.regenerate_member_list()
 
         feature_checker = FeatureChecker(
@@ -196,12 +192,16 @@ class Share_Project():
 
         max_users = feature_checker.get_limit_from_plan('MAX_USERS_PER_PROJECT')
 
-        if len(existing_members) >= max_users:
+        if max_users is None:
+            return True
+
+        if max_users and len(existing_members) >= max_users:
             message = 'Free Tier Limit Reached - Max Users Allowed: {}. But Project with ID: {} has {}'.format(
                 max_users,
                 self.project.project_string_id,
                 len(existing_members))
             self.log['error']['free_tier_limit'] = message
+            self.log['error']['feature_checker'] = feature_checker.log
             return False
 
     def new(self):

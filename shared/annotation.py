@@ -18,7 +18,7 @@ from google.cloud import storage
 from shared.database.user import UserbaseProject
 from shared.database.image import Image
 from shared.database.annotation.instance import Instance
-from shared.database.label import Label
+from shared.database.labels.label import Label
 from shared.helpers.permissions import LoggedIn, defaultRedirect, get_gcs_service_account
 from shared.helpers.permissions import getUserID
 from shared.utils.task import task_complete
@@ -170,6 +170,11 @@ class Annotation_Update():
             'valid_values_list': ['box',
                                   'polygon',
                                   'point',
+                                  'geo_point',
+                                  'geo_circle',
+                                  'geo_polyline',
+                                  'geo_polygon',
+                                  'geo_box',
                                   'cuboid',
                                   'tag',
                                   'line',
@@ -179,7 +184,9 @@ class Annotation_Update():
                                   'keypoints',
                                   'cuboid_3d',
                                   'global',
-                                  'relation']
+                                  'relation',
+                                  'audio'
+                                  ]
         }
         },
         {'rating': {
@@ -237,6 +244,18 @@ class Annotation_Update():
             'default': None,
             'kind': int
         }
+        },
+        {
+            'start_time': {
+                'default': None,
+                'kind': float
+            }
+        },
+        {
+            'end_time': {
+                'default': None,
+                'kind': float
+            }
         },
         {'sentence': {
             'default': None,
@@ -362,7 +381,28 @@ class Annotation_Update():
         {'text_tokenizer': {
             'kind': str,
             'required': False
-        }}
+        }},
+        {'lonlat': {
+            'kind': list,
+            'required': False
+        }},
+        {'coords': {
+            'kind': list,
+            'required': False
+        }},
+        {'radius': {
+            'kind': float,
+            'required': False
+        }},
+        {'bounds': {
+            'kind': list,
+            'required': False
+        }},
+        {'bounds_lonlat': {
+            'kind': list,
+            'required': False
+        }},
+
     ])
 
     # If we want this.
@@ -768,7 +808,7 @@ class Annotation_Update():
             return True
 
         if self.instance.type == "global":
-            self.instance.label_file_id = None      # Ensure is None for Security
+            self.instance.label_file_id = None  # Ensure is None for Security
             return True
 
         self.log['error']['valid_label_file'] = "Permission issue with " + \
@@ -1075,6 +1115,8 @@ class Annotation_Update():
                 end_sentence = input['end_sentence'],
                 start_token = input['start_token'],
                 end_token = input['end_token'],
+                start_time = input['start_time'],
+                end_time = input['end_time'],
                 sentence = input['sentence'],
                 creation_ref_id = input['creation_ref_id'],
                 machine_made = input['machine_made'],
@@ -1109,6 +1151,11 @@ class Annotation_Update():
                 to_instance_id = input['to_instance_id'],
                 from_creation_ref = input['from_creation_ref'],
                 to_creation_ref = input['to_creation_ref'],
+                lonlat = input['lonlat'],
+                coords = input['coords'],
+                radius = input['radius'],
+                bounds = input['bounds'],
+                bounds_lonlat = input['bounds_lonlat'],
             )
 
     def get_min_coordinates_instance(self, instance):
@@ -1241,6 +1288,8 @@ class Annotation_Update():
                         end_sentence = None,
                         start_token = None,
                         end_token = None,
+                        start_time = None,
+                        end_time = None,
                         sentence = None,
                         creation_ref_id = None,
                         model_id = None,
@@ -1273,7 +1322,13 @@ class Annotation_Update():
                         from_instance_id = None,
                         to_instance_id = None,
                         from_creation_ref = None,
-                        to_creation_ref = None):
+                        to_creation_ref = None,
+                        lonlat = None,
+                        coords = None,
+                        radius = None,
+                        bounds = None,
+                        bounds_lonlat = None
+                        ):
         """
         Assumes a "system" level context
 
@@ -1341,6 +1396,8 @@ class Annotation_Update():
             'end_sentence': end_sentence,
             'start_token': start_token,
             'end_token': end_token,
+            'start_time': start_time,
+            'end_time': end_time,
             'sentence': sentence,
             'creation_ref_id': creation_ref_id,
             'model_id': model_id,
@@ -1366,8 +1423,12 @@ class Annotation_Update():
             'from_instance_id': from_instance_id,
             'to_instance_id': to_instance_id,
             'text_tokenizer': text_tokenizer,
+            'lonlat': lonlat,
+            'coords': coords,
+            'radius': radius,
+            'bounds': bounds,
+            'bounds_lonlat': bounds_lonlat,
         }
-
         if overwrite_existing_instances and id is not None:
             self.instance = self.session.query(Instance).filter(Instance.id == id).first()
             for key, value in instance_attrs.items():
@@ -1448,7 +1509,16 @@ class Annotation_Update():
 
     def deduct_spatial_coordinates(self):
 
-        if self.instance.type in ["global", "relation", "token"]:
+        if self.instance.type in ["global",
+                                  'geo_point',
+                                  'geo_circle',
+                                  'geo_polyline',
+                                  'geo_polygon',
+                                  'geo_box',
+                                  "relation",
+                                  "token",
+                                  "audio"
+                                  ]:
             return
 
         min_coords = self.get_min_coordinates_instance(self.instance)
@@ -1619,7 +1689,6 @@ class Annotation_Update():
         if self.instance.type != 'relation':
             return
 
-        print('AAAAAA', self.instance.id, from_id, to_id, from_ref, to_ref)
         if from_id is None and not from_ref:
             self.log['error']['from_id'] = 'Provide from_instance_id or from_creation_ref'
             return

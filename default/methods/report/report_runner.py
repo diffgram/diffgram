@@ -10,6 +10,7 @@ import threading
 
 from methods.report.custom_reports.TimeSpentReport import TimeSpentReport
 from methods.report.custom_reports.AnnotatorPerformanceReport import AnnotatorPerformanceReport
+from methods.report.custom_reports.TaskReportRejectRatioReport import TaskReportRejectRatioReport
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
 
@@ -259,7 +260,8 @@ class Report_Runner():
             'task': Task,
             'event': Event,
             'time_spent_task': 'custom_report',
-            'annotator_performance': 'custom_report'
+            'annotator_performance': 'custom_report',
+            'approval_reject_ratio': 'custom_report'
         }
         return class_dict.get(item_of_interest)
 
@@ -520,13 +522,16 @@ class Report_Runner():
         return stats
 
     def generate_custom_report(self):
+        ReportClass = None
         if self.item_of_interest == 'time_spent_task':
-            report = TimeSpentReport(session = self.session, report_template = self.report_template)
+            ReportClass = TimeSpentReport
         elif self.item_of_interest == 'annotator_performance':
-            report = AnnotatorPerformanceReport(session = self.session, report_template = self.report_template)
+            ReportClass = AnnotatorPerformanceReport
+        elif self.item_of_interest == 'approval_reject_ratio':
+            ReportClass = TaskReportRejectRatioReport
         else:
             raise NotImplementedError
-
+        report = ReportClass(session = self.session, report_template = self.report_template)
         return report.run()
 
     def build_dummy_report_template_from_data(self):
@@ -645,6 +650,8 @@ class Report_Runner():
         if item_of_interest:
             self.item_of_interest = item_of_interest
             self.base_class = self.string_to_class(item_of_interest)
+            if self.base_class is None:
+                raise NotImplementedError(f'Item of interest "{item_of_interest}" is not supported')
             self.normalize_class_defintions()
         else:
             self.log['error']['item_of_interest'] = "item_of_interest is None"

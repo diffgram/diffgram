@@ -66,5 +66,4 @@ class ModelManager:
                     )
                     created_runs.append(model_run)
                 instance['model_run_id'] = model_run.id
-        print('RESULT', created_runs, create_models)
         return create_models, created_runs

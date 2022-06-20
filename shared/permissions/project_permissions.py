@@ -190,7 +190,7 @@ class Project_permissions():
         if 'allow_any_logged_in_user' in Roles:  # TODO not happy with this name, want more clarity on how this effects other permissions like apis / project etc.
             return True
 
-        user = session.query(User).filter(User.id == getUserID()).one()
+        user = session.query(User).filter(User.id == getUserID(session = session)).one()
 
         if user.is_super_admin == True:
             return True

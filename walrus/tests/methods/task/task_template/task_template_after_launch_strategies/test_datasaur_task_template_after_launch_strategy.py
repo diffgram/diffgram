@@ -34,6 +34,12 @@ class TestScaleAITaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTestC
         self.project = self.project_data['project']
 
     def test_execute_after_launch_strategy(self):
+
+
+        return
+        # we can use this test as a reference
+        # if we want to build a "migrate from datasaur" thing
+
         file = data_mocking.create_file({'project_id': self.project.id, 'type': 'text'}, self.session)
         label = data_mocking.create_label({
             'name': 'mylabel',
@@ -92,7 +98,7 @@ class TestScaleAITaskTemplateAfterLaunchStrategy(testing_setup.DiffgramBaseTestC
                  "time_updated": "2020-08-12 16:30:03.770141", "attribute_template_list": []}],
              "colour": {"hex": "#194d33", "hsl": {"h": 150, "s": 0.5, "l": 0.2, "a": 1},
                         "hsv": {"h": 150, "s": 0.66, "v": 0.3, "a": 1}, "rgba": {"r": 25, "g": 77, "b": 51, "a": 1},
-                        "a": 1}, "label": {"id": 5, "name": "Car wheel", "default_sequences_to_single_frame": False}}],
+                        "a": 1}, "label": {"id": 5, "name": "Car wheel"}}],
             "label_file_colour_map": {}}
         job = data_mocking.create_job({
             'name': f"my-test-job-{1}",

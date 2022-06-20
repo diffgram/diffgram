@@ -1,5 +1,7 @@
 <template>
-  <v-container v-if="(!progress_percentage && percentage < 100) || (progress_percentage && progress_percentage < 100) || is_actively_sending">
+ <div>
+
+  <v-container v-if="!declare_success">
     <h1>Uploading Files...</h1>
     <h3 v-if="formatted_total && formatted_uploaded && !progress_percentage">
       {{formatted_uploaded}} of {{formatted_total}}
@@ -12,13 +14,25 @@
     >
     </v-progress-linear>
   </v-container>
-  <v-container v-else class="d-flex align-center justify-center flex-column">
-    <v-icon color="success" size="86">mdi-check</v-icon>
-    <h1>Files Succesfully Uploaded</h1>
-    <p class="secondary--text"><strong>Check Input Table to view Pre-processing progress.</strong></p>
-    <v-btn x-large @click="close_wizard" data-cy="close_wizard_button" color="success">Close</v-btn>
-  </v-container>
 
+  <v_error_multiple :error="error">
+  </v_error_multiple>
+
+  <v-container v-if="declare_success && !is_actively_sending"
+               class="d-flex align-center justify-center flex-column">
+
+    <v-icon color="success" size="86">mdi-check</v-icon>
+    <h1>Files Successfully Uploaded</h1>
+    <p class="secondary--text">
+    <strong>Check Input Table to view Pre-processing progress.</strong></p>
+
+    <v-btn x-large
+           @click="close_wizard"
+           data-cy="close_wizard_button"
+           color="success">Close</v-btn>
+
+  </v-container>
+ </div>
 </template>
 
 <script lang="ts">
@@ -43,6 +57,12 @@
         },
         'is_actively_sending': {
           default: true,
+        },
+        'error': {
+          default: undefined,
+        },
+        'declare_success': {
+          default: false,
         }
       },
       data() {
@@ -77,7 +97,6 @@
       methods: {
         close_wizard: function(){
           this.$emit('close_wizard')
-          this.$emit('success_upload')
         }
       }
     }

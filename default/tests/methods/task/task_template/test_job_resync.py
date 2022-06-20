@@ -96,7 +96,7 @@ class TestJobResync(testing_setup.DiffgramBaseTestCase):
             log = log,
             job = job
         )
-        sync_manager._JobDirectorySyncManager__add_file_into_job(
+        sync_manager.add_file_into_job(
             file,
             directory,
             create_tasks = True

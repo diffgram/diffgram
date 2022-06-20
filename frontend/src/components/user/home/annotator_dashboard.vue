@@ -171,6 +171,10 @@
       </v-card>
     </v-container>
 
+    <v-snackbar v-model="no_task_snackbar" color="red">
+      No tasks available
+    </v-snackbar>
+
   </div>
 </template>
 
@@ -193,6 +197,7 @@ export default Vue.extend( {
   },
   data () {
     return {
+      no_task_snackbar: false,
       next_task_loading : false,
       resume_task_loading: false,
       last_file: undefined
@@ -255,10 +260,12 @@ export default Vue.extend( {
         const response = await axios.post(
           `/api/v1/project/${this.project_string_id}/task/next`, {
         });
-        if(response.status === 200){
+        if(response.status === 200 && response.data.task){
           let task = response.data.task
           const routeData = `/task/${task.id}`;
           this.$router.push(routeData)
+        } else {
+          this.no_task_snackbar = true
         }
       }
       catch (e) {

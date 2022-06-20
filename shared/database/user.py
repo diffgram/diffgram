@@ -6,6 +6,7 @@ from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.account.plan import Plan
 
+
 class User(Base):
     __tablename__ = 'userbase'
 
@@ -76,11 +77,14 @@ class User(Base):
     # query on class Image() every time we get user
     # Not sure if it's worth it to do it this way
     profile_image_url = Column(String())
+
     profile_image_blob = Column(String())  # blob dir
     profile_image_expiry = Column(Integer)
 
     profile_image_thumb_url = Column(String())
     profile_image_thumb_blob = Column(String())
+
+    oidc_id = Column(String())  # Open ID Connect (External Users references)
 
     created_time = Column(DateTime, default = datetime.datetime.utcnow)
 
@@ -153,6 +157,11 @@ class User(Base):
     default_plan = relationship(Plan,
                                 foreign_keys = [default_plan_id])
 
+    def bind_to_oidc_login(self, session, oidc_id):
+        self.oidc_id = oidc_id
+        session.add(self)
+        return self
+
     def get_profile_image_url(self):
         if (self.profile_image_expiry is None or self.profile_image_expiry <= time.time()) and self.profile_image_blob:
             self.profile_image_url = data_tools.build_secure_url(blob_name = self.profile_image_blob)
@@ -171,8 +180,16 @@ class User(Base):
         if self.project_current:
             project_current = self.project_current.serialize()
 
+        kind = None
+        member_id = None
+        if self.member:
+            kind = self.member.kind
+            member_id = self.member_id
         return {
             'id': self.id,
+            'user_id': self.id,
+            'member_id': member_id,
+            'member_kind': kind,
             'current_project_string_id': self.current_project_string_id,
             'is_super_admin': self.is_super_admin,
             'first_name': self.first_name,
@@ -229,7 +246,14 @@ class User(Base):
             'permission_level': permission_level,
             'member_kind': 'human'
         }
-    
+
+    @staticmethod
+    def get_user_by_oidc_id(session, oidc_id):
+        user = session.query(User).filter(
+            User.oidc_id == oidc_id
+        ).first()
+
+        return user
 
     def serialize_with_permission_only(self, project_string_id):
         return self.permissions_projects.get(project_string_id, None)
@@ -280,13 +304,15 @@ class User(Base):
 
         return session.query(User).filter(User.username == username_string).first()
 
+    @staticmethod
     def get_current_user(session):
 
-        return session.query(User).filter_by(id = getUserID()).first()
+        return session.query(User).filter_by(id = getUserID(session = session)).first()
 
+    @staticmethod
     def get(session):
 
-        return session.query(User).filter_by(id = getUserID()).first()
+        return session.query(User).filter_by(id = getUserID(session = session)).first()
 
     def get_by_member_id(
         session,

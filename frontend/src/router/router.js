@@ -3,145 +3,10 @@ import Router from 'vue-router'
 
 const routerOptions = [
   {
-    // home
-    path: '/',
-    component: 'marketing/home_unbounce',
-    alias: ['/training_data', '/training_data_software', '/os', '/marketing/os'],
-    meta: {external_page: true}
-  },
-  {
-    path: '/enterprise/contact',
-    alias: ['/contact'],
-    component: 'products/builder/enterprise_contact_us',
-    meta: {external_page: true}
-  },
-  {
-    path: '/what_is_tdm',
-    component: 'marketing/what_is_tdm',
-    alias: ['/tdm'],
-    meta: {external_page: true}
-  },
-  {
-    path: '/segmentation',
-    component: 'marketing/marketing_segmentation',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/security',
-    alias: ['/secure'],
-    component: 'marketing/marketing_security',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/install',
-    alias: ['/i'],
-    component: 'marketing/marketing_install',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/your_next_step',
-    component: 'marketing/marketing_your_next_step',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/single_application',
-    component: 'marketing/marketing_single_application',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/open_source',
-    component: 'marketing/marketing_open_source',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/automation',
-    component: 'marketing/marketing_automation',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/human_tasks_workflow',
-    component: 'marketing/marketing_human_tasks_workflow',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/white_label_customization',
-    component: 'marketing/marketing_white_label_customization',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/ease_of_use',
-    component: 'marketing/marketing_ease_of_use',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/engineering_led_support',
-    component: 'marketing/marketing_engineering_led_support',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/diffgram-vs-sagemaker',
-    alias: ['/sagemaker'],
-    component: 'marketing/marketing_vs_sagemaker_groundtruth',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/why_diffgram',
-    component: 'marketing/why_diffgram',
-    alias: ['/why'],
-    meta: {external_page: true}
-  },
-  {
     path: '/learn/build_vs_buy',
     component: 'marketing/build_vs_buy',
     alias: ['/build_vs_buy'],
     meta: {external_page: true}
-  },
-  {
-    path: '/video_annotation',
-    component: 'marketing/video_annotation',
-    alias: ['/video'],
-    meta: {external_page: true}
-  },
-  {
-    path: '/pricing',
-    component: 'products/pricing',
-    meta: {external_page: true}
-  },
-  {
-    path: '/streaming',
-    component: 'marketing/marketing_streaming',
-    meta: {external_page: true}
-  },
-  {
-    path: '/versioning',
-    component: 'marketing/marketing_versioning',
-    meta: {external_page: true}
-  },
-  {
-    path: '/enterprise',
-    component: 'marketing/marketing_enterprise',
-    meta: {external_page: true}
-  },
-  {
-    path: '/enterprise/hub',
-    component: 'marketing/marketing_enterprise_hub',
-    meta: {external_page: true}
-  },
-  {
-    path: '/sticker',
-    component: 'products/builder/web_sticker'
   },
   {
     path: '/order/premium',
@@ -154,11 +19,6 @@ const routerOptions = [
   {
     path: '/policies',
     component: 'company/policies',
-    meta: {external_page: true}
-  },
-  {
-    path: '/about',
-    component: 'company/about',
     meta: {external_page: true}
   },
   {
@@ -263,8 +123,8 @@ const routerOptions = [
   // must come before flow id one (otherwise it will try
   // to pass it as prop
   {
-    path: '/project/:project_string_id/flow/list',
-    component: 'action/action_flow_list',
+    path: '/project/:project_string_id/workflow/list',
+    component: 'action/workflow_list',
     props: true,
     meta: {requiresAuth: true}
   },
@@ -273,6 +133,13 @@ const routerOptions = [
     // :flow_id is optional?
     path: '/project/:project_string_id/flow/:flow_id?',
     component: 'action/action_flow',
+    props: true,
+    meta: {requiresAuth: true}
+  },
+  {
+    // :flow_id is optional?
+    path: '/project/:project_string_id/workflow/:workflow_id?',
+    component: 'action/workflow_builder',
     props: true,
     meta: {requiresAuth: true}
   },
@@ -298,17 +165,10 @@ const routerOptions = [
   },
 
   {
-    path: '/project/:project_string_id/flow/:flow_id/event/:flow_event_id',
+    path: '/project/:project_string_id/workflow/:workflow_id/run/:workflow_run_id',
     component: 'action/action_event_list',
     props: true,
     meta: {requiresAuth: true}
-  },
-
-  {
-    path: '/join',
-    component: 'hiring/hiring_home',
-    props: true,
-    meta: {requiresAuth: false}
   },
   {
     path: '/org/:org_id/settings',
@@ -335,8 +195,8 @@ const routerOptions = [
     meta: {requiresAuth: true}
   },
   {
-    path: '/hiring/application/new',
-    component: 'hiring/application_new',
+    path: '/status',
+    component: 'status',
     props: true,
     meta: {requiresAuth: true}
   },
@@ -359,7 +219,8 @@ const routerOptions = [
     alias: ['/project/:project_string_id'],
     component: 'annotation/annotation_ui_factory',
     props: (route) => ({
-      show_explorer_full_screen: true
+      show_explorer_full_screen: true,
+      project_string_id: route.params.project_string_id
     }),
     meta: {
       requiresAuth: true,
@@ -465,7 +326,7 @@ const routerOptions = [
     }
   },
   {
-    path: '/job/new/:job_id_route',
+    path: '/project/:project_string_id_route/job/new/:job_id_route',
     component: 'task/job/task_template_wizard_creation/task_template_new',
     props: true,
     meta: {
@@ -517,8 +378,23 @@ const routerOptions = [
     meta: {requiresAuth: true}
   },
   {
-    path: '/welcome/builder',
-    component: 'annotation/welcome_builder',
+    path: '/welcome',
+    component: 'welcome_builder',
+    meta: {requiresAuth: true}
+  },
+  {
+    path: '/welcome/social',
+    component: 'welcome_social',
+    meta: {requiresAuth: true}
+  },
+  {
+    path: '/welcome/verify',
+    component: 'welcome_email_verify',
+    meta: {requiresAuth: true}
+  },
+  {
+    path: '/welcome/adventure',
+    component: 'welcome_choose_your_adventure',
     meta: {requiresAuth: true}
   },
   {
@@ -611,37 +487,15 @@ const routerOptions = [
     meta: {requiresAuth: true}
   },
   {
-    path: '/home/dashboard',
+    path: '/',
     component: 'user/home/dashboard',
+    alias: ['/home/dashboard'],
     props: false,
     meta: {
       requiresAuth: true,
       title: "Dashboard"
       }
   },
-  {
-    path: '/software',
-    component: 'marketing/software_marketing_unbounce',
-    props: false,
-    meta: {
-      requiresAuth: false,
-      title: "Software"
-    }
-  },
-  {
-    path: '/data_platform',
-    component: 'marketing/data_platform_signup_marketing_unbounce',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-  {
-    path: '/pro',
-    alias: ['/pros'],
-    component: 'marketing/pro_signup_marketing_unbounce',
-    props: false,
-    meta: {requiresAuth: false}
-  },
-
   {
     path: '/user/new',
     alias: ['/user/data_platform/new'],
@@ -749,6 +603,14 @@ const routerOptions = [
     })
   },
   {
+    path: '/user/oidc-login/',
+    component: 'user/login_oidc_redirect',
+    props: true,
+    meta: (route) => ({
+      title: "Login"
+    })
+  },
+  {
     path: '/user/account/password/set',
     component: 'user/account/user_password',
     meta: {requiresAuth: true}
@@ -782,6 +644,24 @@ const routerOptions = [
     meta: {
       requiresAuth: true,
       title: "New Project"
+    }
+  },
+  {
+    path: '/project/:project_string_id/migrate',
+    component: 'project/project_migrator_wizard',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      title: "Migrate Project"
+    }
+  },
+  {
+    path: '/project/:project_string_id/project-migrations',
+    component: 'project/project_migrations_list',
+    props: true,
+    meta: {
+      requiresAuth: true,
+      title: "Project Migrations"
     }
   },
   {

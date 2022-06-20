@@ -387,7 +387,6 @@ def user_limits(session,
                                                     count_only = True)
 
     # if user_job_count is None, assumption is that userhas no jobs
-    print(user_job_count)
 
     job_count_max = 999999
 

@@ -2,10 +2,27 @@
   <div>
 
 
-    <v-menu  v-model="project_menu"
+    <v-flex v-if="!$store.state.project.current.project_string_id
+                && $store.state.user.current.security_email_verified == true
+                && $store.state.project_list.user_projects_list
+                && $store.state.project_list.user_projects_list.length > 0">
+      <v-btn color="primary"
+              text
+              style="text-transform: none !important;"
+              @click="$router.push('/projects')">
+        <span>
+          <v-icon left>folder</v-icon>
+          Change Project
+        </span>
+      </v-btn>
+    </v-flex>
+
+    <v-menu v-model="project_menu"
             :nudge-width="150"
             offset-y
-            :disabled="false">
+            :disabled="false"
+            v-if="$store.state.project.current.project_string_id"
+            >
 
       <template v-slot:activator="{ on }">
         <v-btn  v-on="on"
@@ -13,7 +30,8 @@
                 id="open_main_menu"
                 data-cy="project_menu_dropdown_toggle"
                 text
-                :disabled="!$store.state.project.current.project_string_id || $store.state.user.current.security_email_verified != true">
+                v-if="$store.state.project.current.project_string_id"
+                :disabled="$store.state.user.current.security_email_verified != true">
           <v-icon left> mdi-lightbulb </v-icon>
           Project
           <v-icon right> mdi-chevron-down</v-icon>
@@ -35,8 +53,8 @@
                 @click="$router.push('/project/' +
                         $store.state.project.current.project_string_id
                         + '/labels')">
-              <v-icon left>mdi-format-paint</v-icon>
-              Schema - Labels, Attributes, Templates
+              <v-icon left>mdi-shape-plus</v-icon>
+              Schema
             </v-btn>
           </v-flex>
 
@@ -61,8 +79,20 @@
                     text
                     style="text-transform: none !important;"
                     @click="route_annotate">
+              <v-icon left>mdi-draw</v-icon>
+              Studio
+            </v-btn>
+          </v-flex>
+
+          <v-flex>
+            <v-btn color="primary"
+                   data-cy="main_menu_data_explorer_full_screen"
+                   :disabled="!$store.state.project.current.project_string_id"
+                    text
+                    style="text-transform: none !important;"
+                    @click="$router.push(`/studio/annotate/${$store.state.project.current.project_string_id}/explorer`)">
               <v-icon left>mdi-compass</v-icon>
-              Studio - Data Explorer
+              Query and Explore
             </v-btn>
           </v-flex>
 
@@ -172,7 +202,7 @@
           </v-flex>
           -->
 
-          
+
           <v-flex>
             <v-btn color="primary"
                     text
@@ -200,9 +230,9 @@
             <v-btn color="primary"
                    text
                    style="text-transform: none !important;"
-                   @click="$router.push('/project/' + $store.state.project.current.project_string_id + '/flow/list')">
-              <v-icon left>mdi-playlist-check</v-icon>
-              Email Alerts & Webhooks
+                   @click="$router.push('/project/' + $store.state.project.current.project_string_id + '/workflow/list')">
+              <v-icon left>mdi-lan</v-icon>
+              My WorkFlows
             </v-btn>
 
           </v-flex>

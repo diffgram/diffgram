@@ -1,9 +1,9 @@
 import axios from './customInstance'
 
-export const get_task_template_details = async (exam_id) => {
+export const get_task_template_details = async (task_template_id) => {
 
   try{
-    const response = await axios.post(`/api/v1/job/${exam_id}/builder/info`, {
+    const response = await axios.post(`/api/v1/job/${task_template_id}/builder/info`, {
       mode_data: 'job_detail',
     })
     if (response.data.log.success == true) {
@@ -13,6 +13,25 @@ export const get_task_template_details = async (exam_id) => {
   }
   catch (e){
     console.error(e);
+  }
+}
+
+export const update_task_template = async (project_string_id, task_template_id, task_template) => {
+
+  try{
+    const response = await axios.post(
+      `/api/v1/project/${project_string_id}/job/update`,
+      {
+        ...task_template,
+        job_id: task_template_id,
+      }
+    );
+    if(response.status === 200){
+      return [response.data, null]
+    }
+  }
+  catch (e){
+    return [null, e]
   }
 }
 
@@ -43,6 +62,20 @@ export const archive_task_template = async (job_id, job_list, mode) => {
       })
     if (response.data.log.success == true) {
       return [true, null]
+    }
+
+    return [false, null]
+  }
+  catch (e){
+    return[null, e]
+  }
+}
+
+export const get_task_template_members = async (job_id) => {
+  try{
+    let response = await axios.get(`/api/v1/job/${job_id}/members-list`, {})
+    if (response.status === 200) {
+      return [response.data, null]
     }
 
     return [false, null]

@@ -162,10 +162,10 @@
           </v-layout>
         </v-container>
 
-        <v-container fluid style="border: 1px solid #ababab" v-if="credential_list.length === 0"
-                     class="d-flex flex-column align-center justify-center ma-0">
+        <v-container fluid style="border: 1px solid #ababab; width: 450px; " v-if="credential_list.length === 0"
+                     class="d-flex ma-0 mt-0 flex-column align-center justify-center ma-auto">
           <h1>No Credentials to Display</h1>
-          <v-icon size="250">mdi-shield-star-outline</v-icon>
+          <v-icon size="180">mdi-shield-star-outline</v-icon>
         </v-container>
 
         <!-- End icons for trainers -->

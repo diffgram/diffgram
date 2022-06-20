@@ -12,7 +12,7 @@
           <v-divider></v-divider>
           <v-stepper-step
             :complete="step > 2"
-            step="2"                          
+            step="2"
             :editable="project_string_id != undefined"
           >
             Label Schema
@@ -61,6 +61,7 @@
           <v-stepper-content step="2" style="height: 100%">
 
             <labels_attributes_manager
+              :schema="schema"
               @skip="go_to_step"
               @back="go_back_a_step()"
               :project_string_id="project_string_id">
@@ -100,9 +101,9 @@
 
           <v-stepper-content step="5" style="height: 100%">
 
-            
+
             <h1 class="font-weight-medium text--primary">Create Tasks</h1>
-            
+
 
             <p class="pt-3 text--primary">
               All of your work is saved.
@@ -128,7 +129,7 @@
                        >
                   Create Tasks
                 </v-btn>
-     
+
               </template>
             </wizard_navigation>
 
@@ -147,7 +148,6 @@
 import project_new from './project_new';
 import project_members_step from './project_members_step';
 import labels_attributes_manager from '../label/labels_attributes_manager';
-import welcome_builder from '../annotation/welcome_builder';
 import upload_step_wizard from '../input/upload_step_wizard';
 
 import Vue from "vue";
@@ -158,12 +158,12 @@ export default Vue.extend( {
     upload_step_wizard,
     project_members_step,
     labels_attributes_manager,
-    welcome_builder
   },
   data() {
     return {
       step: 1,
       global_progress: 0,
+      schema: {},
       project_string_id: undefined,
       member_invited: false,
     }
@@ -184,8 +184,9 @@ export default Vue.extend( {
     on_upload_success: function(){
       this.step = 4;
     },
-    on_project_created: function(project){
+    on_project_created: function(project, schema){
       this.project_string_id = project.project_string_id;
+      this.schema = schema
       this.go_to_step(2);
     },
     go_to_step: function(step){

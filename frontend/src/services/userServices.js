@@ -26,11 +26,20 @@ export const user_has_credentials = async (project_string_id, user_id, task_temp
 
 export const logout = async () => {
   try {
-    const response = await axios.get('/user/logout')
+
+    const response = await axios.get('/api/v1/user/logout')
     store.dispatch('log_out')
     router.push('/user/login');
     return response
   } catch(e) {
     console.log(e)
+  }
+}
+
+export const is_user_verified = async () => {
+  try {
+    return await axios.get('/api/v1/user/verify/is_email_confirmed')
+  } catch(e) {
+    return e
   }
 }

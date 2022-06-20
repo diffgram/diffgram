@@ -15,8 +15,12 @@ INTEGRATION_VENDORS_SUPPORTED_FEATURES = {
         'files_import': True,
         'files_export': True
     },
+    'microsoft_azure_text_analytics': {
+        'predict': True,
+    },
     'labelbox': {
         'labeling_interface': True,
+        'project_migration': True,
         'allowed_instance_types': ['box', 'polygon']
     },
     'scale_ai': {
@@ -31,6 +35,10 @@ INTEGRATION_VENDORS_SUPPORTED_FEATURES = {
     'diffgram': {
         'labeling_interface': True,
         'allowed_instance_types': ['box', 'polygon', 'line', 'point', 'tag', 'cuboid', 'ellipse', 'curve', 'custom', 'keypoint']
+    },
+    'minio': {
+        'files_import': True,
+        'files_export': True
     }
 }
 
@@ -54,6 +62,8 @@ class Connection(Base):
     integration_version = Column(Integer, default=1)  # ie for future migration
 
     private_id = Column(String())
+    private_host = Column(String())
+    disabled_ssl_verify = Column(Boolean(), default=False)
 
     # https://stackoverflow.com/questions/27197965/what-type-is-used-to-store-byte-strings-in-sqlalchemy
     private_secret_encrypted = Column(LargeBinary())  # aka api_key, sas_uri, etc.
@@ -91,6 +101,8 @@ class Connection(Base):
             'time_updated': self.time_updated,
             'archived': self.archived,
             'private_id': self.private_id,
+            'private_host': self.private_host,
+            'disabled_ssl_verify': self.disabled_ssl_verify,
             'account_email': self.account_email,
             'project_id_external': self.project_id_external,
             'supported_features': INTEGRATION_VENDORS_SUPPORTED_FEATURES[self.integration_name],

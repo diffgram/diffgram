@@ -82,11 +82,23 @@ def apply_security_rules(response):
 	return response
 
 
+@app.route('/install', defaults={'path' : ''}, methods=['GET'])
+@app.route('/install/', defaults={'path' : ''}, methods=['GET'])
+@app.route('/install/<path:path>', methods=['GET'])
+def install_redirect(path):
+	return redirect(f"https://diffgram.readme.io/install/{path}", code=301)
+
+
 @app.route('/docs', defaults={'path' : ''}, methods=['GET'])
 @app.route('/docs/', defaults={'path' : ''}, methods=['GET'])
 @app.route('/docs/<path:path>', methods=['GET'])
 def docs_redirect(path):
 	return redirect(f"https://diffgram.readme.io/docs/{path}", code=301)	
+
+
+@app.route('/api/status', methods=['GET'])
+def alive_api():
+    return jsonify(True), 200
 
 
 @app.route('/', defaults={'path' : ''}, methods=['GET', 'POST'])

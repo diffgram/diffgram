@@ -9,6 +9,7 @@
     ref="google_gcp"
     :format="format"
   ></export_storage_searchbar>
+
   <export_storage_searchbar
     v-else-if="connection && connection.integration_name === 'amazon_aws'"
     :project_string_id="project_string_id"
@@ -19,6 +20,18 @@
     :connection="connection"
     :format="format"
   ></export_storage_searchbar>
+
+  <export_storage_searchbar
+    v-else-if="connection && connection.integration_name === 'minio'"
+    :project_string_id="project_string_id"
+    :export_obj="export_obj"
+    label="MinIO"
+    ref="minio"
+    @folder-selected="on_folder_selected"
+    :connection="connection"
+    :format="format"
+  ></export_storage_searchbar>
+
   <export_storage_searchbar
     v-else-if="connection && connection.integration_name === 'microsoft_azure'"
     :project_string_id="project_string_id"

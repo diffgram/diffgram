@@ -33,6 +33,7 @@ from shared.data_tools_core import Data_tools
 global Update_Input
 from methods.input.input_update import Update_Input
 from shared.database.model.model_run import ModelRun
+from shared.database.audio.audio_file import AudioFile
 from shared.database.model.model import Model
 from shared.utils import job_dir_sync_utils
 from shared.database.task.job.job import Job
@@ -43,19 +44,24 @@ from shared.model.model_manager import ModelManager
 import traceback
 from shared.utils.source_control.file.file_transfer_core import perform_sync_events_after_file_transfer
 from methods.sensor_fusion.sensor_fusion_file_processor import SensorFusionFileProcessor
+from methods.geotiff.GeoTiffProcessor import GeoTiffProcessor
 import numpy as np
 from shared.regular.regular_log import log_has_error
 import os
 from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
 from methods.text_data.text_tokenizer import TextTokenizer
+from shared.utils.instance.transform_instance_utils import rotate_instance_dict_90_degrees
+
 
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
 sensor_fusion_allowed_extensions = [".json"]
+geo_tiff_allowed_extensions = [".tiff", ".tif"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
 text_allowed_file_names = [".txt"]
+audio_allowed_file_names = [".mp3", ".wav", ".flac"]
 csv_allowed_file_names = [".csv"]
 existing_instances_allowed_file_names = [".json"]
 
@@ -204,16 +210,14 @@ def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEU
 def add_item_to_queue(item):
     # https://diffgram.com/docs/add_item_to_queue
     from methods.input.process_media_queue_manager import process_media_queue_manager
-    if item.media_type and item.media_type in ["frame", "image", "text", "csv_url"]:
-
+    if item.media_type and item.media_type == "video":
+        process_media_queue_manager.VIDEO_QUEUE.put(item)
+    else:
         wait_until_queue_pressure_is_lower(
             queue = process_media_queue_manager.FRAME_QUEUE,
             limit = process_media_queue_manager.frame_threads * 2,
             check_interval = 1)
         process_media_queue_manager.FRAME_QUEUE.put(item)
-
-    else:
-        process_media_queue_manager.VIDEO_QUEUE.put(item)
 
 
 def wait_until_queue_pressure_is_lower(queue, limit, check_interval = 1):
@@ -522,6 +526,8 @@ class Process_Media():
                                "from_url",
                                "from_video_split",
                                "from_sensor_fusion_json",
+                               "from_geo_tiff",
+                               "from_geo_tiff_json",
                                "ui_wizard"]:
 
             download_result = self.download_media()
@@ -611,7 +617,7 @@ class Process_Media():
         )
         if existing_file_list:
             self.input.status = "failed"
-            self.input.status_text = f"Existing filename with ID {str(existing_file_list[0].id)} in directory."
+            self.input.status_text = f"Filename {self.input.original_filename} Already Exists in Dir. Existing ID is:{str(existing_file_list[0].id)}"
             self.input.update_log = {'error': {
                 'existing_file_id': existing_file_list[0].id}
             }
@@ -1006,6 +1012,31 @@ class Process_Media():
         if self.input.job.status in ['active', 'in_review']:
             self.create_task_on_job_sync_directories()
 
+    def process_geo_tiff_file(self):
+        geotiff_processor = GeoTiffProcessor(
+            session = self.session,
+            input = self.input,
+            log = self.log
+        )
+        try:
+            result, self.log = geotiff_processor.process_geotiff_data()
+
+            if log_has_error(self.log):
+                self.input.status = 'failed'
+                logger.error(f"Geotiff file failed to process. Input {self.input.id}")
+                logger.error(self.log)
+                self.input.update_log = self.log
+                return
+
+            self.declare_success(self.input)
+
+        except Exception as e:
+            logger.error(f"Exception on process geo data: {traceback.format_exc()}")
+            self.log['error']['geo_data'] = traceback.format_exc()
+            self.input.status = 'failed'
+            self.input.update_log = self.log
+
+
     def process_sensor_fusion_json(self):
         sf_processor = SensorFusionFileProcessor(
             session = self.session,
@@ -1020,6 +1051,8 @@ class Process_Media():
                 self.input.status = 'failed'
                 logger.error(f"Sensor fussion file failed to process. Input {self.input.id}")
                 logger.error(self.log)
+                self.input.update_log = self.log
+                return
 
             self.declare_success(self.input)
 
@@ -1083,6 +1116,7 @@ class Process_Media():
                 file_count_dir)
             logger.error(message)
             self.log['error']['free_tier_limit'] = message
+            self.log['info']['feature_checker'] = feature_checker.log
             self.input.status = 'failed'
             self.input.description = message
             self.input.update_log = self.log
@@ -1097,8 +1131,10 @@ class Process_Media():
         strategy_operations = {
             "image": self.process_one_image_file,
             "text": self.process_one_text_file,
+            "audio": self.process_one_audio_file,
             "frame": self.process_frame,
             "sensor_fusion": self.process_sensor_fusion_json,
+            "geo_tiff": self.process_geo_tiff_file,
             "video": self.process_video,
             "csv": self.process_csv_file
         }
@@ -1196,7 +1232,7 @@ class Process_Media():
         We don't create an image, as we save the data to the video dict.
         In general this is not for previewing an image from front end
         but more for "internal" access.
-        if needed could cache signed urls on front end
+        if needed could cache WORsigned urls on front end
 
         We don't call resize because we assume the video has already been
         resized as required
@@ -1432,11 +1468,13 @@ class Process_Media():
 
         if input.status == "success":
             return
-
+        if input.file_id is None and input.file is not None:
+            input.file_id = input.file.id
         Event.new_deferred(
             session = self.session,
             kind = 'input_file_uploaded',
             project_id = input.project_id,
+            directory_id = input.directory_id,
             input_id = input.id,
             file_id = input.file_id,
             wait_for_commit = True
@@ -1467,6 +1505,53 @@ class Process_Media():
             video_file_id = self.input.parent_file_id,
             regenerate_preview_images = True)
 
+    def process_one_audio_file(self):
+        try:
+            logger.debug(f"Started processing audio file from input: {self.input_id}")
+
+            self.new_audio_file = AudioFile(original_filename = self.input.original_filename)
+            self.session.add(self.new_audio_file)
+            self.session.flush()
+
+            self.try_to_commit()
+
+            if self.project:
+                # with either object or id... this assumes we don't have project_id set.
+                self.project_id = self.project.id
+
+            ### Main
+            self.save_raw_audio_file()
+
+            self.input.file = File.new(
+                session = self.session,
+                working_dir_id = self.working_dir_id,
+                file_type = "audio",
+                audio_file_id = self.new_audio_file.id,
+                original_filename = self.input.original_filename,
+                project_id = self.project_id,
+                input_id = self.input.id,
+                file_metadata = self.input.file_metadata,
+            )
+
+            if self.input.status != "failed":
+                self.input.status = "success"
+                self.input.percent_complete = 100
+                self.input.time_completed = datetime.datetime.utcnow()
+
+            try:
+                shutil.rmtree(self.input.temp_dir)  # delete directory
+            except OSError as exc:
+                logger.error("shutil error")
+                pass
+        except Exception as e:
+            message = traceback.format_exc()
+            logger.error(message)
+            self.log['error']['text_file_upload'] = message
+            self.input.status = 'failed'
+            self.input.description = message
+            self.input.update_log = self.log
+
+        return True
     def process_one_text_file(self):
         """
             This function will process a single text file and Create a Row in Table
@@ -1510,21 +1595,8 @@ class Process_Media():
             self.save_text_tokens(raw_text, self.input.file)
             # Set success state for input.
             if self.input.media_type == 'text':
-
-                if self.input.status != "failed":  # if we haven't already set a status
-                    # May need this on video too
-                    # Context of for example the packet for instances attached to it
-                    # Not loading successfully
-                    # We default this to init so 'failed' string instead of None
-                    self.input.status = "success"
-                    self.input.percent_complete = 100
-                    self.input.time_completed = datetime.datetime.utcnow()
-
-                # Question, could we just call close() on temp_dir_path_and_filename instead here?
-                # TODO review this usage vs say https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-                # basically, if the default is that delete=True on close, hmmm
-
-                # allow_csv is True by default but gets set to False by process csv...
+                if self.input.status != "failed":
+                    self.declare_success(self.input)
                 try:
                     shutil.rmtree(self.input.temp_dir)  # delete directory
                 except OSError as exc:
@@ -1540,6 +1612,44 @@ class Process_Media():
 
         return True
 
+    def rotate_instance_list(self, instance_list, width, height):
+
+        if not instance_list:
+            return
+        logger.warning('Rotating Instance List')
+        for i in range(0, len(instance_list)):
+            instance_list[i] = rotate_instance_dict_90_degrees(instance = instance_list[i],
+                                                               width = width,
+                                                               height = height)
+
+        return instance_list
+
+    def check_metadata_and_auto_correct_instances(self, imageio_read_image, image_metadata):
+        if not self.input.auto_correct_instances_from_image_metadata:
+            return
+        if not image_metadata:
+            return
+        if image_metadata.get('width') is None or image_metadata.get('height') is None:
+            return
+        logger.info('Checking matching metadata and readed image width/height...')
+        readed_image_height = imageio_read_image.shape[0]
+        readed_image_width = imageio_read_image.shape[1]
+        logger.info(f'Readed Image width: {readed_image_width} height: {readed_image_height}')
+
+        if readed_image_width == readed_image_height:
+            return
+
+        metadata_width = image_metadata.get('width')
+        metadata_height = image_metadata.get('height')
+        logger.info(f'Metadata width: {metadata_width} height: {metadata_height}')
+
+        if metadata_height == readed_image_width and metadata_width == readed_image_height:
+            logger.warning('Detected flipped coordinates on image. Rotating instances to correct positioning')
+            if self.input.instance_list and self.input.instance_list.get('list'):
+                self.input.instance_list['list'] = self.rotate_instance_list(self.input.instance_list.get('list'),
+                                                                             readed_image_width,
+                                                                             readed_image_height)
+
     def process_one_image_file(self):
 
         """
@@ -1549,14 +1659,9 @@ class Process_Media():
 
         """
 
-        # Question, why would we need a default extension?
-        # self.input.extension = ".jpg"
 
         result = self.read_raw_file()
         if result is False: return False
-
-        # Why is content_type needed here?
-        # self.content_type = "image/" + str(self.input.extension)
 
         # Image() subclass
         self.new_image = Image(
@@ -1566,18 +1671,26 @@ class Process_Media():
 
         self.try_to_commit()
 
-        if self.project:  # TODO would like more clarity on option to start
-            # with either object or id... this assumes we don't have project_id set.
+        if self.project:
             self.project_id = self.project.id
 
         ### Main
 
         self.resize_raw_image()
 
+        self.check_metadata_and_auto_correct_instances(
+            imageio_read_image = self.raw_numpy_image,
+            image_metadata = self.input.image_metadata
+        )
+
         self.save_raw_image_file()
-
+        if len(self.log["error"].keys()) >= 1:
+            logger.error(f"Error save_raw_image_file")
+            return
         self.save_raw_image_thumb()
-
+        if len(self.log["error"].keys()) >= 1:
+            logger.error(f"Error save_raw_image_thumb")
+            return
         self.input.file = File.new(
             session = self.session,
             working_dir_id = self.working_dir_id,
@@ -1747,16 +1860,15 @@ class Process_Media():
 
     def save_raw_image_file(self):
 
-        self.new_image.url_signed_expiry = int(time.time() + 2592000)  # 1 month
-
         self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
                                               str(self.project_id) + "/" + str(self.new_image.id)
 
         # Use original file for jpg and jpeg
-        if str(self.input.extension) in ['.jpg', '.jpeg']:
+        extension = str(self.input.extension).lower()
+        if extension in ['.jpg', '.jpeg']:
             new_temp_filename = self.input.temp_dir_path_and_filename
         # If PNG is used check compression
-        elif str(self.input.extension) == '.png':
+        elif extension == '.png':
             new_temp_filename = self.input.temp_dir_path_and_filename
             with open(self.input.temp_dir_path_and_filename, 'rb') as f:
                 f.seek(63)
@@ -1767,23 +1879,33 @@ class Process_Media():
             if (compress):
                 new_temp_filename = self.input.temp_dir + "/resized_" + str(time.time()) + \
                                     str(self.input.extension)
-                imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=2)
-        #For bmp, tif and tiff files save as PNG and compress
-        elif str(self.input.extension) in ['.bmp', '.tif', '.tiff']:
+                imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level = 2)
+        # For bmp, tif and tiff files save as PNG and compress
+        elif extension in ['.bmp', '.tif', '.tiff']:
             new_temp_filename = f"{self.input.temp_dir}/resized_{str(time.time())}.png"
-            imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level=3)
+            imwrite(new_temp_filename, np.asarray(self.raw_numpy_image), compress_level = 3)
         else:
-            raise NotImplementedError(f"Extension: {self.input.extension} not supported yet.")
-            pass
+            self.input.status = "failed"
+            self.input.status_text = f"""Extension: {self.input.extension} not supported yet. 
+                Try adding an accepted extension [.jpg, .jpeg, .png, .bmp, .tif, .tiff] or no extension at all if from cloud source and response header content-type is set correctly."""
+            self.log['error']['extension'] = self.input.status_text
+            return
 
-        data_tools.upload_to_cloud_storage(
-            temp_local_path = new_temp_filename,
-            blob_path = self.new_image.url_signed_blob_path,
-            content_type = "image/jpg",
-        )
+        try:
+            data_tools.upload_to_cloud_storage(
+                temp_local_path = new_temp_filename,
+                blob_path = self.new_image.url_signed_blob_path,
+                content_type = "image/jpg",
+            )
 
-        self.new_image.url_signed = data_tools.build_secure_url(self.new_image.url_signed_blob_path,
-                                                                self.new_image.url_signed_expiry)
+        except Exception as e:
+            message = f'Error uploading to cloud storage: {traceback.format_exc()}'
+            logger.error(message)
+            self.input.status = 'failed'
+            self.log['error']['upload_image'] = message
+            self.input.update_log = self.log
+            return
+
         return new_temp_filename
 
     def save_text_tokens(self, raw_text: str, file: File) -> None:
@@ -1807,10 +1929,30 @@ class Process_Media():
         data_tools.upload_from_string(self.new_text_file.tokens_url_signed_blob_path,
                                       json_string_data,
                                       content_type = 'application/json')
-        self.new_text_file.tokens_url_signed = data_tools.build_secure_url(self.new_text_file.tokens_url_signed_blob_path,
-                                                                           self.new_text_file.tokens_url_signed_expiry)
+        self.new_text_file.tokens_url_signed = data_tools.build_secure_url(
+            self.new_text_file.tokens_url_signed_blob_path,
+            self.new_text_file.tokens_url_signed_expiry)
         logger.info(f"Saved Tokens on: {self.new_text_file.tokens_url_signed_blob_path}")
 
+    def save_raw_audio_file(self):
+        offset = 2592000
+        self.new_audio_file.url_signed_expiry = int(time.time() + offset)  # 1 month
+
+        self.new_audio_file.url_signed_blob_path = '{}{}/{}'.format(settings.PROJECT_TEXT_FILES_BASE_DIR,
+                                                                   str(self.project_id),
+                                                                   str(self.new_audio_file.id))
+
+        # TODO: Please review. On image there's a temp directory for resizing. But I don't feel the need for that here.
+        logger.debug(f"Uploading text file from {self.input.temp_dir_path_and_filename}")
+
+        data_tools.upload_to_cloud_storage(
+            temp_local_path = self.input.temp_dir_path_and_filename,
+            blob_path = self.new_audio_file.url_signed_blob_path,
+            content_type = "text/plain",
+        )
+
+        self.new_audio_file.url_signed = data_tools.build_secure_url(self.new_audio_file.url_signed_blob_path,
+                                                                    offset)
     def save_raw_text_file(self):
         offset = 2592000
         self.new_text_file.url_signed_expiry = int(time.time() + offset)  # 1 month
@@ -1846,13 +1988,7 @@ class Process_Media():
 
         new_temp_filename = f"{self.input.temp_dir}/resized.jpg"
 
-        imwrite(new_temp_filename, thumbnail_image, quality=95)
-
-        # Build URL
-        url_signed_thumb = data_tools.build_secure_url(self.new_image.url_signed_thumb_blob_path,
-                                                       self.new_image.url_signed_expiry)
-
-        self.new_image.url_signed_thumb = url_signed_thumb
+        imwrite(new_temp_filename, thumbnail_image, quality = 95)
 
         data_tools.upload_to_cloud_storage(
             temp_local_path = new_temp_filename,
@@ -1937,7 +2073,7 @@ class Process_Media():
                 row_input.url = row[0]
                 row_input.allow_csv = False
                 row_input.type = "from_url"
-                row_input.media_type = "csv_url"
+                row_input.media_type = None
                 self.try_to_commit()
 
                 # Spawn a new instance for each url
@@ -1946,7 +2082,6 @@ class Process_Media():
                 item = PrioritizedItem(
                     priority = 100,
                     input_id = row_input.id)
-                item.media_type = 'csv_url'
                 add_item_to_queue(item)
 
         # TODO how to handle removing from directory
@@ -2105,9 +2240,10 @@ class Process_Media():
                         self.log['error']['status_text'] = self.input.status_text
                         return
 
-            self.input.media_type = self.determine_media_type(
-                extension = self.input.extension,
-                allow_csv = self.allow_csv)
+            if self.input.media_type is None:
+                self.input.media_type = self.determine_media_type(
+                    extension = self.input.extension,
+                    allow_csv = self.allow_csv)
 
             if self.input.media_type is None or \
                 self.input.media_type not in ["image", "video"]:
@@ -2242,7 +2378,7 @@ class Process_Media():
         """
         extension = extension.lower()
 
-        if extension in images_allowed_file_names:
+        if extension in images_allowed_file_names and input_type != 'from_geo_tiff':
             return "image"
 
         if extension in videos_allowed_file_names:
@@ -2250,6 +2386,9 @@ class Process_Media():
 
         if extension in text_allowed_file_names:
             return 'text'
+
+        if extension in audio_allowed_file_names:
+            return 'audio'
 
         if extension in csv_allowed_file_names:
 
@@ -2262,6 +2401,9 @@ class Process_Media():
         if input_type is not None and input_type == 'from_sensor_fusion_json':
             if extension in sensor_fusion_allowed_extensions:
                 return 'sensor_fusion'
+        if input_type is not None and input_type == 'from_geo_tiff':
+            if extension in geo_tiff_allowed_extensions:
+                return 'geo_tiff'
 
         if extension in existing_instances_allowed_file_names:
             return "existing_instances"

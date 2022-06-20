@@ -131,6 +131,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         # If it is not an int then it should be a string entity type (like "file" or "labels")
         value = name_token.value
         value = value.split('.')[0]
+        if value == "label":
+            value = "labels"  # cast to plural
         return value
 
     def get_compare_op(self, token):
@@ -165,6 +167,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         entity_type = self.__determine_entity_type(token)
         if entity_type == 'labels':
             label_name = token.value.split('.')[1]
+
             label_file = File.get_by_label_name(session = self.session,
                                                 label_name = label_name,
                                                 project_id = self.diffgram_query.project.id)
@@ -184,10 +187,12 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                    and_(
                        Instance.file_id == File.id,
                        Instance.label_file_id == label_file.id,
+                       Instance.soft_delete != True
                    ),
                     and_(
                         Instance.parent_file_id == File.id,
-                        Instance.label_file_id == label_file.id
+                        Instance.label_file_id == label_file.id,
+                        Instance.soft_delete != True
                     )
                 )
 
@@ -230,7 +235,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 return False
 
             if type(value_1) == int and type(value_2) == int:
-                logger.error('Error: at least 1 value must be a label.')
+                logger.error('Error: at least 1 value must be a label.') 
 
         return True
 
@@ -246,12 +251,12 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             compare_op = children[1]
             name2 = children[2]
             entity_type = self.__determine_entity_type(name1)
-
             if self.__validate_expression(name1, name2, compare_op):
                 value_1 = self.__parse_value(name1)
                 value_2 = self.__parse_value(name2)
                 if len(self.log['error'].keys()) > 0:
                     return
+
                 self.conditions.append(
                     self.get_compare_op(compare_op)(
                         value_1,
@@ -291,6 +296,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             grammar defined in grammar.py
         :return:
         """
+
         self.visit(self.diffgram_query.tree)
         if len(self.conditions) == 0 or len(self.log['error'].keys()) > 0 or not self.valid:
             logger.error('Invalid query. Please check your syntax and try again.')

@@ -24,12 +24,14 @@
 // -- This will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 import 'cypress-file-upload';
+import '@4tw/cypress-drag-drop'
 import {v4 as uuidv4} from 'uuid';
 import testUser from '../fixtures/users.json'
 import 'cypress-wait-until';
 import labelsForAttributes from "../fixtures/labelsForAttributes.json";
 import {get_transformed_coordinates} from './utils'
 import testLabels from "../fixtures/labels.json";
+import "cypress-real-events/support";
 
 Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   cy.document().then((doc) => {
@@ -219,10 +221,8 @@ Cypress.Commands.add('registerDataPlatformTestUser', function () {
   cy.get('.v-list.v-select-list div').contains('Other').click({force: true})
   cy.get('[data-cy=company]').click();
   cy.get('[data-cy=company]').type('Diffgram');
-  cy.get('[data-cy=demo_select]').parent().click()
-  cy.get('.v-list.v-select-list div').contains('Not yet.').click({force: true})
   cy.get('.v-slider__tick:nth-child(2)').click();
-  cy.get('[data-cy=finish_singup_button]').click();
+  cy.get('[data-cy=finish_signup_button]').click();
   cy.wait(3000);
   // Create test Project
   cy.visit('http://localhost:8085/a/project/new');
@@ -462,6 +462,7 @@ Cypress.Commands.add('goToStudioFromToolbar', function () {
 });
 
 Cypress.Commands.add('createAndSelectNewAttributeGroup', function () {
+  cy.get('[data-cy="tab__Attributes"]').first().click({force: true})
   cy.get(`[data-cy=new_attribute_button]`).click({force: true});
   cy.get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).first().click({force: true});
 });
@@ -506,7 +507,7 @@ Cypress.Commands.add('createLabels', function (labels_list) {
   const label_list_obj = labels_list.map(elm => ({...elm, exists: false}))
   cy.request({
     method: 'GET',
-    url: `localhost:8085/api/project/diffgram-testing-e2e/labels/refresh`,
+    url: `localhost:8085/api/project/diffgram-testing-e2e/labels`,
     failOnStatusCode: false
   }).then((response) => {
     cy.log('RESPONSE')
@@ -611,7 +612,7 @@ Cypress.Commands.add('uploadImageWithLabels', function (project_string_id) {
   cy.wait(700);
   cy.get('[data-cy=start_files_upload_button]').click();
   cy.wait(3000);
-  cy.get('[data-cy=close_wizard_button]').click();
+  cy.get('[data-cy=close_wizard_button]', {timeout: 15000}).click();
   cy.wait(3000);
   cy.get('[data-cy=refresh-input-icon]').click();
   cy.wait(3000);
@@ -640,7 +641,7 @@ Cypress.Commands.add('uploadAndViewSampleImage', function (project_string_id) {
   cy.wait(700);
   cy.get('[data-cy=start_files_upload_button]').click();
   cy.wait(3000);
-  cy.get('[data-cy=close_wizard_button]').click();
+  cy.get('[data-cy=close_wizard_button]', {timeout: 15000}).click();
   cy.wait(3000);
   cy.get('[data-cy=refresh-input-icon]').click();
   cy.wait(3000);
@@ -676,7 +677,7 @@ Cypress.Commands.add('uploadAndViewSampleVideo', function (project_string_id) {
   cy.wait(700);
   cy.get('[data-cy=start_files_upload_button]').click();
   cy.wait(8000);
-  cy.get('[data-cy=close_wizard_button]').click();
+  cy.get('[data-cy=close_wizard_button]', {timeout: 15000}).click();
   cy.wait(10000);
   cy.get('[data-cy=refresh-input-icon]').click();
   cy.wait(3000);
@@ -688,9 +689,10 @@ Cypress.Commands.add('uploadAndViewSampleVideo', function (project_string_id) {
 Cypress.Commands.add('createInstanceTemplate', function (name, instance_data) {
   cy.visit('http://localhost:8085/project/diffgram-testing-e2e/labels')
   cy.wait(500)
-  cy.get('[data-cy=new_instance_template]').first().click({force: true});
-  cy.get('[data-cy=instance_template_name_text_field]').type(name);
-  cy.wait(500)
+  cy.get('[data-cy="tab__Geometries"]').first().click({force: true})
+    .get('[data-cy=new_instance_template]').first().click({force: true})
+    .get('[data-cy=instance_template_name_text_field]').type(name)
+    .wait(500)
   for (let node of instance_data.nodes) {
     cy.mousedowncanvas(node.x, node.y)
     cy.wait(500)
@@ -795,6 +797,62 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
 
 });
 
+Cypress.Commands.add('upload_text_file', function (project_string_id, file_name = `${uuidv4()}.txt`) {
+  cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`);
+  cy.get('[data-cy=start_upload_wizard]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=upload_new_data]').click({force: true});
+  cy.wait(1200);
+  cy.get('[data-cy=set_dataset_button]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=from_local_button]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=with_no_pre_labels_button]').click({force: true});
+  const fileFixture = {
+    filePath: './test-text/text_sample.txt',
+    fileName: file_name,
+  }
+  cy.get('.dz-hidden-input').attachFile(fileFixture)
+  cy.wait(1000);
+  cy.get('[data-cy=continue_upload_step]').click();
+  cy.wait(700);
+  cy.get('[data-cy=start_files_upload_button]').click();
+  cy.wait(3000);
+  cy.get('[data-cy=close_wizard_button]', {timeout: 15000}).click();
+  cy.wait(3000);
+  cy.get('[data-cy=refresh-input-icon]').click();
+  cy.wait(3000);
+  cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
+});
+
+Cypress.Commands.add('upload_audio_file', function (project_string_id, file_name = `${uuidv4()}.mp3`) {
+  cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`);
+  cy.get('[data-cy=start_upload_wizard]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=upload_new_data]').click({force: true});
+  cy.wait(1200);
+  cy.get('[data-cy=set_dataset_button]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=from_local_button]').click({force: true});
+  cy.wait(700);
+  cy.get('[data-cy=with_no_pre_labels_button]').click({force: true});
+  const fileFixture = {
+    filePath: './test-audio/audio_sample.mp3',
+    fileName: file_name,
+  }
+  cy.get('.dz-hidden-input').attachFile(fileFixture)
+  cy.wait(1000);
+  cy.get('[data-cy=continue_upload_step]').click();
+  cy.wait(700);
+  cy.get('[data-cy=start_files_upload_button]').click();
+  cy.wait(3000);
+  cy.get('[data-cy=close_wizard_button]', {timeout: 15000}).click();
+  cy.wait(3000);
+  cy.get('[data-cy=refresh-input-icon]').click();
+  cy.wait(3000);
+  cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
+});
+
 
 Cypress.Commands.add('draw_cuboid_3d', function (x, y, width, height, canvas_wrapper = 'main_screen') {
   cy.window().then(window => {
@@ -878,3 +936,10 @@ Cypress.Commands.add('create_task_template', function () {
     .get('[data-cy="task-template-credentials-step"] [data-cy="wizard_navigation_next"]').click({force: true})
     return cy.wrap(task_template_name)
 })
+
+Cypress.Commands.add('createLabelSchema', function (schema_name) {
+  cy.visit(`http://localhost:8085/project/${testUser.project_string_id}/labels`)
+    .get('[data-cy="create_label_schema_btn"]').click({force: true})
+    .get('[data-cy="text-field-schema-name"]').type(`{selectall}{backspace}${schema_name}`)
+    .get('[data-cy="create_schema_start"]').click({force: true})
+});

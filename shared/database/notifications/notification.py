@@ -186,7 +186,6 @@ class Notification(Base):
                 Input.created_time >= start_time,
                 Input.created_time <= datetime.datetime.utcnow()
             ).all()
-            print('fileees', files, start_time, datetime.datetime.utcnow())
             links_list = ''
             for file in files:
                 url_task = f"==> {settings.URL_BASE}file/{file.id}"

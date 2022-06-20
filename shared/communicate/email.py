@@ -10,17 +10,23 @@ class Communicate_Via_Email():
         self.api_key = settings.MAILGUN_KEY
         self.reply_to = settings.EMAIL_REPLY_TO
 
-    def send(self, email, subject, message, email_list = []):
+
+    def send(self, email, subject, message, email_list = [], html=None):
+
+        data = {"from": f"Diffgram <web@{self.domain_name}>",
+                "to": [str(email)] if len(email_list) == 0 else [str(email) for email in
+                                                                email_list],
+                "subject": str(subject),
+                "text": str(message),
+                "h:Reply-To": self.reply_to,
+                }
+
+        if html:
+            data['html'] = str(html)
 
         result = requests.post(f"https://api.mailgun.net/v3/{self.domain_name}/messages",
                              auth = ("api", self.api_key),
-                             data = {"from": f"Diffgram <web@{self.domain_name}>",
-                                     "to": [str(email)] if len(email_list) == 0 else [str(email) for email in
-                                                                                      email_list],
-                                     "subject": str(subject),
-                                     "text": str(message),
-                                     "h:Reply-To": self.reply_to
-                                     }
+                             data = data
                              )
 
         return result

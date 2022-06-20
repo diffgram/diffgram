@@ -208,6 +208,7 @@ def job_view_core(session,
 
     # Avoid multiple queries on serializer by fetching joined data
     query = query.options(joinedload(Job.completion_directory))
+    query = query.options(joinedload(Job.label_schema))
 
     job_list = query.all()
 
@@ -236,7 +237,6 @@ def job_view_core(session,
         meta['no_results_match_meta'] = True
 
     end_time = time.time()
-    print("Job meta time", end_time - start_time)
 
     return output_file_list, meta
 

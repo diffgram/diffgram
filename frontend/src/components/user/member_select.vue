@@ -148,6 +148,9 @@ Where is a dict in data() eg  member: {}
         value: function (item) {
           this.item_internal = item
         },
+        member_list: function(new_val, old_val){
+            this.member_list_internal = new_val;
+        }
 
       },
       created() {
@@ -205,7 +208,6 @@ Where is a dict in data() eg  member: {}
               this.item_internal = this.member_list_internal.map(elm => elm.id)
 
             }
-            console.log('item_internal', this.item_internal)
             this.$emit('input', this.item_internal);
             this.$emit('change',  this.item_internal);
           })

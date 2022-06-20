@@ -13,33 +13,6 @@ from shared.database.task.task import TASK_STATUSES
 from shared.utils.task import task_assign_reviewer
 import random
 
-def trigger_task_complete_sync_event(session, task, job, log):
-    sync_event_manager = SyncEventManager.create_sync_event_and_manager(
-        session = session,
-        dataset_source_id = None,
-        dataset_destination = None,
-        description = None,
-        file = task.file,
-        job = task.job,
-        input = None,
-        project = task.job.project,
-        created_task = None,
-        completed_task = task,
-        new_file_copy = None,
-        transfer_action = None,
-        event_effect_type = '',
-        event_trigger_type = 'task_completed',
-        status = 'init',
-        member_created = None
-    )
-    logger.debug(f"Created sync_event {sync_event_manager.sync_event.id}")
-    if job.completion_directory and job.output_dir_action in ['copy', 'move']:
-        job_observable = task_file_observers.JobObservable(session = session,
-                                                           log = log,
-                                                           job = job,
-                                                           task = task,
-                                                           sync_events_manager = sync_event_manager)
-        job_observable.notify_all_observers(defer = True)
 
 def trigger_task_complete_sync_event(session, task, job, log):
     sync_event_manager = SyncEventManager.create_sync_event_and_manager(
@@ -77,7 +50,7 @@ def trigger_task_complete_sync_event(session, task, job, log):
         task_id = task.id,
         wait_for_commit = True
     )
-    job.job_complete_core(session)
+
 
 
 def send_to_review_randomly(session, task, task_update_manager):
@@ -140,7 +113,6 @@ def task_complete(session,
             member = member
         )
         if job.allow_reviews:
-
             if post_review:
                 task_update_manager.status = TASK_STATUSES['complete']
                 task_update_manager.main()
@@ -151,7 +123,7 @@ def task_complete(session,
                     task_update_manager = task_update_manager
                 )
         else:
-            task_update_manager.status = 'complete'
+            task_update_manager.status = TASK_STATUSES['complete']
             task_update_manager.main()
 
         # Careful, this is only relevant for normal
@@ -198,7 +170,7 @@ def task_complete(session,
             job = job,
             log = log
         )
-
+    job.update_job_status(session)
     return True, new_file
 
 

@@ -14,8 +14,11 @@ from methods.input import packet
 from pathlib import Path
 from methods.export.export_view import export_view_core
 from shared.database.export import Export
-from methods.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
+from shared.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.regular import regular_log
+
+from shared.data_tools_core_s3 import DataToolsS3
+
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
@@ -37,9 +40,6 @@ def with_s3_exception_handler(f):
         try:
             return f(*args)
         except Exception as e:
-            log['error']['auth_s3_credentials'] = 'Error connecting to AWS S3. Please ' \
-                                                  'check you private secret and id are correct, ' \
-                                                  'and that you have the correct pemirssions over your buckets.'
             log['error']['exception_details'] = str(e)
             return {'log': log}
 
@@ -47,6 +47,10 @@ def with_s3_exception_handler(f):
 
 
 class S3Connector(Connector):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.name = "amazon_aws"
 
     def connect(self):
         log = regular_log.default()
@@ -58,9 +62,10 @@ class S3Connector(Connector):
                 log['error']['client_secret'] = 'auth_data must provide aws_access_key_id and aws_secret_access_key .'
                 return {'log': log}
 
-            self.connection_client = boto3.client('s3',
-                                                  aws_access_key_id=self.auth_data['client_id'],
-                                                  aws_secret_access_key=self.auth_data['client_secret'])
+            self.connection_client = DataToolsS3.get_client(
+                aws_access_key_id=self.auth_data['client_id'],
+                aws_secret_access_key=self.auth_data['client_secret'])
+
             return {'result': True}
         except Exception as e:
             log['error'][
@@ -167,18 +172,19 @@ class S3Connector(Connector):
             kwargs = {'Bucket': opts['bucket_name'], 'Prefix': current_path}
             while True:
                 resp = self.connection_client.list_objects_v2(**kwargs)
-                for obj in resp['Contents']:
-                    if not obj['Key'].endswith('/'):
-                        opts_fetch_object = {}
-                        opts_fetch_object.update(opts)
-                        new_opts = {
-                            'path': obj['Key'],
-                            'directory_id': opts.get('directory_id'),
-                            'batch_id': opts.get('batch_id'),
-                            'bucket_name': opts.get('bucket_name'),
-                        }
-                        opts_fetch_object.update(new_opts)
-                        self.__fetch_object(opts_fetch_object)
+                if resp.get('Contents'):
+                    for obj in resp['Contents']:
+                        if not obj['Key'].endswith('/'):
+                            opts_fetch_object = {}
+                            opts_fetch_object.update(opts)
+                            new_opts = {
+                                'path': obj['Key'],
+                                'directory_id': opts.get('directory_id'),
+                                'batch_id': opts.get('batch_id'),
+                                'bucket_name': opts.get('bucket_name'),
+                            }
+                            opts_fetch_object.update(new_opts)
+                            self.__fetch_object(opts_fetch_object)
                 try:
                     kwargs['ContinuationToken'] = resp['NextContinuationToken']
                 except KeyError:
@@ -298,6 +304,7 @@ class S3Connector(Connector):
             result.append(bucket['Name'])
         return {'result': result}
 
+    @with_connection
     @with_s3_exception_handler
     def __send_export(self, opts):
         spec_list = [{'project_string_id': dict}]
@@ -344,8 +351,8 @@ class S3Connector(Connector):
                 export=export,
                 format=opts['format'],
                 return_type='bytes')
+            result = bytes(result, 'utf-8')
             filename = generate_file_name_from_export(export, session)
-
             if opts['path'] != '':
                 key = f"{opts['path']}{filename}.{opts['format'].lower()}"
             else:
@@ -384,7 +391,7 @@ class S3Connector(Connector):
             signed_url = self.connection_client.generate_presigned_url('get_object',
                                                        Params = {'Bucket': bucket_name, 'Key': test_file_path},
                                                        ExpiresIn = 3600 * 24 * 6)
-            resp = requests.get(signed_url)
+            resp = requests.get(signed_url, verify=not self.auth_data['disabled_ssl_verify'])
             if resp.status_code != 200:
                 raise Exception(
                     f"Error when accessing presigned URL: Status({resp.status_code}). Error: {resp.text}")

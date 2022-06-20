@@ -5,7 +5,7 @@ except:
 from shared.database.annotation.instance_template_relation import InstanceTemplateRelation
 from shared.database.annotation.instance_template import InstanceTemplate
 from shared.annotation import Annotation_Update
-
+from shared.database.labels.label_schema import LabelSchema
 
 @routes.route('/api/v1/project/<string:project_string_id>/instance-template/new', defaults={'task_id': None}, methods = ['POST'])
 @routes.route('/api/v1/task/<int:task_id>/instance-template/new', methods=['POST'],  defaults={'project_string_id': None})
@@ -30,6 +30,10 @@ def new_instance_template_api(project_string_id, task_id):
         }},
         {"reference_height": {
             'kind': int
+        }},
+        {"schema_id": {
+            'kind': int,
+            'required': True
         }},
     ]
 
@@ -64,6 +68,7 @@ def new_instance_template_api(project_string_id, task_id):
             instance_list = input['instance_list'],
             reference_height = input['reference_height'],
             reference_width = input['reference_width'],
+            schema_id = input['schema_id'],
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
@@ -78,6 +83,7 @@ def new_instance_template_core(session,
                                instance_list,
                                reference_height,
                                reference_width,
+                               schema_id,
                                log = regular_log.default()):
     """
         Creates a new instance template. It first creates the related instances and then saves the template
@@ -92,6 +98,10 @@ def new_instance_template_core(session,
     :return:
     """
     result = None
+    schema = LabelSchema.get_by_id(session, schema_id, project.id)
+    if schema.project_id != project.id:
+        log['error']['schema_id'] = 'Schema does not belong to project'
+        return None, log
     annotation_update = Annotation_Update(
         session = session,
         file = None,
@@ -116,5 +126,8 @@ def new_instance_template_core(session,
         reference_width = reference_width
 
     )
+    schema.add_instance_template(session = session,
+                                 member_created_id = member.id,
+                                 instance_template_id = instance_template.id)
     result = instance_template.serialize(session)
     return result, log

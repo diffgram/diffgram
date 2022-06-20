@@ -11,23 +11,27 @@ _________________
 [Join Slack Community](https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg)
 ![](./github_assets/slack.PNG)
 •
-[Enterprise](https://diffgram.com/enterprise)
+[Enterprise](https://diffgram.com/main/enterprise)
 •
 [Twitter](https://twitter.com/diffgram)
 
+# Support & Community
+1. [Open an issue](https://github.com/diffgram/diffgram/issues) (Technical, bugs, etc)
+2. 😍 [Join us on slack!](https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg)
 
-# Training Data Platform in One Application
+
+# Open Source Training Data Platform
 
 ![](./github_assets/diffgram_high_level.PNG)
 
-Complete training data platform for machine learning delivered as
+Modern Training Data platform for machine learning delivered as
 a single application. 
 
 Open Source Data Labeling, Workflow, Automation, Exploring, Streaming, and so much more!
 
 Watch a high level [video explanation](https://www.youtube.com/watch?v=dws6J3bDbcU).
 
-# Annotate Anything - Images, Video, 3D, Text, And more
+# Annotate Anything - Images, Video, 3D, Text, Geo, Audio And more
 
 ## Images
 Box, Polygons, Lines, [Keypoints](https://diffgram.readme.io/docs/keypoints-annotation-type), Classification Tags, Quadratic Curves, Cuboids, Segmentation,  and More
@@ -46,49 +50,83 @@ Long, High Frame Rate, High Resolution Videos.
 ## Text
 [Text Labeling docs](https://diffgram.readme.io/docs/text-annotation-guide)
 
-1. Named Entity Recognition
-2. Part of Speech Tagging
-3. Coreference Resolution
-4. Dependency Parsing
+Named Entity Recognition, Part of Speech Tagging, Coreference Resolution, Dependency Parsing
 
-![](./github_assets/diffgram_text_interface.png)
+![Diffgram Text Interface](./github_assets/diffgram_text_interface.png)
+
+## Audio
+[Audio Labeling docs](https://diffgram.readme.io/docs/audio-annotation-guide)
+
+Annotate Audio Regions available now, 
+
+![Diffgram Audio Interface](./github_assets/diffgram_audio_interface.png)
+
+Audios Transcription (coming soon)
+
+## Geospatial & Tiled Imagery
+Support for COG (Cloud Optimized GeoTIFF), streaming, multi-layer, standard and cloud-optimized.
+
+Alpha Release: [Geospatial labeling docs](https://diffgram.readme.io/docs/geospatial-annotation)
+
+![Diffgram Geospatial Interface](./github_assets/diffgram_geospatial_interface.png)
+
+## Documents
+
 
 ### More
-Build your own UI or contact us. Our intent is to build and cover all major media types in 2022.
+Build your own UI or [contact us](https://diffgram.com/main/contact). Our intent is to build and cover all major media types in 2022, including timeseries, DICOM, and more.
+
+# Manage all of your training data
+Manage multiple Schemas, Users, Datasets, Process, and so much more. 
+
+## Process Manager
+Organize and surface your machine learning processes. 
+From start, through pre-label ingestion, multiple task stages, training, and back again.
+Event driven backed by AMQP (RabbitMQ).
+Preview available now [Workflow](https://diffgram.readme.io/docs/workflows)
+Example Actions coming June 2022.
 
 ## Customize Everything
 With Diffgram you can get the exact branded experience you want through the what-you-see-is-what-you-get editor.
-Whitelabel UI Layout & Branding, Automations, Label Schema, Spatial Types, Pipelines, Queries, and More.
+Whitelabel UI Layout & Branding, Automations, Schema, Geometry, Processes, Pipelines, Queries, and More.
 Diffgram is the most customizable training data platform.
 [Training Data Customization](https://diffgram.readme.io/docs/customization)
 
+## Cybersecurity
+How secure is your training data? [Learn more about Cybersecurity for Training Data](https://diffgram.readme.io/docs/cybersecurity-101)   
+[Security Policies](https://diffgram.readme.io/docs/security-policies)
+
+# Migration
+## Labelbox to Diffgram
+Are you getting great value from Labelbox? [Labelbox vs Diffgram](https://anthony-sarkis.medium.com/considering-labelbox-consider-diffgram-too-fe7a7b8ee8d7)
+
+[One Click Migration from Labelbox](https://diffgram.readme.io/docs/1-click-migration-from-labelbox)
+
+## Labelstudio to Diffgram
+[Learn about upgrading to Diffgram](https://diffgram.com/main/best-open-source-data-labeling-2022)
+
+## SuperAnnotate to Diffgram
+[Contact us](https://diffgram.com/main/contact) to request prioritization of the automatic migration.
+
 # What is Training Data?
-Training Data is the art of supervising machines through data. The day to day work involves people transferring their knowledge to the computer - often through the form of annotation. For example declaring a region of media, such as an image or audio file, to be valid or invalid. These annotations produce structured data - ready to be consumed by Data Science. This is required because raw media is considered to be unstructured - meaning not readable by data science.
+Training Data is the art of supervising machines through data. This includes the activities of annotation, which produces structured data; ready to be consumed by a machine learning model. Annotation is required because raw media is considered to be unstructured and not usable without it. That’s why training data is required for many modern machine learning use cases including computer vision, natural language processing and speech recognition.
 
 # What is Diffgram?
 Diffgram is multiple training data tools in one single application.
-1. [Ingest](#Ingest) - Magic Mapping Wizard, High QPS Ingest, All-Cloud File Browser, and More.
-2. [Store](#Store) - Source of Truth for Training Data, Query at the Source
-3. [Workflow](#Workflow) - Human Tasks, Many Many QA Features.
-4. [Annotation](#Annotation) - Image, Video, [3D Labeling](https://diffgram.readme.io/docs/3d-lidar-annotation-guide) Available Now. Plus Text & Audio Coming Soon.
-5. [Annotation Automation](#Annotation-Automation) - Customizable, Powerful
-6. [Stream to Training](#Stream-to-Training) - Direct to PyTorch & Tensorflow Memory
-7. [Explore](#Explore) - Query & Visually See Annotations
-8. [Debug](#Debug) - Compare Models & More
-9. [Secure and Private](#Secure-and-Private)
+[What is Diffgram](https://diffgram.readme.io/docs/what-is-diffgram)
 
 Diffgram is Open Source and optionally Client Installed. **[Quickstart](#Quickstart)**
 
 * [Who is Diffgram for?](#Who-is-Diffgram-for)
 * [Why Diffgram?](#Why-Diffgram)
 * [What are Diffgram's competitive advantages?](#What-are-Diffgrams-competitive-advantages)
-* [Roadmap](#Roadmap)
+* [Roadmap](https://diffgram.readme.io/docs/roadmap)
 * [Features](#Features)
 * [Standard Features](#Standard-Features)
-* [Built for Extreme Scale](#Built-for-Extreme-Scale)
+* [Built for Scale](https://diffgram.readme.io/docs/scale)
 
 ### Who is Diffgram for?
-Data Scientists, Machine Learning Leaders, AI Experts, Software Engineers, 
+Data Engineers, Machine Learning Leaders, AI Experts, Software Engineers, Data Scientists, 
 Data Annotators and Subject Matter Experts.
 
 ### New to Training Data?
@@ -103,28 +141,19 @@ with one single integrated application.
 
 Enterprise Questions? Please [contact us](https://diffgram.com/contact).
 
-# Support & Community
-1. [Open an issue](https://github.com/diffgram/diffgram/issues) (Technical, bugs, etc)
-2. 😍 [Join us on slack!](https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg)
-3. Forum (Coming Soon)
-
 Security issues: Do not create a public issue. Email security@diffgram.com with the details.
 [Docs](https://diffgram.readme.io/docs)
 
-# Quickstart
-
+# Online Playground
 [Try Diffgram Online](https://diffgram.com/user/data_platform/new) (Hosted Service, No Setup.)
 
-### Diffgram Dev Installer Quickstart
-Install with Docker and Docker Compose
-```
-git clone https://github.com/diffgram/diffgram.git
-cd diffgram
-pip install -r requirements.txt
-python install.py
-# Follow the installer instruction and 
-# After install:  View the Web UI at: http://localhost:8085
-```
+# Install
+### [Install Diffgram](https://diffgram.readme.io/docs/install)
+
+- [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
+- [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
+- [Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)
+
 Read also our [Docker compose commands cheat-sheet](https://diffgram.readme.io/docs/open-core-docker-install-cheatsheet)
 
 ## Bugs and Issues
@@ -138,19 +167,16 @@ See [Contribution Guide](https://diffgram.readme.io/docs/developer-contribution-
 ### Cloud
 ![Cloud logos](./github_assets/cloud_logos.png)
 
-Full support for Amazon AWS, Google Cloud, and Microsoft Azure.
+Full support for Amazon AWS, Google Cloud, Microsoft Azure, and MinIO.
 
 Run Diffgram on and access data from any of the clouds.
 
+- [MinIO](https://diffgram.readme.io/docs/minio)
 - [Google GCP Install Guide Compute Engine](https://medium.com/diffgram/tutorial-install-diffgram-in-google-compute-engine-134aae7d8a9b)
 - [Azure AKS Kubernetes Install Guide](https://medium.com/diffgram/tutorial-installing-diffgram-on-azure-aks-b9447685e271)
 - [AWS Full Kubernetes Guide](https://get.diffgram.com/kubernetes-install-guide-aws-amazon-elastic-kubernetes-service-k8s-helm-install-vpc-on-premise/)
 - [Helm Chart for Kubernetes Clusters](https://github.com/diffgram/diffgram-helm)
 
-### Other Getting Started Docs:
-- [Updating Existing Installation](https://diffgram.readme.io/docs/updating-an-existing-installation)
-- [Development Install Docs](https://diffgram.readme.io/docs/quickstart-installation-of-diffgram-open-core)
-- [Production Install Docs](https://diffgram.readme.io/docs/open-installation-production)
 
 ### What is Diffgram a drop in replacement for?
 Diffgram is a drop in replacement for the following systems: 
@@ -159,66 +185,14 @@ V7 Labs (Darwin), BasicAI, SuperbAI, Kili-Technology, Cord, HastyAI, Dataloop, K
 
 Please see the roadmap and talk with us if you see a missing feature.
 
-[Labelbox vs Diffgram](https://anthony-sarkis.medium.com/considering-labelbox-consider-diffgram-too-fe7a7b8ee8d7)
-
 ### How much does this cost? What's your business model?
-If you have less than 20 people and manage your own Diffgram instance there is **no licensing cost**. 
-You can install Diffgram and use it with hundreds of thousands of annotations for free.
-
-For more detail [Compare Diffgram Versions](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise)
+[Compare Diffgram Versions](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise)
 
 ### Premium Support
 [Learn more.](https://diffgram.readme.io/docs/diffgram-versions-open-source-premium-enterprise#premium-licenses-with-open-source)
 
 ### Enterprise
-[Enterprise Edition](https://diffgram.com/enterprise).
-For companies and teams with 20+ users.
-This is our best level of support, Enterprise focused features, SLAs, and More.
-
-If you are planning to do millions, billions, or even a trillion+ annotations then Diffgram Enterprise is for you! 
-Diffgram Enterprise can help you scale every aspect of your training data. 
-
-## Roadmap
-2022: 
-1. New Interfaces: Text, Audio
-2. Save on labeling costs by only labeling most relevant data. Active Learning.
-3. Save QA costs by using model to debug humans. Explore V2
-4. Save on labeling costs by using interactive automations. Userscripts V2
-5. Scale: Support for up to 1,000+ QPS and up to 10 Billion annotations per install.
-
-2023:
-1. Scale: Support for up to 10,000+ QPS and up to 500+ Billion annotations.
-![Roadmap](./github_assets/roadmap.PNG)
-
-We welcome you to create issues, join our slack channel, and help shape our roadmap.
-Are you an Enterprise customer? Talk to us about priority implementations.
-
-
-## Built for Extreme Scale
-Diffgram has many great features no matter the volume of annotation. 
-Diffgram is unique in that we think about scale across all aspects of the system.
-
-Do *any* of these apply to you?
-* Models running in staging or production?
-* Are using pre-labels or interactive automations?
-* Need versioning?
-* Have expanding use cases or need better model performance?
-* Expanding your annotation team or needs? Have multiple teams accessing training data?
-* Using complex data types like video, 3D, multi-modal?
-
-These things all stack to make for 10, 100, 1000x+ increases in volumes of annotation needs.
-
-A *single* Diffgram install is capable of 100,000,000+ (100 Million+) annotations. We plan to scale it to support 10,000,000,000 (10 Billion+) *per install*
-in 2022. [More on Scale](https://diffgram.readme.io/docs/scale-store-any-scale-of-dataset-and-access-slices-instantly)
-
-Examples of things we think about for you that go beyond the literal numbers:
-* Is this cost effective at scale? If you need an automation to produce millions of instances, how can we do that in a way that approaches $0?
-* What does access time for data look like when the volume is 10x 100x 1000x+?
-* What does the annotator experience look like if the system is at max ingestion capacity?
-* How does a new team get data in and out of Diffgram in an easy standard process?
-* How can teams access data across Diffgram installations? How can we serve multiple team’s needs through one unified data model?
-
-If you need extreme scale - choose Diffgram.
+[Enterprise Edition](https://diffgram.com/main/enterprise).
 
 
 #  Features
@@ -243,13 +217,14 @@ Ingest prediction data without writing extra scripts.
 ## Store
 Collaboration across teams between machine learning, product, ops, managers, and more.
 
-* Store virtually [any scale](https://diffgram.readme.io/docs/scale-store-any-scale-of-dataset-and-access-slices-instantly) of dataset and instantly access slices of the data to avoid having to download/unzip/load.
+* Store virtually [any scale](https://diffgram.readme.io/docs/scale) of dataset and instantly access slices of the data to avoid having to download/unzip/load.
 * Fast access to datasets from multiple machines. Have multiple Data Scientists working on the same data.
 * Integrates with your tools and 3rd party workforces. [Integrations](#integrations)
 It's a database for your training data, both metadata and access of raw BLOB data (over top of your storage choice).
 
-## Workflow
+## QA & Human Tasks
 Manage Annotation Workflow, Tasks, Quality Assurance and more.
+Task features can be used as modules within [Workflow](https://diffgram.readme.io/docs/workflows)
 
 QA Features including:
 
@@ -272,11 +247,7 @@ to existing partially annotated sets.
 
 
 ## Annotation
-Fully featured data annotation tool for images and video to create, update, and maintain high quality training datasets.
-* [Image and Video Annotation.](https://diffgram.com/software)
-* [Semantic Segmentation Focus](https://diffgram.com/segmentation) Autobordering, turbo mode and more
-* [Video Annotation](https://diffgram.com/video) High resolution, high frame rate, multiple sequences.
-* [3D Annotation (e.g. LiDAR)](https://diffgram.readme.io/docs/3d-lidar-annotation-guide)
+[Annotation Docs](https://diffgram.readme.io/docs/annotation)
 
 Schema (Ontology): Diffgram supports all popular [attributes](https://diffgram.readme.io/docs/attributes-1) and spatial types including *[Custom Spatial types](https://diffgram.readme.io/docs/custom-spatial-templates-user-defined-shapes)*.
 (Best Data Annotation for AI/ML)
@@ -316,9 +287,9 @@ create the highest quality models. Because these features are fully integrated w
 * Automatic error highlighting (Coming Soon)
 
 ## Secure and Private
-* Runs on your local system or cloud. Less lag, more secure, more control. [Security and Privacy](https://diffgram.com/secure)
+* Runs on your local system or cloud. Less lag, more secure, more control.
 * Enforce PII & RBAC automatically across life-cycle of
- training data from ingest to dataset to model predictions and back again (Coming Soon)
+ training data from ingest to dataset to model predictions and back again
 
 
 ## Tested and Stable Core
@@ -338,38 +309,16 @@ Fully integrated automatic test suite, with comprehensive [End to End](https://m
 
 
 # Vision
-1. Application: Support all popular media types for raw data; all popular schema, label, and attribute needs; and all annotation assist speed up approaches
-2. Support all popular training data management and organizational needs
-3. Integrate with all popular 3rd party applications and related offerings
-4. Support modification of source code
-5. Run on any hardware, any cloud, and anywhere
-
-[Technical Direction - Long Term](https://diffgram.readme.io/docs/direction)
-
+[Vision](https://diffgram.readme.io/docs/vision)
 
 # Speed Ups & AI
 Latest AI + More
 * [Examples](https://diffgram.readme.io/docs/userscript-examples)
 * [Userscripts Overview](https://diffgram.readme.io/docs/userscripts-overview)
-![](./github_assets/userscript_diagram.png)
+* Workflow
 
-
-# Integrations
-
-* [Diffgram Python SDK](https://github.com/diffgram/python-sdk)
-* [Diffgram API](https://diffgram.readme.io/reference) Any language
-* [AWS - Amazon Storage](https://diffgram.readme.io/docs/amazon-web-services-connection-requirements)
-* [GCP Google Storage](https://diffgram.readme.io/docs/google-connection-requirements)
-* Azure - Now available
-* [Scale AI](https://diffgram.readme.io/docs/scale-ai)
-* [Datasaur](https://diffgram.readme.io/docs/datasaur-integration)
-* [Labelbox](https://diffgram.readme.io/docs/labelbox-integration)
-* Submit a pull request! We want your integration here too
- 
-![](./github_assets/levels_of_integrations.PNG)
-
-Note for initial open core release Actions Hooks are not yet available. 
-Please see Diffgram.com and use them there if needed.
+# Ecosystem
+[Ecosystem](https://diffgram.readme.io/docs/ecosystem)
 
 # Contributing
 We welcome contributions! Please see our [contributing documentation](https://diffgram.readme.io/docs/contributing-guide).
@@ -377,6 +326,3 @@ We welcome contributions! Please see our [contributing documentation](https://di
 # Architecture & Design Docs
 We plan to release more internal architecture docs over time. Please see the [general docs](https://diffgram.readme.io/docs) in the mean time.
 
-
-##### Comparison Disclaimer
-IMPORTANT Disclaimer: Our opinions based on how we define the above categories. Subject to change. A vendor may offer something in one of these categories that doesn’t meet our definition of the category. Some Diffgram checkmarks include items coming soon. 

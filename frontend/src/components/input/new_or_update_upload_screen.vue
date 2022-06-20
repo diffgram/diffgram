@@ -27,31 +27,65 @@
       </v-btn>
     </div>
   </div>
-  <div v-else-if="with_prelabeled == undefined && upload_mode === 'new'" class="d-flex justify-center flex-column">
+  <div v-else-if="geo_tiff_prompt">
     <h1 class="text-center">
-      <v-icon x-large color="primary">mdi-upload</v-icon>
-      Do you want to add Pre-Labeled data? (Json/Csv format)
+      <v-icon x-large color="primary">mdi-map-search-outline</v-icon>
+      We detected .Tiff files. Are these GeoTiff files?
     </h1>
     <br>
     <br>
     <div class="d-flex justify-space-around">
+
       <v-btn
-        x-large
-        data-cy="with_no_pre_labels_button"
         color="primary lighten-2"
-        @click="set_with_pre_labeled(false)"
+        x-large
+        data-cy="no_geotiff_button"
+        @click="set_geo_tiff_upload(false)"
       >
+        <v-icon class="mr-4">mdi-close-box</v-icon>
         No
       </v-btn>
       <v-btn
-        color="primary"
         x-large
-        data-cy="with_pre_labels_button"
-        @click="set_with_pre_labeled(true)"
+        color="primary "
+        data-cy="yes_geotiff_button"
+        @click="set_geo_tiff_upload(true)"
       >
+        <v-icon class="mr-4">mdi-checkbox-marked-outline</v-icon>
         Yes
       </v-btn>
     </div>
+
+  </div>
+  <div v-else-if="with_prelabeled == undefined && upload_mode === 'new'" class="d-flex justify-center flex-column">
+    <div >
+      <h1 class="text-center">
+        <v-icon x-large color="primary">mdi-upload</v-icon>
+        Do you want to add Pre-Labeled data? (Json/Csv format)
+      </h1>
+      <br>
+      <br>
+      <div class="d-flex justify-space-around">
+        <v-btn
+          x-large
+          data-cy="with_no_pre_labels_button"
+          color="primary lighten-2"
+          @click="set_with_pre_labeled(false)"
+        >
+          No
+        </v-btn>
+        <v-btn
+          color="primary"
+          x-large
+          data-cy="with_pre_labels_button"
+          @click="set_with_pre_labeled(true)"
+        >
+          Yes
+        </v-btn>
+      </div>
+    </div>
+
+
   </div>
   <v-card v-else elevation="0" style="height: 100%" class="ma-0 d-flex flex-column">
     <v-card-title v-if="upload_mode === 'update'">Update Files</v-card-title>
@@ -144,7 +178,9 @@
                               @vdropzone-removed-file="file_removed"
                               v-on:vdropzone-thumbnail="thumbnail"
                               @vdropzone-sending="drop_zone_sending_event"
-                              @vdropzone-complete="drop_zone_complete">
+                              @vdropzone-complete="drop_zone_complete"
+                              @vdropzone-success="drop_zone_success"
+                              @vdropzone-error="drop_zone_error">
                   <div class="dropzone-custom-content">
                     <v-icon class="upload-icon" size="84">mdi-cloud-upload</v-icon>
                     <h3 class="dropzone-custom-title">Desktop Drag and Drop</h3>
@@ -189,7 +225,6 @@
                       <v-icon>mdi-delete</v-icon>
                     </v-btn>
                   </td>
-
                 </tr>
                 <tr v-for="file in file_list_to_upload.filter(f => f.data_type === 'Diffgram Export')">
                   <td style="max-width: 300px">
@@ -280,18 +315,21 @@
       data() {
 
         return {
+          GEO_TIFF_FORMATS: ['image/tiff', 'image/tif'],
+          geo_tiff_upload: false,
+          geo_tiff_prompt: false,
           file_list_to_upload: [],
           error: {},
           sync_job_list: [],
           with_prelabeled: undefined,
-          connection_upload_error: undefined,
+          connection_upload_error: {},
           total_files_update: 0,
           processed_files: 0,
           file_update_error: undefined,
           loading_annotations: false,
           upload_source: null,
           accepted_annotation_file_types: ['json', 'csv'],
-          accepted_files: ".jpg, .jpeg, .png, .bmp, .tif, .tiff, .mp4, .m4v, .mov, .avi, .csv, .txt, .json",
+          accepted_files: ".jpg, .jpeg, .png, .bmp, .tif, .tiff, .mp4, .m4v, .mov, .avi, .csv, .txt, .json, .mp3, .wav, .flac",
           file_table_headers: [
             {
               text: 'File Name',
@@ -364,10 +402,15 @@
                 }
                 file.source = 'local';
                 $vm.file_list_to_upload.push(file);
-
                 $vm.$emit('file_list_updated', $vm.file_list_to_upload)
               });
               this.on('removedfile', function (file) {
+                if(!$vm.$refs.myVueDropzone){
+                  return
+                }
+                if($vm.$refs.myVueDropzone.dropzone.disabled){
+                  return
+                }
                 $vm.file_list_to_upload.splice($vm.file_list_to_upload.indexOf(file), 1);
                 $vm.$emit('file_list_updated', $vm.file_list_to_upload)
               });
@@ -498,7 +541,6 @@
               this.$refs.myVueDropzone.removeFile(file);
               continue
             }
-
             file.uuid = new_file_data.uuid;
             file.input_batch_id = new_file_data.input_batch_id;
           }
@@ -511,6 +553,8 @@
           if (!connection_file_list || connection_file_list.length === 0) {
             return
           }
+          this.connection_upload_error = {}
+
           const connector_id = this.incoming_connection.id;
           const directory_id = this.$store.state.project.current_directory.directory_id;
           try {
@@ -537,11 +581,12 @@
 
               }
             }));
+            this.$emit('declare_success', true)
 
           } catch (error) {
-            // Discuss if there already exists a good abstraction for error handling.
+
             this.connection_upload_error = this.$route_api_errors(error);
-            this.$emit('error_update_files', this.connection_upload_error)
+            this.$emit('error_upload_connections', this.connection_upload_error)
             console.error(error);
           }
         },
@@ -634,6 +679,27 @@
           }
 
         },
+        set_geo_tiff_upload: async function(value){
+          this.geo_tiff_upload = value;
+          if(this.geo_tiff_upload){
+            for(let f of this.file_list_to_upload){
+              if(this.GEO_TIFF_FORMATS.includes(f.type)){
+                f.geo_file = true
+              }
+              f.status = 'queued'
+              this.$emit('file_added', f)
+            }
+            this.$emit('file_list_updated', this.file_list_to_upload)
+          }
+
+          this.move_to_next_step();
+          this.hide_geotiff_prompt();
+          await this.$nextTick();
+          // may be using connections
+          if (this.$refs.myVueDropzone) {
+            this.$refs.myVueDropzone.dropzone.files = this.file_list_to_upload
+          }
+        },
         upload_raw_media: async function (file_list) {
           this.$emit('upload_in_progress')
           if (this.$props.upload_mode === 'update') {
@@ -659,11 +725,18 @@
           }
 
         },
+        show_geotiff_prompt: function(){
+          this.geo_tiff_prompt = true;
+
+        },
+        hide_geotiff_prompt: function(){
+          this.geo_tiff_prompt = false;
+
+        },
         move_to_next_step: function () {
           const annotationFile = this.file_list_to_upload.filter(f => f.data_type === 'Annotations');
-          // if(annotationFile.length > 0){
-          //   this.with_prelabeled = true;
-          // }
+          let file_types = this.file_list_to_upload.map(f => f.type)
+
           const raw_media = this.file_list_to_upload.filter(f => f.data_type === 'Raw Media');
           const export_files = this.file_list_to_upload.filter(f => f.data_type === 'Diffgram Export');
           if(this.with_prelabeled && annotationFile.length === 0){
@@ -687,6 +760,10 @@
             if (raw_media.length === 0) {
               this.error = {}
               this.error.media_files = 'Please upload at least one media file to continue.'
+              return
+            }
+            if(this.GEO_TIFF_FORMATS.some(item => file_types.includes(item)) && !this.geo_tiff_prompt){
+              this.show_geotiff_prompt()
               return
             }
           } else if (this.$props.upload_mode === 'from_diffgram_export') {
@@ -733,7 +810,13 @@
           formData.append('directory_id',
             this.$store.state.project.current_directory.directory_id);
 
-          formData.append('source', 'ui_wizard');
+          if(file.geo_file){
+            formData.append('source', 'from_geo_tiff')
+          }
+          else{
+            formData.append('source', 'ui_wizard');
+          }
+
 
           formData.append('video_split_duration',
             this.video_split_duration);
@@ -745,6 +828,8 @@
           }
 
 
+
+
           this.is_actively_sending = true
           this.$emit('update_is_actively_sending', this.is_actively_sending)
         },
@@ -754,35 +839,18 @@
 
           this.is_actively_sending = false
           this.$emit('update_is_actively_sending', this.is_actively_sending)
+        },
 
-          // Not super happy with this but something to think on
-          // how deeply we want to integrate this with upload
-          // or if we even want to show this here at all
+        drop_zone_success(files, response){
+           this.$emit('declare_success', true)
+        },
 
-          if (Date.now() < this.request_refresh + 5000) {
+        drop_zone_error(file, message, xhr) {
+          if(message == 'Upload canceled.'){
             return
           }
-          this.request_refresh = Date.now()
-
-          var self = this
-
-          // "fast" one
-          setTimeout(function () {
-            self.request_refresh = Date.now()
-          }, 2500)
-
-          // "ongoing" one, cleared at destroy
-          // context of long running video operations may be 10 min+
-          // and to user it could look like it's "frozen".
-          // so we use perpetual thing till component is destroyed
-          // long term I'm sure there's some more graceful way here
-
-          this.refresh_interval = setInterval(function () {
-            self.request_refresh = Date.now()
-          }, 20000)
-
-
-        },
+          this.$emit('error_upload_connections', message)
+        }
 
       }
     }

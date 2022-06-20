@@ -403,14 +403,14 @@
 
                 <a
                   class="file-link"
-                  :href="'/file/' + props.item.file_id">
+                  :href="`/studio/annotate/${project_string_id}/?file=${props.item.file_id}` ">
                   {{ props.item.file_id}}
                 </a>
                 <div v-if='props.item.newly_copied_file_id'>
                   Copied to ->
                 </div>
                 <a v-if='props.item.newly_copied_file_id'
-                   :href="'/file/' + props.item.newly_copied_file_id">
+                   :href="`/studio/annotate/${project_string_id}/?file=${props.item.newly_copied_file_id}` ">
                   {{ props.item.newly_copied_file_id}}
                 </a>
 
@@ -456,7 +456,12 @@
                   color="primary">
                 </tooltip_icon>
 
-
+                <tooltip_icon
+                  v-if="props.item.media_type == 'audio'"
+                  tooltip_message="Audio"
+                  icon="mdi-music-box"
+                  color="primary">
+                </tooltip_icon>
                 <div v-if="props.item.media_type == 'video'">
 
                   <tooltip_icon
@@ -533,7 +538,7 @@
 
 
                   <tooltip_button
-                    v-if="props.item.mode == 'update' || props.item.mode == 'update_with_existing'"
+                    v-if="props.item.mode == 'update' || props.item.mode == 'update_with_existing' || props.item.instance_list"
                     tooltip_message="Raw Instance List & Frame Map"
                     icon="mdi-dump-truck"
                     :icon_style="true"

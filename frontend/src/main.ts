@@ -48,6 +48,7 @@ import upload_large from './components/upload_large'
 import router from './router/router'
 import user_account_verify_email from './components/user/account/verify_email'
 import resend_verify_email from './components/user/account/resend_verify_email'
+import action_node_box from './components/action/action_node_box'
 
 import task_list from './components/task/task/task_list'
 
@@ -57,6 +58,7 @@ import task_list from './components/task/task/task_list'
  *
  */
 
+Vue.component('action_node_box', action_node_box)
 import date_picker from './components/regular/date_picker'
 Vue.component('date_picker', date_picker)
 
@@ -135,7 +137,18 @@ Vue.component('user_profile_image_edit', user_profile_image_edit)
 import thumbnail from './components/annotation/thumbnail'
 Vue.component('thumbnail', thumbnail)
 
-
+import VueHighlightJS from 'vue-highlight.js';
+import css from 'highlight.js/lib/languages/css';
+import json from 'highlight.js/lib/languages/json';
+import javascript from 'highlight.js/lib/languages/javascript';
+Vue.use(VueHighlightJS, {
+  // Register only languages that you want
+  languages: {
+    css,
+    javascript,
+    json,
+  }
+});
 
 import store from './store'
 
@@ -340,7 +353,6 @@ Vue.prototype.$get_sequence_color = get_sequence_color
 
 import {addQueriesToLocation} from './components/regular/regular'
 Vue.prototype.$addQueriesToLocation = addQueriesToLocation
-
 
 
 

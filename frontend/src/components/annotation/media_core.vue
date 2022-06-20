@@ -629,10 +629,29 @@
                       <p class="title-file">{{item.original_filename}}</p>
                     </v-container>
                     <v-container v-else-if="item.type === 'text'"
-                                 class="d-flex flex-column justify-center align-center pa-0"
-                                 style="width: 100px; height: 100px; border: 1px solid #bdbdbd;">
+                                 :class="{['d-flex ma-0 flex-column justify-center align-center pa-0']: true,
+                                 ['unsselected-box']: !selected.includes(item),
+                                 ['selected-box']: selected.includes(item)}"
+                                 style="width: 100px; height: 100px;">
                       <v-icon size="28" class="ma-0 pa-0">
                         mdi-script-text
+                      </v-icon>
+                      <p class="title-file">{{item.original_filename}}</p>
+                    </v-container>
+                    <v-container v-else-if="item.type === 'geospatial'"
+                                 :class="{['d-flex ma-0 flex-column justify-center align-center pa-0']: true,
+                                 ['unsselected-box']: !selected.includes(item),
+                                 ['selected-box']: selected.includes(item)}"
+                                 style="width: 100px; height: 100px;">
+                      <v-icon size="28" class="ma-0 pa-0">
+                        mdi-map-search-outline
+                      </v-icon>
+                    </v-container>
+                    <v-container v-else-if="item.type === 'audio'"
+                                 class="d-flex flex-column justify-center align-center pa-0"
+                                 style="width: 100px; height: 100px; border: 1px solid #bdbdbd;">
+                      <v-icon size="28" class="ma-2 pa-0">
+                        mdi-music-box
                       </v-icon>
                       <p class="title-file">{{item.original_filename}}</p>
                     </v-container>

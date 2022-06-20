@@ -5,15 +5,16 @@
     <v-menu v-model="tasks_menu"
             :nudge-width="150"
             offset-y
-            :disabled="false">
+            :disabled="false"
+            v-if="$store.state.project.current.project_string_id"
+            >
 
       <template v-slot:activator="{ on }">
-        <v-btn v-if="$store.state.builder_or_trainer.mode == 'builder'"
+        <v-btn v-if="$store.state.project.current.project_string_id"
                v-on="on"
-               :disabled="!$store.state.project || !$store.state.project.current.project_string_id"
                text
         >
-          <v-icon left>mdi-brush</v-icon>
+          <v-icon left>mdi-account-multiple</v-icon>
           Tasks
           <v-icon right> mdi-chevron-down</v-icon>
         </v-btn>
@@ -56,7 +57,7 @@
               style="text-transform: none !important;"
               :disabled="!$store.state.project.current.project_string_id"
               @click="$router.push('/job/list')">
-              <v-icon left>mdi-brush</v-icon>
+              <v-icon left>mdi-account-multiple</v-icon>
               Tasks List
             </v-btn>
           </v-flex>

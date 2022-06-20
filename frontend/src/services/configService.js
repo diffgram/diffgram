@@ -11,6 +11,17 @@ export const is_mailgun_set = async () => {
     }
 }
 
+export const is_oidc_set = async () => {
+  try {
+    const { data } = await axios.get('/api/configs/is-oidc-set')
+    return data
+  } catch(e) {
+    return {
+      use_oidc: false
+    }
+  }
+}
+
 export const get_install_info = async () => {
     try {
         const { data } = await axios.get('/api/v1/admin/install/info')
@@ -22,14 +33,30 @@ export const get_install_info = async () => {
     }
 }
 
+export const get_walrus_status = async () => {
+    try {
+        return await axios.get('/api/walrus/status')
+    } catch(error) {
+        return error
+    }
+}
 
+export const get_default_status = async () => {
+    try {
+        return await axios.get('/api/status')
+    } catch(error) {
+        return error
+    }
+}
+
+
+// or $store.commit('check_is_open_source') and $store.state.system.is_open_source
 export const is_open_source = async () => {
   try {
     const { data } = await axios.get('/api/configs/is-open-source')
-    return data
-  } catch(error) {
-    return {
-      error
-    }
+    return [data, null]
+  } catch(e) {
+    return [null, e]
+
   }
 }

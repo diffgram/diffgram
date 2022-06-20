@@ -6,12 +6,14 @@ from shared.database.attribute.attribute_template_group import Attribute_Templat
 from werkzeug.exceptions import Forbidden
 from shared.database.text_file import TextFile
 from shared.database.point_cloud.point_cloud import PointCloud
+from shared.database.audio.audio_file import AudioFile
 from shared.database.source_control import working_dir as working_dir_database_models
 from shared.database.annotation.instance import Instance
-from shared.database.label import Label
+from shared.database.labels.label import Label
 from shared.database.text_file import TextFile
 from shared.database.video.sequence import Sequence
 from shared.helpers.sessionMaker import AfterCommitAction
+from shared.database.labels.label_schema import LabelSchema
 import time
 from shared.regular import regular_log
 from sqlalchemy.orm import joinedload
@@ -19,11 +21,14 @@ from shared.shared_logger import get_shared_logger
 from shared.database.core import MutableDict
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import UniqueConstraint
+from shared.database.geospatial.geo_asset import GeoAsset
+from shared.helpers.performance import timeit
+
 
 logger = get_shared_logger()
 
-
 from sqlalchemy.schema import Index
+
 
 class File(Base, Caching):
     """
@@ -43,11 +48,11 @@ class File(Base, Caching):
               "frame_number"),
     )
 
-    id = Column(BIGINT, primary_key=True)
-    created_time = Column(DateTime, default=datetime.datetime.utcnow)
+    id = Column(BIGINT, primary_key = True)
+    created_time = Column(DateTime, default = datetime.datetime.utcnow)
 
     # TODO would be good to standarized the naming convention for time with other stuff
-    time_last_updated = Column(DateTime, onupdate=datetime.datetime.utcnow)
+    time_last_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
     # A way to disable auto update while doing migration? not 100% sure this works
     # time_last_updated = Column(DateTime)
@@ -55,7 +60,7 @@ class File(Base, Caching):
     count_instances_changed = Column(Integer)
 
     # Number of instances (Of all types) in the file.
-    count_instances = Column(Integer, default=None, nullable = True)
+    count_instances = Column(Integer, default = None, nullable = True)
 
     created_by_kind = Column(String)  # 'human', 'api'
 
@@ -71,10 +76,12 @@ class File(Base, Caching):
     input_id = Column(Integer, ForeignKey('input.id'))
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
-    member_created = relationship("Member", foreign_keys=[member_created_id])
+    member_created = relationship("Member", foreign_keys = [member_created_id])
 
     member_updated_id = Column(Integer, ForeignKey('member.id'))
-    member_updated = relationship("Member", foreign_keys=[member_updated_id])
+    member_updated = relationship("Member", foreign_keys = [member_updated_id])
+
+
 
     # "added", "removed", "changed"
     state = Column(String())  # for source control
@@ -97,11 +104,10 @@ class File(Base, Caching):
     file_metadata = Column(MutableDict.as_mutable(JSONB))
 
     # Deprecated shift to instance_type_count
-    boxes_count = Column(Integer, default=0)
-    boxes_machine_made_count = Column(Integer, default=0)
-    polygon_count = Column(Integer, default=0)
+    boxes_count = Column(Integer, default = 0)
+    boxes_machine_made_count = Column(Integer, default = 0)
+    polygon_count = Column(Integer, default = 0)
     ##########
-
 
     image_id = Column(Integer, ForeignKey('image.id'))
     image = relationship("Image")
@@ -110,7 +116,11 @@ class File(Base, Caching):
     point_cloud = relationship(PointCloud)
 
     text_file_id = Column(Integer, ForeignKey('text_file.id'))
-    text_file = relationship(TextFile, foreign_keys=[text_file_id])
+    text_file = relationship(TextFile, foreign_keys = [text_file_id])
+
+    audio_file_id = Column(Integer, ForeignKey('audio_file.id'))
+    audio_file = relationship(AudioFile, foreign_keys=[audio_file_id])
+
 
     original_filename = Column(String())
 
@@ -137,7 +147,7 @@ class File(Base, Caching):
 
     # Default task, although a file could have many tasks this can still be useful.
     task_id = Column(Integer, ForeignKey('task.id'))
-    task = relationship("Task", foreign_keys=[task_id])
+    task = relationship("Task", foreign_keys = [task_id])
 
     frame_number = Column(Integer)  # assumed to be local
     global_frame_number = Column(Integer)
@@ -145,15 +155,15 @@ class File(Base, Caching):
     # CAUTION in instance.py (shared/database/annotation)
     # see class Instance().list()
     # for more up to date / controlled way of doing this!!!
-    instance_list = relationship("Instance", back_populates="file",
-                                 foreign_keys="Instance.file_id")
+    instance_list = relationship("Instance", back_populates = "file",
+                                 foreign_keys = "Instance.file_id")
 
     # Concept that the first file created, ie a new "import" is the "root"
     # So if a new file media was uploaded this would effect that...
 
     text_tokenizer = Column(String(), default = 'nltk')
 
-    is_root = Column(Boolean) 
+    is_root = Column(Boolean)
     root_id = Column(BIGINT, ForeignKey('file.id'))
 
     # Key point that the file link is "arbitrary" but the file doesn't have to be???
@@ -173,8 +183,8 @@ class File(Base, Caching):
     # Was "next_id"
     # DO we really need this?
     child_primary_id = Column(BIGINT, ForeignKey('file.id'))
-    child_primary = relationship("File", uselist=False,
-                                 foreign_keys=[child_primary_id])
+    child_primary = relationship("File", uselist = False,
+                                 foreign_keys = [child_primary_id])
 
     # For label generally (theory being we may want different colours for different
     # labels
@@ -189,15 +199,15 @@ class File(Base, Caching):
     # the recommended way of updating instances is by callin Annotation_Update().main and then
     # setting the cache to dirty with set_cache_key_dirty()
     cache_dict = Column(MutableDict.as_mutable(JSONEncodedDict),
-                        default={})
+                        default = {})
 
     # External ID's for referencing on integrations like Labelbox, Supervisely, etc.
     default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))  # TODO: add to production
     default_external_map = relationship("ExternalMap",
-                                        uselist=False,
-                                        foreign_keys=[default_external_map_id])
+                                        uselist = False,
+                                        foreign_keys = [default_external_map_id])
 
-    __table_args__ = (UniqueConstraint('video_parent_file_id', 'frame_number', name='unique_frame_number_video'),)
+    __table_args__ = (UniqueConstraint('video_parent_file_id', 'frame_number', name = 'unique_frame_number_video'),)
 
     @staticmethod
     def get_files_in_project_id_name_list(session, project_id, id_or_name_list, directory_id = None):
@@ -219,42 +229,37 @@ class File(Base, Caching):
                 name_list.append(val)
             elif type(val) == int:
                 id_list.append(val)
-        print('name_list', name_list)
-        print('id_list', id_list)
         if directory_id is not None:
-            print('dir case')
-            file_list_id_db = session.query(File)\
+            file_list_id_db = session.query(File) \
                 .join(working_dir_database_models.WorkingDirFileLink,
-                      working_dir_database_models.WorkingDirFileLink.file_id == File.id)\
+                      working_dir_database_models.WorkingDirFileLink.file_id == File.id) \
                 .filter(File.id.in_(id_list),
                         File.project_id == project_id,
                         working_dir_database_models.WorkingDirFileLink.working_dir_id == directory_id).all()
-            file_list_name_db = session.query(File)\
+            file_list_name_db = session.query(File) \
                 .join(working_dir_database_models.WorkingDirFileLink,
-                      working_dir_database_models.WorkingDirFileLink.file_id == File.id)\
+                      working_dir_database_models.WorkingDirFileLink.file_id == File.id) \
                 .filter(File.original_filename.in_(name_list),
                         File.project_id == project_id,
                         working_dir_database_models.WorkingDirFileLink.working_dir_id == directory_id).all()
             return set(file_list_name_db + file_list_id_db)
         else:
-            file_list_id_db = session.query(File)\
+            file_list_id_db = session.query(File) \
                 .filter(File.id.in_(id_list),
                         File.project_id == project_id).all()
-            file_list_name_db = session.query(File)\
+            file_list_name_db = session.query(File) \
                 .filter(File.original_filename.in_(name_list),
                         File.project_id == project_id).all()
         return set(file_list_id_db + file_list_name_db)
 
-
-
     @staticmethod
     def get_frame_from_video(
-            session,
-            video_parent_file_id: int,
-            frame_number: int,
-            with_for_update: bool = False,
-            nowait = False,
-            skip_locked = False
+        session,
+        video_parent_file_id: int,
+        frame_number: int,
+        with_for_update: bool = False,
+        nowait = False,
+        skip_locked = False
     ):
         """
         Prefer this as static method
@@ -271,13 +276,12 @@ class File(Base, Caching):
                 File.video_parent_file_id == video_parent_file_id,
                 File.frame_number == frame_number).first()
 
-
     @staticmethod
     def get_frame_list_from_video(
-            session,
-            video_parent_file_id: int,
-            frame_number_list: list,
-            preload_image=True
+        session,
+        video_parent_file_id: int,
+        frame_number_list: list,
+        preload_image = True
     ):
         """
         Prefer this as static method
@@ -293,7 +297,6 @@ class File(Base, Caching):
             return session.query(File).filter(
                 File.video_parent_file_id == video_parent_file_id,
                 File.frame_number.in_(frame_number_list)).all()
-
 
     def serialize(self):
         # Careful this is just basic stuff
@@ -323,8 +326,6 @@ class File(Base, Caching):
             'count_instances_changed': self.count_instances_changed
         }
 
-
-
     def get_signed_url(self, session):
         if self.type == "image":
             if self.image:
@@ -339,10 +340,9 @@ class File(Base, Caching):
 
         if self.type == "text":
             if self.text_file:
-                serialized = self.text_file.serialize_for_source_control(session)
-                return serialized['url_signed']
+                self.text_file.regenerate_url(session)
+                return self.text_file.url_signed
         return None
-
 
     def get_blob_path(self):
         if self.type == "image":
@@ -365,51 +365,64 @@ class File(Base, Caching):
             File.parent_id == self.id
         ).first()
         return file
+
+    def get_geo_assets(self, session) -> list:
+        assets = session.query(GeoAsset).filter(
+            GeoAsset.file_id == self.id
+        ).all()
+        return assets
+
+    def serialize_geospatial_assets(self, session):
+        assets_list = self.get_geo_assets(session)
+        result = []
+        for asset in assets_list:
+            result.append(asset.serialize(session))
+        return result
+
     def serialize_with_type(self,
-                            session=None
+                            session = None
                             ):
 
         file = self.serialize_base_file()
 
-        #print('serialize with type', self.type)
         if self.type == "image":
             if self.image:
                 file['image'] = self.image.serialize_for_source_control(session)
 
-        # Do we want to throw an error here? should be pretty rare no image if type image
-
-        if self.type == "video":
+        elif self.type == "video":
             if self.video:
                 file['video'] = self.video.serialize_list_view(session, self.project)
 
-        if self.type == "text":
+        elif self.type == "text":
             if self.text_file:
-                file['text'] = self.text_file.serialize()
+                file['text'] = self.text_file.serialize(session)
 
-        if self.type == "sensor_fusion":
+        elif self.type == "geospatial":
+            file['geospatial'] = {
+                'layers': self.serialize_geospatial_assets(session = session)
+            }
+            
+        if self.type == "audio":
+            if self.audio_file:
+                file['audio'] = self.audio_file.serialize()
+
+        elif self.type == "sensor_fusion":
             point_cloud_file = self.get_child_point_cloud_file(session = session)
             if point_cloud_file and point_cloud_file.point_cloud:
-                file['point_cloud'] = point_cloud_file.point_cloud.serialize()
+                file['point_cloud'] = point_cloud_file.point_cloud.serialize(session)
 
-        # Could also get parent file information here too...
-        if self.type == "label":
-            if self.label:
+        elif self.type == "label":
+            if session:
+                label = Label.get_by_id(session, self.label_id)
+            else:
+                label = self.label
+            #if session:
+            #    file['attribute_group_list'] = Attribute_Template_Group.from_file_attribute_group_list_serialize(
+            #        session = session,
+            #       file_id = self.id)
 
-                # WIP
-                # TODO would prefer this to be a mode or something?
-                # context of only needing group list here
-                # if for label file from project
-                # where as from instance.serialize() we want
-                # the instances of attributes
-
-                if session:
-                    file['attribute_group_list'] = Attribute_Template_Group.from_file_attribute_group_list_serialize(
-                        session=session,
-                        file_id=self.id)
-
-                file['colour'] = self.colour
-
-                file['label'] = self.label.serialize()
+            file['colour'] = self.colour
+            file['label'] = label.serialize()
 
         return file
 
@@ -442,32 +455,14 @@ class File(Base, Caching):
     def serialize_with_video(self, session):
         return self.serialize_with_type(session)
 
-    def serialize_with_label(self):
-        return self.serialize_with_type()
+    def serialize_with_label(self, session = None):
+        return self.serialize_with_type(session)
 
     # Don't share colour by default, use map
-
     def serialize_with_label_and_colour(self, session):
         return self.serialize_with_type(session)
 
     def serialize_all_labels_in_attached_instance_list(self, session):
-        # For types Image and Video
-        # TODO cache this...
-
-        # QUESTION why do we need colour map again here
-        # if we are passing colour wiht label file itself??
-        # Different contexts I think, ie video needing frame buffer for it
-        # Or Side panel rendering it
-
-        # This is really awkward
-        # But essentially rebuilding label file list based ONLY on the file
-        # Feel like I'm missing something here
-
-        # Part of this is at heart of conflicting views / constraints
-        # wanting to be able to change label files
-        # But also record source / historic thing
-        # AND also have "global" concepts like "car"...
-        # May need to draw some limits here
 
         label_list = []
         label_file_colour_map = {}
@@ -480,7 +475,7 @@ class File(Base, Caching):
                 continue
 
             label_list.append(instance.label_file.serialize_with_label_and_colour(
-                session=session))
+                session = session))
             label_file_colour_map[instance.label_file.id] = instance.label_file.colour
 
         return {
@@ -489,8 +484,8 @@ class File(Base, Caching):
         }
 
     def serialize_with_annotations(
-            self,
-            session=None):
+        self,
+        session = None):
 
         """
         Better way to do file splitting?
@@ -502,29 +497,11 @@ class File(Base, Caching):
             Instance.soft_delete == False
         ).all()
 
-        if self.type in ['image', 'text']:
-            return {
-                'id': self.id,
-                'type': self.type,
-                'hash': self.hash,
-                'state': self.state,
-                'image': self.image.serialize_for_source_control(session) if self.image else None,
-                'text_file': self.text_file.serialize_for_source_control(session) if self.text_file else None,
-                'instance_list': [instance.serialize_with_label() for instance in instance_list]
-            }
-        if self.type == "video":
-            result = self.serialize_with_video(session)
-            result['instance_list'] = [instance.serialize_with_label() for instance in instance_list]
-            return result
-        if self.type == 'sensor_fusion':
-            return {
-                'id': self.id,
-                'type': self.type,
-                'hash': self.hash,
-                'state': self.state,
-                'point_cloud_3d_file': self.point_cloud.serialize(session) if self.point_cloud else None,
-                'instance_list': [instance.serialize_with_label() for instance in instance_list]
-            }
+        file = self.serialize_with_type(session)
+        file['instance_list'] = [instance.serialize_with_label() for instance in instance_list]
+
+        return file
+
 
     def serialize_annotations_only(self):
 
@@ -537,23 +514,21 @@ class File(Base, Caching):
     def serialize_instance_list_only(self):
         return [instance.serialize_with_label() for instance in self.instance_list]
 
-
     # NOTE for more complex options
     # generally use WorkingDirFileLink.file_list()
     # Becuase we need to cross reference datasets
 
     @staticmethod
-    def get_by_id(session, file_id, with_for_update = False, nowait=False, skip_locked = False):
+    def get_by_id(session, file_id, with_for_update = False, nowait = False, skip_locked = False):
         if with_for_update:
-            return session.query(File).with_for_update(nowait = nowait, skip_locked = skip_locked).filter(File.id == file_id).first()
+            return session.query(File).with_for_update(nowait = nowait, skip_locked = skip_locked).filter(
+                File.id == file_id).first()
 
         else:
             return session.query(File).filter(File.id == file_id).first()
 
-
     def get_by_id_list(session, file_id_list):
         return session.query(File).filter(File.id.in_(file_id_list)).all()
-
 
     def hash_update(self):
         """
@@ -581,7 +556,7 @@ class File(Base, Caching):
 
         hash_data = hash_data + hash_list_instance
 
-        hash = hashlib.sha256(json.dumps(hash_data, sort_keys=True).encode('utf-8')).hexdigest()
+        hash = hashlib.sha256(json.dumps(hash_data, sort_keys = True).encode('utf-8')).hexdigest()
 
         self.hash = hash
 
@@ -591,10 +566,10 @@ class File(Base, Caching):
 
     @staticmethod
     def validate_file_list(
-            session,
-            project_id,
-            file_list: list,
-            return_mode: str = "id") -> list:
+        session,
+        project_id,
+        file_list: list,
+        return_mode: str = "id") -> list:
         """
         TODO compare performance of this
         vs using a 'get where id matches list' method in sql alchemy
@@ -630,22 +605,22 @@ class File(Base, Caching):
     # TODO rename this copy file ?
     @staticmethod
     def copy_file_from_existing(
-            session,
-            working_dir,
-            existing_file,
-            copy_instance_list: bool = False,
-            log=regular_log.default(),
-            add_link: bool = True,
-            remove_link: bool = True,
-            orginal_directory_id=None,
-            previous_video_parent_id=None,
-            sequence_map=None,
-            deep_copy=False,
-            defer_copy=False,
-            ann_is_complete_reset=False,
-            batch_id=None,
-            flush_session=False,
-            working_dir_id: int = None
+        session,
+        working_dir,
+        existing_file,
+        copy_instance_list: bool = False,
+        log = regular_log.default(),
+        add_link: bool = True,
+        remove_link: bool = True,
+        orginal_directory_id = None,
+        previous_video_parent_id = None,
+        sequence_map = None,
+        deep_copy = False,
+        defer_copy = False,
+        ann_is_complete_reset = False,
+        batch_id = None,
+        flush_session = False,
+        working_dir_id: int = None
     ):
         """
         orginal_directory_id is for Video, to get list of video files
@@ -692,7 +667,8 @@ class File(Base, Caching):
                                 'remove_link': remove_link,
                                 }
             )
-            log['info']['message'] = 'File copy in progress. Please check progress in the file operations progress section.'
+            log['info'][
+                'message'] = 'File copy in progress. Please check progress in the file operations progress section.'
             return
 
         # VIDEO
@@ -730,6 +706,8 @@ class File(Base, Caching):
         file.project_id = existing_file.project_id
 
         file.image_id = existing_file.image_id
+        file.text_file_id = existing_file.text_file_id
+        file.audio_file_id = existing_file.audio_file_id
         file.label_id = existing_file.label_id
         file.video_id = existing_file.video_id
         file.global_frame_number = existing_file.global_frame_number
@@ -754,7 +732,6 @@ class File(Base, Caching):
         # At the moment we don't pass add_link as True when copying it for task
         if add_link is True:
             working_dir_database_models.WorkingDirFileLink.add(session, working_dir_id, file)
-        # print("Added link")
 
         if remove_link is True:
             working_dir_database_models.WorkingDirFileLink.remove(session, working_dir_id, existing_file.id)
@@ -769,7 +746,7 @@ class File(Base, Caching):
             instance_list = Instance.list(
                 session = session,
                 file_id = existing_file.id,
-                limit = None)   # Excludes removed by default
+                limit = None)  # Excludes removed by default
             logger.debug(f"instance_list len {len(instance_list)}")
             for instance in instance_list:
 
@@ -779,26 +756,26 @@ class File(Base, Caching):
                     instance_sequence_id = sequence_map.get(instance_sequence_id)
 
                 new_instance = Instance(
-                    file_id=file.id,  # IMPORTANT and different from pattern
-                    sequence_id=instance_sequence_id,   #  Different
-                    parent_file_id=file.video_parent_file_id,  # Cache for video parent file ID.
-                    project_id=instance.project_id,
-                    x_min=instance.x_min,
-                    y_min=instance.y_min,
-                    x_max=instance.x_max,
-                    y_max=instance.y_max,
-                    width=instance.width,
-                    height=instance.height,
-                    label_file_id=instance.label_file_id,
-                    hash=instance.hash,
-                    type=instance.type,
-                    number=instance.number,
-                    frame_number=instance.frame_number,
+                    file_id = file.id,  # IMPORTANT and different from pattern
+                    sequence_id = instance_sequence_id,  # Different
+                    parent_file_id = file.video_parent_file_id,  # Cache for video parent file ID.
+                    project_id = instance.project_id,
+                    x_min = instance.x_min,
+                    y_min = instance.y_min,
+                    x_max = instance.x_max,
+                    y_max = instance.y_max,
+                    width = instance.width,
+                    height = instance.height,
+                    label_file_id = instance.label_file_id,
+                    hash = instance.hash,
+                    type = instance.type,
+                    number = instance.number,
+                    frame_number = instance.frame_number,
                     global_frame_number = instance.global_frame_number,
-                    machine_made=instance.machine_made,
-                    fan_made=instance.fan_made,
-                    points=instance.points,
-                    soft_delete=instance.soft_delete,
+                    machine_made = instance.machine_made,
+                    fan_made = instance.fan_made,
+                    points = instance.points,
+                    soft_delete = instance.soft_delete,
                     center_x = instance.center_x,
                     center_y = instance.center_y,
                     angle = instance.angle,
@@ -819,20 +796,26 @@ class File(Base, Caching):
 
     @staticmethod
     def new_label_file(
-            session,
-            name = None,
-            default_sequences_to_single_frame = False,
-            working_dir_id = None,
-            colour = None,
-            project = None,
-            log=None,
-            existing_file=None
+        session,
+        name = None,
+        working_dir_id = None,
+        colour = None,
+        project = None,
+        log = None,
+        existing_file = None,
+        schema = None,
+        member = None
     ):
+        if schema is None:
+            raise Exception("schema Required")
+
+        if member is None:
+            raise Exception("member Required")
+
         label = Label.new(
             session = session,
-            name = name,
-            default_sequences_to_single_frame = default_sequences_to_single_frame,
-        )
+            name = name)
+
         if not label:
             return None
         if existing_file is None:
@@ -844,6 +827,11 @@ class File(Base, Caching):
                             project_id = project.id
                             )
         session.flush()
+
+        schema.add_label_file(
+            session = session, 
+            label_file_id = file.id, 
+            member_created_id = member.id)
 
         # In the future this could handle other label caching
         # Things beyond id, so for now just hit this?
@@ -868,6 +856,7 @@ class File(Base, Caching):
             image_id=None,
             point_cloud_id=None,
             text_file_id=None,
+            audio_file_id=None,
             video_id=None,
             frame_number=None,
             label_id=None,
@@ -917,6 +906,7 @@ class File(Base, Caching):
             type=file_type,
             project_id=project_id,
             label_id=label_id,
+            audio_file_id=audio_file_id,
             text_file_id=text_file_id,
             video_id=video_id,
             video_parent_file_id=video_parent_file_id,
@@ -961,13 +951,11 @@ class File(Base, Caching):
 
             # start_time = time.time()
             video = video_parent_file.video
-            # print("video pull", (time.time() - start_time) * 1000)
 
             if video:
                 # A new file would never have this created prior...
                 file.global_frame_number = video.calculate_global_reference_frame(
-                    frame_number=file.frame_number)
-            # print("Global frame:", file.global_frame_number)
+                    frame_number = file.frame_number)
             else:
                 print("Error, no .Video while trying to create new File")
 
@@ -986,7 +974,7 @@ class File(Base, Caching):
                             user_id,
                             project_string_id,
                             file_id,
-                            directory_id=None,
+                            directory_id = None,
                             with_for_update = False,
                             nowait = False,
                             skip_locked = False):
@@ -1028,13 +1016,13 @@ class File(Base, Caching):
 
     @staticmethod
     def get_by_id_and_project(
-            session,
-            project_id: int,
-            file_id: int,
-            directory_id=None,
-            with_for_update = False,
-            nowait = False,
-            skip_locked = False):
+        session,
+        project_id: int,
+        file_id: int,
+        directory_id = None,
+        with_for_update = False,
+        nowait = False,
+        skip_locked = False):
         """
         Security models is that if the file matches the project
         (assumes that project_id is trusted), then the file has
@@ -1057,9 +1045,9 @@ class File(Base, Caching):
         if not file and directory_id:
             print("used file migration")
             return File.get_by_id_and_directory_untrusted(
-                session=session,
-                directory_id=directory_id,
-                file_id=file_id,
+                session = session,
+                directory_id = directory_id,
+                file_id = file_id,
                 with_for_update = with_for_update,
                 nowait = nowait,
                 skip_locked = skip_locked)
@@ -1140,13 +1128,13 @@ class File(Base, Caching):
         if not label_file:
             return None
         return label_file
-    
+
     @staticmethod
-    def __get_next_instance_and_migrate(session, video_parent_file_id, start_frame_number, label_file_id=None):
+    def __get_next_instance_and_migrate(session, video_parent_file_id, start_frame_number, label_file_id = None):
         # If there's no next frame let's retry with a join and migrate instances
         # Might eventually remove this code when all instances are migrated.
-        migrate_query = session.query(Instance)\
-            .join(File, Instance.file_id == File.id)\
+        migrate_query = session.query(Instance) \
+            .join(File, Instance.file_id == File.id) \
             .filter(File.video_parent_file_id == video_parent_file_id,
                     Instance.frame_number > start_frame_number,
                     Instance.soft_delete == False)
@@ -1166,7 +1154,7 @@ class File(Base, Caching):
         return next_frame
 
     @staticmethod
-    def get_next_instance(session, video_parent_file_id, start_frame_number, label_file_id=None):
+    def get_next_instance(session, video_parent_file_id, start_frame_number, label_file_id = None):
         query = session.query(Instance)
         query = query.filter(
             Instance.frame_number > start_frame_number,
@@ -1205,10 +1193,10 @@ class File(Base, Caching):
     @staticmethod
     def toggle_flag_single_file(session,
                                 file,
-                                force_bool=None):
+                                force_bool = None):
         assert file is not None
 
-        session.add(file)   # not good auto adds to session.
+        session.add(file)  # not good auto adds to session.
 
         if force_bool:
             file.ann_is_complete = force_bool
@@ -1220,7 +1208,6 @@ class File(Base, Caching):
             file.ann_is_complete = not file.ann_is_complete
 
         return file
-
 
 
 def build_annotation_hash_list(annotation_list):
@@ -1277,4 +1264,3 @@ def file_relationship(session, file, previous_file):
         file.root_id = previous_file.id
 
     session.add(previous_file)
-

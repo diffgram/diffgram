@@ -30,7 +30,6 @@ class Stats():
 		next_date = date_from
 
 		period = (date_to - date_from).days
-		print("period", period)
 	
 		len_task_list = len(list_by_period)
 

@@ -1,7 +1,9 @@
 
 <template>
-  <div class="d-flex align-center justify-center screen-height" v-cloak>
-    <v-flex xs6 center v-if="$store.state.user.logged_in != true">
+  <div class="d-flex align-center justify-center screen-height" v-cloak v-if="render_default_login">
+
+    <v-flex class="flex-column" xs6 center v-if="$store.state.user.logged_in != true">
+      <v_error_multiple :error="error_login"></v_error_multiple>
       <div class="pa-4 ma-auto text-center" style="width: 100%">
         <img
           src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
@@ -59,20 +61,22 @@
             </v-alert>
 
             <v-layout>
-              <v-flex>
-                <v-btn
-                  v-if="mode == 'password'"
-                  @click="login"
-                  color="primary"
-                  :loading="loading"
-                  data-cy="login"
-                  @click.native="loader = 'loading'"
-                  :disabled="loading"
-                >
-                  Login to Diffgram
-                </v-btn>
+              <v-btn
+                v-if="mode == 'password'"
+                @click="login"
+                large
+                color="primary"
+                :loading="loading"
+                data-cy="login"
+                @click.native="loader = 'loading'"
+                :disabled="loading"
+              >
+                Login
+              </v-btn>
 
+              <div class= "pl-2">
                 <v-btn
+                  large
                   v-if="mailgun"
                   @click="start_magic_login_api"
                   color="primary"
@@ -83,8 +87,8 @@
                   <v-icon left>mdi-auto-fix</v-icon>
                   Send Magic Link
                 </v-btn>
-
                 <v-btn
+                  large
                   v-if="mode != 'password'"
                   color="blue darken-1"
                   id="show_pass"
@@ -93,45 +97,46 @@
                   text
                   @click="mode = 'password'"
                 >
-                  Type password instead
+                  Use password
                 </v-btn>
-              </v-flex>
+               </div>
             </v-layout>
 
             <br />
 
-            <!-- TODO add to only show if not in component? -->
-            <!--
-      <v-btn color="blue darken-1" text
-             @click.native="$emit('exit', true)">Cancel</v-btn>
-      -->
-
               <v-layout>
-                <v-flex>
-                  <v-btn
-                    @click="route_account_new"
-                    color="primary"
-                    text
-                    :loading="loading"
-                    @click.native="loader = 'loading'"
-                    :disabled="loading"
-                  >
-                    <v-icon left>mdi-plus</v-icon>
-                    Create new account
-                  </v-btn>
 
-                  <v-btn
-                    @click="route_account_new"
-                    color="primary"
-                    text
+                 <v-spacer></v-spacer>
+
+                <v-btn
+                  @click="route_account_new"
+                  color="primary"
+                  text
+                  :loading="loading"
+                  @click.native="loader = 'loading'"
+                  :disabled="loading"
+                >
+                  <v-icon left>mdi-plus</v-icon>
+                  Create
+                </v-btn>
+
+                <tooltip_button
+                    tooltip_message="Join Slack Community"
+                    href="https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg"
+                    target="_blank"
+                    icon="mdi-slack"
+                    :icon_style="true"
+                    color="primary">
+                </tooltip_button>
+
+                <tooltip_button
+                    tooltip_message="Help"
                     href="https://diffgram.readme.io/docs/login-magic-login-and-password-setting"
                     target="_blank"
-                    :disabled="loading"
-                  >
-                    <v-icon left>mdi-lifebuoy</v-icon>
-                    Help
-                  </v-btn>
-                </v-flex>
+                    icon="mdi-lifebuoy"
+                    :icon_style="true"
+                    color="primary">
+                </tooltip_button>
               </v-layout>
           </v-container>
         </div>
@@ -199,7 +204,7 @@
 
 <script lang="ts">
 import axios from "../../services/customInstance";
-import { is_mailgun_set } from "../../services/configService";
+import { is_mailgun_set, is_oidc_set } from "../../services/configService";
 
 import Vue from "vue";
 export default Vue.extend({
@@ -215,6 +220,7 @@ export default Vue.extend({
   data() {
     return {
       loading: false,
+      render_default_login: false,
 
       e1: true,
 
@@ -233,6 +239,7 @@ export default Vue.extend({
       },
 
       start_magic_login_success: null,
+      error_login: null,
 
       otp: null,
       otp_current_session: null,
@@ -267,6 +274,12 @@ export default Vue.extend({
 
     window.addEventListener("keyup", this.keyboard_events);
     const { mailgun } = await is_mailgun_set();
+    const { use_oidc, login_url } = await is_oidc_set();
+    if(use_oidc){
+      window.location.replace(login_url);
+      return
+    }
+    this.render_default_login = true;
     this.mailgun = mailgun;
     this.mode = mailgun ? "magic_auth" : "password";
 
@@ -360,7 +373,7 @@ export default Vue.extend({
         })
         .catch((error) => {
           this.loading = false;
-
+          this.error_login = this.$route_api_errors(error)
           if (error.response) {
             if (error.response.status == 400) {
               this.error = error.response.data.log.error;

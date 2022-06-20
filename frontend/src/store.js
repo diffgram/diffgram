@@ -116,8 +116,6 @@ export const user_module = {
       commit('clear_ai')
       commit('clear_annotation')
       commit('clear_labels')
-      commit('clear_annotation_assignment')
-      commit('clear_annotation_project')
       commit('clear_video_current')
       commit('builder_or_trainer_clear')
       commit('clear_alert')
@@ -125,6 +123,7 @@ export const user_module = {
       commit('clear_job')
       commit('clear_connection')
       commit('clear_ui_schema')
+      commit('clear_userProjects_list')
 
     },
 
@@ -167,6 +166,9 @@ export const project_list = {
   mutations: {
     set_userProjects_list(state, fetched_projects_list) {
       state.user_projects_list = fetched_projects_list
+    },
+    clear_userProjects_list(state) {
+      state.user_projects_list = undefined
     }
   }
 }
@@ -262,13 +264,7 @@ const org = {
 }
 
 
-/* Feb 14, 2020
- * Example context
- * of wanting to easily access values of counts from different
- * components and context that current media core is kind buried.
- *
- *
- */
+
 const job = {
 
   state: {
@@ -316,20 +312,22 @@ const integration_spec_list_template = [
     'image-icon': 'https://uploads-ssl.webflow.com/5f07389521600425ba513006/5f1750e39c67ad3dd7c69015_logo_scale.png',
   },
   {
-    'display_name': 'Diffgram (Default)',
-    'name': 'diffgram',
-    'image-icon': 'https://res-4.cloudinary.com/crunchbase-production/image/upload/c_lpad,h_170,w_170,f_auto,b_white,q_auto:eco/okhxici7vjqqznihxezz',
-  },
-  {'display_name': 'Microsoft Azure',
+   'display_name': 'Microsoft Azure',
    'name': 'microsoft_azure',
    'icon': 'mdi-microsoft-azure',
    'color': 'blue'
   },
-  // {'display_name': 'ScaleAI',
-  //  'name': 'sacle_ai',
-  //  'icon': 'mdi-domain',
-  //  'color': 'purple'
-  // }
+  {
+   'display_name': 'Microsoft Azure Text Analytics',
+   'name': 'microsoft_azure_text_analytics',
+   'icon': 'mdi-microsoft-azure',
+   'color': 'blue'
+  },
+  {
+    'display_name': 'Minio',
+    'name': 'minio',
+    'image-icon': 'https://min.io/resources/img/logo/MINIO_Bird.png',
+  }
 ]
 
 export const connection = {
@@ -344,7 +342,7 @@ export const connection = {
   },
   mutations: {
 
-    init_constant() {
+    init_constant(state) {
       state.integration_spec_list = integration_spec_list_template
     },
 
@@ -570,37 +568,7 @@ const auth = {
 }
 
 
-const annotation_assignment = {
-  state: {
-    assignment: {},
-    on: false,
-  },
-  mutations: {
-    annotation_assignment_on: state => state.on = true,
-    annotation_assignment_off: state => state.on = false,
-    set_annotation_assignment(state, assignment) {
-      state.assignment = assignment
-    },
-    clear_annotation_assignment(state) {
-      state.on = false,
-        state.assignment = {}
-    }
-  }
-}
 
-const annotation_project = {
-  state: {
-    current: {}
-  },
-  mutations: {
-    set_annotation_project(state, current) {
-      state.current = current
-    },
-    clear_annotation_project(state) {
-      state.current = {}
-    }
-  }
-}
 
 const builder_or_trainer = {
   state: {
@@ -721,7 +689,6 @@ const ui_schema = {
       // use example
       // this.$emit('set_ui_schema_element_value',
       //  [this.target_element, 'allowed_instance_types', new_type_list])
-      console.log('aaa', payload)
       const element = payload[0]
       if (element === undefined) {
         throw new Error("set_ui_schema_element_value element is undefined")
@@ -770,6 +737,42 @@ const video = {
   }
 }
 
+const snackbar = {
+  state: {
+    show_snackbar: false,
+    text: '',
+    color: 'primary',
+  },
+  mutations: {
+    display_snackbar(state, payload) {
+      state.text = payload.text
+      state.color = payload.color
+      state.show_snackbar = true
+    },
+    hide_snackbar(state) {
+      state.text = ''
+      state.color = 'primary'
+      state.show_snackbar = false
+    }
+  }
+}
+
+export const system = {
+  state: {
+    is_open_source: undefined
+  },
+  mutations: {
+    check_is_open_source(state) {
+      if (window.location && window.location.hostname == "127.0.0.1") {
+        state.is_open_source = true
+        }
+      else {
+        state.is_open_source = false
+      }
+    },
+  }
+}
+
 const modulesToOmit = ['public_project', 'network']
 const my_store = new Vuex.Store({
   modules: {
@@ -788,15 +791,15 @@ const my_store = new Vuex.Store({
     project_list: project_list,
     ai: ai,
     labels: labels,
-    annotation_assignment: annotation_assignment,
-    annotation_project: annotation_project,
     video: video,
     job: job,
     connection: connection,
     input: input,
     clipboard: clipboard,
     public_project: public_project,
-    ui_schema: ui_schema
+    ui_schema: ui_schema,
+    snackbar: snackbar,
+    system: system
   },
   plugins: [createPersistedState({
 
@@ -815,5 +818,6 @@ const my_store = new Vuex.Store({
 if (window.Cypress) {
   window.__store__ = my_store
 }
+
 
 export default my_store

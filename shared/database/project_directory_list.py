@@ -27,6 +27,15 @@ class Project_Directory_List(Base):
     created_time = Column(DateTime, default=datetime.datetime.utcnow)
     last_time = Column(DateTime, onupdate=datetime.datetime.utcnow)
 
+    @staticmethod
+    def get_by_name(session, project_id, name):
+        query = session.query(Project_Directory_List).filter(
+            or_(Project_Directory_List.archived == False, Project_Directory_List.archived == None),
+            Project_Directory_List.nickname == name,
+            Project_Directory_List.project_id == project_id
+        )
+        return query.first()
+
     def get_by_project(
             session,
             project_id,

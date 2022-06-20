@@ -15,7 +15,10 @@ class ConnectorManager:
         'amazon_aws': 'S3Connector',
         'labelbox': 'LabelboxConnector',
         'datasaur': 'DatasaurConnector',
-        'scale_ai': 'ScaleAIConnector'
+        'scale_ai': 'ScaleAIConnector',
+        'minio': 'MinioConnector',
+        'microsoft_azure_text_analytics': 'AzureConnectorTextAnalytics',
+
     }
 
     def __init__(self, connection=None, session=None, integration_name=None):
@@ -60,7 +63,8 @@ class ConnectorManager:
             'client_email': self.connection.account_email,
             'client_id': self.connection.private_id,
             'client_secret': connection_operations.get_secret(),
-            'project_id': self.connection.project_id_external
+            'project_id': self.connection.project_id_external,
+            'private_host' : self.connection.private_host
         }
         config_data = {'project_string_id': self.connection.project.project_string_id}
         connector = connector_class(auth_data=auth_data, config_data=config_data)

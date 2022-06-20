@@ -1,22 +1,21 @@
 from shared.database.common import *
+from typing import List
+from sqlalchemy_serializer import SerializerMixin
+from sqlalchemy.dialects.postgresql import JSONB
 
-class Action_Template(Base):
+
+class Action_Template(Base, SerializerMixin):
     """
-
-    For adding more information to action kind.
-    ie the "kind" may be "brain"
-    and there is a Action_Template.kind == "brain".
-
-    The goal is to be able to have say a list of things a user
-    can select from,
-    and add more stuff here over time (ie if a kind is available)
-    or available for certain users etc...
-
-    Called templated and not kind since Action.kind is already reserved,
-    it's a Template of Action Kinds.
-
-    For now templates are assumed to be global,
-    but in future could have per project or custom made ones
+        This represents any of the possible "step" options when building a flow.
+        For example:
+            - Prelabel Data
+            - Add to Task Template
+            - Send Email
+            - Post to Webhook
+        Most of these are added as part of the alembic migrations on database creation.
+        For example check:
+            alembic_2021_11_12_10_08_7059bb6bc019_add_default_action_templates.py
+        for the default templates available.
 
     """
 
@@ -25,12 +24,23 @@ class Action_Template(Base):
 
     public_name = Column(String())
 
+    icon = Column(String())
+
+    description = Column(String())
+
+    trigger_data = Column(MutableDict.as_mutable(JSONB))
+
+    condition_data = Column(MutableDict.as_mutable(JSONB))
+
+    completion_condition_data = Column(MutableDict.as_mutable(JSONB))
+
     # Kind matches Action.kind
     kind = Column(String())
 
     category = Column(String())
 
     is_available = Column(Boolean, default = True)
+    is_global = Column(Boolean, default = True)
 
     # Future if we allow non global templates
     # Could store contraints here?
@@ -51,6 +61,14 @@ class Action_Template(Base):
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
     @staticmethod
+    def list(session) -> List["Action_Template"]:
+        """
+            Returns all Action templates available in the installation.
+        """
+
+        return session.query(Action_Template).all()
+
+    @staticmethod
     def get_by_kind(session,
                     kind):
         """
@@ -67,13 +85,40 @@ class Action_Template(Base):
             Action_Template.kind == kind).first()
 
     @staticmethod
-    def new(session, public_name, kind, category):
+    def get_by_id(session, id):
+        return session.query(Action_Template).filter(
+            Action_Template.id == id).first()
+
+    @staticmethod
+    def new(session,
+            public_name,
+            icon,
+            description,
+            kind,
+            category,
+            trigger_data,
+            condition_data,
+            completion_condition_data,
+            is_global = True):
         result = Action_Template(
             public_name = public_name,
             kind = kind,
-            category = category
+            category = category,
+            icon = icon,
+            description = description,
+            trigger_data = trigger_data,
+            condition_data = condition_data,
+            completion_condition_data = completion_condition_data,
+            is_global = is_global,
         )
 
         session.add(result)
         session.flush()
         return result
+
+    def serialize(self):
+        data = self.to_dict(rules = (
+            '-member_created',
+            '-member_updated'))
+
+        return data

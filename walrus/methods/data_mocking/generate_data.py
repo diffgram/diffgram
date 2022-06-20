@@ -6,7 +6,8 @@ from shared.database.task.job.job_working_dir import JobWorkingDir
 from sqlalchemy.orm import Session
 from methods.input.packet import enqueue_packet
 from shared.database.input import Input
-from shared.database.label import Label
+from shared.database.labels.label import Label
+from shared.database.labels.label_schema import LabelSchema
 from methods.input.process_media import Process_Media
 from shared.utils.job_dir_sync_utils import JobDirectorySyncManager
 from shared.regular.regular_methods import commit_with_rollback
@@ -44,6 +45,12 @@ data_gen_spec_list = [
     {
         'num_files': {
             'default': 3,
+            'kind': int,
+            'required': False
+        }
+    },
+    {
+        'schema_id': {
             'kind': int,
             'required': False
         }
@@ -117,6 +124,7 @@ def mock_generate_data_api():
 
 
 def shared_data_gen(session, project, input):
+    print('shared_data_gen', project, input)
     data_mocker = DiffgramDataMocker(session = session)
     if input['data_type'] == 'dataset':
         dataset = WorkingDir.get(session = session,
@@ -125,7 +133,7 @@ def shared_data_gen(session, project, input):
         data_mocker.generate_test_data_on_dataset(dataset = dataset)
 
     elif input['data_type'] == 'label':
-        data_mocker.generate_sample_label_files(project = project)
+        data_mocker.generate_sample_label_files(project = project, schema_id = input['schema_id'])
 
     elif input['data_type'] == 'task_template':
         task_template = data_mocker.generate_test_data_for_task_templates(
@@ -180,13 +188,10 @@ class DiffgramDataMocker:
 
         label_file_id = label_file_list[0].id
 
-        print(len(task_list))
         for task in task_list:
-            print(task.id, task.project_id)
             for i in range(count_per_task):
                 self.generate_instance(task, member_created_id, instance_type = "box", label_file_id = label_file_id)
 
-        print("Complete")
 
     def generate_instance(self, task, member_created_id, instance_type, label_file_id):
 
@@ -234,13 +239,14 @@ class DiffgramDataMocker:
             project = Project()
             self.session.add(project)
             self.session.flush()
-            print(project)
             mock_dataset = WorkingDir.new_blank_directory(
                 self.session, project_id = project.id, nickname = mock_dir_name)
             self.generate_test_data_on_dataset(dataset = mock_dataset, num_files = num_files)
-
+            # In this case we need to for process_media to finish uploading to that file_list query below return files.
+            # This is not a best practice, but this is only for testing mock data so its not that important.
+            time.sleep(10)
+            regular_methods.commit_with_rollback(self.session)
         elif num_files > self.NUM_IMAGES:
-            print("gen new ones")
             self.generate_test_data_on_dataset(dataset = mock_dataset, num_files = num_files)
 
         files_list = WorkingDirFileLink.file_list(
@@ -249,7 +255,6 @@ class DiffgramDataMocker:
             root_files_only = True,
             limit = num_files,
         )
-
         for file in files_list:
             new_file = file_transfer_core(
                 session = self.session,
@@ -270,7 +275,11 @@ class DiffgramDataMocker:
             file.project = dataset.project
             self.session.add(file)
 
-    def generate_sample_label_files(self, project):
+    def generate_sample_label_files(self, project, schema_id = None):
+        if schema_id is None:
+            schema = LabelSchema.get_default(session = self.session, project_id = project.id)
+        else:
+            schema = LabelSchema.get_by_id(self.session, id = schema_id, project_id = project.id)
         NUM_LABELS = 3
         label_files = []
         default_dir = self.session.query(WorkingDir).filter(WorkingDir.nickname == 'Default',
@@ -278,7 +287,6 @@ class DiffgramDataMocker:
         if default_dir is None:
             # Fallback to default directory on project.
             default_dir = project.directory_default
-
         rand_int_0_255 = lambda: random.randint(0, 255)
         for i in range(0, NUM_LABELS):
             r = rand_int_0_255()    # red
@@ -295,12 +303,15 @@ class DiffgramDataMocker:
                     'a': 1  # alpha
                 }
             }
-
+            member = get_member(session = self.session)
+            if not member:
+                admin = self.session.query(User).filter(
+                    User.is_super_admin == True
+                ).first()
+                member = admin.member
             label_name = f"Diffgram Sample Label {i + 1}"
             label = self.session.query(Label).filter(
-                Label.name == label_name,
-                Label.default_sequences_to_single_frame == False
-            ).first()
+                Label.name == label_name).first()
             if label:
                 existing_label_file = self.session.query(File).join(WorkingDirFileLink).filter(
                     File.type == "label",
@@ -310,16 +321,19 @@ class DiffgramDataMocker:
                     File.state != 'removed'
                 ).first()
                 if existing_label_file:
+                    schema.add_label_file(session = self.session, label_file_id = existing_label_file.id, member_created_id = member.id)
                     label_files.append(existing_label_file)
                     continue
+
             label_file = File.new_label_file(
                 session = self.session,
                 working_dir_id = default_dir.id,
                 name = label_name,
                 colour = colour,
-                project = project
+                project = project,
+                schema = schema,
+                member = member
             )
-
             if project.directory_default.label_file_colour_map is None:
                 project.directory_default.label_file_colour_map = {}
 
@@ -356,7 +370,6 @@ class DiffgramDataMocker:
 
         project.set_cache_key_dirty('directory_list')
         self.session.add(project)
-
         return working_dir, False
 
     def generate_sample_files_for_dataset(self, dataset):
@@ -415,6 +428,7 @@ class DiffgramDataMocker:
 
     def __create_sample_task_template(self, name, project, reviews, member = None):
         user = None
+        print('__create_sample_task_template', name, project, reviews, member)
         if member:
             user = User.get_by_member_id(self.session, member_id = member.id)
         task_template = Job()
@@ -427,6 +441,9 @@ class DiffgramDataMocker:
         task_template.stat_count_complete = 0
         task_template.allow_reviews = reviews['allow_reviews']
         task_template.review_chance = reviews['review_chance']
+        schema = self.session.query(LabelSchema).filter(LabelSchema.project_id == project.id,
+                                                        LabelSchema.name == 'Default Schema').first()
+        task_template.label_schema_id = schema.id
         directory = WorkingDir.new_blank_directory(session = self.session)
         task_template.directory = directory
         label_files = self.generate_sample_label_files(project = project)
@@ -440,6 +457,7 @@ class DiffgramDataMocker:
                                              log = regular_log.default())
 
         task_template.status = 'active'
+        print('STATUSS', task_template.status)
         self.session.add(task_template)
         self.session.flush()
         task_template_label_attach(self.session, task_template)

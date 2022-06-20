@@ -78,8 +78,6 @@ def transaction_list_core(session,
 
     query = query.order_by(Transaction.time_created.desc())
 
-    # print(query)
-
     transaction_list = query.all()
 
     out_list = []

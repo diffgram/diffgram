@@ -120,7 +120,7 @@
           },
 
           selected: [],
-          event_list: [],
+          workflow_run_list: [],
 
           loading: false,
 

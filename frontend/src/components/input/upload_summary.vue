@@ -271,7 +271,6 @@
               type: "application/json;charset=utf-8"
             });
             const total_size = blob.size;
-            console.log('total size', total_size, chunk_size_bytes)
             if (total_size < chunk_size_bytes){
               const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/input-batch/new`, {
                 pre_labeled_data: {...labels_payload}

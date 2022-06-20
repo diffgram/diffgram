@@ -2,7 +2,9 @@
 from shared.database.common import *
 from shared.database.attribute.attribute_template import Attribute_Template
 from shared.database.attribute.attribute_template_group_to_file import Attribute_Template_Group_to_File
-
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import joinedload
+from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
 
 class Attribute_Template_Group(Base):
     """
@@ -26,7 +28,7 @@ class Attribute_Template_Group(Base):
     parent_id = Column(Integer, ForeignKey('attribute_template.id'))
     root_id = Column(Integer, ForeignKey('attribute_template_group.id'))
 
-    kind = Column(String())  # select_one, check_boxes, ...?
+    kind = Column(String())  # [select, multiple_select, radio, slider, treeview]
 
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")
@@ -54,39 +56,30 @@ class Attribute_Template_Group(Base):
                                         foreign_keys = [default_external_map_id])
 
     is_global = Column(Boolean, default = False)
-    global_type = Column(String(), default = 'file')        # Expansion direction eg for frame, series, etc.
-
+    global_type = Column(String(), default = 'file')  # Expansion direction eg for frame, series, etc.
 
     @staticmethod
     def new(session,
             project,
-            member):
+            member,
+            schema):
 
-        # Singleton ish concept, only ever 1 new() one to return
-        # (that hasn't been modified, so seperate drafts are still
-        # allowed
+        if schema is None:
+            raise Exception("schema Required")
 
-        # If we have an existing one
-        attribute_template_group = session.query(Attribute_Template_Group).filter(
-            Attribute_Template_Group.is_new == True,
-            Attribute_Template_Group.archived == False,
-            Attribute_Template_Group.member_created == member,
-            Attribute_Template_Group.project == project).first()
+        if member is None:
+            raise Exception("member Required")
 
-        if attribute_template_group:
-            return attribute_template_group
-
-        # Else create a new one
         attribute_template_group = Attribute_Template_Group(
             project = project,
             member_created = member)
 
-        # Not sure if fan of forcing adding to session here
-        # BUT since we potentialy return an existing object it would
-        # Be strange to require it after
-
         session.add(attribute_template_group)
         session.flush()
+
+        schema.add_attribute_group(session = session,
+                                   attribute_group_id = attribute_template_group.id,
+                                   member_created_id = member.id)
 
         return attribute_template_group
 
@@ -109,7 +102,7 @@ class Attribute_Template_Group(Base):
             'max_value': self.max_value,
             'default_id': self.default_id,
             'is_global': self.is_global,
-            'global_type': self.global_type
+            'global_type': self.global_type,
         }
 
     def serialize_for_export(self):
@@ -129,7 +122,7 @@ class Attribute_Template_Group(Base):
             'min_value': self.min_value,
             'max_value': self.max_value,
             'is_global': self.is_global,
-            'global_type': self.global_type
+            'global_type': self.global_type,
         }
 
     def serialize_with_attributes_and_labels(self, session):
@@ -137,7 +130,7 @@ class Attribute_Template_Group(Base):
         data = self.serialize_with_attributes(session)
         rels = Attribute_Template_Group_to_File.get_all_from_group(session = session, group_id = self.id)
         label_file_list = [rel.file for rel in rels]
-        data['label_file_list'] = [x.serialize_with_label() for x in label_file_list]
+        data['label_file_list'] = [x.serialize_with_label(session = session) for x in label_file_list]
         return data
 
     def serialize_with_attributes(
@@ -162,12 +155,11 @@ class Attribute_Template_Group(Base):
 
         return group
 
-
     @staticmethod
     def get_globals(
-            session,
-            project_id,
-            is_global = True):
+        session,
+        project_id,
+        is_global = True):
 
         query = session.query(Attribute_Template_Group)
 
@@ -175,7 +167,6 @@ class Attribute_Template_Group(Base):
         query = query.filter(Attribute_Template_Group.is_global == is_global)
 
         return query.all()
-
 
     @staticmethod
     def from_file_attribute_group_list_serialize(
@@ -215,6 +206,15 @@ class Attribute_Template_Group(Base):
 
         return query.all()
 
+    @staticmethod
+    def get_group_relations_list(session, file_id_list):
+
+        result = session.query(Attribute_Template_Group_to_File).options(
+            joinedload(Attribute_Template_Group_to_File.attribute_template_group)).\
+            filter(Attribute_Template_Group_to_File.file_id.in_(file_id_list)).all()
+
+        return result
+
     # General from project or group id
     @staticmethod
     def list(session,
@@ -222,9 +222,11 @@ class Attribute_Template_Group(Base):
              project_id,
              archived = False,
              recursive = False,
-             limit = 100,
+             limit = None,
              return_kind = "objects",
              is_root = None,
+             schema_id = None,
+             group_id_list = None,
              is_global = None
              ):
         """
@@ -234,9 +236,11 @@ class Attribute_Template_Group(Base):
         """
 
         query = session.query(Attribute_Template_Group).filter(
-                Attribute_Template_Group.project_id == project_id,
-                Attribute_Template_Group.archived == archived)
+            Attribute_Template_Group.project_id == project_id,
+            Attribute_Template_Group.archived == archived)
 
+        if group_id_list:
+            query = query.filter(Attribute_Template_Group.id.in_(group_id_list))
         if group_id:
             query = query.filter(Attribute_Template_Group.id == group_id)
 
@@ -246,10 +250,19 @@ class Attribute_Template_Group(Base):
         if is_root:
             query = query.filter(Attribute_Template_Group.is_root == is_root)
 
+        if schema_id:
+            schema = LabelSchema.get_by_id(session, schema_id, project_id)
+            attr_group_list = schema.get_attribute_groups(session)
+            group_ids = [g.id for g in attr_group_list]
+            query = query.filter(
+                Attribute_Template_Group.id.in_(group_ids)
+            )
         # Future
         if recursive == True:
+            if limit:
+                query = query.limit(limit)
 
-            root_group_list = query.limit(limit).all()
+            root_group_list = query.all()
 
             for group in root_group_list:
                 # Caching / have_children? flag on attribute group?
@@ -270,12 +283,14 @@ class Attribute_Template_Group(Base):
 
                 return serialized
         ## end future
-
+        if limit:
+            query = query.limit(limit)
         if return_kind == "count":
-            return query.limit(limit).count()
+            return query.count()
 
         if return_kind == "objects":
-            return query.limit(limit).all()
+            return query.all()
+
 
     @staticmethod
     def get_by_id(session,
@@ -293,6 +308,40 @@ class Attribute_Template_Group(Base):
             Attribute_Template_Group.project_id == project_id).first()
 
     # WIP
+
+    @staticmethod
+    def get_by_name_and_label(session, project_id, name, label_file_id):
+        result_attrs = session.query(Attribute_Template_Group).filter(
+            Attribute_Template_Group.project_id == project_id,
+            Attribute_Template_Group.name == name,
+            Attribute_Template_Group.archived == False
+        ).all()
+
+        id_list = []
+        for elm in result_attrs:
+            id_list.append(elm.id)
+
+        links = session.query(Attribute_Template_Group_to_File).filter(
+            Attribute_Template_Group_to_File.file_id == label_file_id,
+            Attribute_Template_Group_to_File.attribute_template_group_id.in_(id_list)
+        )
+
+        result = links.first()
+        if result:
+            return result.attribute_template_group
+
+        return None
+
+    @staticmethod
+    def get_by_name_and_type(session, project_id, name, kind):
+        result = session.query(Attribute_Template_Group).filter(
+            Attribute_Template_Group.project_id == project_id,
+            Attribute_Template_Group.name == name,
+            Attribute_Template_Group.kind == kind,
+            Attribute_Template_Group.archived == False
+        ).first()
+
+        return result
 
     def recurse_graph(
         session,
@@ -324,8 +373,6 @@ class Attribute_Template_Group(Base):
 
         for template in attribute_template_list:
 
-            print("Looking a template group")
-
             # Somehow append group to list.
             # TODO group serialize handles serializeing templates within group
 
@@ -336,7 +383,6 @@ class Attribute_Template_Group(Base):
             # Depth limit.
 
             if template.kind == "children":
-                print("Children, recusing graph")
 
                 child_group_list = Attribute_Template_Group.child_group_list(
                     session = session,

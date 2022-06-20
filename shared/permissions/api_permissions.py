@@ -41,9 +41,7 @@ class API_Permissions():
         """
 
         # Gets actual auth object
-
         auth = Auth_api.get(session, client_id)
-
         if auth is None:
             return False
 

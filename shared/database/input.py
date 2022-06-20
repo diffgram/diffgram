@@ -32,7 +32,7 @@ class Input(Base):
 
     time_last_attempted = Column(Integer)
 
-    # TODO list available modes here...
+    # ["copy_file", "update", "update_with_existing", ""]
     mode = Column(String) 
 
     url = Column(String())
@@ -62,6 +62,8 @@ class Input(Base):
     size = Column(Integer)
 
     archived = Column(Boolean, default=False)
+
+    auto_correct_instances_from_image_metadata = Column(Boolean, default=False)
 
 
     raw_data_blob_path = Column(String())
@@ -111,6 +113,9 @@ class Input(Base):
     sequence_map = Column(MutableDict.as_mutable(JSONEncodedDict))
 
     file_metadata = Column(MutableDict.as_mutable(JSONB))
+
+    # For storing things like width, height, opacity, etc...
+    image_metadata = Column(MutableDict.as_mutable(JSONB))
 
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys=[task_id])

@@ -18,10 +18,19 @@
             {{verify_error}}
           </v-alert>
 
+          <v_resend_verify_email v-if="!auth_code" />
+
         </v-card-text>
 
         <v-card-actions>
-          <v_resend_verify_email v-if="!auth_code" />
+
+          <v-btn large
+                color="primary"
+                :disabled="$store.state.user.current.security_email_verified != true"
+                @click="$router.push('/welcome/adventure')">
+            Resume Onboarding
+          </v-btn>
+
         </v-card-actions>
 
       </v-card>

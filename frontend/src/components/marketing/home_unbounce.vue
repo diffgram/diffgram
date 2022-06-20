@@ -1,22 +1,6 @@
 <template>
 <div v-if="!loading">
 
-<!--<iframe-->
-<!--  src="https://get.diffgram.com"-->
-<!--  style="-->
-<!--    position: fixed;-->
-<!--    top: 50px;-->
-<!--    bottom: 100px;-->
-<!--    right: 0px;-->
-<!--    width: 100%;-->
-<!--    border: none;-->
-<!--    margin: 0;-->
-<!--    padding: 0;-->
-<!--    overflow: auto;-->
-<!--    z-index: 0;-->
-<!--    height: 100%;-->
-<!--  ">-->
-<!--</iframe>-->
 
 </div>
 </template>
@@ -39,7 +23,11 @@ export default Vue.extend( {
   async created() {
     this.loading = true
     console.log(this.$route)
-    let result = await is_open_source();
+    let [result, error] = await is_open_source();
+    if(error){
+      this.$router.push('/user/login')
+      return
+    }
     console.log('is_open_source', result)
     if(this.$route.path === '/' && !result.is_open_source){
       window.location.href = 'https://diffgram.com/main/'

@@ -185,8 +185,9 @@ export default Vue.extend({
   created() {
 
   },
-  mounted() {
-    this.refresh()
+  async mounted() {
+    await this.refresh();
+    this.update_current(this.$props.current_ui_schema_prop)
   },
   computed: {
     ui_schema_list_computed() {
@@ -215,12 +216,23 @@ export default Vue.extend({
 
   watch: {
     current_ui_schema_prop (ui_schema) {
-      this.internal_ui_schema_list.splice(0, 0, ui_schema)
-      this.current_ui_schema = ui_schema
+      this.update_current(ui_schema)
     }
   },
 
   methods: {
+    update_current: function(ui_schema){
+      console.log('AAAAAA', ui_schema, this.internal_ui_schema_list)
+      this.internal_ui_schema_list.splice(0, 0, ui_schema)
+      this.current_ui_schema = ui_schema
+    },
+    set_ui_schema: function(uis){
+      let new_schema = this.internal_ui_schema_list.find(elm => elm.id === uis.id)
+      if(new_schema){
+        this.current_ui_schema = new_schema;
+      }
+
+    },
     async refresh(){
 
       this.loading = true;

@@ -766,6 +766,9 @@ export default Vue.extend( {
       if (this.go_to_keyframe_loading == true) { // swallow spamming
         return
       }
+      if(frame < 0 ){
+        return
+      }
       /* We currently emit frame updates while playing
        * So this way we know if a specific frame is requested.
        * Usually this is in the context of a user request.
@@ -873,11 +876,11 @@ export default Vue.extend( {
       this.refresh = Date.now()
     },
 
-    move_frame: function(direction) {
+    move_frame: async function(direction) {
       // direction is an int where:
       // -1 to go back, 1 go forward
       let new_frame = this.video_current_frame_guess + direction
-      this.go_to_keyframe(new_frame)
+      await this.go_to_keyframe(new_frame)
       // Better reuse of existing go to keyframe function.
 
     },

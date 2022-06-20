@@ -1,6 +1,5 @@
 from walrus.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
-from walrus.methods.task.task_template import task_template_launch_handler
 from walrus.methods.text_data.text_tokenizer import TextTokenizer
 from unittest.mock import patch
 from nltk.tokenize import word_tokenize, sent_tokenize
@@ -65,7 +64,9 @@ class TestTextTokenizer(testing_setup.DiffgramBaseTestCase):
                           {'value': '.', 'tag': ''},
                           {'value': 'Hello', 'tag': ''},
                           {'value': 'world', 'tag': ''},
-                          {'value': '.', 'tag': ''}]
+                          {'value': '.', 'tag': ''},
+                          {'value': '\n', 'tag': ''},
+                          ]
                          )
 
     def test_tokenize_sentences(self):

@@ -1,10 +1,10 @@
-# OPENCORE - ADD
 from shared.database.auth.api import Auth_api
 from shared.database.auth.member import Member
 from shared.database.project import Project
 import random
 import string
 from shared.database import hashing_functions
+from shared.regular import regular_methods
 
 def create_random_string(length):
     return ''.join(random.choice(string.ascii_lowercase + \
@@ -16,7 +16,7 @@ def add_auth_to_session(session, user):
     # Set the user session for request permissions.
     session['user_id'] = cookie_hash
     return session
-def create_project_auth(project, session):
+def create_project_auth(project, session, role = "Editor"):
     auth = Auth_api()
     session.add(auth)
 
@@ -29,7 +29,8 @@ def create_project_auth(project, session):
     member.auth_api = auth
     auth.member_id = member.id
 
-    auth.permission_level = 'Editor'
+
+    auth.permission_level = role
     auth.project_string_id = project.project_string_id
     auth.is_live = True
 
@@ -43,7 +44,5 @@ def create_project_auth(project, session):
 
     auth.project_id = project.id
 
-    # Careful we are placing this in the member not the auth
-    # for now...
-    session.commit()
+    regular_methods.commit_with_rollback(session)
     return auth

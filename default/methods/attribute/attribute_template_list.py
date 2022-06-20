@@ -18,6 +18,14 @@ def api_attribute_template_list(project_string_id):
     spec_list = [
         {'group_id': None},
         {'mode': None},
+        {'schema_id': {
+            'required': False,
+            'type': int
+        }},
+        {'group_id_list': {
+            'required': False,
+            'type': list
+        }},
         {'with_labels': None}]
 
     log, input, untrusted_input = regular_input.master(request = request,
@@ -38,8 +46,11 @@ def api_attribute_template_list(project_string_id):
         group_list = Attribute_Template_Group.list(
             session = session,
             group_id = input['group_id'],
+            schema_id = input['schema_id'],
+            group_id_list = input['group_id_list'],
             project_id = project.id,
-            return_kind = "objects"
+            return_kind = "objects",
+            limit = None
         )
 
         group_list_serialized = []

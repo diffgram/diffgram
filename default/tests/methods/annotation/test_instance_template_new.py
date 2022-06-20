@@ -32,6 +32,7 @@ class TeseInstanceTemplateNew(testing_setup.DiffgramBaseTestCase):
         self.project_data = project_data
 
     def test_new_instance_template_api(self):
+        schema = data_mocking.create_label_schema({'name': 'test', 'project_id': self.project.id}, self.session)
         request_data = {
             'instance_list': [
                 {
@@ -42,8 +43,10 @@ class TeseInstanceTemplateNew(testing_setup.DiffgramBaseTestCase):
             ],
             'name': 'my instance template',
             'reference_width': 600,
-            'reference_height': 800
+            'reference_height': 800,
+            'schema_id': schema.id
         }
+
 
         endpoint = f"/api/v1/project/{self.project.project_string_id}/instance-template/new"
         auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
@@ -76,6 +79,7 @@ class TeseInstanceTemplateNew(testing_setup.DiffgramBaseTestCase):
                 'edges': [{'from': 'abc', 'to': 'cde'}]
             }
         ]
+        schema = data_mocking.create_label_schema({'name': 'test', 'project_id': self.project.id}, self.session)
         reference_height = 800
         reference_width = 600
         name = 'test instance template'
@@ -89,6 +93,7 @@ class TeseInstanceTemplateNew(testing_setup.DiffgramBaseTestCase):
                                                                        instance_list,
                                                                        reference_height,
                                                                        reference_width,
+                                                                       schema_id = schema.id,
                                                                        log = regular_log.default())
         self.assertEqual(len(log['error'].keys()), 0)
         self.assertTrue('instance_list' in result)

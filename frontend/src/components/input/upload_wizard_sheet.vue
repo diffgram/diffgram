@@ -64,6 +64,8 @@
       >
       </v-progress-linear>
 
+      <status :show_detail="false"> </status>
+
       <v-stepper-items style="height: 100%">
         <v-stepper-content step="1" style="height: 100%">
           <div class="d-flex justify-center flex-column">
@@ -71,6 +73,7 @@
               <v-icon x-large color="primary">mdi-upload</v-icon>
               Welcome to the Diffgram Upload Wizard!
             </h1>
+
             <h3 class="text-center mb-12">Do you want to upload new data or update existing files?</h3>
 
             <div class="d-flex justify-space-around ">
@@ -183,6 +186,7 @@
             @current_directory="set_current_directory"
             @file_added="file_added"
             @file_removed="file_removed"
+            @declare_success="on_success_upload"
             ref="new_or_update_upload_screen"
             :initial_dataset="initial_dataset"
             :current_directory="current_directory"
@@ -257,6 +261,7 @@
             @created_batch="set_batch"
           ></upload_summary>
           <v_error_multiple :error="file_update_error"></v_error_multiple>
+
           <upload_progress
             v-if="upload_in_progress"
             :total_bytes="dropzone_total_file_size"
@@ -264,8 +269,9 @@
             :is_actively_sending="is_actively_sending"
             :currently_uploading="currently_uploading_bytes"
             :progress_percentage="progress_percentage"
+            :error="error_update_files || connection_upload_error"
+            :declare_success="declare_success"
             @close_wizard="close"
-            @success_upload="on_success_upload"
           >
 
           </upload_progress>
@@ -289,6 +295,7 @@
   import upload_progress from './upload_progress'
   import axios from '../../services/customInstance';
   import Vue from "vue";
+  import status from '../status'
 
   function get_initial_state() {
     const initial_state = {
@@ -303,6 +310,7 @@
       is_actively_sending: true,
 
       error_update_files: undefined,
+      connection_upload_error: undefined,
       batch: null,
       file_update_error: undefined,
       error_file_uploads: null,
@@ -312,6 +320,7 @@
       supported_video_files: ['video/mp4', 'video/x-msvideo', 'video/quicktime', 'video/x-m4v'],
       supported_image_files: ['image/jpg', 'image/jpeg', 'image/png'],
 
+      declare_success: false,
 
       diffgram_schema_mapping: {
         instance_type: null,
@@ -409,7 +418,8 @@
         instance_schema_mapper,
         diffgram_export_validator,
         new_or_update_upload_screen,
-        upload_progress
+        upload_progress,
+        status
       },
       props: {
         'project_string_id': {
@@ -522,10 +532,8 @@
 
       methods: {
         on_success_upload: function(){
-          this.is_open = false;
-          Object.assign(this.$data, get_initial_state());
+          this.declare_success = true
           this.$emit('upload_success')
-          this.$router.push({query: {}}).catch(()=>{});
         },
         update_is_actively_sending: function(is_actively_sending){
           this.is_actively_sending = is_actively_sending
@@ -563,6 +571,7 @@
           this.batch = batch;
         },
         error_upload_connections: function (error) {
+          console.error(error)
           this.connection_upload_error = error;
         },
 
@@ -573,6 +582,7 @@
           this.dropzone_total_file_size = 0;
         },
         file_removed: function(file){
+
           if (file.size && file.data_type != 'Annotations') {
             this.dropzone_total_file_size -= file.size;
           }

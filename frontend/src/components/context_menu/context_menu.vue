@@ -43,6 +43,11 @@
         default: null,
 
       },
+      'instance_focused_index': {
+        type: Number,
+        default: null,
+
+      },
       'instance_clipboard': {
         type: Object,
         default: null,
@@ -183,6 +188,14 @@
 
     },
     methods: {
+      on_click_stop_focus_instance: function(){
+        this.$emit('stop_focus_instance', this.instance_hover_index_locked);
+        this.close();
+      },
+      on_click_focus_instance: function(){
+        this.$emit('focus_instance', this.instance_hover_index_locked);
+        this.close();
+      },
       on_node_updated: function(){
         let instance_update = {
           index: this.instance_hover_index_locked,
@@ -250,6 +263,7 @@
       },
       show_instance_history_panel: function () {
         this.$emit('open_instance_history_panel', this.instance_hover_index_locked);
+        this.close();
       },
       close_instance_history_panel: function () {
         this.$emit('close_instance_history_panel', this.instance_hover_index_locked);
@@ -525,7 +539,42 @@
         </v-list-item-content>
       </v-list-item>
 
-
+      <v-list-item
+        v-if="instance_hover_index_locked != undefined && instance_focused_index == undefined"
+        dense
+        @click="on_click_focus_instance"
+      >
+        <v-list-item-icon>
+          <tooltip_icon
+            tooltip_message="Focus Instance"
+            icon="mdi-image-filter-center-focus-strong"
+            color="primary"
+          ></tooltip_icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Focus
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
+      <v-list-item
+        v-if="instance_hover_index_locked != undefined && instance_focused_index != undefined"
+        dense
+        @click="on_click_stop_focus_instance"
+      >
+        <v-list-item-icon>
+          <tooltip_icon
+            tooltip_message="Stop Focus Mode"
+            icon="mdi-television-stop"
+            color="primary"
+          ></tooltip_icon>
+        </v-list-item-icon>
+        <v-list-item-content>
+          <v-list-item-title class="pr-4">
+            Stop Focus Mode
+          </v-list-item-title>
+        </v-list-item-content>
+      </v-list-item>
       <v-list-item
         v-if="instance_hover_index_locked != null && !draw_mode"
         link
@@ -862,6 +911,7 @@
 
 
       <v-divider></v-divider>
+
 
       <v-list-item
         v-if="instance_hover_index_locked != undefined"

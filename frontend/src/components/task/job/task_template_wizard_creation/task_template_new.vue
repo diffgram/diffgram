@@ -1,5 +1,5 @@
 <template>
-  <div id="">
+  <div class="task-template-new-container">
     <main_menu> </main_menu>
     <v-toolbar
       class="mt-4 d-flex justify-space-between"
@@ -37,10 +37,10 @@
 
 <script lang="ts">
 import axios from "../../../../services/customInstance";
-import sillyname from "sillyname";
+
 import task_template_wizard from "./task_template_wizard";
 import {archive_task_template} from "./../../../../services/taskTemplateService";
-
+import {create_empty_job} from '../empty_job.js';
 import Vue from "vue";
 
 export default Vue.extend({
@@ -63,47 +63,14 @@ export default Vue.extend({
       this.$store.state.project.current.project_string_id + " (Project)";
     //this.$store.commit('set_project_string_id', this.project_string_id)
 
-    this.project_string_id = this.project_string_id_route;
 
-    if (!this.project_string_id) {
-      this.project_string_id = this.job.project_string_id;
-    }
     this.loading = false;
   },
   data() {
     return {
-      project_string_id: null,
       loading: false,
       mode: null,
-      job: {
-        name: sillyname().split(" ")[0],
-        label_mode: "closed_all_available",
-
-        loading: false,
-        passes_per_file: 1,
-        share_object: {
-          // TODO this may fail for org jobs? double check this.
-          text: String,
-          type: "project",
-        },
-        share: "project",
-        allow_reviews: false,
-        review_chance: 0,
-        instance_type: "box", //"box" or "polygon" or... "text"...
-        permission: "all_secure_users",
-        field: "Other",
-        category: "visual",
-        attached_directories_dict: { attached_directories_list: [] },
-        type: "Normal",
-        connector_data: {},
-        // default to no review while improving review system
-        review_by_human_freqeuncy: "No review", //'every_3rd_pass'
-        td_api_trainer_basic_training: false,
-        file_handling: "use_existing",
-        interface_connection: undefined,
-        member_list_ids: ["all"],
-        reviewer_list_ids: ["all"],
-      },
+      job: create_empty_job(),
       job_id: null,
     };
   },
@@ -121,6 +88,14 @@ export default Vue.extend({
         },
       ];
     },
+    project_string_id: function(){
+      let project_string_id = this.project_string_id_route;
+
+      if (!project_string_id) {
+        project_string_id = this.job.project_string_id;
+      }
+      return project_string_id
+    }
   },
   methods: {
     cancel_job_api: async function (mode) {
@@ -159,9 +134,12 @@ export default Vue.extend({
         );
         if (response.data.log.success == true) {
           this.job = response.data.job;
-          this.job.label_file_list = this.job.label_file_list.map((elm) => ({
-            id: elm,
-          }));
+          if(this.job.label_file_list){
+            this.job.label_file_list = this.job.label_file_list.map((elm) => ({
+              id: elm,
+            }));
+          }
+
           this.job.original_attached_directories_dict = {
             ...this.job.attached_directories_dict,
           };
@@ -183,3 +161,9 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style>
+.task-template-new-container{
+  height: 100%;
+}
+</style>

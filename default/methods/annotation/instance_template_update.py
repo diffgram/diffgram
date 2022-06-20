@@ -29,6 +29,10 @@ def update_instance_template_api(project_string_id, instance_template_id):
             'kind': str,
             'required': False
         }},
+        {"mode": {
+            'kind': str,
+            'required': False
+        }},
     ]
 
     log, input, untrusted_input = regular_input.master(
@@ -58,6 +62,7 @@ def update_instance_template_api(project_string_id, instance_template_id):
             project = project,
             instance_list = input['instance_list'],
             status = input['status'],
+            mode = input['mode'],
             instance_template_id = instance_template_id
         )
         if len(log["error"].keys()) >= 1:
@@ -71,6 +76,7 @@ def update_instance_template_core(session,
                                   project,
                                   instance_template_id,
                                   name = None,
+                                  mode = None,
                                   instance_list = None,
                                   status = None,
                                   log = regular_log.default()):
@@ -109,6 +115,8 @@ def update_instance_template_core(session,
     )
     if name is not None:
         instance_template.name = name
+    if mode is not None:
+        instance_template.mode = mode
     if status is not None:
         instance_template.status = status
     session.add(instance_template)

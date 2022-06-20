@@ -71,6 +71,7 @@ class WorkingDir(Base):
                                         uselist=False,
                                         foreign_keys=[default_external_map_id])
 
+    @staticmethod
     def new_user_working_dir(
             session,
             branch,  # branch is sorta deprecated...
@@ -560,19 +561,9 @@ class WorkingDirFileLink(Base):
         # Would prefer a better way to handle this
         # BUT at least this is all in one query...
         if isinstance(type, list):
-            if "text" in type:
-                query = query.filter(
-                    or_(
-                        and_(File.type == "image", File.video_id == None),
-                        File.type == "video",
-                        File.type == "text",
-                        File.type == "sensor_fusion"
-                    )
-                )
-            else:
-                query = query.filter(
-                    File.type.in_(type)
-                )
+            query = query.filter(
+                File.type.in_(type)
+            )
 
         if original_filename is not None:
             if original_filename_match_type == "ilike":
@@ -816,7 +807,7 @@ class WorkingDirFileLink(Base):
         # May have the file link
         existing_file_link = WorkingDirFileLink.file_link(
             session, directory.id, file_id)
-
+        print('existing_file_link', existing_file_link)
         if add_or_remove == "add":
 
             # Note info not error.
