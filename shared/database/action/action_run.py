@@ -68,10 +68,10 @@ class ActionRun(Base):
 
     @staticmethod
     def new(session,
-            workflow_run_id,
             workflow_id,
             action_id,
-            file_id,
+            file_id = None,
+            workflow_run_id = None,
             project_id = None,
             org = None,
             kind = None

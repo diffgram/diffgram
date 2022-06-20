@@ -82,6 +82,8 @@ class ActionRunner:
                 workflow_id = self.action.workflow_id,
                 action_id = self.action.id,
                 project_id = self.action.project_id,
+                workflow_run_id = None,
+                file_id = None
             )
 
             allow = self.execute_pre_conditions(session)

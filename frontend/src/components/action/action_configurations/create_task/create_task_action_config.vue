@@ -1,13 +1,15 @@
 <template>
   <div class="d-flex flex-column" style="height: 100%">
-    <action_config_wizard_base
-      v-if="display_mode === 'wizard'"
-      :action="action"
-      :actions_list="actions_list"
-      :steps_config_prop="steps_config"
+
+    <action_config_base
+      :project_string_id="project_string_id"
+      :display_mode="display_mode"
       @open_action_selector="$emit('open_action_selector')"
-      :project_string_id="project_string_id">
-      <template v-slot:action_config>
+      :steps_config_prop="steps_config"
+      :actions_list="actions_list"
+      :action="action">
+
+      <template v-slot:wizard_action_config>
         <task_template_config_details
           :action="action"
           :project_string_id="project_string_id"
@@ -15,45 +17,34 @@
           @action_updated="on_action_updated"
         ></task_template_config_details>
       </template>
-    </action_config_wizard_base>
 
-
-    <action_config_form_base
-      v-if="display_mode === 'form'"
-      :project_string_id="project_string_id"
-      :action="action"
-      :actions_list="actions_list"
-    >
-      <template v-slot:action_config>
+      <template v-slot:form_action_config>
         <task_template_config_details
           :action="action"
           :project_string_id="project_string_id"
           :actions_list="actions_list"
         ></task_template_config_details>
       </template>
-    </action_config_form_base>
 
-    <div v-if="display_mode === 'ongoing_usage'">
-      <job_detail
+      <template v-slot:ongoing_usage>
+        <job_detail
           v-if="action.config_data"
           :job_id="action.config_data.task_template_id">
-      </job_detail>
-    </div>
+        </job_detail>
+      </template>
 
-
-
+    </action_config_base>
   </div>
 </template>
 
 <script>
 import task_template_wizard from '../../../task/job/task_template_wizard_creation/task_template_wizard'
-import {create_empty_job} from '../../../task/job/empty_job'
-import {Action} from './../../Action'
 import Job_detail from "@/components/task/job/job_detail";
 import task_template_config_details from './task_template_config_details';
 import Action_config_wizard_base from "@/components/action/actions_config_base/action_config_wizard_base";
 import action_config_form_base from "@/components/action/actions_config_base/action_config_form_base";
 import {default_steps_config} from "@/components/action/actions_config_base/default_steps_config";
+import action_config_base from "@/components/action/actions_config_base/action_config_base";
 import action_config_mixin from "../action_config_mixin";
 export default {
   name: "create_task_action_config",
@@ -76,6 +67,7 @@ export default {
       number: 3,
     }
   },
+
   data: function(){
     return{
       job_selected: null,
@@ -87,6 +79,7 @@ export default {
   },
   components: {
     Action_config_wizard_base,
+    action_config_base,
     action_config_form_base,
     task_template_config_details,
     Job_detail,

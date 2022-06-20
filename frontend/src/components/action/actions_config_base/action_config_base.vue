@@ -10,17 +10,18 @@
       <template v-slot:triggers>
         <slot name="wizard_triggers"></slot>
       </template>
+      <template v-slot:pre_conditions>
+        <slot name="wizard_pre_conditions"></slot>
+      </template>
       <template v-slot:action_config>
-        <slot name="wizard_pre_conditions">
+        <slot name="wizard_action_config">
           Your Action specific configuration goes here.
         </slot>
       </template>
-      <template v-slot:action_config>
+      <template v-slot:completion_trigger>
         <slot name="wizard_completion_trigger"></slot>
       </template>
-      <template v-slot:action_config>
-        <slot name="wizard_action_config"></slot>
-      </template>
+
     </action_config_wizard_base>
 
 
@@ -30,17 +31,28 @@
       :action="action"
       :actions_list="actions_list"
     >
-      <template v-slot:action_config>
-        <task_template_config_details
-          :action="action"
-          :project_string_id="project_string_id"
-          :actions_list="actions_list"
-        ></task_template_config_details>
+      <template v-slot:triggers>
+        <slot name="form_triggers"></slot>
       </template>
+      <template v-slot:pre_conditions>
+        <slot name="form_pre_conditions"></slot>
+      </template>
+      <template v-slot:action_config>
+        <slot name="form_action_config">
+          Your Action specific configuration goes here.
+        </slot>
+      </template>
+      <template v-slot:completion_trigger>
+        <slot name="form_completion_trigger"></slot>
+      </template>
+
     </action_config_form_base>
 
     <div v-if="display_mode === 'ongoing_usage'">
-      <h1> YOUR ONGOING USAGE TEMPLATE CODE GOES HERE</h1>
+      <slot name="ongoing_usage">
+        <h1> YOUR ONGOING USAGE TEMPLATE CODE GOES HERE</h1>
+      </slot>
+
     </div>
 
 
@@ -56,22 +68,26 @@ import action_config_mixin from "../action_configurations/action_config_mixin.js
 export default {
   name: "action_config_base",
   mixins: [action_config_mixin],
+  props:{
+    steps_config_prop: {
+      type: Object,
+      required: false
+    }
+  },
   mounted() {
-    this.steps_config = {
-      ...default_steps_config
+    this.steps_config = {...default_steps_config}
+    if (this.steps_config_prop){
+      this.steps_config = {...this.steps_config_prop}
     }
-    this.steps_config.pre_conditions = {
-      ...this.steps_config.pre_conditions,
-      hide: true,
-      number: -1,
-    }
-    this.steps_config.action_config = {
-      ...this.steps_config.action_config,
-      number: 2,
-    }
-    this.steps_config.completion_trigger = {
-      ...this.steps_config.completion_trigger,
-      number: 3,
+  },
+  watch:{
+    steps_config_prop:{
+      deep: true,
+      handler: function(new_val, old_val){
+        if(new_val){
+          this.steps_config = {...new_val}
+        }
+      }
     }
   },
   data: function(){
@@ -86,9 +102,6 @@ export default {
   components: {
     Action_config_wizard_base,
     action_config_form_base,
-    task_template_config_details,
-    Job_detail,
-    task_template_wizard: task_template_wizard,
   },
   methods: {
 
