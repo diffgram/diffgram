@@ -124,3 +124,14 @@ export const get_workflow = async (project_string_id, workflow_id) => {
     return [null, e]
   }
 }
+
+export const get_action_template = async (project_string_id, action_template_id) => {
+  let url = `/api/v1/project/${project_string_id}/action-template/${action_template_id}`;
+  try {
+    const {data} = await axios.get(url)
+    return [data, null]
+  } catch (e) {
+    console.error(e)
+    return [null, e]
+  }
+}

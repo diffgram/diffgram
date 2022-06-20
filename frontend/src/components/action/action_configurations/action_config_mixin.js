@@ -1,3 +1,4 @@
+import {get_action_template} from '../../../services/workflowServices'
 const action_mixin = {
 
   props: {
@@ -24,6 +25,17 @@ const action_mixin = {
     on_action_updated: function (act) {
       this.$emit('action_updated', act)
     },
+    get_action_template: async function (){
+      if(!this.action){
+        throw new Error("Cannot get action_template. Action is undefined.")
+      }
+      let [res, err] = get_action_template(this.project_string_id, this.action.template_id)
+      if (err){
+        console.error(err)
+        return
+      }
+      this.action_template = res.action_template
+    }
   },
   computed: {}
 }

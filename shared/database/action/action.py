@@ -150,6 +150,7 @@ class Action(Base, SerializerMixin):
         from shared.database.action.workflow import Workflow
         actions = session.query(Action).join(Workflow, Action.workflow_id == Workflow.id).filter(
             Workflow.active == True,
+            Action.archived == False,
             Action.project_id == project_id,
             Action.trigger_data['trigger_event_name'].astext == trigger_kind
         ).all()

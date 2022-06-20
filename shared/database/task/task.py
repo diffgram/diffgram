@@ -569,6 +569,7 @@ class Task(Base):
         task_serialized['time_tracking'] = time_tracking_records_data
         return task_serialized
 
+    @staticmethod
     def get_by_job_and_file(
         session,
         job,

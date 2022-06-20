@@ -15,7 +15,24 @@
       </template>
       <template v-slot:action_config>
         <slot name="wizard_action_config">
-          Your Action specific configuration goes here.
+          <p>
+            Your Action specific configuration goes here.
+          </p>
+          <p>
+            If you want to override this add the following slot in your action configuration component. It should
+            look similar to this:
+          </p>
+          <code>
+            <action_config_wizard_base>
+              <template v-slot:wizard_action_config>
+                Your components for configuration go here...
+              </template>
+            </action_config_wizard_base>
+          </code>
+          <p>
+            If you want to learn more about developing actions read:
+            https://dash.readme.com/project/diffgram/v1.0/docs/developing-you-custom-actions
+          </p>
         </slot>
       </template>
       <template v-slot:completion_trigger>
@@ -79,6 +96,7 @@ export default {
     if (this.steps_config_prop){
       this.steps_config = {...this.steps_config_prop}
     }
+    this.get_action_template()
   },
   watch:{
     steps_config_prop:{

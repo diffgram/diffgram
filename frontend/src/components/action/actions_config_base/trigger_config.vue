@@ -32,6 +32,10 @@ export default Vue.extend({
           type: Action,
           required: true
       },
+      action_template: {
+        type: Object,
+        required: true
+      },
       project_string_id: {
         type: String,
         required: true
@@ -70,6 +74,12 @@ export default Vue.extend({
       selected_trigger: function (new_val, old_val) {
         if (new_val && new_val.value) {
           this.action.trigger_data.trigger_event_name = new_val.value
+        }
+      },
+      action: {
+        deep: true,
+        handler: function(new_val, old_val){
+
         }
       }
     },

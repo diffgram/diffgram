@@ -16,6 +16,9 @@ from shared.database.project import Project
 from shared.data_tools_core import Data_tools
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
+from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
+from eventhandlers.action_runners.base.ActionCondition import ActionCondition
+from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 
 data_tools = Data_tools().data_tools
 
@@ -62,12 +65,10 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
     public_name = 'Deep Check - Image Properties Outliers'
     description = 'Image Properties Outliers'
     icon = 'https://finder.startupnationcentral.org/image_cloud/deepchecks_22b0d93d-3797-11ea-aa4a-bd6ae2b3f19f?w=240&h=240'
-    kind = 'deep_checks__image_properties_outliers'  # The kind has to be unique to all actions
-    category = 'Training Data Checks'  # Optional
-    trigger_data = {'trigger_event_name': 'input_file_uploaded'}  # What events can this action listen to?
-    condition_data = {'event_name': None}  # What pre-conditions can this action have?
-    completion_condition_data = {
-        'event_name': 'action_completed'}  # What options are available to declare the actions as completed?
+    kind = 'DeepcheckImagePropertyOutliers'
+    trigger_data = ActionTrigger(default_event = 'input_file_uploaded', event_list = ['input_file_uploaded', 'task_completed'])
+    condition_data = ActionCondition(default_event = None, event_list = [])
+    completion_condition_data = ActionCompleteCondition(default_event = None, event_list = [])
 
     def execute_pre_conditions(self, session, action) -> bool:
         # Return true if no pre-conditions are needed.

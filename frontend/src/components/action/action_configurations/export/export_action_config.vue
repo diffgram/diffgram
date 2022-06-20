@@ -13,7 +13,9 @@
           :project_string_id="project_string_id"
           :actions_list=actions_list
           :action="action"
-          :triggers_list_prop="triggers_list"></trigger_config>
+          :triggers_list_prop="triggers_list">
+
+        </trigger_config>
       </template>
       <template v-slot:wizard_pre_conditions>
         <pre_conditions_config
@@ -26,12 +28,7 @@
         </pre_conditions_config>
       </template>
       <template v-slot:wizard_action_config>
-        <trigger_config
-          @change="on_action_updated"
-          :project_string_id="project_string_id"
-          :actions_list=actions_list
-          :action="action"
-          :triggers_list_prop="triggers_list"></trigger_config>
+        <export_config_details :action="action" :project_string_id="project_string_id"></export_config_details>
       </template>
       <template v-slot:wizard_completion_trigger>
         <complete_conditions_config
@@ -92,11 +89,10 @@
 
 <script>
 import directory_list from '../../../source_control/directory_list'
-import action_config_wizard_base from '../../actions_config_base/action_config_wizard_base'
-import action_config_form_base from '../../actions_config_base/action_config_form_base'
 import Export_config_details from "@/components/action/action_configurations/export/export_config_details";
 import trigger_config from "@/components/action/actions_config_base/trigger_config";
 import pre_conditions_config from "@/components/action/actions_config_base/pre_conditions_config";
+import action_config_base from "@/components/action/actions_config_base/action_config_base";
 import complete_conditions_config from "@/components/action/actions_config_base/complete_conditions_config";
 import action_config_mixin from "../action_config_mixin";
 
@@ -105,10 +101,9 @@ export default {
   mixins: [action_config_mixin],
   components: {
     Export_config_details,
-    action_config_wizard_base,
-    action_config_form_base,
     trigger_config,
     pre_conditions_config,
+    action_config_base,
     complete_conditions_config,
     directory_list: directory_list
   },

@@ -47,7 +47,7 @@ class ActionRunner:
         fields = ['public_name', 'description', 'icon', 'kind', 'trigger_data', 'condition_data', 'completion_condition_data']
         for field in fields:
             if self.__getattribute__(field) is None:
-                msg = f'Error registering {self.__class__}. Provide f{field}'
+                msg = f'Error registering {self.__class__}. Provide {field}'
                 logger.error(msg)
                 raise ActionRegistrationError(msg)
 
@@ -63,6 +63,7 @@ class ActionRunner:
 
     def register(self, session) -> None:
         self.verify_registration_data()
+        print('aaa', self.kind)
         Action_Template.register(
             session = session,
             public_name = self.public_name,
@@ -70,9 +71,9 @@ class ActionRunner:
             icon = self.icon,
             kind = self.kind,
             category = None,
-            trigger_data = self.trigger_data.build_trigger_data(),
-            condition_data = self.condition_data.build_trigger_data(),
-            completion_condition_data = self.completion_condition_data.build_trigger_data(),
+            trigger_data = self.trigger_data.build_trigger_data() if self.trigger_data else None,
+            condition_data = self.condition_data.build_trigger_data() if self.condition_data else None,
+            completion_condition_data = self.completion_condition_data.build_trigger_data() if self.completion_condition_data else None,
         )
 
     def run(self) -> None:

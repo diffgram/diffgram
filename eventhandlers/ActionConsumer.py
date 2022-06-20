@@ -7,7 +7,7 @@ from shared.queueclient.QueueClient import RoutingKeys, Exchanges, QueueNames
 from shared.shared_logger import get_shared_logger
 from shared.database.action.action import Action
 from shared.database.action.workflow import Workflow
-from action_runners.runners_mapping import get_runner
+from action_runners.ActionRegistrar import get_runner
 from shared.helpers import sessionMaker
 logger = get_shared_logger()
 

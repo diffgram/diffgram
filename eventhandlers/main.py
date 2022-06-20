@@ -3,7 +3,7 @@ from shared.shared_logger import get_shared_logger
 from ConsumersCreator import ConsumerCreator
 from shared.settings import settings
 from startup.system_startup_checker import EventHandlerSystemStartupChecker
-from action_runners.runners_mapping import register_all
+from action_runners.ActionRegistrar import register_all
 import traceback
 logger = get_shared_logger()
 
