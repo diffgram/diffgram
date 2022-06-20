@@ -18,7 +18,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
     public_name = 'Zero Shot Classification (Hugging Face)'
     description = 'Performs Zero Shot Classification for the text file'
     icon = 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg'
-    kind = 'hf_zero_shot'
+    kind = 'HuggingFaceZeroShotAction'
     trigger_data = ActionTrigger(default_event='task_created', event_list = ['task_created', 'input_file_uploaded'])
     condition_data = ActionCondition(default_event = 'action_completed',
                                      event_list = ['action_completed'])
@@ -30,7 +30,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
     def execute_pre_conditions(self, session) -> bool:
         return True
 
-    def test_execute_action(self, session):
+    def test_execute_action(self, session, file_id, connection_id):
         pass
 
     def execute_action(self, session, do_save_annotations=True):
