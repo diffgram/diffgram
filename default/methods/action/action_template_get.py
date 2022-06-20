@@ -14,19 +14,13 @@ from shared.regular.regular_log import log_has_error
 @limiter.limit("20 per day")
 def api_get_action_template(project_string_id, action_template_id):
     """
-
+        Fetch single action template
+    :param project_string_id:
+    :param action_template_id:
+    :return:
     """
-
-    spec_list = [
-        {'flow_id': int},
-        {'mode': None}]
-
-    log, input, untrusted_input = regular_input.master(request = request,
-                                                       spec_list = spec_list)
-    if log_has_error(log) >= 1:
-        return jsonify(log = log), 400
-
     with sessionMaker.session_scope() as session:
+        log = regular_log.default()
         project = Project.get(session, project_string_id)
         action_template, log = get_action_template_core(
             session = session,

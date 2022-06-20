@@ -20,6 +20,7 @@ const action_mixin = {
   },
   data: () => ({
     loading: false,
+    action_template: null
   }),
   methods: {
     on_action_updated: function (act) {
@@ -29,7 +30,7 @@ const action_mixin = {
       if(!this.action){
         throw new Error("Cannot get action_template. Action is undefined.")
       }
-      let [res, err] = get_action_template(this.project_string_id, this.action.template_id)
+      let [res, err] = await get_action_template(this.project_string_id, this.action.template_id)
       if (err){
         console.error(err)
         return

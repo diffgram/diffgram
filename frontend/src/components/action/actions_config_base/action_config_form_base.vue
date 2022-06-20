@@ -2,10 +2,20 @@
   <v-container fluid>
 
     <slot name="triggers">
-      <trigger_config :project_string_id="project_string_id" :actions_list=actions_list :action="action"></trigger_config>
+      <trigger_config
+        :action_template="action_template"
+        :project_string_id="project_string_id"
+        :actions_list=actions_list
+        :action="action"></trigger_config>
     </slot>
     <slot name="pre_conditions">
-      <pre_conditions_config :project_string_id="project_string_id" :actions_list=actions_list :action="action"></pre_conditions_config>
+      <pre_conditions_config
+        :action_template="action_template"
+        :project_string_id="project_string_id"
+        :actions_list=actions_list
+        :action="action">
+
+      </pre_conditions_config>
     </slot>
     <slot name="action_config">
 
@@ -14,7 +24,10 @@
       <complete_conditions_config
         :project_string_id="project_string_id"
         :actions_list=actions_list
-        :action="action"></complete_conditions_config>
+        :action_template="action_template"
+        :action="action">
+
+      </complete_conditions_config>
     </slot>
   </v-container>
 </template>
@@ -35,7 +48,7 @@ export default Vue.extend({
       pre_conditions_config: pre_conditions_config,
       complete_conditions_config: complete_conditions_config,
     },
-    props: ['action', 'project_string_id', 'actions_list', 'steps_config_prop'],
+    props: ['action', 'project_string_id', 'actions_list', 'steps_config_prop', 'action_template'],
 
     mounted() {
 

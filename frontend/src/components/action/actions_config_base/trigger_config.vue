@@ -33,7 +33,6 @@ export default Vue.extend({
           required: true
       },
       action_template: {
-        type: Object,
         required: true
       },
       project_string_id: {

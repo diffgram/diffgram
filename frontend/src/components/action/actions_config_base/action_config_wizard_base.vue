@@ -16,16 +16,18 @@
         <slot :name="keyStep" v-if="keyStep === 'triggers'" >
           <trigger_config :project_string_id="project_string_id"
                           :actions_list=actions_list
+                          :action_template="action_template"
                           :action="action">
 
           </trigger_config>
         </slot>
         <slot :name="keyStep" v-if="keyStep === 'pre_conditions'">
-          <pre_conditions_config :project_string_id="project_string_id" :actions_list=actions_list :action="action"></pre_conditions_config>
+          <pre_conditions_config   :action_template="action_template" :project_string_id="project_string_id" :actions_list=actions_list :action="action"></pre_conditions_config>
         </slot>
         <slot :name="keyStep" v-if="keyStep === 'completion_trigger'">
           <complete_conditions_config
             :project_string_id="project_string_id"
+            :action_template="action_template"
             :actions_list=actions_list
             :action="action"></complete_conditions_config>
         </slot>
@@ -94,7 +96,7 @@ export default Vue.extend({
       Trigger_config
 
     },
-    props: ['action', 'project_string_id', 'actions_list', 'steps_config_prop'],
+    props: ['action', 'project_string_id', 'actions_list', 'steps_config_prop', 'action_template'],
 
     mounted() {
 

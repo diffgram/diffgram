@@ -10,6 +10,7 @@
       <template v-slot:wizard_triggers>
         <trigger_config
           @change="on_action_updated"
+          :action_template="action_template"
           :project_string_id="project_string_id"
           :actions_list=actions_list
           :action="action"
@@ -19,6 +20,7 @@
       </template>
       <template v-slot:wizard_pre_conditions>
         <pre_conditions_config
+          :action_template="action_template"
           @change="on_action_updated"
           :project_string_id="project_string_id"
           :actions_list=actions_list
@@ -32,6 +34,7 @@
       </template>
       <template v-slot:wizard_completion_trigger>
         <complete_conditions_config
+          :action_template="action_template"
           :completion_condition_list_prop="completion_condition_list_prop"
           :project_string_id="project_string_id"
           :actions_list=actions_list
@@ -46,11 +49,13 @@
           @change="on_action_updated"
           :project_string_id="project_string_id"
           :actions_list=actions_list
+          :action_template="action_template"
           :action="action"
           :triggers_list_prop="triggers_list"></trigger_config>
       </template>
       <template v-slot:form_pre_conditions>
         <pre_conditions_config
+          :action_template="action_template"
           @change="on_action_updated"
           :project_string_id="project_string_id"
           :actions_list=actions_list

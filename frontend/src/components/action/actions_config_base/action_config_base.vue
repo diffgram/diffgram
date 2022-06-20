@@ -5,6 +5,7 @@
       :action="action"
       :actions_list="actions_list"
       :steps_config_prop="steps_config"
+      :action_template="action_template"
       @open_action_selector="$emit('open_action_selector')"
       :project_string_id="project_string_id">
       <template v-slot:triggers>
@@ -47,6 +48,7 @@
       :project_string_id="project_string_id"
       :action="action"
       :actions_list="actions_list"
+      :action_template="action_template"
     >
       <template v-slot:triggers>
         <slot name="form_triggers"></slot>

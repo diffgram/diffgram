@@ -17,6 +17,7 @@
 import action_config_base from '../../../actions_config_base/action_config_base'
 import action_config_mixin from '../../../action_configurations/action_config_mixin'
 import {default_steps_config} from "@/components/action/actions_config_base/default_steps_config";
+
 export default {
   mixins: [action_config_mixin],
   name: "img_properties_outliers_config",

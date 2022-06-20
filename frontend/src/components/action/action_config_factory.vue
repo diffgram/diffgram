@@ -17,6 +17,7 @@ import Vue from "vue";
 import axios from '../../services/customInstance';
 import action_step_box from "./action_step_box.vue";
 import create_task_action_config from "./action_configurations/create_task/create_task_action_config";
+import img_properties_outliers_config from "./action_configurations/deepchecks/img_properties_outliers/img_properties_outliers_config";
 import export_action_config from "./action_configurations/export/export_action_config";
 import AzureTextAnalyticsSentimentAction from "./action_configurations/azure/AzureTextAnalyticsSentimentAction";
 
@@ -24,18 +25,20 @@ import AzureTextAnalyticsSentimentAction from "./action_configurations/azure/Azu
 export const COMPONENTS_KIND_MAPPING = {
   'AzureTextAnalyticsSentimentAction': AzureTextAnalyticsSentimentAction,
   'export': export_action_config,
-  'create_task': create_task_action_config
+  'create_task': create_task_action_config,
+  'DeepcheckImagePropertyOutliers': img_properties_outliers_config
 }
 
 
 export default Vue.extend({
 
-    name: 'image_properties_outliers_action_config',
+    name: 'action_config_factory',
     components: {
       action_step_box,
       create_task_action_config,
       export_action_config,
-      AzureTextAnalyticsSentimentAction
+      AzureTextAnalyticsSentimentAction,
+      img_properties_outliers_config
 
     },
     props: ['action', 'project_string_id', 'actions_list', 'display_mode'],

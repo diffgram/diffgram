@@ -64,7 +64,7 @@ class DiffgramVisionDataset(VisionData):
 class DeepcheckImagePropertyOutliers(ActionRunner):
     public_name = 'Deep Check - Image Properties Outliers'
     description = 'Image Properties Outliers'
-    icon = 'https://finder.startupnationcentral.org/image_cloud/deepchecks_22b0d93d-3797-11ea-aa4a-bd6ae2b3f19f?w=240&h=240'
+    icon = 'https://media-exp1.licdn.com/dms/image/C560BAQHFz-PWwUqWvg/company-logo_200_200/0/1579104155214?e=2147483647&v=beta&t=own-JfrDFxlz6goCBucZZ65OcB3l3nQPAzX4q3oN1yE'
     kind = 'DeepcheckImagePropertyOutliers'
     trigger_data = ActionTrigger(default_event = 'input_file_uploaded', event_list = ['input_file_uploaded', 'task_completed'])
     condition_data = ActionCondition(default_event = None, event_list = [])
