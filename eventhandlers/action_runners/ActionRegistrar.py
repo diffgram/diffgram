@@ -17,7 +17,7 @@ logger = get_shared_logger()
 try:
     from action_runners.actions.AzureTextAnalyticsSentiment import AzureTextAnalyticsSentimentAction
 
-    ACTION_RUNNERS_KIND_MAPPER["AzureTextAnalyticsSentimentAction"] = AzureTextAnalyticsSentimentAction
+    ACTION_RUNNERS_KIND_MAPPER[AzureTextAnalyticsSentimentAction.kind] = AzureTextAnalyticsSentimentAction
 except:
     logger.error(traceback.format_exc())
     print("AzureTextAnalyticsSentimentAction is not avalible on your installation")
@@ -25,7 +25,7 @@ except:
 try:
     from action_runners.actions.DeepCheckImagePropertyOutliers import DeepcheckImagePropertyOutliers
 
-    ACTION_RUNNERS_KIND_MAPPER["DeepcheckImagePropertyOutliers"] = DeepcheckImagePropertyOutliers
+    ACTION_RUNNERS_KIND_MAPPER[DeepcheckImagePropertyOutliers.kind] = DeepcheckImagePropertyOutliers
 except Exception as e:
     logger.error(traceback.format_exc())
     print("deep_checks__image_properties_outliers is not avalible on your installation")
@@ -33,7 +33,7 @@ except Exception as e:
 try:
     from action_runners.actions.HuggingFaceZeroShot import HuggingFaceZeroShotAction
 
-    ACTION_RUNNERS_KIND_MAPPER["HuggingFaceZeroShotAction"] = HuggingFaceZeroShotAction
+    ACTION_RUNNERS_KIND_MAPPER[HuggingFaceZeroShotAction.kind] = HuggingFaceZeroShotAction
 except:
     logger.error(traceback.format_exc())
     print("HuggingFaceZeroShotAction is not avalible on your installation")
