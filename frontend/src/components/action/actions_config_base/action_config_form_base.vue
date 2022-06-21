@@ -34,44 +34,30 @@
 
 <script lang="ts">
 import Vue from "vue";
-import axios from '../../services/customInstance';
-import complete_conditions_config from './complete_conditions_config'
-import pre_conditions_config from './pre_conditions_config'
-import trigger_config from './trigger_config'
-import {default_steps_config} from './default_steps_config'
+import complete_conditions_config from './complete_conditions_config.vue'
+import pre_conditions_config from './pre_conditions_config.vue'
+import trigger_config from './trigger_config.vue'
 
 export default Vue.extend({
-
     name: 'action_config_wizard_base',
     components: {
       trigger_config: trigger_config,
       pre_conditions_config: pre_conditions_config,
       complete_conditions_config: complete_conditions_config,
     },
-    props: ['action', 'project_string_id', 'actions_list', 'steps_config_prop', 'action_template'],
-
-    mounted() {
-
-    },
-
+    props: [
+      'action', 
+      'project_string_id', 
+      'actions_list', 
+      'steps_config', 
+      'action_template'
+    ],
     data() {
       return {
         is_open: true,
-        search: '',
-        default_steps_config: default_steps_config
-
+        search: ''
       }
     },
-    watch: {},
-    computed: {
-      steps_config: function () {
-        if (this.steps_config_prop) {
-          return this.steps_config_prop
-        }
-        return this.default_steps_config
-      }
-    },
-    methods: {}
   }
 ) </script>
 

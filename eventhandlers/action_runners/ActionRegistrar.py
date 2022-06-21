@@ -5,8 +5,6 @@ from shared.database.action.action import Action
 from shared.shared_logger import get_shared_logger
 from .actions import ACTION_RUNNERS_KIND_MAPPER
 
-print(ACTION_RUNNERS_KIND_MAPPER)
-
 logger = get_shared_logger()
 
 def register_all():
