@@ -1,6 +1,7 @@
 <template>
   <div id="annotation_core">
     <ui_schema_context_menu
+      v-if="show_ui_schema_context_menu"
       :schema_id="label_schema.id"
       :show_context_menu="show_ui_schema_context_menu"
       :project_string_id="project_string_id"
@@ -518,8 +519,8 @@
             </ghost_canvas_available_alert>
 
             <div v-if="file_cant_be_accessed && !loading">
-              <v_error_multiple :error="{ 
-                error: 'Storage error. Error accessing BLOB', 
+              <v_error_multiple :error="{
+                error: 'Storage error. Error accessing BLOB',
                 descriptive: 'You may not have permissions. If you are an Admin, check storage config and signed URL settings.'
               }"> </v_error_multiple>
 
