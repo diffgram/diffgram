@@ -1,95 +1,51 @@
 <template>
   <div class="d-flex flex-column" style="height: 100%">
 
-    <!-- WIP to call `action_manual_trigger` service
-         Also probably not right spot for it maybe should be inside wizard etc-->
-    <tooltip_button
-        tooltip_message="Manual Trigger"
-        @click="move_frame"
-        icon="help"
-        :text_style="true"
-        color="primary">
-    </tooltip_button>
-
-    <action_config_wizard_base
-      v-if="display_mode === 'wizard'"
-      :action="action"
-      :actions_list="actions_list"
-      :steps_config_prop="steps_config"
-      @open_action_selector="$emit('open_action_selector')"
-      :project_string_id="project_string_id">
-      <template v-slot:action_config>
-
-      </template>
-    </action_config_wizard_base>
-
-
-    <action_config_form_base
-      v-if="display_mode === 'form'"
+    <action_config_base
       :project_string_id="project_string_id"
-      :action="action"
+      :display_mode="display_mode"
+      @open_action_selector="$emit('open_action_selector')"
+      :steps_config_prop="steps_config"
       :actions_list="actions_list"
-    >
-      <template v-slot:action_config>
+      :action="action">
 
-
+      <template v-slot:wizard_action_config>
+        <h1>wizard_action_config</h1>
       </template>
-    </action_config_form_base>
 
-    <div v-if="display_mode === 'ongoing_usage'">
+      <template v-slot:form_action_config>
+        <h1>form_action_config</h1>
+      </template>
 
-      <!-- TBD -->
-      
-    </div>
+      <template v-slot:ongoing_usage>
+        <job_detail
+          v-if="action.config_data"
+          :job_id="action.config_data.task_template_id">
+        </job_detail>
+      </template>
 
-
-
+    </action_config_base>
   </div>
 </template>
 
 <script>
-import {Action} from '../../Action'
+import task_template_wizard from '../../../task/job/task_template_wizard_creation/task_template_wizard'
+import Job_detail from "@/components/task/job/job_detail";
 import Action_config_wizard_base from "@/components/action/actions_config_base/action_config_wizard_base";
 import action_config_form_base from "@/components/action/actions_config_base/action_config_form_base";
 import {default_steps_config} from "@/components/action/actions_config_base/default_steps_config";
-import {action_manual_trigger} from '@/services/workflowServices';
-
+import action_config_base from "@/components/action/actions_config_base/action_config_base";
+import action_config_mixin from "../action_config_mixin";
 
 export default {
   name: "HuggingFaceZeroShotAction",
-  props:{
-    action:{
-      required: true,
-      type: Action
-    },
-    project_string_id: {
-      required: true
-    },
-    actions_list: {
-      required: true
-    },
-    display_mode:{
-      default: "wizard"
-    }
-  },
+  mixins: [action_config_mixin],
   mounted() {
     this.steps_config = {
       ...default_steps_config
     }
-    this.steps_config.pre_conditions = {
-      ...this.steps_config.pre_conditions,
-      hide: true,
-      number: -1,
-    }
-    this.steps_config.action_config = {
-      ...this.steps_config.action_config,
-      number: 2,
-    }
-    this.steps_config.completion_trigger = {
-      ...this.steps_config.completion_trigger,
-      number: 3,
-    }
   },
+
   data: function(){
     return{
       job_selected: null,
@@ -101,12 +57,13 @@ export default {
   },
   components: {
     Action_config_wizard_base,
+    action_config_base,
     action_config_form_base,
+    Job_detail,
+    task_template_wizard: task_template_wizard,
   },
   methods: {
-    on_action_updated: function(act){
-      this.$emit('action_updated', act)
-    },
+
   },
   computed:{
     on_directories_updated: function(){
