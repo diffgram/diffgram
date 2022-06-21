@@ -959,7 +959,6 @@ export default Vue.extend({
       },
 
       global_attribute_change: function (attribute) {
-        console.log('CHANGEEEE', attribute, this.current_global_instance_index, this.current_global_instance.id)
         this.instance_update(
           "attribute_change",
           this.current_global_instance_index,
