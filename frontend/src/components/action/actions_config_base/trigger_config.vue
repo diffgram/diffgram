@@ -12,7 +12,7 @@
 
     <v_directory_list
       v-model="action.trigger_data.upload_directory_id_list"
-      v-if="action.trigger_data.trigger_event_name === 'file_uploaded'"
+      v-if="action.trigger_data.trigger_event_name === 'input_file_uploaded'"
       :project_string_id="project_string_id"
       :show_new="true"
       :show_update="true"

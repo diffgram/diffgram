@@ -6,10 +6,20 @@
     @open_action_selector="$emit('open_action_selector')"
     :steps_config="steps_config.generate()"
     :actions_list="actions_list"
+    :steps_config_prop="steps_config"
     :action="action">
 
     <template slot="ongoing_usage">
-      DEEP CHECKS REPORT GOES HERE
+      <h1>Deep Checks Result: </h1>
+      <div v-if="!action.output" class="d-flex flex-column justify-center align-center">
+        <h3 class="font-weight-light mt-8">Report Will Show up here when action gets triggered for the first time</h3>
+        <v-icon size="128">mdi-file-chart</v-icon>
+      </div>
+      {{ action.output }}
+    </template>
+
+    <template slot="form_action_config">
+
     </template>
 
   </action_config_base>
@@ -23,25 +33,18 @@ import ActionStepsConfig from '../../ActionStepsConfig';
 export default {
   mixins: [action_config_mixin],
   name: "img_properties_outliers_config",
-  components:{
+  components: {
     action_config_base: action_config_base
+  },
+  data: function(){
+    return{
+      steps_config: []
+    }
   },
   mounted() {
     this.steps_config = new ActionStepsConfig()
-    // this.steps_config.pre_conditions = {
-    //   ...this.steps_config.pre_conditions,
-    //   hide: true,
-    //   number: -1,
-    // }
-    // this.steps_config.action_config = {
-    //   ...this.steps_config.action_config,
-    //   number: -1,
-    //   hide: true
-    // }
-    // this.steps_config.completion_trigger = {
-    //   ...this.steps_config.completion_trigger,
-    //   number: 2,
-    // }
+    this.steps_config.hide_step('pre_conditions')
+    this.steps_config.hide_step('completion_trigger')
   }
 }
 </script>

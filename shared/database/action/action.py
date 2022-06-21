@@ -57,6 +57,9 @@ class Action(Base, SerializerMixin):
 
     completion_condition_data = Column(MutableDict.as_mutable(JSONB))
 
+    # Output of action, usually caches the output of latest ActionRun.
+    output = Column(MutableDict.as_mutable(JSONB))
+
     ordinal = Column(Integer)
 
     is_root = Column(Boolean)

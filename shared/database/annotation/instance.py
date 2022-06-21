@@ -486,6 +486,7 @@ class Instance(Base):
         instance = self.serialize()
 
         label_file = None
+
         if self.label_file is not None:
             label_file = self.label_file.serialize_with_label()
 

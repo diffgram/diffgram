@@ -21,18 +21,16 @@
           </p>
           <p>
             If you want to override this add the following slot in your action configuration component. It should
-            look similar to this:
+            look like this:
           </p>
-          <code>
-            <action_config_wizard_base>
-              <template v-slot:wizard_action_config>
-                Your components for configuration go here...
-              </template>
-            </action_config_wizard_base>
+          <code >
+            <pre style="background: dimgrey; color: white">{{sample_code}}</pre>
           </code>
           <p>
             If you want to learn more about developing actions read:
-            https://dash.readme.com/project/diffgram/v1.0/docs/developing-you-custom-actions
+            <a class="secondary--text"
+
+               href="https://dash.readme.com/project/diffgram/v1.0/docs/developing-you-custom-actions">Docs On Developing you Actions</a>
           </p>
         </slot>
       </template>
@@ -105,6 +103,16 @@ export default {
       job_selected: null,
       show_task_template_wizard: false,
       switch_loading: false,
+<<<<<<< HEAD
+=======
+      steps_config: null,
+      sample_code: "<action_config_wizard_base>\n" +
+        "   <template v-slot:wizard_action_config>\n" +
+        "     Your action configuration code goes here...\n" +
+        "   </template>\n" +
+        "</action_config_wizard_base>"
+
+>>>>>>> db35c8e5 (feat: save html)
     }
   },
 }
