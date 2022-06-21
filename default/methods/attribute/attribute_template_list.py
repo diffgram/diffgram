@@ -17,7 +17,7 @@ def api_attribute_template_list(project_string_id):
 
     spec_list = [
         {'group_id': None},
-        {'mode': None},
+        {'mode': None}, # valid values: [from_project]
         {'schema_id': {
             'required': False,
             'type': int
