@@ -124,7 +124,8 @@ class Action_Template(Base, SerializerMixin):
 
         if update == False:
             existing = Action_Template.get_by_kind(session, kind)
-            existing.is_available = True
+            if existing:
+                existing.is_available = True
             if existing: return True
 
 
