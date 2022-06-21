@@ -61,6 +61,9 @@ class ActionRun(Base):
     email_subject = Column(String())
     email_body = Column(String())
 
+    # Output of action, usually caches the output of latest ActionRun.
+    output = Column(MutableDict.as_mutable(JSONB))
+    
     # Reuse image class setup for clarity
     overlay_rendered_image_id = Column(Integer, ForeignKey('image.id'))  # new feb 12 2019
     overlay_rendered_image = relationship("Image",

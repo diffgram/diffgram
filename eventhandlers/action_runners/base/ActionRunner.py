@@ -10,6 +10,7 @@ from sqlalchemy.orm.session import Session
 from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
 from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
+
 logger = get_shared_logger()
 
 
@@ -37,6 +38,12 @@ class ActionRunner:
         self.log = regular_log.default()
         self.mngr = QueueClient()
 
+    def save_html_output(self, session, html_data: str):
+        self.action.output = {'html': html_data}
+        self.action_run.output = {'html': html_data}
+        session.add(self.action)
+        session.add(self.action_run)
+
     def execute_pre_conditions(self, session: Session) -> bool:
         raise NotImplementedError
 
@@ -44,7 +51,13 @@ class ActionRunner:
         raise NotImplementedError
 
     def verify_registration_data(self) -> None:
-        fields = ['public_name', 'description', 'icon', 'kind', 'trigger_data', 'condition_data', 'completion_condition_data']
+        fields = ['public_name',
+                  'description',
+                  'icon',
+                  'kind',
+                  'trigger_data',
+                  'condition_data',
+                  'completion_condition_data']
         for field in fields:
             if self.__getattribute__(field) is None:
                 msg = f'Error registering {self.__class__}. Provide {field}'

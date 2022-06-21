@@ -66,7 +66,8 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
     description = 'Image Properties Outliers'
     icon = 'https://media-exp1.licdn.com/dms/image/C560BAQHFz-PWwUqWvg/company-logo_200_200/0/1579104155214?e=2147483647&v=beta&t=own-JfrDFxlz6goCBucZZ65OcB3l3nQPAzX4q3oN1yE'
     kind = 'DeepcheckImagePropertyOutliers'
-    trigger_data = ActionTrigger(default_event = 'input_file_uploaded', event_list = ['input_file_uploaded', 'task_completed'])
+    trigger_data = ActionTrigger(default_event = 'input_file_uploaded',
+                                 event_list = ['input_file_uploaded', 'task_completed'])
     condition_data = ActionCondition(default_event = None, event_list = [])
     completion_condition_data = ActionCompleteCondition(default_event = None, event_list = [])
 
@@ -90,3 +91,5 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
             include_requirejs = True,
             include_plotlyjs = True
         )
+
+        self.save_html_output(html_data = html)
