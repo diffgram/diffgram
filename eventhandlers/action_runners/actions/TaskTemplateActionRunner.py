@@ -21,7 +21,7 @@ class TaskTemplateActionRunner(ActionRunner):
     public_name = 'Human Labeling Tasks'
     description = 'Add tasks to a task template'
     icon = 'https://www.svgrepo.com/show/376121/list-task.svg'
-    kind = 'create_task'
+    kind = 'TaskTemplateActionRunner'
     trigger_data = ActionTrigger(default_event = 'input_file_upload', event_list = [])
     condition_data = ActionCondition(default_event = None, event_list = [])
     completion_condition_data = ActionCompleteCondition(default_event = 'task_completed', event_list = [])
