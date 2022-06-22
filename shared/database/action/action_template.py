@@ -67,7 +67,7 @@ class Action_Template(Base, SerializerMixin):
             Returns all Action templates available in the installation.
         """
 
-        return session.query(Action_Template).filter_by(is_available=True).all()
+        return session.query(Action_Template).filter_by(is_available = True).all()
 
     @staticmethod
     def list_avalible_kinds(session) -> List[str]:
@@ -75,7 +75,7 @@ class Action_Template(Base, SerializerMixin):
             Returns all Action templates available in the installation.
         """
 
-        return session.query(Action_Template).filter_by(is_available=True).options(load_only('kind')).all()
+        return session.query(Action_Template).filter_by(is_available = True).options(load_only('kind')).all()
 
     @staticmethod
     def get_by_kind(session,
@@ -108,26 +108,26 @@ class Action_Template(Base, SerializerMixin):
         to_update = Action_Template.get_by_kind(session, kind)
         for key in payload:
             setattr(to_update, key, payload[key])
+        session.add(to_update)
 
     @staticmethod
     def register(
-            session,
-            public_name,
-            icon,
-            description,
-            kind,
-            category,
-            trigger_data = None,
-            condition_data = None,
-            completion_condition_data = None,
-            update=False):
+        session,
+        public_name,
+        icon,
+        description,
+        kind,
+        category,
+        trigger_data = None,
+        condition_data = None,
+        completion_condition_data = None,
+        update = False):
 
         if update == False:
             existing = Action_Template.get_by_kind(session, kind)
             if existing:
                 existing.is_available = True
             if existing: return True
-
 
         Action_Template.new(
             session,
@@ -139,7 +139,6 @@ class Action_Template(Base, SerializerMixin):
             trigger_data,
             condition_data,
             completion_condition_data)
-
 
     @staticmethod
     def new(session,

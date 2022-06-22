@@ -93,7 +93,6 @@ export default {
     steps_config: {
       type: Object,
       required: true
-    }
   },
   mounted() {
     this.get_action_template()

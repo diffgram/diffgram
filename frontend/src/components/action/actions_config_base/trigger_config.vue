@@ -6,13 +6,13 @@
               @change_directory="$emit('change')"
               item-value="value"
               :items="triggers_list"
-              v-model="selected_trigger"
-              >
+              v-model="action.trigger_data.event_name"
+    >
     </v-select>
 
     <v_directory_list
       v-model="action.trigger_data.upload_directory_id_list"
-      v-if="action.trigger_data.trigger_event_name === 'input_file_uploaded'"
+      v-if="action.trigger_data.event_name === 'input_file_uploaded'"
       :project_string_id="project_string_id"
       :show_new="true"
       :show_update="true"
@@ -29,8 +29,8 @@ export default Vue.extend({
     name: 'trigger_config',
     props: {
       action: {
-          type: Action,
-          required: true
+        type: Action,
+        required: true
       },
       action_template: {
         required: true
@@ -42,13 +42,13 @@ export default Vue.extend({
       actions_list: {
         required: true
       },
-      triggers_list_prop: {
-      }
+      triggers_list_prop: {}
     },
     mounted() {
-      if(!this.action.trigger_data.trigger_event_name){
+      if (!this.action.trigger_data.trigger_event_name) {
         this.action.trigger_data.trigger_event_name = 'action_completed'
       }
+      this.set_trigger_list(this.action_template)
     },
 
     data() {
@@ -58,10 +58,6 @@ export default Vue.extend({
         selected_trigger: {},
         default_triggers_list: [
           {
-            name: 'File is uploaded',
-            value: 'input_file_uploaded'
-          },
-          {
             name: 'Previous Step Completed',
             value: 'action_completed'
           },
@@ -70,21 +66,26 @@ export default Vue.extend({
       }
     },
     watch: {
+      action_template: {
+        deep: true,
+        handler: function (new_val, old_val) {
+          this.set_trigger_list(new_val)
+        }
+      },
       selected_trigger: function (new_val, old_val) {
         if (new_val && new_val.value) {
-          this.action.trigger_data.trigger_event_name = new_val.value
+          this.action.trigger_data.event_name = new_val.value
         }
       },
       action: {
         deep: true,
-        handler: function(new_val, old_val){
+        handler: function (new_val, old_val) {
 
         }
       }
     },
     created: function () {
 
-      this.selected_trigger = this.triggers_list.find(elm => elm.value === this.action.trigger_data.trigger_event_name)
     },
 
     computed: {
@@ -123,6 +124,22 @@ export default Vue.extend({
       }
     },
     methods: {
+      set_trigger_list: function (action_template) {
+        if(!action_template){
+          return
+        }
+        if(!action_template.trigger_data){
+          return
+        }
+        if (action_template.trigger_data && action_template.trigger_data.event_list) {
+          this.default_triggers_list = action_template.trigger_data.event_list
+          let selected = this.default_triggers_list.find(elm => elm.value === action_template.trigger_data.default_event_name)
+          if(selected){
+            this.action.trigger_data.event_name = selected.value
+          }
+
+        }
+      },
       close() {
         this.input = undefined;
         this.is_open = false;
@@ -136,12 +153,13 @@ export default Vue.extend({
 
 
 <style>
-  .v-select__selections input {
-    font-size: 1.6em;
-    line-height: 24px;
-  }
-  .list-item__title input {
-    font-size: 1.6em;
-    line-height: 24px;
-  }
+.v-select__selections input {
+  font-size: 1.6em;
+  line-height: 24px;
+}
+
+.list-item__title input {
+  font-size: 1.6em;
+  line-height: 24px;
+}
 </style>

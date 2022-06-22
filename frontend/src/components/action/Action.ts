@@ -1,6 +1,6 @@
 
 export interface TriggerData {
-  trigger_event_name: string,
+  event_name: string,
   upload_directory_id_list: Array<number>,
   trigger_action_id: number,
 
