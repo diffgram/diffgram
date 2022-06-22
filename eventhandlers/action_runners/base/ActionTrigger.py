@@ -6,8 +6,18 @@ class ActionTrigger:
         self.default_event = default_event
         self.event_list = event_list
 
-    def build_trigger_data(self) -> dict:
+    def build_event_list(self, event_list):
+        res = []
+        for e in event_list:
+            res.append({
+                'name': e,
+                'value': e
+            })
+        return res
+
+    def build_data(self) -> dict:
+        event_list = self.build_event_list(self.event_list)
         return {
-            'trigger_event_name': self.default_event,
-            'event_list': self.event_list,
+            'default_event_name': self.default_event,
+            'event_list': event_list,
         }

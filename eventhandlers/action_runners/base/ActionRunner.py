@@ -69,6 +69,9 @@ class ActionRunner:
         payload = {
             "public_name": self.public_name,
             "description": self.description,
+            "trigger_data": self.trigger_data.build_data(),
+            "condition_data": self.condition_data.build_data(),
+            "completion_condition_data": self.completion_condition_data.build_data(),
             "icon": self.icon,
             "category": None
         }
@@ -76,7 +79,6 @@ class ActionRunner:
 
     def register(self, session) -> None:
         self.verify_registration_data()
-        print('aaa', self.kind)
         Action_Template.register(
             session = session,
             public_name = self.public_name,
@@ -84,9 +86,9 @@ class ActionRunner:
             icon = self.icon,
             kind = self.kind,
             category = None,
-            trigger_data = self.trigger_data.build_trigger_data() if self.trigger_data else None,
-            condition_data = self.condition_data.build_trigger_data() if self.condition_data else None,
-            completion_condition_data = self.completion_condition_data.build_trigger_data() if self.completion_condition_data else None,
+            trigger_data = self.trigger_data.build_data() if self.trigger_data else None,
+            condition_data = self.condition_data.build_data() if self.condition_data else None,
+            completion_condition_data = self.completion_condition_data.build_data() if self.completion_condition_data else None,
         )
 
     def run(self) -> None:

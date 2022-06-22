@@ -22,7 +22,13 @@
           </trigger_config>
         </slot>
         <slot :name="keyStep" v-if="keyStep === 'pre_conditions'">
-          <pre_conditions_config   :action_template="action_template" :project_string_id="project_string_id" :actions_list=actions_list :action="action"></pre_conditions_config>
+          <pre_conditions_config
+            :action_template="action_template"
+            :project_string_id="project_string_id"
+            :actions_list=actions_list
+            :action="action">
+
+          </pre_conditions_config>
         </slot>
         <slot :name="keyStep" v-if="keyStep === 'completion_trigger'">
           <complete_conditions_config

@@ -87,7 +87,6 @@ export default {
   mixins: [action_config_mixin],
   props:{
     steps_config_prop: {
-      type: Object,
       required: false
     }
   },
