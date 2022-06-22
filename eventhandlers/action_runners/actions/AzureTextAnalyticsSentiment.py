@@ -15,8 +15,8 @@ from shared.ingest import packet
 class AzureTextAnalyticsSentimentAction(ActionRunner):
     public_name = 'Azure Text Analytics'
     description = 'Azure Text Analytics'
-    icon = 'https://www.svgrepo.com/show/46774/export.svg'
-    kind = 'export'
+    icon = 'https://www.svgrepo.com/show/375442/healthcare-nlp-api.svg'
+    kind = 'azure_sentiment'
     trigger_data = ActionTrigger(default_event = 'input_file_uploaded', event_list = [])
     condition_data = ActionCondition(default_event = None, event_list = [])
     completion_condition_data = ActionCompleteCondition(default_event = 'action_completed', event_list = [])

@@ -3,43 +3,11 @@ from shared.regular.regular_api import *
 from action_runners.base.ActionRunner import ActionRunner
 from shared.database.action.action import Action
 from shared.shared_logger import get_shared_logger
-from action_runners.actions.ExportActionRunner import ExportActionRunner
-from action_runners.actions.TaskTemplateActionRunner import TaskTemplateActionRunner
-import traceback
+from .actions import ACTION_RUNNERS_KIND_MAPPER
 
-ACTION_RUNNERS_KIND_MAPPER = {
-    'TaskTemplateActionRunner': TaskTemplateActionRunner,
-    'ExportActionRunner': ExportActionRunner
-}
+print(ACTION_RUNNERS_KIND_MAPPER)
 
 logger = get_shared_logger()
-
-try:
-    from action_runners.actions.AzureTextAnalyticsSentiment import AzureTextAnalyticsSentimentAction
-
-    ACTION_RUNNERS_KIND_MAPPER["AzureTextAnalyticsSentimentAction"] = AzureTextAnalyticsSentimentAction
-except:
-    logger.error(traceback.format_exc())
-    print("AzureTextAnalyticsSentimentAction is not avalible on your installation")
-
-try:
-    from action_runners.actions.DeepCheckImagePropertyOutliers import DeepcheckImagePropertyOutliers
-
-    ACTION_RUNNERS_KIND_MAPPER["DeepcheckImagePropertyOutliers"] = DeepcheckImagePropertyOutliers
-except Exception as e:
-    logger.error(traceback.format_exc())
-    print("deep_checks__image_properties_outliers is not avalible on your installation")
-
-try:
-    from action_runners.actions.HuggingFaceZeroShot import HuggingFaceZeroShotAction
-
-    ACTION_RUNNERS_KIND_MAPPER["HuggingFaceZeroShotAction"] = HuggingFaceZeroShotAction
-except:
-    logger.error(traceback.format_exc())
-    print("HuggingFaceZeroShotAction is not avalible on your installation")
-
-logger = get_shared_logger()
-
 
 def register_all():
     with sessionMaker.session_scope() as session:

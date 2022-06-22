@@ -25,7 +25,7 @@ import AzureTextAnalyticsSentimentAction from "./action_configurations/azure/Azu
 export const COMPONENTS_KIND_MAPPING = {
   'AzureTextAnalyticsSentimentAction': AzureTextAnalyticsSentimentAction,
   'export': export_action_config,
-  'create_task': create_task_action_config,
+  'TaskTemplateActionRunner': create_task_action_config,
   'DeepcheckImagePropertyOutliers': img_properties_outliers_config
 }
 
