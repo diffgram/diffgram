@@ -93,8 +93,25 @@ export default class ActionStepsConfig {
     const non_hidden_additionsl_steps = this.get_non_hiden_steps({ ...this.additional_steps })
 
     const all_steps = { ...non_hidden_default_steps, ...non_hidden_additionsl_steps }
+    const keys = Object.keys(all_steps)
 
-    return all_steps
+    const steps_to_return = {}
+
+    keys
+      .map(key => ({ [key]: all_steps[key].number }))
+      .sort((a, b) => {
+        const a_key = Object.keys(a)[0]
+        const b_key = Object.keys(b)[0]
+        return a[a_key] - b[b_key]
+      })
+      .map((pair, index) => {
+        const key = Object.keys(pair)[0]
+        all_steps[key].number = index + 1
+
+        steps_to_return[key] = all_steps[key]
+      })
+
+    return steps_to_return
   }
 }
 

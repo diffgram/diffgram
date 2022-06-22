@@ -30,7 +30,6 @@ export const COMPONENTS_KIND_MAPPING = {
 
 
 export default Vue.extend({
-
     name: 'action_config_factory',
     components: {
       action_step_box,
