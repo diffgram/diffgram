@@ -69,11 +69,13 @@ export default Vue.extend({
       action_template: {
         deep: true,
         handler: function (new_val, old_val) {
+          console.log('eweweww', this.action_template)
           this.set_trigger_list(new_val)
         }
       },
       selected_trigger: function (new_val, old_val) {
         if (new_val && new_val.value) {
+
           this.action.trigger_data.event_name = new_val.value
         }
       },

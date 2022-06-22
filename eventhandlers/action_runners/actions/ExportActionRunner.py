@@ -19,9 +19,9 @@ class ExportActionRunner(ActionRunner):
     description = 'Generate JSON Export'
     icon = 'https://www.svgrepo.com/show/46774/export.svg'
     kind = 'export'
-    trigger_data = ActionTrigger(default_event = 'task_completed', event_list = [])
-    condition_data = ActionCondition(default_event = 'all_tasks_completed', event_list = [])
-    completion_condition_data = ActionCompleteCondition(default_event = 'export_generate_success', event_list = [])
+    trigger_data = ActionTrigger(default_event = 'task_completed', event_list = ["task_completed", "action_completed"])
+    condition_data = ActionCondition(default_event = 'all_tasks_completed', event_list = ["all_tasks_completed"])
+    completion_condition_data = ActionCompleteCondition(default_event = 'export_generate_success', event_list = ["export_generate_success"])
 
     def execute_pre_conditions(self, session: Session) -> bool:
         event_name = self.action.condition_data.get('event_name')
@@ -37,7 +37,7 @@ class ExportActionRunner(ActionRunner):
                 task_template = Job.get_by_id(session = session, job_id = task_template_id)
                 if task_template.status == 'complete':
                     logger.info('Pre condition pass. Task template is completed.')
-                    return True
+                    return Trueaction
                 else:
                     logger.warning(
                         f'Pre condition failed. Task template not completed. Status is: {task_template.status}')
@@ -48,7 +48,7 @@ class ExportActionRunner(ActionRunner):
                 return False
         return False
 
-    def execute_action(self, session: Session, action_run: ActionRun) -> bool:
+    def execute_action(self, session: Session) -> bool:
         """
             Creates a task from the given file_id in the given task template ID.
             :return: True if access was succesfull false in other case.
@@ -78,5 +78,6 @@ class ExportActionRunner(ActionRunner):
         )
         if log_has_error(log):
             self.declare_action_failed(session)
-            return True
+            return False
         logger.info(f'Export: generated successfully.')
+        return True

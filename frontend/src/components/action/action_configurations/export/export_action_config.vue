@@ -7,77 +7,16 @@
       :actions_list="actions_list"
       :action="action">
 
-      <template v-slot:wizard_triggers>
-        <trigger_config
-          @change="on_action_updated"
-          :action_template="action_template"
-          :project_string_id="project_string_id"
-          :actions_list=actions_list
-          :action="action"
-          :triggers_list_prop="triggers_list">
 
-        </trigger_config>
-      </template>
-      <template v-slot:wizard_pre_conditions>
-        <pre_conditions_config
-          :action_template="action_template"
-          @change="on_action_updated"
-          :project_string_id="project_string_id"
-          :actions_list=actions_list
-          :conditions_list_prop=pre_conditions_list
-          :action="action">
-
-        </pre_conditions_config>
-      </template>
       <template v-slot:wizard_action_config>
         <export_config_details :action="action" :project_string_id="project_string_id"></export_config_details>
       </template>
-      <template v-slot:wizard_completion_trigger>
-        <complete_conditions_config
-          :action_template="action_template"
-          :completion_condition_list_prop="completion_condition_list_prop"
-          :project_string_id="project_string_id"
-          :actions_list=actions_list
-          :action="action">
-
-        </complete_conditions_config>
-      </template>
 
 
-      <template v-slot:form_triggers>
-        <trigger_config
-          @change="on_action_updated"
-          :project_string_id="project_string_id"
-          :actions_list=actions_list
-          :action_template="action_template"
-          :action="action"
-          :triggers_list_prop="triggers_list"></trigger_config>
-      </template>
-      <template v-slot:form_pre_conditions>
-        <pre_conditions_config
-          :action_template="action_template"
-          @change="on_action_updated"
-          :project_string_id="project_string_id"
-          :actions_list=actions_list
-          :conditions_list_prop=pre_conditions_list
-          :action="action">
 
-        </pre_conditions_config>
-      </template>
       <template v-slot:form_action_config>
         <export_config_details :action="action" :project_string_id="project_string_id"></export_config_details>
       </template>
-      <template v-slot:form_completion_trigger>
-        <complete_conditions_config
-          :completion_condition_list_prop="completion_condition_list_prop"
-          :project_string_id="project_string_id"
-          :actions_list=actions_list
-          :action="action">
-
-        </complete_conditions_config>
-      </template>
-
-
 
       <template v-slot:ongoing_usage>
         <v_export_view
@@ -117,28 +56,6 @@ export default {
   },
   data: function(){
     return{
-      completion_condition_list_prop: [
-        {
-          name: 'Export Finishes Generating',
-          value: 'export_generate_success'
-        }
-      ],
-      pre_conditions_list: [
-        {
-          name: 'All tasks completed.',
-          value: 'all_tasks_completed'
-        }
-      ],
-      triggers_list: [
-        {
-          name: 'Task is Completed',
-          value: 'task_completed'
-        },
-        {
-          name: 'Previous Step Completed',
-          value: 'action_completed'
-        },
-      ],
       loading: false,
       source_list: [
         {

@@ -1,7 +1,7 @@
 <template>
   <v-container fluid>
 
-    <slot name="triggers">
+    <slot name="triggers" :action_template="action_template">
       <trigger_config
         :action_template="action_template"
         :project_string_id="project_string_id"

@@ -13,7 +13,7 @@
         <slot :name="keyStep" v-if="keyStep === 'action_config'">
 
         </slot>
-        <slot :name="keyStep" v-if="keyStep === 'triggers'" >
+        <slot :name="keyStep" v-if="keyStep === 'triggers'" :action_template="action_template">
           <trigger_config :project_string_id="project_string_id"
                           :actions_list=actions_list
                           :action_template="action_template"

@@ -43,6 +43,7 @@ export class Action {
   public ordinal: number;
   public public_name: string;
   public archived: boolean;
+  public output: any;
   public icon: string;
   public kind: string;
   public trigger_data: TriggerData;
@@ -80,6 +81,7 @@ export class Action {
     this.condition_data = action.condition_data;
     this.ordinal = action.ordinal;
     this.description = action.description;
+    this.output = action.output;
     this.completion_condition_data = action.completion_condition_data ? action.completion_condition_data : {};
   }
 }

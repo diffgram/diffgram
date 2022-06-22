@@ -31,7 +31,7 @@
             <a class="secondary--text"
 
                href="https://dash.readme.com/project/diffgram/v1.0/docs/developing-you-custom-actions">Docs On Developing you Actions</a>
-          </p>
+          </p>    action_config_form_base,
         </slot>
       </template>
       <template v-slot:completion_trigger>
