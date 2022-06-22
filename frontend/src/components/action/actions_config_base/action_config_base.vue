@@ -93,6 +93,7 @@ export default {
     steps_config: {
       type: Object,
       required: true
+    }
   },
   mounted() {
     this.get_action_template()
@@ -108,8 +109,9 @@ export default {
         "     Your action configuration code goes here...\n" +
         "   </template>\n" +
         "</action_config_wizard_base>"
+
     }
-  },
+  }
 }
 </script>
 
