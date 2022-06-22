@@ -103,16 +103,12 @@ export default {
       job_selected: null,
       show_task_template_wizard: false,
       switch_loading: false,
-<<<<<<< HEAD
-=======
       steps_config: null,
       sample_code: "<action_config_wizard_base>\n" +
         "   <template v-slot:wizard_action_config>\n" +
         "     Your action configuration code goes here...\n" +
         "   </template>\n" +
         "</action_config_wizard_base>"
-
->>>>>>> db35c8e5 (feat: save html)
     }
   },
 }
