@@ -601,7 +601,6 @@ export default Vue.extend({
 
         openedGlobalPanel: 0,
         instance_detail_open: 0,
-        current_global_instance_index: 0, // hard coded until support multiple
 
         render_mode: "deprecated",  // pending moving gold standard to it's own component if needed (moving shared functions to general JS object)
 
@@ -678,7 +677,14 @@ export default Vue.extend({
 
     computed: {
 
-
+      current_global_instance_index: function(){
+        for(let i = 0; i < this.instance_list.length; i++){
+          let inst = this.instance_list[i]
+          if(inst.type === 'global'){
+            return i
+          }
+        }
+      },
       anonymous_user_in_public_project: function () {
         if (this.$store.getters.is_on_public_project && !this.$store.state.user.logged_in) {
           return true
@@ -953,7 +959,6 @@ export default Vue.extend({
       },
 
       global_attribute_change: function (attribute) {
-
         this.instance_update(
           "attribute_change",
           this.current_global_instance_index,
