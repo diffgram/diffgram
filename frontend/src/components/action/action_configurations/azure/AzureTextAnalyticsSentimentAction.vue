@@ -85,22 +85,6 @@ export default {
   },
   mounted() {
     this.steps_manager = new ActionStepsConfig()
-    // this.steps_config = {
-    //   ...default_steps_config
-    // }
-    // this.steps_config.pre_conditions = {
-    //   ...this.steps_config.pre_conditions,
-    //   hide: true,
-    //   number: -1,
-    // }
-    // this.steps_config.action_config = {
-    //   ...this.steps_config.action_config,
-    //   number: 2,
-    // }
-    // this.steps_config.completion_trigger = {
-    //   ...this.steps_config.completion_trigger,
-    //   number: 3,
-    // }
   },
   methods: {
     on_action_updated: function(act){
