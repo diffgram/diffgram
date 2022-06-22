@@ -38,7 +38,11 @@ interface Step {
 }
 
 export default class ActionStepsConfig {
+<<<<<<< HEAD
   private default_steps: Object = JSON.parse(JSON.stringify(default_steps_config));
+=======
+  private default_steps: Object = { ...default_steps_config };
+>>>>>>> 6bb9442b (Resolve merge conflicts)
   private additional_steps: Object = {};
 
   constructor(new_steps: Object = {}) {

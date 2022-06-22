@@ -38,7 +38,7 @@ export default {
   },
   data: function(){
     return{
-      steps_config: []
+      steps_config: null
     }
   },
   mounted() {
