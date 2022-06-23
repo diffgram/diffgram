@@ -186,6 +186,7 @@ SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFF
 USE_OIDC = env_adapter.bool(os.getenv('USE_OIDC', False))
 OIDC_PROVIDER_NAME = os.getenv('OIDC_PROVIDER_NAME', 'keycloak')
 OIDC_PROVIDER_HOST = os.getenv('OIDC_PROVIDER_HOST', 'http://localhost:8099/auth/')
+OIDC_DEFAULT_REDIRECT_URL = f'{URL_BASE}/api/v1/auth/oidc-login'
 
 
 OIDC_PROVIDER_CLIENT_ID = os.getenv('OIDC_PROVIDER_CLIENT_ID', 'diffgram')
@@ -197,6 +198,8 @@ KEY_CLOAK_MASTER_USER = os.getenv('KEY_CLOAK_MASTER_USER', 'admin')
 KEY_CLOAK_MASTER_PASSWORD = os.getenv('KEY_CLOAK_MASTER_PASSWORD', 'admin')
 KEY_CLOAK_DIFFGRAM_USER = os.getenv('KEY_CLOAK_DIFFGRAM_USER', 'diffgram')
 KEY_CLOAK_DIFFGRAM_PASSWORD = os.getenv('KEY_CLOAK_DIFFGRAM_PASSWORD', 'diffgram')
+
+# Cognito Settings
 
 
 # Minio Only Allow Expiry time is less than 7 days (value in seconds).
