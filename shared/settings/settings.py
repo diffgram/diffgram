@@ -182,16 +182,19 @@ RABBITMQ_PORT = int(os.getenv('RABBITMQ_PORT', 5672))
 SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_MINIMUM_DAYS_VALID', 30 * 12))     # this should always be lower then new offset
 SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID', 30 * 14))
 
-# Keycloak / OIDC Settings
+# OIDC Settings
 USE_OIDC = env_adapter.bool(os.getenv('USE_OIDC', False))
-USE_KEYCLOAK_AUTHORIZATION = env_adapter.bool(os.getenv('USE_KEYCLOAK_AUTHORIZATION', False))
+OIDC_PROVIDER_NAME = os.getenv('OIDC_PROVIDER_NAME', 'keycloak')
 OIDC_PROVIDER_HOST = os.getenv('OIDC_PROVIDER_HOST', 'http://localhost:8099/auth/')
+
+
 OIDC_PROVIDER_CLIENT_ID = os.getenv('OIDC_PROVIDER_CLIENT_ID', 'diffgram')
 OIDC_PROVIDER_PUBLIC_KEY = os.getenv('OIDC_PROVIDER_PUBLIC_KEY', 'diffgram_public_key')
 OIDC_PROVIDER_REALM = os.getenv('OIDC_PROVIDER_REALM', 'diffgram-realm')
+
+# Keycloak Settings
 KEY_CLOAK_MASTER_USER = os.getenv('KEY_CLOAK_MASTER_USER', 'admin')
 KEY_CLOAK_MASTER_PASSWORD = os.getenv('KEY_CLOAK_MASTER_PASSWORD', 'admin')
-
 KEY_CLOAK_DIFFGRAM_USER = os.getenv('KEY_CLOAK_DIFFGRAM_USER', 'diffgram')
 KEY_CLOAK_DIFFGRAM_PASSWORD = os.getenv('KEY_CLOAK_DIFFGRAM_PASSWORD', 'diffgram')
 

@@ -4,7 +4,9 @@ from flask import redirect
 from methods import routes
 from shared.settings import settings
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
+from shared.auth.OIDCProvider import OIDCProvider
 
+oidc = OIDCProvider()
 
 def oidc_logout():
     jwt_data = login_session.get('jwt')

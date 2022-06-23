@@ -6,6 +6,7 @@ from shared.helpers import sessionMaker
 from shared.database import hashing_functions
 import sys, os
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
+from shared.auth.OIDCProvider import OIDCProvider
 from shared.settings import settings
 
 from shared.shared_logger import get_shared_logger
@@ -17,25 +18,25 @@ logger = get_shared_logger()
 
 def LoggedIn():
     if settings.USE_OIDC:
+        oidc = OIDCProvider()
+        oidc_client = oidc.get_client()
         jwt = login_session.get('jwt')
-        access_token = jwt.get('access_token')
-        refresh_token = jwt.get('refresh_token')
+        access_token = oidc_client.get_access_token_from_jwt(jwt_data = jwt)
+        refresh_token = oidc_client.get_refresh_token_from_jwt(jwt_data = jwt)
         if jwt is None:
             return False
-        kc_client = KeycloakDiffgramClient()
+
         try:
-            user = kc_client.get_user(access_token)
+            user = oidc_client.get_user(access_token)
             if not user:
                 return False
-            new_token = kc_client.refresh_token(refresh_token)
+            new_token = oidc_client.refresh_token(refresh_token)
             login_session['jwt'] = new_token
             return True
         except Exception as e:
             err_data = traceback.format_exc()
             logger.error(err_data)
             return False
-     
-
     else:
         if login_session.get('user_id', None) is not None:
             out = hashing_functions.check_secure_val(login_session['user_id'])

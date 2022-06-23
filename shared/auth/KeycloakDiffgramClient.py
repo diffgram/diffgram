@@ -6,7 +6,7 @@ import jwt
 from shared.shared_logger import get_shared_logger
 import traceback
 from shared.utils.singleton import Singleton
-
+from shared.auth.OIDCProvider import OIDCClientBase
 logger = get_shared_logger()
 
 REDIRECT_URI_DIFFGRAM = f'{settings.URL_BASE}user/oidc-login'
@@ -40,7 +40,7 @@ class DefaultGlobalRoles(Enum):
     super_admin = 'super_admin'
 
 
-class KeycloakDiffgramClient(metaclass = Singleton):
+class KeycloakDiffgramClient(OIDCClientBase):
     keycloak: KeycloakOpenID
     installed: bool
     client_secret: str
@@ -136,7 +136,7 @@ class KeycloakDiffgramClient(metaclass = Singleton):
         logger.info(f'Fetched Keycloak Client for Diffgram:  {client_id}')
         return client_id
 
-    def __create_default_global_roles(self, client_id) -> list:
+    def __create_default_global_roles(self, client_id: str) -> list:
         created_role_ids = []
         for enum_item in DefaultGlobalRoles:
             res = self.keycloak_admin_master.create_client_role(client_role_id = client_id,
@@ -146,7 +146,7 @@ class KeycloakDiffgramClient(metaclass = Singleton):
             created_role_ids.append(res)
         return created_role_ids
 
-    def __create_default_project_roles(self, normal_user_role, client_id) -> list:
+    def __create_default_project_roles(self, normal_user_role: str, client_id: str) -> list:
         created_role_ids = []
         role = self.keycloak_admin_master.get_client_role(
             client_id = client_id,
@@ -168,16 +168,16 @@ class KeycloakDiffgramClient(metaclass = Singleton):
             created_role_ids.append(enum_item.value)
         return created_role_ids
 
-    def refresh_token(self, token):
+    def refresh_token(self, token: str) -> dict:
         return self.keycloak.refresh_token(refresh_token = token)
 
-    def logout(self, refresh_token):
+    def logout(self, refresh_token: str):
         self.keycloak.logout(refresh_token)
 
     def get_login_url(self):
         return self.keycloak.auth_url(redirect_uri = REDIRECT_URI_DIFFGRAM)
 
-    def get_access_token_with_code_grant(self, code):
+    def get_access_token_with_code_grant(self, code: str) -> dict:
 
         token = self.keycloak.token(grant_type = 'authorization_code',
                                     code = code,
@@ -211,3 +211,11 @@ class KeycloakDiffgramClient(metaclass = Singleton):
             err = traceback.format_exc()
             logger.error(err)
             return False, e
+
+    def get_access_token_from_jwt(self, jwt_data: dict) -> str:
+
+        return jwt_data.get('access_token')
+
+    def get_refresh_token_from_jwt(self, jwt_data: dict) -> str:
+
+        return jwt_data.get('refresh_token')
