@@ -8,8 +8,8 @@
       <v_error_multiple :error="error"></v_error_multiple>
 
       <v-stepper-content
-        v-for="(keyStep, index) in Object.keys(visible_steps)"
-        :step="visible_steps[keyStep].number">
+        v-for="(keyStep, index) in Object.keys(steps_config)"
+        :step="steps_config[keyStep].number">
         <slot :name="keyStep" v-if="keyStep === 'action_config'">
 
         </slot>
@@ -47,7 +47,7 @@
 
         </wizard_navigation>
       </v-stepper-content>
-      <v-stepper-content :step="Object.keys(visible_steps).length + 1">
+      <v-stepper-content :step="Object.keys(steps_config).length + 1">
         <slot name="sucess_config">
           <v-container class="d-flex flex-column justify-center align-center">
             <v-icon color="success" size="256">mdi-check</v-icon>
@@ -71,15 +71,15 @@
 
 
     <v-stepper-header class="ma-0 pl-8 pr-8 " style="height: 20%">
-      <template v-for="(key, index) in Object.keys(visible_steps)">
+      <template v-for="(key, index) in Object.keys(steps_config)">
         <v-stepper-step
-          :complete="step > visible_steps[key].number"
-          :step="visible_steps[key].number"
+          :complete="step > steps_config[key].number"
+          :step="steps_config[key].number"
           editable
         >
-          {{ visible_steps[key].header_title }}
+          {{ steps_config[key].header_title }}
         </v-stepper-step>
-        <v-divider v-if="index < Object.keys(visible_steps).length - 1"></v-divider>
+        <v-divider v-if="index < Object.keys(steps_config).length - 1"></v-divider>
       </template>
     </v-stepper-header>
   </v-stepper>
@@ -87,55 +87,31 @@
 
 <script lang="ts">
 import Vue from "vue";
-import axios from '../../services/customInstance';
-import {default_steps_config} from './default_steps_config'
 import Trigger_config from "./trigger_config.vue";
 import Pre_conditions_config from "./pre_conditions_config.vue";
 import Complete_conditions_config from "./complete_conditions_config.vue";
 
 export default Vue.extend({
-
     name: 'action_config_wizard_base',
     components: {
       Complete_conditions_config,
       Pre_conditions_config,
       Trigger_config
-
     },
-    props: ['action', 'project_string_id', 'actions_list', 'steps_config_prop', 'action_template'],
-
-    mounted() {
-
-    },
-
+    props: [
+      'action', 
+      'project_string_id', 
+      'actions_list', 
+      'steps_config', 
+      'action_template'
+    ],
     data() {
       return {
         step: 1,
         loading_steps: false,
         is_open: true,
         search: '',
-        default_steps_config: default_steps_config,
         error: null
-
-      }
-    },
-    watch: {},
-    computed: {
-      steps_config: function () {
-        if (this.steps_config_prop) {
-          return this.steps_config_prop
-        }
-        return this.default_steps_config
-      },
-      visible_steps: function () {
-        let res = {}
-        for (let key of Object.keys(this.steps_config)) {
-          let current = this.steps_config[key]
-          if (!current.hide) {
-            res[key] = current
-          }
-        }
-        return res
       }
     },
     methods: {

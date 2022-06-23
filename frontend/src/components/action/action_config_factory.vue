@@ -14,7 +14,6 @@
 
 <script lang="ts">
 import Vue from "vue";
-import axios from '../../services/customInstance';
 import action_step_box from "./action_step_box.vue";
 import create_task_action_config from "./action_configurations/create_task/create_task_action_config";
 import img_properties_outliers_config from "./action_configurations/deepchecks/img_properties_outliers/img_properties_outliers_config";
@@ -31,7 +30,6 @@ export const COMPONENTS_KIND_MAPPING = {
 
 
 export default Vue.extend({
-
     name: 'action_config_factory',
     components: {
       action_step_box,

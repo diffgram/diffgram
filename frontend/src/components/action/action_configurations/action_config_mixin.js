@@ -1,6 +1,6 @@
-import {get_action_template} from '../../../services/workflowServices'
-const action_mixin = {
+import { get_action_template } from '../../../services/workflowServices'
 
+const action_mixin = {
   props: {
     prev_action: {
       default: null

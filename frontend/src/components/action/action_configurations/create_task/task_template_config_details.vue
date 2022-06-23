@@ -46,12 +46,12 @@
 </template>
 
 <script>
-import task_template_wizard from '../../../task/job/task_template_wizard_creation/task_template_wizard'
 import task_template_creation_dialog from '../../../task/job/task_template_wizard_creation/task_template_creation_dialog'
 import {create_empty_job} from '../../../task/job/empty_job'
 import {Action} from './../../Action'
 import Job_detail from "@/components/task/job/job_detail";
 import Action_config_wizard_base from "@/components/action/actions_config_base/action_config_wizard_base";
+
 export default {
   name: "task_template_config_details",
   props:{

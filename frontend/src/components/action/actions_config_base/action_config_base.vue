@@ -4,7 +4,7 @@
       v-if="display_mode === 'wizard'"
       :action="action"
       :actions_list="actions_list"
-      :steps_config_prop="steps_config"
+      :steps_config="steps_config"
       :action_template="action_template"
       @open_action_selector="$emit('open_action_selector')"
       :project_string_id="project_string_id">
@@ -80,56 +80,34 @@
 <script>
 import Action_config_wizard_base from "@/components/action/actions_config_base/action_config_wizard_base";
 import action_config_form_base from "@/components/action/actions_config_base/action_config_form_base";
-import {default_steps_config} from "@/components/action/actions_config_base/default_steps_config";
 import action_config_mixin from "../action_configurations/action_config_mixin.js";
+
 export default {
   name: "action_config_base",
   mixins: [action_config_mixin],
+  components: {
+    Action_config_wizard_base,
+    action_config_form_base,
+  },
   props:{
-    steps_config_prop: {
-      required: false
+    steps_config: {
+      type: Object,
+      required: true
     }
   },
   mounted() {
-    this.steps_config = {...default_steps_config}
-    if (this.steps_config_prop){
-      this.steps_config = {...this.steps_config_prop}
-    }
     this.get_action_template()
-  },
-  watch:{
-    steps_config_prop:{
-      deep: true,
-      handler: function(new_val, old_val){
-        if(new_val){
-          this.steps_config = {...new_val}
-        }
-      }
-    }
   },
   data: function(){
     return{
       job_selected: null,
       show_task_template_wizard: false,
       switch_loading: false,
-      steps_config: null,
       sample_code: "<action_config_wizard_base>\n" +
         "   <template v-slot:wizard_action_config>\n" +
         "     Your action configuration code goes here...\n" +
         "   </template>\n" +
         "</action_config_wizard_base>"
-
-    }
-  },
-  components: {
-    Action_config_wizard_base,
-    action_config_form_base,
-  },
-  methods: {
-
-  },
-  computed:{
-    on_directories_updated: function(){
 
     }
   }
