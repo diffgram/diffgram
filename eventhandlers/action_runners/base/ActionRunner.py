@@ -10,9 +10,11 @@ from sqlalchemy.orm.session import Session
 from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
 from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
-
+from shared.data_tools_core import Data_tools
+from shared.settings import settings
 logger = get_shared_logger()
 
+data_tools = Data_tools().data_tools
 
 class ActionRegistrationError(Exception):
     pass

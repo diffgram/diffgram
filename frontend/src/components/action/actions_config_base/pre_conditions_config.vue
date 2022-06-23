@@ -91,14 +91,7 @@ export default Vue.extend({
       }
     },
     computed: {
-      conditions_list: function () {
-        if (this.conditions_list_prop) {
-          return this.conditions_list_prop;
 
-        }
-
-        return this.conditions_list_default
-      },
 
     },
   }

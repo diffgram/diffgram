@@ -10,7 +10,7 @@
       :actions_list="actions_list"
       :action="action">
 
-      <template v-slot:wizard_action_config>
+      <template v-slot:wizard_action_config >
         <task_template_config_details
           :action="action"
           :project_string_id="project_string_id"
@@ -42,8 +42,6 @@
 import task_template_wizard from '../../../task/job/task_template_wizard_creation/task_template_wizard'
 import Job_detail from "@/components/task/job/job_detail";
 import task_template_config_details from './task_template_config_details';
-import Action_config_wizard_base from "@/components/action/actions_config_base/action_config_wizard_base";
-import action_config_form_base from "@/components/action/actions_config_base/action_config_form_base";
 import action_config_base from "@/components/action/actions_config_base/action_config_base";
 import action_config_mixin from "../action_config_mixin";
 import ActionStepsConfig from '../ActionStepsConfig';
@@ -52,9 +50,7 @@ export default {
   name: "create_task_action_config",
   mixins: [action_config_mixin],
   components: {
-    Action_config_wizard_base,
     action_config_base,
-    action_config_form_base,
     task_template_config_details,
     Job_detail,
     task_template_wizard: task_template_wizard,

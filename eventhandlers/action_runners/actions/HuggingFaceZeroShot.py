@@ -33,7 +33,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
     def test_execute_action(self, session, file_id, connection_id):
         pass
 
-    def execute_action(self, session, do_save_annotations=True):
+    def execute_action(self, session, do_save_annotations=True) -> bool:
         print("Hugging face has been executed")
         return
         """

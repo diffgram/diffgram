@@ -71,7 +71,7 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
     condition_data = ActionCondition(default_event = None, event_list = [])
     completion_condition_data = ActionCompleteCondition(default_event = None, event_list = [])
 
-    def execute_pre_conditions(self, session, action) -> bool:
+    def execute_pre_conditions(self, session) -> bool:
         # Return true if no pre-conditions are needed.
         return True
 
@@ -79,12 +79,10 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
         # Your core Action logic will go here.
         dir_id = self.event_data.get('directory_id')
         pytorch_dataset = DiffgramDataset(session = session, diffgram_dir_id = dir_id)
-        dataloader = DataLoader(pytorch_dataset, batch_size = 100, shuffle = True, num_workers = 2,
-                                collate_fn = lambda data: data)
+        dataloader = DataLoader(pytorch_dataset, batch_size = 100, shuffle = True, num_workers = 2, collate_fn = lambda data: data)
         vision_ds = DiffgramVisionDataset(data_loader = dataloader)
         check = ImagePropertyOutliers()
         result = check.run(vision_ds)
-        result.save_as_html()
         html = CheckResultHtmlSerializer(result).serialize(
             output_id = None,
             full_html = True,
@@ -92,4 +90,5 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
             include_plotlyjs = True
         )
 
-        self.save_html_output(html_data = html)
+        url = self.save_html_output(session = session, html_data = html)
+        return True

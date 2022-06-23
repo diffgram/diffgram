@@ -22,9 +22,9 @@ class TaskTemplateActionRunner(ActionRunner):
     description = 'Add tasks to a task template'
     icon = 'https://www.svgrepo.com/show/376121/list-task.svg'
     kind = 'TaskTemplateActionRunner'
-    trigger_data = ActionTrigger(default_event = 'input_file_upload', event_list = [])
+    trigger_data = ActionTrigger(default_event = 'input_file_upload', event_list = ["input_file_upload"])
     condition_data = ActionCondition(default_event = None, event_list = [])
-    completion_condition_data = ActionCompleteCondition(default_event = 'task_completed', event_list = [])
+    completion_condition_data = ActionCompleteCondition(default_event = 'task_completed', event_list = ["task_completed"])
 
     def execute_pre_conditions(self, session: Session) -> bool:
         return True
@@ -90,3 +90,4 @@ class TaskTemplateActionRunner(ActionRunner):
         )
         task_template.update_file_count_statistic(session = session)
         task_template.refresh_stat_count_tasks(session = session)
+        return True

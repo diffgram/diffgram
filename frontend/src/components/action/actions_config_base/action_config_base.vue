@@ -31,7 +31,7 @@
             <a class="secondary--text"
 
                href="https://dash.readme.com/project/diffgram/v1.0/docs/developing-you-custom-actions">Docs On Developing you Actions</a>
-          </p>
+          </p>    action_config_form_base,
         </slot>
       </template>
       <template v-slot:completion_trigger>
@@ -103,7 +103,6 @@ export default {
       job_selected: null,
       show_task_template_wizard: false,
       switch_loading: false,
-      steps_config: null,
       sample_code: "<action_config_wizard_base>\n" +
         "   <template v-slot:wizard_action_config>\n" +
         "     Your action configuration code goes here...\n" +
