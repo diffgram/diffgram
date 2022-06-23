@@ -1,0 +1,48 @@
+version: "3.9"
+services:
+  db_migration:
+    image: gcr.io/diffgram-open-core/default:${DIFFGRAM_VERSION_TAG}
+    env_file:
+      - .env
+    environment:
+      PYTHONPATH: "/app/"
+    command: ["/app/db-init.sh", "${DATABASE_HOST}"]
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+  db:
+    image: ${POSTGRES_IMAGE}
+    hostname: db
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-d", "db_prod" ]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s
+    environment:
+    - POSTGRES_HOST_AUTH_METHOD=trust
+    - POSTGRES_DB=diffgram
+    volumes:
+    # Default INTERNAL_POSTGRES_DIR=/var/lib/postgresql/data:Z
+    - ${POSTGRES_DATA_DIR:-./postgres-data}:${INTERNAL_POSTGRES_DIR:-/var/lib/postgresql/data}
+    ports:
+    - 5432:5432
+  rabbitmq:
+    image: rabbitmq:3.10-rc-management-alpine
+    env_file:
+      - .env
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 30s
+      retries: 3
+    container_name: 'rabbitmq'
+    expose: [5672, 15672]
+    ports:
+        - 5672:5672
+        - 15672:15672
+volumes:
+  static: {}
