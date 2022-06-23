@@ -1,9 +1,11 @@
 <template>
   <v-container fluid style="height: 100%">
     <action_config_base
+      v-if="steps_config"
       :project_string_id="project_string_id"
       :display_mode="display_mode"
       @open_action_selector="$emit('open_action_selector')"
+      :steps_config="steps_config.generate()"
       :actions_list="actions_list"
       :action="action">
 
@@ -39,6 +41,7 @@ import pre_conditions_config from "@/components/action/actions_config_base/pre_c
 import action_config_base from "@/components/action/actions_config_base/action_config_base";
 import complete_conditions_config from "@/components/action/actions_config_base/complete_conditions_config";
 import action_config_mixin from "../action_config_mixin";
+import ActionStepsConfig from '../ActionStepsConfig';
 
 export default {
   name: "export_action_config",
@@ -51,11 +54,31 @@ export default {
     complete_conditions_config,
     directory_list: directory_list
   },
-  props:{
-
-  },
   data: function(){
     return{
+      steps_config: null,
+      completion_condition_list_prop: [
+        {
+          name: 'Export Finishes Generating',
+          value: 'export_generate_success'
+        }
+      ],
+      pre_conditions_list: [
+        {
+          name: 'All tasks completed.',
+          value: 'all_tasks_completed'
+        }
+      ],
+      triggers_list: [
+        {
+          name: 'Task is Completed',
+          value: 'task_completed'
+        },
+        {
+          name: 'Previous Step Completed',
+          value: 'action_completed'
+        },
+      ],
       loading: false,
       source_list: [
         {
@@ -98,6 +121,9 @@ export default {
         }
       ]
     }
+  },
+  mounted() {
+    this.steps_config = new ActionStepsConfig()
   },
 
   computed:{
