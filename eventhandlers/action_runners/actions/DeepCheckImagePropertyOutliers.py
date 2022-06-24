@@ -1,4 +1,4 @@
-import cv2
+#import cv2
 from eventhandlers.action_runners.base.ActionRunner import ActionRunner
 from deepchecks.vision.checks import ImagePropertyOutliers
 from deepchecks.vision import VisionData
@@ -25,10 +25,10 @@ data_tools = Data_tools().data_tools
 
 class DiffgramDataset(Dataset):
     def __init__(self, session: Session, diffgram_dir_id: int):
-        self.session = session
+        #self.session = session
         self.diffgram_dir_id = diffgram_dir_id
         query, count = WorkingDirFileLink.file_list(
-            session = self.session,
+            session = session,
             working_dir_id = self.diffgram_dir_id,
             type = ['image'],
             return_mode = "query",
@@ -38,8 +38,8 @@ class DiffgramDataset(Dataset):
         )
         self.file_list = []
         for file in query.all():
-            file.image.regenerate_url(session = self.session)
-            self.file_list.append(file.serialize_with_type(session = self.session))
+            #file.image.regenerate_url(session = self.session)
+            self.file_list.append(file.serialize_with_type(session = session))
         self.count = count
 
     def __len__(self) -> int:
@@ -50,8 +50,8 @@ class DiffgramDataset(Dataset):
         bytes_img = data_tools.download_bytes(file.get('image').get('url_signed_blob_path'))
         res = BytesIO(bytes_img)
         image = io.imread(res)
-        img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        return img
+        #img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        return image
 
 
 class DiffgramVisionDataset(VisionData):
@@ -77,9 +77,11 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
 
     def execute_action(self, session):
         # Your core Action logic will go here.
+        print("running")
+
         dir_id = self.event_data.get('directory_id')
         pytorch_dataset = DiffgramDataset(session = session, diffgram_dir_id = dir_id)
-        dataloader = DataLoader(pytorch_dataset, batch_size = 100, shuffle = True, num_workers = 2, collate_fn = lambda data: data)
+        dataloader = DataLoader(pytorch_dataset, batch_size = 5, shuffle = True, num_workers = 0, collate_fn = lambda data: data)
         vision_ds = DiffgramVisionDataset(data_loader = dataloader)
         check = ImagePropertyOutliers()
         result = check.run(vision_ds)

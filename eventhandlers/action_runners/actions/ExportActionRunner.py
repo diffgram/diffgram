@@ -37,7 +37,7 @@ class ExportActionRunner(ActionRunner):
                 task_template = Job.get_by_id(session = session, job_id = task_template_id)
                 if task_template.status == 'complete':
                     logger.info('Pre condition pass. Task template is completed.')
-                    return Trueaction
+                    return True
                 else:
                     logger.warning(
                         f'Pre condition failed. Task template not completed. Status is: {task_template.status}')
