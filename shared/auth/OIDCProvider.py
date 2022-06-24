@@ -3,6 +3,27 @@ from shared.settings import settings
 from shared.utils.singleton import Singleton
 import time
 import abc
+import traceback
+from shared.shared_logger import get_shared_logger
+
+logger = get_shared_logger()
+
+def check_oidc_setup():
+    """
+        Initializes Keylcoak client for startup check purposes.
+    :return: True if init was successful.
+    """
+    if settings.USE_OIDC:
+        logger.info('Testing Keycloak setup...')
+        try:
+            prov = OIDCProvider()
+            oidc = prov.get_client()
+        except Exception as e:
+            data = traceback.format_exc()
+            logger.error(data)
+            logger.error(f'Error connecting setting up Keycloak')
+            return None
+    return True
 
 
 class SingletonABC(abc.ABCMeta, Singleton):
@@ -24,8 +45,19 @@ class OIDCClientBase(metaclass = SingletonABC):
                 callable(subclass.get_refresh_token_from_jwt) and
                 hasattr(subclass, 'get_access_token_with_code_grant') and
                 callable(subclass.get_access_token_with_code_grant) or
+                hasattr(subclass, 'get_login_url') and
+                callable(subclass.get_login_url) or
 
                 NotImplemented)
+
+    @abc.abstractmethod
+    def get_login_url(self) -> str:
+        """
+            returns the login URL to redirect user
+        :param refresh_token: refresh token to invalidate
+        :return:
+        """
+        raise NotImplementedError
 
     @abc.abstractmethod
     def logout(self, refresh_token: str):

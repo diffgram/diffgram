@@ -12,21 +12,6 @@ logger = get_shared_logger()
 REDIRECT_URI_DIFFGRAM = f'{settings.URL_BASE}user/oidc-login'
 
 
-def check_keycloak_setup():
-    """
-        Initializes Keylcoak client for startup check purposes.
-    :return: True if init was successful.
-    """
-    if settings.USE_OIDC:
-        logger.info('Testing Keycloak setup...')
-        try:
-            client = KeycloakDiffgramClient()
-        except Exception as e:
-            data = traceback.format_exc()
-            logger.error(data)
-            logger.error(f'Error connecting setting up Keycloak')
-            return None
-    return True
 
 
 class DefaultProjectRoles(Enum):

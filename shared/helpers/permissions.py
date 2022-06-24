@@ -5,7 +5,6 @@ from flask import request, redirect, url_for, flash
 from shared.helpers import sessionMaker
 from shared.database import hashing_functions
 import sys, os
-from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
 from shared.auth.OIDCProvider import OIDCProvider
 from shared.settings import settings
 
@@ -50,14 +49,15 @@ def LoggedIn():
 
 def get_user_from_oidc(session):
     from shared.database.user import User
-    kc_client = KeycloakDiffgramClient()
+    oidc = OIDCProvider()
+    oidc_client = oidc.get_client()
     jwt = login_session.get('jwt')
     if jwt is None:
         return None
     access_token = jwt.get('access_token')
     if access_token is None:
         return None
-    oidc_user = kc_client.get_user(access_token = access_token)
+    oidc_user = oidc_client.get_user(access_token = access_token)
     if not oidc_user:
         return None
     diffgram_user = User.get_user_by_oidc_id(session = session,
