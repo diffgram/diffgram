@@ -155,7 +155,7 @@ class Action(Base, SerializerMixin):
             Workflow.active == True,
             Action.archived == False,
             Action.project_id == project_id,
-            Action.trigger_data['trigger_event_name'].astext == trigger_kind
+            Action.trigger_data['default_event_name'].astext == trigger_kind
         ).all()
         return actions
 
