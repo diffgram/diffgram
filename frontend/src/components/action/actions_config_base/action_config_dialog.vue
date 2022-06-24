@@ -20,7 +20,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import action_config_form_base from './action_config_form_base';
+import action_config_form_base from './action_config_form_base.vue';
 import Action_config_factory from "../action_config_factory.vue";
 export default Vue.extend({
 
@@ -29,24 +29,17 @@ export default Vue.extend({
       Action_config_factory,
       action_config_form_base: action_config_form_base,
     },
-    props: ['action', 'project_string_id', 'actions_list', 'steps_config_prop'],
-
-    mounted() {
-
-    },
-
+    props: [
+      'action', 
+      'project_string_id', 
+      'actions_list', 
+      'steps_config_prop'
+    ],
     data() {
       return {
         is_open: false,
-        search: '',
-
+        search: ''
       }
-    },
-    watch: {
-
-    },
-    computed: {
-
     },
     methods: {
       open: function(){
