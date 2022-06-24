@@ -20,7 +20,6 @@
 
 <script lang="ts">
 import Vue from "vue";
-import axios from '../../../services/customInstance';
 import action_config_form_base from './action_config_form_base';
 import Action_config_factory from "../action_config_factory.vue";
 export default Vue.extend({

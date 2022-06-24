@@ -19,8 +19,6 @@ export const action_update = async (project_string_id, workflow_id, action) => {
     workflow_id: workflow_id
   }
   try {
-    console.log('action', action);
-    console.log('req_data', req_data);
     const {data} = await axios.put(
       url,
       req_data

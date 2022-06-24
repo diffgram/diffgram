@@ -4,6 +4,7 @@
 
     <v-select item-text="name"
               @change_directory="$emit('change')"
+              @change="select_trigger"
               item-value="value"
               :items="triggers_list"
               v-model="action.trigger_data.event_name"
@@ -69,13 +70,11 @@ export default Vue.extend({
       action_template: {
         deep: true,
         handler: function (new_val, old_val) {
-          console.log('eweweww', this.action_template)
           this.set_trigger_list(new_val)
         }
       },
       selected_trigger: function (new_val, old_val) {
         if (new_val && new_val.value) {
-
           this.action.trigger_data.event_name = new_val.value
         }
       },
@@ -126,6 +125,9 @@ export default Vue.extend({
       }
     },
     methods: {
+      select_trigger: function(e) {
+        this.$emit('change', e)
+      },
       set_trigger_list: function (action_template) {
         if(!action_template){
           return

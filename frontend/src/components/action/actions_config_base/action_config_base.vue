@@ -108,7 +108,6 @@ export default {
         "     Your action configuration code goes here...\n" +
         "   </template>\n" +
         "</action_config_wizard_base>"
-
     }
   }
 }

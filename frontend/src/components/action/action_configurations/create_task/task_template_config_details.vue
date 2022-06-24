@@ -19,7 +19,9 @@
                outlined
                small
                v-if="!show_task_template_wizard"
-               color="success" @click="show_wizard">
+               color="success" 
+               @click="show_wizard"
+               >
           <v-icon>mdi-plus</v-icon>
           Create New
         </v-btn>
