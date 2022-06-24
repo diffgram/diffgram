@@ -66,7 +66,7 @@ class ActionsConsumer:
     @staticmethod
     def filter_from_trigger_metadata(kind, event_data, actions_list):
         if trigger_kinds_with_custom_metadata.get(kind):
-            if kind == 'file_upload':
+            if kind == 'file_uploaded':
                 result = ActionsConsumer.filter_actions_matching_directory_trigger(event_data = event_data,
                                                                                    actions_list = actions_list)
                 return result
@@ -79,6 +79,7 @@ class ActionsConsumer:
             execution.
         :return:
         """
+        print(msg)
         with sessionMaker.session_scope_threaded() as session:
             msg_data = json.loads(msg)
             kind = msg_data.get('kind')
