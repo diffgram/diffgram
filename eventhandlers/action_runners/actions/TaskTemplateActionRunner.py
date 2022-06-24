@@ -22,7 +22,7 @@ class TaskTemplateActionRunner(ActionRunner):
     description = 'Add tasks to a task template'
     icon = 'https://www.svgrepo.com/show/376121/list-task.svg'
     kind = 'TaskTemplateActionRunner'
-    trigger_data = ActionTrigger(default_event = 'input_file_upload', event_list = ["input_file_upload"])
+    trigger_data = ActionTrigger(default_event = 'input_file_uploaded', event_list = ["input_file_uploaded"])
     condition_data = ActionCondition(default_event = None, event_list = [])
     completion_condition_data = ActionCompleteCondition(default_event = 'task_completed', event_list = ["task_completed"])
 
@@ -30,6 +30,7 @@ class TaskTemplateActionRunner(ActionRunner):
         return True
 
     def execute_action(self, session: Session):
+        print("triggered")
         """
                    Creates a task from the given file_id in the given task template ID.
                :return:
