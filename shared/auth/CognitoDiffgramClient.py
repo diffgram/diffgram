@@ -34,22 +34,18 @@ class CognitoDiffgramClient(OIDCClientBase):
         }
 
         response = requests.get(url = url, params = payload)
-        return response
+        return response.json()
 
-    def get_user(self, access_token: str):
+    def get_user(self, access_token: str) -> dict:
         """
             Get a user from OIDC provider.
         :param access_token: access token that belongs to the user to be fetched..
         :return:
         """
         url = f'{settings.OIDC_PROVIDER_HOST}oauth2/userInfo'
-
-        payload = {
-            'client_id': settings.OIDC_PROVIDER_CLIENT_ID,
-            'redirect_uri': f'{settings.URL_BASE}/user/login',
-        }
         headers = f'Bearer {access_token}'
-        response = requests.get(url = url, params = payload, headers = headers)
+        response = requests.get(url = url, params = {}, headers = headers)
+        return response.json()
 
     def get_access_token_from_jwt(self, jwt_data: dict):
         """
