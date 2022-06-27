@@ -19,7 +19,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
     description = 'Performs Zero Shot Classification for the text file'
     icon = 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg'
     kind = 'hf_zero_shot'
-    trigger_data = ActionTrigger(default_event='', event_list = ['task_created', 'input_file_uploaded'])
+    trigger_data = ActionTrigger(default_event='input_file_uploaded', event_list = ['input_file_uploaded'])
     condition_data = ActionCondition(default_event = 'action_completed',
                                      event_list = ['action_completed'])
 
@@ -34,7 +34,12 @@ class HuggingFaceZeroShotAction(ActionRunner):
         pass
 
     def execute_action(self, session, do_save_annotations=True) -> bool:
-        print("Hugging face has been executed")
+        file_id = self.event_data['file_id']
+        file = File.get_by_id(session, file_id = file_id)
+
+        if file.type != 'text':
+            return
+        
         return
         """
                     Creates a task from the given file_id in the given task template ID.
