@@ -24,7 +24,7 @@ def api_attribute_template_group_update(project_string_id):
         {'kind': str},
         {'label_file_list': None},
         {'default_value': None},
-        {'default_id': None},
+        {'default_id': Nlabel_file_listone},
         {'min_value': None},
         {'max_value': None},
         {'mode': str},

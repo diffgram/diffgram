@@ -104,7 +104,7 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
 def api_get_labels(project_string_id):
     """
     """
-
+    print('AAAAA', request.headers)
     schema_id = request.args.get('schema_id')
     log = regular_log.default()
     with sessionMaker.session_scope() as session:

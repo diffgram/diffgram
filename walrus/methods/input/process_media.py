@@ -53,7 +53,6 @@ from shared.utils.singleton import Singleton
 from methods.text_data.text_tokenizer import TextTokenizer
 from shared.utils.instance.transform_instance_utils import rotate_instance_dict_90_degrees
 
-
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
@@ -1036,7 +1035,6 @@ class Process_Media():
             self.input.status = 'failed'
             self.input.update_log = self.log
 
-
     def process_sensor_fusion_json(self):
         sf_processor = SensorFusionFileProcessor(
             session = self.session,
@@ -1552,6 +1550,7 @@ class Process_Media():
             self.input.update_log = self.log
 
         return True
+
     def process_one_text_file(self):
         """
             This function will process a single text file and Create a Row in Table
@@ -1650,32 +1649,7 @@ class Process_Media():
                                                                              readed_image_width,
                                                                              readed_image_height)
 
-    def process_one_image_file(self):
-
-        """
-
-        raw_file is raw data file, not diffgram class File(object)
-        if we don't have a raw file, we use the self.input.temp_dir_path_and_filename
-
-        """
-
-
-        result = self.read_raw_file()
-        if result is False: return False
-
-        # Image() subclass
-        self.new_image = Image(
-            original_filename = self.input.original_filename)
-        self.session.add(self.new_image)
-        self.session.flush()
-
-        self.try_to_commit()
-
-        if self.project:
-            self.project_id = self.project.id
-
-        ### Main
-
+    def save_image_and_thumbnails(self):
         self.resize_raw_image()
 
         self.check_metadata_and_auto_correct_instances(
@@ -1691,6 +1665,39 @@ class Process_Media():
         if len(self.log["error"].keys()) >= 1:
             logger.error(f"Error save_raw_image_thumb")
             return
+
+    def process_one_image_file(self):
+
+        """
+
+        raw_file is raw data file, not diffgram class File(object)
+        if we don't have a raw file, we use the self.input.temp_dir_path_and_filename
+
+        """
+
+        # Read file if it does not come from a blob
+        if self.input.type != 'from_blob_path':
+            result = self.read_raw_file()
+            if result is False:
+                return False
+
+        # Image() subclass
+        self.new_image = Image(
+            original_filename = self.input.original_filename)
+        self.session.add(self.new_image)
+        self.session.flush()
+
+        self.try_to_commit()
+
+        if self.project:
+            self.project_id = self.project.id
+
+        ### Main
+        if self.input.type != 'from_blob_path':
+            self.save_image_and_thumbnails()
+            if log_has_error(self.log):
+                return
+
         self.input.file = File.new(
             session = self.session,
             working_dir_id = self.working_dir_id,
@@ -1699,7 +1706,8 @@ class Process_Media():
             original_filename = self.input.original_filename,
             project_id = self.project_id,  # TODO test if project_id is working as expected here
             input_id = self.input.id,
-            file_metadata = self.input.file_metadata
+            connection_id = self.input.connection_id,
+            file_metadata = self.input.file_metadata,
         )
 
         ###
@@ -1939,8 +1947,8 @@ class Process_Media():
         self.new_audio_file.url_signed_expiry = int(time.time() + offset)  # 1 month
 
         self.new_audio_file.url_signed_blob_path = '{}{}/{}'.format(settings.PROJECT_TEXT_FILES_BASE_DIR,
-                                                                   str(self.project_id),
-                                                                   str(self.new_audio_file.id))
+                                                                    str(self.project_id),
+                                                                    str(self.new_audio_file.id))
 
         # TODO: Please review. On image there's a temp directory for resizing. But I don't feel the need for that here.
         logger.debug(f"Uploading text file from {self.input.temp_dir_path_and_filename}")
@@ -1952,7 +1960,8 @@ class Process_Media():
         )
 
         self.new_audio_file.url_signed = data_tools.build_secure_url(self.new_audio_file.url_signed_blob_path,
-                                                                    offset)
+                                                                     offset)
+
     def save_raw_text_file(self):
         offset = 2592000
         self.new_text_file.url_signed_expiry = int(time.time() + offset)  # 1 month

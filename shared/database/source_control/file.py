@@ -149,6 +149,10 @@ class File(Base, Caching):
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys = [task_id])
 
+    # Connection ID where the file is stored (if no connection provided will use default storage provider from env vars)
+    connection_id = Column(Integer, ForeignKey('connection_base.id'))
+    connection = relationship("Connection", foreign_keys = [connection_id])
+
     frame_number = Column(Integer)  # assumed to be local
     global_frame_number = Column(Integer)
 
@@ -858,6 +862,7 @@ class File(Base, Caching):
             text_file_id=None,
             audio_file_id=None,
             video_id=None,
+            connection_id=None,
             frame_number=None,
             label_id=None,
             colour=None,
