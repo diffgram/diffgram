@@ -3,7 +3,7 @@ from shared.system_startup.system_startup_base import SystemStartupBase
 from shared.shared_logger import get_shared_logger
 from shared.queueclient.QueueClient import QueueClient
 from shared.settings import settings
-from shared.auth.KeycloakDiffgramClient import check_keycloak_setup
+from shared.auth.OIDCProvider import check_oidc_setup
 import traceback
 
 logger = get_shared_logger()
@@ -29,4 +29,4 @@ class EventHandlerSystemStartupChecker(SystemStartupBase):
         if not result:
             raise Exception('System Startup Check Failed.')
 
-        check_keycloak_setup()
+        check_oidc_setup()
