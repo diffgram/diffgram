@@ -14,28 +14,28 @@
 
         </slot>
         <slot :name="keyStep" v-if="keyStep === 'triggers'" :action_template="action_template">
-          <trigger_config :project_string_id="project_string_id"
-                          :actions_list=actions_list
-                          :action_template="action_template"
-                          :action="action">
-
-          </trigger_config>
+          <trigger_config 
+            :project_string_id="project_string_id"
+            :actions_list=actions_list
+            :action_template="action_template"
+            :action="action" 
+          />
         </slot>
         <slot :name="keyStep" v-if="keyStep === 'pre_conditions'">
           <pre_conditions_config
             :action_template="action_template"
             :project_string_id="project_string_id"
             :actions_list=actions_list
-            :action="action">
-
-          </pre_conditions_config>
+            :action="action"
+          />
         </slot>
         <slot :name="keyStep" v-if="keyStep === 'completion_trigger'">
           <complete_conditions_config
             :project_string_id="project_string_id"
             :action_template="action_template"
             :actions_list=actions_list
-            :action="action"></complete_conditions_config>
+            :action="action" 
+          />
         </slot>
         <wizard_navigation
           @next="on_next_button_click"

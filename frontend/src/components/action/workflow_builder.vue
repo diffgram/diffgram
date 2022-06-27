@@ -255,7 +255,7 @@ export default Vue.extend({
       },
       selected_action: {
         deep: true,
-        handler: function(new_val, old_val){
+        handler: function(new_val, old_val) {
           this.on_action_updated(new_val)
         }
       }

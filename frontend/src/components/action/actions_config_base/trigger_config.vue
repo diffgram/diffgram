@@ -3,12 +3,10 @@
     <h3 class="mr-6">When:</h3>
 
     <v-select item-text="name"
-              @change_directory="$emit('change')"
-              item-value="value"
-              :items="triggers_list"
-              v-model="action.trigger_data.event_name"
-    >
-    </v-select>
+      item-value="value"
+      :items="triggers_list"
+      v-model="action.trigger_data.event_name"
+    />
 
     <v_directory_list
       v-model="action.trigger_data.upload_directory_id_list"
@@ -45,9 +43,6 @@ export default Vue.extend({
       triggers_list_prop: {}
     },
     mounted() {
-      if (!this.action.trigger_data.trigger_event_name) {
-        this.action.trigger_data.trigger_event_name = 'action_completed'
-      }
       this.set_trigger_list(this.action_template)
     },
 
@@ -69,13 +64,11 @@ export default Vue.extend({
       action_template: {
         deep: true,
         handler: function (new_val, old_val) {
-          console.log('eweweww', this.action_template)
           this.set_trigger_list(new_val)
         }
       },
       selected_trigger: function (new_val, old_val) {
         if (new_val && new_val.value) {
-
           this.action.trigger_data.event_name = new_val.value
         }
       },
@@ -136,7 +129,7 @@ export default Vue.extend({
         if (action_template.trigger_data && action_template.trigger_data.event_list) {
           this.default_triggers_list = action_template.trigger_data.event_list
           let selected = this.default_triggers_list.find(elm => elm.value === action_template.trigger_data.default_event_name)
-          if(selected){
+          if(selected && selected.trigger_data && !selected.trigger_data.event_name){
             this.action.trigger_data.event_name = selected.value
           }
 
