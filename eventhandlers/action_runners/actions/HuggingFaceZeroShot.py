@@ -8,8 +8,8 @@ from shared.helpers.sessionMaker import session_scope
 from shared.utils import job_dir_sync_utils
 from shared.database.source_control.file import File
 from shared.ingest import packet
+import json
 from transformers import pipeline
-
 
 logger = get_shared_logger()
 
@@ -39,6 +39,21 @@ class HuggingFaceZeroShotAction(ActionRunner):
 
         if file.type != 'text':
             return
+
+        raw_sentences = json.loads(file.text_file.get_text())['nltk']['sentences']
+
+        text = ''
+
+        for sentence in raw_sentences:
+            text += sentence['value']
+
+
+        candidate_labels = ["renewable", "politics", "emission", "temperature", "emergency", "advertisment"]
+        classifier = pipeline("zero-shot-classification")
+
+        result = classifier(text, candidate_labels)
+
+        print(result)
         
         return
         """
