@@ -27,12 +27,12 @@
         ></task_template_config_details>
       </template>
 
-      <template v-slot:ongoing_usage>
+      <!-- <template v-slot:ongoing_usage>
         <job_detail
           v-if="action.config_data"
           :job_id="action.config_data.task_template_id">
         </job_detail>
-      </template>
+      </template> -->
 
     </action_config_base>
   </div>
