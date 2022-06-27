@@ -4,10 +4,12 @@ from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 from shared.shared_logger import get_shared_logger
 from shared.database.task.job.job import Job
+from shared.database.attribute.attribute import Attribute
 from shared.helpers.sessionMaker import session_scope
 from shared.utils import job_dir_sync_utils
 from shared.database.source_control.file import File
 from shared.ingest import packet
+from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 import json
 from transformers import pipeline
 
@@ -40,20 +42,32 @@ class HuggingFaceZeroShotAction(ActionRunner):
         if file.type != 'text':
             return
 
-        raw_sentences = json.loads(file.text_file.get_text())['nltk']['sentences']
-
         text = ''
-
+        raw_sentences = json.loads(file.text_file.get_text())['nltk']['sentences']
         for sentence in raw_sentences:
             text += sentence['value']
 
+        group_list = Attribute_Template_Group.list(
+            session = session,
+            group_id = 4,
+            project_id = 4,
+            return_kind = "objects",
+            limit = None
+        )
 
-        candidate_labels = ["renewable", "politics", "emission", "temperature", "emergency", "advertisment"]
+        group_list_serialized = []
+
+        for group in group_list:
+            group_list_serialized.append(group.serialize_with_attributes(session = session))
+
+        candidate_labels =[option['name'] for option in group_list_serialized[0]['attribute_template_list']]
         classifier = pipeline("zero-shot-classification")
 
         result = classifier(text, candidate_labels)
 
-        print(result)
+        label_to_apply = result['labels'][result['scores'].index(max(result['scores']))]
+
+        print(label_to_apply)
         
         return
         """
