@@ -2,14 +2,19 @@ from action_runners.base.ActionRunner import ActionRunner
 from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
 from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
+from shared.database.annotation.instance import Instance
+from shared.database.project import Project
 from shared.shared_logger import get_shared_logger
 from shared.database.task.job.job import Job
 from shared.database.attribute.attribute import Attribute
 from shared.helpers.sessionMaker import session_scope
 from shared.utils import job_dir_sync_utils
 from shared.database.source_control.file import File
+from shared.database.annotation.instance import Instance
+from shared.database.project import Project
 from shared.ingest import packet
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
+from shared.annotation import Annotation_Update
 import json
 from transformers import pipeline
 
@@ -37,6 +42,9 @@ class HuggingFaceZeroShotAction(ActionRunner):
 
     def execute_action(self, session, do_save_annotations=True) -> bool:
         file_id = self.event_data['file_id']
+        project_id = 4
+        group_id = 4
+
         file = File.get_by_id(session, file_id = file_id)
 
         if file.type != 'text':
@@ -49,8 +57,8 @@ class HuggingFaceZeroShotAction(ActionRunner):
 
         group_list = Attribute_Template_Group.list(
             session = session,
-            group_id = 4,
-            project_id = 4,
+            group_id = group_id,
+            project_id = project_id,
             return_kind = "objects",
             limit = None
         )
@@ -60,15 +68,35 @@ class HuggingFaceZeroShotAction(ActionRunner):
         for group in group_list:
             group_list_serialized.append(group.serialize_with_attributes(session = session))
 
-        candidate_labels =[option['name'] for option in group_list_serialized[0]['attribute_template_list']]
+        candidate_attributes = [option['name'] for option in group_list_serialized[0]['attribute_template_list']]
         classifier = pipeline("zero-shot-classification")
 
-        result = classifier(text, candidate_labels)
+        result = classifier(text, candidate_attributes)
 
-        label_to_apply = result['labels'][result['scores'].index(max(result['scores']))]
+        attribute_to_apply = result['labels'][result['scores'].index(max(result['scores']))]
+        attribute_item_to_apply = [option for option in group_list_serialized[0]['attribute_template_list'] if option['name'] == attribute_to_apply][0]
 
-        print(label_to_apply)
-        
+        to_create = {
+            "file_id": file_id,
+            "project_id": 4,
+            "type": 'global',
+            "attribute_groups": {
+                    [group_id] : attribute_item_to_apply
+                }
+        }
+
+        project = Project.get_by_id(session=session, id=project_id)
+
+        annotation_update = Annotation_Update(
+            session = session,
+            task = None,
+            file = file,
+            project = project,
+            instance_list_new = [to_create],
+            do_init_existing_instances = True
+        )
+
+        annotation_update.main()        
         return
         """
                     Creates a task from the given file_id in the given task template ID.
