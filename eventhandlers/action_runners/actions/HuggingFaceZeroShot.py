@@ -42,12 +42,15 @@ class HuggingFaceZeroShotAction(ActionRunner):
 
     def execute_action(self, session, do_save_annotations=True) -> bool:
         file_id = self.event_data['file_id']
-        project_id = 4
-        group_id = 4
+        project_id = self.action.config_data['project_id']
+        group_id = self.action.config_data['group_id']
 
         file = File.get_by_id(session, file_id = file_id)
 
         if file.type != 'text':
+            return
+
+        if not project_id or  not group_id:
             return
 
         text = ''
@@ -78,12 +81,12 @@ class HuggingFaceZeroShotAction(ActionRunner):
 
         to_create = {
             "file_id": file_id,
-            "project_id": 4,
+            "project_id": project_id,
             "type": 'global',
-            "attribute_groups": {
-                    [group_id] : attribute_item_to_apply
-                }
+            "attribute_groups": {}
         }
+
+        to_create['attribute_groups'][group_id] = attribute_item_to_apply
 
         project = Project.get_by_id(session=session, id=project_id)
 
