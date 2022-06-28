@@ -36,7 +36,7 @@
           <p v-if="loading_attributes">
             Loading...
           </p>
-          <v-radio-group v-if="global_attribute_groups_list.length > 0 && !loading_attributes" v-model="radioGroup">
+          <v-radio-group v-if="global_attribute_groups_list.length > 0 && !loading_attributes" @change="change_attribute">
             <v-radio
               v-for="attribute in global_attribute_groups_list"
               :key="attribute.id"
@@ -119,7 +119,6 @@ export default {
   mounted() {
     this.steps_config = new ActionStepsConfig()
     this.steps_config.hide_step('pre_conditions')
-
     this.get_attributes()
   },
   watch: {
@@ -130,6 +129,13 @@ export default {
   methods: {
     change_schema: function(event) {
       this.selected_schema = event.id
+      this.action.config_data.schema_id = event.id;
+      this.action.config_data.project_id = event.project_id;
+      this.$emit('action_updated', this.action)
+    },
+    change_attribute: function(event) {
+      this.action.config_data.group_id = event
+      this.$emit('action_updated', this.action)
     },
     get_attributes: async function() {
       this.loading_attributes = true
