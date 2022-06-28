@@ -125,6 +125,9 @@ class Input(Base):
     connection_id = Column(Integer, ForeignKey('connection_base.id'))
     connection = relationship("Connection", foreign_keys = [connection_id])
 
+    # Bucket name for a blob path file
+    bucket_name = Column(String())
+
     external_map_id = Column(Integer, ForeignKey('external_map.id'))
     external_map = relationship("ExternalMap", foreign_keys=[external_map_id])
     external_map_action = Column(String())
