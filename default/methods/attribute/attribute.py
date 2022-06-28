@@ -13,7 +13,6 @@ from shared.database.attribute.attribute_template_group import Attribute_Templat
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("200 per day")
 def api_attribute_update_or_new(project_string_id):
     """
     Shared route for update and new
