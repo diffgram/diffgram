@@ -64,7 +64,7 @@
                 </v-layout>
               </template>
             </v-select>
-            <p>Options will bepassed to the action: {{ options }}</p>
+            <p>Options that will bepassed to the action: {{ options }}</p>
           </div>
           <p v-else>There are no global attributes in this schema</p>
         </div>
