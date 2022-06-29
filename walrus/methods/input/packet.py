@@ -13,8 +13,10 @@ try:
     from methods.input.process_media import add_item_to_queue
 except:
     pass
-from shared.regular import regular_methods
+from shared.regular import regular_methods, regular_log
 from methods.input.upload import Upload
+from shared.database.connection.connection import Connection
+from sqlalchemy.orm.session import Session
 
 
 @routes.route('/api/walrus/v1/project/<string:project_string_id>/input/packet',
@@ -44,6 +46,18 @@ def input_packet(project_string_id):
                  {'mode': None},
                  {'directory_id': None},
                  {'original_filename': None},
+                 {'connection_id': {
+                     "required": False,
+                     "kind": int
+                 }},
+                 {'bucket_name': {
+                     "required": False,
+                     "kind": str
+                 }},
+                 {'blob_path': {
+                     "required": False,
+                     "kind": str
+                 }},
                  {'type': None},
                  {'batch_id': None},
                  {"media": {
@@ -121,6 +135,8 @@ def input_packet(project_string_id):
                                         directory_id = directory_id,
                                         instance_list = untrusted_input.get('instance_list', None),
                                         original_filename = input.get('original_filename', None),
+                                        bucket_name = input.get('bucket_name', None),
+                                        connection_id = input.get('connection_id', None),
                                         video_split_duration = video_split_duration,
                                         frame_packet_map = untrusted_input.get('frame_packet_map', None),
                                         batch_id = untrusted_input.get('batch_id', None),
@@ -173,6 +189,8 @@ def enqueue_packet(project_string_id,
                    type = None,
                    task_action = None,
                    external_map_id = None,
+                   connection_id = None,
+                   bucket_name = None,
                    original_filename = None,
                    external_map_action = None,
                    enqueue_immediately = False,
@@ -202,6 +220,8 @@ def enqueue_packet(project_string_id,
     diffgram_input.external_map_id = external_map_id
     diffgram_input.original_filename = original_filename
     diffgram_input.external_map_action = external_map_action
+    diffgram_input.connection_id = connection_id
+    diffgram_input.bucket_name = bucket_name
     diffgram_input.task_action = task_action
     diffgram_input.mode = mode
     diffgram_input.project = project
@@ -262,6 +282,34 @@ def enqueue_packet(project_string_id,
     return diffgram_input
 
 
+def validate_input_from_blob_path(project: Project, input: dict, session: Session, log: dict):
+    if input.get('connection_id') is None:
+        log['error'] = {}
+        log['error']['connection_id'] = 'Provide a connection ID'
+    connection = Connection.get_by_id(session, id = input.get('connection_id'))
+    if connection is None:
+        log['error'] = {}
+        log['error']['connection_id'] = 'Connection ID does not exist'
+
+    if connection.project_id != project.id:
+        log['error'] = {}
+        log['error']['connection_id'] = 'Invalid Connection ID. Connection ID must belong to project'
+
+    if input.get('bucket_name') is None:
+        log['error'] = {}
+        log['error']['bucket_name'] = 'Provide bucket name for blob'
+
+    if input.get('blob_path') is None:
+        log['error'] = {}
+        log['error']['blob_path'] = 'Provide blob_path for blob'
+
+    if input.get('blob_path') is None:
+        log['error'] = {}
+        log['error']['blob_path'] = 'Provide blob_path for blob'
+
+    return log
+
+
 def validate_file_data_for_input_packet(session, input, project_string_id, log):
     """
     Determines if payload has valid file data.
@@ -276,6 +324,18 @@ def validate_file_data_for_input_packet(session, input, project_string_id, log):
     :param log:
     :return:
     """
+    project = Project.get_by_string_id(session = session, project_string_id = project_string_id)
+    if input.get('type') == 'from_blob_path':
+        log = validate_input_from_blob_path(
+            project = project,
+            input = input,
+            session = session,
+            log = log
+        )
+        if regular_log.log_has_error(log):
+            return False, log, None
+        else:
+            return True, log, None
     valid_id = False
     valid_media_url = False
     valid_file_name = False
@@ -285,7 +345,7 @@ def validate_file_data_for_input_packet(session, input, project_string_id, log):
     else:
         media_url = None
         media_type = None
-    project = Project.get_by_string_id(session = session, project_string_id = project_string_id)
+
     file_id = None
     if input.get('file_id') is None:
         # Validate Media URL Case

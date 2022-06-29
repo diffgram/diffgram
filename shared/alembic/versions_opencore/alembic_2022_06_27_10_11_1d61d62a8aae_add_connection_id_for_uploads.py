@@ -17,9 +17,9 @@ depends_on = None
 
 def upgrade():
     op.add_column('file', sa.Column('connection_id', sa.Integer(), sa.ForeignKey('connection_base.id')))
-    op.add_column('file', sa.Column('bucket_name', sa.Integer(), sa.ForeignKey('connection_base.id')))
+    op.add_column('file', sa.Column('bucket_name', sa.String()))
     op.add_column('input', sa.Column('connection_id', sa.Integer(), sa.ForeignKey('connection_base.id')))
-    op.add_column('input', sa.Column('bucket_name', sa.Integer(), sa.ForeignKey('connection_base.id')))
+    op.add_column('input', sa.Column('bucket_name', sa.String()))
 
 
 def downgrade():

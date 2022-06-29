@@ -152,6 +152,7 @@ class File(Base, Caching):
     # Connection ID where the file is stored (if no connection provided will use default storage provider from env vars)
     connection_id = Column(Integer, ForeignKey('connection_base.id'))
     connection = relationship("Connection", foreign_keys = [connection_id])
+    bucket_name = Column(String())
 
     frame_number = Column(Integer)  # assumed to be local
     global_frame_number = Column(Integer)
@@ -863,6 +864,7 @@ class File(Base, Caching):
             audio_file_id=None,
             video_id=None,
             connection_id=None,
+            bucket_name=None,
             frame_number=None,
             label_id=None,
             colour=None,
@@ -913,6 +915,8 @@ class File(Base, Caching):
             label_id=label_id,
             audio_file_id=audio_file_id,
             text_file_id=text_file_id,
+            bucket_name=bucket_name,
+            connection_id=connection_id,
             video_id=video_id,
             video_parent_file_id=video_parent_file_id,
             frame_number=frame_number,

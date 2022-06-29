@@ -1692,7 +1692,7 @@ class Process_Media():
         if self.project:
             self.project_id = self.project.id
 
-        ### Main
+        # Save thumbnails if we are uploading blobs, otherwise skip
         if self.input.type != 'from_blob_path':
             self.save_image_and_thumbnails()
             if log_has_error(self.log):
@@ -1707,31 +1707,25 @@ class Process_Media():
             project_id = self.project_id,  # TODO test if project_id is working as expected here
             input_id = self.input.id,
             connection_id = self.input.connection_id,
+            bucket_name = self.input.bucket_name,
             file_metadata = self.input.file_metadata,
+
         )
 
-        ###
         self.populate_new_models_and_runs()
-        # If it's a video then we expect it will be handled by the above detection
+
+        # Handle status checks
         if self.input.media_type == 'image':
 
             if self.input.status != "failed":  # if we haven't already set a status
-                # May need this on video too
-                # Context of for example the packet for instances attached to it
-                # Not loading successfully
-                # We default this to init so 'failed' string instead of None
                 self.declare_success(self.input)
 
-            # Question, could we just call close() on temp_dir_path_and_filename instead here?
-            # TODO review this usage vs say https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-            # basically, if the default is that delete=True on close, hmmm
-
-            # allow_csv is True by default but gets set to False by process csv...
-            try:
-                shutil.rmtree(self.input.temp_dir)  # delete directory
-            except OSError as exc:
-                print("shutil error")
-                pass
+            if self.input.type != 'from_blob_path':
+                try:
+                    shutil.rmtree(self.input.temp_dir)  # delete directory
+                except OSError as exc:
+                    print("shutil error")
+                    pass
 
         # Refresh Previews of project
         self.project.set_cache_key_dirty('preview_file_list')
