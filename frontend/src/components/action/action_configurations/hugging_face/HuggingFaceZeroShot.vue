@@ -23,9 +23,10 @@
         <br />
         <h4>Select schema</h4>
         <label_schema_selector
+            v-if="action"
             :project_string_id="project_string_id"
+            :initial_schema="selected_schema"
             @change="change_schema"
-            @update_label_file_visible="$emit('update_label_file_visibility', $event)"
           >
         </label_schema_selector>
 
@@ -138,6 +139,12 @@ export default {
     this.steps_config = new ActionStepsConfig()
     this.steps_config.hide_step('pre_conditions')
     this.get_attributes()
+
+    if (this.action) {
+      if (this.action.config_data.schema_id) {
+        this.selected_schema = this.action.config_data.schema_id
+      }
+    } 
   },
   watch: {
     selected_schema: function() {
@@ -146,10 +153,12 @@ export default {
   },
   methods: {
     change_schema: function(event) {
-      this.selected_schema = event.id
-      this.action.config_data.schema_id = event.id;
-      this.action.config_data.project_id = event.project_id;
-      this.$emit('action_updated', this.action)
+      if (this.action && event.id) {
+        this.selected_schema = event.id
+        this.action.config_data.schema_id = event.id;
+        this.action.config_data.project_id = event.project_id;
+        this.$emit('action_updated', this.action)
+      }
     },
     change_attribute: function(event) {
       this.action.config_data.group_id = event
