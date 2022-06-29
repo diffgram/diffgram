@@ -6,7 +6,7 @@ from shared.helpers import sessionMaker
 from shared.database import hashing_functions
 import sys, os
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
-from shared.auth.OIDCProvider import OIDCProvider
+from shared.auth.OIDCProvider import OAuth2Provider
 from shared.settings import settings
 
 from shared.shared_logger import get_shared_logger
@@ -17,8 +17,8 @@ logger = get_shared_logger()
 # True means has permission, False means doesn't.
 
 def LoggedIn():
-    if settings.USE_OIDC:
-        oidc = OIDCProvider()
+    if settings.USE_OAUTH2:
+        oidc = OAuth2Provider()
         oidc_client = oidc.get_client()
         jwt = login_session.get('jwt')
         access_token = oidc_client.get_access_token_from_jwt(jwt_data = jwt)
@@ -68,7 +68,7 @@ def get_user_from_oidc(session):
 
 
 def getUserID(session):
-    if settings.USE_OIDC:
+    if settings.USE_OAUTH2:
         return get_user_from_oidc(session = session)
     else:
         if login_session.get('user_id', None) is not None:

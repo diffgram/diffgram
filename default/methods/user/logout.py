@@ -4,9 +4,9 @@ from flask import redirect
 from methods import routes
 from shared.settings import settings
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
-from shared.auth.OIDCProvider import OIDCProvider
+from shared.auth.OIDCProvider import OAuth2Provider
 
-oidc = OIDCProvider()
+oidc = OAuth2Provider()
 
 def oidc_logout():
     jwt_data = login_session.get('jwt')
@@ -24,7 +24,7 @@ def oidc_logout():
 
 @routes.route('/api/v1/user/logout', methods = ['GET'])
 def logout():
-    if settings.USE_OIDC:
+    if settings.USE_OAUTH2:
         oidc_logout()
     else:
         login_session['user_id'] = ''

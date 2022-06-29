@@ -183,13 +183,13 @@ SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_MINIMUM_DA
 SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID', 30 * 14))
 
 # OIDC Settings
-USE_OIDC = env_adapter.bool(os.getenv('USE_OIDC', False))
-OIDC_PROVIDER_NAME = os.getenv('OIDC_PROVIDER_NAME', 'keycloak')
-OIDC_PROVIDER_HOST = os.getenv('OIDC_PROVIDER_HOST', 'http://localhost:8099/auth/')
-OIDC_DEFAULT_REDIRECT_URL = f'{URL_BASE}/api/v1/auth/oidc-login'
+USE_OAUTH2 = env_adapter.bool(os.getenv('USE_OIDC', False))
+OAUTH2_PROVIDER_NAME = os.getenv('OIDC_PROVIDER_NAME', 'keycloak')
+OAUTH2_PROVIDER_HOST = os.getenv('OIDC_PROVIDER_HOST', 'http://localhost:8099/auth/')
+OAUTH2_DEFAULT_REDIRECT_URL = f'{URL_BASE}/api/v1/auth/oidc-login'
 
 
-OIDC_PROVIDER_CLIENT_ID = os.getenv('OIDC_PROVIDER_CLIENT_ID', 'diffgram')
+OAUTH2_PROVIDER_CLIENT_ID = os.getenv('OIDC_PROVIDER_CLIENT_ID', 'diffgram')
 OIDC_PROVIDER_PUBLIC_KEY = os.getenv('OIDC_PROVIDER_PUBLIC_KEY', 'diffgram_public_key')
 OIDC_PROVIDER_REALM = os.getenv('OIDC_PROVIDER_REALM', 'diffgram-realm')
 

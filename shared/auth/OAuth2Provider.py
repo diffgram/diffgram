@@ -9,7 +9,7 @@ class SingletonABC(abc.ABCMeta, Singleton):
     pass
 
 
-class OIDCClientBase(metaclass = SingletonABC):
+class OAuth2ClientBase(metaclass = SingletonABC):
     @classmethod
     def __subclasshook__(cls, subclass):
         return (hasattr(subclass, 'logout') and
@@ -82,19 +82,19 @@ class OIDCClientBase(metaclass = SingletonABC):
         raise NotImplementedError
 
 
-class OIDCProvider(metaclass = Singleton):
+class OAuth2Provider(metaclass = Singleton):
     """
         Factory Class For OIDC Clients implementation.
         Depending on the setting set in settings.OIDC_PROVIDER_NAME
         this class will instantiatiate a different client oidc provider implementation for
         users to manage login, registration, token refresh, etc...
     """
-    oidc_client: OIDCClientBase
+    oidc_client: OAuth2ClientBase
 
     def __init__(self):
         from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
 
-        provider = settings.OIDC_PROVIDER_NAME
+        provider = settings.OAUTH2_PROVIDER_NAME
 
         if not provider:
             raise ValueError("No DIFFGRAM_STATIC_STORAGE_PROVIDER env var set. valid values are [gcp, aws, azure]")

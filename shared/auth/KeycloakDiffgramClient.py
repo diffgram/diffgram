@@ -6,7 +6,7 @@ import jwt
 from shared.shared_logger import get_shared_logger
 import traceback
 from shared.utils.singleton import Singleton
-from shared.auth.OIDCProvider import OIDCClientBase
+from shared.auth.OIDCProvider import OAuth2ClientBase
 logger = get_shared_logger()
 
 REDIRECT_URI_DIFFGRAM = f'{settings.URL_BASE}user/oidc-login'
@@ -17,7 +17,7 @@ def check_keycloak_setup():
         Initializes Keylcoak client for startup check purposes.
     :return: True if init was successful.
     """
-    if settings.USE_OIDC:
+    if settings.USE_OAUTH2:
         logger.info('Testing Keycloak setup...')
         try:
             client = KeycloakDiffgramClient()
@@ -40,15 +40,15 @@ class DefaultGlobalRoles(Enum):
     super_admin = 'super_admin'
 
 
-class KeycloakDiffgramClient(OIDCClientBase):
+class KeycloakDiffgramClient(OAuth2ClientBase):
     keycloak: KeycloakOpenID
     installed: bool
     client_secret: str
 
     def __init__(self):
         self.setup_keycloak_diffgram_install()
-        self.keycloak = KeycloakOpenID(server_url = settings.OIDC_PROVIDER_HOST,
-                                       client_id = settings.OIDC_PROVIDER_CLIENT_ID,
+        self.keycloak = KeycloakOpenID(server_url = settings.OAUTH2_PROVIDER_HOST,
+                                       client_id = settings.OAUTH2_PROVIDER_CLIENT_ID,
                                        realm_name = settings.OIDC_PROVIDER_REALM,
                                        client_secret_key = self.client_secret)
 
@@ -59,7 +59,7 @@ class KeycloakDiffgramClient(OIDCClientBase):
             for diffgram to work correctly with it.
         :return:
         """
-        self.keycloak_admin_master = KeycloakAdmin(server_url = settings.OIDC_PROVIDER_HOST,
+        self.keycloak_admin_master = KeycloakAdmin(server_url = settings.OAUTH2_PROVIDER_HOST,
                                                    username = settings.KEY_CLOAK_MASTER_USER,
                                                    password = settings.KEY_CLOAK_MASTER_PASSWORD)
         # Create a new Realm
@@ -97,7 +97,7 @@ class KeycloakDiffgramClient(OIDCClientBase):
         return self.client_secret
 
     def __get_client_secret(self):
-        client = self.keycloak_admin_master.get_client(settings.OIDC_PROVIDER_CLIENT_ID)
+        client = self.keycloak_admin_master.get_client(settings.OAUTH2_PROVIDER_CLIENT_ID)
         secret = self.keycloak_admin_master.get_client_secrets(client_id = client.get('id'))
         self.client_secret = secret.get('value')
         return self.client_secret
@@ -123,10 +123,10 @@ class KeycloakDiffgramClient(OIDCClientBase):
         return user_id
 
     def __create_default_diffgram_client(self) -> str:
-        logger.info(f'Creating client {settings.OIDC_PROVIDER_CLIENT_ID}')
+        logger.info(f'Creating client {settings.OAUTH2_PROVIDER_CLIENT_ID}')
         client_id = self.keycloak_admin_master.create_client(
-            payload = {'name': settings.OIDC_PROVIDER_CLIENT_ID,
-                       'id': settings.OIDC_PROVIDER_CLIENT_ID},
+            payload = {'name': settings.OAUTH2_PROVIDER_CLIENT_ID,
+                       'id': settings.OAUTH2_PROVIDER_CLIENT_ID},
             skip_exists = True)
         self.keycloak_admin_master.update_client(client_id,
                                                  {'authorizationServicesEnabled': True,

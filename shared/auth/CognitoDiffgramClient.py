@@ -1,20 +1,20 @@
-from shared.auth.OIDCProvider import OIDCClientBase
+from shared.auth.OIDCProvider import OAuth2ClientBase
 from shared.settings import settings
 import requests
 import boto3
 
 
-class CognitoDiffgramClient(OIDCClientBase):
+class CognitoDiffgramClient(OAuth2ClientBase):
 
     def __init__(self):
-        self.cognito_client = boto3.client('cognito-idp', endpoint_url = settings.OIDC_PROVIDER_HOST)
+        self.cognito_client = boto3.client('cognito-idp', endpoint_url = settings.OAUTH2_PROVIDER_HOST)
 
     def get_access_token_with_code_grant(self, code: str) -> dict:
-        url = f'{settings.OIDC_PROVIDER_HOST}oauth2/token'
+        url = f'{settings.OAUTH2_PROVIDER_HOST}oauth2/token'
 
         payload = {
             'grant_type': 'authorization_code',
-            'client_id': settings.OIDC_PROVIDER_CLIENT_ID,
+            'client_id': settings.OAUTH2_PROVIDER_CLIENT_ID,
             'code': code,
             'redirect_url': settings.Red
         }
@@ -26,10 +26,10 @@ class CognitoDiffgramClient(OIDCClientBase):
         return result
 
     def logout(self, refresh_token):
-        url = f'{settings.OIDC_PROVIDER_HOST}logout'
+        url = f'{settings.OAUTH2_PROVIDER_HOST}logout'
 
         payload = {
-            'client_id': settings.OIDC_PROVIDER_CLIENT_ID,
+            'client_id': settings.OAUTH2_PROVIDER_CLIENT_ID,
             'redirect_uri': f'{settings.URL_BASE}/user/login',
         }
 
@@ -42,7 +42,7 @@ class CognitoDiffgramClient(OIDCClientBase):
         :param access_token: access token that belongs to the user to be fetched..
         :return:
         """
-        url = f'{settings.OIDC_PROVIDER_HOST}oauth2/userInfo'
+        url = f'{settings.OAUTH2_PROVIDER_HOST}oauth2/userInfo'
         headers = f'Bearer {access_token}'
         response = requests.get(url = url, params = {}, headers = headers)
         return response.json()
@@ -53,7 +53,7 @@ class CognitoDiffgramClient(OIDCClientBase):
         :param jwt_data:
         :return:
         """
-        raise NotImplementedError
+        return jwt_data.get('access_token')
 
     def get_refresh_token_from_jwt(self, jwt_data: dict):
         """
@@ -61,7 +61,7 @@ class CognitoDiffgramClient(OIDCClientBase):
         :param jwt_data:
         :return:
         """
-        raise NotImplementedError
+        return jwt_data.get('refresh_token')
 
     def refresh_token(self, token: str) -> dict:
         """

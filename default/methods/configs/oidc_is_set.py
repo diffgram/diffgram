@@ -7,13 +7,13 @@ from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
 
 @routes.route('/api/configs/is-oidc-set')
 def oidc_is_set():
-    if settings.USE_OIDC is False:
+    if settings.USE_OAUTH2 is False:
         return jsonify({"use_oidc": False})
 
-    is_set = settings.USE_OIDC and \
-             settings.OIDC_PROVIDER_HOST and \
+    is_set = settings.USE_OAUTH2 and \
+             settings.OAUTH2_PROVIDER_HOST and \
              settings.OIDC_PROVIDER_REALM and \
-             settings.OIDC_PROVIDER_CLIENT_ID
+             settings.OAUTH2_PROVIDER_CLIENT_ID
 
     if is_set:
         kc_client = KeycloakDiffgramClient()

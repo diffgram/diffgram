@@ -2,7 +2,7 @@ from methods.regular.regular_api import *
 from flask import redirect
 import uuid
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
-from shared.auth.OIDCProvider import OIDCProvider
+from shared.auth.OIDCProvider import OAuth2Provider
 from methods.user.login import first_stage_login_success
 from methods.user.account.account_new import user_new_core, set_password_and_login_history
 
@@ -41,7 +41,7 @@ def api_oidc_callback():
     log = regular_log.default()
     with sessionMaker.session_scope() as session:
         keycloak = KeycloakDiffgramClient()
-        oidc_provider = OIDCProvider()
+        oidc_provider = OAuth2Provider()
         oidc_client = oidc_provider.get_client()
         access_token_data = oidc_client.get_access_token_with_code_grant(code = code)
         user_data = oidc_client.get_user(access_token = access_token_data.get('access_token'))

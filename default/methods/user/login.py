@@ -174,7 +174,7 @@ def first_stage_login_success(log,
                        otp_current_session = user.otp_current_session), 200
 
     if user.otp_enabled is None or user.otp_enabled is False:
-        if settings.USE_OIDC:
+        if settings.USE_OAUTH2:
             set_jwt_in_session(jwt)
         else:
             setSecureCookie(user)

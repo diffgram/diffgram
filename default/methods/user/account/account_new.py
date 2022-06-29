@@ -127,7 +127,7 @@ def validate_existing_user_from_raw(
 
 
 def set_password_and_login_history(session, new_user, password, token_data = None):
-    if settings.USE_OIDC:
+    if settings.USE_OAUTH2:
         set_jwt_in_session(token_data = token_data)
     setSecureCookie(new_user)
 
