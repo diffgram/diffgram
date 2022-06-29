@@ -518,17 +518,16 @@
             >
             </ghost_canvas_available_alert>
 
-            <div v-if="file_cant_be_accessed && !loading">
-              <v_error_multiple :error="{
-                error: 'Storage error. Error accessing BLOB',
-                descriptive: 'You may not have permissions. If you are an Admin, check storage config and signed URL settings.'
-              }"> </v_error_multiple>
-
+            <div v-if="file_cant_be_accessed && !loading"
+                 class="d-flex flex-column justify-center align-center"
+                 style="min-width: 750px; min-height: 750px; border: 1px solid #e0e0e0">
+              <v-icon size="450">mdi-download-off</v-icon>
               <div v-if="file && file.image">
-                URL Attempted To be Used: {{file.image.url_signed}}
+               <p>
+                 URL Attempted To be Used: {{file.image.url_signed ? file.image.url_signed : "null"}}
+               </p>
               </div>
-
-               {{file_cant_be_accessed_error}}
+              <v_error_multiple :error="file_cant_be_accessed_error"> </v_error_multiple>
             </div>
 
             <canvas
@@ -7807,7 +7806,7 @@ export default Vue.extend({
           this.file_cant_be_accessed = true
           console.error(error);
           this.file_cant_be_accessed_error = this.$route_api_errors(error)
-
+          this.file_cant_be_accessed_error['Blob Storage error'] = 'You may not have permissions. If you are an Admin, check storage config and signed URL settings.'
         }
       }
       if (file.type === "video") {
