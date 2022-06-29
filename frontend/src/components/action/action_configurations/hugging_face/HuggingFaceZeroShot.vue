@@ -36,14 +36,32 @@
           <p v-if="loading_attributes">
             Loading...
           </p>
-          <v-radio-group v-if="global_attribute_groups_list.length > 0 && !loading_attributes" @change="change_attribute">
-            <v-radio
-              v-for="attribute in global_attribute_groups_list"
-              :key="attribute.id"
-              :label="attribute.prompt"
-              :value="attribute.id"
-            ></v-radio>
-          </v-radio-group>
+          <v-select
+            v-if="global_attribute_groups_list.length > 0 && !loading_attributes" 
+            :items="global_attribute_groups_list"
+            item-text="prompt"
+            item-value="id"
+            label="Attribute"
+            @change="change_attribute"
+          >
+            <template v-slot:item="data">
+              <v-layout class="d-flex align-center justify-start">
+                <v-icon v-if="data.item.kind === 'multiple_select'" color="#9c27b0">
+                  mdi-select-multiple
+                </v-icon>
+                <v-icon v-if="data.item.kind === 'radio'" color="#e91e63">
+                  mdi-radiobox-marked
+                </v-icon>
+                <v-icon v-if="data.item.kind === 'select'">
+                  mdi-selection
+                </v-icon>
+                <div style="width: 20px" />
+                <div>
+                  {{ data.item.prompt }}
+              </div>
+              </v-layout>
+            </template>
+          </v-select>
           <p v-else>There are no global attributes in this schema</p>
         </div>
         </task_template_config_details>
