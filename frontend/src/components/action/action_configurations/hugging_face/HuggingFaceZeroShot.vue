@@ -141,7 +141,7 @@ export default {
   },
   watch: {
     selected_schema: function() {
-      this.get_attributes()
+      if (this.selected_schema) this.get_attributes()
     }
   },
   computed: {
@@ -163,7 +163,6 @@ export default {
   mounted() {
     this.steps_config = new ActionStepsConfig()
     this.steps_config.hide_step('pre_conditions')
-    this.get_attributes()
 
     if (this.action) {
       if (this.action.config_data.schema_id) {
@@ -180,6 +179,8 @@ export default {
         this.selected_schema = event.id
         this.action.config_data.schema_id = event.id;
         this.action.config_data.project_id = event.project_id;
+        this.action.config_data.group_id = null
+        this.selected_attribute_group= null
         this.$emit('action_updated', this.action)
       }
     },
