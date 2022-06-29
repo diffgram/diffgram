@@ -37,32 +37,35 @@
           <p v-if="loading_attributes">
             Loading...
           </p>
-          <v-select
-            v-if="global_attribute_groups_list.length > 0 && !loading_attributes" 
-            :items="global_attribute_groups_list"
-            item-text="prompt"
-            item-value="id"
-            label="Attribute"
-            @change="change_attribute"
-          >
-            <template v-slot:item="data">
-              <v-layout class="d-flex align-center justify-start">
-                <v-icon v-if="data.item.kind === 'multiple_select'" color="#9c27b0">
-                  mdi-select-multiple
-                </v-icon>
-                <v-icon v-if="data.item.kind === 'radio'" color="#e91e63">
-                  mdi-radiobox-marked
-                </v-icon>
-                <v-icon v-if="data.item.kind === 'select'">
-                  mdi-selection
-                </v-icon>
-                <div style="width: 20px" />
-                <div>
-                  {{ data.item.prompt }}
-              </div>
-              </v-layout>
-            </template>
-          </v-select>
+          <div v-if="global_attribute_groups_list.length > 0 && !loading_attributes" >
+            <v-select
+              :items="global_attribute_groups_list"
+              :value="selected_attribute_group"
+              item-text="prompt"
+              item-value="id"
+              label="Attribute"
+              @change="change_attribute"
+            >
+              <template v-slot:item="data">
+                <v-layout class="d-flex align-center justify-start">
+                  <v-icon v-if="data.item.kind === 'multiple_select'" color="#9c27b0">
+                    mdi-select-multiple
+                  </v-icon>
+                  <v-icon v-if="data.item.kind === 'radio'" color="#e91e63">
+                    mdi-radiobox-marked
+                  </v-icon>
+                  <v-icon v-if="data.item.kind === 'select'">
+                    mdi-selection
+                  </v-icon>
+                  <div style="width: 20px" />
+                  <div>
+                    {{ data.item.prompt }}
+                </div>
+                </v-layout>
+              </template>
+            </v-select>
+            <p>Options will bepassed to the action: {{ options }}</p>
+          </div>
           <p v-else>There are no global attributes in this schema</p>
         </div>
         </task_template_config_details>
@@ -126,6 +129,7 @@ export default {
       switch_loading: false,
       steps_config: null,
       selected_schema: null,
+      selected_attribute_group: null,
       loading_attributes: false,
       global_attribute_groups_list: [],
       allowed_attributes_kinds: [
@@ -133,6 +137,27 @@ export default {
         'radio',
         'multiple_select'
       ],
+    }
+  },
+  watch: {
+    selected_schema: function() {
+      this.get_attributes()
+    }
+  },
+  computed: {
+    options: function() {
+      let option_string = '';
+      if (!this.global_attribute_groups_list || !this.selected_attribute_group) return option_string
+
+      const current_attribute = this.global_attribute_groups_list.find(attr => attr.id === this.selected_attribute_group)
+
+      if (!current_attribute) return option_string
+
+      current_attribute.attribute_template_list.map(attr => {
+        option_string += attr.name + ' ,'
+      })
+
+      return option_string.slice(0, -2)
     }
   },
   mounted() {
@@ -144,12 +169,10 @@ export default {
       if (this.action.config_data.schema_id) {
         this.selected_schema = this.action.config_data.schema_id
       }
+      if (this.action.config_data.group_id) {
+        this.selected_attribute_group = this.action.config_data.group_id
+      }
     } 
-  },
-  watch: {
-    selected_schema: function() {
-      this.get_attributes()
-    }
   },
   methods: {
     change_schema: function(event) {
@@ -162,6 +185,7 @@ export default {
     },
     change_attribute: function(event) {
       this.action.config_data.group_id = event
+      this.selected_attribute_group= event
       this.$emit('action_updated', this.action)
     },
     get_attributes: async function() {
