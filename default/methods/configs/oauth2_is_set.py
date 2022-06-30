@@ -7,9 +7,6 @@ from shared.auth.OAuth2Provider import OAuth2Provider
 
 @routes.route('/api/configs/is-oauth2-set')
 def oauth2_is_set():
-    print('USE_OAUTH2', settings.USE_OAUTH2)
-    print('OAUTH2_PROVIDER_HOST', settings.OAUTH2_PROVIDER_HOST)
-    print('OAUTH2_PROVIDER_CLIENT_ID', settings.OAUTH2_PROVIDER_CLIENT_ID)
     if settings.USE_OAUTH2 is False:
         return jsonify({"use_oauth2": False})
 

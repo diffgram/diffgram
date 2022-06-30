@@ -48,21 +48,21 @@ def LoggedIn():
             return False
 
 
-def get_user_from_oidc(session):
+def get_user_from_oauth2(session):
     from shared.database.user import User
-    oidc = OIDCProvider()
-    oidc_client = oidc.get_client()
+    oauth2 = OAuth2Provider()
+    oauth2_client = oauth2.get_client()
     jwt = login_session.get('jwt')
     if jwt is None:
         return None
     access_token = jwt.get('access_token')
     if access_token is None:
         return None
-    oidc_user = oidc_client.get_user(access_token = access_token)
+    oidc_user = oauth2_client.get_user(access_token = access_token)
     if not oidc_user:
         return None
-    diffgram_user = User.get_user_by_oidc_id(session = session,
-                                             oidc_id = oidc_user.get('sub'))
+    diffgram_user = User.get_user_by_oauth2_id(session = session,
+                                               oidc_id = oidc_user.get('sub'))
     if not diffgram_user:
         return None
     return diffgram_user.id
@@ -70,7 +70,7 @@ def get_user_from_oidc(session):
 
 def getUserID(session):
     if settings.USE_OAUTH2:
-        return get_user_from_oidc(session = session)
+        return get_user_from_oauth2(session = session)
     else:
         if login_session.get('user_id', None) is not None:
             out = hashing_functions.check_secure_val(login_session['user_id'])

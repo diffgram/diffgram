@@ -5,8 +5,7 @@ from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
 from shared.auth.OAuth2Provider import OAuth2Provider
 
 
-
-def oidc_logout():
+def oauth2_logout():
     oauth2 = OAuth2Provider()
     jwt_data = login_session.get('jwt')
     if jwt_data is None:
@@ -23,7 +22,7 @@ def oidc_logout():
 @routes.route('/api/v1/user/logout', methods = ['GET'])
 def logout():
     if settings.USE_OAUTH2:
-        oidc_logout()
+        oauth2_logout()
     else:
         login_session['user_id'] = ''
     return "Success", 200
