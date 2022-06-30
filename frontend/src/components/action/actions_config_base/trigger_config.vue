@@ -16,6 +16,16 @@
       :show_update="true"
       @change_directory="$emit('change')">
     </v_directory_list>
+
+    <job_select 
+      v-if="action.trigger_data.event_name === 'task_created'"
+      ref="job_select"
+      class="mr-4"
+      label="Select Task Template"
+      @change="on_change_job"
+      :select_this_id="action.config_data.job_id"
+      >
+      </job_select>
   </div>
 </template>
 
@@ -45,7 +55,6 @@ export default Vue.extend({
     mounted() {
       this.set_trigger_list(this.action_template)
     },
-
     data() {
       return {
         is_open: true,
@@ -79,10 +88,6 @@ export default Vue.extend({
         }
       }
     },
-    created: function () {
-
-    },
-
     computed: {
       triggers_list: function () {
         if (this.triggers_list_prop) {
@@ -134,6 +139,9 @@ export default Vue.extend({
           }
 
         }
+      },
+      on_change_job: function(event) {
+        this.action.config_data.job_id = event.id
       },
       close() {
         this.input = undefined;
