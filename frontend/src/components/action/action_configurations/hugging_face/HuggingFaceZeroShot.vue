@@ -23,7 +23,8 @@
         <br />
         <h4>Select schema</h4>
         <label_schema_selector
-            v-if="action"
+            v-if="action && !loading"
+            :disabled="true"
             :project_string_id="project_string_id"
             :initial_schema="selected_schema"
             @change="change_schema"
@@ -101,6 +102,7 @@ import label_schema_selector from "../../../label/label_schema_selector.vue"
 import global_attributes_list from "../../../attribute/global_attributes_list.vue"
 import ActionStepsConfig from '../ActionStepsConfig';
 import { get_labels } from '../../../../services/labelServices';
+import { get_task_template_details } from '../../../../services/taskTemplateService'
 
 export default {
   name: "hf_zero_shot",
@@ -125,6 +127,7 @@ export default {
   data: function(){
     return{
       job_selected: null,
+      loading: false,
       show_task_template_wizard: false,
       switch_loading: false,
       steps_config: null,
@@ -160,18 +163,26 @@ export default {
       return option_string.slice(0, -2)
     }
   },
-  mounted() {
+  async mounted() {
+    this.loading = true
     this.steps_config = new ActionStepsConfig()
     this.steps_config.hide_step('pre_conditions')
 
     if (this.action) {
-      if (this.action.config_data.schema_id) {
-        this.selected_schema = this.action.config_data.schema_id
+      if (this.action.trigger_data.event_name === 'task_created') {
+        const { label_schema } = await get_task_template_details(this.action.config_data.task_template_id)
+        this.change_schema(label_schema)
+      }
+      else {
+        if (this.action.config_data.schema_id) {
+          this.selected_schema = this.action.config_data.schema_id
+        }
       }
       if (this.action.config_data.group_id) {
         this.selected_attribute_group = this.action.config_data.group_id
       }
     } 
+    this.loading = false
   },
   methods: {
     change_schema: function(event) {
