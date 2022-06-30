@@ -12,13 +12,13 @@ class CognitoDiffgramClient(OAuth2ClientBase):
 
     def __init__(self):
         self.client_id = settings.OAUTH2_PROVIDER_CLIENT_ID
-        if self.client_secret:
+        if settings.OAUTH2_PROVIDER_CLIENT_SECRET:
             str_credentials = f'{self.client_id}:{self.client_secret}'
             encoded_credentials = base64.b64encode(str_credentials.encode('utf-8'))
             self.auth_header = f'Basic: {encoded_credentials}'
 
     def get_access_token_with_code_grant(self, code: str) -> dict:
-        url = f'{settings.OAUTH2_PROVIDER_HOST}oauth2/token'
+        url = f'{settings.OAUTH2_PROVIDER_HOST}/oauth2/token'
 
         payload = {
             'grant_type': 'authorization_code',
@@ -86,3 +86,6 @@ class CognitoDiffgramClient(OAuth2ClientBase):
         :return:
         """
         raise NotImplementedError
+
+    def get_login_url(self):
+        return settings.COGNITO_LOGIN_URL

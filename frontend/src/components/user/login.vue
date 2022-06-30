@@ -274,6 +274,7 @@ export default Vue.extend({
 
     window.addEventListener("keyup", this.keyboard_events);
     const { mailgun } = await is_mailgun_set();
+    console.log('AAAAAAAAAAAAAAAAAAAAAA')
     const { use_oauth2, login_url } = await is_oauth2_set();
     if(use_oauth2){
       window.location.replace(login_url);

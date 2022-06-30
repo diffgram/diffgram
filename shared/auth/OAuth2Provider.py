@@ -45,9 +45,21 @@ class OAuth2ClientBase(metaclass = SingletonABC):
                 hasattr(subclass, 'get_refresh_token_from_jwt') and
                 callable(subclass.get_refresh_token_from_jwt) and
                 hasattr(subclass, 'get_access_token_with_code_grant') and
-                callable(subclass.get_access_token_with_code_grant) or
+                callable(subclass.get_access_token_with_code_grant) and
+                hasattr(subclass, 'get_login_url') and
+                callable(subclass.get_login_url) or
 
                 NotImplemented)
+
+    @abc.abstractmethod
+    def get_login_url(self, refresh_token: str):
+        """
+            Logout a user from OIDC Provider.
+        :param refresh_token: refresh token to invalidate
+        :return:
+        """
+        raise NotImplementedError
+
 
     @abc.abstractmethod
     def logout(self, refresh_token: str):
@@ -115,6 +127,7 @@ class OAuth2Provider(metaclass = Singleton):
 
     def __init__(self):
         from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
+        from shared.auth.CognitoDiffgramClient import CognitoDiffgramClient
 
         provider = settings.OAUTH2_PROVIDER_NAME
 
@@ -123,6 +136,8 @@ class OAuth2Provider(metaclass = Singleton):
 
         if provider == 'keycloak':
             self.oidc_client = KeycloakDiffgramClient()
+        if provider == 'cognito':
+            self.oidc_client = CognitoDiffgramClient()
 
     def get_client(self):
         return self.oidc_client
