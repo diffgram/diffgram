@@ -1,5 +1,4 @@
 from methods.regular.regular_api import *
-from flask import redirect
 import uuid
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
 from shared.auth.OAuth2Provider import OAuth2Provider

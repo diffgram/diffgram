@@ -3,7 +3,7 @@ from shared.system_startup.system_startup_base import SystemStartupBase
 from methods.regular.regular_api import logger
 from shared.settings import settings
 from shared.queueclient.QueueClient import QueueClient
-from shared.auth.KeycloakDiffgramClient import check_keycloak_setup
+from shared.auth.OIDCProvider import check_oidc_setup
 import traceback
 from shared.connection.connection_operations import Connection_Operations
 
@@ -26,7 +26,7 @@ class DefaultServiceSystemStartupChecker(SystemStartupBase):
             logger.error(f'Error connecting to rabbit MQ')
             raise (Exception('Error connecting to RabbitMQ'))
 
-        check_keycloak_setup()
+        check_oidc_setup()
         DefaultServiceSystemStartupChecker.connection_operations_self_tests()
 
         return result

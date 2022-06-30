@@ -1,6 +1,4 @@
-# OPENCORE - ADD
 from flask import session as login_session
-from flask import redirect
 from methods import routes
 from shared.settings import settings
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
@@ -17,7 +15,6 @@ def oidc_logout():
 
     login_session['jwt'] = ''
     if type(jwt_data) == dict:
-        access_token = jwt_data.get('access_token')
         refresh_token = jwt_data.get('refresh_token')
         oauth_client = oauth2.get_client()
         oauth_client.logout(refresh_token = refresh_token)
