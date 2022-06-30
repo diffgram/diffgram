@@ -26,7 +26,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
     description = 'Performs Zero Shot Classification for the text file'
     icon = 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg'
     kind = 'hf_zero_shot'
-    trigger_data = ActionTrigger(default_event='input_file_uploaded', event_list = ['input_file_uploaded'])
+    trigger_data = ActionTrigger(default_event='input_file_uploaded', event_list = ['input_file_uploaded', 'task_created'])
     condition_data = ActionCondition(default_event = 'action_completed',
                                      event_list = ['action_completed'])
 
