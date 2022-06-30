@@ -51,8 +51,6 @@ export default {
       this.selected_schema = this.schema_list[0];
     }
     this.on_change_schema(this.selected_schema)
-    console.log(this.action)
-
   },
   data:function (){
     return{

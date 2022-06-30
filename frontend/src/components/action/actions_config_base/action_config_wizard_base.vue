@@ -118,9 +118,6 @@ export default Vue.extend({
       open_action_selector: function(){
         this.$emit('open_action_selector')
       },
-      on_change_step: function(){
-
-      },
       on_next_button_click: function(){
         if(this.step <= 0){
           return

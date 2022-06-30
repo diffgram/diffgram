@@ -169,7 +169,7 @@ export default {
     this.steps_config.hide_step('pre_conditions')
 
     if (this.action) {
-      if (this.action.trigger_data.event_name === 'task_created') {
+      if (this.action.trigger_data.event_name === 'task_created' && this.action.config_data.task_template_id) {
         const { label_schema } = await get_task_template_details(this.action.config_data.task_template_id)
         this.change_schema(label_schema)
       }
@@ -190,8 +190,10 @@ export default {
         this.selected_schema = event.id
         this.action.config_data.schema_id = event.id;
         this.action.config_data.project_id = event.project_id;
-        this.action.config_data.group_id = null
-        this.selected_attribute_group= null
+        if (this.action.trigger_data.event_name !== 'task_created') {
+          this.action.config_data.group_id = null
+          this.selected_attribute_group= null
+        }
         this.$emit('action_updated', this.action)
       }
     },
