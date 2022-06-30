@@ -4,11 +4,9 @@ from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 from shared.database.annotation.instance import Instance
 from shared.database.project import Project
+from shared.database.task.task import Task
 from shared.shared_logger import get_shared_logger
-from shared.database.task.job.job import Job
-from shared.database.attribute.attribute import Attribute
-from shared.helpers.sessionMaker import session_scope
-from shared.utils import job_dir_sync_utils
+from shared.database.task.task import Task
 from shared.database.source_control.file import File
 from shared.database.annotation.instance import Instance
 from shared.database.project import Project
@@ -41,9 +39,21 @@ class HuggingFaceZeroShotAction(ActionRunner):
         pass
 
     def execute_action(self, session, do_save_annotations=True) -> bool:
+        event_name = self.action.trigger_data.get('event_name')
         file_id = self.event_data['file_id']
         project_id = self.action.config_data['project_id']
         group_id = self.action.config_data['group_id']
+
+        task = None
+
+        if event_name == 'task_created':
+            job_id = self.action.config_data['task_template_id']
+            task_id = self.event_data['task_id']
+            task = Task.get_by_id(session=session, task_id=task_id)
+            if task.job_id != job_id:
+                return
+
+            file_id = task.file_id
 
         file = File.get_by_id(session, file_id = file_id)
 
@@ -57,6 +67,8 @@ class HuggingFaceZeroShotAction(ActionRunner):
         raw_sentences = json.loads(file.text_file.get_text())['nltk']['sentences']
         for sentence in raw_sentences:
             text += sentence['value']
+
+        print("------------HERE--------------")
 
         group_list = Attribute_Template_Group.list(
             session = session,
@@ -80,7 +92,8 @@ class HuggingFaceZeroShotAction(ActionRunner):
         attribute_item_to_apply = [option for option in group_list_serialized[0]['attribute_template_list'] if option['name'] == attribute_to_apply][0]
 
         to_create = {
-            "file_id": file_id,
+            "file_id": file_id if task == None else None,
+            "task_id": task.id if task != None else None,
             "project_id": project_id,
             "type": 'global',
             "attribute_groups": {}
@@ -92,7 +105,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
 
         annotation_update = Annotation_Update(
             session = session,
-            task = None,
+            task = task,
             file = file,
             project = project,
             instance_list_new = [to_create],
