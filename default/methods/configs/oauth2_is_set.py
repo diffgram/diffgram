@@ -6,7 +6,7 @@ from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
 
 
 @routes.route('/api/configs/is-oauth2-set')
-def oidc_is_set():
+def oauth2_is_set():
     if settings.USE_OAUTH2 is False:
         return jsonify({"use_oauth2": False})
 

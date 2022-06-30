@@ -3,6 +3,28 @@ from shared.settings import settings
 from shared.utils.singleton import Singleton
 import time
 import abc
+import traceback
+from shared.shared_logger import get_shared_logger
+
+logger = get_shared_logger()
+
+
+def check_oauth2_setup():
+    """
+        Initializes Keylcoak client for startup check purposes.
+    :return: True if init was successful.
+    """
+    if settings.USE_OAUTH2:
+        logger.info('Testing Keycloak setup...')
+        try:
+            prov = OAuth2Provider()
+            oidc = prov.get_client()
+        except Exception as e:
+            data = traceback.format_exc()
+            logger.error(data)
+            logger.error(f'Error connecting setting up Keycloak')
+            return None
+    return True
 
 
 class SingletonABC(abc.ABCMeta, Singleton):
