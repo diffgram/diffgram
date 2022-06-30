@@ -375,7 +375,6 @@ class Upload():
     Roles=['admin', "Editor"],
     apis_user_list=['api_enabled_builder',
                     'security_email_verified'])
-@limiter.limit("1 per second, 5000 per day")
 def api_project_input_from_local(project_string_id):
 
     try:
