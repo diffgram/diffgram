@@ -204,7 +204,7 @@
 
 <script lang="ts">
 import axios from "../../services/customInstance";
-import { is_mailgun_set, is_oidc_set } from "../../services/configService";
+import { is_mailgun_set, is_oauth2_set } from "../../services/configService";
 
 import Vue from "vue";
 export default Vue.extend({
@@ -274,8 +274,8 @@ export default Vue.extend({
 
     window.addEventListener("keyup", this.keyboard_events);
     const { mailgun } = await is_mailgun_set();
-    const { use_oidc, login_url } = await is_oidc_set();
-    if(use_oidc){
+    const { use_oauth2, login_url } = await is_oauth2_set();
+    if(use_oauth2){
       window.location.replace(login_url);
       return
     }

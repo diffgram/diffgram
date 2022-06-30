@@ -1,13 +1,21 @@
-from shared.auth.OIDCProvider import OAuth2ClientBase
+from shared.auth.OAuth2Provider import OAuth2ClientBase
 from shared.settings import settings
 import requests
 import boto3
+import base64
 
 
 class CognitoDiffgramClient(OAuth2ClientBase):
+    client_id: str
+    client_secret: str
+    auth_header: str
 
     def __init__(self):
-        self.cognito_client = boto3.client('cognito-idp', endpoint_url = settings.OAUTH2_PROVIDER_HOST)
+        self.client_id = settings.OAUTH2_PROVIDER_CLIENT_ID
+        if self.client_secret:
+            str_credentials = f'{self.client_id}:{self.client_secret}'
+            encoded_credentials = base64.b64encode(str_credentials.encode('utf-8'))
+            self.auth_header = f'Basic: {encoded_credentials}'
 
     def get_access_token_with_code_grant(self, code: str) -> dict:
         url = f'{settings.OAUTH2_PROVIDER_HOST}oauth2/token'
@@ -16,7 +24,7 @@ class CognitoDiffgramClient(OAuth2ClientBase):
             'grant_type': 'authorization_code',
             'client_id': settings.OAUTH2_PROVIDER_CLIENT_ID,
             'code': code,
-            'redirect_url': settings.Red
+            'redirect_url': settings.OAUTH2_DEFAULT_REDIRECT_URL
         }
 
         response = requests.post(url = url, json = payload)

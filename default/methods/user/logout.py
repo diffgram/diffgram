@@ -4,11 +4,12 @@ from flask import redirect
 from methods import routes
 from shared.settings import settings
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
-from shared.auth.OIDCProvider import OAuth2Provider
+from shared.auth.OAuth2Provider import OAuth2Provider
 
-oidc = OAuth2Provider()
+
 
 def oidc_logout():
+    oauth2 = OAuth2Provider()
     jwt_data = login_session.get('jwt')
     if jwt_data is None:
         login_session['jwt'] = ''
@@ -18,8 +19,8 @@ def oidc_logout():
     if type(jwt_data) == dict:
         access_token = jwt_data.get('access_token')
         refresh_token = jwt_data.get('refresh_token')
-        kc_client = KeycloakDiffgramClient()
-        kc_client.logout(refresh_token = refresh_token)
+        oauth_client = oauth2.get_client()
+        oauth_client.logout(refresh_token = refresh_token)
 
 
 @routes.route('/api/v1/user/logout', methods = ['GET'])

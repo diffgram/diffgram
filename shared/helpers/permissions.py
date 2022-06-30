@@ -6,7 +6,7 @@ from shared.helpers import sessionMaker
 from shared.database import hashing_functions
 import sys, os
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
-from shared.auth.OIDCProvider import OAuth2Provider
+from shared.auth.OAuth2Provider import OAuth2Provider
 from shared.settings import settings
 
 from shared.shared_logger import get_shared_logger

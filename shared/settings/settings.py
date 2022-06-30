@@ -186,20 +186,21 @@ SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFF
 USE_OAUTH2 = env_adapter.bool(os.getenv('USE_OIDC', False))
 OAUTH2_PROVIDER_NAME = os.getenv('OIDC_PROVIDER_NAME', 'keycloak')
 OAUTH2_PROVIDER_HOST = os.getenv('OIDC_PROVIDER_HOST', 'http://localhost:8099/auth/')
-OAUTH2_DEFAULT_REDIRECT_URL = f'{URL_BASE}/api/v1/auth/oidc-login'
-
-
+OAUTH2_DEFAULT_REDIRECT_URL = f'{URL_BASE}/api/v1/auth/callback'
 OAUTH2_PROVIDER_CLIENT_ID = os.getenv('OIDC_PROVIDER_CLIENT_ID', 'diffgram')
-OIDC_PROVIDER_PUBLIC_KEY = os.getenv('OIDC_PROVIDER_PUBLIC_KEY', 'diffgram_public_key')
-OIDC_PROVIDER_REALM = os.getenv('OIDC_PROVIDER_REALM', 'diffgram-realm')
+OAUTH2_PROVIDER_PUBLIC_KEY = os.getenv('OIDC_PROVIDER_PUBLIC_KEY', 'diffgram_public_key')
+
+# Cognito Settings
+COGNITO_ACCESS_KEY = os.getenv('COGNITO_ACCESS_KEY')
+COGNITO_ACCESS_SECRET = os.getenv('COGNITO_ACCESS_SECRET')
+
 
 # Keycloak Settings
 KEY_CLOAK_MASTER_USER = os.getenv('KEY_CLOAK_MASTER_USER', 'admin')
 KEY_CLOAK_MASTER_PASSWORD = os.getenv('KEY_CLOAK_MASTER_PASSWORD', 'admin')
 KEY_CLOAK_DIFFGRAM_USER = os.getenv('KEY_CLOAK_DIFFGRAM_USER', 'diffgram')
 KEY_CLOAK_DIFFGRAM_PASSWORD = os.getenv('KEY_CLOAK_DIFFGRAM_PASSWORD', 'diffgram')
-
-# Cognito Settings
+KEYCLOAK_REALM = os.getenv('KEYCLOAK_REALM', 'diffgram-realm')
 
 
 # Minio Only Allow Expiry time is less than 7 days (value in seconds).

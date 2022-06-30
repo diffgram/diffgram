@@ -2,7 +2,7 @@ from methods.regular.regular_api import *
 from flask import redirect
 import uuid
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
-from shared.auth.OIDCProvider import OAuth2Provider
+from shared.auth.OAuth2Provider import OAuth2Provider
 from methods.user.login import first_stage_login_success
 from methods.user.account.account_new import user_new_core, set_password_and_login_history
 
@@ -22,7 +22,7 @@ def login_and_return_access_token(session, diffgram_user, user_data, access_toke
     })
 
 
-@routes.route('/api/v1/auth/oidc-login', methods = ['POST'])
+@routes.route('/api/v1/auth/callback', methods = ['POST'])
 def api_oidc_callback():
     """
         OIDC Callback

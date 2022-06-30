@@ -6,7 +6,7 @@ import jwt
 from shared.shared_logger import get_shared_logger
 import traceback
 from shared.utils.singleton import Singleton
-from shared.auth.OIDCProvider import OAuth2ClientBase
+from shared.auth.OAuth2Provider import OAuth2ClientBase
 logger = get_shared_logger()
 
 REDIRECT_URI_DIFFGRAM = f'{settings.URL_BASE}user/oidc-login'
@@ -49,7 +49,7 @@ class KeycloakDiffgramClient(OAuth2ClientBase):
         self.setup_keycloak_diffgram_install()
         self.keycloak = KeycloakOpenID(server_url = settings.OAUTH2_PROVIDER_HOST,
                                        client_id = settings.OAUTH2_PROVIDER_CLIENT_ID,
-                                       realm_name = settings.OIDC_PROVIDER_REALM,
+                                       realm_name = settings.KEYCLOAK_REALM,
                                        client_secret_key = self.client_secret)
 
     def setup_keycloak_diffgram_install(self):
@@ -104,13 +104,13 @@ class KeycloakDiffgramClient(OAuth2ClientBase):
 
     def __create_diffgram_default_realm(self) -> str:
         realm_id = self.keycloak_admin_master.create_realm(
-            payload = {"realm": settings.OIDC_PROVIDER_REALM, 'enabled': True},
+            payload = {"realm": settings.KEYCLOAK_REALM, 'enabled': True},
             skip_exists = True)
         return realm_id
 
     def __create_admin_user(self) -> str:
 
-        self.keycloak_admin_master.realm_name = settings.OIDC_PROVIDER_REALM
+        self.keycloak_admin_master.realm_name = settings.KEYCLOAK_REALM
         user_id = self.keycloak_admin_master.create_user(payload = {
             'username': settings.KEY_CLOAK_DIFFGRAM_USER,
             'enabled': True,
@@ -200,7 +200,7 @@ class KeycloakDiffgramClient(OAuth2ClientBase):
             # Build the key in format accepted by JWT (python implementation)
             header = "-----BEGIN PUBLIC KEY-----\n"
             trailer = "\n-----END PUBLIC KEY-----"
-            key = header + str(settings.OIDC_PROVIDER_PUBLIC_KEY).encode('utf-8') + trailer
+            key = header + str(settings.OAUTH2_PROVIDER_PUBLIC_KEY).encode('utf-8') + trailer
             # Decode the token by using the server public key
             decoded = jwt.decode(access_token,
                                  key = key,
