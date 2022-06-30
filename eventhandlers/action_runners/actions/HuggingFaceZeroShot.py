@@ -47,7 +47,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
         task = None
 
         if event_name == 'task_created':
-            job_id = self.action.config_data['task_template_id']
+            job_id = self.action.config_data['task_template_id']['id']
             task_id = self.event_data['task_id']
             task = Task.get_by_id(session=session, task_id=task_id)
             if task.job_id != job_id:
@@ -67,8 +67,6 @@ class HuggingFaceZeroShotAction(ActionRunner):
         raw_sentences = json.loads(file.text_file.get_text())['nltk']['sentences']
         for sentence in raw_sentences:
             text += sentence['value']
-
-        print("------------HERE--------------")
 
         group_list = Attribute_Template_Group.list(
             session = session,

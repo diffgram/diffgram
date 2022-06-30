@@ -24,7 +24,7 @@
         <h4>Select schema</h4>
         <label_schema_selector
             v-if="action && !loading"
-            :disabled="true"
+            :disabled="shema_selector_disabled"
             :project_string_id="project_string_id"
             :initial_schema="selected_schema"
             @change="change_schema"
@@ -145,6 +145,13 @@ export default {
   watch: {
     selected_schema: function() {
       if (this.selected_schema) this.get_attributes()
+    },
+    action: {
+      deep: true,
+      handler: function() {
+        console.log("Action vhnged")
+        this.update_schema()
+      }
     }
   },
   computed: {
@@ -161,30 +168,36 @@ export default {
       })
 
       return option_string.slice(0, -2)
+    },
+    shema_selector_disabled: function() {
+      return this.action && this.action.trigger_data.event_name === 'task_created'
     }
   },
   async mounted() {
-    this.loading = true
     this.steps_config = new ActionStepsConfig()
     this.steps_config.hide_step('pre_conditions')
 
-    if (this.action) {
-      if (this.action.trigger_data.event_name === 'task_created' && this.action.config_data.task_template_id) {
-        const { label_schema } = await get_task_template_details(this.action.config_data.task_template_id)
-        this.change_schema(label_schema)
-      }
-      else {
-        if (this.action.config_data.schema_id) {
-          this.selected_schema = this.action.config_data.schema_id
-        }
-      }
-      if (this.action.config_data.group_id) {
-        this.selected_attribute_group = this.action.config_data.group_id
-      }
-    } 
-    this.loading = false
+    this.update_schema()
   },
   methods: {
+    update_schema: async function() {
+      this.loading = true
+      if (this.action) {
+        if (this.action.trigger_data.event_name === 'task_created' && this.action.config_data.task_template_id) {
+          const { label_schema } = await get_task_template_details(this.action.config_data.task_template_id.id)
+          this.change_schema(label_schema)
+        }
+        else {
+          if (this.action.config_data.schema_id) {
+            this.selected_schema = this.action.config_data.schema_id
+          }
+        }
+        if (this.action.config_data.group_id) {
+          this.selected_attribute_group = this.action.config_data.group_id
+        }
+    } 
+    this.loading = false
+    },
     change_schema: function(event) {
       if (this.action && event.id) {
         this.selected_schema = event.id

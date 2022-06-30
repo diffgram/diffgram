@@ -19,11 +19,11 @@
 
     <job_select 
         v-if="action.trigger_data.event_name === 'task_created'"
+        v-model="action.config_data.task_template_id"
         ref="job_select"
         class="mr-4"
         label="Select Task Template"
         :select_this_id="action.config_data.task_template_id"
-        @change="on_change_job"
     />
   </div>
 </template>
@@ -139,10 +139,6 @@ export default Vue.extend({
           }
 
         }
-      },
-      on_change_job: function(event) {
-        this.action.config_data.task_template_id = event.id
-        this.$emit('change')
       },
       close() {
         this.input = undefined;
