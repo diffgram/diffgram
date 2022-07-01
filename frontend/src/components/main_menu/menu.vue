@@ -212,16 +212,14 @@
                     Mock Data
                   </v-btn>
 
+                  <!--
                   <v-btn @click="builder_or_trainer_toggle()">
                     Builder / Trainer Toggle
                   </v-btn>
+                  -->
 
                   <v-btn @click="toggle_super_admin_mode()">
                     Super Admin Toggle
-                  </v-btn>
-
-                  <v-btn @click="$router.push('/admin/student')">
-                    Student Plan
                   </v-btn>
 
 
@@ -253,9 +251,10 @@
                      style="text-transform: none !important;"
                      class="mr-2"
                      @click="contact_us"
-                     v-if="$store.state.org && !$store.state.org.current.id && $store.state.builder_or_trainer.mode == 'builder'"
+                     v-if="$store.state.org
+                     && !$store.state.org.current.id"
               >
-                  Book A Demo
+                  Enterprise
               </v-btn>
 
 
@@ -269,14 +268,18 @@
                 Try Now
               </v-btn>
             </ahref_seo_optimal>
+
             <v-btn
               v-if="$store.state.user.logged_in == true
-                   && $store.state.org && !$store.state.org.current.id"
-              @click="go_to_order_page"
+                   && $store.state.system
+                   && $store.state.system.is_open_source == false
+                   && !$store.state.org.current.id"
+              @click="go_to_install()"
               outlined
-              color="success">
-              <v-icon left>mdi-star-shooting</v-icon>
-              Upgrade
+              style="text-transform: none !important;"
+                   >
+              <v-icon left>mdi-download</v-icon>
+              Install
             </v-btn>
 
             <v_profile_in_menu class="hidden-xs-only">
@@ -400,6 +403,11 @@
       }
     },
     methods: {
+
+      go_to_install: function() {
+        window.open(`https://diffgram.readme.io/docs/install`, '_blank')
+      },
+
       go_to_order_page: function(){
         if(window.location.host === 'diffgram.com'){
           window.open(`https://diffgram.com/order/premium`, '_blank')
