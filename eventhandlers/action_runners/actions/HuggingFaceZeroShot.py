@@ -110,8 +110,15 @@ class HuggingFaceZeroShotAction(ActionRunner):
             do_init_existing_instances = True
         )
 
-        annotation_update.main()        
-        return
+        annotation_update.main() 
+
+        return {
+            "task_id": task_id,
+            "file_id": file_id,
+            "file_name": file.text_file.original_filename,
+            "applied_option_id": attribute_item_to_apply['id'],
+            "applied_option_label": attribute_to_apply
+        }
     
     def create_action_template():
         Action_Template.new(
