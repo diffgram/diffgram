@@ -93,7 +93,6 @@ def validate_file_data_for_input_packet(session, input, project_string_id, log):
 @routes.route('/api/walrus/v1/project/<string:project_string_id>/input/packet',
               methods = ['POST'])
 @Project_permissions.user_has_project(['admin', "Editor"])
-@limiter.limit("20 per second")
 def input_packet(project_string_id):
     """
     Import single packet
