@@ -1,7 +1,6 @@
 <template>
   <v-stepper v-model="step"
              style="height: 100%"
-             @change="on_change_step"
              class="elevation-0"
              >
     <v-stepper-items style="height: 80%">

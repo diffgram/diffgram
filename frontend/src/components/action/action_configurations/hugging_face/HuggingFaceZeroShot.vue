@@ -11,12 +11,6 @@
       :action="action">
 
       <template v-slot:wizard_action_config>
-        <task_template_config_details
-          :action="action"
-          :project_string_id="project_string_id"
-          :actions_list="actions_list"
-          @action_updated="on_action_updated"
-        >
         <h3>
           Select attribute for Zero Shot Classification:
         </h3>
@@ -69,15 +63,6 @@
           </div>
           <p v-else>There are no global attributes in this schema</p>
         </div>
-        </task_template_config_details>
-      </template>
-
-      <template v-slot:form_action_config>
-        <task_template_config_details
-          :action="action"
-          :project_string_id="project_string_id"
-          :actions_list="actions_list"
-        ></task_template_config_details>
       </template>
 
       <template v-slot:ongoing_usage>
@@ -116,7 +101,7 @@ export default {
     task_template_wizard: task_template_wizard,
     label_schema_selector,
     global_attributes_list,
-    hf_zero_shot_report
+    hf_zero_shot_report,
   },
   props: {
     action:{
