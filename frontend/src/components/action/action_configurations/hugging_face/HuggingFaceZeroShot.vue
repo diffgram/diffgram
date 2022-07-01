@@ -11,11 +11,17 @@
       :action="action">
 
       <template v-slot:wizard_action_config>
-        <h3>
-          Select attribute for Zero Shot Classification:
-        </h3>
+        <h2>
+          Hugging Face Zero Shot Classification will be performed.
+        </h2>
+
+        <p>
+          The results will be saved directly on the file.
+          For more information see the docs here.
+        </p>
+
         <br />
-        <h4>Select schema</h4>
+        <h4>Select Schema</h4>
         <label_schema_selector
             v-if="action && !loading"
             :disabled="shema_selector_disabled"
@@ -28,7 +34,7 @@
         <br />
 
         <div v-if="selected_schema">
-          <h4>Select Attribute</h4>
+          <h4>Select Attribute Group</h4>
           <p v-if="loading_attributes">
             Loading...
           </p>
@@ -59,7 +65,7 @@
                 </v-layout>
               </template>
             </v-select>
-            <p>Options that will bepassed to the action: {{ options }}</p>
+            <p>Options that will be passed to the action: {{ options }}</p>
           </div>
           <p v-else>There are no global attributes in this schema</p>
         </div>
