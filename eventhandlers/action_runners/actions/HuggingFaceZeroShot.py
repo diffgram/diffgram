@@ -45,6 +45,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
         group_id = self.action.config_data['group_id']
 
         task = None
+        task_id = None
 
         if event_name == 'task_created':
             job_id = self.action.config_data['task_template_id']['id']
