@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!loading">
+  <div v-if="!loading" class="chart-wrapper">
       <h3>
           Total action runs: {{ action_list.length }}
       </h3>
@@ -77,6 +77,10 @@ export default {
 </script>
 
 <style scoped>
-
+.chart-wrapper {
+    display: flex; 
+    flex-direction: column; 
+    align-items: center
+}
 </style>
 
