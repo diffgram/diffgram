@@ -80,12 +80,12 @@
         ></task_template_config_details>
       </template>
 
-      <!-- <template v-slot:ongoing_usage>
-        <job_detail
-          v-if="action.config_data"
-          :job_id="action.config_data.task_template_id">
-        </job_detail>
-      </template> -->
+      <template v-slot:ongoing_usage>
+        <hf_zero_shot_report
+          :action="action"
+          :project_string_id="project_string_id"
+        />
+      </template>
 
     </action_config_base>
   </div>
@@ -101,6 +101,7 @@ import action_config_mixin from "../action_config_mixin";
 import label_schema_selector from "../../../label/label_schema_selector.vue"
 import global_attributes_list from "../../../attribute/global_attributes_list.vue"
 import ActionStepsConfig from '../ActionStepsConfig';
+import hf_zero_shot_report from "./HuggingFaceZeroShotStat.vue"
 import { get_labels } from '../../../../services/labelServices';
 import { get_task_template_details } from '../../../../services/taskTemplateService'
 
@@ -114,7 +115,8 @@ export default {
     Job_detail,
     task_template_wizard: task_template_wizard,
     label_schema_selector,
-    global_attributes_list
+    global_attributes_list,
+    hf_zero_shot_report
   },
   props: {
     action:{
