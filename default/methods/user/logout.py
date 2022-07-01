@@ -5,24 +5,20 @@ from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
 from shared.auth.OAuth2Provider import OAuth2Provider
 
 
-def oauth2_logout():
+def oauth2_logout() -> [dict, int]:
     oauth2 = OAuth2Provider()
     jwt_data = login_session.get('jwt')
-    if jwt_data is None:
-        login_session['jwt'] = ''
-        return "Success", 200
-
-    login_session['jwt'] = ''
-    if type(jwt_data) == dict:
-        refresh_token = jwt_data.get('refresh_token')
-        oauth_client = oauth2.get_client()
-        oauth_client.logout(refresh_token = refresh_token)
+    oauth_client = oauth2.get_client()
+    refresh_token = oauth_client.get_refresh_token_from_jwt(jwt_data = jwt_data)
+    login_session['jwt'] = None
+    url_data = oauth_client.logout(refresh_token = refresh_token)
+    return {"url_redirect": url_data}, 200
 
 
 @routes.route('/api/v1/user/logout', methods = ['GET'])
 def logout():
     if settings.USE_OAUTH2:
-        oauth2_logout()
+        return oauth2_logout()
     else:
         login_session['user_id'] = ''
-    return "Success", 200
+        return {"url_redirect": None}, 200

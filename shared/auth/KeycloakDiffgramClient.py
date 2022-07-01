@@ -171,8 +171,9 @@ class KeycloakDiffgramClient(OAuth2ClientBase):
     def refresh_token(self, token: str) -> dict:
         return self.keycloak.refresh_token(refresh_token = token)
 
-    def logout(self, refresh_token: str):
+    def logout(self, refresh_token: str) -> str:
         self.keycloak.logout(refresh_token)
+        return None
 
     def get_login_url(self):
         return self.keycloak.auth_url(redirect_uri = REDIRECT_URI_DIFFGRAM)

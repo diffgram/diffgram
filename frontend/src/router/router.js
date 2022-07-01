@@ -611,6 +611,14 @@ const routerOptions = [
     })
   },
   {
+    path: '/user/logout/',
+    component: 'user/logout',
+    props: true,
+    meta: (route) => ({
+      title: "Login"
+    })
+  },
+  {
     path: '/user/account/password/set',
     component: 'user/account/user_password',
     meta: {requiresAuth: true}

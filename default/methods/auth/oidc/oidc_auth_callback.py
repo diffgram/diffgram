@@ -39,7 +39,7 @@ def api_oidc_callback():
     code = None
     if input:
         code = input.get('code')
-    print('CPODEEEE', code)
+
     if code is None:
         code = request.args.get('code')
     if code is None:
@@ -50,17 +50,18 @@ def api_oidc_callback():
         oidc_provider = OAuth2Provider()
         oidc_client = oidc_provider.get_client()
         access_token_data = oidc_client.get_access_token_with_code_grant(code = code)
+        print('ACCES TOKEN DATA', access_token_data)
         if not access_token_data:
             log['error']['token'] = 'Failed to get access token. Please check authorization_code and client configuration.'
             logger.error(log)
             return jsonify(log), 400
-        print('access_token_data', access_token_data)
         access_token = oidc_client.get_access_token_from_jwt(jwt_data = access_token_data)
         user_data = oidc_client.get_user(access_token = access_token)
         if not user_data:
             log['error']['userinfo'] = 'Failed to get userinfo. Please check access_token and client configuration.'
             logger.error(log)
             return jsonify(log), 400
+        print('USER DATA', user_data)
         user_id = user_data.get('sub')
         email = user_data.get('email')
         diffgram_user = User.get_user_by_oauth2_id(session = session,

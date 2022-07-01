@@ -60,13 +60,12 @@ class OAuth2ClientBase(metaclass = SingletonABC):
         """
         raise NotImplementedError
 
-
     @abc.abstractmethod
-    def logout(self, refresh_token: str):
+    def logout(self, refresh_token: str) -> str:
         """
             Logout a user from OIDC Provider.
         :param refresh_token: refresh token to invalidate
-        :return:
+        :return: logout url or None if no external url is used.
         """
         raise NotImplementedError
 

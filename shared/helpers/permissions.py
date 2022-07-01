@@ -32,6 +32,7 @@ def LoggedIn():
                 return False
             new_token = oidc_client.refresh_token(refresh_token)
             login_session['jwt'] = new_token
+            login_session['jwt']['refresh_token'] = refresh_token
             return True
         except Exception as e:
             err_data = traceback.format_exc()
@@ -58,17 +59,18 @@ def get_user_from_oauth2(session):
     access_token = jwt.get('access_token')
     if access_token is None:
         return None
-    oidc_user = oauth2_client.get_user(access_token = access_token)
-    if not oidc_user:
+    oauth2_user = oauth2_client.get_user(access_token = access_token)
+    if not oauth2_user:
         return None
     diffgram_user = User.get_user_by_oauth2_id(session = session,
-                                               oidc_id = oidc_user.get('sub'))
+                                               oidc_id = oauth2_user.get('sub'))
     if not diffgram_user:
         return None
     return diffgram_user.id
 
 
 def getUserID(session):
+    print('GEET USER ID', settings.USE_OAUTH2)
     if settings.USE_OAUTH2:
         return get_user_from_oauth2(session = session)
     else:
@@ -89,6 +91,7 @@ def setSecureCookie(user_db):
 
 
 def set_jwt_in_session(token_data):
+    print('set_jwt_in_session', token_data)
     login_session['jwt'] = token_data
 
 
