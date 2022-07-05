@@ -139,6 +139,17 @@ class ActionRun(Base):
         if return_kind == "objects":
             return query.limit(limit).all()
 
+    @staticmethod
+    def list_by_action_id(session, action_id):
+        query = session.query(ActionRun).filter(ActionRun.action_id == action_id)
+        return query.all()
+
+    def serialize_action_run(self):
+        return {
+            'id': self.id,
+            'output': self.output
+        }
+
     def serialize(self,
                   session = None):
 

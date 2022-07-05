@@ -78,6 +78,9 @@ celerybeat-schedule
 venv/
 ENV/
 
+# Dev container
+docker-compose-dev.yaml
+
 # Spyder project settings
 .spyderproject
 

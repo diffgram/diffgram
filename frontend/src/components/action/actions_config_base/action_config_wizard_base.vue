@@ -1,7 +1,6 @@
 <template>
   <v-stepper v-model="step"
              style="height: 100%"
-             @change="on_change_step"
              class="elevation-0"
              >
     <v-stepper-items style="height: 80%">
@@ -117,9 +116,6 @@ export default Vue.extend({
     methods: {
       open_action_selector: function(){
         this.$emit('open_action_selector')
-      },
-      on_change_step: function(){
-
       },
       on_next_button_click: function(){
         if(this.step <= 0){

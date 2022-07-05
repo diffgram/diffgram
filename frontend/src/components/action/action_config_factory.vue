@@ -15,29 +15,13 @@
 <script lang="ts">
 import Vue from "vue";
 import action_step_box from "./action_step_box.vue";
-import create_task_action_config from "./action_configurations/create_task/create_task_action_config";
-import img_properties_outliers_config from "./action_configurations/deepchecks/img_properties_outliers/img_properties_outliers_config";
-import export_action_config from "./action_configurations/export/export_action_config";
-import AzureTextAnalyticsSentimentAction from "./action_configurations/azure/AzureTextAnalyticsSentimentAction";
-
-
-export const COMPONENTS_KIND_MAPPING = {
-  'AzureTextAnalyticsSentimentAction': AzureTextAnalyticsSentimentAction,
-  'export': export_action_config,
-  'TaskTemplateActionRunner': create_task_action_config,
-  'DeepcheckImagePropertyOutliers': img_properties_outliers_config
-}
+import COMPONENTS_KIND_MAPPING from "./component_mapping"
 
 
 export default Vue.extend({
     name: 'action_config_factory',
     components: {
-      action_step_box,
-      create_task_action_config,
-      export_action_config,
-      AzureTextAnalyticsSentimentAction,
-      img_properties_outliers_config
-
+      action_step_box
     },
     props: ['action', 'project_string_id', 'actions_list', 'display_mode'],
 
