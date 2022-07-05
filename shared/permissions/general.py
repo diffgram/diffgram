@@ -11,7 +11,9 @@ from shared.helpers import sessionMaker
 from shared.permissions.user_permissions import User_Permissions
 
 import sys
-
+from shared.shared_logger import get_shared_logger
+import traceback
+logger = get_shared_logger()
 # TODO thoughts on this vs project specific permissions
 # (Project specific permissions requires keywoord args from function)...
 # ie refactor into Roles, type or something?
@@ -56,8 +58,12 @@ class General_permissions():
                 # api_user_list so even for "normal_users" we want to check their permissions
 
                 with sessionMaker.session_scope() as s:
-                    user = s.query(User).filter(User.id == getUserID(session = s)).one()
-
+                    try:
+                        user = s.query(User).filter(User.id == getUserID(session = s)).one()
+                    except Exception as e:
+                        err_data = traceback.format_exc()
+                        logger.error(f'Error Fetching user: {err_data}')
+                        raise Unauthorized('Invalid user in session')
                     if user.is_super_admin == True:
                         return func(*args, **kwds)
 

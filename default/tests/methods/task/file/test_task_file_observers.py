@@ -35,7 +35,6 @@ class TestTaskFileObservers(testing_setup.DiffgramBaseTestCase):
             'project': project,
             'user': self.project_data['users'][0],
         }, self.session)
-        print('completion_dir', completion_dir.id)
         job = data_mocking.create_job({
             'name': 'my-test-job',
             'completion_directory_id': completion_dir.id

@@ -73,7 +73,6 @@ class QueryCreator:
                             keys = File.get_metadata_keys(session = self.session,
                                                    project = self.project,
                                                    directory = self.directory)
-                            print('eys', keys)
                             suggestions = keys
                             suggest_type = 'labels'
                         elif last_token.value in ['instance', 'instances']:
@@ -93,7 +92,6 @@ class QueryCreator:
             return [], None
         except UnexpectedToken as token_exception:
             suggestions = []
-            print('TOKEN ', token_exception.accepts)
             token_type = [t for t in token_exception.accepts]
             if 'COMPARE_OP' in token_type:
                 suggestions.append('$operator')

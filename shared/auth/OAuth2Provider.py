@@ -8,15 +8,16 @@ from shared.shared_logger import get_shared_logger
 
 logger = get_shared_logger()
 
-def check_oidc_setup():
+
+def check_oauth2_setup():
     """
         Initializes Keylcoak client for startup check purposes.
     :return: True if init was successful.
     """
-    if settings.USE_OIDC:
-        logger.info('Testing Keycloak setup...')
+    if settings.USE_OAUTH2:
+        logger.info('Testing Oauth2 setup...')
         try:
-            prov = OIDCProvider()
+            prov = OAuth2Provider()
             oidc = prov.get_client()
         except Exception as e:
             data = traceback.format_exc()
@@ -30,7 +31,7 @@ class SingletonABC(abc.ABCMeta, Singleton):
     pass
 
 
-class OIDCClientBase(metaclass = SingletonABC):
+class OAuth2ClientBase(metaclass = SingletonABC):
     @classmethod
     def __subclasshook__(cls, subclass):
         return (hasattr(subclass, 'logout') and
@@ -44,27 +45,27 @@ class OIDCClientBase(metaclass = SingletonABC):
                 hasattr(subclass, 'get_refresh_token_from_jwt') and
                 callable(subclass.get_refresh_token_from_jwt) and
                 hasattr(subclass, 'get_access_token_with_code_grant') and
-                callable(subclass.get_access_token_with_code_grant) or
+                callable(subclass.get_access_token_with_code_grant) and
                 hasattr(subclass, 'get_login_url') and
                 callable(subclass.get_login_url) or
 
                 NotImplemented)
 
     @abc.abstractmethod
-    def get_login_url(self) -> str:
+    def get_login_url(self, refresh_token: str):
         """
-            returns the login URL to redirect user
+            Logout a user from OIDC Provider.
         :param refresh_token: refresh token to invalidate
         :return:
         """
         raise NotImplementedError
 
     @abc.abstractmethod
-    def logout(self, refresh_token: str):
+    def logout(self, refresh_token: str) -> str:
         """
             Logout a user from OIDC Provider.
         :param refresh_token: refresh token to invalidate
-        :return:
+        :return: logout url or None if no external url is used.
         """
         raise NotImplementedError
 
@@ -114,25 +115,28 @@ class OIDCClientBase(metaclass = SingletonABC):
         raise NotImplementedError
 
 
-class OIDCProvider(metaclass = Singleton):
+class OAuth2Provider(metaclass = Singleton):
     """
         Factory Class For OIDC Clients implementation.
         Depending on the setting set in settings.OIDC_PROVIDER_NAME
         this class will instantiatiate a different client oidc provider implementation for
         users to manage login, registration, token refresh, etc...
     """
-    oidc_client: OIDCClientBase
+    oidc_client: OAuth2ClientBase
 
     def __init__(self):
         from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
+        from shared.auth.CognitoDiffgramClient import CognitoDiffgramClient
 
-        provider = settings.OIDC_PROVIDER_NAME
+        provider = settings.OAUTH2_PROVIDER_NAME
 
         if not provider:
             raise ValueError("No DIFFGRAM_STATIC_STORAGE_PROVIDER env var set. valid values are [gcp, aws, azure]")
 
         if provider == 'keycloak':
             self.oidc_client = KeycloakDiffgramClient()
+        if provider == 'cognito':
+            self.oidc_client = CognitoDiffgramClient()
 
     def get_client(self):
         return self.oidc_client
