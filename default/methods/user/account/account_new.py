@@ -174,6 +174,9 @@ def user_new_api():
         request = request,
         spec_list = spec_list)
 
+    if settings.DISABLE_SELF_REGISTRATION:
+        log['error']['DISABLE_SELF_REGISTRATION'] = 'Self registration is disabled. Change install settings to enable.'
+        return jsonify(log = log), 400
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
