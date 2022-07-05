@@ -50,7 +50,6 @@ def api_oidc_callback():
         oidc_provider = OAuth2Provider()
         oidc_client = oidc_provider.get_client()
         access_token_data = oidc_client.get_access_token_with_code_grant(code = code)
-        print('ACCES TOKEN DATA', access_token_data)
         if not access_token_data:
             log['error']['token'] = 'Failed to get access token. Please check authorization_code and client configuration.'
             logger.error(log)
@@ -61,7 +60,6 @@ def api_oidc_callback():
             log['error']['userinfo'] = 'Failed to get userinfo. Please check access_token and client configuration.'
             logger.error(log)
             return jsonify(log), 400
-        print('USER DATA', user_data)
         user_id = user_data.get('sub')
         email = user_data.get('email')
         diffgram_user = User.get_user_by_oauth2_id(session = session,

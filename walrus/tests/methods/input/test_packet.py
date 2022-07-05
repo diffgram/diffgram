@@ -110,7 +110,6 @@ class TestPacket(testing_setup.DiffgramBaseTestCase):
             input = input_data,
             log = log
         )
-        print('log', log)
         self.assertFalse(result)
         self.assertEqual(len(log['error'].keys()), 1)
         self.assertEqual(file_id, None)

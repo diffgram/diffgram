@@ -16,7 +16,8 @@ class CognitoDiffgramClient(OAuth2ClientBase):
 
     def __init__(self):
         self.client_id = settings.OAUTH2_PROVIDER_CLIENT_ID
-        if settings.OAUTH2_PROVIDER_CLIENT_SECRET:
+        if settings.OAUTH2_PROVIDER_CLIENT_SECRET is not None and settings.OAUTH2_PROVIDER_CLIENT_SECRET != 'none':
+            self.client_secret = settings.OAUTH2_PROVIDER_CLIENT_SECRET
             str_credentials = f'{self.client_id}:{self.client_secret}'
             encoded_credentials = base64.b64encode(str_credentials.encode('utf-8'))
             self.auth_header = f'Basic: {encoded_credentials}'

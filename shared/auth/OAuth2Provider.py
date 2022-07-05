@@ -15,7 +15,7 @@ def check_oauth2_setup():
     :return: True if init was successful.
     """
     if settings.USE_OAUTH2:
-        logger.info('Testing Keycloak setup...')
+        logger.info('Testing Oauth2 setup...')
         try:
             prov = OAuth2Provider()
             oidc = prov.get_client()

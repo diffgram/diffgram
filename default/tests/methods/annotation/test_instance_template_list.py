@@ -85,7 +85,6 @@ class TeseInstanceTemplateList(testing_setup.DiffgramBaseTestCase):
             }
         )
         data = response.json
-        print('dada', data)
         self.assertEqual(response.status_code, 200)
         self.assertTrue('instance_template_list' in data)
         self.assertEqual(len(data['instance_template_list']), 3)
