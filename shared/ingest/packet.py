@@ -8,15 +8,19 @@ from shared.database.input import Input
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.video.video import Video
 
-if settings.DIFFGRAM_SERVICE_NAME == 'walrus':
+on_walrus = True
+
+try:
+    from walrus.methods.input.process_media import PrioritizedItem
+    from walrus.methods.input.process_media import add_item_to_queue
+    from walrus.methods.input.upload import Upload
+except:
     try:
-        from walrus.methods.input.process_media import PrioritizedItem
-        from walrus.methods.input.process_media import add_item_to_queue
-        from walrus.methods.input.upload import Upload
-    except:
         from methods.input.process_media import PrioritizedItem
         from methods.input.process_media import add_item_to_queue
         from methods.input.upload import Upload
+    except:
+        on_walrus = False
 
 
 def enqueue_packet(project_string_id,
@@ -116,7 +120,8 @@ def enqueue_packet(project_string_id,
         queue_limit = 1
 
     # Temporary workaround until new Rabbit MQ implmentation for walrus
-    if settings.DIFFGRAM_SERVICE_NAME == 'walrus':
+    print('on_walrus', on_walrus)
+    if on_walrus:
 
         if settings.PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY is True or enqueue_immediately:
 

@@ -70,7 +70,6 @@ def get_user_from_oauth2(session):
 
 
 def getUserID(session):
-    print('GEET USER ID', settings.USE_OAUTH2)
     if settings.USE_OAUTH2:
         return get_user_from_oauth2(session = session)
     else:

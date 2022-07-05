@@ -255,6 +255,9 @@ class DiffgramDataMocker:
             root_files_only = True,
             limit = num_files,
         )
+        if len(files_list) == 0 or len(files_list) < num_files:
+            self.generate_test_data_on_dataset(dataset = mock_dataset, num_files = num_files)
+
         for file in files_list:
             new_file = file_transfer_core(
                 session = self.session,
