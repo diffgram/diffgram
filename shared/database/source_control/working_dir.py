@@ -807,7 +807,6 @@ class WorkingDirFileLink(Base):
         # May have the file link
         existing_file_link = WorkingDirFileLink.file_link(
             session, directory.id, file_id)
-        print('existing_file_link', existing_file_link)
         if add_or_remove == "add":
 
             # Note info not error.

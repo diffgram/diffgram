@@ -248,7 +248,7 @@ class User(Base):
         }
 
     @staticmethod
-    def get_user_by_oidc_id(session, oidc_id):
+    def get_user_by_oauth2_id(session, oidc_id):
         user = session.query(User).filter(
             User.oidc_id == oidc_id
         ).first()

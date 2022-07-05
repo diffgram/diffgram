@@ -24,7 +24,7 @@ import { is_mailgun_set } from "../../services/configService";
 import Vue from "vue";
 import {auth_redirect} from "./account/auth_redirect";
 export default Vue.extend({
-  name: "user_login",
+  name: "login_oauth2_redirect",
   props: {
     magic_auth: {
       default: null,
@@ -66,7 +66,7 @@ export default Vue.extend({
     oidc_login: async function (code) {
       this.loading = true;
       try{
-        const response = await axios.post(`/api/v1/auth/oidc-login`, {
+        const response = await axios.post(`/api/v1/auth/callback`, {
           code: code
         })
         this.loading = false;

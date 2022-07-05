@@ -64,7 +64,6 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
                 member = self.member
             )
             mock_1.asser_called_once()
-            print('ressss', export_data)
             self.assertTrue(result)
             self.assertTrue('readme' in export_data)
             self.assertTrue('label_map' in export_data)
@@ -140,8 +139,6 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             )
 
             mock_1.assert_called_once()
-
-            print('result', export_data[file.id]['instance_list'])
 
             self.assertTrue(result)
 
