@@ -603,8 +603,16 @@ const routerOptions = [
     })
   },
   {
-    path: '/user/oidc-login/',
-    component: 'user/login_oidc_redirect',
+    path: '/user/oauth2-login/',
+    component: 'user/login_oauth2_redirect',
+    props: true,
+    meta: (route) => ({
+      title: "Login"
+    })
+  },
+  {
+    path: '/user/logout/',
+    component: 'user/logout',
     props: true,
     meta: (route) => ({
       title: "Login"

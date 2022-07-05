@@ -99,8 +99,7 @@ export default Vue.extend( {
   },
   methods: {
     logout: async function () {
-      console.log('LOGOUTTT')
-      await logout()
+      this.$router.push('/user/logout/');
     },
     edit: function () {
       this.$router.push('/user/edit/');

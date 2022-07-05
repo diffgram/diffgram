@@ -108,7 +108,6 @@ class TeseDiscussionUpdate(testing_setup.DiffgramBaseTestCase):
             member = member,
             log = regular_log.default(),
         )
-        print('log', log)
         self.assertTrue(len(log['error'].keys()) == 0)
         self.assertIsNotNone(result)
         self.assertEqual(result['description'], new_content)

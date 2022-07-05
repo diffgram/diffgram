@@ -28,11 +28,17 @@ export const logout = async () => {
   try {
 
     const response = await axios.get('/api/v1/user/logout')
+
     store.dispatch('log_out')
+    if(response.data.url_redirect){
+      window.location.replace(response.data.url_redirect)
+      return [true, null]
+    }
     router.push('/user/login');
-    return response
+    return [true, null]
   } catch(e) {
     console.log(e)
+    return [null, e]
   }
 }
 

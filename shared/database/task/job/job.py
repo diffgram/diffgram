@@ -995,7 +995,6 @@ class Job(Base, Caching):
         the file doesn't get remove properly from the job...
 
         """
-        print('update_file_count_statistic')
         self.file_count_statistic = WorkingDirFileLink.file_list(
             session = session,
             working_dir_id = self.directory_id,
