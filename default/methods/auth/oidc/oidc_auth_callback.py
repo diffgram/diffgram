@@ -7,18 +7,18 @@ from methods.user.account.account_new import user_new_core, set_password_and_log
 
 
 def login_and_return_access_token(session, diffgram_user, user_data, access_token_data, log):
-    first_stage_login_success(
+    logger.info(f'Login in user: {diffgram_user}')
+    response, status = first_stage_login_success(
         log = log,
         session = session,
         user = diffgram_user,
-        jwt = access_token_data
+        jwt = access_token_data,
+        user_data_oidc = user_data,
+        access_token_data = access_token_data,
     )
 
-    return jsonify({
-        'access_token_data': access_token_data,
-        'user_data_oidc': user_data,
-        'user': diffgram_user.serialize()
-    })
+
+    return response, status
 
 
 @routes.route('/api/v1/auth/callback', methods = ['POST'])
