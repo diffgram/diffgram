@@ -138,7 +138,10 @@ def login():
 def first_stage_login_success(log,
                               session,
                               user,
-                              jwt = None):
+                              jwt = None,
+                              user_data_oidc = None,
+                              access_token_data = None,
+                              ) -> [any, int]:
     """
 
     Assumes initial login success
@@ -178,7 +181,12 @@ def first_stage_login_success(log,
             set_jwt_in_session(jwt)
         else:
             setSecureCookie(user)
-
-        return jsonify(log = log,
-                       user = user.serialize(),
-                       install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT), 200
+        result = {
+            'log': log,
+            'user': user.serialize(),
+            'access_token_data': access_token_data,
+            'user_data_oidc': user_data_oidc,
+            'install_fingerprint': settings.DIFFGRAM_INSTALL_FINGERPRINT
+        }
+        logger.info(f'Log in success result {result}')
+        return jsonify(result), 200
