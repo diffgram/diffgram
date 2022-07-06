@@ -9,13 +9,14 @@
     />
 
     <v_directory_list
-      v-model="action.trigger_data.upload_directory_id_list"
-      v-if="action.trigger_data.event_name === 'input_file_uploaded'"
+      v-if="action && action.trigger_data.event_name === 'input_file_uploaded'"
+      :initial_dir_from_state="action.config_data.directory_id"
       :project_string_id="project_string_id"
       :show_new="true"
       :show_update="true"
-      @change_directory="$emit('change')">
-    </v_directory_list>
+      :set_from_id="action.config_data.directory_id"
+      @change_directory="on_update_directory"
+    />
 
     <job_select 
         v-if="action.trigger_data.event_name === 'task_created'"
@@ -52,14 +53,12 @@ export default Vue.extend({
       triggers_list_prop: {}
     },
     mounted() {
-      console.log(this.action)
       this.set_trigger_list(this.action_template)
     },
     data() {
       return {
         is_open: true,
         search: '',
-        selected_trigger: {},
         default_triggers_list: [
           {
             name: 'Previous Step Completed',
@@ -75,17 +74,6 @@ export default Vue.extend({
         handler: function (new_val, old_val) {
           this.set_trigger_list(new_val)
         }
-      },
-      selected_trigger: function (new_val, old_val) {
-        if (new_val && new_val.value) {
-          this.action.trigger_data.event_name = new_val.value
-        }
-      },
-      action: {
-        deep: true,
-        handler: function (new_val, old_val) {
-
-        }
       }
     },
     computed: {
@@ -94,7 +82,6 @@ export default Vue.extend({
           return this.triggers_list_prop;
 
         }
-
         return this.default_triggers_list.filter(elm => {
           if (elm.value === 'action_completed' && !this.prev_action) {
             return false
@@ -139,6 +126,9 @@ export default Vue.extend({
           }
 
         }
+      },
+      on_update_directory: function(e) {
+        this.action.config_data.directory_id = e.directory_id
       },
       close() {
         this.input = undefined;
