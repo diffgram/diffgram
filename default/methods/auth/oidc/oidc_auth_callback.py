@@ -43,7 +43,7 @@ def api_oidc_callback():
     if code is None:
         code = request.args.get('code')
     if code is None:
-        log['error']['code'] = 'Authorizacion code missing'
+        log['error']['code'] = 'Authorization code missing'
         return jsonify(log), 400
     log = regular_log.default()
     with sessionMaker.session_scope() as session:
