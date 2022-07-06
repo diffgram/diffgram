@@ -6,7 +6,7 @@ class ActionCompleteCondition:
         self.default_event = default_event
         self.event_list = event_list
 
-    def build_event_list(self, event_list):
+    def build_event_list(self, event_list: list) -> list:
         res = []
         for e in event_list:
             res.append({

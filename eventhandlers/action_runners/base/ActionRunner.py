@@ -47,12 +47,27 @@ class ActionRunner:
         session.add(self.action_run)
 
     def execute_pre_conditions(self, session: Session) -> bool:
+        """
+        Function to determine if pre conditions for execution are met.
+        Returns true if action can be executed and False if actions cannot be executed.
+        :param session:
+        :return:
+        """
         raise NotImplementedError
 
     def execute_action(self, session: Session) -> None:
+        """
+            Function that executes main action logic. This is implemented on the subclasses of the `ActionRunner`
+        :param session:
+        :return:
+        """
         raise NotImplementedError
 
     def verify_registration_data(self) -> None:
+        """
+
+        :return:
+        """
         fields = ['public_name',
                   'description',
                   'icon',
@@ -94,6 +109,12 @@ class ActionRunner:
         )
 
     def run(self) -> None:
+        """
+        Executes the action. This method does not need to be overriden.
+        The method calls `execute_pre_conditions` and then `execute_action`.
+        Finally it calls `declare_action_complete` or `declare_action_failed` depending on outcome
+        :return:
+        """
         with sessionMaker.session_scope_threaded() as session:
             self.action_run = ActionRun.new(
                 session = session,
