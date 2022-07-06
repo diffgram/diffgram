@@ -3,7 +3,7 @@ from shared.system_startup.system_startup_base import SystemStartupBase
 from methods.regular.regular_api import logger
 from shared.settings import settings
 from shared.queueclient.QueueClient import QueueClient
-from shared.auth.OIDCProvider import check_oidc_setup
+from shared.auth.OAuth2Provider import check_oauth2_setup
 import traceback
 from shared.connection.connection_operations import Connection_Operations
 
@@ -26,18 +26,12 @@ class DefaultServiceSystemStartupChecker(SystemStartupBase):
             logger.error(f'Error connecting to rabbit MQ')
             raise (Exception('Error connecting to RabbitMQ'))
 
-        check_oidc_setup()
+        check_oauth2_setup()
         DefaultServiceSystemStartupChecker.connection_operations_self_tests()
 
         return result
 
-
+    @staticmethod
     def connection_operations_self_tests():
 
-        Connection_Operations(session=None).self_test()
-
-
-
-
-
-
+        Connection_Operations(session = None).self_test()

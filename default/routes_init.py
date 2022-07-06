@@ -151,7 +151,7 @@ def do_routes_importing():
     from methods.ui_schema.ui_schema import ui_schema_new_api
 
     from methods.configs.mailgun_is_set import mailgun_is_set
-    from methods.configs.oidc_is_set import oidc_is_set
+    from methods.configs.oauth2_is_set import oauth2_is_set
     from methods.configs.admin_install_info import api_admin_install_info
     from methods.configs.is_open_source import api_is_open_source
 

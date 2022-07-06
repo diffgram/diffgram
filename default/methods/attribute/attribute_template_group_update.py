@@ -10,7 +10,6 @@ from shared.database.attribute.attribute_template_group_to_file import Attribute
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("20 per day")
 def api_attribute_template_group_update(project_string_id):
     """
 

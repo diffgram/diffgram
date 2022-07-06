@@ -3,7 +3,7 @@ from shared.system_startup.system_startup_base import SystemStartupBase
 from methods.regular.regular_api import logger
 from shared.queueclient.QueueClient import QueueClient
 from shared.settings import settings
-from shared.auth.OIDCProvider import check_oidc_setup
+from shared.auth.OAuth2Provider import check_oauth2_setup
 import traceback
 
 
@@ -27,4 +27,4 @@ class WalrusServiceSystemStartupChecker(SystemStartupBase):
         if not result:
             raise Exception('System Startup Check Failed.')
 
-        check_oidc_setup()
+        check_oauth2_setup()

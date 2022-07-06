@@ -183,20 +183,35 @@ SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_MINIMUM_DA
 SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID', 30 * 14))
 
 # OIDC Settings
-USE_OIDC = env_adapter.bool(os.getenv('USE_OIDC', False))
-OIDC_PROVIDER_NAME = os.getenv('OIDC_PROVIDER_NAME', 'keycloak')
-OIDC_PROVIDER_HOST = os.getenv('OIDC_PROVIDER_HOST', 'http://localhost:8099/auth/')
+USE_OAUTH2 = env_adapter.bool(os.getenv('USE_OAUTH2', False))
+OAUTH2_PROVIDER_NAME = os.getenv('OAUTH2_PROVIDER_NAME', 'keycloak')
+OAUTH2_PROVIDER_HOST = os.getenv('OAUTH2_PROVIDER_HOST', 'http://localhost:8099/auth/')
+OAUTH2_PROVIDER_CLIENT_ID = os.getenv('OAUTH2_PROVIDER_CLIENT_ID', 'diffgram')
+OAUTH2_PROVIDER_CLIENT_SECRET = os.getenv('OAUTH2_PROVIDER_CLIENT_SECRET')
+OAUTH2_PROVIDER_PUBLIC_KEY = os.getenv('OAUTH2_PROVIDER_PUBLIC_KEY', 'diffgram_public_key')
+
+if URL_BASE.endswith('/'):
+    OAUTH2_DEFAULT_REDIRECT_URL = f'{URL_BASE}user/oauth2-login/'
+    OAUTH2_DEFAULT_LOGOUT_URL = f'{URL_BASE}user/logout/'
+    DEFAULT_LOGIN_URL = f'{URL_BASE}user/login/'
+else:
+    OAUTH2_DEFAULT_REDIRECT_URL = f'{URL_BASE}/user/oauth2-login/'
+    OAUTH2_DEFAULT_LOGOUT_URL = f'{URL_BASE}/user/logout/'
+    DEFAULT_LOGIN_URL = f'{URL_BASE}/user/login/'
 
 
-OIDC_PROVIDER_CLIENT_ID = os.getenv('OIDC_PROVIDER_CLIENT_ID', 'diffgram')
-OIDC_PROVIDER_PUBLIC_KEY = os.getenv('OIDC_PROVIDER_PUBLIC_KEY', 'diffgram_public_key')
-OIDC_PROVIDER_REALM = os.getenv('OIDC_PROVIDER_REALM', 'diffgram-realm')
+DISABLE_SELF_REGISTRATION = env_adapter.bool(os.getenv('DISABLE_SELF_REGISTRATION', False))
+
+# Cognito Settings
+COGNITO_LOGIN_URL = os.getenv('COGNITO_LOGIN_URL')
+
 
 # Keycloak Settings
 KEY_CLOAK_MASTER_USER = os.getenv('KEY_CLOAK_MASTER_USER', 'admin')
 KEY_CLOAK_MASTER_PASSWORD = os.getenv('KEY_CLOAK_MASTER_PASSWORD', 'admin')
 KEY_CLOAK_DIFFGRAM_USER = os.getenv('KEY_CLOAK_DIFFGRAM_USER', 'diffgram')
 KEY_CLOAK_DIFFGRAM_PASSWORD = os.getenv('KEY_CLOAK_DIFFGRAM_PASSWORD', 'diffgram')
+KEYCLOAK_REALM = os.getenv('KEYCLOAK_REALM', 'diffgram-realm')
 
 
 # Minio Only Allow Expiry time is less than 7 days (value in seconds).

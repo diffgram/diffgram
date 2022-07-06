@@ -682,7 +682,6 @@ class File_Browser():
                 self.metadata['prev_page'] = self.metadata['page'] - 1
             else:
                 self.metadata['prev_page'] = None
-        print('working_dir_file_list', working_dir_file_list, len(working_dir_file_list))
         if mode == "serialize":
             for index_file, file in enumerate(working_dir_file_list):
                 if self.metadata['file_view_mode'] == 'explorer':

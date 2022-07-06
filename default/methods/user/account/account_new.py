@@ -127,7 +127,7 @@ def validate_existing_user_from_raw(
 
 
 def set_password_and_login_history(session, new_user, password, token_data = None):
-    if settings.USE_OIDC:
+    if settings.USE_OAUTH2:
         set_jwt_in_session(token_data = token_data)
     setSecureCookie(new_user)
 
@@ -174,6 +174,9 @@ def user_new_api():
         request = request,
         spec_list = spec_list)
 
+    if settings.DISABLE_SELF_REGISTRATION:
+        log['error']['DISABLE_SELF_REGISTRATION'] = 'Self registration is disabled. Change install settings to enable.'
+        return jsonify(log = log), 400
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
