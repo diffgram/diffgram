@@ -377,11 +377,11 @@ class File(Base, Caching):
         ).all()
         return assets
 
-    def serialize_geospatial_assets(self, session):
+    def serialize_geospatial_assets(self, session, connection_id = None, bucket_name = None):
         assets_list = self.get_geo_assets(session)
         result = []
         for asset in assets_list:
-            result.append(asset.serialize(session))
+            result.append(asset.serialize(session, connection_id = connection_id, bucket_name = bucket_name))
         return result
 
     def serialize_with_type(self,
@@ -389,32 +389,46 @@ class File(Base, Caching):
                             ):
 
         file = self.serialize_base_file()
-
+        connection_id = self.connection_id
+        bucket_name = self.bucket_name
         if self.type == "image":
             if self.image:
-                file['image'] = self.image.serialize_for_source_control(session)
+                file['image'] = self.image.serialize_for_source_control(session = session,
+                                                                        connection_id = connection_id,
+                                                                        bucket_name = bucket_name)
 
         elif self.type == "video":
             if self.video:
-                file['video'] = self.video.serialize_list_view(session, self.project)
+                file['video'] = self.video.serialize_list_view(session = session,
+                                                               project = self.project,
+                                                               connection_id = connection_id,
+                                                               bucket_name = bucket_name)
 
         elif self.type == "text":
             if self.text_file:
-                file['text'] = self.text_file.serialize(session)
+                file['text'] = self.text_file.serialize(session = session,
+                                                        connection_id = connection_id,
+                                                        bucket_name = bucket_name)
 
         elif self.type == "geospatial":
             file['geospatial'] = {
-                'layers': self.serialize_geospatial_assets(session = session)
+                'layers': self.serialize_geospatial_assets(session = session,
+                                                           connection_id = connection_id,
+                                                           bucket_name = bucket_name)
             }
             
         if self.type == "audio":
             if self.audio_file:
-                file['audio'] = self.audio_file.serialize()
+                file['audio'] = self.audio_file.serialize(session = session,
+                                                          connection_id = connection_id,
+                                                          bucket_name = bucket_name)
 
         elif self.type == "sensor_fusion":
             point_cloud_file = self.get_child_point_cloud_file(session = session)
             if point_cloud_file and point_cloud_file.point_cloud:
-                file['point_cloud'] = point_cloud_file.point_cloud.serialize(session)
+                file['point_cloud'] = point_cloud_file.point_cloud.serialize(session = session,
+                                                                             connection_id = connection_id,
+                                                                             bucket_name = bucket_name)
 
         elif self.type == "label":
             if session:

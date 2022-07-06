@@ -54,7 +54,7 @@ class TestAudioFile(testing_setup.DiffgramBaseTestCase):
         }
         audio_file = data_mocking.create_audio_file(test_audio_data, self.session)
 
-        result = audio_file.serialize()
+        result = audio_file.serialize(self.session)
         
         self.assertEqual(result['original_filename'], audio_file.original_filename)
         self.assertEqual(result['description'], audio_file.description)

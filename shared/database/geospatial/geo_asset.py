@@ -63,7 +63,7 @@ class GeoAsset(Base):
 
         return point_cloud
 
-    def serialize(self, session):
+    def serialize(self, session, connection_id = None, bucket_name = None):
 
         self.regenerate_url(session)
 

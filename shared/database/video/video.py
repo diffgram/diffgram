@@ -86,7 +86,9 @@ class Video(Base):
     def serialize_list_view(
         self,
         session = None,
-        project = None):
+        project = None,
+        connection_id = None,
+        bucket_name = None):
 
         self.regenerate_url(
             project = project,

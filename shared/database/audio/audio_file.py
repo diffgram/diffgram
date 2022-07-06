@@ -30,7 +30,8 @@ class AudioFile(Base, SerializerMixin):
     def get_by_id(session, id):
         return session.query(AudioFile).filter(AudioFile.id == id).first()
 
-    def serialize(self):
+    def serialize(self, session, connection_id = None, bucket_name = None):
+        self.regenerate_url(session = session)
         data = self.to_dict(rules = ())
 
         return data
