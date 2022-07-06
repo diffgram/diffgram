@@ -189,10 +189,17 @@ OAUTH2_PROVIDER_HOST = os.getenv('OAUTH2_PROVIDER_HOST', 'http://localhost:8099/
 OAUTH2_PROVIDER_CLIENT_ID = os.getenv('OAUTH2_PROVIDER_CLIENT_ID', 'diffgram')
 OAUTH2_PROVIDER_CLIENT_SECRET = os.getenv('OAUTH2_PROVIDER_CLIENT_SECRET')
 OAUTH2_PROVIDER_PUBLIC_KEY = os.getenv('OAUTH2_PROVIDER_PUBLIC_KEY', 'diffgram_public_key')
-OAUTH2_DEFAULT_REDIRECT_URL = f'{URL_BASE}user/oauth2-login/'
 
-OAUTH2_DEFAULT_LOGOUT_URL = f'{URL_BASE}user/logout/'
-DEFAULT_LOGIN_URL = f'{URL_BASE}user/login/'
+if URL_BASE.endswith('/'):
+    OAUTH2_DEFAULT_REDIRECT_URL = f'{URL_BASE}user/oauth2-login/'
+    OAUTH2_DEFAULT_LOGOUT_URL = f'{URL_BASE}user/logout/'
+    DEFAULT_LOGIN_URL = f'{URL_BASE}user/login/'
+else:
+    OAUTH2_DEFAULT_REDIRECT_URL = f'{URL_BASE}/user/oauth2-login/'
+    OAUTH2_DEFAULT_LOGOUT_URL = f'{URL_BASE}/user/logout/'
+    DEFAULT_LOGIN_URL = f'{URL_BASE}/user/login/'
+
+
 DISABLE_SELF_REGISTRATION = env_adapter.bool(os.getenv('DISABLE_SELF_REGISTRATION', False))
 
 # Cognito Settings
