@@ -142,7 +142,6 @@ export default {
     action: {
       deep: true,
       handler: function() {
-        console.log("Action vhnged")
         this.update_schema()
       }
     }
@@ -205,7 +204,16 @@ export default {
     },
     change_attribute: function(event) {
       this.action.config_data.group_id = event
-      this.selected_attribute_group= event
+      this.selected_attribute_group = event
+      console.log("here")
+      if (this.global_attribute_groups_list && this.selected_attribute_group) {
+        const current_attribute = this.global_attribute_groups_list.find(attr => attr.id === this.selected_attribute_group)
+
+        const output_interface = current_attribute.attribute_template_list.map(attr => attr.name)
+        this.action.output_interface = {
+          output_options: output_interface
+        }
+      }
       this.$emit('action_updated', this.action)
     },
     get_attributes: async function() {
