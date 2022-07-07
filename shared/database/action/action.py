@@ -59,6 +59,7 @@ class Action(Base, SerializerMixin):
 
     # Output of action, usually caches the output of latest ActionRun.
     output = Column(MutableDict.as_mutable(JSONB))
+    output_interface = Column(MutableDict.as_mutable(JSONB))
 
     ordinal = Column(Integer)
 
@@ -176,8 +177,8 @@ class Action(Base, SerializerMixin):
         completion_condition_data,
         public_name,
         add_to_session = True,
-        flush_session = True
-
+        flush_session = True,
+        output_interface = None
     ):
         """
         We default active to True for easier searching
@@ -203,6 +204,7 @@ class Action(Base, SerializerMixin):
             public_name = public_name,
             condition_data = condition_data,
             completion_condition_data = completion_condition_data,
+            output_interface = output_interface
         )
         if add_to_session:
             session.add(action)
