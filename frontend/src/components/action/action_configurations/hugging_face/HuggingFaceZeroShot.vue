@@ -166,7 +166,6 @@ export default {
     }
   },
   async mounted() {
-    console.log(this.action)
     this.steps_config = new ActionStepsConfig()
     this.steps_config.hide_step('pre_conditions')
 
