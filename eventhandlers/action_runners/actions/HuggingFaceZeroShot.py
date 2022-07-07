@@ -117,16 +117,3 @@ class HuggingFaceZeroShotAction(ActionRunner):
             "applied_option_id": attribute_item_to_apply['id'],
             "applied_option_label": attribute_to_apply
         }
-    
-    def create_action_template():
-        Action_Template.new(
-            session = session,
-            public_name = 'Hugging Face Text Zero Shot',
-            description = 'Hugging Face Text Zero Shot',
-            icon = 'https://www.svgrepo.com/show/46774/export.svg',
-            kind = 'HuggingFaceZeroShotAction',
-            category = None,
-            #trigger_data = {'trigger_event_name': 'task_completed'},
-            #condition_data = {'event_name': 'all_tasks_completed'},
-            #completion_condition_data = {'event_name': 'prediction_success'},
-        )

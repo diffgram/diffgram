@@ -112,31 +112,31 @@ class ActionRunner:
                 if isinstance(success, dict):
                     self.action_run.output = success
 
-                self.declare_action_complete(session)
+                self.declare_action_complete(session, success)
             else:
                 self.declare_action_failed(session)
 
     def declare_action_failed(self, session: Session) -> None:
-
         event = Event.new(
             session = session,
             action_id = self.action.id,
             kind = 'action_failed',
             project_id = self.action.project_id,
-
         )
         event_data = event.serialize()
         self.mngr.send_message(message = event_data,
                                exchange = Exchanges.actions.value,
                                routing_key = RoutingKeys.action_trigger_event_new.value)
 
-    def declare_action_complete(self, session: Session) -> None:
+    def declare_action_complete(self, session: Session, output) -> None:
         event = Event.new(
             session = session,
             action_id = self.action.id,
             kind = 'action_completed',
             project_id = self.action.project_id,
-
+            file_id = output['file_id'],
+            task_id = output['task_id'],
+            result = output
         )
         event_data = event.serialize()
         self.mngr.send_message(message = event_data,
