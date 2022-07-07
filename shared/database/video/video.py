@@ -2,9 +2,7 @@
 from shared.database.common import *
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.source_control.file import File
-from shared.data_tools_core import Data_tools
 
-data_tools = Data_tools().data_tools
 
 
 class Video(Base):
@@ -68,6 +66,9 @@ class Video(Base):
         self,
         session = None,
         project = None):
+        from shared.data_tools_core import Data_tools
+
+        data_tools = Data_tools().data_tools
         if session and self.file_blob_path:
             should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(self, session)
             if should_regenerate is True:

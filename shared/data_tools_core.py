@@ -6,13 +6,13 @@ from shared.data_tools_core_minio import DataToolsMinio
 from shared.data_tools_core_azure import DataToolsAzure
 from shared.utils.singleton import Singleton
 from shared.database.image import Image
-from shared.database.video.video import Video
 from shared.database.audio.audio_file import AudioFile
 from shared.database.geospatial.geo_asset import GeoAsset
 from shared.database.point_cloud.point_cloud import PointCloud
 from sqlalchemy.orm.session import Session
 
-DiffgramBlobObjectType = Image or Video or AudioFile or GeoAsset or PointCloud
+# Videos Excluded for now
+DiffgramBlobObjectType = Image or AudioFile or GeoAsset or PointCloud
 
 
 class Data_tools(metaclass = Singleton):
