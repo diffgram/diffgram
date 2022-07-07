@@ -74,8 +74,6 @@ def api_action_update(project_string_id, action_id):
         member = get_member(session)
         project = Project.get(session, project_string_id)
 
-        print(input['output_interface'])
-
         result, log = action_update_core(
             session = session,
             project = project,
@@ -123,7 +121,7 @@ def action_update_core(session: Session,
                        archived: bool,
                        completion_condition_data: dict,
                        log: dict,
-                       output_intertace: dict
+                       output_interface: dict
                        ):
     workflow = Workflow.get_by_id(session = session, id = workflow_id, project_id = project.id)
     if workflow is None:
@@ -153,7 +151,7 @@ def action_update_core(session: Session,
         'archived': archived,
         'completion_condition_data': completion_condition_data,
         'member_updated_id': member.id,
-        'output_intertace': output_intertace
+        'output_interface': output_interface
     }
     for key, val in data_to_update.items():
         setattr(action, key, val)

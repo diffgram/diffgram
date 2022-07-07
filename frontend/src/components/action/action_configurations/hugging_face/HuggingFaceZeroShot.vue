@@ -166,6 +166,7 @@ export default {
     }
   },
   async mounted() {
+    console.log(this.action)
     this.steps_config = new ActionStepsConfig()
     this.steps_config.hide_step('pre_conditions')
 
@@ -205,7 +206,6 @@ export default {
     change_attribute: function(event) {
       this.action.config_data.group_id = event
       this.selected_attribute_group = event
-      console.log("here")
       if (this.global_attribute_groups_list && this.selected_attribute_group) {
         const current_attribute = this.global_attribute_groups_list.find(attr => attr.id === this.selected_attribute_group)
 
