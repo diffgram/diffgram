@@ -67,6 +67,18 @@ export default {
     this.steps_config = new ActionStepsConfig()
     this.steps_config.hide_step('pre_conditions')
   },
+  watch: {
+    action: {
+      deep: true,
+      handler(newValue, oldValue) {
+        if (newValue.trigger_data.event_name === 'action_completed') {
+          this.steps_config.show_step('pre_conditions')
+        } else {
+          this.steps_config.hide_step('pre_conditions')
+        }
+      }
+    }
+  }
 }
 </script>
 
