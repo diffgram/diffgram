@@ -208,7 +208,7 @@ export default {
       if (this.global_attribute_groups_list && this.selected_attribute_group) {
         const current_attribute = this.global_attribute_groups_list.find(attr => attr.id === this.selected_attribute_group)
 
-        const output_interface = current_attribute.attribute_template_list.map(attr => attr.name)
+        const output_interface = current_attribute.attribute_template_list.map(attr => ({id: attr.id, name: attr.name}))
         this.action.output_interface = {
           output_options: output_interface
         }
