@@ -210,7 +210,10 @@ export default {
 
         const output_interface = current_attribute.attribute_template_list.map(attr => ({id: attr.id, name: attr.name}))
         this.action.output_interface = {
-          output_options: output_interface
+          output_labels: {
+            label: "Labels",
+            options: output_interface
+          }
         }
       }
       this.$emit('action_updated', this.action)

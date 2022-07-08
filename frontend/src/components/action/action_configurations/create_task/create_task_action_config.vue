@@ -20,13 +20,16 @@
       </template>
 
       <template v-slot:wizard_pre_conditions>
+        <h3>Select label:</h3>
+        <p>(leave blank to allow all)</p>
         <v-select
-          :items="previous_action.output_interface.output_options"
+          :items="previous_action.output_interface.output_labels.options"
+          :label="previous_action.output_interface.output_labels.label"
+          :value="action.precondition.output_labels"
+          multiple
+          return-object
           item-text="name"
           item-value="id"
-          label="Label"
-          return-object
-          multiple
           @change="change_pre_condition"
         />
       </template>
