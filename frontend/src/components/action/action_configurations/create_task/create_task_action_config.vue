@@ -25,6 +25,8 @@
           item-text="name"
           item-value="id"
           label="Label"
+          return-object
+          multiple
           @change="change_pre_condition"
         />
       </template>
@@ -76,6 +78,7 @@ export default {
     }
   },
   async mounted() {
+    console.log(this.action)
     this.steps_config = new ActionStepsConfig()
     await this.set_step()
   },
@@ -99,6 +102,11 @@ export default {
         }
     },
     change_pre_condition: function(event) {
+      if (this.action.precondition) {
+        this.action.precondition.output_labels = event
+      } else {
+        this.action.precondition = { 'output_labels': event }
+      }
       this.$emit('action_updated', this.action)
     },
   }
