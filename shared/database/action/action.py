@@ -104,6 +104,10 @@ class Action(Base, SerializerMixin):
     count = Column(Integer)  # ie 1, 4, 0
     count_confidence_threshold = Column(Float)  # ie 0.50 prediction confidence
 
+    # Action preconditions
+
+    precondition = Column(MutableDict.as_mutable(JSONB))
+
     # Condition action
 
     condition_operator = Column(String)  # (equals, less than, greater than, etc.)
