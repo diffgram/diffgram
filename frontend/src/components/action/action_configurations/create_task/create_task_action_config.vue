@@ -19,6 +19,16 @@
         ></task_template_config_details>
       </template>
 
+      <template v-slot:wizard_pre_conditions>
+        <v-select
+          :items="previous_action.output_interface.output_options"
+          item-text="name"
+          item-value="id"
+          label="Label"
+          @change="change_pre_condition"
+        />
+      </template>
+
       <template v-slot:form_action_config>
         <task_template_config_details
           :action="action"
@@ -45,6 +55,7 @@ import task_template_config_details from './task_template_config_details';
 import action_config_base from "@/components/action/actions_config_base/action_config_base";
 import action_config_mixin from "../action_config_mixin";
 import ActionStepsConfig from '../ActionStepsConfig';
+import axios from 'axios';
 
 export default {
   name: "create_task_action_config",
@@ -60,24 +71,36 @@ export default {
       job_selected: null,
       show_task_template_wizard: false,
       switch_loading: false,
-      steps_config: null
+      steps_config: null,
+      previous_action: null
     }
   },
-  mounted() {
+  async mounted() {
     this.steps_config = new ActionStepsConfig()
-    this.steps_config.hide_step('pre_conditions')
+    await this.set_step()
   },
   watch: {
     action: {
       deep: true,
-      handler(newValue, oldValue) {
-        if (newValue.trigger_data.event_name === 'action_completed') {
-          this.steps_config.show_step('pre_conditions')
-        } else {
-          this.steps_config.hide_step('pre_conditions')
-        }
+      async handler(newValue, oldValue) {
+        await this.set_step()
       }
     }
+  },
+  methods: {
+    set_step: async function() {
+        if (this.action.trigger_data.event_name === 'action_completed') {
+          this.steps_config.show_step('pre_conditions')
+          const { data } = await axios.get(`/api/v1/project/${this.project_string_id}/action/previous/${this.action.id}`)
+          this.previous_action = data.previuos_action
+        } else {
+          this.steps_config.hide_step('pre_conditions')
+          this.previous_action = null
+        }
+    },
+    change_pre_condition: function(event) {
+      this.$emit('action_updated', this.action)
+    },
   }
 }
 </script>

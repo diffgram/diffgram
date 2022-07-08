@@ -28,7 +28,8 @@ export const initialize_action_list = function(action_list){
       act.condition_data,
       act.description,
       act.completion_condition_data,
-      act.output_interface
+      act.output_interface,
+      act.previus_action_output_interface
     )
     action.setFromObject(act)
     if(act.config_data){
@@ -53,6 +54,7 @@ export class Action {
   public description: string;
   public completion_condition_data: CompletionConditionData;
   public output_interface: any;
+  public previus_action_output_interface: any;
 
   constructor(public_name: string,
               icon: string,
@@ -61,7 +63,8 @@ export class Action {
               condition_data: ConditionData,
               description: string,
               complete_condition: CompletionConditionData,
-              output_interface: any = null
+              output_interface: any = null,
+              previus_action_output_interface: any = null
               ) {
     this.public_name = public_name;
     this.icon = icon;
@@ -72,6 +75,7 @@ export class Action {
     this.config_data = {} as ConfigData;
     this.completion_condition_data = complete_condition;
     this.output_interface = output_interface
+    this.previus_action_output_interface = previus_action_output_interface
   }
 
   public setFromObject(action: any){
