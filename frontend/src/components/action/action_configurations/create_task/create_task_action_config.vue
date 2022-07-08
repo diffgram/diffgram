@@ -23,9 +23,10 @@
         <h3>Select label:</h3>
         <p>(leave blank to allow all)</p>
         <v-select
+          v-if="previous_action"
           :items="previous_action.output_interface.output_labels.options"
           :label="previous_action.output_interface.output_labels.label"
-          :value="action.precondition.output_labels"
+          :value="action.precondition ? action.precondition.output_labels : null"
           multiple
           return-object
           item-text="name"
@@ -81,7 +82,6 @@ export default {
     }
   },
   async mounted() {
-    console.log(this.action)
     this.steps_config = new ActionStepsConfig()
     await this.set_step()
   },
