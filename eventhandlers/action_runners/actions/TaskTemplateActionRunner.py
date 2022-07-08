@@ -1,15 +1,12 @@
 from action_runners.base.ActionRunner import ActionRunner
 from shared.shared_logger import get_shared_logger
 from shared.database.task.job.job import Job
-from shared.helpers.sessionMaker import session_scope
 from shared.utils import job_dir_sync_utils
 from shared.database.source_control.file import File
 from shared.utils.sync_events_manager import SyncEventManager
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.auth.member import Member
-from shared.database.action.action_template import Action_Template
 from sqlalchemy.orm.session import Session
-from shared.database.action.action_run import ActionRun
 from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
 from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
@@ -27,11 +24,16 @@ class TaskTemplateActionRunner(ActionRunner):
     completion_condition_data = ActionCompleteCondition(default_event = 'task_completed', event_list = ["task_completed"])
 
     def execute_pre_conditions(self, session: Session) -> bool:
+        if self.action.trigger_data.get('event_name') == 'action_completed':
+            result = self.event_data['result']['applied_option_id']
+            output_labels = self.action.precondition['output_labels']
+            if not output_labels or len(output_labels) == 0:
+                return True
+            condition_is_satisfied = any(label['id'] == result for label in output_labels)
+            return condition_is_satisfied
         return True
 
     def execute_action(self, session: Session):
-        if self.action.trigger_data.get('event_name') == 'action_completed':
-            print("Print here", self.event_data['result'])
         """
                    Creates a task from the given file_id in the given task template ID.
                :return:
