@@ -40,6 +40,9 @@ class TaskTemplateActionRunner(ActionRunner):
                """
         dir_id = self.event_data.get('directory_id')
         member_id = self.event_data.get('member_id')
+
+        if self.action.trigger_data.get('event_name') == 'action_completed':
+            dir_id = self.event_data['result']['directory_id']
         if dir_id is None:
             logger.warning(f'Cannot add task, provide directory_id in event data.')
             return
@@ -55,6 +58,9 @@ class TaskTemplateActionRunner(ActionRunner):
         task_template = Job.get_by_id(session, job_id = tt_id)
 
         file_id = self.event_data['file_id']
+        if self.action.trigger_data.get('event_name') == 'action_completed':
+            file_id = self.event_data['result']['file_id']
+
         if not file_id:
             logger.warning(f'Action has no file_id Stopping execution')
             return
@@ -94,4 +100,4 @@ class TaskTemplateActionRunner(ActionRunner):
         )
         task_template.update_file_count_statistic(session = session)
         task_template.refresh_stat_count_tasks(session = session)
-        return True
+        return {}

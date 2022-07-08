@@ -134,8 +134,8 @@ class ActionRunner:
             action_id = self.action.id,
             kind = 'action_completed',
             project_id = self.action.project_id,
-            file_id = output['file_id'],
-            task_id = output['task_id'],
+            file_id = None if isinstance(output, bool) else output['file_id'],
+            task_id = None if isinstance(output, bool) else output['task_id'],
             result = output
         )
         event_data = event.serialize()

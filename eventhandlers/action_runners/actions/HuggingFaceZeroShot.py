@@ -90,6 +90,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
         to_create = {
             "file_id": file_id if task == None else None,
             "task_id": task.id if task != None else None,
+            "directory_id": self.event_data['directory_id'],
             "project_id": project_id,
             "type": 'global',
             "attribute_groups": {}
@@ -114,6 +115,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
             "task_id": task_id,
             "file_id": file_id,
             "file_name": file.text_file.original_filename,
+            "directory_id": self.event_data['directory_id'],
             "applied_option_id": attribute_item_to_apply['id'],
             "applied_option_label": attribute_to_apply
         }
