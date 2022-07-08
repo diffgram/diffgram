@@ -59,7 +59,13 @@ def api_action_update(project_string_id, action_id):
                 'default': None,
                 'kind': dict
             }
-        }
+        },
+        {
+            'precondition': {
+                'default': None,
+                'kind': dict
+            }
+        },
 
     ]
 
@@ -92,6 +98,7 @@ def api_action_update(project_string_id, action_id):
             archived = input['archived'],
             icon = input['icon'],
             output_interface = input['output_interface'],
+            precondition = input['precondition'],
             log = log,
         )
 
@@ -121,7 +128,8 @@ def action_update_core(session: Session,
                        archived: bool,
                        completion_condition_data: dict,
                        log: dict,
-                       output_interface: dict
+                       output_interface: dict,
+                       precondition
                        ):
     workflow = Workflow.get_by_id(session = session, id = workflow_id, project_id = project.id)
     if workflow is None:
@@ -151,7 +159,8 @@ def action_update_core(session: Session,
         'archived': archived,
         'completion_condition_data': completion_condition_data,
         'member_updated_id': member.id,
-        'output_interface': output_interface
+        'output_interface': output_interface,
+        'precondition': precondition
     }
     for key, val in data_to_update.items():
         setattr(action, key, val)

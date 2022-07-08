@@ -182,7 +182,8 @@ class Action(Base, SerializerMixin):
         public_name,
         add_to_session = True,
         flush_session = True,
-        output_interface = None
+        output_interface = None,
+        precondition = None
     ):
         """
         We default active to True for easier searching
@@ -208,7 +209,8 @@ class Action(Base, SerializerMixin):
             public_name = public_name,
             condition_data = condition_data,
             completion_condition_data = completion_condition_data,
-            output_interface = output_interface
+            output_interface = output_interface,
+            precondition = precondition
         )
         if add_to_session:
             session.add(action)
