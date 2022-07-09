@@ -6,7 +6,6 @@ from shared.regular.regular_log import log_has_error
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
     apis_user_list=['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("20 per day")
 def api_action_previous(project_string_id, action_id):
 
     with sessionMaker.session_scope() as session:

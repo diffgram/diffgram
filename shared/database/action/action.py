@@ -59,6 +59,8 @@ class Action(Base, SerializerMixin):
 
     # Output of action, usually caches the output of latest ActionRun.
     output = Column(MutableDict.as_mutable(JSONB))
+
+    # This is possible return of the output
     output_interface = Column(MutableDict.as_mutable(JSONB))
 
     ordinal = Column(Integer)

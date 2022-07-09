@@ -25,8 +25,8 @@ class TaskTemplateActionRunner(ActionRunner):
 
     def execute_pre_conditions(self, session: Session) -> bool:
         if self.action.trigger_data.get('event_name') == 'action_completed':
-            result = self.event_data['result']['applied_option_id']
-            output_labels = self.action.precondition['output_labels']
+            result = self.event_data.get('result', {}).get('applied_option_id')
+            output_labels = self.action.precondition.get('output_labels')
             if not output_labels or len(output_labels) == 0:
                 return True
             condition_is_satisfied = any(label['id'] == result for label in output_labels)
@@ -42,7 +42,7 @@ class TaskTemplateActionRunner(ActionRunner):
         member_id = self.event_data.get('member_id')
 
         if self.action.trigger_data.get('event_name') == 'action_completed':
-            dir_id = self.event_data['result']['directory_id']
+            dir_id = self.event_data.get('result', {}).get('directory_id')
         if dir_id is None:
             logger.warning(f'Cannot add task, provide directory_id in event data.')
             return
@@ -57,9 +57,9 @@ class TaskTemplateActionRunner(ActionRunner):
 
         task_template = Job.get_by_id(session, job_id = tt_id)
 
-        file_id = self.event_data['file_id']
+        file_id = self.event_data.get('file_id')
         if self.action.trigger_data.get('event_name') == 'action_completed':
-            file_id = self.event_data['result']['file_id']
+            file_id = self.event_data.get('result').get('file_id')
 
         if not file_id:
             logger.warning(f'Action has no file_id Stopping execution')
@@ -100,4 +100,4 @@ class TaskTemplateActionRunner(ActionRunner):
         )
         task_template.update_file_count_statistic(session = session)
         task_template.refresh_stat_count_tasks(session = session)
-        return {}
+        return True

@@ -37,16 +37,16 @@ class HuggingFaceZeroShotAction(ActionRunner):
 
     def execute_action(self, session, do_save_annotations=True) -> bool:
         event_name = self.action.trigger_data.get('event_name')
-        file_id = self.event_data['file_id']
-        project_id = self.action.config_data['project_id']
-        group_id = self.action.config_data['group_id']
+        file_id = self.event_data.get('file_id')
+        project_id = self.action.config_data.get('project_id')
+        group_id = self.action.config_data.get('group_id')
 
         task = None
         task_id = None
 
         if event_name == 'task_created':
-            job_id = self.action.config_data['task_template_id']['id']
-            task_id = self.event_data['task_id']
+            job_id = self.action.config_data.get('task_template_id', {}).get('id')
+            task_id = self.event_data.get('task_id')
             task = Task.get_by_id(session=session, task_id=task_id)
             if task.job_id != job_id:
                 return
@@ -62,7 +62,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
             return
 
         text = ''
-        raw_sentences = json.loads(file.text_file.get_text())['nltk']['sentences']
+        raw_sentences = json.loads(file.text_file.get_text()).get('nltk', {}).get('sentences', [])
         for sentence in raw_sentences:
             text += sentence['value']
 
@@ -90,7 +90,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
         to_create = {
             "file_id": file_id if task == None else None,
             "task_id": task.id if task != None else None,
-            "directory_id": self.event_data['directory_id'],
+            "directory_id": self.event_data.get('directory_id'),
             "project_id": project_id,
             "type": 'global',
             "attribute_groups": {}
@@ -115,7 +115,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
             "task_id": task_id,
             "file_id": file_id,
             "file_name": file.text_file.original_filename,
-            "directory_id": self.event_data['directory_id'],
-            "applied_option_id": attribute_item_to_apply['id'],
+            "directory_id": self.event_data.get('directory_id'),
+            "applied_option_id": attribute_item_to_apply.get('id'),
             "applied_option_label": attribute_to_apply
         }
