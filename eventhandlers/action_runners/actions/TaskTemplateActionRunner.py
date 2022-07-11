@@ -7,9 +7,9 @@ from shared.utils.sync_events_manager import SyncEventManager
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.auth.member import Member
 from sqlalchemy.orm.session import Session
-from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
-from eventhandlers.action_runners.base.ActionCondition import ActionCondition
-from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
+from action_runners.base.ActionTrigger import ActionTrigger
+from action_runners.base.ActionCondition import ActionCondition
+from action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 
 logger = get_shared_logger()
 

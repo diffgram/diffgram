@@ -1,5 +1,5 @@
 #import cv2
-from eventhandlers.action_runners.base.ActionRunner import ActionRunner
+from action_runners.base.ActionRunner import ActionRunner
 from deepchecks.vision.checks import ImagePropertyOutliers
 from deepchecks.vision import VisionData
 from deepchecks.core.serialization.check_result.html import CheckResultSerializer as CheckResultHtmlSerializer
@@ -16,9 +16,9 @@ from shared.database.project import Project
 from shared.data_tools_core import Data_tools
 from torch.utils.data import Dataset, DataLoader
 import numpy as np
-from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
-from eventhandlers.action_runners.base.ActionCondition import ActionCondition
-from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
+from action_runners.base.ActionTrigger import ActionTrigger
+from action_runners.base.ActionCondition import ActionCondition
+from action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 
 data_tools = Data_tools().data_tools
 

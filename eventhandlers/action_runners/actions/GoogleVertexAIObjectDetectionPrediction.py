@@ -1,4 +1,4 @@
-from eventhandlers.action_runners.base.ActionRunner import ActionRunner
+from action_runners.base.ActionRunner import ActionRunner
 from shared.shared_logger import get_shared_logger
 from shared.database.action.action_template import Action_Template
 from shared.database.source_control.file import File

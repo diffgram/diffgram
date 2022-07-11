@@ -2,9 +2,9 @@ from shared.regular.regular_api import *
 
 from action_runners.base.ActionRunner import ActionRunner
 from shared.database.action.action_template import Action_Template
-from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
-from eventhandlers.action_runners.base.ActionCondition import ActionCondition
-from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
+from action_runners.base.ActionTrigger import ActionTrigger
+from action_runners.base.ActionCondition import ActionCondition
+from action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 from shared.database.source_control.file import File
 
 from shared.connection.connection_strategy import ConnectionStrategy
