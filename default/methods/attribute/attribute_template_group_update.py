@@ -59,7 +59,7 @@ def api_attribute_template_group_update(project_string_id):
             mode = input['mode'],
             kind = input['kind'],
             log = log,
-            member = user.member,
+            member = user.member if user else None,
             default_value = input['default_value'],
             min_value = input['min_value'],
             max_value = input['max_value'],
