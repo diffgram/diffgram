@@ -358,7 +358,7 @@ class Attribute_Template_Group(Base):
             return_kind = "objects"
         )
 
-        if attribute_template_list is None or len(attribute_template_list) is 0:
+        if attribute_template_list == None or len(attribute_template_list) == 0:
             return children
 
         # TODO handle serialzing children
