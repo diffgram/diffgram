@@ -16,35 +16,50 @@ import zlib
 logger = get_shared_logger()
 
 
-# True means has permission, False means doesn't.
-def get_decoded_jwt_from_session() -> dict or None:
-    jwt = login_session.get('jwt')
-    if jwt is None:
+def set_jwt_in_session(token_data: dict):
+    """
+        Sets the JWT data in the client cookie session.
+    :param token_data:
+    :return:
+    """
+
+    oidc = OAuth2Provider()
+    oidc_client = oidc.get_client()
+    refresh_token = oidc_client.get_refresh_token_from_jwt(jwt_data = token_data)
+    str_comp = zlib.compress(refresh_token.encode())
+    login_session['jwt'] = str_comp
+
+
+def get_decoded_jwt_from_session() -> str or None:
+    """
+        Gets the JWT from the client cookie.
+    :return: String representing the refresh token
+    """
+
+    jwt_refresh_token = login_session.get('jwt')
+    if type(jwt_refresh_token) == str:
+        return jwt_refresh_token
+    if jwt_refresh_token is None:
         return None
-    if type(jwt) == dict:
-        return jwt
-    jwt_string = zlib.decompress(jwt).decode()
-    res = ast.literal_eval(jwt_string)
-    return res
+    refresh_token_string = zlib.decompress(jwt_refresh_token).decode()
+    return refresh_token_string
 
 
 def LoggedIn():
     if settings.USE_OAUTH2:
         oidc = OAuth2Provider()
         oidc_client = oidc.get_client()
-        jwt = get_decoded_jwt_from_session()
-        access_token = oidc_client.get_access_token_from_jwt(jwt_data = jwt)
-        refresh_token = oidc_client.get_refresh_token_from_jwt(jwt_data = jwt)
-        if jwt is None:
+        refresh_token = get_decoded_jwt_from_session()
+        if refresh_token is None:
             return False
 
         try:
-            user = oidc_client.get_user(access_token)
-            if not user:
-                return False
             new_token = oidc_client.refresh_token(refresh_token)
-            login_session['jwt'] = new_token
-            login_session['jwt']['refresh_token'] = refresh_token
+            if not new_token:
+                return False
+            new_refresh_token = oidc_client.get_refresh_token_from_jwt(jwt_data = new_token)
+            if new_refresh_token is not None:
+                login_session['jwt'] = new_refresh_token
             return True
         except Exception as e:
             err_data = traceback.format_exc()
@@ -65,11 +80,12 @@ def get_user_from_oauth2(session):
     from shared.database.user import User
     oauth2 = OAuth2Provider()
     oauth2_client = oauth2.get_client()
-    jwt = get_decoded_jwt_from_session()
-    if jwt is None:
+    refresh_token = get_decoded_jwt_from_session()
+    if refresh_token is None:
         return None
-    access_token = jwt.get('access_token')
-    if access_token is None:
+    access_token_data = oauth2_client.refresh_token(token = refresh_token)
+    access_token = oauth2_client.get_access_token_from_jwt(jwt_data = access_token_data)
+    if access_token_data is None:
         return None
     oauth2_user = oauth2_client.get_user(access_token = access_token)
     if not oauth2_user:
@@ -99,15 +115,6 @@ def defaultRedirect():
 def setSecureCookie(user_db):
     cookie_hash = hashing_functions.make_secure_val(user_db.id)
     login_session['user_id'] = cookie_hash
-
-
-def set_jwt_in_session(token_data):
-    token_str = str(token_data)
-    str_comp = zlib.compress(token_str.encode())
-    # message_bytes = token_str.encode('utf-8')
-    # base64_bytes = base64.b64encode(message_bytes)
-    # base64_string = base64_bytes.decode("ascii")
-    login_session['jwt'] = str_comp
 
 
 def get_current_version(session):
