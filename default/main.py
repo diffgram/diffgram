@@ -145,4 +145,4 @@ if __name__ == '__main__':
 else:
 
 	app.debug == False
-	app.wsgi_app = ProxyFix(app.wsgi_app, num_proxies=2)
+	app.wsgi_app = ProxyFix(app.wsgi_app)
