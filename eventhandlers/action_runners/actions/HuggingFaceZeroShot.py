@@ -21,9 +21,10 @@ class HuggingFaceZeroShotAction(ActionRunner):
     description = 'Performs Zero Shot Classification for the text file'
     icon = 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg'
     kind = 'hf_zero_shot'
-    trigger_data = ActionTrigger(default_event='input_file_uploaded', event_list = ['input_file_uploaded', 'task_created'])
+    trigger_data = ActionTrigger(default_event = 'input_file_uploaded',
+                                 event_list = ['input_file_uploaded', 'task_created'])
     precondition = ActionCondition(default_event = 'action_completed',
-                                     event_list = ['action_completed'])
+                                   event_list = ['action_completed'])
 
     completion_condition_data = ActionCompleteCondition(default_event = 'action_completed',
                                                         event_list = ['action_completed'])
@@ -35,7 +36,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
     def test_execute_action(self, session, file_id, connection_id):
         pass
 
-    def execute_action(self, session, do_save_annotations=True) -> bool:
+    def execute_action(self, session, do_save_annotations = True) -> dict or None:
         event_name = self.action.trigger_data.get('event_name')
         file_id = self.event_data.get('file_id')
         project_id = self.action.config_data.get('project_id')
@@ -47,7 +48,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
         if event_name == 'task_created':
             job_id = self.action.config_data.get('task_template_id', {}).get('id')
             task_id = self.event_data.get('task_id')
-            task = Task.get_by_id(session=session, task_id=task_id)
+            task = Task.get_by_id(session = session, task_id = task_id)
             if task.job_id != job_id:
                 return
 
@@ -55,10 +56,14 @@ class HuggingFaceZeroShotAction(ActionRunner):
 
         file = File.get_by_id(session, file_id = file_id)
 
+        if not file:
+            logger.error(f'Cannot find file_id {file_id}')
+            return None
+
         if file.type != 'text':
             return
 
-        if not project_id or  not group_id:
+        if not project_id or not group_id:
             return
 
         text = ''
@@ -85,7 +90,8 @@ class HuggingFaceZeroShotAction(ActionRunner):
         result = classifier(text, candidate_attributes)
 
         attribute_to_apply = result['labels'][result['scores'].index(max(result['scores']))]
-        attribute_item_to_apply = [option for option in group_list_serialized[0]['attribute_template_list'] if option['name'] == attribute_to_apply][0]
+        attribute_item_to_apply = [option for option in group_list_serialized[0]['attribute_template_list'] if
+                                   option['name'] == attribute_to_apply][0]
 
         to_create = {
             "file_id": file_id if task == None else None,
@@ -98,7 +104,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
 
         to_create['attribute_groups'][group_id] = attribute_item_to_apply
 
-        project = Project.get_by_id(session=session, id=project_id)
+        project = Project.get_by_id(session = session, id = project_id)
 
         annotation_update = Annotation_Update(
             session = session,
@@ -109,7 +115,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
             do_init_existing_instances = True
         )
 
-        annotation_update.main() 
+        annotation_update.main()
 
         return {
             "task_id": task_id,

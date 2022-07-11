@@ -20,7 +20,7 @@ def upgrade():
     op.add_column('instance', sa.Column('score', sa.Float))
     op.add_column('action', sa.Column('output', JSONB))
     op.add_column('action_run', sa.Column('output', JSONB))
-
+    return
 
 def downgrade():
     op.drop_column('instance', 'score')

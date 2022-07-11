@@ -40,7 +40,7 @@ class TaskTemplateActionRunner(ActionRunner):
                """
         dir_id = self.event_data.get('directory_id')
         member_id = self.event_data.get('member_id')
-
+        logger.info(f'Attempting to create task from {dir_id}')
         if self.action.trigger_data.get('event_name') == 'action_completed':
             dir_id = self.event_data.get('result', {}).get('directory_id')
         if dir_id is None:
@@ -50,12 +50,13 @@ class TaskTemplateActionRunner(ActionRunner):
         if not self.action.config_data:
             logger.warning(f'Action has no config data. Stopping execution')
             return
-        tt_id = self.action.config_data.get('task_template_id')
-        if not tt_id:
+        task_template_id = self.action.config_data.get('task_template_id')
+        logger.info(f'Task template {task_template_id}')
+        if not task_template_id:
             logger.warning(f'Action has no task_template_id Stopping execution')
             return
 
-        task_template = Job.get_by_id(session, job_id = tt_id)
+        task_template = Job.get_by_id(session, job_id = task_template_id)
 
         file_id = self.event_data.get('file_id')
         if self.action.trigger_data.get('event_name') == 'action_completed':
@@ -91,13 +92,18 @@ class TaskTemplateActionRunner(ActionRunner):
             member_created = member
         )
 
-        job_sync_manager.add_file_into_job(
+        task, log = job_sync_manager.add_file_into_job(
             file = file,
             incoming_directory = directory,
             job = task_template,
             create_tasks = True,
             sync_event_manager = sync_event_manager
         )
+        self.log = log
         task_template.update_file_count_statistic(session = session)
         task_template.refresh_stat_count_tasks(session = session)
-        return True
+        return {
+            'file_id': file.id,
+            'task_id': task.id if task is not None else None,
+            'task_template_id': task_template_id
+        }

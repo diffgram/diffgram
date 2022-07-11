@@ -1,6 +1,7 @@
 <template>
 
   <div style="height: 100%">
+    <h2 class="font-weight-light font-weight-medium" v-if="action">{{action.ordinal + 1}}. {{action.public_name}}</h2>
     <component :is="selected_action_config"
                :project_string_id="project_string_id"
                :actions_list="actions_list"
@@ -26,6 +27,7 @@ export default Vue.extend({
     props: ['action', 'project_string_id', 'actions_list', 'display_mode'],
 
     mounted() {
+      console.log('MONTEEEEED', this.selected_action_config)
       this.set_action_config_component()
     },
 
@@ -71,6 +73,7 @@ export default Vue.extend({
     methods: {
       set_action_config_component: function(){
         this.selected_action_config = COMPONENTS_KIND_MAPPING[this.action.kind]
+        console.log('SETTTT', this.selected_action_config)
       },
       on_action_updated: function(act){
         this.$emit('action_updated', act)

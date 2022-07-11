@@ -55,7 +55,7 @@ class ActionRunner:
         """
         raise NotImplementedError
 
-    def execute_action(self, session: Session) -> None:
+    def execute_action(self, session: Session) -> dict:
         """
             Function that executes main action logic. This is implemented on the subclasses of the `ActionRunner`
         :param session:
@@ -128,12 +128,12 @@ class ActionRunner:
             allow = self.execute_pre_conditions(session)
             if not allow:
                 return
-            success = self.execute_action(session)
-            if success:
-                if isinstance(success, dict):
-                    self.action_run.output = success
+            output = self.execute_action(session)
+            if output:
+                if isinstance(output, dict):
+                    self.action_run.output = output
 
-                self.declare_action_complete(session, success)
+                self.declare_action_complete(session, output)
             else:
                 self.declare_action_failed(session)
 
@@ -150,14 +150,20 @@ class ActionRunner:
                                routing_key = RoutingKeys.action_trigger_event_new.value)
 
     def declare_action_complete(self, session: Session, output) -> None:
+        has_output = isinstance(output, dict)
+        event_payload = {
+            'session': session,
+            'action_id': self.action.id,
+            'kind': 'action_completed',
+            'project_id': self.action.project_id,
+            'file_id': None if not has_output else output.get('file_id'),
+            'task_id': None if not has_output else output.get('task_id'),
+
+        }
+        if has_output:
+            event_payload['extra_metadata'] = output
         event = Event.new(
-            session = session,
-            action_id = self.action.id,
-            kind = 'action_completed',
-            project_id = self.action.project_id,
-            file_id = None if isinstance(output, bool) else output.get('file_id'),
-            task_id = None if isinstance(output, bool) else output.get('task_id'),
-            extra_metadata = output
+            **event_payload
         )
         event_data = event.serialize()
         self.mngr.send_message(message = event_data,

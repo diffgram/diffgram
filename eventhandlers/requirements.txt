@@ -7,7 +7,7 @@ psycopg2-binary==2.8.5
 numpy==1.21.0
 scipy==1.6.2
 pillow==9.0.1
-pyyaml==5.4
+pyyaml==5.4.1
 proglog==0.1.9
 google-cloud-storage==1.35.1
 google-api-python-client==1.12.3

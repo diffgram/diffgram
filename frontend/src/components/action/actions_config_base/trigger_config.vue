@@ -19,7 +19,7 @@
       @change_directory="on_update_directory"
     />
 
-    <job_select 
+    <job_select
         v-if="action.trigger_data.event_name === 'task_created'"
         v-model="action.config_data.task_template_id"
         ref="job_select"
@@ -121,6 +121,10 @@ export default Vue.extend({
         }
         if (action_template.trigger_data && action_template.trigger_data.event_list) {
           this.default_triggers_list = action_template.trigger_data.event_list
+          let action_completed_event = this.default_triggers_list.find(elm => elm.name === 'action_completed')
+          if (this.prev_action && !action_completed_event){
+            this.default_triggers_list.push({name: 'action_completed', value: 'action_completed'})
+          }
           let selected = this.default_triggers_list.find(elm => elm.value === action_template.trigger_data.default_event_name)
           if(selected && selected.trigger_data && !selected.trigger_data.event_name){
             this.action.trigger_data.event_name = selected.value
