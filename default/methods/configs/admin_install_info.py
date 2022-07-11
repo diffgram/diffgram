@@ -33,12 +33,30 @@ def serialize_public_env_variables():
         'DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE': settings.DIFFGRAM_ERROR_SEND_TRACES_IN_RESPONSE,
         'ALLOW_EVENTHUB': settings.ALLOW_EVENTHUB,
         'DIFFGRAM_INSTALL_FINGERPRINT': settings.DIFFGRAM_INSTALL_FINGERPRINT,
-        'ALLOW_STRIPE_BILLING': settings.ALLOW_STRIPE_BILLING
+        'ALLOW_STRIPE_BILLING': settings.ALLOW_STRIPE_BILLING,
+
+    }
+    oauth2 = {
+        'USE_OAUTH2': settings.USE_OAUTH2,
+        'OAUTH2_PROVIDER_NAME': settings.OAUTH2_PROVIDER_NAME,
+        'OAUTH2_PROVIDER_HOST': settings.OAUTH2_PROVIDER_HOST,
+        'OAUTH2_PROVIDER_CLIENT_ID': settings.OAUTH2_PROVIDER_CLIENT_ID,
+        'OAUTH2_PROVIDER_CLIENT_SECRET': settings.OAUTH2_PROVIDER_CLIENT_SECRET,
+        'OAUTH2_PROVIDER_PUBLIC_KEY': settings.OAUTH2_PROVIDER_PUBLIC_KEY,
+        'COGNITO_LOGIN_URL': settings.COGNITO_LOGIN_URL,
+    }
+
+    rabbitmq = {
+        'RABBITMQ_DEFAULT_USER': settings.RABBITMQ_DEFAULT_USER,
+        'RABBITMQ_HOST': settings.RABBITMQ_HOST,
+        'USE_RABBIT_MQ': settings.USE_RABBIT_MQ,
+        'RABBITMQ_PORT': settings.RABBITMQ_PORT,
     }
     email = {
         'EMAIL_VALIDATION': settings.EMAIL_VALIDATION,
         'MAILGUN_KEY': bool(settings.MAILGUN_KEY),
-        'EMAIL_DOMAIN_NAME': settings.EMAIL_DOMAIN_NAME
+        'EMAIL_DOMAIN_NAME': settings.EMAIL_DOMAIN_NAME,
+        'EMAIL_REPLY_TO': settings.EMAIL_REPLY_TO
     }
     storage = {
         'DIFFGRAM_STATIC_STORAGE_PROVIDER': settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
@@ -47,4 +65,6 @@ def serialize_public_env_variables():
     out['general'] = general
     out['email'] = email
     out['storage'] = storage
+    out['oauth2'] = oauth2
+    out['rabbitmq'] = rabbitmq
     return out

@@ -8,19 +8,31 @@ import sys, os
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
 from shared.auth.OAuth2Provider import OAuth2Provider
 from shared.settings import settings
-
+import base64
 from shared.shared_logger import get_shared_logger
+import ast
+import zlib
 
 logger = get_shared_logger()
 
 
 # True means has permission, False means doesn't.
+def get_decoded_jwt_from_session() -> dict or None:
+    jwt = login_session.get('jwt')
+    if jwt is None:
+        return None
+    if type(jwt) == dict:
+        return jwt
+    jwt_string = zlib.decompress(jwt).decode()
+    res = ast.literal_eval(jwt_string)
+    return res
+
 
 def LoggedIn():
     if settings.USE_OAUTH2:
         oidc = OAuth2Provider()
         oidc_client = oidc.get_client()
-        jwt = login_session.get('jwt')
+        jwt = get_decoded_jwt_from_session()
         access_token = oidc_client.get_access_token_from_jwt(jwt_data = jwt)
         refresh_token = oidc_client.get_refresh_token_from_jwt(jwt_data = jwt)
         if jwt is None:
@@ -53,7 +65,7 @@ def get_user_from_oauth2(session):
     from shared.database.user import User
     oauth2 = OAuth2Provider()
     oauth2_client = oauth2.get_client()
-    jwt = login_session.get('jwt')
+    jwt = get_decoded_jwt_from_session()
     if jwt is None:
         return None
     access_token = jwt.get('access_token')
@@ -90,8 +102,12 @@ def setSecureCookie(user_db):
 
 
 def set_jwt_in_session(token_data):
-    print('set_jwt_in_session', token_data)
-    login_session['jwt'] = token_data
+    token_str = str(token_data)
+    str_comp = zlib.compress(token_str.encode())
+    # message_bytes = token_str.encode('utf-8')
+    # base64_bytes = base64.b64encode(message_bytes)
+    # base64_string = base64_bytes.decode("ascii")
+    login_session['jwt'] = str_comp
 
 
 def get_current_version(session):
