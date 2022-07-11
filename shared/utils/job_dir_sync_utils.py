@@ -335,10 +335,11 @@ class JobDirectorySyncManager:
                         create_tasks = create_tasks,
                         sync_event_manager = sync_event_manager
                     )
-                    if result is not True:
-                        log['error']['sync_file_dirs'] = f"Error syncing dirs for file id: {file.id}"
+
                     if regular_log.log_has_error(log):
+                        log['error']['sync_file_dirs'] = f"Error syncing dirs for file id: {file.id}"
                         return False, log
+
         else:
             logger.debug(
                 f"Single file sync event with file: {file_to_link_dataset.id} and folder {file_to_link.id}")
