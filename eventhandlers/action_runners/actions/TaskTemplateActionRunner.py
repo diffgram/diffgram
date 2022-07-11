@@ -1,15 +1,12 @@
 from action_runners.base.ActionRunner import ActionRunner
 from shared.shared_logger import get_shared_logger
 from shared.database.task.job.job import Job
-from shared.helpers.sessionMaker import session_scope
 from shared.utils import job_dir_sync_utils
 from shared.database.source_control.file import File
 from shared.utils.sync_events_manager import SyncEventManager
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.auth.member import Member
-from shared.database.action.action_template import Action_Template
 from sqlalchemy.orm.session import Session
-from shared.database.action.action_run import ActionRun
 from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
 from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
@@ -22,21 +19,30 @@ class TaskTemplateActionRunner(ActionRunner):
     description = 'Add tasks to a task template'
     icon = 'https://www.svgrepo.com/show/376121/list-task.svg'
     kind = 'TaskTemplateActionRunner'
-    trigger_data = ActionTrigger(default_event = 'input_file_uploaded', event_list = ["input_file_uploaded"])
-    condition_data = ActionCondition(default_event = None, event_list = [])
+    trigger_data = ActionTrigger(default_event = 'input_file_uploaded', event_list = ["input_file_uploaded", "action_completed"])
+    precondition = ActionCondition(default_event = None, event_list = [])
     completion_condition_data = ActionCompleteCondition(default_event = 'task_completed', event_list = ["task_completed"])
 
     def execute_pre_conditions(self, session: Session) -> bool:
+        if self.action.trigger_data.get('event_name') == 'action_completed':
+            result = self.event_data.get('result', {}).get('applied_option_id')
+            output_labels = self.action.precondition.get('output_labels')
+            if not output_labels or len(output_labels) == 0:
+                return True
+            condition_is_satisfied = any(label['id'] == result for label in output_labels)
+            return condition_is_satisfied
         return True
 
     def execute_action(self, session: Session):
-        print("triggered")
         """
                    Creates a task from the given file_id in the given task template ID.
                :return:
                """
         dir_id = self.event_data.get('directory_id')
         member_id = self.event_data.get('member_id')
+
+        if self.action.trigger_data.get('event_name') == 'action_completed':
+            dir_id = self.event_data.get('result', {}).get('directory_id')
         if dir_id is None:
             logger.warning(f'Cannot add task, provide directory_id in event data.')
             return
@@ -51,7 +57,10 @@ class TaskTemplateActionRunner(ActionRunner):
 
         task_template = Job.get_by_id(session, job_id = tt_id)
 
-        file_id = self.event_data['file_id']
+        file_id = self.event_data.get('file_id')
+        if self.action.trigger_data.get('event_name') == 'action_completed':
+            file_id = self.event_data.get('result').get('file_id')
+
         if not file_id:
             logger.warning(f'Action has no file_id Stopping execution')
             return

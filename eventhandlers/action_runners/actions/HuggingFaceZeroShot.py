@@ -22,7 +22,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
     icon = 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg'
     kind = 'hf_zero_shot'
     trigger_data = ActionTrigger(default_event='input_file_uploaded', event_list = ['input_file_uploaded', 'task_created'])
-    condition_data = ActionCondition(default_event = 'action_completed',
+    precondition = ActionCondition(default_event = 'action_completed',
                                      event_list = ['action_completed'])
 
     completion_condition_data = ActionCompleteCondition(default_event = 'action_completed',
@@ -37,16 +37,16 @@ class HuggingFaceZeroShotAction(ActionRunner):
 
     def execute_action(self, session, do_save_annotations=True) -> bool:
         event_name = self.action.trigger_data.get('event_name')
-        file_id = self.event_data['file_id']
-        project_id = self.action.config_data['project_id']
-        group_id = self.action.config_data['group_id']
+        file_id = self.event_data.get('file_id')
+        project_id = self.action.config_data.get('project_id')
+        group_id = self.action.config_data.get('group_id')
 
         task = None
         task_id = None
 
         if event_name == 'task_created':
-            job_id = self.action.config_data['task_template_id']['id']
-            task_id = self.event_data['task_id']
+            job_id = self.action.config_data.get('task_template_id', {}).get('id')
+            task_id = self.event_data.get('task_id')
             task = Task.get_by_id(session=session, task_id=task_id)
             if task.job_id != job_id:
                 return
@@ -62,7 +62,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
             return
 
         text = ''
-        raw_sentences = json.loads(file.text_file.get_text())['nltk']['sentences']
+        raw_sentences = json.loads(file.text_file.get_text()).get('nltk', {}).get('sentences', [])
         for sentence in raw_sentences:
             text += sentence['value']
 
@@ -90,6 +90,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
         to_create = {
             "file_id": file_id if task == None else None,
             "task_id": task.id if task != None else None,
+            "directory_id": self.event_data.get('directory_id'),
             "project_id": project_id,
             "type": 'global',
             "attribute_groups": {}
@@ -114,19 +115,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
             "task_id": task_id,
             "file_id": file_id,
             "file_name": file.text_file.original_filename,
-            "applied_option_id": attribute_item_to_apply['id'],
+            "directory_id": self.event_data.get('directory_id'),
+            "applied_option_id": attribute_item_to_apply.get('id'),
             "applied_option_label": attribute_to_apply
         }
-    
-    def create_action_template():
-        Action_Template.new(
-            session = session,
-            public_name = 'Hugging Face Text Zero Shot',
-            description = 'Hugging Face Text Zero Shot',
-            icon = 'https://www.svgrepo.com/show/46774/export.svg',
-            kind = 'HuggingFaceZeroShotAction',
-            category = None,
-            #trigger_data = {'trigger_event_name': 'task_completed'},
-            #condition_data = {'event_name': 'all_tasks_completed'},
-            #completion_condition_data = {'event_name': 'prediction_success'},
-        )

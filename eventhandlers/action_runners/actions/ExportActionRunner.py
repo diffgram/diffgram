@@ -20,11 +20,11 @@ class ExportActionRunner(ActionRunner):
     icon = 'https://www.svgrepo.com/show/46774/export.svg'
     kind = 'export'
     trigger_data = ActionTrigger(default_event = 'task_completed', event_list = ["task_completed", "action_completed"])
-    condition_data = ActionCondition(default_event = 'all_tasks_completed', event_list = ["all_tasks_completed"])
+    precondition = ActionCondition(default_event = 'all_tasks_completed', event_list = ["all_tasks_completed"])
     completion_condition_data = ActionCompleteCondition(default_event = 'export_generate_success', event_list = ["export_generate_success"])
 
     def execute_pre_conditions(self, session: Session) -> bool:
-        event_name = self.action.condition_data.get('event_name')
+        event_name = self.action.precondition.get('event_name')
         if event_name is None:
             return True
         if event_name == 'all_tasks_completed':

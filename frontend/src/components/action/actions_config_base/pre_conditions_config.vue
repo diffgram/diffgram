@@ -5,7 +5,7 @@
     <v-select item-text="name" item-value="value"
               @change="on_pre_condition_change"
               :items="conditions_list"
-              v-model="action.condition_data.event_name">
+              v-model="action.precondition.event_name">
 
     </v-select>
   </div>
@@ -47,14 +47,14 @@ export default Vue.extend({
         if(!action_template){
           return
         }
-        if(!action_template.condition_data){
+        if(!action_template.precondition){
           return
         }
-        if (action_template.condition_data && action_template.condition_data.event_list) {
-          this.conditions_list = action_template.condition_data.event_list
+        if (action_template.precondition && action_template.precondition.event_list) {
+          this.conditions_list = action_template.precondition.event_list
           let selected = this.conditions_list.find(elm => elm.value === action_template.trigger_data.default_event_name)
           if(selected){
-            this.action.condition_data.event_name = selected.value
+            this.action.precondition.event_name = selected.value
           }
 
         }
@@ -73,8 +73,8 @@ export default Vue.extend({
       }
     },
     created() {
-      if (this.action.condition_data.event_name) {
-        this.selected_condition = this.conditions_list.find(elm => elm.value === this.action.condition_data.event_name)
+      if (this.action.precondition.event_name) {
+        this.selected_condition = this.conditions_list.find(elm => elm.value === this.action.precondition.event_name)
       }
     },
     watch: {
@@ -86,7 +86,7 @@ export default Vue.extend({
       },
       selected_condition: function (new_val, old_val) {
         if (new_val && new_val.value) {
-          this.action.condition_data.event_name = new_val.value
+          this.action.precondition.event_name = new_val.value
         }
       }
     },

@@ -53,12 +53,15 @@ class Action(Base, SerializerMixin):
 
     config_data = Column(MutableDict.as_mutable(JSONB))
 
-    condition_data = Column(MutableDict.as_mutable(JSONB))
+    precondition = Column(MutableDict.as_mutable(JSONB))
 
     completion_condition_data = Column(MutableDict.as_mutable(JSONB))
 
     # Output of action, usually caches the output of latest ActionRun.
     output = Column(MutableDict.as_mutable(JSONB))
+
+    # This is possible return of the output
+    output_interface = Column(MutableDict.as_mutable(JSONB))
 
     ordinal = Column(Integer)
 
@@ -102,6 +105,9 @@ class Action(Base, SerializerMixin):
 
     count = Column(Integer)  # ie 1, 4, 0
     count_confidence_threshold = Column(Float)  # ie 0.50 prediction confidence
+
+    # Action preconditions
+
 
     # Condition action
 
@@ -172,12 +178,12 @@ class Action(Base, SerializerMixin):
         icon,
         description,
         ordinal,
-        condition_data,
+        precondition,
         completion_condition_data,
         public_name,
         add_to_session = True,
-        flush_session = True
-
+        flush_session = True,
+        output_interface = None,
     ):
         """
         We default active to True for easier searching
@@ -201,8 +207,9 @@ class Action(Base, SerializerMixin):
             description = description,
             ordinal = ordinal,
             public_name = public_name,
-            condition_data = condition_data,
             completion_condition_data = completion_condition_data,
+            output_interface = output_interface,
+            precondition = precondition
         )
         if add_to_session:
             session.add(action)

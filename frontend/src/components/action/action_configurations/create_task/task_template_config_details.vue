@@ -76,8 +76,7 @@ export default {
       job_to_create: create_empty_job(),
       job_selected: null,
       show_task_template_wizard: false,
-      switch_loading: false,
-
+      switch_loading: false
     }
   },
   components: {

@@ -30,7 +30,7 @@ class ActionRunner:
     category: str
     description: str
     trigger_data: ActionTrigger
-    condition_data: ActionCondition
+    precondition: ActionCondition
     completion_condition_data: ActionCompleteCondition
     action_run: ActionRun
 
@@ -73,7 +73,7 @@ class ActionRunner:
                   'icon',
                   'kind',
                   'trigger_data',
-                  'condition_data',
+                  'precondition',
                   'completion_condition_data']
         for field in fields:
             if self.__getattribute__(field) is None:
@@ -87,7 +87,7 @@ class ActionRunner:
             "public_name": self.public_name,
             "description": self.description,
             "trigger_data": self.trigger_data.build_data(),
-            "condition_data": self.condition_data.build_data(),
+            "precondition": self.precondition.build_data(),
             "completion_condition_data": self.completion_condition_data.build_data(),
             "icon": self.icon,
             "category": None
@@ -104,7 +104,7 @@ class ActionRunner:
             kind = self.kind,
             category = None,
             trigger_data = self.trigger_data.build_data() if self.trigger_data else None,
-            condition_data = self.condition_data.build_data() if self.condition_data else None,
+            condition_data = self.precondition.build_data() if self.precondition else None,
             completion_condition_data = self.completion_condition_data.build_data() if self.completion_condition_data else None,
         )
 
@@ -133,31 +133,31 @@ class ActionRunner:
                 if isinstance(success, dict):
                     self.action_run.output = success
 
-                self.declare_action_complete(session)
+                self.declare_action_complete(session, success)
             else:
                 self.declare_action_failed(session)
 
     def declare_action_failed(self, session: Session) -> None:
-
         event = Event.new(
             session = session,
             action_id = self.action.id,
             kind = 'action_failed',
             project_id = self.action.project_id,
-
         )
         event_data = event.serialize()
         self.mngr.send_message(message = event_data,
                                exchange = Exchanges.actions.value,
                                routing_key = RoutingKeys.action_trigger_event_new.value)
 
-    def declare_action_complete(self, session: Session) -> None:
+    def declare_action_complete(self, session: Session, output) -> None:
         event = Event.new(
             session = session,
             action_id = self.action.id,
             kind = 'action_completed',
             project_id = self.action.project_id,
-
+            file_id = None if isinstance(output, bool) else output.get('file_id'),
+            task_id = None if isinstance(output, bool) else output.get('task_id'),
+            extra_metadata = output
         )
         event_data = event.serialize()
         self.mngr.send_message(message = event_data,

@@ -36,7 +36,7 @@ def api_action_update(project_string_id, action_id):
         {'workflow_id': int},
         {'ordinal': int},
         {'archived': bool},
-        {'condition_data': 
+        {'precondition':
             {
             'default': None,
             'kind': dict
@@ -53,7 +53,19 @@ def api_action_update(project_string_id, action_id):
             'default': None,
             'kind': dict
             }
-        }
+        },
+        {
+            'output_interface': {
+                'default': None,
+                'kind': dict
+            }
+        },
+        {
+            'precondition': {
+                'default': None,
+                'kind': dict
+            }
+        },
 
     ]
 
@@ -77,7 +89,6 @@ def api_action_update(project_string_id, action_id):
             kind = input['kind'],
             description = input['description'],
             trigger_data = input['trigger_data'],
-            condition_data = input['condition_data'],
             config_data = input['config_data'],
             template_id = input['template_id'],
             completion_condition_data = input['completion_condition_data'],
@@ -85,6 +96,8 @@ def api_action_update(project_string_id, action_id):
             ordinal = input['ordinal'],
             archived = input['archived'],
             icon = input['icon'],
+            output_interface = input['output_interface'],
+            precondition = input['precondition'],
             log = log,
         )
 
@@ -107,13 +120,15 @@ def action_update_core(session: Session,
                        description: str,
                        trigger_data: dict,
                        config_data: dict,
-                       condition_data: dict,
                        template_id: int,
                        workflow_id: int,
                        ordinal: int,
                        archived: bool,
                        completion_condition_data: dict,
-                       log: dict):
+                       log: dict,
+                       output_interface: dict,
+                       precondition
+                       ):
     workflow = Workflow.get_by_id(session = session, id = workflow_id, project_id = project.id)
     if workflow is None:
         log['error']['workflow'] = f'Workflow id {workflow_id} not found'
@@ -135,13 +150,14 @@ def action_update_core(session: Session,
         'description': description,
         'trigger_data': trigger_data,
         'config_data': config_data,
-        'condition_data': condition_data,
         'template_id': template_id,
         'workflow_id': workflow_id,
         'ordinal': ordinal,
         'archived': archived,
         'completion_condition_data': completion_condition_data,
         'member_updated_id': member.id,
+        'output_interface': output_interface,
+        'precondition': precondition
     }
     for key, val in data_to_update.items():
         setattr(action, key, val)

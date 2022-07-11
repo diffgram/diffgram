@@ -68,7 +68,7 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
     kind = 'DeepcheckImagePropertyOutliers'
     trigger_data = ActionTrigger(default_event = 'input_file_uploaded',
                                  event_list = ['input_file_uploaded', 'task_completed'])
-    condition_data = ActionCondition(default_event = None, event_list = [])
+    precondition = ActionCondition(default_event = None, event_list = [])
     completion_condition_data = ActionCompleteCondition(default_event = None, event_list = [])
 
     def execute_pre_conditions(self, session) -> bool:

@@ -35,7 +35,7 @@ def api_action_new(project_string_id, workflow_id):
         {'template_id': int},
         {'workflow_id': int},
         {'ordinal': int},
-        {'condition_data': 
+        {'precondition':
             {
             'default': None,
             'kind': dict
@@ -75,7 +75,7 @@ def api_action_new(project_string_id, workflow_id):
             kind = input['kind'],
             description = input['description'],
             trigger_data = input['trigger_data'],
-            condition_data = input['condition_data'],
+            precondition = input['precondition'],
             template_id = input['template_id'],
             completion_condition_data = input['completion_condition_data'],
             workflow_id = input['workflow_id'],
@@ -130,7 +130,7 @@ def action_creation_core(session: Session,
                          kind: str,
                          description: str,
                          trigger_data: dict,
-                         condition_data: dict,
+                         precondition: dict,
                          template_id: int,
                          workflow_id: int,
                          ordinal: int,
@@ -158,7 +158,7 @@ def action_creation_core(session: Session,
         description = description,
         ordinal = ordinal,
         trigger_data = trigger_data,
-        condition_data = condition_data,
+        precondition = precondition,
     )
 
     res = action.serialize()
