@@ -59,7 +59,7 @@ export const new_action = async (project_string_id, workflow_id, action) => {
         ordinal: action.ordinal,
         workflow_id: workflow_id,
         trigger_data: action.trigger_data,
-        condition_data: action.condition_data,
+        precondition: action.precondition,
         completion_condition_data: action.completion_condition_data,
         template_id: action.template_id,
         icon: action.icon,

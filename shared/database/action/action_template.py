@@ -31,6 +31,7 @@ class Action_Template(Base, SerializerMixin):
 
     trigger_data = Column(MutableDict.as_mutable(JSONB))
 
+    # Pre-Conditions
     condition_data = Column(MutableDict.as_mutable(JSONB))
 
     completion_condition_data = Column(MutableDict.as_mutable(JSONB))

@@ -36,7 +36,7 @@ def api_action_update(project_string_id, action_id):
         {'workflow_id': int},
         {'ordinal': int},
         {'archived': bool},
-        {'condition_data': 
+        {'precondition':
             {
             'default': None,
             'kind': dict
@@ -89,7 +89,6 @@ def api_action_update(project_string_id, action_id):
             kind = input['kind'],
             description = input['description'],
             trigger_data = input['trigger_data'],
-            condition_data = input['condition_data'],
             config_data = input['config_data'],
             template_id = input['template_id'],
             completion_condition_data = input['completion_condition_data'],
@@ -121,7 +120,6 @@ def action_update_core(session: Session,
                        description: str,
                        trigger_data: dict,
                        config_data: dict,
-                       condition_data: dict,
                        template_id: int,
                        workflow_id: int,
                        ordinal: int,
@@ -152,7 +150,6 @@ def action_update_core(session: Session,
         'description': description,
         'trigger_data': trigger_data,
         'config_data': config_data,
-        'condition_data': condition_data,
         'template_id': template_id,
         'workflow_id': workflow_id,
         'ordinal': ordinal,

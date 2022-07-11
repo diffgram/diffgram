@@ -17,8 +17,10 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('action', sa.Column('precondition', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
+    op.add_column('action', sa.Column('precondition', postgresql.JSONB(astext_type = sa.Text()), nullable = True))
+    op.drop_column('action', 'condition_data')
 
 
 def downgrade():
     op.drop_column('action', 'precondition')
+    op.add_column('action', sa.Column('condition_data', postgresql.JSONB(astext_type = sa.Text()), nullable = True))

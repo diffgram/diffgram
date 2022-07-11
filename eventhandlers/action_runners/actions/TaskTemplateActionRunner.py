@@ -20,7 +20,7 @@ class TaskTemplateActionRunner(ActionRunner):
     icon = 'https://www.svgrepo.com/show/376121/list-task.svg'
     kind = 'TaskTemplateActionRunner'
     trigger_data = ActionTrigger(default_event = 'input_file_uploaded', event_list = ["input_file_uploaded", "action_completed"])
-    condition_data = ActionCondition(default_event = None, event_list = [])
+    precondition = ActionCondition(default_event = None, event_list = [])
     completion_condition_data = ActionCompleteCondition(default_event = 'task_completed', event_list = ["task_completed"])
 
     def execute_pre_conditions(self, session: Session) -> bool:

@@ -53,7 +53,7 @@ class Action(Base, SerializerMixin):
 
     config_data = Column(MutableDict.as_mutable(JSONB))
 
-    condition_data = Column(MutableDict.as_mutable(JSONB))
+    precondition = Column(MutableDict.as_mutable(JSONB))
 
     completion_condition_data = Column(MutableDict.as_mutable(JSONB))
 
@@ -108,7 +108,6 @@ class Action(Base, SerializerMixin):
 
     # Action preconditions
 
-    precondition = Column(MutableDict.as_mutable(JSONB))
 
     # Condition action
 
@@ -179,13 +178,12 @@ class Action(Base, SerializerMixin):
         icon,
         description,
         ordinal,
-        condition_data,
+        precondition,
         completion_condition_data,
         public_name,
         add_to_session = True,
         flush_session = True,
         output_interface = None,
-        precondition = None
     ):
         """
         We default active to True for easier searching
@@ -209,7 +207,6 @@ class Action(Base, SerializerMixin):
             description = description,
             ordinal = ordinal,
             public_name = public_name,
-            condition_data = condition_data,
             completion_condition_data = completion_condition_data,
             output_interface = output_interface,
             precondition = precondition

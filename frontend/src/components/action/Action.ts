@@ -25,12 +25,11 @@ export const initialize_action_list = function(action_list){
       act.icon,
       act.kind,
       act.trigger_data,
-      act.condition_data,
+      act.precondition,
       act.description,
       act.completion_condition_data,
       act.output_interface,
       act.previus_action_output_interface,
-      act.precondition
     )
     action.setFromObject(act)
     if(act.config_data){
@@ -51,35 +50,33 @@ export class Action {
   public kind: string;
   public trigger_data: TriggerData;
   public config_data: ConfigData;
-  public condition_data: ConditionData;
+  public precondition: ConditionData;
   public description: string;
   public completion_condition_data: CompletionConditionData;
   public output_interface: any;
   public previus_action_output_interface: any;
-  public precondition: any;
 
   constructor(public_name: string,
               icon: string,
               kind: string,
               trigger_data: TriggerData,
-              condition_data: ConditionData,
+              precondition: ConditionData,
               description: string,
               complete_condition: CompletionConditionData,
               output_interface: any = null,
               previus_action_output_interface: any = null,
-              precondition: any = null
               ) {
     this.public_name = public_name;
     this.icon = icon;
     this.kind = kind;
     this.trigger_data = trigger_data;
-    this.condition_data = condition_data;
+    this.precondition = precondition;
     this.description = description;
     this.config_data = {} as ConfigData;
     this.completion_condition_data = complete_condition;
     this.output_interface = output_interface
     this.previus_action_output_interface = previus_action_output_interface;
-    this.precondition = precondition
+
   }
 
   public setFromObject(action: any){
@@ -91,7 +88,7 @@ export class Action {
     this.kind = action.kind;
     this.archived = action.archived;
     this.trigger_data = action.trigger_data ? action.trigger_data : {};
-    this.condition_data = action.condition_data;
+    this.precondition = action.precondition;
     this.ordinal = action.ordinal;
     this.description = action.description;
     this.output = action.output;

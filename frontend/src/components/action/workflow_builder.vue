@@ -378,7 +378,7 @@ export default Vue.extend({
             result.action.icon,
             result.action.kind,
             result.action.trigger_data,
-            result.action.condition_data,
+            result.action.precondition,
             result.action.description,
             result.action.completion_condition_data
           )

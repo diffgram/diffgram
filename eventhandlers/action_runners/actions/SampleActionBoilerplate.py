@@ -15,7 +15,7 @@ class MySampleAction(ActionRunner):
                             event_list = ['some_diffgram_event'])
 
     # What pre-conditions can this action have?
-    condition_data = ActionCondition(default_event = 'some_diffgram_event',
+    precondition = ActionCondition(default_event = 'some_diffgram_event',
                                      event_list = ['some_diffgram_event'])
 
     # How to declare the actions as completed?

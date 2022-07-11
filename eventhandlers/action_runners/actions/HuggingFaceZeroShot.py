@@ -22,7 +22,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
     icon = 'https://huggingface.co/front/assets/huggingface_logo-noborder.svg'
     kind = 'hf_zero_shot'
     trigger_data = ActionTrigger(default_event='input_file_uploaded', event_list = ['input_file_uploaded', 'task_created'])
-    condition_data = ActionCondition(default_event = 'action_completed',
+    precondition = ActionCondition(default_event = 'action_completed',
                                      event_list = ['action_completed'])
 
     completion_condition_data = ActionCompleteCondition(default_event = 'action_completed',

@@ -30,7 +30,7 @@ class ActionRunner:
     category: str
     description: str
     trigger_data: ActionTrigger
-    condition_data: ActionCondition
+    precondition: ActionCondition
     completion_condition_data: ActionCompleteCondition
     action_run: ActionRun
 
@@ -58,7 +58,7 @@ class ActionRunner:
                   'icon',
                   'kind',
                   'trigger_data',
-                  'condition_data',
+                  'precondition',
                   'completion_condition_data']
         for field in fields:
             if self.__getattribute__(field) is None:
@@ -72,7 +72,7 @@ class ActionRunner:
             "public_name": self.public_name,
             "description": self.description,
             "trigger_data": self.trigger_data.build_data(),
-            "condition_data": self.condition_data.build_data(),
+            "precondition": self.precondition.build_data(),
             "completion_condition_data": self.completion_condition_data.build_data(),
             "icon": self.icon,
             "category": None
@@ -89,7 +89,7 @@ class ActionRunner:
             kind = self.kind,
             category = None,
             trigger_data = self.trigger_data.build_data() if self.trigger_data else None,
-            condition_data = self.condition_data.build_data() if self.condition_data else None,
+            condition_data = self.precondition.build_data() if self.precondition else None,
             completion_condition_data = self.completion_condition_data.build_data() if self.completion_condition_data else None,
         )
 
