@@ -44,7 +44,7 @@ def new_attribute_template_group_factory_api(project_string_id):
         Event.new(
             session = session,
             kind = "new_attribute_template_group",
-            member = user.memberNone,
+            member = user.member if user else None,
             success = True,
             project_id = project.id,
             email = user.email
