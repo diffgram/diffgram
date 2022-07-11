@@ -126,9 +126,12 @@ class ActionRunner:
             )
 
             allow = self.execute_pre_conditions(session)
+
             if not allow:
                 return
             output = self.execute_action(session)
+            print('FINISH EXECUTIOOOOOOON', output)
+            print('ACTIONNNN', self.action.id)
             if output:
                 if isinstance(output, dict):
                     self.action_run.output = output
@@ -160,12 +163,9 @@ class ActionRunner:
             'task_id': None if not has_output else output.get('task_id'),
 
         }
+        print('DECLARE ACTION COMPELTEEED', event_payload)
         if has_output:
             event_payload['extra_metadata'] = output
-        event = Event.new(
+        Event.new(
             **event_payload
         )
-        event_data = event.serialize()
-        self.mngr.send_message(message = event_data,
-                               exchange = Exchanges.actions.value,
-                               routing_key = RoutingKeys.action_trigger_event_new.value)
