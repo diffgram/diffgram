@@ -47,7 +47,7 @@ def new_attribute_template_group_factory_api(project_string_id):
             member = user.member if user else None,
             success = True,
             project_id = project.id,
-            email = user.email
+            email = user.email if user else None
         )
 
         log['success'] = True
