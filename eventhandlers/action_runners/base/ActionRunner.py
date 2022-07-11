@@ -136,7 +136,7 @@ class ActionRunner:
             project_id = self.action.project_id,
             file_id = None if isinstance(output, bool) else output.get('file_id'),
             task_id = None if isinstance(output, bool) else output.get('task_id'),
-            result = output
+            extra_metadata = output
         )
         event_data = event.serialize()
         self.mngr.send_message(message = event_data,

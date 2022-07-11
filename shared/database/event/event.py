@@ -105,7 +105,7 @@ class Event(Base):
 
     diffgram_version = Column(String)
 
-    result = Column(MutableDict.as_mutable(JSONB))
+    extra_metadata = Column(MutableDict.as_mutable(JSONB))
 
     # We don't need an "update" since this is meant to be a static record??
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
@@ -135,7 +135,7 @@ class Event(Base):
             'host_os': settings.DIFFGRAM_HOST_OS,
             'storage_backend': settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
             'service_name': settings.DIFFGRAM_SERVICE_NAME,
-            'result': self.result
+            'extra_metadata': self.extra_metadata
         }
 
     def serialize_for_visit_history(self, session):
@@ -276,7 +276,7 @@ class Event(Base):
             report_template_data = None,
             add_to_session = True,
             flush_session = True,
-            result = None
+            extra_metadata = None
             ):
         """
         Generally we always want a member_id
@@ -316,7 +316,7 @@ class Event(Base):
             report_template_id = report_template_id,
             report_template_data = report_template_data,
             page_name = page_name,
-            result = result
+            extra_metadata = extra_metadata
         )
         if add_to_session:
             session.add(event)

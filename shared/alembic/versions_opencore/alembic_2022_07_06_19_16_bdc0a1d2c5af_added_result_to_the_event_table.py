@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.add_column('event', sa.Column('result', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
+    op.add_column('event', sa.Column('extra_metadata', postgresql.JSONB(astext_type=sa.Text()), nullable=True))
 
 
 def downgrade():
-    op.drop_column('event', 'result')
+    op.drop_column('event', 'extra_metadata')
