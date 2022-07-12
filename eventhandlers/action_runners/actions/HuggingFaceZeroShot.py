@@ -50,6 +50,9 @@ class HuggingFaceZeroShotAction(ActionRunner):
             task_id = self.event_data.get('task_id')
             task = Task.get_by_id(session = session, task_id = task_id)
             if task.job_id != job_id:
+                msg = f'Task and Job mismatch task-job_id {task.id}-{task.job_id} != {job_id}'
+                logger.error(msg)
+                self.log['error'][self.kind] = msg
                 return
 
             file_id = task.file_id
@@ -57,14 +60,22 @@ class HuggingFaceZeroShotAction(ActionRunner):
         file = File.get_by_id(session, file_id = file_id)
 
         if not file:
-            logger.error(f'Cannot find file_id {file_id}')
+            msg = f'Cannot find file_id {file_id}'
+            logger.error(msg)
+            self.log['error'][self.kind] = msg
             return None
 
         if file.type != 'text':
-            return
+            msg = f'Files is not text file skipping {file_id}'
+            logger.error(msg)
+            self.log['error'][self.kind] = msg
+            return None
 
         if not project_id or not group_id:
-            return
+            msg = f'Project or group is None {project_id} {group_id}'
+            logger.error(msg)
+            self.log['error'][self.kind] = msg
+            return None
 
         text = ''
         raw_sentences = json.loads(file.text_file.get_text()).get('nltk', {}).get('sentences', [])

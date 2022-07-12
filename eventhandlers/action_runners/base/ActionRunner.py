@@ -1,3 +1,5 @@
+import traceback
+
 from shared.database.action.action import Action
 from shared.queueclient.QueueClient import QueueClient, RoutingKeys, Exchanges
 from shared.database.event.event import Event
@@ -129,7 +131,12 @@ class ActionRunner:
 
             if not allow:
                 return
-            output = self.execute_action(session)
+            try:
+                output = self.execute_action(session)
+            except Exception as e:
+                msg = traceback.format_exc()
+                logger.error(msg)
+                self.log['error']['trace'] = msg
             print('FINISH EXECUTIOOOOOOON', output)
             print('ACTIONNNN', self.action.id)
             if output:
@@ -141,16 +148,13 @@ class ActionRunner:
                 self.declare_action_failed(session)
 
     def declare_action_failed(self, session: Session) -> None:
-        event = Event.new(
+        Event.new(
             session = session,
             action_id = self.action.id,
             kind = 'action_failed',
+            error_log = self.log,
             project_id = self.action.project_id,
         )
-        event_data = event.serialize()
-        self.mngr.send_message(message = event_data,
-                               exchange = Exchanges.actions.value,
-                               routing_key = RoutingKeys.action_trigger_event_new.value)
 
     def declare_action_complete(self, session: Session, output) -> None:
         has_output = isinstance(output, dict)
