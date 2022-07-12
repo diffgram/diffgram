@@ -188,5 +188,5 @@ def first_stage_login_success(log,
             'user_data_oidc': user_data_oidc,
             'install_fingerprint': settings.DIFFGRAM_INSTALL_FINGERPRINT
         }
-        logger.info(f'Log in success result {result}')
+        logger.debug(f'Log in success result {result}')
         return jsonify(result), 200
