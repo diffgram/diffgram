@@ -35,3 +35,4 @@ transformers==4.20.0
 deepchecks[vision]
 memory-profiler==0.55.0
 opencv-contrib-python
+labelbox==3.16.0
