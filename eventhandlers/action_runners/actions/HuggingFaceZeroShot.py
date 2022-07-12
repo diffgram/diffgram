@@ -37,6 +37,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
         pass
 
     def execute_action(self, session, do_save_annotations = True) -> dict or None:
+        print('EXECUTIN ACTIONNNN HUGGIN FACE')
         event_name = self.action.trigger_data.get('event_name')
         file_id = self.event_data.get('file_id')
         project_id = self.action.config_data.get('project_id')
@@ -58,7 +59,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
             file_id = task.file_id
 
         file = File.get_by_id(session, file_id = file_id)
-
+        print('FILE', file)
         if not file:
             msg = f'Cannot find file_id {file_id}'
             logger.error(msg)
@@ -89,7 +90,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
             return_kind = "objects",
             limit = None
         )
-
+        print('group_list', group_list)
         group_list_serialized = []
 
         for group in group_list:
@@ -99,7 +100,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
         classifier = pipeline("zero-shot-classification")
 
         result = classifier(text, candidate_attributes)
-
+        print('result', result)
         attribute_to_apply = result['labels'][result['scores'].index(max(result['scores']))]
         attribute_item_to_apply = [option for option in group_list_serialized[0]['attribute_template_list'] if
                                    option['name'] == attribute_to_apply][0]
@@ -116,7 +117,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
         to_create['attribute_groups'][group_id] = attribute_item_to_apply
 
         project = Project.get_by_id(session = session, id = project_id)
-
+        print('project', project)
         annotation_update = Annotation_Update(
             session = session,
             task = task,
@@ -127,7 +128,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
         )
 
         annotation_update.main()
-
+        print('annotation_update SUCCESS')
         return {
             "task_id": task_id,
             "file_id": file_id,
