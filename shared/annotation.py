@@ -1,9 +1,16 @@
-# OPEN CORE - ADD
-try:
-    from methods.regular.regular_api import *
-except:
-    from default.methods.regular.regular_api import *
-
+import datetime, time
+from shared.communicate.email import communicate_via_email
+from dataclasses import dataclass, field
+from shared.database.user import User
+from shared.database.project import Project
+from shared.database.task.task import Task
+from typing import Any
+from shared.regular import regular_log
+from shared.regular import regular_input
+from shared.regular.regular_member import get_member
+from shared.database.event.event import Event
+from shared.database.source_control.file import File
+from shared.settings import settings
 try:
     # The walrus service doesn't have task_complete
     from shared.methods.task.task import task_complete
