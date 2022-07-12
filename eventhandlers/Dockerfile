@@ -12,7 +12,8 @@ RUN pip3 install --upgrade pip
 RUN pip3 install -r /app/requirements.txt
 ADD eventhandlers/ /app/
 ADD shared /app/shared
-
+ENV TRANSFORMERS_CACHE=/tmp/
+ENV HF_HOME=/tmp/
 WORKDIR /app/
 #CMD exec gunicorn --bind :$PORT --timeout 120 --worker-class eventlet --workers 3 --no-sendfile --config python:my_conf main:app
 EXPOSE 8086
