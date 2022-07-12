@@ -110,6 +110,7 @@
 
                 <v-btn
                   @click="route_oauth2_login"
+                  v-if="show_oauth2"
                   color="secondary"
                   outlined
                   class="mr-4"
@@ -312,7 +313,8 @@ export default Vue.extend({
   },
   methods: {
     route_oauth2_login: function(){
-      this.$router.push("/user/oauth2-login");
+      window.location.replace(this.oauth_login_url);
+      // this.$router.push(this.oauth_login_url);
     },
     route_account_new: function () {
       this.$router.push("/user/new");
