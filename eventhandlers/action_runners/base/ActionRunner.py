@@ -137,8 +137,8 @@ class ActionRunner:
                 msg = traceback.format_exc()
                 logger.error(msg)
                 self.log['error']['trace'] = msg
-            print('FINISH EXECUTIOOOOOOON', output)
-            print('ACTIONNNN', self.action.id)
+                self.declare_action_failed(session)
+                return
             if output:
                 if isinstance(output, dict):
                     self.action_run.output = output
