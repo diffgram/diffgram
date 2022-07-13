@@ -509,7 +509,6 @@
       components: {
         draggable,
         attribute,
-        attribute_new_or_update,
         label_select_only,
         attribute_kind_icons,
         attribute_group_wizard
@@ -551,6 +550,7 @@
           search: "",
           tree_force_rerender: false,
           tree_rerender_timeout: null,
+          filtered_node_list: null,
           first_load: true,
           original_kind: null,
           loading_update: null,
@@ -747,15 +747,14 @@
         load_clidren: function(e) {
           console.log("Load children",e)
           let template_list = this.group.attribute_template_list.filter(item => item.parent_id === e.id)
-          if (this.search) template_list = this.group.attribute_template_list.filter(item => item.name.toLowerCase().includes(this.search.toLowerCase()))
           console.log(template_list)
 
           this.set_tree(template_list)
         },
         tree_search: function(e) {
-          console.log(e)
+          this.tree_items_list = []
+
           const res = this.group.attribute_template_list.filter(item => item.name.toLowerCase().includes(e.toLowerCase()))
-          console.log(res)
           this.set_tree(res)
         },
         set_tree: function(to_tree) {
