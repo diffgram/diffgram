@@ -647,7 +647,6 @@
           clearTimeout(this.tree_rerender_timeout)
           this.tree_force_rerender = true
           this.tree_rerender_timeout = setTimeout(() => {
-            console.log("here")
             this.tree_search(newValue)
             this.tree_force_rerender = false
           }, 300)
@@ -751,9 +750,7 @@
           console.log("Tree input", e)
         },
         load_clidren: function(e) {
-          console.log("Load children",e)
           let template_list = this.group.attribute_template_list.filter(item => item.parent_id === e.id)
-          console.log(template_list)
 
           this.set_tree(template_list)
         },
