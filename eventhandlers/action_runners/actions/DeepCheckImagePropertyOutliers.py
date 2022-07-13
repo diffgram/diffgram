@@ -3,7 +3,7 @@ from action_runners.base.ActionRunner import ActionRunner
 from deepchecks.vision.checks import ImagePropertyOutliers
 from deepchecks.vision import VisionData
 from deepchecks.core.serialization.check_result.html import CheckResultSerializer as CheckResultHtmlSerializer
-
+from PIL import Image
 from skimage import io, transform
 from sqlalchemy.orm import Session
 from torch.utils.data import DataLoader
@@ -19,6 +19,7 @@ import numpy as np
 from action_runners.base.ActionTrigger import ActionTrigger
 from action_runners.base.ActionCondition import ActionCondition
 from action_runners.base.ActionCompleteCondition import ActionCompleteCondition
+import skimage
 
 data_tools = Data_tools().data_tools
 
@@ -50,8 +51,10 @@ class DiffgramDataset(Dataset):
         bytes_img = data_tools.download_bytes(file.get('image').get('url_signed_blob_path'))
         res = BytesIO(bytes_img)
         image = io.imread(res)
+        PIL_image = Image.fromarray(np.uint8(image)).convert('RGB')
+        final_image = np.asarray(PIL_image)
         #img = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
-        return image
+        return final_image
 
 
 class DiffgramVisionDataset(VisionData):
@@ -77,8 +80,6 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
 
     def execute_action(self, session):
         # Your core Action logic will go here.
-        print("running")
-
         dir_id = self.event_data.get('directory_id')
         pytorch_dataset = DiffgramDataset(session = session, diffgram_dir_id = dir_id)
         dataloader = DataLoader(pytorch_dataset, batch_size = 5, shuffle = True, num_workers = 0, collate_fn = lambda data: data)
