@@ -81,8 +81,9 @@ class DeepcheckImagePropertyOutliers(ActionRunner):
     def execute_action(self, session):
         # Your core Action logic will go here.
         dir_id = self.event_data.get('directory_id')
+        batch_size = int(self.action.config_data.get('batch_size', 5))
         pytorch_dataset = DiffgramDataset(session = session, diffgram_dir_id = dir_id)
-        dataloader = DataLoader(pytorch_dataset, batch_size = 5, shuffle = True, num_workers = 0, collate_fn = lambda data: data)
+        dataloader = DataLoader(pytorch_dataset, batch_size = batch_size, shuffle = True, num_workers = 0, collate_fn = lambda data: data)
         vision_ds = DiffgramVisionDataset(data_loader = dataloader)
         check = ImagePropertyOutliers()
         result = check.run(vision_ds)
