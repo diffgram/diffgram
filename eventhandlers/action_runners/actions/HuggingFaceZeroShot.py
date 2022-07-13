@@ -2,15 +2,12 @@ from action_runners.base.ActionRunner import ActionRunner
 from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
 from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
-from shared.database.annotation.instance import Instance
 from shared.database.project import Project
 from shared.database.task.task import Task
 from shared.shared_logger import get_shared_logger
 from shared.database.task.task import Task
 from shared.database.source_control.file import File
-from shared.database.annotation.instance import Instance
 from shared.database.project import Project
-from shared.ingest import packet
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.annotation import Annotation_Update
 import json
