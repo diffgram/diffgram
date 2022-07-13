@@ -173,9 +173,12 @@
               :items="tree_items"
               :load-children="load_clidren"
               selectionType="independent"
-              selectable
               @input="tree_input"
-            />
+            >
+              <template v-slot:prepend="{ item, open }">
+                  <v-checkbox style="margin-top: 0" hide-details />
+              </template>
+            </v-treeview>
           </v-card>
 
         </v-layout>
