@@ -170,8 +170,10 @@
             </p>
             <v-treeview
               v-model="internal_selected"
+              v-else
               :items="tree_items"
               :load-children="load_clidren"
+              :open-all="search ? true : false"
               selectionType="independent"
               @input="tree_input"
             >
@@ -645,9 +647,10 @@
           clearTimeout(this.tree_rerender_timeout)
           this.tree_force_rerender = true
           this.tree_rerender_timeout = setTimeout(() => {
+            console.log("here")
             this.tree_search(newValue)
             this.tree_force_rerender = false
-          }, 100)
+          }, 300)
         },
 
         // not sure if this is right thing to watch
