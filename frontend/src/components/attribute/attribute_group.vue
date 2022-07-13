@@ -169,11 +169,9 @@
               Searching...
             </p>
             <v-treeview
-              v-if="!tree_force_rerender"
               v-model="internal_selected"
               :items="tree_items"
-              :search="search"
-              :open-all="search && search.length > 0"
+              :load-children="load_clidren"
               selectionType="independent"
               selectable
               open-on-click
@@ -641,10 +639,11 @@
       },
 
       watch: {
-        search: function() {
+        search: function(newValue) {
           clearTimeout(this.tree_rerender_timeout)
           this.tree_force_rerender = true
           this.tree_rerender_timeout = setTimeout(() => {
+            this.tree_search(newValue)
             this.tree_force_rerender = false
           }, 100)
         },
@@ -674,7 +673,7 @@
         this.group_internal = this.$props.group
 
         if (this.group.kind === "tree") {
-          this.group.attribute_template_list.map(attr => {
+          this.group.attribute_template_list.filter(item => !item.parent_id).map(attr => {
             const new_node = new TreeNode(attr.group_id, attr.name)
             new_node.initialize_existing_node(attr.id, attr.parent_id)
             this.tree_items_list.push(new_node)
@@ -743,6 +742,30 @@
         }
       },
       methods: {
+        load_clidren: function(e) {
+          let template_list = this.group.attribute_template_list
+          if (this.search) template_list = this.group.attribute_template_list.filter(item => item.name.toLowerCase().includes(this.search.toLowerCase()))
+
+          this.set_tree(template_list)
+        },
+        tree_search: function(e) {
+          console.log(e)
+          const res = this.group.attribute_template_list.filter(item => item.name.toLowerCase().includes(e.toLowerCase()))
+          console.log(res)
+          this.set_tree(res)
+        },
+        set_tree: function(to_tree) {
+          this.tree_items = {}
+          this.tree_items_list = []
+
+          to_tree.map(attr => {
+            const new_node = new TreeNode(attr.group_id, attr.name)
+            new_node.initialize_existing_node(attr.id, attr.parent_id)
+            this.tree_items_list.push(new_node)
+          })
+
+          this.tree_items = construct_tree(this.tree_items_list)
+        },
         update_label_files: function(new_label_list){
           if(!this.$props.enable_wizard){
             this.$refs.label_selector.set_label_list(new_label_list)
