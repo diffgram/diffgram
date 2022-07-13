@@ -56,4 +56,15 @@ class TestURLGeneration(testing_setup.DiffgramBaseTestCase):
                                                    connection_id = None,
                                                    bucket_name = None)
                 self.assertEqual('some_url', image.url_signed)
-                self.assertIsNotNone('some_url', image.url_signed_thumb)
+                self.assertIsNotNone(image.url_signed_thumb)
+
+    def test_default_url_regenerate(self):
+        image = Image()
+        with patch.object(data_tools, 'build_secure_url', return_value = 'some_url') as mock1:
+            url_generation.default_url_regenerate(blob_object = image,
+                                                  session = self.session,
+                                                  new_offset_in_seconds = 1000, )
+            self.assertEqual('some_url', image.url_signed)
+            self.assertIsNotNone(image.url_signed_thumb)
+            self.assertIsNotNone(image.url_signed_expiry)
+            self.assertTrue(1000 + time.time() >= image.url_signed_expiry)
