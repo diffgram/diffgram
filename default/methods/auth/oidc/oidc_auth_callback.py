@@ -7,18 +7,18 @@ from methods.user.account.account_new import user_new_core, set_password_and_log
 
 
 def login_and_return_access_token(session, diffgram_user, user_data, access_token_data, log):
-    first_stage_login_success(
+    logger.info(f'Login in user: {diffgram_user}')
+    response, status = first_stage_login_success(
         log = log,
         session = session,
         user = diffgram_user,
-        jwt = access_token_data
+        jwt = access_token_data,
+        user_data_oidc = user_data,
+        access_token_data = access_token_data,
     )
 
-    return jsonify({
-        'access_token_data': access_token_data,
-        'user_data_oidc': user_data,
-        'user': diffgram_user.serialize()
-    })
+
+    return response, status
 
 
 @routes.route('/api/v1/auth/callback', methods = ['POST'])
@@ -49,14 +49,23 @@ def api_oidc_callback():
     with sessionMaker.session_scope() as session:
         oidc_provider = OAuth2Provider()
         oidc_client = oidc_provider.get_client()
+        logger.info('OAuth2 Client Fetched')
         access_token_data = oidc_client.get_access_token_with_code_grant(code = code)
+
+        if 'id_token' in access_token_data:
+            access_token_data.pop('id_token')
+
+        logger.info(f'OAuth2 access_token_data: {access_token_data}')
         if not access_token_data:
             log['error']['token'] = 'Failed to get access token. Please check authorization_code and client configuration.'
             logger.error(log)
             return jsonify(log), 400
         access_token = oidc_client.get_access_token_from_jwt(jwt_data = access_token_data)
+        logger.info(f'OAuth2 access_token: {access_token}')
         user_data = oidc_client.get_user(access_token = access_token)
+        logger.info(f'OAuth2 user data: {user_data}')
         if not user_data:
+            logger.error('Failed to fecth user data from oauth2 provider')
             log['error']['userinfo'] = 'Failed to get userinfo. Please check access_token and client configuration.'
             logger.error(log)
             return jsonify(log), 400
@@ -64,7 +73,9 @@ def api_oidc_callback():
         email = user_data.get('email')
         diffgram_user = User.get_user_by_oauth2_id(session = session,
                                                    oidc_id = user_id)
+        logger.info(f'diffgram_user fetch by external id:  {diffgram_user}')
         if diffgram_user:
+            logger.info(f'login_and_return_access_token ')
             return login_and_return_access_token(
                 session = session,
                 diffgram_user = diffgram_user,
@@ -74,6 +85,7 @@ def api_oidc_callback():
             )
         # Check if user exists from email
         diffgram_user = User.get_by_email(session=session, email = email)
+        logger.info(f'diffgram_user fetch by email {diffgram_user}')
         if diffgram_user:
             diffgram_user.bind_to_oidc_login(session = session, oidc_id = user_id)
             first_stage_login_success(
@@ -82,6 +94,7 @@ def api_oidc_callback():
                 user = diffgram_user,
                 jwt = access_token_data
             )
+            logger.info(f'diffgram_user found by email {user_data}')
             return jsonify({
                 'access_token_data': access_token_data,
                 'user_data_oidc': user_data,
@@ -98,6 +111,7 @@ def api_oidc_callback():
                                        new_user = new_user,
                                        password = str(uuid.uuid4()),
                                        token_data = access_token_data)
+        logger.info(f'new diffgram user created {user_data}')
         return jsonify({
             'access_token_data': access_token_data,
             'user_data_oidc': user_data,
