@@ -174,8 +174,7 @@
               :load-children="load_clidren"
               selectionType="independent"
               selectable
-              open-on-click
-              @input="attribute_change"
+              @input="tree_input"
             />
           </v-card>
 
@@ -742,9 +741,14 @@
         }
       },
       methods: {
+        tree_input: function(e) {
+          console.log("Tree input", e)
+        },
         load_clidren: function(e) {
-          let template_list = this.group.attribute_template_list
+          console.log("Load children",e)
+          let template_list = this.group.attribute_template_list.filter(item => item.parent_id === e.id)
           if (this.search) template_list = this.group.attribute_template_list.filter(item => item.name.toLowerCase().includes(this.search.toLowerCase()))
+          console.log(template_list)
 
           this.set_tree(template_list)
         },
@@ -755,9 +759,6 @@
           this.set_tree(res)
         },
         set_tree: function(to_tree) {
-          this.tree_items = {}
-          this.tree_items_list = []
-
           to_tree.map(attr => {
             const new_node = new TreeNode(attr.group_id, attr.name)
             new_node.initialize_existing_node(attr.id, attr.parent_id)
@@ -777,6 +778,7 @@
         },
         // group change
         attribute_change: function () {
+          console.log("fire")
           /*
            *
            * the theory here is mainly that it is maintaining the same format
