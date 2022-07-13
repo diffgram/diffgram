@@ -109,5 +109,6 @@ class ActionsConsumer:
             actions_list = ActionsConsumer.filter_from_trigger_metadata(session, kind, msg_data, actions_list)
             logger.debug(f'Filtered to {len(actions_list)} actions.')
             for action in actions_list:
+                logger.info(f'Getting action {action.kind}')
                 action_runner = get_runner(action = action, event_data = msg_data)
                 action_runner.run()
