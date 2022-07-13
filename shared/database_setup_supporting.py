@@ -1,4 +1,8 @@
 # OPEN CORE - ADD
+from shared.database.action.action import Action
+from shared.database.action.workflow import Workflow
+from shared.database.action.workflow_run import WorkflowRun
+from shared.database.action.action_run import ActionRun
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.discussion.discussion import Discussion
 

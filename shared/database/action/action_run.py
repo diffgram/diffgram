@@ -61,6 +61,9 @@ class ActionRun(Base):
     email_subject = Column(String())
     email_body = Column(String())
 
+    # Output of action, usually caches the output of latest ActionRun.
+    output = Column(MutableDict.as_mutable(JSONB))
+    
     # Reuse image class setup for clarity
     overlay_rendered_image_id = Column(Integer, ForeignKey('image.id'))  # new feb 12 2019
     overlay_rendered_image = relationship("Image",
@@ -68,28 +71,31 @@ class ActionRun(Base):
 
     @staticmethod
     def new(session,
-            flow_event_id,
-            flow_id,
+            workflow_id,
             action_id,
-            file_id,
+            file_id = None,
+            workflow_run_id = None,
             project_id = None,
             org = None,
-            link = None,
-            member = None,
             kind = None
             ):
         """
-        objects vs ids here...
-
-        Not using member yet.
-
+            Creates a new Action run.
+        :param session:
+        :param workflow_run_id:
+        :param workflow_id:
+        :param action_id:
+        :param file_id:
+        :param project_id:
+        :param org:
+        :param link:
+        :param member:
+        :param kind:
+        :return:
         """
-        if flow_event_id is None:
-            return
-
-        action_event = WofklowRun(
-            flow_event_id = flow_event_id,
-            flow_id = flow_id,
+        action_run = ActionRun(
+            workflow_id = workflow_id,
+            workflow_run_id = workflow_run_id,
             action_id = action_id,
             file_id = file_id,
             project_id = project_id,
@@ -97,8 +103,9 @@ class ActionRun(Base):
             kind = kind
         )
 
-        session.add(action_event)
-        return action_event
+        session.add(action_run)
+        session.flush()
+        return action_run
 
     @staticmethod
     def list(
@@ -131,6 +138,17 @@ class ActionRun(Base):
 
         if return_kind == "objects":
             return query.limit(limit).all()
+
+    @staticmethod
+    def list_by_action_id(session, action_id):
+        query = session.query(ActionRun).filter(ActionRun.action_id == action_id)
+        return query.all()
+
+    def serialize_action_run(self):
+        return {
+            'id': self.id,
+            'output': self.output
+        }
 
     def serialize(self,
                   session = None):

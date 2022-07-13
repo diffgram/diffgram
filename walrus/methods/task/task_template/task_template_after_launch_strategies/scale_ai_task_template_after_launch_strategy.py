@@ -3,7 +3,7 @@ from methods.regular.regular_api import logger
 from methods.task.task_template.task_template_after_launch_strategies.task_template_after_launch_strategy import \
     TaskTemplateAfterLaunchStrategy
 from shared.utils import job_dir_sync_utils
-from methods.connectors.connectors import ConnectorManager
+from shared.connection.connection_strategy import ConnectionStrategy
 from methods.task.task_template.task_template_after_launch_strategies.standard_task_template_after_launch_strategy import \
     StandardTaskTemplateAfterLaunchStrategy
 from shared.database.external.external import ExternalMap
@@ -52,8 +52,7 @@ class ScaleAITaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
             # Otherwise, we would need request context here, which we don't have.
             connection = self.task_template.interface_connection
             logger.debug(f"Connection for ScaleAI: {connection}")
-            connector_manager = ConnectorManager(connection=connection, session=self.session)
-            connector = connector_manager.get_connector_instance()
+            connector, success = ConnectionStrategy(connection=connection, session=self.session).get_connector()
             connector.connect()
 
             # We create a project

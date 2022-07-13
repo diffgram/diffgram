@@ -1,8 +1,6 @@
-# OPENCORE - ADD
-try:
-    from methods.regular.regular_api import *
-except:
-    from default.methods.regular.regular_api import *
+from shared.database.source_control.working_dir import WorkingDirFileLink
+from shared.database.source_control.file import File
+from shared.database.task.task import Task
 
 
 def provision_root_tasks(session,
@@ -10,7 +8,6 @@ def provision_root_tasks(session,
                          mode = 'default',
                          default_assignee = None,
                          default_reviewers = []):
-
     if not job:
         return False
 
@@ -228,8 +225,3 @@ def create_review_sub_task(session,
         session.add(task)
 
     return task
-
-# In what cases need/want to assign child id?
-
-
-# Other completion rules

@@ -1,20 +1,32 @@
 <template>
   <div class="d-flex flex-column" style="height: 100%">
+
+    <!-- WIP to call `action_manual_trigger` service
+         Also probably not right spot for it maybe should be inside wizard etc-->
+    <tooltip_button
+        tooltip_message="Manual Trigger"
+        @click="move_frame"
+        icon="help"
+        :text_style="true"
+        color="primary">
+    </tooltip_button>
+
     <action_config_wizard_base
-      v-if="display_mode === 'wizard'"
+      v-if="display_mode === 'wizard' && steps_manager"
       :action="action"
       :actions_list="actions_list"
-      :steps_config_prop="steps_config"
+      :steps_config="steps_manager.generate()"
       @open_action_selector="$emit('open_action_selector')"
       :project_string_id="project_string_id">
       <template v-slot:action_config>
-    
+
       </template>
     </action_config_wizard_base>
 
 
     <action_config_form_base
-      v-if="display_mode === 'form'"
+      v-if="display_mode === 'form' && steps_manager"
+      :steps_config="steps_manager.generate()"
       :project_string_id="project_string_id"
       :action="action"
       :actions_list="actions_list"
@@ -40,10 +52,14 @@
 import {Action} from './../../Action'
 import Action_config_wizard_base from "@/components/action/actions_config_base/action_config_wizard_base";
 import action_config_form_base from "@/components/action/actions_config_base/action_config_form_base";
-import {default_steps_config} from "@/components/action/actions_config_base/default_steps_config";
+import ActionStepsConfig from '../ActionStepsConfig'
 
 export default {
-  name: "create_task_action_config",
+  name: "AzureTextAnalyticsSentimentAction",
+  components: {
+    Action_config_wizard_base,
+    action_config_form_base,
+  },
   props:{
     action:{
       required: true,
@@ -59,36 +75,16 @@ export default {
       default: "wizard"
     }
   },
-  mounted() {
-    this.steps_config = {
-      ...default_steps_config
-    }
-    this.steps_config.pre_conditions = {
-      ...this.steps_config.pre_conditions,
-      hide: true,
-      number: -1,
-    }
-    this.steps_config.action_config = {
-      ...this.steps_config.action_config,
-      number: 2,
-    }
-    this.steps_config.completion_trigger = {
-      ...this.steps_config.completion_trigger,
-      number: 3,
-    }
-  },
   data: function(){
     return{
       job_selected: null,
       show_task_template_wizard: false,
       switch_loading: false,
-      steps_config: null
-
+      steps_manager: null
     }
   },
-  components: {
-    Action_config_wizard_base,
-    action_config_form_base,
+  mounted() {
+    this.steps_manager = new ActionStepsConfig()
   },
   methods: {
     on_action_updated: function(act){

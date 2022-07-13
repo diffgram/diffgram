@@ -2,6 +2,7 @@ from shared.database.common import *
 from typing import List
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.orm import load_only
 
 
 class Action_Template(Base, SerializerMixin):
@@ -30,6 +31,7 @@ class Action_Template(Base, SerializerMixin):
 
     trigger_data = Column(MutableDict.as_mutable(JSONB))
 
+    # Pre-Conditions
     condition_data = Column(MutableDict.as_mutable(JSONB))
 
     completion_condition_data = Column(MutableDict.as_mutable(JSONB))
@@ -66,7 +68,15 @@ class Action_Template(Base, SerializerMixin):
             Returns all Action templates available in the installation.
         """
 
-        return session.query(Action_Template).all()
+        return session.query(Action_Template).filter_by(is_available = True).all()
+
+    @staticmethod
+    def list_avalible_kinds(session) -> List[str]:
+        """
+            Returns all Action templates available in the installation.
+        """
+
+        return session.query(Action_Template).filter_by(is_available = True).options(load_only('kind')).all()
 
     @staticmethod
     def get_by_kind(session,
@@ -90,7 +100,38 @@ class Action_Template(Base, SerializerMixin):
             Action_Template.id == id).first()
 
     @staticmethod
-    def new(session,
+    def unregister_by_kind(session, kind):
+        to_make_unavalible = Action_Template.get_by_kind(session, kind)
+        to_make_unavalible.is_available = False
+
+    @staticmethod
+    def update_by_kind(session, kind, payload):
+        to_update = Action_Template.get_by_kind(session, kind)
+        for key in payload:
+            setattr(to_update, key, payload[key])
+        session.add(to_update)
+
+    @staticmethod
+    def register(
+        session,
+        public_name,
+        icon,
+        description,
+        kind,
+        category,
+        trigger_data = None,
+        condition_data = None,
+        completion_condition_data = None,
+        update = False):
+
+        if update == False:
+            existing = Action_Template.get_by_kind(session, kind)
+            if existing:
+                existing.is_available = True
+            if existing: return True
+
+        Action_Template.new(
+            session,
             public_name,
             icon,
             description,
@@ -98,8 +139,20 @@ class Action_Template(Base, SerializerMixin):
             category,
             trigger_data,
             condition_data,
-            completion_condition_data,
+            completion_condition_data)
+
+    @staticmethod
+    def new(session,
+            public_name,
+            icon,
+            description,
+            kind,
+            category,
+            trigger_data = None,
+            condition_data = None,
+            completion_condition_data = None,
             is_global = True):
+
         result = Action_Template(
             public_name = public_name,
             kind = kind,

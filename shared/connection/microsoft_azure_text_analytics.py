@@ -1,8 +1,9 @@
-from methods.regular.regular_api import *
+from shared.regular.regular_api import *
 from shared.regular import regular_log
 from azure.ai.textanalytics import TextAnalyticsClient
 from shared.connection.connectors.connectors_base import Connector
 from azure.core.credentials import AzureKeyCredential
+
 
 
 def with_azure_exception_handler(f):
@@ -34,6 +35,7 @@ class AzureConnectorTextAnalytics(Connector):
                 return log
 
             credential_key_AzureKeyCredential = AzureKeyCredential(self.auth_data['client_secret'])
+
             self.text_analytics_client = TextAnalyticsClient(
                 self.auth_data['endpoint_url'], 
                 credential_key_AzureKeyCredential)
@@ -51,6 +53,10 @@ class AzureConnectorTextAnalytics(Connector):
             return {'log' : log}
 
         return {'log' : log}
+
+
+    def get_client(self):
+        return self.text_analytics_client
 
 
 

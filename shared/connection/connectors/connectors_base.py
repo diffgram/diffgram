@@ -34,6 +34,20 @@ class Connector(ABC):
         """
         raise NotImplementedError
 
+    @abstractmethod
+    def test_connection(self):
+        """
+            This function checks if there is a successful connection to the source
+        :return: True/False
+        """
+        raise NotImplementedError
+
+    def get_client(self):
+        """
+            Returns client relevant to connection
+        """
+        raise NotImplementedError
+
     def get_meta_data(self):
         """
             This method should bring a dict for all the metadata specific to the connector.
@@ -58,11 +72,5 @@ class Connector(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def test_connection(self):
-        """
-            This function checks if there is a succseful connecction to the source
-        :return: True/False
-        """
-        raise NotImplementedError
+
 

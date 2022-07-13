@@ -1,6 +1,5 @@
 import json
 import functools
-from pika.exchange_type import ExchangeType
 import pika
 import threading
 from pika.exchange_type import ExchangeType
@@ -8,7 +7,7 @@ from shared.queueclient.QueueClient import RoutingKeys, Exchanges, QueueNames
 from shared.shared_logger import get_shared_logger
 from shared.database.action.action import Action
 from shared.database.action.workflow import Workflow
-from action_runners.runners_mapping import get_runner
+from action_runners.ActionRegistrar import get_runner
 from shared.helpers import sessionMaker
 logger = get_shared_logger()
 
@@ -65,12 +64,24 @@ class ActionsConsumer:
         return result
 
     @staticmethod
-    def filter_from_trigger_metadata(kind, event_data, actions_list):
+    def filter_from_trigger_metadata(session, kind, event_data, actions_list):
         if trigger_kinds_with_custom_metadata.get(kind):
-            if kind == 'file_upload':
+            if kind == 'file_uploaded':
                 result = ActionsConsumer.filter_actions_matching_directory_trigger(event_data = event_data,
                                                                                    actions_list = actions_list)
                 return result
+        if kind == 'action_completed':
+            # If the action is listening to action completed, we need to make sure the action that was completed
+            # is the previous action.
+            filtered_list = []
+            action_id = event_data.get('action_id')
+            if action_id is None:
+                return  filtered_list
+            for action in actions_list:
+                prev_action = action.get_previous_action(session = session)
+                if prev_action.id == action_id:
+                    filtered_list.append(action)
+            return filtered_list
         return actions_list
 
     @staticmethod
@@ -80,10 +91,12 @@ class ActionsConsumer:
             execution.
         :return:
         """
+        print(msg)
         with sessionMaker.session_scope_threaded() as session:
             msg_data = json.loads(msg)
             kind = msg_data.get('kind')
             project_id = msg_data.get('project_id')
+            logger.debug(f'Processing action trigger event {msg}')
             if not project_id:
                 logger.warning(f'Invalid project_id {project_id}')
                 return
@@ -93,8 +106,9 @@ class ActionsConsumer:
 
             actions_list = Action.get_triggered_actions(session = session, trigger_kind = kind, project_id = project_id)
             logger.debug(f'Matched with {len(actions_list)} actions.')
-            actions_list = ActionsConsumer.filter_from_trigger_metadata(kind, msg_data, actions_list)
+            actions_list = ActionsConsumer.filter_from_trigger_metadata(session, kind, msg_data, actions_list)
             logger.debug(f'Filtered to {len(actions_list)} actions.')
             for action in actions_list:
+                logger.info(f'Getting action {action.kind}')
                 action_runner = get_runner(action = action, event_data = msg_data)
                 action_runner.run()

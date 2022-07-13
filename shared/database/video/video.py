@@ -108,6 +108,7 @@ class Video(Base):
             'status': self.status,
             'description': self.description,
             'preview_image_url_thumb': self.preview_image_url_thumb,
+            'file_blob_path': self.file_blob_path,
             'file_signed_url': self.file_signed_url,
             'width': self.width,
             'height': self.height,

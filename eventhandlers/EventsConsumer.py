@@ -1,6 +1,4 @@
 import json
-
-from pika.exchange_type import ExchangeType
 import pika
 import threading
 from pika.exchange_type import ExchangeType
