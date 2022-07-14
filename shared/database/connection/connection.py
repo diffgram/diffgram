@@ -99,6 +99,7 @@ class Connection(Base):
             'project_id': self.project_id,
             'member_created_id': self.member_created_id,
             'member_updated': self.member_updated,
+            'aws_v4_signature': self.aws_v4_signature,
             'time_created': self.time_created,
             'time_updated': self.time_updated,
             'archived': self.archived,

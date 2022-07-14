@@ -19,6 +19,7 @@ from shared.export.export_utils import generate_file_name_from_export, check_exp
 from shared.regular import regular_log
 
 from shared.data_tools_core_s3 import DataToolsS3
+from botocore.config import Config
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
@@ -62,9 +63,16 @@ class S3Connector(Connector):
                 log['error']['client_secret'] = 'auth_data must provide aws_access_key_id and aws_secret_access_key .'
                 return {'log': log}
 
+            config = None
+            print('self.auth_data.get(', self.auth_data.get('aws_v4_signature'))
+            if self.auth_data.get('aws_v4_signature'):
+                config = Config(signature_version = 's3v4')
+
             self.connection_client = DataToolsS3.get_client(
                 aws_access_key_id = self.auth_data['client_id'],
-                aws_secret_access_key = self.auth_data['client_secret'])
+                aws_secret_access_key = self.auth_data['client_secret'],
+                config = config
+            )
 
             return {'result': True}
         except Exception as e:

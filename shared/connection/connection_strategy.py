@@ -9,7 +9,6 @@ from shared.connection.s3_connector import S3Connector
 from shared.connection.minio_connector import MinioConnector
 from shared.connection.labelbox_connector import LabelboxConnector
 
-
 CONNECTIONS_MAPPING = {
     'google_gcp': GoogleCloudStorageConnector,
     'microsoft_azure': AzureConnector,
@@ -18,14 +17,15 @@ CONNECTIONS_MAPPING = {
     'labelbox': LabelboxConnector
 }
 
+
 class ConnectionStrategy:
 
-    def __init__(self, 
-                 session=None, 
-                 connection_class = None, 
-                 connection=None, 
-                 connector_id=None,
-                 integration_name=None):
+    def __init__(self,
+                 session = None,
+                 connection_class = None,
+                 connection = None,
+                 connector_id = None,
+                 integration_name = None):
 
         self.connection = connection
         self.session = session
@@ -33,8 +33,7 @@ class ConnectionStrategy:
         self.connection_class = connection_class
 
         if connector_id:
-            self.set_connection(connector_id=connector_id, check_perms=False)
-
+            self.set_connection(connector_id = connector_id, check_perms = False)
 
     def set_class(self):
         # The Context is that for some of the storage ones with similar patterns we use the strategy pattern
@@ -50,7 +49,6 @@ class ConnectionStrategy:
         else:
             self.connection_class = CONNECTIONS_MAPPING[self.connection.integration_name]
 
-
     def get_client(self):
         if not self.connection:
             raise Exception("connection object or connector_id must be supplied at init")
@@ -61,49 +59,49 @@ class ConnectionStrategy:
 
         return connector.get_client()
 
-
-    def set_connection(self, connector_id=None, check_perms=None):
+    def set_connection(self, connector_id = None, check_perms = None):
         if not connector_id: return
 
         self.connection_operations = Connection_Operations(
-            session=self.session,
-            member=None,
-            connection_id=connector_id
+            session = self.session,
+            member = None,
+            connection_id = connector_id
         )
         self.connection = self.connection_operations.get_existing_connection(connector_id)
         if check_perms:
             self.connection_operations.validate_existing_connection_id_permissions()
 
-
-    def build_auth_data(self, input=None):
+    def build_auth_data(self, input = None):
         if input and input.get('integration_name'):
             self.integration_name = input.get('integration_name')
 
         auth_data = {
             'endpoint_url': self.connection.private_host,
-            'client_email':  self.connection.account_email,
+            'client_email': self.connection.account_email,
             'client_id': self.connection.private_id,
             'client_secret': self.connection_operations.get_secret(),
             'disabled_ssl_verify': self.connection.disabled_ssl_verify,
             'project_id': self.connection.project_id_external,
+            'aws_v4_signature': self.connection.aws_v4_signature,
         }
         auth_data_to_input = {
-            'endpoint_url' : 'private_host',
-            'client_email' : 'account_email',
-            'client_id' : 'private_id',
-            'client_secret' : 'private_secret',
-            'project_id' : 'project_id_external'
+            'endpoint_url': 'private_host',
+            'client_email': 'account_email',
+            'client_id': 'private_id',
+            'client_secret': 'private_secret',
+            'project_id': 'project_id_external',
+            'aws_v4_signature': 'aws_v4_signature'
         }
         if input:
             for key, value in auth_data.items():
                 input_value = input.get(auth_data_to_input.get(key))
+                print('ley', key, value)
                 if input_value:
-                    auth_data[value] = input_value
+                    auth_data[key] = input_value
 
         return auth_data
 
-
-    def get_connector(self, connector_id=None, input=None, check_perms=True):
+    def get_connector(self, connector_id = None, input = None, check_perms = True):
         """
             input is a Diffgram input dict, overrides preset values
             Process
@@ -123,12 +121,11 @@ class ConnectionStrategy:
 
         auth_data = self.build_auth_data(input)
         config_data = {'project_string_id': self.connection.project.project_string_id}
-        
+
         self.set_class()
-        connector_instance = self.connection_class(auth_data=auth_data, config_data=config_data)
+        connector_instance = self.connection_class(auth_data = auth_data, config_data = config_data)
 
         return connector_instance, True
-
 
     @staticmethod
     def add_event_data_to_input(input, session, connector_id):
