@@ -32,11 +32,20 @@ class ActionRunner:
     category: str
     description: str
     trigger_data: ActionTrigger
+<<<<<<< HEAD
+=======
+    session: Session
+>>>>>>> 59dd34d9a54feb49c3ef827b32b90b312f8c902d
     precondition: ActionCondition
     completion_condition_data: ActionCompleteCondition
     action_run: ActionRun
 
+<<<<<<< HEAD
     def __init__(self, action = None, event_data: dict = None):
+=======
+    def __init__(self, session, action = None, event_data: dict = None):
+        self.session = session
+>>>>>>> 59dd34d9a54feb49c3ef827b32b90b312f8c902d
         self.action = action
         self.event_data = event_data
         self.log = regular_log.default()
@@ -117,6 +126,7 @@ class ActionRunner:
         Finally it calls `declare_action_complete` or `declare_action_failed` depending on outcome
         :return:
         """
+<<<<<<< HEAD
         with sessionMaker.session_scope_threaded() as session:
             self.action_run = ActionRun.new(
                 session = session,
@@ -146,6 +156,37 @@ class ActionRunner:
                 self.declare_action_complete(session, output)
             else:
                 self.declare_action_failed(session)
+=======
+        session = self.session
+        self.action_run = ActionRun.new(
+            session = session,
+            workflow_id = self.action.workflow_id,
+            action_id = self.action.id,
+            project_id = self.action.project_id,
+            workflow_run_id = None,
+            file_id = None
+        )
+
+        allow = self.execute_pre_conditions(session)
+
+        if not allow:
+            return
+        try:
+            output = self.execute_action(session)
+        except Exception as e:
+            msg = traceback.format_exc()
+            logger.error(msg)
+            self.log['error']['trace'] = msg
+            self.declare_action_failed(session)
+            return
+        if output:
+            if isinstance(output, dict):
+                self.action_run.output = output
+
+            self.declare_action_complete(session, output)
+        else:
+            self.declare_action_failed(session)
+>>>>>>> 59dd34d9a54feb49c3ef827b32b90b312f8c902d
 
     def declare_action_failed(self, session: Session) -> None:
         Event.new(
