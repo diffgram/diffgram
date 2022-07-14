@@ -1,8 +1,17 @@
-# OPEN CORE - ADD
-try:
-    from methods.regular.regular_api import *
-except:
-    from default.methods.regular.regular_api import *
+import datetime, time
+from shared.communicate.email import communicate_via_email
+from dataclasses import dataclass, field
+from shared.database.user import User
+from shared.database.project import Project
+from shared.database.task.task import Task
+from typing import Any
+from shared.regular import regular_log
+from shared.regular import regular_input
+from shared.regular.regular_member import get_member
+from shared.database.event.event import Event
+from shared.database.source_control.file import File
+from shared.settings import settings
+from flask import request
 
 try:
     # The walrus service doesn't have task_complete
@@ -400,6 +409,10 @@ class Annotation_Update():
         }},
         {'bounds_lonlat': {
             'kind': list,
+            'required': False
+        }},
+        {'score': {
+            'kind': float,
             'required': False
         }},
 
@@ -1156,6 +1169,7 @@ class Annotation_Update():
                 radius = input['radius'],
                 bounds = input['bounds'],
                 bounds_lonlat = input['bounds_lonlat'],
+                score = input['score'],
             )
 
     def get_min_coordinates_instance(self, instance):
@@ -1327,7 +1341,8 @@ class Annotation_Update():
                         coords = None,
                         radius = None,
                         bounds = None,
-                        bounds_lonlat = None
+                        bounds_lonlat = None,
+                        score = None
                         ):
         """
         Assumes a "system" level context
@@ -1428,6 +1443,7 @@ class Annotation_Update():
             'radius': radius,
             'bounds': bounds,
             'bounds_lonlat': bounds_lonlat,
+            'score' : score
         }
         if overwrite_existing_instances and id is not None:
             self.instance = self.session.query(Instance).filter(Instance.id == id).first()

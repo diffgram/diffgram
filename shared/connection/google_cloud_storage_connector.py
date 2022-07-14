@@ -5,20 +5,21 @@ import threading
 import logging
 import traceback
 
+from shared.regular.regular_api import *
+
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from google.cloud import storage
 from google.oauth2 import service_account
 from shared.helpers import sessionMaker
-from methods.input import packet
+from shared.ingest import packet
 from pathlib import Path
 from shared.regular import regular_input
 from shared.regular import regular_log
-from methods.export.export_view import export_view_core
+from shared.export.export_view import export_view_core
 from shared.database.export import Export
 from shared.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.database.project import Project
 from shared.database.event.event import Event
-from shared.database.auth.member import Member
 
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
@@ -71,7 +72,7 @@ class GoogleCloudStorageConnector(Connector):
     def connect(self):
         log = regular_log.default()
         if 'project_id' not in self.auth_data or \
-                (self.auth_data['project_id'] is '' or self.auth_data['project_id'] is None):
+                (self.auth_data['project_id'] == '' or self.auth_data['project_id'] is None):
             log['error']['client_project'] = "ValueError: Client project not set: pass an explicit project."
             return {'log': log}
 

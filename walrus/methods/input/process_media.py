@@ -1470,6 +1470,8 @@ class Process_Media():
             return
         if input.file_id is None and input.file is not None:
             input.file_id = input.file.id
+
+        logger.debug(f'Success Processing Input: {input.id} {input.mode} - {input.type}')
         Event.new_deferred(
             session = self.session,
             kind = 'input_file_uploaded',

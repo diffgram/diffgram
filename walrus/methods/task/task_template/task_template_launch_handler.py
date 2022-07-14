@@ -4,14 +4,8 @@ import threading
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.task.job.job_launch import JobLaunchQueue, JobLaunch
 from methods.regular.regular_api import logger
-from methods.task.task_template.task_template_after_launch_strategies.labelbox_task_template_after_launch_strategy import \
-    LabelboxTaskTemplateAfterLaunchStrategy
 from methods.task.task_template.task_template_after_launch_strategies.standard_task_template_after_launch_strategy import \
     StandardTaskTemplateAfterLaunchStrategy
-from methods.task.task_template.task_template_after_launch_strategies.datasaur_task_template_after_launch_strategy import \
-    DatasaurTaskTemplateAfterLaunchStrategy
-from methods.task.task_template.task_template_after_launch_strategies.scale_ai_task_template_after_launch_strategy import \
-    ScaleAITaskTemplateAfterLaunchStrategy
 from shared.utils.task import task_new
 from shared.settings import settings
 from shared.regular import regular_log
@@ -225,22 +219,10 @@ class AfterLaunchControl:
             interface_connection = self.task_template.interface_connection
             logger.debug(f"integration name is {interface_connection.integration_name}")
             # If task template has an integration with labelbox. Change the after launch strategy.
-            if interface_connection.integration_name == 'labelbox':
-                strategy = LabelboxTaskTemplateAfterLaunchStrategy(
-                    session=self.session,
-                    task_template=self.task_template,
-                    log=self.log
-                )
-            if interface_connection.integration_name == 'datasaur':
-                strategy = DatasaurTaskTemplateAfterLaunchStrategy(
-                    session=self.session,
-                    task_template=self.task_template,
-                    log=self.log
-                )
-            if interface_connection.integration_name == 'scale_ai':
-                strategy = ScaleAITaskTemplateAfterLaunchStrategy(
-                    session=self.session,
-                    task_template=self.task_template,
-                    log=self.log
-                )
+            #if interface_connection.integration_name == 'scale_ai':
+            #    strategy = ScaleAITaskTemplateAfterLaunchStrategy(
+            #        session=self.session,
+            #        task_template=self.task_template,
+            #        log=self.log
+            #    )
         return strategy

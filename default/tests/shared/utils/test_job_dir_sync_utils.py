@@ -41,7 +41,7 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
             {
                 'project': project
             },
-            session=self.session
+            session = self.session
         )
         directory = data_mocking.create_directory({
             'project': project,
@@ -50,14 +50,14 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
         }, self.session)
         log = regular_log.default()
         sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-            session=self.session,
-            log=log,
-            job=job
+            session = self.session,
+            log = log,
+            job = job
         )
         sync_manager.add_file_into_job(
             file,
             directory,
-            create_tasks=True
+            create_tasks = True
         )
         commit_with_rollback(self.session)
 
@@ -77,7 +77,7 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
         sync_manager.add_file_into_job(
             file,
             directory,
-            create_tasks=True
+            create_tasks = True
         )
         task = self.session.query(Task).filter(
             Task.job_id == job.id
@@ -85,12 +85,12 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
         self.assertTrue(task.first() is not None)
         commit_with_rollback(self.session)
         # Retest for case of an existing file/task.
-        mngr = SyncEventManager.create_sync_event_and_manager(session=self.session, status='started')
+        mngr = SyncEventManager.create_sync_event_and_manager(session = self.session, status = 'started')
         sync_manager.add_file_into_job(
             file,
             directory,
-            create_tasks=True,
-            sync_event_manager=mngr
+            create_tasks = True,
+            sync_event_manager = mngr
         )
         task = self.session.query(Task).filter(
             Task.job_id == job.id
@@ -105,14 +105,14 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
                 'project': project,
                 'status': 'active'
             },
-            session=self.session
+            session = self.session
         )
         job2 = data_mocking.create_job(
             {
                 'project': project,
                 'status': 'active'
             },
-            session=self.session
+            session = self.session
         )
         directory = data_mocking.create_directory({
             'project': project,
@@ -128,15 +128,15 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
                                             )
         log = regular_log.default()
         sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-            session=self.session,
-            log=log,
-            job=None
+            session = self.session,
+            log = log,
+            job = None
         )
         sync_manager._JobDirectorySyncManager__sync_all_jobs_from_dir(
             file,
             directory,
             directory,
-            create_tasks=True
+            create_tasks = True
         )
 
         dir_link = self.session.query(WorkingDirFileLink).filter(WorkingDirFileLink.file_id == file.id,
@@ -163,7 +163,7 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
                 'project': project,
                 'status': 'active'
             },
-            session=self.session
+            session = self.session
         )
         directory = data_mocking.create_directory({
             'project': project,
@@ -177,16 +177,16 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
         dir_list = [
             {'directory_id': directory.id, 'nickname': directory.nickname, 'selected': 'sync'}
         ]
-        job.update_attached_directories(self.session, dir_list, delete_existing=True)
+        job.update_attached_directories(self.session, dir_list, delete_existing = True)
         self.session.add(job)
         commit_with_rollback(self.session)
         sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-            session=self.session,
-            log=log,
-            job=job,
-            directory=directory
+            session = self.session,
+            log = log,
+            job = job,
+            directory = directory
         )
-        sync_manager.remove_directory_from_all_attached_jobs(soft_delete=False)
+        sync_manager.remove_directory_from_all_attached_jobs(soft_delete = False)
         commit_with_rollback(self.session)
         self.session.flush()
         attachments = job.get_attached_dirs(self.session)
@@ -200,7 +200,7 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
                 'project': project,
                 'status': 'active'
             },
-            session=self.session
+            session = self.session
         )
         directory = data_mocking.create_directory({
             'project': project,
@@ -214,16 +214,16 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
         dir_list = [
             {'directory_id': directory.id, 'nickname': directory.nickname, 'selected': 'sync'}
         ]
-        job.update_attached_directories(self.session, dir_list, delete_existing=True)
+        job.update_attached_directories(self.session, dir_list, delete_existing = True)
         self.session.add(job)
         commit_with_rollback(self.session)
         sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-            session=self.session,
-            log=log,
-            job=job,
-            directory=directory
+            session = self.session,
+            log = log,
+            job = job,
+            directory = directory
         )
-        sync_manager.remove_job_from_all_dirs(soft_delete=False)
+        sync_manager.remove_job_from_all_dirs(soft_delete = False)
         commit_with_rollback(self.session)
         self.session.flush()
         directory_attachments = self.session.query(JobWorkingDir).filter(
@@ -238,7 +238,7 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
                 'project': project,
                 'status': 'active'
             },
-            session=self.session
+            session = self.session
         )
         directory = data_mocking.create_directory({
             'project': project,
@@ -252,13 +252,13 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
         dir_list = [
             {'directory_id': directory.id, 'nickname': directory.nickname, 'selected': 'sync'}
         ]
-        job.update_attached_directories(self.session, dir_list, delete_existing=True)
+        job.update_attached_directories(self.session, dir_list, delete_existing = True)
         self.session.add(job)
         commit_with_rollback(self.session)
         sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-            session=self.session,
-            log=log,
-            job=job,
+            session = self.session,
+            log = log,
+            job = job,
         )
         sync_manager.create_task_from_file(file)
         commit_with_rollback(self.session)
@@ -276,7 +276,7 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
                 'project': project,
                 'status': 'active'
             },
-            session=self.session
+            session = self.session
         )
         directory = data_mocking.create_directory({
             'project': project,
@@ -290,16 +290,16 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
         dir_list = [
             {'directory_id': directory.id, 'nickname': directory.nickname, 'selected': 'sync'}
         ]
-        job.update_attached_directories(self.session, dir_list, delete_existing=True)
+        job.update_attached_directories(self.session, dir_list, delete_existing = True)
         self.session.add(job)
         commit_with_rollback(self.session)
         sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-            session=self.session,
-            log=log,
-            job=job,
-            directory=directory
+            session = self.session,
+            log = log,
+            job = job,
+            directory = directory
         )
-        sync_manager.add_file_to_all_jobs(file, create_tasks=True)
+        sync_manager.add_file_to_all_jobs(file, create_tasks = True)
         commit_with_rollback(self.session)
         self.session.flush()
         task = self.session.query(Task).filter(
@@ -316,7 +316,7 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
                 'project': project,
                 'status': 'active'
             },
-            session=self.session
+            session = self.session
         )
         directory1 = data_mocking.create_directory({
             'project': project,
@@ -340,17 +340,17 @@ class TestJobDirSyncUtils(testing_setup.DiffgramBaseTestCase):
             {'directory_id': directory1.id, 'nickname': directory1.nickname, 'selected': 'sync'},
             {'directory_id': directory2.id, 'nickname': directory2.nickname, 'selected': 'sync'}
         ]
-        job.update_attached_directories(self.session, dir_list, delete_existing=True)
+        job.update_attached_directories(self.session, dir_list, delete_existing = True)
         self.session.add(job)
         self.session.add(directory1)
         self.session.add(directory2)
         commit_with_rollback(self.session)
         sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-            session=self.session,
-            log=log,
-            job=job,
+            session = self.session,
+            log = log,
+            job = job,
         )
-        sync_manager.create_file_links_for_attached_dirs(create_tasks=True)
+        sync_manager.create_file_links_for_attached_dirs(create_tasks = True)
         commit_with_rollback(self.session)
         self.session.flush()
         dir_link1 = self.session.query(WorkingDirFileLink).filter(WorkingDirFileLink.file_id == file1.id,

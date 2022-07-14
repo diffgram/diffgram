@@ -1,11 +1,14 @@
 # OPENCORE - ADD
-try:
-    from methods.regular.regular_api import *
-except:
-    from default.methods.regular.regular_api import *
-
+from shared.regular import regular_log, regular_input
+from shared.settings import settings
+from werkzeug.exceptions import Forbidden
 from shared.database.connection.connection import Connection
+from shared.permissions.project_permissions import Project_permissions
+from shared.database.project import Project
 from cryptography.fernet import Fernet
+from shared.shared_logger import get_shared_logger
+
+logger = get_shared_logger()
 
 connection_spec_list = [
 

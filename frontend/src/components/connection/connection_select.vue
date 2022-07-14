@@ -222,7 +222,8 @@
 
             </button_with_menu>
             <v-card-text class="d-flex">
-              <v-img :src="vendor_images[connection.integration_name].image" width="45" height="65px"></v-img>
+              <v-img v-if="vendor_images[connection.integration_name]"
+                     :src="vendor_images[connection.integration_name].image" width="45" height="65px"></v-img>
             </v-card-text>
             <v-card-title class="text-center vendor-text d-flex justify-center align-center align-content-center">
               {{connection.name}}

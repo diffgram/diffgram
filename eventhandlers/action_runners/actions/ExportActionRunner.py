@@ -1,15 +1,28 @@
-from action_runners.ActionRunner import ActionRunner
+from action_runners.base.ActionRunner import ActionRunner
 from shared.shared_logger import get_shared_logger
 from shared.regular.regular_log import log_has_error
 from shared.export.export_create import create_new_export
 from shared.database.action.action import ActionKinds
 from shared.database.task.job.job import Job
+from sqlalchemy.orm import Session
+from action_runners.base.ActionTrigger import ActionTrigger
+from action_runners.base.ActionCondition import ActionCondition
+from action_runners.base.ActionCompleteCondition import ActionCompleteCondition
+
 logger = get_shared_logger()
 
 
 class ExportActionRunner(ActionRunner):
-    def execute_pre_conditions(self, session) -> bool:
-        event_name = self.action.condition_data.get('event_name')
+    public_name = 'JSON Export'
+    description = 'Generate JSON Export'
+    icon = 'https://www.svgrepo.com/show/46774/export.svg'
+    kind = 'export'
+    trigger_data = ActionTrigger(default_event = 'task_completed', event_list = ["task_completed", "action_completed"])
+    precondition = ActionCondition(default_event = 'all_tasks_completed', event_list = ["all_tasks_completed"])
+    completion_condition_data = ActionCompleteCondition(default_event = 'export_generate_success', event_list = ["export_generate_success"])
+
+    def execute_pre_conditions(self, session: Session) -> bool:
+        event_name = self.action.precondition.get('event_name')
         if event_name is None:
             return True
         if event_name == 'all_tasks_completed':
@@ -24,14 +37,16 @@ class ExportActionRunner(ActionRunner):
                     logger.info('Pre condition pass. Task template is completed.')
                     return True
                 else:
-                    logger.warning(f'Pre condition failed. Task template not completed. Status is: {task_template.status}')
+                    logger.warning(
+                        f'Pre condition failed. Task template not completed. Status is: {task_template.status}')
                     return False
             else:
-                logger.warning(f'Previous Action kind: {prev_action.kind} not applicable to precondition. Stopping execution.')
+                logger.warning(
+                    f'Previous Action kind: {prev_action.kind} not applicable to precondition. Stopping execution.')
                 return False
         return False
 
-    def execute_action(self, session) -> bool:
+    def execute_action(self, session: Session) -> bool:
         """
             Creates a task from the given file_id in the given task template ID.
             :return: True if access was succesfull false in other case.
@@ -61,5 +76,6 @@ class ExportActionRunner(ActionRunner):
         )
         if log_has_error(log):
             self.declare_action_failed(session)
-            return True
+            return False
         logger.info(f'Export: generated successfully.')
+        return True

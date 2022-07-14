@@ -5,7 +5,7 @@
       return-object
 
       data-cy="label_schema_selector"
-      :disabled="schema_list_loading"
+      :disabled="schema_list_loading || disabled"
       @change="on_change_schema"
       prepend-icon="mdi-shape-plus"
       item-value="id"
@@ -23,13 +23,17 @@
 </template>
 
 <script>
-import {get_schemas} from "@/services/labelServices";
+import { get_schemas } from "@/services/labelServices";
 
 export default {
   name: "label_schema_selector",
   props:{
     project_string_id:{
       required: true
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     },
     initial_schema:{
       default: undefined
@@ -47,7 +51,6 @@ export default {
       this.selected_schema = this.schema_list[0];
     }
     this.on_change_schema(this.selected_schema)
-
   },
   data:function (){
     return{

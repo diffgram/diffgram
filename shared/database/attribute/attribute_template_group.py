@@ -67,8 +67,8 @@ class Attribute_Template_Group(Base):
         if schema is None:
             raise Exception("schema Required")
 
-        if member is None:
-            raise Exception("member Required")
+        # if member is None:
+        #     raise Exception("member Required")
 
         attribute_template_group = Attribute_Template_Group(
             project = project,
@@ -79,7 +79,7 @@ class Attribute_Template_Group(Base):
 
         schema.add_attribute_group(session = session,
                                    attribute_group_id = attribute_template_group.id,
-                                   member_created_id = member.id)
+                                   member_created_id = None)
 
         return attribute_template_group
 
@@ -358,7 +358,7 @@ class Attribute_Template_Group(Base):
             return_kind = "objects"
         )
 
-        if attribute_template_list is None or len(attribute_template_list) is 0:
+        if attribute_template_list == None or len(attribute_template_list) == 0:
             return children
 
         # TODO handle serialzing children

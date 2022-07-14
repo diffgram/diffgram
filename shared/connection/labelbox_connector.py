@@ -1,5 +1,6 @@
 # OPENCORE - ADD
-from methods.regular.regular_api import *
+from shared.regular.regular_api import *
+
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from shared.regular import regular_log
 from dataclasses import dataclass
@@ -10,14 +11,11 @@ from shared.annotation import Annotation_Update
 import hmac
 import hashlib
 from shared.database.external.external import ExternalMap
-from shared.database.task.job.job import Job
 from shared.database.task.job.job_working_dir import JobWorkingDir
 from shared.utils.task import task_complete
-from methods.connectors.connectors import ConnectorManager
-from methods.input.packet import enqueue_packet
+from shared.ingest import packet
 from shared.regular.regular_log import result_has_error
 from shared.regular import regular_log
-from shared.database.auth.member import Member
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.attribute.attribute_template import Attribute_Template
 from shared.database.attribute.attribute_template_group_to_file import Attribute_Template_Group_to_File
@@ -921,7 +919,7 @@ class LabelboxConnector(Connector):
                 'height': data_row.media_attributes.get('height')
             }
 
-            diffgram_input = enqueue_packet(project_string_id = diffgram_dataset.project.project_string_id,
+            diffgram_input = packet.enqueue_packet(project_string_id = diffgram_dataset.project.project_string_id,
                                             session = session,
                                             media_url = data_row.row_data,
                                             media_type = media_type,
@@ -1210,7 +1208,7 @@ class LabelboxConnector(Connector):
     @with_connection
     def fetch_data(self, opts):
         """
-            This function routes any action_type to the correct S3 connector actions.
+            This function routes any action_type to the correct connector actions.
         :return: Object
         """
         if 'action_type' not in opts:
@@ -1354,7 +1352,7 @@ class LabelBoxSyncManager:
                 instance_list.append(diffgram_label_instance)
             count += 1
         if instance_list and video_data is None:
-            enqueue_packet(project_string_id = self.task_template.project.project_string_id,
+            packet.enqueue_packet(project_string_id = self.task_template.project.project_string_id,
                            session = self.session,
                            media_url = None,
                            media_type = 'image',
@@ -1389,7 +1387,7 @@ class LabelBoxSyncManager:
                                                                       diffgram_task,
                                                                       video_data = video_data,
                                                                       frame_packet_map = frame_packet_map)
-        enqueue_packet(project_string_id = self.task_template.project.project_string_id,
+        packet.enqueue_packet(project_string_id = self.task_template.project.project_string_id,
                        session = self.session,
                        media_url = None,
                        media_type = 'video',
@@ -1831,54 +1829,58 @@ class LabelBoxSyncManager:
                 self.add_files_to_labelbox_dataset(diffgram_files = file_list, labelbox_dataset = labelbox_dataset)
 
 
-@routes.route('/api/walrus/v1/webhooks/labelbox-webhook', methods = ['POST'])
-def labelbox_web_hook_manager():
-    """
-        Webhook for receiving data on Diffgram once finished on labelbox.
-        # NOTE: Labelbox does not supportText or dropdown classifications in export for videos.
-    :return:
-    """
-    # First check if secret is correct
-    payload = request.data
-    secret = settings.LABEL_BOX_SECRET
-    log = regular_log.default()
-    computed_signature = hmac.new(bytearray(secret.encode('utf-8')), msg = payload,
-                                  digestmod = hashlib.sha1).hexdigest()
-    if request.headers['X-Hub-Signature'] != f"sha1={computed_signature}":
-        error = 'Error: computed_signature does not match signature provided in the headers'
-        logger.error('Error: computed_signature does not match signature provided in the headers')
-        return error
-    with sessionMaker.session_scope() as session:
-        labelbox_event = request.headers['X-Labelbox-Event']
-        payload = request.json
-        logger.debug(f"Payload for labelbox webhooks: {payload}")
-        labelbox_project_id = payload['project']['id']
-        project_external_mapping = ExternalMap.get(
-            session = session,
-            external_id = labelbox_project_id,
-            type = 'labelbox',
-            diffgram_class_string = 'task_template'
-        )
-        if project_external_mapping:
-            task_template = Job.get_by_id(session, project_external_mapping.job_id)
-            if task_template:
-                connection = task_template.interface_connection
-                logger.debug(f"Connection for labelbox: {connection}")
-                connector_manager = ConnectorManager(connection = connection, session = session)
-                connector = connector_manager.get_connector_instance()
-                connector.connect()
-                sync_manager = LabelBoxSyncManager(
-                    session = session,
-                    task_template = task_template,
-                    labelbox_project = None,
-                    log = log,
-                    labelbox_connector = connector
-                )
-                sync_manager.handle_task_creation_hook(payload)
-                return jsonify({'message': 'OK.'})
-            else:
-                log['error']['task_template'] = 'Task template not found.'
-                return jsonify(log)
-        else:
-            log['error']['labelbox_project'] = 'Labelbox external mapping not found.'
-            return jsonify(log)
+
+# Deprecated
+# This would belong in a different area if we brought it back not in connector which is in shared now
+#@routes.route('/api/walrus/v1/webhooks/labelbox-webhook', methods = ['POST'])
+#def labelbox_web_hook_manager():
+#    """
+#        Webhook for receiving data on Diffgram once finished on labelbox.
+#        # NOTE: Labelbox does not supportText or dropdown classifications in export for videos.
+#    :return:
+#    """
+#    # First check if secret is correct
+#    payload = request.data
+#    secret = settings.LABEL_BOX_SECRET
+#    log = regular_log.default()
+#    computed_signature = hmac.new(bytearray(secret.encode('utf-8')), msg = payload,
+#                                  digestmod = hashlib.sha1).hexdigest()
+#    if request.headers['X-Hub-Signature'] != f"sha1={computed_signature}":
+#        error = 'Error: computed_signature does not match signature provided in the headers'
+#        logger.error('Error: computed_signature does not match signature provided in the headers')
+#        return error
+#    with sessionMaker.session_scope() as session:
+#        labelbox_event = request.headers['X-Labelbox-Event']
+#        payload = request.json
+#        logger.debug(f"Payload for labelbox webhooks: {payload}")
+#        labelbox_project_id = payload['project']['id']
+#        project_external_mapping = ExternalMap.get(
+#            session = session,
+#            external_id = labelbox_project_id,
+#            type = 'labelbox',
+#            diffgram_class_string = 'task_template'
+#        )
+#        if project_external_mapping:
+#            task_template = Job.get_by_id(session, project_external_mapping.job_id)
+#            if task_template:
+#                connection = task_template.interface_connection
+#                logger.debug(f"Connection for labelbox: {connection}")
+#                connector = ConnectionStrategy(connection_class = LabelboxConnector,
+#                                               connection=connection, 
+#                                               session=session).get_connector()
+#                connector.connect()
+#                sync_manager = LabelBoxSyncManager(
+#                    session = session,
+#                    task_template = task_template,
+#                    labelbox_project = None,
+#                    log = log,
+#                    labelbox_connector = connector
+#                )
+#                sync_manager.handle_task_creation_hook(payload)
+#                return jsonify({'message': 'OK.'})
+#            else:
+#                log['error']['task_template'] = 'Task template not found.'
+#                return jsonify(log)
+#        else:
+#            log['error']['labelbox_project'] = 'Labelbox external mapping not found.'
+#            return jsonify(log)

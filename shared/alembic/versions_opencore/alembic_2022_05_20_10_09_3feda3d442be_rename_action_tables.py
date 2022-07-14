@@ -22,29 +22,6 @@ branch_labels = None
 depends_on = None
 
 
-def create_default_action_templates(session):
-    Action_Template.new(
-        session = session,
-        public_name = 'Human Labeling Task',
-        description = 'Add tasks to a task template',
-        icon = 'https://www.svgrepo.com/show/376121/list-task.svg',
-        kind = 'create_task',
-        category = None,
-        trigger_data = {'trigger_event_name': 'input_file_uploaded'},
-        condition_data = {'event_name': None},
-        completion_condition_data = {'event_name': 'task_completed'},
-    )
-    Action_Template.new(
-        session = session,
-        public_name = 'JSON Export',
-        description = 'Generate JSON Export',
-        icon = 'https://www.svgrepo.com/show/46774/export.svg',
-        kind = 'export',
-        category = None,
-        trigger_data = {'trigger_event_name': 'task_completed'},
-        condition_data = {'event_name': 'all_tasks_completed'},
-        completion_condition_data = {'event_name': 'export_generate_success'},
-    )
 
 
 def upgrade():
@@ -96,8 +73,6 @@ def upgrade():
             act.template_id = None
             session.add(act)
         session.delete(temp)
-
-    create_default_action_templates(session)
 
     op.add_column('event', sa.Column('action_id', sa.Integer(), sa.ForeignKey('action.id')))
     op.add_column('event', sa.Column('workflow_id', sa.Integer(), sa.ForeignKey('workflow.id')))
