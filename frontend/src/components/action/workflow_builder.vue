@@ -255,7 +255,7 @@ export default Vue.extend({
       },
       selected_action: {
         deep: true,
-        handler: function(new_val, old_val){
+        handler: function(new_val, old_val) {
           this.on_action_updated(new_val)
         }
       }
@@ -378,7 +378,7 @@ export default Vue.extend({
             result.action.icon,
             result.action.kind,
             result.action.trigger_data,
-            result.action.condition_data,
+            result.action.precondition,
             result.action.description,
             result.action.completion_condition_data
           )

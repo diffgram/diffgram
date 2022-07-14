@@ -75,6 +75,7 @@ class TextFile(Base):
             'original_filename': self.original_filename,
             'soft_delete': self.soft_delete,
             'url_signed': self.url_signed,
+            'url_signed_blob_path': self.url_signed_blob_path,
             'id': self.id,
             'is_inference': self.is_inference,
             'tokens_url_signed': self.tokens_url_signed,

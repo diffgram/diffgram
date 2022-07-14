@@ -1,18 +1,18 @@
-# OPENCORE - ADD
-try:
-    from methods.regular.regular_api import *
-except:
-    from default.methods.regular.regular_api import *
-
+import random
+import datetime
+from shared.shared_logger import get_shared_logger
+from shared.regular import regular_log
+from shared.database.event.event import Event
 from shared.utils.task import task_file_observers
-
+from shared.regular.regular_member import get_member
 from shared.utils.sync_events_manager import SyncEventManager
 from shared.database.task.task_event import TaskEvent
+from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.utils.task.task_update_manager import Task_Update
 from shared.database.task.task import TASK_STATUSES
 from shared.utils.task import task_assign_reviewer
-import random
 
+logger = get_shared_logger()
 
 def trigger_task_complete_sync_event(session, task, job, log):
     sync_event_manager = SyncEventManager.create_sync_event_and_manager(

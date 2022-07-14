@@ -18,21 +18,6 @@ class Test():
 		self.log = regular_log.default()
 		self.try_to_commit = regular_methods.try_to_commit
 
-	# WIP not updated
-	def __del__(self):
-		# Clean up
-		# actually in this case we don't want to delete input because
-		# we expect that process_media will handle that
-		"""
-		try:
-			self.session.delete(self.input)
-		except:
-			# can't delete if it's not persisted
-			# otherwise this throws funny exception message
-			pass
-		"""
-
-
 
 	def mock_decryption(self):
 
@@ -74,12 +59,6 @@ class Test():
 
 
 
-	def mock_date(self):
-		pass
-
-		# TODO mock date and attach to report?
-
-
 	def mock_source(self, id):
 		"""
 		"""
@@ -99,9 +78,6 @@ class Test():
 	
 	def test_create_new_source(self):
 		"""
-		Feb 5, 2020
-		 So one issue is this misses some of validation that
-		 front end stuff does...
 		"""
 	
 		source_id = None

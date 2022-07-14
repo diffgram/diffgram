@@ -242,23 +242,22 @@
 
       }
     },
-    created() {
-
-    },
     mounted() {
       if (this.set_from_id && this.$store.state.project.current.directory_list_filtered) {
         this.current_directory = this.directory_list_filtered.find(
           x => {return x.directory_id == this.set_from_id});
         if(this.change_on_mount){
-
           this.$emit('change_directory', this.current_directory)
         }
       } else {
         if(this.$props.initial_dir_from_state){
           this.current_directory = this.$store.state.project.current_directory;
         }
+        if (this.set_from_id && this.$store.state.project.current.directory_list) {
+          this.current_directory = this.directory_list_filtered.find(
+            x => {return x.directory_id == this.set_from_id});
+        }
         if(this.change_on_mount){
-
           this.$emit('change_directory', this.current_directory)
         }
         // there can be a timing issue where this won't get set

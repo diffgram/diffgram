@@ -1,18 +1,18 @@
 # OPENCORE - ADD
-from methods.regular.regular_api import *
+from shared.regular.regular_api import *
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from dataclasses import dataclass
 from functools import wraps
 from shared.database.external.external import ExternalMap
 from shared.database.task.job.job_working_dir import JobWorkingDir
 from shared.utils.task import task_complete
-from methods.connectors.connectors import ConnectorManager
+from shared.connection.connection_strategy import ConnectionStrategy
 import uuid
 from shared.database.task.job.job_working_dir import JobWorkingDir
 from google.cloud import storage
 import os
 import shutil
-from methods.input.packet import enqueue_packet
+from shared.ingest.packet import enqueue_packet
 from shared.database.connection.connection import Connection
 from shared.utils.task.task_complete import task_complete
 import random
@@ -818,8 +818,7 @@ class DatasaurSyncManager:
 
     def sync_projects_for_task_template(self, task_template):
         connection = task_template.interface_connection
-        connector_manager = ConnectorManager(connection=connection, session=self.session)
-        datasaur_connector = connector_manager.get_connector_instance()
+        datasaur_connector = ConnectionStrategy(connection=connection, session=self.session).get_connector()
         datasaur_connector.connect()
         project_map = ExternalMap.get(
             session = self.session,

@@ -4,7 +4,7 @@ from shared.database.source_control.working_dir import WorkingDir
 from dataclasses import dataclass
 from shared.database.task.job.job_working_dir import JobWorkingDir
 from sqlalchemy.orm import Session
-from methods.input.packet import enqueue_packet
+from shared.ingest.packet import enqueue_packet
 from shared.database.input import Input
 from shared.database.labels.label import Label
 from shared.database.labels.label_schema import LabelSchema
@@ -255,6 +255,9 @@ class DiffgramDataMocker:
             root_files_only = True,
             limit = num_files,
         )
+        if len(files_list) == 0 or len(files_list) < num_files:
+            self.generate_test_data_on_dataset(dataset = mock_dataset, num_files = num_files)
+
         for file in files_list:
             new_file = file_transfer_core(
                 session = self.session,
@@ -441,8 +444,9 @@ class DiffgramDataMocker:
         task_template.stat_count_complete = 0
         task_template.allow_reviews = reviews['allow_reviews']
         task_template.review_chance = reviews['review_chance']
-        schema = self.session.query(LabelSchema).filter(LabelSchema.project_id == project.id,
-                                                        LabelSchema.name == 'Default Schema').first()
+
+        schema = LabelSchema.get_default(session = self.session, project_id = project.id)
+
         task_template.label_schema_id = schema.id
         directory = WorkingDir.new_blank_directory(session = self.session)
         task_template.directory = directory
@@ -474,12 +478,23 @@ class DiffgramDataMocker:
                               )
         self.generate_test_data_for_task_templates(project, structure = '1_pass')
 
-    def generate_test_data_for_task_templates(self, project, structure = '1_pass', num_files = NUM_IMAGES, reviews = {
-        "allow_reviews": False,
-        "review_chance": 0
-    }, member = None, name = 'Sample Task Template [Diffgram]') -> Job:
+    def generate_test_data_for_task_templates(
+            self, 
+            project, 
+            structure = '1_pass', 
+            num_files = NUM_IMAGES, 
+            reviews = None, 
+            member = None, 
+            name = 'Sample Task Template [Diffgram]') -> Job:
+
+        if reviews is None:
+            reviews = {
+                "allow_reviews": False,
+                "review_chance": 0
+            }
 
         if structure == '1_pass':
+
             task_template = self.__create_sample_task_template(name, project, reviews, member)
             # Try to get the default dataset.
             input_dir, input_dir_exists = self.generate_sample_dataset(f"Pending [1st pass] {str(time.time())[-5:]}", project=project)

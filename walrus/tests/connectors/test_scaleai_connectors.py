@@ -1,4 +1,4 @@
-from methods.connectors.scale_ai_connector import ScaleAIConnector
+from shared.connection.scale_ai_connector import ScaleAIConnector
 from scaleapi.tasks import Task as ScaleAITask
 from walrus.tests.test_utils import testing_setup
 from shared.tests.test_utils import data_mocking

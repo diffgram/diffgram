@@ -84,6 +84,7 @@ PROJECT_TEXT_FILES_BASE_DIR = "projects/text/"
 PROJECT_PCD_FILES_BASE_DIR = "projects/pcd/"
 PROJECT_GEOSPATIAL_FILES_BASE_DIR = "projects/geospatial/"
 PROJECT_INSTANCES_IMAGES_BASE_DIR = "projects/instances/images/"
+ACTIONS_BASE_DIR = "actions/"
 USER_IMAGES_BASE_DIR = "users/images/"
 EXPORT_DIR = "export/"
 

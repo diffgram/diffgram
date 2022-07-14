@@ -1,7 +1,7 @@
 # OPENCORE - ADD
 from methods.regular.regular_api import *
-from methods.connectors.connector_interface_utils import get_connector  , add_event_data_to_input
-
+from shared.connection.connection_operations import Connection_Operations
+from shared.connection.connection_strategy import ConnectionStrategy
 
 @routes.route('/api/walrus/v1/connectors/<int:connector_id>/fetch-data', methods=['POST'])
 @General_permissions.grant_permission_for(['normal_user'])
@@ -12,12 +12,12 @@ def fetch_data(connector_id):
                                                        spec_list=spec_list)
 
     with sessionMaker.session_scope() as session:
-        connector, success = get_connector(connector_id, session)
+        connector, success = ConnectionStrategy(session=session).get_connector(connector_id)
         if not success:
             return jsonify(connector), 400
 
         # Add relevant data to opts
-        input_data = add_event_data_to_input(input_data, session, connector_id)
+        input_data = ConnectionStrategy.add_event_data_to_input(input_data, session, connector_id)
         connection_result = connector.connect()
         if 'log' in connection_result:
             return jsonify(connection_result), 400
@@ -38,12 +38,12 @@ def put_data(connector_id):
                                                        spec_list=spec_list)
 
     with sessionMaker.session_scope() as session:
-        connector, success = get_connector(connector_id, session)
+        connector, success = ConnectionStrategy(session=session).get_connector(connector_id)
         if not success:
             return jsonify(connector), 400
 
         # Add relevant data to opts
-        input_data = add_event_data_to_input(input_data, session, connector_id)
+        input_data = ConnectionStrategy.add_event_data_to_input(input_data, session, connector_id)
         connection_result = connector.connect()
         if 'log' in connection_result:
             return jsonify(connection_result), 400
@@ -143,7 +143,7 @@ def test_connection_api():
         return jsonify(log=log), 400
     
     with sessionMaker.session_scope() as session:
-        connector, success = get_connector(input['connection_id'], session, input)
+        connector, success = ConnectionStrategy(session=session).get_connector(input['connection_id'], input)
         if not success:
             return jsonify(connector), 400
 

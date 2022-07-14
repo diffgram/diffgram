@@ -78,6 +78,9 @@ celerybeat-schedule
 venv/
 ENV/
 
+# Dev container
+docker-compose-dev.yaml
+
 # Spyder project settings
 .spyderproject
 
@@ -166,3 +169,4 @@ git_ignore/*
 run_dev/*
 
 default/play_and_scripts/client_stats_lb.py
+run_dev_public/*

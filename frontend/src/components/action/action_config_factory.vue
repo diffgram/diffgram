@@ -1,58 +1,52 @@
 <template>
 
   <div style="height: 100%">
-    <create_task_action_config v-if="action.kind === 'create_task'"
-                               :project_string_id="project_string_id"
-                               :actions_list="actions_list"
-                               :display_mode="display_mode"
-                               @action_updated="on_action_updated"
-                               @open_action_selector="$emit('open_action_selector')"
-                               :action="action">
-
-    </create_task_action_config>
-    <export_action_config v-if="action.kind === 'export'"
-                          :prev_action="prev_action"
-                          :display_mode="display_mode"
-                          :actions_list="actions_list"
-                          :project_string_id="project_string_id"
-                          @action_updated="on_action_updated"
-                          @open_action_selector="$emit('open_action_selector')"
-                          :action="action">
-
-    </export_action_config>
+    <h2 class="font-weight-light font-weight-medium" v-if="action">{{action.ordinal + 1}}. {{action.public_name}}</h2>
+    <component :is="selected_action_config"
+               :project_string_id="project_string_id"
+               :actions_list="actions_list"
+               :display_mode="display_mode"
+               @action_updated="on_action_updated"
+               @open_action_selector="$emit('open_action_selector')"
+               :action="action"
+    ></component>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from "vue";
-import axios from '../../services/customInstance';
 import action_step_box from "./action_step_box.vue";
-import create_task_action_config from "./action_configurations/create_task/create_task_action_config";
-import export_action_config from "./action_configurations/export/export_action_config";
-export default Vue.extend({
+import COMPONENTS_KIND_MAPPING from "./component_mapping"
 
+
+export default Vue.extend({
     name: 'action_config_factory',
     components: {
-      action_step_box,
-      create_task_action_config,
-      export_action_config,
-
+      action_step_box
     },
     props: ['action', 'project_string_id', 'actions_list', 'display_mode'],
 
     mounted() {
-
+      console.log('MONTEEEEED', this.selected_action_config)
+      this.set_action_config_component()
     },
 
     data() {
       return {
+
         is_open: true,
         search: '',
+        selected_action_config: null
 
       }
     },
     watch: {
-
+      action:{
+        deep: true,
+        handler: function(){
+          this.set_action_config_component()
+        }
+      }
     },
     computed: {
       prev_action: function(){
@@ -77,6 +71,10 @@ export default Vue.extend({
       }
     },
     methods: {
+      set_action_config_component: function(){
+        this.selected_action_config = COMPONENTS_KIND_MAPPING[this.action.kind]
+        console.log('SETTTT', this.selected_action_config)
+      },
       on_action_updated: function(act){
         this.$emit('action_updated', act)
       },

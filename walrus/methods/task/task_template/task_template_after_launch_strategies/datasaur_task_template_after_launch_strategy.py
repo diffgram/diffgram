@@ -3,7 +3,6 @@ from methods.regular.regular_api import logger
 from methods.task.task_template.task_template_after_launch_strategies.task_template_after_launch_strategy import \
     TaskTemplateAfterLaunchStrategy
 from shared.utils import job_dir_sync_utils
-from methods.connectors.connectors import ConnectorManager
 from shared.database.external.external import ExternalMap
 import uuid
 from methods.task.task_template.task_template_after_launch_strategies.standard_task_template_after_launch_strategy import \
@@ -52,8 +51,7 @@ class DatasaurTaskTemplateAfterLaunchStrategy(TaskTemplateAfterLaunchStrategy):
         datasaur_project = None
         connection = self.task_template.interface_connection
         logger.debug(f"Connection for Datasaur: {connection}")
-        connector_manager = ConnectorManager(connection=connection, session=self.session)
-        connector = connector_manager.get_connector_instance()
+        connector, success = ConnectionStrategy(connection=connection, session=self.session).get_connector()
         connector.connect()
         try:
 
