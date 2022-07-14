@@ -3,16 +3,17 @@ from methods.regular.regular_api import *
 from shared.connection.connection_operations import Connection_Operations
 from shared.connection.connection_strategy import ConnectionStrategy
 
-@routes.route('/api/walrus/v1/connectors/<int:connector_id>/fetch-data', methods=['POST'])
+
+@routes.route('/api/walrus/v1/connectors/<int:connector_id>/fetch-data', methods = ['POST'])
 @General_permissions.grant_permission_for(['normal_user'])
 def fetch_data(connector_id):
     spec_list = [{'opts': dict}, {'project_string_id': str}]
 
-    log, input_data, untrusted_input = regular_input.master(request=request,
-                                                       spec_list=spec_list)
+    log, input_data, untrusted_input = regular_input.master(request = request,
+                                                            spec_list = spec_list)
 
     with sessionMaker.session_scope() as session:
-        connector, success = ConnectionStrategy(session=session).get_connector(connector_id)
+        connector, success = ConnectionStrategy(session = session).get_connector(connector_id)
         if not success:
             return jsonify(connector), 400
 
@@ -29,16 +30,16 @@ def fetch_data(connector_id):
         return jsonify(result), 200
 
 
-@routes.route('/api/walrus/v1/connectors/<int:connector_id>/put-data', methods=['POST'])
+@routes.route('/api/walrus/v1/connectors/<int:connector_id>/put-data', methods = ['POST'])
 @General_permissions.grant_permission_for(['normal_user'])
 def put_data(connector_id):
     spec_list = [{'opts': dict}, {'project_string_id': str}]
 
-    log, input_data, untrusted_input = regular_input.master(request=request,
-                                                       spec_list=spec_list)
+    log, input_data, untrusted_input = regular_input.master(request = request,
+                                                            spec_list = spec_list)
 
     with sessionMaker.session_scope() as session:
-        connector, success = ConnectionStrategy(session=session).get_connector(connector_id)
+        connector, success = ConnectionStrategy(session = session).get_connector(connector_id)
         if not success:
             return jsonify(connector), 400
 
@@ -56,7 +57,7 @@ def put_data(connector_id):
 
 
 @routes.route('/api/walrus/v1/connection/test',
-              methods=['POST'])
+              methods = ['POST'])
 @General_permissions.grant_permission_for(['normal_user'])
 def test_connection_api():
     """
@@ -136,14 +137,14 @@ def test_connection_api():
     ]
 
     log, input, untrusted_input = regular_input.master(
-        request=request,
-        spec_list=spec_list)
+        request = request,
+        spec_list = spec_list)
 
     if len(log["error"].keys()) >= 1:
-        return jsonify(log=log), 400
-    
+        return jsonify(log = log), 400
+
     with sessionMaker.session_scope() as session:
-        connector, success = ConnectionStrategy(session=session).get_connector(input['connection_id'], input)
+        connector, success = ConnectionStrategy(session = session).get_connector(input['connection_id'], input)
         if not success:
             return jsonify(connector), 400
 

@@ -393,6 +393,7 @@ class File(Base, Caching):
         bucket_name = self.bucket_name
         if self.type == "image":
             if self.image:
+                print('regen', file['id'])
                 file['image'] = self.image.serialize_for_source_control(session = session,
                                                                         connection_id = connection_id,
                                                                         bucket_name = bucket_name)

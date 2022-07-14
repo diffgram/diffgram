@@ -1,4 +1,4 @@
-    from flask import current_app
+from flask import current_app
 from flask import jsonify
 from shared.settings import settings
 import traceback

@@ -3,6 +3,7 @@ from EventsConsumer import EventsConsumer
 from ActionConsumer import ActionsConsumer
 from shared.settings import settings
 
+
 class ConsumerCreator:
     connection: pika.BlockingConnection
     channel: pika.adapters.blocking_connection.BlockingChannel
@@ -13,7 +14,7 @@ class ConsumerCreator:
         self.create_consumers()
 
     def create_consumers(self):
-        self.connection = pika.BlockingConnection(
+        self.connection = pika.SelectConnection(
             pika.ConnectionParameters(host = settings.RABBITMQ_HOST,
                                       port = settings.RABBITMQ_PORT,
                                       credentials = pika.PlainCredentials(settings.RABBITMQ_DEFAULT_USER,

@@ -30,6 +30,7 @@ def api_label_schema_list(project_string_id: str):
             member = member,
             log = log,
         )
+        print('AAA', log)
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
 

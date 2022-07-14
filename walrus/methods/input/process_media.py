@@ -1686,9 +1686,12 @@ class Process_Media():
         # Image() subclass
         self.new_image = Image(
             original_filename = self.input.original_filename)
+
+
         self.session.add(self.new_image)
         self.session.flush()
-
+        self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
+                                              str(self.project_id) + "/" + str(self.new_image.id)
         self.try_to_commit()
 
         if self.project:
@@ -1863,9 +1866,6 @@ class Process_Media():
         self._add_input_to_session(parent_input)
 
     def save_raw_image_file(self):
-
-        self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
-                                              str(self.project_id) + "/" + str(self.new_image.id)
 
         # Use original file for jpg and jpeg
         extension = str(self.input.extension).lower()

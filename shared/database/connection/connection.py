@@ -54,6 +54,7 @@ class Connection(Base):
     name = Column(String())
     archived = Column(Boolean, default=False)
     is_active = Column(Boolean, default=False)
+    aws_v4_signature = Column(Boolean, default=False)
 
     # In [project, org, diffgram_wide, future]
     permission_scope = Column(String, default="project")
@@ -71,6 +72,7 @@ class Connection(Base):
     account_email = Column(String())  # ie for Google
     project_id_external = Column(String())  # ie for Google
     # _external because project_id is the internal project_id for Diffgram
+
 
     # Standard items
 

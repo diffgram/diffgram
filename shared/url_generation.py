@@ -8,13 +8,24 @@ from shared.database.image import Image
 from shared.regular import regular_log
 from shared.shared_logger import get_shared_logger
 from shared.database.connection.connection import Connection
-
+from shared.connection.connection_strategy import ConnectionStrategy
+from shared.connection.s3_connector import S3Connector
+from shared.regular.regular_member import get_member
 logger = get_shared_logger()
+
+ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS = ['amazon_aws']
 
 
 def default_url_regenerate(session: Session,
                            blob_object: DiffgramBlobObjectType,
                            new_offset_in_seconds: int) -> [DiffgramBlobObjectType, dict]:
+    """
+        Regenerates signed URL using blob default storage provider from DataTools().
+    :param session:
+    :param blob_object:
+    :param new_offset_in_seconds:
+    :return:
+    """
     log = regular_log.default()
     try:
         blob_object.url_signed = data_tools.build_secure_url(blob_object.url_signed_blob_path, new_offset_in_seconds)
@@ -31,10 +42,40 @@ def default_url_regenerate(session: Session,
     return blob_object, log
 
 
+def get_url_from_connector(connector, params, log):
+    """
+        Gets signed URL from given connector.
+    :param connector:
+    :param params:
+    :param log:
+    :return:
+    """
+    connector.connect()
+    print('params', params)
+    response = connector.fetch_data(params)
+    if response is None or response.get('result') is None:
+        msg = f'Error regenerating URL: {params}. Response: {response}'
+        log['error']['connector_s3_client'] = msg
+        logger.error(msg)
+        return None, log
+    signed_url = response.get('result')
+    return signed_url, log
+
+
 def connection_url_regenerate(session: Session,
                               blob_object: DiffgramBlobObjectType,
                               connection_id: int,
-                              bucket_name: int) -> [DiffgramBlobObjectType, dict]:
+                              bucket_name: int,
+                              new_offset_in_seconds: int) -> [DiffgramBlobObjectType, dict]:
+    """
+        Regenerates signed url from the given connection ID, bucket and blob path.
+    :param session:
+    :param blob_object:
+    :param connection_id:
+    :param bucket_name:
+    :param new_offset_in_seconds:
+    :return:
+    """
     log = regular_log.default()
     connection = Connection.get_by_id(session = session, id = connection_id)
     if connection is None:
@@ -42,9 +83,50 @@ def connection_url_regenerate(session: Session,
         log['error']['connection_id'] = msg
         logger.error(msg)
         return blob_object, log
+    member = get_member(session = session)
+    params = {
+        'bucket_name': bucket_name,
+        'path': blob_object.url_signed_blob_path,
+        'expiration_offset': new_offset_in_seconds,
+        'action_type': 'get_pre_signed_url',
+        'event_data': {
+            'request_user': member.user_id
+        }
+    }
 
-    if connection.integration_name == 's3':
-        s3_connector = get_connector()
+    if connection.integration_name not in ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS:
+        msg = f'Unsupported connection provider for URL regeneration {connection.id}:{connection.integration_name}'
+        log['error']['unsupported'] = msg
+        logger.error(msg)
+        return blob_object, log
+
+    connection_strategy = ConnectionStrategy(
+        connection_class = S3Connector,
+        connector_id = connection_id,
+        session = session)
+
+    client, success = connection_strategy.get_connector(connector_id = connection_id)
+    if not success:
+        msg = f'Failed to get connector for connection {connection_id}'
+        log['error']['connector'] = msg
+        logger.error(msg)
+        return blob_object, log
+    signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+    if regular_log.log_has_error(log):
+        return blob_object, log
+    if regular_log.log_has_error(log):
+        return blob_object, log
+    blob_object.url_signed = signed_url
+
+    # Extra assets (Depending on type)
+    if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path:
+        params['path'] = blob_object.url_signed_thumb_blob_path
+        thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+        if regular_log.log_has_error(log):
+            return blob_object, log
+        blob_object.url_signed_thumb = thumb_signed_url
+
+    return blob_object, log
 
 
 def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
@@ -59,15 +141,28 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
     :param bucket_name:
     :return:
     """
+    print('REGENERATEEE', blob_object.url_signed_blob_path)
     if not blob_object.url_signed_blob_path:
         return
     should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(blob_object, session)
     if should_regenerate is True:
         if connection_id is None and bucket_name is None:
-            default_url_regenerate(
+            logger.info(f'Generate Signed Url with connection {connection_id} on bucket {bucket_name}')
+            blob_object, log = default_url_regenerate(
                 session = session,
                 blob_object = blob_object,
                 new_offset_in_seconds = new_offset_in_seconds
             )
         else:
-            connection_url_regenerate()
+            blob_object, log = connection_url_regenerate(
+                session = session,
+                blob_object = blob_object,
+                connection_id = connection_id,
+                bucket_name = bucket_name,
+                new_offset_in_seconds = new_offset_in_seconds
+            )
+
+        if regular_log.log_has_error(log):
+            raise Exception(f'Failed to regenerate Blob URL {log}')
+
+        return blob_object, log
