@@ -18,7 +18,7 @@ def register_all():
                 runner.update(session = session)
             else:
                 logger.info(f'Registering: {key}')
-                runner = value(action = None, event_data = None)
+                runner = value(session = session, action = None, event_data = None)
                 runner.register(session = session)
 
         for action in avalible_actions:
