@@ -114,7 +114,7 @@ class HuggingFaceZeroShotAction(ActionRunner):
             "attribute_groups": {}
         }
 
-        to_create['attribute_groups'][group_id] = attribute_item_to_apply
+        to_create['attribute_groups'][group_id] = [attribute_item_to_apply] if group_list_serialized[0]['kind'] == 'multiple_select' else attribute_item_to_apply
 
         project = Project.get_by_id(session = session, id = project_id)
         print('project', project)
