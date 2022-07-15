@@ -41,3 +41,4 @@ pika
 azure-ai-textanalytics
 python-keycloak
 pyjwt
+imageio-ffmpeg==0.2.0
