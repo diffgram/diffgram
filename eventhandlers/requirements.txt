@@ -37,3 +37,4 @@ memory-profiler==0.55.0
 opencv-contrib-python
 labelbox==3.16.0
 azure-ai-textanalytics
+newrelic

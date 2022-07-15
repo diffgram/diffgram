@@ -451,7 +451,7 @@ jobs:
           rabbitmq.auth.password: ${{secrets.RABBITMQ_DEFAULT_PASS}}
           eventHandlersService.requests.memory: "6G"
           eventHandlersService.limits.memory: "6G"
-          eventHandlersService.requests.cpu: ""
+          eventHandlersService.requests.cpu: "1"
           eventHandlersService.limits.cpu: "1"
           defaultService.numReplicas: 1
           frontendService.numReplicas: 1
