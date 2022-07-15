@@ -10,6 +10,7 @@ RUN pip3 install --upgrade pip
 RUN pip3 install -r /app/requirements.txt
 ADD eventhandlers/ /app/
 ADD shared /app/shared
+ENV NEW_RELIC_CONFIG_FILE=/app/newrelic.ini
 ENV TRANSFORMERS_CACHE=/tmp/
 ENV HF_HOME=/tmp/
 WORKDIR /app/
