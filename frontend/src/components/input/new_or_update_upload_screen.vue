@@ -420,7 +420,7 @@
             // addRemoveLinks: true,
             forceChunking: true,
             autoProcessQueue: false,
-            chunkSize: 1024 * 1024 * 5,
+            chunkSize: 1024 * 1024 * VUE_APP_API_CHUNK_SIZE,
             height: 450,
             // number of concurrent uploads at a time, each upload still goes at same speed
             parallelUploads: 1,
