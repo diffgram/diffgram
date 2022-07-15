@@ -20,6 +20,7 @@ def get_memory_percent():
 
 def is_memory_available(memory_limit_float = 75.0):
     memory_percent = get_memory_percent()
+    logger.info(f'Checking for memory {memory_percent}%')
     if memory_percent is None: return True  # Don't stop if this check fails
 
     if memory_percent > memory_limit_float:
