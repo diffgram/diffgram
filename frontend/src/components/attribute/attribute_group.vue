@@ -169,16 +169,17 @@
               Searching...
             </p>
             <v-treeview
-              v-model="internal_selected"
               v-else
               :items="tree_items"
               :load-children="load_clidren"
               :open-all="search ? true : false"
               selectionType="independent"
-              @input="tree_input"
             >
-              <template v-slot:prepend="{ item, open }">
-                  <v-checkbox style="margin-top: 0" hide-details />
+              <template v-slot:prepend="{ item }">
+                  <v-checkbox 
+                    :input-value="internal_selected.includes(item.id)"
+                    @change="tree_input(item)" style="margin-top: 0" hide-details 
+                  />
               </template>
             </v-treeview>
           </v-card>
@@ -692,9 +693,10 @@
 
           const tree_array = this.internal_selected.map(item => {
             const item_node = this.tree_items_list.find(node_item => node_item.get_id() === item)
-            const { id, name } = item_node.get_API_data()
-            return {[id]: { name, "selected": true}}
-
+            if (item_node) {
+              const { id, name } = item_node.get_API_data()
+              return {[id]: { name, "selected": true}}
+            }
           })
 
           const tree_post_items = {
@@ -747,7 +749,15 @@
       },
       methods: {
         tree_input: function(e) {
-          console.log("Tree input", e)
+          const already_selected = this.internal_selected.includes(e.id)
+
+          if (already_selected) {
+            const index_to_delete = this.internal_selected.indexOf(e.id);
+            this.internal_selected.splice(index_to_delete, 1);
+          }
+          else this.internal_selected.push(e.id)
+
+          this.attribute_change()
         },
         load_clidren: function(e) {
           let template_list = this.group.attribute_template_list.filter(item => item.parent_id === e.id)
@@ -780,7 +790,6 @@
         },
         // group change
         attribute_change: function () {
-          console.log("fire")
           /*
            *
            * the theory here is mainly that it is maintaining the same format
