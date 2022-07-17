@@ -284,6 +284,7 @@
   import connector_import_renderer from "../connectors/connector_import_renderer";
   import mime from 'mime-types';
   import pLimit from 'p-limit';
+  import { get_large_api_chunk_size } from '../../services/configService'
 
   export default Vue.extend({
       name: 'new_or_update_upload_screen',
@@ -354,6 +355,7 @@
           incoming_connection: null,
           upload_mode_toggle: 0,
           video_split_duration: 60,
+          large_api_chunk_size: 5,
         }
 
 
@@ -420,7 +422,7 @@
             // addRemoveLinks: true,
             forceChunking: true,
             autoProcessQueue: false,
-            chunkSize: 1024 * 1024 * VUE_APP_API_CHUNK_SIZE,
+            chunkSize: 1024 * 1024 * this.large_api_chunk_size,
             height: 450,
             // number of concurrent uploads at a time, each upload still goes at same speed
             parallelUploads: 1,
@@ -451,6 +453,9 @@
       },
       mounted() {
 
+      },
+      async created() {
+        this.large_api_chunk_size = await get_large_api_chunk_size()
       },
 
       beforeDestroy() {
