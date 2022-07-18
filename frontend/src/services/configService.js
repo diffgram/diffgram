@@ -60,3 +60,12 @@ export const is_open_source = async () => {
 
   }
 }
+
+export const get_large_api_chunk_size = async () => {
+  try {
+    let res = await axios.get('/api/configs/large-api-chunk-size')
+    return res.data.large_api_chunk_size
+  } catch(error) {
+    return error
+  }
+}
