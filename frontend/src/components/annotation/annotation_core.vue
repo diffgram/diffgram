@@ -7800,7 +7800,6 @@ export default Vue.extend({
         // maybe this.current_file should store width/height? ...
         try {
           const new_image = await this.addImageProcess(file.image.url_signed);
-          console.log('FILE IMAGEE', file.image)
           if (!file.image.width || !file.image.height){
             file.image.width = new_image.width
             file.image.height = new_image.height
