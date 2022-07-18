@@ -148,25 +148,45 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
     if not blob_object.url_signed_blob_path:
         return
     should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(blob_object, session)
-    if should_regenerate is True:
-        if connection_id is None and bucket_name is None:
-            logger.info(f'Generate Signed Url with connection {connection_id} on bucket {bucket_name}')
-            blob_object, log = default_url_regenerate(
-                session = session,
-                blob_object = blob_object,
-                new_offset_in_seconds = new_offset_in_seconds
-            )
-        else:
-            blob_object, log = connection_url_regenerate(
-                session = session,
-                blob_object = blob_object,
-                connection_id = connection_id,
-                bucket_name = bucket_name,
-                new_offset_in_seconds = new_offset_in_seconds,
-                reference_file = reference_file
-            )
 
-        if regular_log.log_has_error(log):
-            raise Exception(f'Failed to regenerate Blob URL {log}')
+    if should_regenerate is not True: 
+        return
 
-        return blob_object, log
+    strategy = determine_url_regenerate_strategy(
+        connection_id = connection_id,
+        bucket_name = bucket_name)
+
+    if strategy == "default":
+        logger.info(f'Generate Signed Url with connection {connection_id} on bucket {bucket_name}')
+        blob_object, log = default_url_regenerate(
+            session = session,
+            blob_object = blob_object,
+            new_offset_in_seconds = new_offset_in_seconds
+        )
+
+    if strategy == "connection":
+        blob_object, log = connection_url_regenerate(
+            session = session,
+            blob_object = blob_object,
+            connection_id = connection_id,
+            bucket_name = bucket_name,
+            new_offset_in_seconds = new_offset_in_seconds,
+            reference_file = reference_file
+        )
+
+    if regular_log.log_has_error(log):
+        raise Exception(f'Failed to regenerate Blob URL {log}')
+
+    return blob_object, log
+
+
+def determine_url_regenerate_strategy(connection_id,
+                                      bucket_name) -> str:
+
+    default_strategy = "default"
+    strategy = default_strategy
+
+    if connection_id is None and bucket_name is None:
+        strategy = "connection"
+
+    return strategy 
