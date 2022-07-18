@@ -154,6 +154,8 @@ class File(Base, Caching):
     connection = relationship("Connection", foreign_keys = [connection_id])
     bucket_name = Column(String())
 
+    storage_strategy = Column(String(), default="global_env_vars")   # ['connection', 'global_env_vars'] 
+
     frame_number = Column(Integer)  # assumed to be local
     global_frame_number = Column(Integer)
 
