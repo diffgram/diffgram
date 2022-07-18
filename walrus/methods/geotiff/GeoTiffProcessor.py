@@ -78,7 +78,6 @@ class GeoTiffProcessor:
                                                 blob_path = blob_path,
                                                 content_type = 'image/tiff')
         geo_asset.url_signed_blob_path = blob_path
-        geo_asset.regenerate_url(session = self.session)
 
     def __create_geo_layer_child_file(self, parent_file: File) -> GeoAsset:
         geo_asset = GeoAsset.new(

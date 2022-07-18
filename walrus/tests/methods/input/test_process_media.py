@@ -141,8 +141,6 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
         with patch.object(process_media, 'imwrite') as mock1:
             with patch.object(process_media.data_tools, 'upload_to_cloud_storage') as mock2:
                 new_temp_filename = pm.save_raw_image_file()
-                self.assertEqual(pm.new_image.url_signed_blob_path,
-                                 f'{settings.PROJECT_IMAGES_BASE_DIR}{str(self.project.id)}/{str(pm.new_image.id)}')
                 mock1.assert_called_with(new_temp_filename, np.asarray(pm.raw_numpy_image), compress_level = 2)
                 mock2.assert_called_with(temp_local_path = new_temp_filename,
                                          blob_path = pm.new_image.url_signed_blob_path,
@@ -173,8 +171,6 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
         with patch.object(process_media, 'imwrite') as mock1:
             with patch.object(process_media.data_tools, 'upload_to_cloud_storage') as mock2:
                 new_temp_filename = pm.save_raw_image_file()
-                self.assertEqual(pm.new_image.url_signed_blob_path,
-                                 f'{settings.PROJECT_IMAGES_BASE_DIR}{str(self.project.id)}/{str(pm.new_image.id)}')
                 self.assertEqual(mock1.call_count, 0)
                 mock2.assert_called_with(temp_local_path = new_temp_filename,
                                          blob_path = pm.new_image.url_signed_blob_path,
@@ -206,8 +202,6 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
             with patch.object(process_media, 'imwrite') as mock1:
                 with patch.object(process_media.data_tools, 'upload_to_cloud_storage') as mock2:
                     new_temp_filename = pm.save_raw_image_file()
-                    self.assertEqual(pm.new_image.url_signed_blob_path,
-                                     f'{settings.PROJECT_IMAGES_BASE_DIR}{str(self.project.id)}/{str(pm.new_image.id)}')
                     mock1.assert_called_with(new_temp_filename, np.asarray(pm.raw_numpy_image), compress_level = 3)
                     mock2.assert_called_with(temp_local_path = new_temp_filename,
                                              blob_path = pm.new_image.url_signed_blob_path,

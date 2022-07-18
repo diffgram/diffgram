@@ -345,8 +345,8 @@ class File(Base, Caching):
 
         if self.type == "text":
             if self.text_file:
-                self.text_file.regenerate_url(session)
-                return self.text_file.url_signed
+                serialized = self.text_file.serialize(session)
+                return serialized['url_signed']
         return None
 
     def get_blob_path(self):
@@ -395,7 +395,8 @@ class File(Base, Caching):
             if self.image:
                 file['image'] = self.image.serialize_for_source_control(session = session,
                                                                         connection_id = connection_id,
-                                                                        bucket_name = bucket_name)
+                                                                        bucket_name = bucket_name,
+                                                                        reference_file = self)
 
         elif self.type == "video":
             if self.video:
