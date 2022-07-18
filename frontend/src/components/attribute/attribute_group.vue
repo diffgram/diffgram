@@ -503,7 +503,7 @@
   import label_select_only from '../label/label_select_only.vue'
   import attribute_kind_icons from './attribute_kind_icons';
   import attribute_group_wizard from './attribute_group_wizard';
-  import { construct_tree } from "../../helpers/tree_view/construct_tree"
+  import { construct_tree, find_all_parents } from "../../helpers/tree_view/construct_tree"
   import { TreeNode } from "../../helpers/tree_view/Node"
 
   import Vue from "vue";
@@ -767,8 +767,40 @@
         tree_search: function(e) {
           this.tree_items_list = []
 
+          if (!this.search) {
+            this.group.attribute_template_list.filter(item => !item.parent_id).map(attr => {
+              const new_node = new TreeNode(attr.group_id, attr.name)
+              new_node.initialize_existing_node(attr.id, attr.parent_id)
+              this.tree_items_list.push(new_node)
+            })
+            this.tree_items = construct_tree(this.tree_items_list)
+            return
+          }
+
           const res = this.group.attribute_template_list.filter(item => item.name.toLowerCase().includes(e.toLowerCase()))
-          this.set_tree(res)
+
+          const selected_nodes = res.map(item => {
+            const new_node = new TreeNode(item.group_id, item.name)
+            new_node.initialize_existing_node(item.id, item.parent_id)
+            return new_node
+          })
+
+          const all_nodes = this.group.attribute_template_list.map(item => {
+            const new_node = new TreeNode(item.group_id, item.name)
+            new_node.initialize_existing_node(item.id, item.parent_id)
+            return new_node
+          })
+
+          const local_nodes = []
+
+
+          selected_nodes.map(node => {
+            const result = find_all_parents(node.id, [...all_nodes])
+            local_nodes.push(...result)
+          })
+
+          this.tree_items_list = [...new Set(local_nodes.map(node => node))]
+          this.tree_items = construct_tree(this.tree_items_list)
         },
         set_tree: function(to_tree) {
           to_tree.map(attr => {

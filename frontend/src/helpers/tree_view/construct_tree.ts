@@ -2,12 +2,38 @@ import {Node} from "../interfaces/TreeNode";
 
 let root_path: Array<any> = [];
 
+export const find_all_parents = (id, array) => {
+  const current_node = array.find(node => node.get_id() === id)
+
+  let working_node = current_node
+
+  const nodes_to_return = []
+  nodes_to_return.push(current_node)
+
+  if (!current_node.get_parent()) return nodes_to_return
+
+  while(working_node && working_node.get_parent()) {
+    const checker_node = array.find(node => {
+      return node.get_id() === working_node.get_parent()
+    })
+    nodes_to_return.push(checker_node)
+    working_node = checker_node
+  }
+
+  return nodes_to_return
+}
+
 export const find_all_relatives = (id, array) => {
+  const related_nodes = []
   const related_indexes = array
     .filter(item => item.get_parent() === id)
-    .map(item => item.get_id())
+    .map(item => {
+      related_nodes.push(item)
+      return item.get_id()
+    })
 
   related_indexes.push(id)
+  related_nodes.push(array.find(node => node.id === id))
   let has_more = true;
 
   while (has_more) {
@@ -17,12 +43,13 @@ export const find_all_relatives = (id, array) => {
 
     if (has_more_relatives.length === 0) {
       has_more = false
-      return related_indexes
+      return {related_indexes, related_nodes}
     }
     has_more_relatives.map(item => related_indexes.push(item.get_id()))
+    has_more_relatives.map(item => related_nodes.push(item))
   }
 
-  return related_indexes
+  return {related_indexes, related_nodes}
 }
 
 export const build_path = (array: Array<any>, parent_id, path) => {
