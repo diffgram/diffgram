@@ -17,7 +17,7 @@
 
         <p>
           The results will be saved directly on the file.
-          For more information see the docs here.
+          For more info see <a href="https://diffgram.readme.io/docs/hugging-face-zero-shot" target=_blank>the docs here.</a>
         </p>
 
         <br />

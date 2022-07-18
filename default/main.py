@@ -19,7 +19,7 @@ from flask import request
 from flask import Response
 from flask import redirect
 
-from werkzeug.middleware.proxy_fix import ProxyFix  # needed for get_remote_address to get right ip
+from werkzeug.middleware.proxy_fix import ProxyFix # needed for get_remote_address to get right ip
 from threading import Lock
 import os, logging, sys
 import requests
@@ -153,5 +153,5 @@ if __name__ == '__main__':
 
 else:
 
-    app.debug == False
-    app.wsgi_app = ProxyFix(app.wsgi_app)
+	app.debug == False
+	app.wsgi_app = ProxyFix(app.wsgi_app)

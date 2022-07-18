@@ -211,8 +211,8 @@ jobs:
           rabbitmq.auth.username: ${{secrets.RABBITMQ_DEFAULT_USER}}
           rabbitmq.auth.password: ${{secrets.RABBITMQ_DEFAULT_PASS}}
           rabbitmq.auth.erlangCookie: ${{secrets.ERLANG_COOKIE}}
-          eventHandlersService.requests.memory: "4G"
-          eventHandlersService.limits.memory: "4G"
+          eventHandlersService.requests.memory: "8G"
+          eventHandlersService.limits.memory: "8G"
           eventHandlersService.requests.cpu: "1"
           eventHandlersService.limits.cpu: "1"
           walrusService.requests.memory: "16G"
@@ -449,8 +449,8 @@ jobs:
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           rabbitmq.auth.username: ${{secrets.RABBITMQ_DEFAULT_USER}}
           rabbitmq.auth.password: ${{secrets.RABBITMQ_DEFAULT_PASS}}
-          eventHandlersService.requests.memory: "4G"
-          eventHandlersService.limits.memory: "4G"
+          eventHandlersService.requests.memory: "6G"
+          eventHandlersService.limits.memory: "6G"
           eventHandlersService.requests.cpu: "1"
           eventHandlersService.limits.cpu: "1"
           defaultService.numReplicas: 1

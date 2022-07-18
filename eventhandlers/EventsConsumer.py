@@ -2,6 +2,7 @@ import json
 import pika
 import threading
 from pika.exchange_type import ExchangeType
+from pika.channel import Channel
 from shared.queueclient.QueueClient import RoutingKeys, Exchanges, QueueNames
 from shared.database.action.action import ActionTriggerEventTypes
 from shared.shared_logger import get_shared_logger
@@ -13,15 +14,22 @@ logger = get_shared_logger()
 
 class EventsConsumer:
 
-    def __init__(self, channel, connection):
+    def __init__(self, channel: Channel, connection: pika.SelectConnection):
         self.channel = channel
         self.connection = connection
+        cb = functools.partial(self.on_exchange_declareok,
+                               userdata = {})
+
         self.exchange = self.channel.exchange_declare(
             exchange = Exchanges.events.value,
             exchange_type = ExchangeType.direct.value,
             passive = False,
-            auto_delete = False
+            auto_delete = False,
+            callback = cb
         )
+
+    def on_exchange_declareok(self, _unused_frame, userdata):
+        logger.info(f'EventsConsumer Created. Adding Queues...')
         self.channel.queue_declare(queue = QueueNames.events_new.value)
         self.channel.queue_bind(
             queue = QueueNames.events_new.value,
@@ -29,10 +37,11 @@ class EventsConsumer:
             routing_key = RoutingKeys.event_new.value)
         self.channel.basic_qos(prefetch_count = 1)
         threads = []
-        on_message_callback = functools.partial(EventsConsumer.on_message, args = (connection, threads))
+        on_message_callback = functools.partial(EventsConsumer.on_message, args = (self.connection, threads))
         self.channel.basic_consume(queue = QueueNames.events_new.value,
                                    on_message_callback = on_message_callback,
                                    auto_ack = True)
+        logger.info('Queues ready to listen for messages')
 
     @staticmethod
     def on_message(ch, method_frame, _header_frame, body, args):
@@ -62,7 +71,7 @@ class EventsConsumer:
         if kind in actions_kinds_list:
             logger.debug("Event Matched Action Triggers. Publishing Action Trigger Message...")
             queueclient.send_message(message = msg_data,
-                                      routing_key = RoutingKeys.action_trigger_event_new.value,
-                                      exchange = Exchanges.actions.value)
+                                     routing_key = RoutingKeys.action_trigger_event_new.value,
+                                     exchange = Exchanges.actions.value)
         else:
             logger.debug(f'No matching actions for event. Kind is {kind}')

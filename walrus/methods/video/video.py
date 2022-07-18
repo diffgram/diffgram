@@ -19,6 +19,7 @@ from shared.database.video.sequence import Sequence
 from shared.database.input import Input
 
 from methods.input import process_media
+from shared.utils.memory_checks import check_and_wait_for_memory
 from shared.data_tools_core import Data_tools
 from shared.feature_flags.feature_checker import FeatureChecker
 import traceback
@@ -138,7 +139,7 @@ class New_video():
         Returns
             None
         """
-        process_media.check_and_wait_for_memory(memory_limit_float=85.0)
+        check_and_wait_for_memory(memory_limit_float=85.0)
 
         logger.info(f"Reading video data for {input.id} - {video_file_name}")
         try:
@@ -218,7 +219,7 @@ class New_video():
         num_cores = os.cpu_count()
         logger.info(f"Num Core to write video: {num_cores}")
 
-        process_media.check_and_wait_for_memory(memory_limit_float=75.0)
+        check_and_wait_for_memory(memory_limit_float=75.0)
 
         if settings.PROCESS_MEDIA_TRY_BLOCK_ON is True:
             try:
@@ -360,7 +361,7 @@ class New_video():
             # Because at the moment this loop can be fairly slow
 
             if index % 10 == 0:
-                process_media.check_and_wait_for_memory(memory_limit_float=90.0)
+                check_and_wait_for_memory(memory_limit_float=90.0)
                 # Where 10 is adding this every 10 frames
                 # to be completed by next phase
                 # at most this adds 1 when compelte so multiple by 30 to represent

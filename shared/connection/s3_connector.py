@@ -19,7 +19,7 @@ from shared.export.export_utils import generate_file_name_from_export, check_exp
 from shared.regular import regular_log
 
 from shared.data_tools_core_s3 import DataToolsS3
-from botocore.config import Config
+
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
@@ -63,16 +63,9 @@ class S3Connector(Connector):
                 log['error']['client_secret'] = 'auth_data must provide aws_access_key_id and aws_secret_access_key .'
                 return {'log': log}
 
-            config = None
-            if self.auth_data.get('aws_v4_signature'):
-                config = Config(signature_version = 's3v4')
-
             self.connection_client = DataToolsS3.get_client(
-                aws_access_key_id = self.auth_data['client_id'],
-                aws_secret_access_key = self.auth_data['client_secret'],
-                config = config,
-                region_name = self.auth_data.get('aws_region')
-            )
+                aws_access_key_id=self.auth_data['client_id'],
+                aws_secret_access_key=self.auth_data['client_secret'])
 
             return {'result': True}
         except Exception as e:
@@ -88,8 +81,7 @@ class S3Connector(Connector):
         :return:
         """
         bytes_buffer = io.BytesIO()
-        self.connection_client.download_fileobj(Bucket = opts['bucket_name'], Key = opts['path'],
-                                                Fileobj = bytes_buffer)
+        self.connection_client.download_fileobj(Bucket = opts['bucket_name'], Key = opts['path'], Fileobj = bytes_buffer)
         byte_value = bytes_buffer.getvalue()
         str_value = byte_value.decode()  # python3, default decoding is utf-8
         return {'data': str_value}
@@ -103,16 +95,16 @@ class S3Connector(Connector):
         """
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input = opts,
-                                                    spec_list = spec_list,
-                                                    log = log)
+        log, input = regular_input.input_check_many(untrusted_input=opts,
+                                                    spec_list=spec_list,
+                                                    log=log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         # This might be an issue. Currently not supporting urls with no expiration. Biggest time is 1 week.
         signed_url = self.connection_client.generate_presigned_url('get_object',
-                                                                   Params = {'Bucket': opts['bucket_name'],
-                                                                             'Key': opts['path']},
-                                                                   ExpiresIn = 3600 * 24 * 6)  # 5 Days.
+                                                                   Params={'Bucket': opts['bucket_name'],
+                                                                           'Key': opts['path']},
+                                                                   ExpiresIn=3600 * 24 * 6)  # 5 Days.
 
         with sessionMaker.session_scope() as session:
 
@@ -134,41 +126,41 @@ class S3Connector(Connector):
                 log['error']['file_name'] = opts['path']
                 log['opts'] = opts
                 Event.new(
-                    session = session,
-                    member_id = opts['event_data']['request_user'],
-                    kind = 'aws_s3_new_import_warning',
-                    description = f"Skipped import for {opts['path']}, invalid file type.",
-                    error_log = log,
-                    project_id = project.id,
-                    member = member,
-                    success = False
+                    session=session,
+                    member_id=opts['event_data']['request_user'],
+                    kind='aws_s3_new_import_warning',
+                    description=f"Skipped import for {opts['path']}, invalid file type.",
+                    error_log=log,
+                    project_id=project.id,
+                    member=member,
+                    success=False
                 )
                 return None
 
             # metadata = self.connection_client.head_object(Bucket=self.config_data['bucket_name'], Key=path)
             member = session.query(Member).filter(Member.user_id == opts['event_data']['request_user']).first()
             created_input = packet.enqueue_packet(self.config_data['project_string_id'],
-                                                  session = session,
-                                                  media_url = signed_url,
-                                                  media_type = media_type,
+                                                  session=session,
+                                                  media_url=signed_url,
+                                                  media_type=media_type,
                                                   file_name = opts['path'],
-                                                  job_id = opts.get('job_id'),
-                                                  batch_id = opts.get('batch_id'),
-                                                  video_split_duration = opts.get('video_split_duration'),
-                                                  directory_id = opts.get('directory_id'),
-                                                  extract_labels_from_batch = True,
+                                                  job_id=opts.get('job_id'),
+                                                  batch_id=opts.get('batch_id'),
+                                                  video_split_duration=opts.get('video_split_duration'),
+                                                  directory_id=opts.get('directory_id'),
+                                                  extract_labels_from_batch=True,
                                                   member = member)
             log = regular_log.default()
             log['opts'] = opts
             Event.new(
-                session = session,
-                member_id = opts['event_data']['request_user'],
-                kind = 'aws_s3_new_import_success',
-                description = f"New cloud import for {opts['path']}",
-                error_log = opts,
-                project_id = project.id,
-                member = member,
-                success = True
+                session=session,
+                member_id=opts['event_data']['request_user'],
+                kind='aws_s3_new_import_success',
+                description=f"New cloud import for {opts['path']}",
+                error_log=opts,
+                project_id=project.id,
+                member=member,
+                success=True
             )
         return created_input
 
@@ -205,14 +197,14 @@ class S3Connector(Connector):
 
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input = opts,
-                                                    spec_list = spec_list,
-                                                    log = log)
+        log, input = regular_input.input_check_many(untrusted_input=opts,
+                                                    spec_list=spec_list,
+                                                    log=log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         t = threading.Thread(
-            target = self.__fetch_folder,
-            args = ((opts,)))
+            target=self.__fetch_folder,
+            args=((opts,)))
         t.start()
         return {'result': True}
 
@@ -239,34 +231,12 @@ class S3Connector(Connector):
 
     @with_connection
     @with_s3_exception_handler
-    def __get_pre_signed_url(self, opts):
-        spec_list = [{'bucket_name': str, 'path': str, 'expiration_offset': int}]
-        log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input = opts,
-                                                    spec_list = spec_list,
-                                                    log = log)
-        if regular_log.log_has_error(log):
-            return {'log': log}
-        blob_name = opts['path']
-        expiration_offset = opts['expiration_offset']
-        filename = blob_name.split("/")[-1]
-        bucket_name = opts['bucket_name']
-
-        signed_url = self.connection_client.generate_presigned_url('get_object',
-                                                                   Params = {
-                                                                       'Bucket': bucket_name,
-                                                                       'Key': blob_name},
-                                                                   ExpiresIn = int(expiration_offset))
-        return {'result': signed_url}
-
-    @with_connection
-    @with_s3_exception_handler
     def __get_folder_contents(self, opts):
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input = opts,
-                                                    spec_list = spec_list,
-                                                    log = log)
+        log, input = regular_input.input_check_many(untrusted_input=opts,
+                                                    spec_list=spec_list,
+                                                    log=log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         prefix = opts['path']
@@ -283,9 +253,9 @@ class S3Connector(Connector):
     def __list_objects(self, opts):
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input = opts,
-                                                    spec_list = spec_list,
-                                                    log = log)
+        log, input = regular_input.input_check_many(untrusted_input=opts,
+                                                    spec_list=spec_list,
+                                                    log=log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         keys = []
@@ -306,9 +276,9 @@ class S3Connector(Connector):
     def __count_objects(self, opts):
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input = opts,
-                                                    spec_list = spec_list,
-                                                    log = log)
+        log, input = regular_input.input_check_many(untrusted_input=opts,
+                                                    spec_list=spec_list,
+                                                    log=log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         count = 0
@@ -340,9 +310,9 @@ class S3Connector(Connector):
     def __send_export(self, opts):
         spec_list = [{'project_string_id': dict}]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input = self.config_data,
-                                                    spec_list = spec_list,
-                                                    log = log)
+        log, input = regular_input.input_check_many(untrusted_input=self.config_data,
+                                                    spec_list=spec_list,
+                                                    log=log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         spec_list = [
@@ -357,10 +327,10 @@ class S3Connector(Connector):
 
         ]
         log = regular_log.default()
-        log, input = regular_input.input_check_many(untrusted_input = opts,
-                                                    spec_list = spec_list,
-                                                    log = log,
-                                                    string_len_not_zero = False)
+        log, input = regular_input.input_check_many(untrusted_input=opts,
+                                                    spec_list=spec_list,
+                                                    log=log,
+                                                    string_len_not_zero=False)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
         if not opts['path'].endswith('/') and opts['path'] != '':
@@ -379,9 +349,9 @@ class S3Connector(Connector):
                 return export_check_result
 
             result = export_view_core(
-                export = export,
-                format = opts['format'],
-                return_type = 'bytes')
+                export=export,
+                format=opts['format'],
+                return_type='bytes')
             result = bytes(result, 'utf-8')
             filename = generate_file_name_from_export(export, session)
             if opts['path'] != '':
@@ -394,14 +364,14 @@ class S3Connector(Connector):
             log = regular_log.default()
             log['opts'] = opts
             Event.new(
-                session = session,
-                member_id = opts['event_data']['request_user'],
-                kind = 'aws_s3_new_export_success',
-                description = f"New cloud export for {opts['path']}{filename}",
-                error_log = opts,
-                member = member,
-                project_id = project.id,
-                success = True
+                session=session,
+                member_id=opts['event_data']['request_user'],
+                kind='aws_s3_new_export_success',
+                description=f"New cloud export for {opts['path']}{filename}",
+                error_log=opts,
+                member=member,
+                project_id=project.id,
+                success=True
             )
             return {'result': True}
 
@@ -410,27 +380,24 @@ class S3Connector(Connector):
         log = regular_log.default()
         try:
             self.connection_client.put_object(Body = 'This is a diffgram test file',
-                                              Bucket = bucket_name,
-                                              Key = test_file_path,
-                                              ContentType = 'text/plain')
+                              Bucket = bucket_name,
+                              Key = test_file_path,
+                              ContentType = 'text/plain')
 
         except Exception as e:
-            log['error'][
-                's3_write_perms'] = 'Error Connecting to S3: Please check you have write permissions on the S3 bucket.'
+            log['error']['s3_write_perms'] = 'Error Connecting to S3: Please check you have write permissions on the S3 bucket.'
             log['error']['details'] = traceback.format_exc()
             return False, log
         try:
             signed_url = self.connection_client.generate_presigned_url('get_object',
-                                                                       Params = {'Bucket': bucket_name,
-                                                                                 'Key': test_file_path},
-                                                                       ExpiresIn = 3600 * 24 * 6)
-            resp = requests.get(signed_url, verify = not self.auth_data['disabled_ssl_verify'])
+                                                       Params = {'Bucket': bucket_name, 'Key': test_file_path},
+                                                       ExpiresIn = 3600 * 24 * 6)
+            resp = requests.get(signed_url, verify=not self.auth_data['disabled_ssl_verify'])
             if resp.status_code != 200:
                 raise Exception(
                     f"Error when accessing presigned URL: Status({resp.status_code}). Error: {resp.text}")
         except:
-            log['error'][
-                's3_write_perms'] = 'Error Connecting to S3: Please check you have read permissions on the S3 bucket.'
+            log['error']['s3_write_perms'] = 'Error Connecting to S3: Please check you have read permissions on the S3 bucket.'
             log['error']['details'] = traceback.format_exc()
             return False, log
         return True, log
@@ -450,6 +417,7 @@ class S3Connector(Connector):
             validation_result, log = self.validate_s3_connection_read_write(bucket_names[0])
             if len(log['error'].keys()) > 0:
                 return {'log': log}
+
 
         return result_buckets
 
@@ -482,8 +450,6 @@ class S3Connector(Connector):
             return self.__list_buckets(opts)
         if action_type == 'get_folder_contents':
             return self.__get_folder_contents(opts)
-        if action_type == 'get_pre_signed_url':
-            return self.__get_pre_signed_url(opts)
 
     @with_connection
     def put_data(self, opts):

@@ -7955,6 +7955,10 @@ export default Vue.extend({
           !this.label_settings.show_ghost_instances;
       }
 
+      if (event.key === "t") {
+        this.insert_tag_type();
+      }
+
       if (event.keyCode === 13) {
         // enter
         if (this.instance_type == "polygon") {

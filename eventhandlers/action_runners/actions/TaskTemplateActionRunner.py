@@ -25,7 +25,7 @@ class TaskTemplateActionRunner(ActionRunner):
 
     def execute_pre_conditions(self, session: Session) -> bool:
         if self.action.trigger_data.get('event_name') == 'action_completed':
-            result = self.event_data.get('result', {}).get('applied_option_id')
+            result = self.event_data.get('extra_metadata', {}).get('applied_option_id')
             output_labels = self.action.precondition.get('output_labels')
             if not output_labels or len(output_labels) == 0:
                 return True
@@ -42,7 +42,7 @@ class TaskTemplateActionRunner(ActionRunner):
         member_id = self.event_data.get('member_id')
         logger.info(f'Attempting to create task from {dir_id}')
         if self.action.trigger_data.get('event_name') == 'action_completed':
-            dir_id = self.event_data.get('result', {}).get('directory_id')
+            dir_id = self.event_data.get('extra_metadata', {}).get('directory_id')
         if dir_id is None:
             logger.warning(f'Cannot add task, provide directory_id in event data.')
             return
@@ -60,7 +60,7 @@ class TaskTemplateActionRunner(ActionRunner):
 
         file_id = self.event_data.get('file_id')
         if self.action.trigger_data.get('event_name') == 'action_completed':
-            file_id = self.event_data.get('result').get('file_id')
+            file_id = self.event_data.get('extra_metadata').get('file_id')
 
         if not file_id:
             logger.warning(f'Action has no file_id Stopping execution')
