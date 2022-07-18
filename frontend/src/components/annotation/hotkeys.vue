@@ -43,6 +43,9 @@
 
   <p> <kbd>Z</kbd> Pan Only </p>
 
+  <h2> Tag </h2>
+  <p> <kbd>T</kbd> Create a Tag </p>
+
   <h2> Keypoints:  </h2>
   <p> <kbd>O</kbd> Show/Hide Occluded Nodes  </p>
   <p>On Guided Mode: <b>Hold</b> <kbd>n</kbd> to draw a node as occluded.  </p>
