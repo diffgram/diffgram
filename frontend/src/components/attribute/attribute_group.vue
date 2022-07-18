@@ -650,7 +650,7 @@
           this.tree_rerender_timeout = setTimeout(() => {
             this.tree_search(newValue)
             this.tree_force_rerender = false
-          }, 300)
+          }, 400)
         },
 
         // not sure if this is right thing to watch
@@ -792,11 +792,12 @@
           })
 
           const local_nodes = []
-
+          const global_tracker = []
 
           selected_nodes.map(node => {
-            const result = find_all_parents(node.id, [...all_nodes])
-            local_nodes.push(...result)
+            const result = find_all_parents(node.id, [...all_nodes], global_tracker)
+            local_nodes.push(...result.nodes_to_return)
+            global_tracker.push(...result.local_tracker)
           })
 
           this.tree_items_list = [...new Set(local_nodes.map(node => node))]
