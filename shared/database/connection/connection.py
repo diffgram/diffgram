@@ -55,6 +55,7 @@ class Connection(Base):
     archived = Column(Boolean, default=False)
     is_active = Column(Boolean, default=False)
     aws_v4_signature = Column(Boolean, default=False)
+    aws_region = Column(String, default="us-west-1")
 
     # In [project, org, diffgram_wide, future]
     permission_scope = Column(String, default="project")
@@ -100,6 +101,7 @@ class Connection(Base):
             'member_created_id': self.member_created_id,
             'member_updated': self.member_updated,
             'aws_v4_signature': self.aws_v4_signature,
+            'aws_region': self.aws_region,
             'time_created': self.time_created,
             'time_updated': self.time_updated,
             'archived': self.archived,

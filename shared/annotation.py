@@ -11,6 +11,7 @@ from shared.regular.regular_member import get_member
 from shared.database.event.event import Event
 from shared.database.source_control.file import File
 from shared.settings import settings
+from flask import request
 try:
     # The walrus service doesn't have task_complete
     from shared.methods.task.task import task_complete

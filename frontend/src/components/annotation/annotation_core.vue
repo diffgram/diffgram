@@ -4692,7 +4692,10 @@ export default Vue.extend({
 
       if (this.draw_mode == false) {
         if (this.lock_point_hover_change == false) {
-          this.canvas_element.style.cursor = "default";
+          if(this.canvas_element){
+            this.canvas_element.style.cursor = "default";
+          }
+
         }
 
         this.detect_hover_on_cuboid_corners();
@@ -4711,7 +4714,9 @@ export default Vue.extend({
 
         this.style_mouse_if_rotation();
       } else {
-        this.canvas_element.style.cursor = "default";
+        if(this.canvas_element){
+          this.canvas_element.style.cursor = "default";
+        }
       }
     },
 
@@ -5764,7 +5769,9 @@ export default Vue.extend({
         if (process.env.NODE_ENV === "testing") {
           image.crossOrigin = "anonymous";
         }
-        image.onload = () => resolve(image);
+        image.onload = () => {
+          resolve(image)
+        };
         image.onerror = reject;
       });
     },
@@ -7793,6 +7800,11 @@ export default Vue.extend({
         // maybe this.current_file should store width/height? ...
         try {
           const new_image = await this.addImageProcess(file.image.url_signed);
+          console.log('FILE IMAGEE', file.image)
+          if (!file.image.width || !file.image.height){
+            file.image.width = new_image.width
+            file.image.height = new_image.height
+          }
           this.html_image = new_image;
           this.refresh = Date.now();
           await this.get_parent_instance_list_for_video();

@@ -334,7 +334,7 @@ class File(Base, Caching):
     def get_signed_url(self, session):
         if self.type == "image":
             if self.image:
-                serialized = self.image.serialize_for_source_control(session)
+                serialized = self.image.serialize_for_source_control(session, refrence_file=self)
                 return serialized['url_signed']
         # Do we want to throw an error here? should be pretty rare no image if type image
 
@@ -393,7 +393,6 @@ class File(Base, Caching):
         bucket_name = self.bucket_name
         if self.type == "image":
             if self.image:
-                print('regen', file['id'])
                 file['image'] = self.image.serialize_for_source_control(session = session,
                                                                         connection_id = connection_id,
                                                                         bucket_name = bucket_name)

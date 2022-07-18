@@ -46,6 +46,7 @@ def input_packet(project_string_id):
                  {'mode': None},
                  {'directory_id': None},
                  {'original_filename': None},
+                 {'raw_data_blob_path': None},
                  {'connection_id': {
                      "required": False,
                      "kind": int
@@ -135,6 +136,7 @@ def input_packet(project_string_id):
                                         directory_id = directory_id,
                                         instance_list = untrusted_input.get('instance_list', None),
                                         original_filename = input.get('original_filename', None),
+                                        raw_data_blob_path = input.get('raw_data_blob_path', None),
                                         bucket_name = input.get('bucket_name', None),
                                         connection_id = input.get('connection_id', None),
                                         video_split_duration = video_split_duration,
@@ -192,6 +194,7 @@ def enqueue_packet(project_string_id,
                    connection_id = None,
                    bucket_name = None,
                    original_filename = None,
+                   raw_data_blob_path = None,
                    external_map_action = None,
                    enqueue_immediately = False,
                    image_metadata = {},
@@ -213,6 +216,7 @@ def enqueue_packet(project_string_id,
     diffgram_input.auto_correct_instances_from_image_metadata = auto_correct_instances_from_image_metadata
     diffgram_input.task_id = task_id
     diffgram_input.batch_id = batch_id
+    diffgram_input.raw_data_blob_path = raw_data_blob_path
     diffgram_input.video_parent_length = video_parent_length
     diffgram_input.remove_link = remove_link
     diffgram_input.add_link = add_link
@@ -299,13 +303,9 @@ def validate_input_from_blob_path(project: Project, input: dict, session: Sessio
         log['error'] = {}
         log['error']['bucket_name'] = 'Provide bucket name for blob'
 
-    if input.get('blob_path') is None:
+    if input.get('raw_data_blob_path') is None:
         log['error'] = {}
-        log['error']['blob_path'] = 'Provide blob_path for blob'
-
-    if input.get('blob_path') is None:
-        log['error'] = {}
-        log['error']['blob_path'] = 'Provide blob_path for blob'
+        log['error']['raw_data_blob_path'] = 'Provide raw_data_blob_path for blob'
 
     return log
 
@@ -398,5 +398,3 @@ def validate_file_data_for_input_packet(session, input, project_string_id, log):
         log['error'] = {}
 
     return result, log, file_id
-
-

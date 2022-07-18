@@ -83,6 +83,7 @@ class ConnectionStrategy:
             'disabled_ssl_verify': self.connection.disabled_ssl_verify,
             'project_id': self.connection.project_id_external,
             'aws_v4_signature': self.connection.aws_v4_signature,
+            'aws_region': self.connection.aws_region,
         }
         auth_data_to_input = {
             'endpoint_url': 'private_host',
@@ -90,12 +91,12 @@ class ConnectionStrategy:
             'client_id': 'private_id',
             'client_secret': 'private_secret',
             'project_id': 'project_id_external',
-            'aws_v4_signature': 'aws_v4_signature'
+            'aws_v4_signature': 'aws_v4_signature',
+            'aws_region': 'aws_region'
         }
         if input:
             for key, value in auth_data.items():
                 input_value = input.get(auth_data_to_input.get(key))
-                print('ley', key, value)
                 if input_value:
                     auth_data[key] = input_value
 

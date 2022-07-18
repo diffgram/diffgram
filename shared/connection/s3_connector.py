@@ -64,14 +64,14 @@ class S3Connector(Connector):
                 return {'log': log}
 
             config = None
-            print('self.auth_data.get(', self.auth_data.get('aws_v4_signature'))
             if self.auth_data.get('aws_v4_signature'):
                 config = Config(signature_version = 's3v4')
 
             self.connection_client = DataToolsS3.get_client(
                 aws_access_key_id = self.auth_data['client_id'],
                 aws_secret_access_key = self.auth_data['client_secret'],
-                config = config
+                config = config,
+                region_name = self.auth_data.get('aws_region')
             )
 
             return {'result': True}
@@ -251,10 +251,10 @@ class S3Connector(Connector):
         expiration_offset = opts['expiration_offset']
         filename = blob_name.split("/")[-1]
         bucket_name = opts['bucket_name']
+
         signed_url = self.connection_client.generate_presigned_url('get_object',
                                                                    Params = {
                                                                        'Bucket': bucket_name,
-                                                                       'ResponseContentDisposition': f"attachment; filename={filename}",
                                                                        'Key': blob_name},
                                                                    ExpiresIn = int(expiration_offset))
         return {'result': signed_url}

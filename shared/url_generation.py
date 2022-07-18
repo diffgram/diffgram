@@ -5,6 +5,7 @@ from shared.data_tools_core import data_tools
 from shared.data_tools_core import DiffgramBlobObjectType
 from sqlalchemy.orm.session import Session
 from shared.database.image import Image
+from shared.database.source_control.file import File
 from shared.regular import regular_log
 from shared.shared_logger import get_shared_logger
 from shared.database.connection.connection import Connection
@@ -66,7 +67,8 @@ def connection_url_regenerate(session: Session,
                               blob_object: DiffgramBlobObjectType,
                               connection_id: int,
                               bucket_name: int,
-                              new_offset_in_seconds: int) -> [DiffgramBlobObjectType, dict]:
+                              new_offset_in_seconds: int,
+                              reference_file: File = None) -> [DiffgramBlobObjectType, dict]:
     """
         Regenerates signed url from the given connection ID, bucket and blob path.
     :param session:
@@ -76,6 +78,7 @@ def connection_url_regenerate(session: Session,
     :param new_offset_in_seconds:
     :return:
     """
+
     log = regular_log.default()
     connection = Connection.get_by_id(session = session, id = connection_id)
     if connection is None:
@@ -86,7 +89,7 @@ def connection_url_regenerate(session: Session,
     member = get_member(session = session)
     params = {
         'bucket_name': bucket_name,
-        'path': blob_object.url_signed_blob_path,
+        'path': blob_object.url_signed_blob_path if reference_file is None else reference_file.bl,
         'expiration_offset': new_offset_in_seconds,
         'action_type': 'get_pre_signed_url',
         'event_data': {
@@ -132,7 +135,8 @@ def connection_url_regenerate(session: Session,
 def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
                         session: Session,
                         connection_id = None,
-                        bucket_name = None):
+                        bucket_name = None,
+                        reference_file: File = None):
     """
         Regenerates the signed url of the given blob object.
     :param blob_object:
@@ -141,7 +145,6 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
     :param bucket_name:
     :return:
     """
-    print('REGENERATEEE', blob_object.url_signed_blob_path)
     if not blob_object.url_signed_blob_path:
         return
     should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(blob_object, session)
@@ -159,7 +162,8 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
                 blob_object = blob_object,
                 connection_id = connection_id,
                 bucket_name = bucket_name,
-                new_offset_in_seconds = new_offset_in_seconds
+                new_offset_in_seconds = new_offset_in_seconds,
+                reference_file = reference_file
             )
 
         if regular_log.log_has_error(log):

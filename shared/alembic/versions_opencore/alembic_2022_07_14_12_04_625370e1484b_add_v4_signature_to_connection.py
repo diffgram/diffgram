@@ -18,7 +18,9 @@ depends_on = None
 
 def upgrade():
     op.add_column('connection_base', sa.Column('aws_v4_signature', sa.Boolean()))
+    op.add_column('connection_base', sa.Column('aws_region', sa.String()))
 
 
 def downgrade():
     op.drop_column('connection_base', 'aws_v4_signature')
+    op.drop_column('connection_base', 'aws_region')

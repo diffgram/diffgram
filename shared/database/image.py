@@ -1,7 +1,5 @@
 from shared.database.common import *
 
-
-
 class Image(Base):
     __tablename__ = 'image'
 
@@ -75,12 +73,16 @@ class Image(Base):
         }
         return image
 
-    def serialize_for_source_control(self, session = None, connection_id = None, bucket_name = None):
+    def serialize_for_source_control(self, session = None,
+                                     connection_id = None,
+                                     bucket_name = None,
+                                     reference_file: 'File' = None):
         from shared.url_generation import blob_regenerate_url
         blob_regenerate_url(blob_object = self,
                             session = session,
                             connection_id = connection_id,
-                            bucket_name = bucket_name)
+                            bucket_name = bucket_name,
+                            reference_file = reference_file)
 
         return {
             'original_filename': self.original_filename,

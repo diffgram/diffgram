@@ -100,7 +100,6 @@ class HuggingFaceZeroShotAction(ActionRunner):
         classifier = pipeline("zero-shot-classification")
 
         result = classifier(text, candidate_attributes)
-        print('result', result)
         attribute_to_apply = result['labels'][result['scores'].index(max(result['scores']))]
         attribute_item_to_apply = [option for option in group_list_serialized[0]['attribute_template_list'] if
                                    option['name'] == attribute_to_apply][0]

@@ -1690,8 +1690,12 @@ class Process_Media():
 
         self.session.add(self.new_image)
         self.session.flush()
-        self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
-                                              str(self.project_id) + "/" + str(self.new_image.id)
+        if self.input.type != 'from_blob_path':
+            self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
+                                                  str(self.project_id) + "/" + str(self.new_image.id)
+        else:
+            self.new_image.url_signed_blob_path = self.input.raw_data_blob_path
+
         self.try_to_commit()
 
         if self.project:
