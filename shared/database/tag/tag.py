@@ -3,7 +3,6 @@ import re
 import random
 
 tag_format = "^[a-zA-Z0-9_-]{1,40}$"
-KEYWORD_RE = re.compile(r + tag_format)
 
 
 class Tag(Base):
@@ -33,7 +32,7 @@ class Tag(Base):
         }
 
     def valid_tag(string):
-        if not KEYWORD_RE.match(string):
+        if not re.match(tag_format, string):
             return False
 
     @staticmethod
