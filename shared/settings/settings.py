@@ -171,6 +171,7 @@ EMAIL_REPLY_TO = os.getenv('EMAIL_REPLY_TO', 'support@diffgram.com')
 
 # Plans Features
 IS_OPEN_SOURCE = env_adapter.bool(os.getenv('IS_OPEN_SOURCE', True))
+LARGE_API_CHUNK_SIZE = int(os.getenv('LARGE_API_CHUNK_SIZE', 5))
 
 # System Info
 RABBITMQ_DEFAULT_USER = os.getenv('RABBITMQ_DEFAULT_USER')
