@@ -110,7 +110,6 @@ def do_routes_importing():
     from methods.source_control.working_dir.directory_update import update_directory_api
 
     from methods.project.star import star_status
-    from methods.project.tags import update_tags
 
     from methods.video.video_view import get_video_single_image
     from methods.video.sequence import get_sequence
@@ -178,3 +177,5 @@ def do_routes_importing():
     from methods.labels.label_schema_list import api_label_schema_list
     from methods.labels.label_schema_new import api_label_schema_new
     from methods.labels.label_schema_update import api_label_schema_update
+
+    from methods.tag.tag import tag_view_by_project
