@@ -44,4 +44,4 @@ from sqlalchemy import or_
 from shared.regular import regular_methods
 
 
-data_tools = data_tools_core.Data_tools().data_tools
+

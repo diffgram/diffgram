@@ -2,9 +2,6 @@
 from shared.database.common import *
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.source_control.file import File
-from shared.data_tools_core import Data_tools
-
-data_tools = Data_tools().data_tools
 
 
 class Video(Base):
@@ -68,10 +65,12 @@ class Video(Base):
         self,
         session = None,
         project = None):
+        from shared.data_tools_core import Data_tools
+
+        data_tools = Data_tools().data_tools
         if session and self.file_blob_path:
             should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(self, session)
             if should_regenerate is True:
-
                 self.file_signed_url = data_tools.build_secure_url(
                     self.file_blob_path, new_offset_in_seconds)
 
@@ -86,7 +85,9 @@ class Video(Base):
     def serialize_list_view(
         self,
         session = None,
-        project = None):
+        project = None,
+        connection_id = None,
+        bucket_name = None):
 
         self.regenerate_url(
             project = project,
@@ -243,7 +244,7 @@ class Video(Base):
         frame_number: int,
         thumb: bool = False,
         project = None) -> str:
-
+        from shared.data_tools_core import data_tools
         # Temp thing, until we have project saved here or something
 
         # New default

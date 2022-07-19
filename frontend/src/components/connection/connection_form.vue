@@ -216,6 +216,31 @@
               ></v-checkbox>
             </v-col>
           </v-row>
+          <v-row
+            v-if="connection.integration_name && connection_form_specs[connection.integration_name].aws_v4_signature"
+            no-gutters>
+            <v-col>
+              <v-checkbox v-model="connection.aws_v4_signature"
+                          label="Use V4 Signature"
+                          color="orange"
+                          @change="has_changes = true"
+                          hide-details
+              ></v-checkbox>
+            </v-col>
+          </v-row>
+          <v-row
+            v-if="connection.integration_name && connection_form_specs[connection.integration_name].aws_region"
+            no-gutters>
+            <v-col>
+              <v-text-field
+                label="AWS Region (Empty will default to us-west-1)"
+                v-model="connection.aws_region"
+                @input="has_changes = true"
+                flat
+              >
+              </v-text-field>
+            </v-col>
+          </v-row>
           <v-row>
             <v-col cols="12" class="d-flex align-center">
               <p>
@@ -356,6 +381,8 @@
               name: true,
               private_id: true,
               private_secret: true,
+              aws_v4_signature: true,
+              aws_region: true,
             },
             'datasaur': {
               name: true,
@@ -469,7 +496,9 @@
             private_secret: this.connection.private_secret ? this.connection.private_secret : undefined,
             account_email: this.connection.account_email ? this.connection.account_email : undefined,
             integration_name: this.connection.integration_name ? this.connection.integration_name : undefined,
-            project_id_external: this.connection.project_id_external ? this.connection.project_id_external : undefined
+            project_id_external: this.connection.project_id_external ? this.connection.project_id_external : undefined,
+            aws_v4_signature: this.connection.aws_v4_signature ? this.connection.aws_v4_signature : undefined,
+            aws_region: this.connection.aws_region ? this.connection.aws_region : "us-west-1"
 
           }).then(response => {
             this.success_run = true

@@ -24,7 +24,6 @@ from sqlalchemy import UniqueConstraint
 from shared.database.geospatial.geo_asset import GeoAsset
 from shared.helpers.performance import timeit
 
-
 logger = get_shared_logger()
 
 from sqlalchemy.schema import Index
@@ -81,8 +80,6 @@ class File(Base, Caching):
     member_updated_id = Column(Integer, ForeignKey('member.id'))
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
-
-
     # "added", "removed", "changed"
     state = Column(String())  # for source control
 
@@ -119,8 +116,7 @@ class File(Base, Caching):
     text_file = relationship(TextFile, foreign_keys = [text_file_id])
 
     audio_file_id = Column(Integer, ForeignKey('audio_file.id'))
-    audio_file = relationship(AudioFile, foreign_keys=[audio_file_id])
-
+    audio_file = relationship(AudioFile, foreign_keys = [audio_file_id])
 
     original_filename = Column(String())
 
@@ -148,6 +144,11 @@ class File(Base, Caching):
     # Default task, although a file could have many tasks this can still be useful.
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys = [task_id])
+
+    # Connection ID where the file is stored (if no connection provided will use default storage provider from env vars)
+    connection_id = Column(Integer, ForeignKey('connection_base.id'))
+    connection = relationship("Connection", foreign_keys = [connection_id])
+    bucket_name = Column(String())
 
     frame_number = Column(Integer)  # assumed to be local
     global_frame_number = Column(Integer)
@@ -329,7 +330,7 @@ class File(Base, Caching):
     def get_signed_url(self, session):
         if self.type == "image":
             if self.image:
-                serialized = self.image.serialize_for_source_control(session)
+                serialized = self.image.serialize_for_source_control(session, refrence_file = self)
                 return serialized['url_signed']
         # Do we want to throw an error here? should be pretty rare no image if type image
 
@@ -340,8 +341,8 @@ class File(Base, Caching):
 
         if self.type == "text":
             if self.text_file:
-                self.text_file.regenerate_url(session)
-                return self.text_file.url_signed
+                serialized = self.text_file.serialize(session)
+                return serialized['url_signed']
         return None
 
     def get_blob_path(self):
@@ -372,11 +373,11 @@ class File(Base, Caching):
         ).all()
         return assets
 
-    def serialize_geospatial_assets(self, session):
+    def serialize_geospatial_assets(self, session, connection_id = None, bucket_name = None):
         assets_list = self.get_geo_assets(session)
         result = []
         for asset in assets_list:
-            result.append(asset.serialize(session))
+            result.append(asset.serialize(session, connection_id = connection_id, bucket_name = bucket_name))
         return result
 
     def serialize_with_type(self,
@@ -384,39 +385,52 @@ class File(Base, Caching):
                             ):
 
         file = self.serialize_base_file()
-
         if self.type == "image":
             if self.image:
-                file['image'] = self.image.serialize_for_source_control(session)
+                file['image'] = self.image.serialize_for_source_control(session = session,
+                                                                        connection_id = self.connection_id,
+                                                                        bucket_name = self.bucket_name,
+                                                                        reference_file = self)
 
         elif self.type == "video":
             if self.video:
-                file['video'] = self.video.serialize_list_view(session, self.project)
+                file['video'] = self.video.serialize_list_view(session = session,
+                                                               project = self.project,
+                                                               connection_id = self.connection_id,
+                                                               bucket_name = self.bucket_name)
 
         elif self.type == "text":
             if self.text_file:
-                file['text'] = self.text_file.serialize(session)
+                file['text'] = self.text_file.serialize(session = session,
+                                                        connection_id = self.connection_id,
+                                                        bucket_name = self.bucket_name)
 
         elif self.type == "geospatial":
             file['geospatial'] = {
-                'layers': self.serialize_geospatial_assets(session = session)
+                'layers': self.serialize_geospatial_assets(session = session,
+                                                           connection_id = self.connection_id,
+                                                           bucket_name = self.bucket_name)
             }
-            
+
         if self.type == "audio":
             if self.audio_file:
-                file['audio'] = self.audio_file.serialize()
+                file['audio'] = self.audio_file.serialize(session = session,
+                                                          connection_id = self.connection_id,
+                                                          bucket_name = self.bucket_name)
 
         elif self.type == "sensor_fusion":
             point_cloud_file = self.get_child_point_cloud_file(session = session)
             if point_cloud_file and point_cloud_file.point_cloud:
-                file['point_cloud'] = point_cloud_file.point_cloud.serialize(session)
+                file['point_cloud'] = point_cloud_file.point_cloud.serialize(session = session,
+                                                                             connection_id = self.connection_id,
+                                                                             bucket_name = self.bucket_name)
 
         elif self.type == "label":
             if session:
                 label = Label.get_by_id(session, self.label_id)
             else:
                 label = self.label
-            #if session:
+            # if session:
             #    file['attribute_group_list'] = Attribute_Template_Group.from_file_attribute_group_list_serialize(
             #        session = session,
             #       file_id = self.id)
@@ -501,7 +515,6 @@ class File(Base, Caching):
         file['instance_list'] = [instance.serialize_with_label() for instance in instance_list]
 
         return file
-
 
     def serialize_annotations_only(self):
 
@@ -829,8 +842,8 @@ class File(Base, Caching):
         session.flush()
 
         schema.add_label_file(
-            session = session, 
-            label_file_id = file.id, 
+            session = session,
+            label_file_id = file.id,
             member_created_id = member.id)
 
         # In the future this could handle other label caching
@@ -850,24 +863,26 @@ class File(Base, Caching):
 
     @staticmethod
     def new(session,
-            working_dir_id=None,
-            project_id=None,
-            file_type=None,
-            image_id=None,
-            point_cloud_id=None,
-            text_file_id=None,
-            audio_file_id=None,
-            video_id=None,
-            frame_number=None,
-            label_id=None,
-            colour=None,
-            original_filename=None,
-            video_parent_file=None,
-            text_tokenizer=None,
-            input_id=None,
-            parent_id=None,
-            task=None,
-            file_metadata=None
+            working_dir_id = None,
+            project_id = None,
+            file_type = None,
+            image_id = None,
+            point_cloud_id = None,
+            text_file_id = None,
+            audio_file_id = None,
+            video_id = None,
+            connection_id = None,
+            bucket_name = None,
+            frame_number = None,
+            label_id = None,
+            colour = None,
+            original_filename = None,
+            video_parent_file = None,
+            text_tokenizer = None,
+            input_id = None,
+            parent_id = None,
+            task = None,
+            file_metadata = None
             ):
         """
         "file_added" case
@@ -899,24 +914,26 @@ class File(Base, Caching):
             video_parent_file_id = video_parent_file.id
 
         file = File(
-            original_filename=original_filename,
-            image_id=image_id,
-            point_cloud_id=point_cloud_id,
-            state="added",
-            type=file_type,
-            project_id=project_id,
-            label_id=label_id,
-            audio_file_id=audio_file_id,
-            text_file_id=text_file_id,
-            video_id=video_id,
-            video_parent_file_id=video_parent_file_id,
-            frame_number=frame_number,
-            colour=colour,
-            input_id=input_id,
-            parent_id=parent_id,
-            task=task,
-            file_metadata=file_metadata,
-            text_tokenizer=text_tokenizer
+            original_filename = original_filename,
+            image_id = image_id,
+            point_cloud_id = point_cloud_id,
+            state = "added",
+            type = file_type,
+            project_id = project_id,
+            label_id = label_id,
+            audio_file_id = audio_file_id,
+            text_file_id = text_file_id,
+            bucket_name = bucket_name,
+            connection_id = connection_id,
+            video_id = video_id,
+            video_parent_file_id = video_parent_file_id,
+            frame_number = frame_number,
+            colour = colour,
+            input_id = input_id,
+            parent_id = parent_id,
+            task = task,
+            file_metadata = file_metadata,
+            text_tokenizer = text_tokenizer
         )
 
         File.new_file_new_frame(file, video_parent_file)

@@ -60,14 +60,12 @@ def connection_save_api():
         },
         {'connection': dict}  # see connection_spec for spec
     ]
-
     log, input, untrusted_input = regular_input.master(
         request = request,
         spec_list = spec_list)
 
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
-
     with sessionMaker.session_scope() as session:
         connection_operations = Connection_Operations(
             session = session,

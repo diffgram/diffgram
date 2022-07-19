@@ -67,7 +67,6 @@ class SensorFusionFileProcessor:
             original_filename = pcd_file_path,
             url_signed_blob_path = blob_path
         )
-        point_cloud.regenerate_url(session = self.session)
         file_3d.point_cloud_id = point_cloud.id
         return point_cloud
 

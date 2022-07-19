@@ -8,6 +8,7 @@ from pika.channel import Channel
 logger = get_shared_logger()
 
 
+
 class ConsumerCreator:
     connection: pika.SelectConnection
     channel: Channel or None

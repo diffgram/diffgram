@@ -103,8 +103,10 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
 @Project_permissions.user_has_project(["admin", "Editor", "Viewer", "allow_if_project_is_public"])
 def api_get_labels(project_string_id):
     """
+        GET Handler to get labels from given project and Schema ID.
+    :param project_string_id:
+    :return:
     """
-
     schema_id = request.args.get('schema_id')
     log = regular_log.default()
     with sessionMaker.session_scope() as session:

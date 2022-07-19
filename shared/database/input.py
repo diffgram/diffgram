@@ -40,7 +40,7 @@ class Input(Base):
 
     #  Why not name this "source"
     # TODO naming of this attribute could probably be improved.
-    type = Column(String())  # ["from_url", "from_video_split"]
+    type = Column(String())  # ["from_url", "from_video_split", "from_blob_path"]
 
     allow_csv = Column(Boolean())
 
@@ -120,6 +120,13 @@ class Input(Base):
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys=[task_id])
     task_action = Column(String())
+
+    # Connection ID where the file is stored (if no connection provided will use default storage provider from env vars)
+    connection_id = Column(Integer, ForeignKey('connection_base.id'))
+    connection = relationship("Connection", foreign_keys = [connection_id])
+
+    # Bucket name for a blob path file
+    bucket_name = Column(String())
 
     external_map_id = Column(Integer, ForeignKey('external_map.id'))
     external_map = relationship("ExternalMap", foreign_keys=[external_map_id])

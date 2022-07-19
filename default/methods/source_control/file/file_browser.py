@@ -375,7 +375,6 @@ def view_file_list_web_route(project_string_id, username):
 
         if directory is False:
             return jsonify("Error with directory"), 400
-
         user = User.get(session)
         member = None
         if user:
@@ -394,7 +393,6 @@ def view_file_list_web_route(project_string_id, username):
             metadata_proposed = metadata_proposed,
             member = member
         )
-
         output_file_list = file_browser_instance.file_view_core(
             mode = "serialize")
 

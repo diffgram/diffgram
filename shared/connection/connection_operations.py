@@ -36,7 +36,19 @@ connection_spec_list = [
         'required': False
     }
     },
+    {"aws_v4_signature": {
+        'default': False,
+        'kind': bool,
+        'required': False
+    }
+    },
     {"private_id": {
+        'default': None,
+        'kind': str,
+        'required': False
+    }
+    },
+    {"aws_region": {
         'default': None,
         'kind': str,
         'required': False
@@ -141,8 +153,6 @@ class Connection_Operations():
         if self.fernet is None:
             raise Exception('Fernet not defined.')
 
-   
-
     def get_existing_connection(self, connection_id):
         """
         No permissions checking
@@ -195,7 +205,6 @@ class Connection_Operations():
         self.permission_scope = permission_scope
 
         if permission_scope == "project":
-
             project_role_list = ["admin"]
 
             Project_permissions.by_project_core(
@@ -214,6 +223,7 @@ class Connection_Operations():
             connection_id = self.connection_id,
             project = self.project
         )
+
         if len(self.log["error"].keys()) >= 1:
             return
 
@@ -254,14 +264,13 @@ class Connection_Operations():
                 member = self.member,
                 project = project)
 
-
     def self_test(self):
 
         self.init_cryptography()
 
         message = "attack at dawn"
         encrypted_message = self.encrypt_secret(message)
-        
+
         if message == encrypted_message:
             raise Exception("Encryption failed")
 
@@ -270,7 +279,6 @@ class Connection_Operations():
             raise Exception("Decryption failed")
 
         logger.info("init_cryptography() self test success")
-
 
     def encrypt_secret(self, secret) -> str:
         """
@@ -383,6 +391,8 @@ class Connection_Operations():
         self.connection.integration_name = metadata.get('integration_name')
         self.connection.private_host = metadata.get('private_host')
         self.connection.disabled_ssl_verify = bool(metadata.get('disabled_ssl_verify', False))
+        self.connection.aws_v4_signature = bool(metadata.get('aws_v4_signature', False))
+        self.connection.aws_region = metadata.get('aws_region', 'us-west-1')
         self.connection.private_id = metadata.get('private_id')
         self.connection.account_email = metadata.get('account_email')
         self.connection.project_id_external = metadata.get('project_id_external')
