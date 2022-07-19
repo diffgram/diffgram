@@ -101,21 +101,17 @@ def tag_view_by_project(project_string_id):
 	with sessionMaker.session_scope() as session:
 
 		project = Project.get_project(session, project_string_id)
-		if project is None:
-			return jsonify(success=False), 400, {'ContentType':'application/json'}
 		
-		tag_list = project.serialize_tag_list_PUBLIC()
+		tag_list = Tag.get_by_project(project_id = project.id)
+
+		tag_list_serailized = []
+		for tag in tag_list:
+		    tag_list_serailized.append(tag.serialize())
+
 		out = jsonify(	success=True,
-						tag_list=tag_list)
+						tag_list=tag_list_serailized)
 
 		return out, 200, {'ContentType':'application/json'}
-
-
-# TODO add general permissions
-# TODO review permissions for private project tags
-
-# Handling tag privacy may be slightly complex
-# As projects change and tags many to many
 
 
 @routes.route('/api/tags/public/list', 
