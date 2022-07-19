@@ -132,6 +132,8 @@
             </project_org_select>
           -->
 
+          {{tag_list}}
+
           <v-toolbar-items class="pt-4 pl-4 pr-4">
 
             <v-text-field v-model="text_search"
@@ -664,6 +666,9 @@
           metadata_limit: 10,
           error_sample_data: {},
 
+          tag_loading: false,
+          tag_list: [],
+
           request_next_page_flag: false,
           request_next_page_available: true,
 
@@ -932,6 +937,7 @@
         },
         async mount() {
           await this.job_list_api()
+          this.tag_list_api()
         },
 
         item_changed() {
@@ -940,6 +946,32 @@
         search_jobs: debounce(async function () {
           this.job_list_api();
         }, 200),
+
+
+        tag_list_api() {
+
+          this.tag_loading = true
+
+          axios.get('/api/v1/project/' + this.store.state.project.project_string_id +
+              '/tags/list', {
+
+          }).then(response => {
+
+            if (response.data['tag_list'] != null) {
+
+              this.tag_list = response.data['tag_list']
+            }
+
+            this.tag_loading = false
+
+          })
+            .catch(error => {
+              console.error(error);
+              this.tag_loading = false
+            });
+        },
+
+
         job_list_api() {
 
           this.loading = true
