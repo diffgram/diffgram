@@ -2,7 +2,51 @@ import {Node} from "../interfaces/TreeNode";
 
 let root_path: Array<any> = [];
 
-export const find_all_parents = (id, array, global_tracker = []) => {
+// export const find_all_parents = (id, array, global_tracker = []) => {
+//   const local_tracker = []
+//   const current_node = array.find(node => node.get_id() === id)
+
+//   let working_node = current_node
+
+//   const nodes_to_return = []
+//   nodes_to_return.push(current_node)
+//   local_tracker.push(current_node.get_id());
+
+//   if (
+//     !current_node.get_parent() || 
+//     local_tracker.includes(current_node.get_parent()) ||
+//     global_tracker.includes(current_node.get_parent())
+//   ) {
+//     return { nodes_to_return, local_tracker }
+//   };
+
+//   let checker_node = array.find(node => {
+//     return node.get_id() === working_node.get_parent()
+//   })
+
+//   function find_parent() {
+//       if (
+//         local_tracker.includes(current_node.get_parent()) ||
+//         global_tracker.includes(current_node.get_parent())
+//       ) return { nodes_to_return, local_tracker }
+  
+//       checker_node = array.find(node => {
+//         return node.get_id() === working_node.get_parent()
+//       })
+//       console.log("here")
+      
+//       nodes_to_return.push(checker_node)
+//       local_tracker.push(checker_node.get_id())
+//       working_node = checker_node
+//       setTimeout(find_parent, 0)
+//   }
+
+//   find_parent()
+
+//   return { nodes_to_return, local_tracker }
+// }
+
+export const find_all_parents = (id, array, global_tracker) => {
   const local_tracker = []
   const current_node = array.find(node => node.get_id() === id)
 
@@ -13,36 +57,28 @@ export const find_all_parents = (id, array, global_tracker = []) => {
   local_tracker.push(current_node.get_id());
 
   if (
-    !current_node.get_parent() || 
-    local_tracker.includes(current_node.get_parent()) ||
-    global_tracker.includes(current_node.get_parent())
-  ) {
-    return { nodes_to_return, local_tracker }
-  };
+      !current_node.get_parent() || 
+      local_tracker.includes(current_node.get_parent()) || 
+      global_tracker.includes(current_node.get_parent())
+    ) return { nodes_to_return, local_tracker }
 
-  let checker_node = array.find(node => {
-    return node.get_id() === working_node.get_parent()
-  })
-
-  function find_parent() {
-      if (
-        local_tracker.includes(current_node.get_parent()) ||
-        global_tracker.includes(current_node.get_parent())
-      ) return { nodes_to_return, local_tracker }
-  
-      checker_node = array.find(node => {
-        return node.get_id() === working_node.get_parent()
-      })
-      
-      nodes_to_return.push(checker_node)
-      local_tracker.push(checker_node.get_id())
-      working_node = checker_node
-      setTimeout(find_parent, 0)
+  while(working_node && working_node.get_parent()) {
+    const checker_node = array.find(node => {
+      return node.get_id() === working_node.get_parent()
+    })
+    nodes_to_return.push(checker_node)
+    local_tracker.push(checker_node.get_id())
+    working_node = checker_node
   }
 
-  find_parent()
+  return {nodes_to_return, local_tracker}
+}
 
-  return { nodes_to_return, local_tracker }
+export const tree_parents = (id, array, global_tracker = []) => {
+  return new Promise((resolve, reject) => {
+    const result = find_all_parents(id, array, global_tracker)
+    resolve(result)
+  })
 }
 
 export const find_all_relatives = (id, array) => {

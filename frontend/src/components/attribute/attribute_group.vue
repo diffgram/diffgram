@@ -168,8 +168,13 @@
             <p v-if="tree_force_rerender">
               Searching...
             </p>
-            <v-treeview
+            <v-lazy
               v-else
+              :options="{
+                threshold: 0.3
+              }"
+            >
+            <v-treeview
               :items="tree_items"
               :load-children="load_clidren"
               :open-all="search ? true : false"
@@ -182,6 +187,7 @@
                   />
               </template>
             </v-treeview>
+            </v-lazy>
           </v-card>
 
         </v-layout>
@@ -503,7 +509,7 @@
   import label_select_only from '../label/label_select_only.vue'
   import attribute_kind_icons from './attribute_kind_icons';
   import attribute_group_wizard from './attribute_group_wizard';
-  import { construct_tree, find_all_parents } from "../../helpers/tree_view/construct_tree"
+  import { construct_tree, tree_parents } from "../../helpers/tree_view/construct_tree"
   import { TreeNode } from "../../helpers/tree_view/Node"
 
   import Vue from "vue";
@@ -764,7 +770,7 @@
 
           this.set_tree(template_list)
         },
-        tree_search: function(e) {
+        tree_search: async function(e) {
           this.tree_items_list = []
 
           if (!this.search) {
@@ -794,8 +800,8 @@
           const local_nodes = []
           const global_tracker = []
 
-          selected_nodes.map(node => {
-            const result = find_all_parents(node.id, [...all_nodes], global_tracker)
+          await selected_nodes.map(async node => {
+            const result = await tree_parents(node.id, [...all_nodes], global_tracker)
             local_nodes.push(...result.nodes_to_return)
             global_tracker.push(...result.local_tracker)
           })
