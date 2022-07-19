@@ -19,6 +19,7 @@ from shared.permissions.project_permissions import Project_permissions
 
 
 
+# LEGACY Route TBD
 @routes.route('/api/project/<string:project_string_id>/tags/update', 
 			  methods=['POST'])
 @Project_permissions.user_has_project(["admin", "Editor"])
@@ -29,6 +30,8 @@ def update_tags(project_string_id):
 	Update tags to latest
 
 	"""
+	return
+
 	have_error = False
 	error_message_list = []
 
@@ -113,21 +116,3 @@ def tag_view_by_project(project_string_id):
 
 		return out, 200, {'ContentType':'application/json'}
 
-
-@routes.route('/api/tags/public/list', 
-			  methods=['GET'])
-def tag_view_all_public():        
-
-	with sessionMaker.session_scope() as session:
-
-		tag_list = session.query(Tag).filter(
-					Tag.is_public == True).all()
-
-		tag_list_serailized = []
-		for tag in tag_list:
-			tag_list_serailized.append(tag.name)
-
-		out = jsonify(	success=True,
-						tag_list=tag_list_serailized)
-
-		return out, 200, {'ContentType':'application/json'}
