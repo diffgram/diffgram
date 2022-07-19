@@ -147,6 +147,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
     """
     if not blob_object.url_signed_blob_path:
         return
+
     should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(blob_object, session)
 
     if should_regenerate is not True: 
@@ -157,7 +158,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
         bucket_name = bucket_name)
 
     if strategy == "default":
-        logger.info(f'Generate Signed Url with connection {connection_id} on bucket {bucket_name}')
+
         blob_object, log = default_url_regenerate(
             session = session,
             blob_object = blob_object,
@@ -165,6 +166,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
         )
 
     if strategy == "connection":
+        logger.info(f'Generate Signed Url with connection {connection_id} on bucket {bucket_name}')
         blob_object, log = connection_url_regenerate(
             session = session,
             blob_object = blob_object,
