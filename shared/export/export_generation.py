@@ -31,12 +31,12 @@ def try_to_commit(session):
 
 
 def new_external_export(
-        session,
-        project,
-        export_id,
-        member,
-        version = None,
-        working_dir = None):
+    session,
+    project,
+    export_id,
+    member,
+    version = None,
+    working_dir = None):
     """
     Create a new export data file
 
@@ -121,7 +121,6 @@ def new_external_export(
     filename = generate_file_name_from_export(export, session)
 
     if export.kind == "Annotations":
-
         export.json_blob_name = settings.EXPORT_DIR + \
                                 str(export.id) + filename + '.json'
 
@@ -334,11 +333,13 @@ def build_packet(file,
     if file.type == "sensor_fusion":
         return build_sensor_fusion_packet(file, session, file_comparison_mode)
 
-def build_geopacket(file, session, file_comparison_mode="latest"):
+
+def build_geopacket(file, session, file_comparison_mode = "latest"):
     geo_assets = file.get_geo_assets(session = session)
     assets_serialized = []
     for asset in geo_assets:
-        asset.regenerate_url(session = session)
+        # Serialization triggers URL generation
+        asset.serialize(session = session)
         geo_dict = {
             'original_filename': asset.original_filename,
             'signed_expiry': asset.url_signed_expiry,
@@ -493,7 +494,7 @@ def build_image_packet(
     Generic method to generate a dict of information given a file
     """
 
-    file.image.regenerate_url(session = session)
+    file.image.serialize_for_source_control(session = session)
 
     image_dict = {'width': file.image.width,
                   'height': file.image.height,
@@ -550,7 +551,7 @@ def build_text_packet(
     Generic method to generate a dict of information given a file
     """
 
-    file.text_file.regenerate_url(session = session)
+    file.text_file.serialize(session = session)
     tokens = file.text_file.get_text_tokens(file.text_tokenizer)
     text_dict = {
         'original_filename': file.text_file.original_filename,
@@ -618,7 +619,7 @@ def build_sensor_fusion_packet(
     point_cloud_dict = {}
     point_cloud_file = file.get_child_point_cloud_file(session = session);
     if point_cloud_file:
-        point_cloud_file.point_cloud.regenerate_url(session = session)
+        point_cloud_file.point_cloud.serialize(session = session)
         point_cloud_dict = {
             'original_filename': point_cloud_file.point_cloud.original_filename,
             'image_signed_expiry': point_cloud_file.point_cloud.url_signed_expiry,
@@ -758,7 +759,6 @@ def build_instance(instance, include_label = False):
     if instance.type == 'keypoints':
         out['nodes'] = instance.nodes
         out['edges'] = instance.edges
-
 
     if instance.type == 'cuboid_3d':
         out['rotation_euler_angles'] = instance.rotation_euler_angles

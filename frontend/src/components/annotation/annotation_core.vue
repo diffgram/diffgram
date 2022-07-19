@@ -518,17 +518,16 @@
             >
             </ghost_canvas_available_alert>
 
-            <div v-if="file_cant_be_accessed && !loading">
-              <v_error_multiple :error="{
-                error: 'Storage error. Error accessing BLOB',
-                descriptive: 'You may not have permissions. If you are an Admin, check storage config and signed URL settings.'
-              }"> </v_error_multiple>
-
+            <div v-if="file_cant_be_accessed && !loading"
+                 class="d-flex flex-column justify-center align-center"
+                 style="min-width: 750px; min-height: 750px; border: 1px solid #e0e0e0">
+              <v-icon size="450">mdi-download-off</v-icon>
               <div v-if="file && file.image">
-                URL Attempted To be Used: {{file.image.url_signed}}
+               <p>
+                 URL Attempted To be Used: {{file.image.url_signed ? file.image.url_signed : "null"}}
+               </p>
               </div>
-
-               {{file_cant_be_accessed_error}}
+              <v_error_multiple :error="file_cant_be_accessed_error"> </v_error_multiple>
             </div>
 
             <canvas
@@ -4693,7 +4692,10 @@ export default Vue.extend({
 
       if (this.draw_mode == false) {
         if (this.lock_point_hover_change == false) {
-          this.canvas_element.style.cursor = "default";
+          if(this.canvas_element){
+            this.canvas_element.style.cursor = "default";
+          }
+
         }
 
         this.detect_hover_on_cuboid_corners();
@@ -4712,7 +4714,9 @@ export default Vue.extend({
 
         this.style_mouse_if_rotation();
       } else {
-        this.canvas_element.style.cursor = "default";
+        if(this.canvas_element){
+          this.canvas_element.style.cursor = "default";
+        }
       }
     },
 
@@ -5765,7 +5769,9 @@ export default Vue.extend({
         if (process.env.NODE_ENV === "testing") {
           image.crossOrigin = "anonymous";
         }
-        image.onload = () => resolve(image);
+        image.onload = () => {
+          resolve(image)
+        };
         image.onerror = reject;
       });
     },
@@ -7794,6 +7800,10 @@ export default Vue.extend({
         // maybe this.current_file should store width/height? ...
         try {
           const new_image = await this.addImageProcess(file.image.url_signed);
+          if (!file.image.width || !file.image.height){
+            file.image.width = new_image.width
+            file.image.height = new_image.height
+          }
           this.html_image = new_image;
           this.refresh = Date.now();
           await this.get_parent_instance_list_for_video();
@@ -7807,7 +7817,7 @@ export default Vue.extend({
           this.file_cant_be_accessed = true
           console.error(error);
           this.file_cant_be_accessed_error = this.$route_api_errors(error)
-
+          this.file_cant_be_accessed_error['Blob Storage error'] = 'You may not have permissions. If you are an Admin, check storage config and signed URL settings.'
         }
       }
       if (file.type === "video") {

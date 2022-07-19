@@ -1,8 +1,4 @@
-# OPENCORE - ADD
 from shared.database.common import *
-from shared.settings import settings
-from shared.database.common import data_tools
-
 
 class Image(Base):
     __tablename__ = 'image'
@@ -61,7 +57,6 @@ class Image(Base):
         return image
 
     def serialize(self):
-
         keyframe = False
 
         image = {
@@ -78,9 +73,16 @@ class Image(Base):
         }
         return image
 
-    def serialize_for_source_control(self, session = None):
-
-        self.regenerate_url(session)
+    def serialize_for_source_control(self, session = None,
+                                     connection_id = None,
+                                     bucket_name = None,
+                                     reference_file: 'File' = None):
+        from shared.url_generation import blob_regenerate_url
+        blob_regenerate_url(blob_object = self,
+                            session = session,
+                            connection_id = connection_id,
+                            bucket_name = bucket_name,
+                            reference_file = reference_file)
 
         return {
             'original_filename': self.original_filename,
@@ -92,13 +94,3 @@ class Image(Base):
             'url_signed_blob_path': self.url_signed_blob_path,
             'annotation_status': self.annotation_status
         }
-
-    def regenerate_url(self, session):
-        if not self.url_signed_blob_path: return
-        should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(self, session)
-        if should_regenerate is True:
-            self.url_signed = data_tools.build_secure_url(self.url_signed_blob_path, new_offset_in_seconds)
-            self.url_signed_thumb = data_tools.build_secure_url(self.url_signed_thumb_blob_path,
-                                                                new_offset_in_seconds)
-            self.url_signed_expiry = time.time() + new_offset_in_seconds
-            session.add(self)

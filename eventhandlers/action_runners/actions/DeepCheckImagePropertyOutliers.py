@@ -39,7 +39,6 @@ class DiffgramDataset(Dataset):
         )
         self.file_list = []
         for file in query.all():
-            #file.image.regenerate_url(session = self.session)
             self.file_list.append(file.serialize_with_type(session = session))
         self.count = count
 

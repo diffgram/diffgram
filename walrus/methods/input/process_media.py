@@ -54,7 +54,6 @@ from shared.utils.singleton import Singleton
 from methods.text_data.text_tokenizer import TextTokenizer
 from shared.utils.instance.transform_instance_utils import rotate_instance_dict_90_degrees
 
-
 data_tools = Data_tools().data_tools
 
 images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
@@ -138,10 +137,6 @@ def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
         except Exception as exception:
             logger.info(f"[Media Queue Failed] {str(exception)}")
             add_deferred_items_time = 30  # reset
-
-
-
-
 
 
 def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEUE):
@@ -1021,7 +1016,6 @@ class Process_Media():
             self.input.status = 'failed'
             self.input.update_log = self.log
 
-
     def process_sensor_fusion_json(self):
         sf_processor = SensorFusionFileProcessor(
             session = self.session,
@@ -1539,6 +1533,7 @@ class Process_Media():
             self.input.update_log = self.log
 
         return True
+
     def process_one_text_file(self):
         """
             This function will process a single text file and Create a Row in Table
@@ -1637,32 +1632,7 @@ class Process_Media():
                                                                              readed_image_width,
                                                                              readed_image_height)
 
-    def process_one_image_file(self):
-
-        """
-
-        raw_file is raw data file, not diffgram class File(object)
-        if we don't have a raw file, we use the self.input.temp_dir_path_and_filename
-
-        """
-
-
-        result = self.read_raw_file()
-        if result is False: return False
-
-        # Image() subclass
-        self.new_image = Image(
-            original_filename = self.input.original_filename)
-        self.session.add(self.new_image)
-        self.session.flush()
-
-        self.try_to_commit()
-
-        if self.project:
-            self.project_id = self.project.id
-
-        ### Main
-
+    def save_image_and_thumbnails(self):
         self.resize_raw_image()
 
         self.check_metadata_and_auto_correct_instances(
@@ -1678,6 +1648,28 @@ class Process_Media():
         if len(self.log["error"].keys()) >= 1:
             logger.error(f"Error save_raw_image_thumb")
             return
+
+    def determine_image_upload_strategy(self) -> str:
+        """
+            Determines the upload strategy based on available upload data.
+        :return:
+        """
+        if self.input.type == "from_blob_path" \
+            and self.input.bucket_name is not None \
+            and self.input.raw_data_blob_path is not None:
+            return "connection_processing"
+        else:
+            return "standard_processing"
+
+    def create_image_object_from_input(self):
+        self.new_image = Image(original_filename = self.input.original_filename)
+
+        self.session.add(self.new_image)
+        self.session.flush()
+
+        return self.new_image
+
+    def create_image_file_from_input(self):
         self.input.file = File.new(
             session = self.session,
             working_dir_id = self.working_dir_id,
@@ -1686,31 +1678,79 @@ class Process_Media():
             original_filename = self.input.original_filename,
             project_id = self.project_id,  # TODO test if project_id is working as expected here
             input_id = self.input.id,
-            file_metadata = self.input.file_metadata
-        )
+            connection_id = self.input.connection_id,
+            bucket_name = self.input.bucket_name,
+            file_metadata = self.input.file_metadata,
 
-        ###
+        )
+        return self.input.file
+
+    def connection_image_processing(self):
+
+        self.new_image = self.create_image_object_from_input()
+        # Set URL
+        self.new_image.url_signed_blob_path = self.input.raw_data_blob_path
+        self.try_to_commit()
+
+        if log_has_error(self.log):
+            return
+
+        self.input.file = self.create_image_file_from_input()
+
         self.populate_new_models_and_runs()
-        # If it's a video then we expect it will be handled by the above detection
+
+        # Handle status checks
+        if self.input.media_type == 'image':
+            if self.input.status != "failed":  # if we haven't already set a status
+                self.declare_success(self.input)
+
+    def standard_image_processing(self):
+        # Read file if it does not come from a blob
+        result = self.read_raw_file()
+        if result is False:
+            return False
+
+        self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
+                                              str(self.project_id) + "/" + str(self.new_image.id)
+
+        self.try_to_commit()
+
+        # Save thumbnails if we are uploading blobs, otherwise skip
+        self.save_image_and_thumbnails()
+        if log_has_error(self.log):
+            return
+
+        self.input.file = self.create_image_file_from_input()
+
+        self.populate_new_models_and_runs()
+
+        # Handle status checks
         if self.input.media_type == 'image':
 
             if self.input.status != "failed":  # if we haven't already set a status
-                # May need this on video too
-                # Context of for example the packet for instances attached to it
-                # Not loading successfully
-                # We default this to init so 'failed' string instead of None
                 self.declare_success(self.input)
 
-            # Question, could we just call close() on temp_dir_path_and_filename instead here?
-            # TODO review this usage vs say https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-            # basically, if the default is that delete=True on close, hmmm
+            if self.input.type != 'from_blob_path':
+                try:
+                    shutil.rmtree(self.input.temp_dir)  # delete directory
+                except OSError as exc:
+                    print("shutil error")
+                    pass
 
-            # allow_csv is True by default but gets set to False by process csv...
-            try:
-                shutil.rmtree(self.input.temp_dir)  # delete directory
-            except OSError as exc:
-                print("shutil error")
-                pass
+    def process_one_image_file(self):
+        """
+            Adds an image file into diffgram from self.input data.
+        :return:
+        """
+        self.new_image = self.create_image_object_from_input()
+        if self.project:
+            self.project_id = self.project.id
+
+        strategy = self.determine_image_upload_strategy()
+        if strategy == "connection_processing":
+            self.connection_image_processing()
+        else:
+            self.standard_image_processing()
 
         # Refresh Previews of project
         self.project.set_cache_key_dirty('preview_file_list')
@@ -1847,9 +1887,6 @@ class Process_Media():
 
     def save_raw_image_file(self):
 
-        self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
-                                              str(self.project_id) + "/" + str(self.new_image.id)
-
         # Use original file for jpg and jpeg
         extension = str(self.input.extension).lower()
         if extension in ['.jpg', '.jpeg']:
@@ -1926,8 +1963,8 @@ class Process_Media():
         self.new_audio_file.url_signed_expiry = int(time.time() + offset)  # 1 month
 
         self.new_audio_file.url_signed_blob_path = '{}{}/{}'.format(settings.PROJECT_TEXT_FILES_BASE_DIR,
-                                                                   str(self.project_id),
-                                                                   str(self.new_audio_file.id))
+                                                                    str(self.project_id),
+                                                                    str(self.new_audio_file.id))
 
         # TODO: Please review. On image there's a temp directory for resizing. But I don't feel the need for that here.
         logger.debug(f"Uploading text file from {self.input.temp_dir_path_and_filename}")
@@ -1939,7 +1976,8 @@ class Process_Media():
         )
 
         self.new_audio_file.url_signed = data_tools.build_secure_url(self.new_audio_file.url_signed_blob_path,
-                                                                    offset)
+                                                                     offset)
+
     def save_raw_text_file(self):
         offset = 2592000
         self.new_text_file.url_signed_expiry = int(time.time() + offset)  # 1 month
@@ -2473,4 +2511,3 @@ def clean_up_temp_dir(path):
     except OSError as exc:
         logger.error(f"shutil error {str(exc)}")
         pass
-
