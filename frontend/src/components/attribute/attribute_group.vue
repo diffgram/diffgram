@@ -168,17 +168,26 @@
             <p v-if="tree_force_rerender">
               Searching...
             </p>
+            <v-lazy
+              v-else
+              :options="{
+                threshold: 0.3
+              }"
+            >
             <v-treeview
-              v-if="!tree_force_rerender"
-              v-model="internal_selected"
               :items="tree_items"
-              :search="search"
-              :open-all="search && search.length > 0"
+              :load-children="load_clidren"
+              :open-all="search ? true : false"
               selectionType="independent"
-              selectable
-              open-on-click
-              @input="attribute_change"
-            />
+            >
+              <template v-slot:prepend="{ item }">
+                  <v-checkbox 
+                    :input-value="internal_selected.includes(item.id)"
+                    @change="tree_input(item)" style="margin-top: 0" hide-details 
+                  />
+              </template>
+            </v-treeview>
+            </v-lazy>
           </v-card>
 
         </v-layout>
@@ -500,7 +509,7 @@
   import label_select_only from '../label/label_select_only.vue'
   import attribute_kind_icons from './attribute_kind_icons';
   import attribute_group_wizard from './attribute_group_wizard';
-  import { construct_tree } from "../../helpers/tree_view/construct_tree"
+  import { construct_tree, tree_parents } from "../../helpers/tree_view/construct_tree"
   import { TreeNode } from "../../helpers/tree_view/Node"
 
   import Vue from "vue";
@@ -512,7 +521,6 @@
       components: {
         draggable,
         attribute,
-        attribute_new_or_update,
         label_select_only,
         attribute_kind_icons,
         attribute_group_wizard
@@ -554,6 +562,7 @@
           search: "",
           tree_force_rerender: false,
           tree_rerender_timeout: null,
+          filtered_node_list: null,
           first_load: true,
           original_kind: null,
           loading_update: null,
@@ -641,12 +650,13 @@
       },
 
       watch: {
-        search: function() {
+        search: function(newValue) {
           clearTimeout(this.tree_rerender_timeout)
           this.tree_force_rerender = true
           this.tree_rerender_timeout = setTimeout(() => {
+            this.tree_search(newValue)
             this.tree_force_rerender = false
-          }, 100)
+          }, 400)
         },
 
         // not sure if this is right thing to watch
@@ -674,7 +684,7 @@
         this.group_internal = this.$props.group
 
         if (this.group.kind === "tree") {
-          this.group.attribute_template_list.map(attr => {
+          this.group.attribute_template_list.filter(item => !item.parent_id).map(attr => {
             const new_node = new TreeNode(attr.group_id, attr.name)
             new_node.initialize_existing_node(attr.id, attr.parent_id)
             this.tree_items_list.push(new_node)
@@ -689,9 +699,10 @@
 
           const tree_array = this.internal_selected.map(item => {
             const item_node = this.tree_items_list.find(node_item => node_item.get_id() === item)
-            const { id, name } = item_node.get_API_data()
-            return {[id]: { name, "selected": true}}
-
+            if (item_node) {
+              const { id, name } = item_node.get_API_data()
+              return {[id]: { name, "selected": true}}
+            }
           })
 
           const tree_post_items = {
@@ -743,6 +754,70 @@
         }
       },
       methods: {
+        tree_input: function(e) {
+          const already_selected = this.internal_selected.includes(e.id)
+
+          if (already_selected) {
+            const index_to_delete = this.internal_selected.indexOf(e.id);
+            this.internal_selected.splice(index_to_delete, 1);
+          }
+          else this.internal_selected.push(e.id)
+
+          this.attribute_change()
+        },
+        load_clidren: function(e) {
+          let template_list = this.group.attribute_template_list.filter(item => item.parent_id === e.id)
+
+          this.set_tree(template_list)
+        },
+        tree_search: async function(e) {
+          this.tree_items_list = []
+
+          if (!this.search) {
+            this.group.attribute_template_list.filter(item => !item.parent_id).map(attr => {
+              const new_node = new TreeNode(attr.group_id, attr.name)
+              new_node.initialize_existing_node(attr.id, attr.parent_id)
+              this.tree_items_list.push(new_node)
+            })
+            this.tree_items = construct_tree(this.tree_items_list)
+            return
+          }
+
+          const res = this.group.attribute_template_list.filter(item => item.name.toLowerCase().includes(e.toLowerCase()))
+
+          const selected_nodes = res.map(item => {
+            const new_node = new TreeNode(item.group_id, item.name)
+            new_node.initialize_existing_node(item.id, item.parent_id)
+            return new_node
+          })
+
+          const all_nodes = this.group.attribute_template_list.map(item => {
+            const new_node = new TreeNode(item.group_id, item.name)
+            new_node.initialize_existing_node(item.id, item.parent_id)
+            return new_node
+          })
+
+          const local_nodes = []
+          const global_tracker = []
+
+          await selected_nodes.map(async node => {
+            const result = await tree_parents(node.id, [...all_nodes], global_tracker)
+            local_nodes.push(...result.nodes_to_return)
+            global_tracker.push(...result.local_tracker)
+          })
+
+          this.tree_items_list = [...new Set(local_nodes.map(node => node))]
+          this.tree_items = construct_tree(this.tree_items_list)
+        },
+        set_tree: function(to_tree) {
+          to_tree.map(attr => {
+            const new_node = new TreeNode(attr.group_id, attr.name)
+            new_node.initialize_existing_node(attr.id, attr.parent_id)
+            this.tree_items_list.push(new_node)
+          })
+
+          this.tree_items = construct_tree(this.tree_items_list)
+        },
         update_label_files: function(new_label_list){
           if(!this.$props.enable_wizard){
             this.$refs.label_selector.set_label_list(new_label_list)
