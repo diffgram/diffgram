@@ -19,8 +19,8 @@ class Tag(Base):
 
     color_hex = Column(String())    # FFFFFF   without leading hashtag "#"
 
-    created_time = Column(DateTime, default=datetime.datetime.utcnow)
-    last_time = Column(DateTime, onupdate=datetime.datetime.utcnow)
+    time_created = Column(DateTime, default=datetime.datetime.utcnow)
+    time_updated = Column(DateTime, onupdate=datetime.datetime.utcnow)
 
 
     def serialize(self):
@@ -133,7 +133,7 @@ class JobTag(Base):
     tag = relationship("Tag")
     project = relationship("Project")
 
-    created_time = Column(DateTime, default=datetime.datetime.utcnow)
+    time_created = Column(DateTime, default=datetime.datetime.utcnow)
 
 
     @staticmethod
