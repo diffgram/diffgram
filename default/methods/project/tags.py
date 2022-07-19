@@ -9,7 +9,6 @@ from shared.database.project import ProjectStar
 from shared.database.project import Tag
 import logging
 import sys
-import re
 import json
 from shared.helpers import sessionMaker, query_val
 from shared.helpers.permissions import LoggedIn, defaultRedirect, getUserID
@@ -18,13 +17,6 @@ from shared.permissions.general import General_permissions
 from shared.permissions.project_permissions import Project_permissions
 
 
-
-
-KEYWORD_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-
-def valid_tag(string):
-	if KEYWORD_RE.match(string):
-		return string
 
 
 @routes.route('/api/project/<string:project_string_id>/tags/update', 
