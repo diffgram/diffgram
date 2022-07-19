@@ -8,6 +8,7 @@ from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.task.job.job import Job
 from shared.utils.task import task_file_observers
 from shared.database.userscript.userscript import UserScript
+from shared.database.tag.tag import Tag
 
 
 job_new_spec_list = [
@@ -824,7 +825,7 @@ def new_or_update_core(session,
         job.completion_directory_id = completion_directory_id
 
     if tag_list:
-        job.tag_list
+        add_tags_to_job(tag_list)
 
     if is_updating:
         Event.new(
@@ -842,6 +843,25 @@ def new_or_update_core(session,
         )
     return job, log
 
+
+
+def add_tags_to_job(tag_list):
+
+
+    if len(tag_list) > 100: return
+
+    for tag in tag_list:
+
+        tag = Tag.get_or_new(
+            name = name,
+            project_id = project.id)
+
+        if tag.id is None:
+            session.add(tag)
+
+        jobtag = tag.add_to_job(job_id = job.id)
+
+        session.add(jobtag)
 
 
 def email_about_new_pro_job(job, user):
