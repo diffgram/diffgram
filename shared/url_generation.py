@@ -6,6 +6,7 @@ from shared.data_tools_core import DiffgramBlobObjectType
 from sqlalchemy.orm.session import Session
 from shared.database.image import Image
 from shared.database.source_control.file import File
+from shared.database.text_file import TextFile
 from shared.regular import regular_log
 from shared.shared_logger import get_shared_logger
 from shared.database.connection.connection import Connection
@@ -35,6 +36,14 @@ def default_url_regenerate(session: Session,
             blob_object.url_signed_thumb = data_tools.build_secure_url(blob_object.url_signed_thumb_blob_path,
                                                                        new_offset_in_seconds)
         session.add(blob_object)
+
+        # Extra assets (Depending on type)
+        if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path:
+            blob_object.url_signed_thumb = data_tools.build_secure_url(blob_object.url_signed_thumb_blob_path, new_offset_in_seconds)
+            blob_object.url_ = time.time() + new_offset_in_seconds
+        if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
+            blob_object.tokens_url_signed = data_tools.build_secure_url(blob_object.tokens_url_signed_blob_path, new_offset_in_seconds)
+
     except Exception as e:
         msg = traceback.format_exc()
         logger.error(msg)
@@ -89,7 +98,7 @@ def connection_url_regenerate(session: Session,
     member = get_member(session = session)
     params = {
         'bucket_name': bucket_name,
-        'path': blob_object.url_signed_blob_path if reference_file is None else reference_file.bl,
+        'path': blob_object.url_signed_blob_path if reference_file is None else reference_file.get_blob_path(),
         'expiration_offset': new_offset_in_seconds,
         'action_type': 'get_pre_signed_url',
         'event_data': {
@@ -104,7 +113,6 @@ def connection_url_regenerate(session: Session,
         return blob_object, log
 
     connection_strategy = ConnectionStrategy(
-        connection_class = S3Connector,
         connector_id = connection_id,
         session = session)
 
@@ -124,6 +132,14 @@ def connection_url_regenerate(session: Session,
     # Extra assets (Depending on type)
     if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path:
         params['path'] = blob_object.url_signed_thumb_blob_path
+        thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+        if regular_log.log_has_error(log):
+            return blob_object, log
+        blob_object.url_signed_thumb = thumb_signed_url
+
+    # Extra assets (Depending on type)
+    if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
+        params['path'] = blob_object.tokens_url_signed_blob_path
         thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
         if regular_log.log_has_error(log):
             return blob_object, log
@@ -157,6 +173,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
         connection_id = connection_id,
         bucket_name = bucket_name)
 
+    logger.debug(f"Regenerating with {strategy} strategy")
     if strategy == "default":
 
         blob_object, log = default_url_regenerate(
@@ -188,7 +205,7 @@ def determine_url_regenerate_strategy(connection_id,
     default_strategy = "default"
     strategy = default_strategy
 
-    if connection_id is None and bucket_name is None:
+    if connection_id is not None and bucket_name is not None:
         strategy = "connection"
 
     return strategy 

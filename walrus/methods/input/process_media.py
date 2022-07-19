@@ -139,10 +139,6 @@ def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
             add_deferred_items_time = 30  # reset
 
 
-
-
-
-
 def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEUE):
     # https://diffgram.com/docs/remote-queue-check_if_add_items_to_queue
 
@@ -1653,45 +1649,27 @@ class Process_Media():
             logger.error(f"Error save_raw_image_thumb")
             return
 
-    def process_one_image_file(self):
-
+    def determine_image_upload_strategy(self) -> str:
         """
-
-        raw_file is raw data file, not diffgram class File(object)
-        if we don't have a raw file, we use the self.input.temp_dir_path_and_filename
-
+            Determines the upload strategy based on available upload data.
+        :return:
         """
+        if self.input.type == "from_blob_path" \
+            and self.input.bucket_name is not None \
+            and self.input.raw_data_blob_path is not None:
+            return "connection_processing"
+        else:
+            return "standard_processing"
 
-        # Read file if it does not come from a blob
-        if self.input.type != 'from_blob_path':
-            result = self.read_raw_file()
-            if result is False:
-                return False
-
-        # Image() subclass
-        self.new_image = Image(
-            original_filename = self.input.original_filename)
-
+    def create_image_object_from_input(self):
+        self.new_image = Image(original_filename = self.input.original_filename)
 
         self.session.add(self.new_image)
         self.session.flush()
-        if self.input.type != 'from_blob_path':
-            self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
-                                                  str(self.project_id) + "/" + str(self.new_image.id)
-        else:
-            self.new_image.url_signed_blob_path = self.input.raw_data_blob_path
 
-        self.try_to_commit()
+        return self.new_image
 
-        if self.project:
-            self.project_id = self.project.id
-
-        # Save thumbnails if we are uploading blobs, otherwise skip
-        if self.input.type != 'from_blob_path':
-            self.save_image_and_thumbnails()
-            if log_has_error(self.log):
-                return
-
+    def create_image_file_from_input(self):
         self.input.file = File.new(
             session = self.session,
             working_dir_id = self.working_dir_id,
@@ -1705,6 +1683,44 @@ class Process_Media():
             file_metadata = self.input.file_metadata,
 
         )
+        return self.input.file
+
+    def connection_image_processing(self):
+
+        self.new_image = self.create_image_object_from_input()
+        # Set URL
+        self.new_image.url_signed_blob_path = self.input.raw_data_blob_path
+        self.try_to_commit()
+
+        if log_has_error(self.log):
+            return
+
+        self.input.file = self.create_image_file_from_input()
+
+        self.populate_new_models_and_runs()
+
+        # Handle status checks
+        if self.input.media_type == 'image':
+            if self.input.status != "failed":  # if we haven't already set a status
+                self.declare_success(self.input)
+
+    def standard_image_processing(self):
+        # Read file if it does not come from a blob
+        result = self.read_raw_file()
+        if result is False:
+            return False
+
+        self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
+                                              str(self.project_id) + "/" + str(self.new_image.id)
+
+        self.try_to_commit()
+
+        # Save thumbnails if we are uploading blobs, otherwise skip
+        self.save_image_and_thumbnails()
+        if log_has_error(self.log):
+            return
+
+        self.input.file = self.create_image_file_from_input()
 
         self.populate_new_models_and_runs()
 
@@ -1720,6 +1736,21 @@ class Process_Media():
                 except OSError as exc:
                     print("shutil error")
                     pass
+
+    def process_one_image_file(self):
+        """
+            Adds an image file into diffgram from self.input data.
+        :return:
+        """
+        self.new_image = self.create_image_object_from_input()
+        if self.project:
+            self.project_id = self.project.id
+
+        strategy = self.determine_image_upload_strategy()
+        if strategy == "connection_processing":
+            self.connection_image_processing()
+        else:
+            self.standard_image_processing()
 
         # Refresh Previews of project
         self.project.set_cache_key_dirty('preview_file_list')
@@ -2480,4 +2511,3 @@ def clean_up_temp_dir(path):
     except OSError as exc:
         logger.error(f"shutil error {str(exc)}")
         pass
-

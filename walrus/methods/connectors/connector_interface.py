@@ -144,7 +144,9 @@ def test_connection_api():
         return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
-        connector, success = ConnectionStrategy(session = session).get_connector(input['connection_id'], input)
+        conn_strategy = ConnectionStrategy(session = session)
+
+        connector, success = conn_strategy.get_connector(input['connection_id'], input)
         if not success:
             return jsonify(connector), 400
 

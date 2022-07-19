@@ -1,5 +1,6 @@
 import datetime
 from shared.database.user import User
+from dataclasses import dataclass, field
 
 from shared.connection.connection_operations import Connection_Operations
 
@@ -18,6 +19,7 @@ CONNECTIONS_MAPPING = {
 }
 
 
+@dataclass()
 class ConnectionStrategy:
 
     def __init__(self,
@@ -34,6 +36,10 @@ class ConnectionStrategy:
 
         if connector_id:
             self.set_connection(connector_id = connector_id, check_perms = False)
+
+    def __post_init__(self):
+        if not self.connection_class:
+            self.set_connection()
 
     def set_class(self):
         # The Context is that for some of the storage ones with similar patterns we use the strategy pattern

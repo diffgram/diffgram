@@ -87,14 +87,14 @@ class TextFile(Base):
         }
         return text
 
-    def regenerate_tokens_urls(self, session, new_offset_in_seconds):
+    def regenerate_tokens_urls(self, session, new_offset_in_seconds, connection_id = None, bucket_name = None):
         """
             Refresh signed URL for tokens Blob of the text file.
         :param session:
         :return:
         """
-        if self.tokens_url_signed_blob_path:
-            self.tokens_url_signed = data_tools.build_secure_url(self.tokens_url_signed_blob_path,
-                                                                 new_offset_in_seconds)
-            # self.tokens_url_signed_expiry = time.time() + new_offset_in_seconds
-            session.add(self)
+        from shared.url_generation import blob_regenerate_url
+        blob_regenerate_url(blob_object = self,
+                            session = session,
+                            connection_id = connection_id,
+                            bucket_name = bucket_name)
