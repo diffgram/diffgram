@@ -26,7 +26,10 @@ class Tag(Base):
 
     def serialize(self):
         return {
-            'name': self.name
+            'name': self.name,
+            'archived': self.archived,
+            'color_hex': self.color_hex,
+            'id': self.id
         }
 
     def valid_tag(string):
@@ -44,6 +47,18 @@ class Tag(Base):
         
         tag = session.query(Tag).filter(
             Tag.name == name,
+            Tag.project_id == project_id).first()
+
+        return tag
+
+
+    @staticmethod
+    def get_many(
+            name_list: list,
+            project_id: int):
+        
+        tag = session.query(Tag).filter(
+            Tag.name.in_(name_list),
             Tag.project_id == project_id).first()
 
         return tag
@@ -85,7 +100,6 @@ class Tag(Base):
         return tag
 
 
-
     def add_to_job(
             self,
             job_id: int
@@ -97,8 +111,16 @@ class Tag(Base):
             project_id = self.project_id
             )
 
-
         return jobtag
+
+
+    @staticmethod
+    def get_by_project(project_id: int):
+        tag_list = session.query(Tag).filter(
+            Tag.project_id == project_id).all()
+        return tag_list
+
+
 
 
 class JobTag(Base):
@@ -130,3 +152,16 @@ class JobTag(Base):
         )
 
         return jobtag
+
+
+    @staticmethod
+    def get_many(
+            name_list: list,
+            project_id: int):
+        
+        jobtag = session.query(JobTag).filter(
+            JobTag.name.in_(name_list),
+            JobTag.project_id == project_id).first()
+
+        return jobtag
+
