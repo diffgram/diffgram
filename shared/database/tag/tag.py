@@ -37,8 +37,39 @@ class Tag(Base):
     def get_random_color():
         return "%06x" % random.randint(0, 0xFFFFFF)
 
+
+    @staticmethod
+    def get(name: str,
+            project_id: int):
+        
+        tag = session.query(Tag).filter(
+            Tag.name == name,
+            Tag.project_id == project_id).first()
+
+        return tag
+
+
+    @staticmethod
+    def get_or_new(
+            name: str,
+            project_id: int):
+
+        tag = Tag.get(name = name,
+                      project_id = project_id)
+
+        if tag: return tag
+
+        tag = Tag.new(
+                name = name,
+                project_id = project_id)
+
+        return tag
+
+
+    @staticmethod
     def new(
             name: str,
+            project_id: int,            
             color_hex: str = None):
 
         if valid_tag(name) is False:
@@ -46,6 +77,7 @@ class Tag(Base):
 
         tag = Tag()
         tag.name = name
+        tag.project_id = project_id
 
         if color_hex is None:
             tag.color_hex = Tag.get_random_color()
@@ -53,13 +85,20 @@ class Tag(Base):
         return tag
 
 
-    def add_to_job():
 
-        job.tag_list
+    def add_to_job(
+            self,
+            job_id: int
+            ):
 
-        # make new tag
+        jobtag = JobTag.new(
+            job_id = job_id,
+            tag = tag,
+            project_id = self.project_id
+            )
 
-        # make new junction
+
+        return jobtag
 
 
 class JobTag(Base):
@@ -79,12 +118,14 @@ class JobTag(Base):
     @staticmethod
     def new(job_id: int,
             tag_id: int,
-            project_id: int
+            project_id: int,
+            tag
             ):
 
         jobtag = JobTag(
             job_id=job_id,
             tag_id=tag_id,
+            tag=tag,
             project_id=project_id
         )
 
