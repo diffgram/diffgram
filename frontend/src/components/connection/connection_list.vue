@@ -179,6 +179,7 @@
 import axios from '../../services/customInstance';
 import Vue from "vue";
 import {create_event} from "../event/create_event";
+import {list_connections} from "../../services/connectionService";
 
  export default Vue.extend( {
   name: 'connection_list',
@@ -446,28 +447,18 @@ import {create_event} from "../event/create_event";
       return this.headers_selected.includes(column_name)
     },
 
-    connection_list_api() {
+    async connection_list_api() {
 
       this.connection_list_loading = true
-
-      axios.post('/api/v1/connection/list', {
-
-        permission_scope: this.permission_scope,
-        project_string_id: this.project_string_id,
-        org_id: this.org_id
-
-
-      }).then(response => {
-
-        this.connection_list = response.data.connection_list
+      let [connection_list, err] = await list_connections(this.project_string_id)
+      if (err){
+        console.error(err);
         this.connection_list_loading = false
+        return
+      }
+      this.connection_list = connection_list
+      this.connection_list_loading = false
 
-      })
-      .catch(error => {
-        console.log(error);
-        this.connection_list_loading = false
-
-      });
     },
 
     item_changed() {

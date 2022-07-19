@@ -205,7 +205,7 @@ class Connection_Operations():
         self.permission_scope = permission_scope
 
         if permission_scope == "project":
-            project_role_list = ["admin"]
+            project_role_list = ["admin", "Editor", "Viewer", "allow_if_project_is_public"]
 
             Project_permissions.by_project_core(
                 project_string_id = project_string_id,
