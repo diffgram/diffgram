@@ -12,6 +12,9 @@ from shared.database.task.job.user_to_job import User_To_Job
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
+from shared.database.tag.tag import Tag
+from shared.database.tag.tag import JobTag
+
 
 @routes.route('/api/v1/job/list',
               methods = ['POST'])
@@ -100,11 +103,19 @@ def job_view_core(session,
 
     if job_type:
         query = query.filter(Job.type == job_type)
+
     if meta.get('members'):
         members = session.query(Member).filter(Member.id.in_(meta.get('members')))
         user_ids = [m.user_id for m in members]
         rels = session.query(User_To_Job).filter(User_To_Job.user_id.in_(user_ids))
         job_ids = [rel.job_id for rel in rels]
+        query = query.filter(Job.id.in_(job_ids))
+
+    if meta["tag_list"]:
+        jobtag_list = JobTag.get_many(
+            name_list = tag_list,
+            project_id = project.id)
+        job_ids = [jobtag.job_id for jobtag in jobtag_list]
         query = query.filter(Job.id.in_(job_ids))
 
     if meta["my_jobs_only"]:
