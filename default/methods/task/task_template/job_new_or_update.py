@@ -138,7 +138,14 @@ job_new_spec_list = [
         'kind': int,
         'required': False
         }
-    }
+    },
+    {"tag_list": {
+        'default': None,
+        'allow_empty': True,
+        'kind': list,
+        'required': False
+        }
+    },
 ]
 
 """
@@ -589,6 +596,7 @@ def new_web(project_string_id):
             default_userscript_id=input['default_userscript_id'],
             allow_reviews=input.get('allow_reviews'),
             review_chance=input.get('review_chance'),
+            tag_list=input.get('tag_list')
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log=log), 400
@@ -673,7 +681,8 @@ def new_or_update_core(session,
                        pro_network=False,
                        default_userscript_id=None,
                        allow_reviews=False,
-                       review_chance=0
+                       review_chance=0,
+                       tag_list=None
                        ):
     """
 
@@ -813,6 +822,9 @@ def new_or_update_core(session,
         job.set_cache_key_dirty(cache_key="attached_directories_dict")
     if completion_directory_id:
         job.completion_directory_id = completion_directory_id
+
+    if tag_list:
+        job.tag_list
 
     if is_updating:
         Event.new(
