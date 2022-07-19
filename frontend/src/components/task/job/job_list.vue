@@ -952,7 +952,7 @@
 
           this.tag_loading = true
 
-          axios.get('/api/v1/project/' + this.store.state.project.project_string_id +
+          axios.get('/api/v1/project/' + this.$store.state.project.project_string_id +
               '/tags/list', {
 
           }).then(response => {

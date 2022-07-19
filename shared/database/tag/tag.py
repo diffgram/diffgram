@@ -42,7 +42,8 @@ class Tag(Base):
 
     @staticmethod
     def get(name: str,
-            project_id: int):
+            project_id: int,
+            session):
         
         tag = session.query(Tag).filter(
             Tag.name == name,
@@ -54,7 +55,8 @@ class Tag(Base):
     @staticmethod
     def get_many(
             name_list: list,
-            project_id: int):
+            project_id: int,
+            session):
         
         tag = session.query(Tag).filter(
             Tag.name.in_(name_list),
@@ -66,7 +68,8 @@ class Tag(Base):
     @staticmethod
     def get_or_new(
             name: str,
-            project_id: int):
+            project_id: int,
+            session):
 
         tag = Tag.get(name = name,
                       project_id = project_id)
@@ -114,7 +117,8 @@ class Tag(Base):
 
 
     @staticmethod
-    def get_by_project(project_id: int):
+    def get_by_project(project_id: int, 
+                       session):
         tag_list = session.query(Tag).filter(
             Tag.project_id == project_id).all()
         return tag_list
@@ -156,7 +160,8 @@ class JobTag(Base):
     @staticmethod
     def get_many(
             name_list: list,
-            project_id: int):
+            project_id: int,
+            session):
         
         jobtag = session.query(JobTag).filter(
             JobTag.name.in_(name_list),

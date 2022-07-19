@@ -113,6 +113,7 @@ def job_view_core(session,
 
     if meta["tag_list"]:
         jobtag_list = JobTag.get_many(
+            session = session,
             name_list = tag_list,
             project_id = project.id)
         job_ids = [jobtag.job_id for jobtag in jobtag_list]

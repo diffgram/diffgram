@@ -825,7 +825,8 @@ def new_or_update_core(session,
         job.completion_directory_id = completion_directory_id
 
     if tag_list:
-        add_tags_to_job(tag_list)
+        add_tags_to_job(tag_list,
+                        session = session)
 
     if is_updating:
         Event.new(
@@ -845,7 +846,8 @@ def new_or_update_core(session,
 
 
 
-def add_tags_to_job(tag_list):
+def add_tags_to_job(tag_list,
+                    session):
 
 
     if len(tag_list) > 100: return
@@ -854,7 +856,8 @@ def add_tags_to_job(tag_list):
 
         tag = Tag.get_or_new(
             name = name,
-            project_id = project.id)
+            project_id = project.id,
+            session = session)
 
         if tag.id is None:
             session.add(tag)

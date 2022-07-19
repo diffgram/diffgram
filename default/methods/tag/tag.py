@@ -93,7 +93,7 @@ def update_tags(project_string_id):
 
 
 
-@routes.route('/api/project/<string:project_string_id>/tags/list', 
+@routes.route('/api/v1/project/<string:project_string_id>/tags/list', 
 			  methods=['GET'])
 @Project_permissions.user_has_project(["allow_if_project_is_public",
 									   "admin", 
@@ -105,7 +105,9 @@ def tag_view_by_project(project_string_id):
 
 		project = Project.get_project(session, project_string_id)
 		
-		tag_list = Tag.get_by_project(project_id = project.id)
+		tag_list = Tag.get_by_project(
+            session = session,
+            project_id = project.id)
 
 		tag_list_serailized = []
 		for tag in tag_list:
