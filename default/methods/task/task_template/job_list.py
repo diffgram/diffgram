@@ -12,6 +12,9 @@ from shared.database.task.job.user_to_job import User_To_Job
 from sqlalchemy import or_
 from sqlalchemy.orm import joinedload
 
+from shared.database.tag.tag import Tag
+from shared.database.tag.tag import JobTag
+
 
 @routes.route('/api/v1/job/list',
               methods = ['POST'])
@@ -100,11 +103,27 @@ def job_view_core(session,
 
     if job_type:
         query = query.filter(Job.type == job_type)
+
     if meta.get('members'):
         members = session.query(Member).filter(Member.id.in_(meta.get('members')))
         user_ids = [m.user_id for m in members]
         rels = session.query(User_To_Job).filter(User_To_Job.user_id.in_(user_ids))
         job_ids = [rel.job_id for rel in rels]
+        query = query.filter(Job.id.in_(job_ids))
+
+
+    project = Project.get(session, meta["project_string_id"])
+
+    if meta["tag_list"]:
+        tag_id_list = []
+        for tag in meta["tag_list"]:
+            if isinstance(tag, int):
+                tag_id_list.append(tag)
+        jobtag_list = JobTag.get_many(
+            session = session,
+            tag_id_list = tag_id_list,
+            project_id = project.id)
+        job_ids = [jobtag.job_id for jobtag in jobtag_list]
         query = query.filter(Job.id.in_(job_ids))
 
     if meta["my_jobs_only"]:
@@ -134,18 +153,6 @@ def job_view_core(session,
         if builder_or_trainer_mode == "trainer" and job_type == "Exam":
             query = query.filter(Job.is_template == True)
 
-    # Disable field, till fully supported.
-    """
-    if meta["field"]:
-        if meta["field"] != "All":
-
-            field = Field.get_by_name(session = session,
-                                      name = meta["field"])
-
-            if field:
-                query = query.filter(Job.field == field)
-    """
-    # TODO could we combine these methods seems like repetition
 
     if meta["instance_type"]:
         if meta["instance_type"] != "All":
@@ -266,6 +273,8 @@ def default_metadata(meta_proposed):
 
     meta["data_mode"] = meta_proposed.get("data_mode", None)
     meta["project_string_id"] = meta_proposed.get("project_string_id", None)
+
+    meta["tag_list"] = meta_proposed.get("tag_list", None)
 
     # SPECIAL for now, condition on string None instead of actual None
     # Since we are naively sending string None from front end if an org exists
