@@ -12,6 +12,7 @@ from shared.database.account.account import Account
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
 from shared.database.labels.label import Label
+from shared.database.tag.tag import Tag
 
 
 class Project(Base, Caching):
@@ -733,21 +734,6 @@ class ProjectTag(Base):
         self.project = project
         self.tag = tag
 
-
-class Tag(Base):
-    __tablename__ = 'tag'
-    id = Column(Integer, primary_key = True)
-
-    is_public = Column(Boolean)
-
-    count = Column(Integer)
-
-    name = Column('name', String(64))
-
-    def serialize(self):
-        return {
-            'name': self.name
-        }
 
 
 class ProjectStar(Base):

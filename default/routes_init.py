@@ -45,7 +45,6 @@ def do_routes_importing():
     from methods.task.task.task_review import task_review_api
     from methods.task.task.task_complete import api_task_complete
 
-    from methods.task.file.file_attach import add_files_to_job_api
     from methods.task.file.dir_attach import update_dirs_to_job_api
     from methods.source_control.file.file_exists import file_list_exists_api
 
@@ -110,7 +109,6 @@ def do_routes_importing():
     from methods.source_control.working_dir.directory_update import update_directory_api
 
     from methods.project.star import star_status
-    from methods.project.tags import update_tags
 
     from methods.video.video_view import get_video_single_image
     from methods.video.sequence import get_sequence
@@ -178,3 +176,5 @@ def do_routes_importing():
     from methods.labels.label_schema_list import api_label_schema_list
     from methods.labels.label_schema_new import api_label_schema_new
     from methods.labels.label_schema_update import api_label_schema_update
+
+    from methods.tag.tag import tag_view_by_project
