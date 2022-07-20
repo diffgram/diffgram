@@ -72,7 +72,8 @@ class Tag(Base):
             session):
 
         tag = Tag.get(name = name,
-                      project_id = project_id)
+                      project_id = project_id,
+                      session = session)
 
         if tag: return tag
 
@@ -89,7 +90,7 @@ class Tag(Base):
             project_id: int,            
             color_hex: str = None):
 
-        if valid_tag(name) is False:
+        if Tag.valid_tag(name) is False:
             return "Invalid tag format, format is regular expression of: " + tag_format
 
         tag = Tag()
@@ -109,7 +110,7 @@ class Tag(Base):
 
         jobtag = JobTag.new(
             job_id = job_id,
-            tag = tag,
+            tag = self,
             project_id = self.project_id
             )
 
@@ -142,14 +143,13 @@ class JobTag(Base):
 
     @staticmethod
     def new(job_id: int,
-            tag_id: int,
             project_id: int,
             tag
             ):
 
         jobtag = JobTag(
             job_id=job_id,
-            tag_id=tag_id,
+
             tag=tag,
             project_id=project_id
         )

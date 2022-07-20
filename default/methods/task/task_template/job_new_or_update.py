@@ -826,7 +826,9 @@ def new_or_update_core(session,
 
     if tag_list:
         add_tags_to_job(tag_list,
-                        session = session)
+                        session = session,
+                        project = project,
+                        job = job)
 
     if is_updating:
         Event.new(
@@ -847,12 +849,14 @@ def new_or_update_core(session,
 
 
 def add_tags_to_job(tag_list,
-                    session):
+                    session,
+                    project,
+                    job):
 
 
     if len(tag_list) > 100: return
 
-    for tag in tag_list:
+    for name in tag_list:
 
         tag = Tag.get_or_new(
             name = name,
