@@ -132,13 +132,6 @@
             </project_org_select>
           -->
 
-          <tag_select
-              v-model="tag_selected_list"
-              :tag_list="tag_list"
-              @change="$emit('change', $event)"
-          >
-          </tag_select>
-
           <v-toolbar-items class="pt-4 pl-4 pr-4">
 
             <v-text-field v-model="text_search"
@@ -147,6 +140,7 @@
                           clearable>
 
             </v-text-field>
+
 
             <job_status_select
               class="ml-4"
@@ -157,6 +151,12 @@
             >
             </job_status_select>
 
+            <tag_select
+              v-model="tag_selected_list"
+              :tag_list="tag_list"
+              @change="search_jobs, $emit('change', $event)"
+            >
+            </tag_select>
 
             <job_type_select
               class="ml-4"
