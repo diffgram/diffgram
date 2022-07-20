@@ -11,6 +11,7 @@ from methods.input.process_media import add_item_to_queue
 
 from shared.database.input import Input
 from shared.database.batch.batch import InputBatch
+from shared.database.project import Project
 
 from shared.data_tools_core import Data_tools
 from shared.database.source_control.file import File
@@ -384,7 +385,13 @@ def api_project_input_from_local(project_string_id):
         temp_log["error"]["input"] = "Expecting a key 'json' in form request."
         return jsonify(log=temp_log), 400
 
-    spec_list = [{"instance_list": {
+    spec_list = [{"directory_id": {
+                     'default': None,
+                     'kind': int,
+                     'required': False
+                    }
+                 },
+                {"instance_list": {
                      'default': None,
                      'kind': list,
                      'allow_empty': True,
@@ -410,19 +417,28 @@ def api_project_input_from_local(project_string_id):
 
     with sessionMaker.session_scope() as session:
 
-        directory_id = request.headers.get('directory_id')
+        project = Project.get(session, project_string_id)
+
+        directory = WorkingDir.get_with_fallback(
+            session = session,
+            project = project,
+            directory_id = input.get('directory_id')
+        )
+        if directory is False:
+            log['error'] = f"Bad directory_id: {input.get('directory_id')}"
+            return jsonify(log=log), 400
 
         file = request.files.get('file')
         if not file:
             log['error'] = "No files"
-            return False, log, None
+            return jsonify(log=log), 400
 
         result, log, input = input_from_local(
             session=session,
             log=log,
             project_string_id=project_string_id,
             file=file,
-            directory_id = directory_id,
+            directory_id = directory.id,
             http_input = input)
 
         if result is not True:
@@ -445,12 +461,8 @@ def input_from_local(session,
                      http_input,
                      file,
                      directory_id):
-    # TODO review how we want to handle header options
-    # Especially if needs to be outside of function for python requests...
-    # immediate_mode = request.headers['immediate_mode']
-    # Issues to be careful with ie string treamtment of 'True' vs True...
-    immediate_mode = True
 
+    immediate_mode = True
 
     input = Input()
     input.directory_id = directory_id
