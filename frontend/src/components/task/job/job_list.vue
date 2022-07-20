@@ -154,7 +154,7 @@
             <tag_select
               v-model="tag_selected_list"
               :tag_list="tag_list"
-              @change="search_jobs"
+              @change="search_jobs()"
             >
             </tag_select>
 
@@ -854,7 +854,6 @@
           for (let tag of this.tag_selected_list) {
             id_list.push(tag.id)
           }
-          console.log(id_list)
           return id_list
         },
 

@@ -20,23 +20,21 @@
 
       <template v-slot:item="data">
 
-        <v-layout :data-cy="`${datacy}__select-tag`">
+        <v-layout :data-cy="`${datacy}__select-tag`"
+                  :style="style_color(data.item.color_hex)"
+                  >
             {{ data.item.name }}
         </v-layout>
 
       </template>
 
       <template v-slot:selection="data">
-        <v-chip color="data.item.name" small>
+        <v-chip :style="style_color(data.item.color_hex)">
           <template>
 
             <v-layout :data-cy="`${datacy}__select-tag`">
                 {{ data.item.name }}
             </v-layout>
-
-            <span  style="font-size: 10px">
-
-            </span>
 
           </template>
         </v-chip>
@@ -130,6 +128,10 @@ Where is a dict in data() eg  tag: {}
         on_filter: function(item, query_text, item_text){
           return item.name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())
 
+        },
+        style_color: function (hex) {
+          console.log("color: #" + hex)
+          return "color: #" + hex
         },
       }
     }
