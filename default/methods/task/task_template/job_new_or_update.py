@@ -825,10 +825,12 @@ def new_or_update_core(session,
         job.completion_directory_id = completion_directory_id
 
     if tag_list:
-        add_tags_to_job(tag_list,
-                        session = session,
-                        project = project,
-                        job = job)
+        log = add_tags_to_job(
+            tag_list,
+            session = session,
+            project = project,
+            job = job,
+            log = log)
 
     if is_updating:
         Event.new(
@@ -851,10 +853,13 @@ def new_or_update_core(session,
 def add_tags_to_job(tag_list,
                     session,
                     project,
-                    job):
+                    job,
+                    log):
 
 
-    if len(tag_list) > 100: return
+    if len(tag_list) > 100: 
+        log['info']['tag_list_length'] = f"Over limit, tags sent: {len(tag_list)}"
+        return log
 
     for name in tag_list:
 
@@ -869,6 +874,8 @@ def add_tags_to_job(tag_list,
         jobtag = tag.add_to_job(job_id = job.id)
 
         session.add(jobtag)
+
+    return log
 
 
 def email_about_new_pro_job(job, user):
