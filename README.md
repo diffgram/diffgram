@@ -264,7 +264,7 @@ Less annotation and automation costs.
 ## Stream to Training
 * NEW - [Stream Training Data is Now Available](https://medium.com/diffgram/stream-training-data-to-your-models-with-diffgram-f0f25f6688c5).
 * [Colab Notebook Example](https://colab.research.google.com/drive/1mW9AXnx1Ywuz_f090x0NLJDxlniKygSk?authuser=1#scrollTo=dzoSS_W0EqgW) || [Docs](https://diffgram.readme.io/docs/datasets#data-streaming-concepts) 
-* [Pytorch](https://diffgram.readme.io/docs/sdk-dataset-to_tensorflow)
+* [Pytorch](https://diffgram.readme.io/docs/sdk-dataset-to_pytorch)
 ||  [Tensorflow](https://diffgram.readme.io/docs/sdk-dataset-to_tensorflow)
 
 Easier and faster for data science. Less compute cost. More privacy controls. 
