@@ -130,7 +130,6 @@ Where is a dict in data() eg  tag: {}
 
         },
         style_color: function (hex) {
-          console.log("color: #" + hex)
           return "color: #" + hex
         },
       }
