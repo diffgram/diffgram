@@ -154,7 +154,7 @@
             <tag_select
               v-model="tag_selected_list"
               :tag_list="tag_list"
-              @change="search_jobs, $emit('change', $event)"
+              @change="search_jobs"
             >
             </tag_select>
 
