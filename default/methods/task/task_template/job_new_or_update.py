@@ -858,7 +858,7 @@ def add_tags_to_job(tag_list,
 
 
     if len(tag_list) > 100: 
-        log['info']['tag_list_length'] = f"Over limit, tags sent: {len(tag_list)}"
+        log['error']['tag_list_length'] = f"Over limit, tags sent: {len(tag_list)}"
         return log
 
     for name in tag_list:
