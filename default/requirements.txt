@@ -34,4 +34,4 @@ markupsafe==2.0.1
 pika
 python-keycloak
 pyjwt
-labelbox=3.23.3
+labelbox==3.23.3
