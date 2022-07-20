@@ -101,6 +101,12 @@ connection_spec_list = [
         'kind': str,
         'required': True
     }
+    },
+    {"url_signer_service": {
+        'default': None,
+        'kind': str,
+        'required': False
+    }
     }
 
     # See update_connection () for where metadata get loaded
@@ -396,6 +402,7 @@ class Connection_Operations():
         self.connection.private_id = metadata.get('private_id')
         self.connection.account_email = metadata.get('account_email')
         self.connection.project_id_external = metadata.get('project_id_external')
+        self.connection.url_signer_service = metadata.get('url_signer_service')
 
         self.connection.member_updated = self.member
 
