@@ -149,7 +149,6 @@ class JobTag(Base):
 
         jobtag = JobTag(
             job_id=job_id,
-
             tag=tag,
             project_id=project_id
         )
@@ -159,13 +158,13 @@ class JobTag(Base):
 
     @staticmethod
     def get_many(
-            name_list: list,
+            tag_id_list: list,
             project_id: int,
             session):
         
         jobtag = session.query(JobTag).filter(
-            JobTag.name.in_(name_list),
-            JobTag.project_id == project_id).first()
+            JobTag.tag_id.in_(tag_id_list),
+            JobTag.project_id == project_id).all()
 
         return jobtag
 

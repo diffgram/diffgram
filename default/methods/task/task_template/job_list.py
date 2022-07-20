@@ -115,13 +115,13 @@ def job_view_core(session,
     project = Project.get(session, meta["project_string_id"])
 
     if meta["tag_list"]:
-        tag_str_list = []
+        tag_id_list = []
         for tag in meta["tag_list"]:
-            if isinstance(tag, str):
-                tag_str_list.append(tag)
+            if isinstance(tag, int):
+                tag_id_list.append(tag)
         jobtag_list = JobTag.get_many(
             session = session,
-            name_list = tag_str_list,
+            tag_id_list = tag_id_list,
             project_id = project.id)
         job_ids = [jobtag.job_id for jobtag in jobtag_list]
         query = query.filter(Job.id.in_(job_ids))

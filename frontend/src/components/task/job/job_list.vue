@@ -849,13 +849,13 @@
 
         },
 
-        tag_selected_list_strings_only: function() {
-          let name_list = []
+        tag_selected_list_ids_only: function() {
+          let id_list = []
           for (let tag of this.tag_selected_list) {
-            name_list.push(tag.name)
+            id_list.push(tag.id)
           }
-          console.log(name_list)
-          return name_list
+          console.log(id_list)
+          return id_list
         },
 
         metadata: function () {
@@ -878,7 +878,7 @@
             'project_string_id': project_string_id,
             'org': this.org,
             'share_type': this.share_type,
-            'tag_list': this.tag_selected_list_strings_only
+            'tag_list': this.tag_selected_list_ids_only
           }
 
         }
