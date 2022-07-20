@@ -111,10 +111,17 @@ def job_view_core(session,
         job_ids = [rel.job_id for rel in rels]
         query = query.filter(Job.id.in_(job_ids))
 
+
+    project = Project.get(session, meta["project_string_id"])
+
     if meta["tag_list"]:
+        tag_str_list = []
+        for tag in meta["tag_list"]:
+            if isinstance(tag, str):
+                tag_str_list.append(tag)
         jobtag_list = JobTag.get_many(
             session = session,
-            name_list = tag_list,
+            name_list = tag_str_list,
             project_id = project.id)
         job_ids = [jobtag.job_id for jobtag in jobtag_list]
         query = query.filter(Job.id.in_(job_ids))
