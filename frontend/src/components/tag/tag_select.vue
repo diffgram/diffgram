@@ -11,6 +11,9 @@
               :disabled="loading || view_only"
               @input="$emit('input', $event)"
               @change="$emit('change', $event)"
+              @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+              @blur="$store.commit('set_user_is_typing_or_menu_open')"
+              :filter="on_filter"
               clearable
               return-object
     >
@@ -124,7 +127,10 @@ Where is a dict in data() eg  tag: {}
       },
 
       methods: {
+        on_filter: function(item, query_text, item_text){
+          return item.name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())
 
+        },
       }
     }
   )
