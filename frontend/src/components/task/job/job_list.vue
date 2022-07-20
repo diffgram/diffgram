@@ -132,7 +132,12 @@
             </project_org_select>
           -->
 
-          {{tag_list}}
+          <tag_select
+              v-model="tag_selected_list"
+              :tag_list="tag_list"
+              @change="$emit('change', $event)"
+          >
+          </tag_select>
 
           <v-toolbar-items class="pt-4 pl-4 pr-4">
 
@@ -585,8 +590,11 @@
   import job_list_card_display from '../job/job_list_card_display'
   import label_select_only from '../../label/label_select_only.vue'
 
+  import tag_select from '@/components/tag/tag_select.vue'
+
   import Vue from "vue";
   import {create_event} from "../../event/create_event";
+
 
   export default Vue.extend({
       name: 'job_list',
@@ -596,7 +604,8 @@
         job_type_select,
         project_pipelines_dialog,
         job_list_card_display,
-        label_select_only
+        label_select_only,
+        tag_select
       },
 
       props: {
@@ -668,6 +677,7 @@
 
           tag_loading: false,
           tag_list: [],
+          tag_selected_list: [],
 
           request_next_page_flag: false,
           request_next_page_available: true,
@@ -839,6 +849,15 @@
 
         },
 
+        tag_selected_list_strings_only: function() {
+          let name_list = []
+          for (let tag of this.tag_selected_list) {
+            name_list.push(tag.name)
+          }
+          console.log(name_list)
+          return name_list
+        },
+
         metadata: function () {
 
           let project_string_id = this.project_string;
@@ -858,7 +877,8 @@
             'instance_type': this.instance_type,
             'project_string_id': project_string_id,
             'org': this.org,
-            'share_type': this.share_type
+            'share_type': this.share_type,
+            'tag_list': this.tag_selected_list_strings_only
           }
 
         }
