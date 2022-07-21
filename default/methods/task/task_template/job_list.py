@@ -58,33 +58,18 @@ def job_view_core(session,
 
     """
 
-    # CAUTION some of these settings get overriden / effected by
-    # default_metadata below!!!
     meta = default_metadata(metadata_proposed)
 
     start_time = time.time()
     output_file_list = []
     limit_counter = 0
 
-    # CAUTION
-    # Multiple "modes", for output and trainer builder, maybe more in future
     builder_or_trainer_mode = meta['builder_or_trainer']['mode']
 
-    # It doesn't really make sense to have this here
-    # Should be part of some other meta data checking or something.
     if builder_or_trainer_mode not in ["builder", "trainer"]:
         raise Forbidden("Invalid builder_or_trainer_mode mode.")
 
     query = session.query(Job)
-
-    # TODO may want to make this a flag, ie in case
-    # super admin wants to see it.
-    query = query.filter(Job.hidden == False)
-
-    # Caution there's "Status" check query things buried at the bottom
-    # here
-
-    # May also want to view jobs by multiple users!!!
 
     user = User.get(session)
 
@@ -95,12 +80,10 @@ def job_view_core(session,
     ### START FILTERS ###
 
     job_type = None
+
     if meta["type"]:
         if meta["type"] != "All":
             job_type = meta["type"]
-
-    if builder_or_trainer_mode == "trainer":
-        pass
 
     if job_type:
         query = query.filter(Job.type == job_type)
@@ -111,7 +94,6 @@ def job_view_core(session,
         rels = session.query(User_To_Job).filter(User_To_Job.user_id.in_(user_ids))
         job_ids = [rel.job_id for rel in rels]
         query = query.filter(Job.id.in_(job_ids))
-
 
     project = Project.get(session, meta["project_string_id"])
 
@@ -138,19 +120,7 @@ def job_view_core(session,
 
             query = query.filter(Job.id == attached_query.c.job_id)
 
-        """
-        # Prior combo method for both builder and trainer
-        query = query.filter(or_(Job.member_created == user.member,
-                                Job.id == attached_query.c.job_id))
-        """
-
     else:
-
-        # Trainers should be able to see their instance of an exam
-        # And the templates of other exams?
-
-        # TODO not clear how this should effect builders
-
         if builder_or_trainer_mode == "trainer" and job_type == "Exam":
             query = query.filter(Job.is_template == True)
 
@@ -189,27 +159,11 @@ def job_view_core(session,
     if builder_or_trainer_mode == "trainer":
         query = query.filter(Job.status.in_(("active", "complete")))
 
-    # The by API thing is not yet supported and this is confusing things
-    # For user level search
-    # if meta["org"] == "None":
-    # Restrict trainers to market only jobs. (if no org is present)
-    # A user that wants to share the job with project should be a builder...
-
-    # TODO review this, confusing / if shared with org...
-    # One part of the issue is need better checking on what's an allowed shared type...
-
-    # CAUTION market is caps senstive
-    #	query = query.filter(Job.share_type == "market")
-
-    # If mode is trainer then force to use org id
-
     if meta["search"] is not None:
         search_text = f"%{meta['search']}%"
         query = query.filter(Job.name.ilike(search_text))
 
     query = query.order_by(Job.time_created.desc())
-
-    #### END FILTERS ###
 
     query = query.limit(meta["limit"])
     query = query.offset(meta["start_index"])
@@ -277,11 +231,6 @@ def default_metadata(meta_proposed):
 
     meta["tag_list"] = meta_proposed.get("tag_list", None)
 
-    # SPECIAL for now, condition on string None instead of actual None
-    # Since we are naively sending string None from front end if an org exists
-    # BUT if there aren't any orgs we want to run the search like normal...
-    # TODO review this
-
     meta["org"] = meta_proposed.get("org", "None")
 
     meta["share_type"] = meta_proposed.get("share_type", None)
@@ -295,7 +244,6 @@ def default_metadata(meta_proposed):
     # WIP WIP WIP
 
     #meta['name'] = meta_proposed.get("name", None)
-    #meta['search_term'] = meta_proposed.get('search_term', None)
     meta_limit_proposed = meta_proposed.get('limit', None)
         
     if meta_limit_proposed:
