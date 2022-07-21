@@ -22,11 +22,6 @@ from shared.database.tag.tag import JobTag
     Roles = ['normal_user'],
     apis_user_list = ["builder_or_trainer"])
 def job_list_api():
-    # Would prefer to check all the inputs directly
-    # But then would have to revist whole metadata proposed concept
-    # for search
-    # TODO roll this into concept of reviewing regular method's
-    # default values, ie allowing values but not requiring them
 
     spec_list = [{"metadata": dict}]
 
@@ -36,10 +31,10 @@ def job_list_api():
         return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
-        ### MAIN ###
+ 
         Job_list, metadata = job_view_core(session = session,
                                            metadata_proposed = input['metadata'])
-        ############
+     
         log['success'] = True
         return jsonify(Job_list = Job_list,
                        metadata = metadata,
@@ -60,7 +55,6 @@ def job_view_core(session,
 
     meta = default_metadata(metadata_proposed)
 
-    start_time = time.time()
     output_file_list = []
     limit_counter = 0
 
@@ -71,14 +65,17 @@ def job_view_core(session,
 
     query = session.query(Job)
 
+    ## Until refactor to support "market" better, default to project
+    ## This included the permissions
+    query = filter_by_project(session = session,
+                              project_string_id = meta["project_string_id"],
+                              query = query)
+
     user = User.get(session)
 
     if user:
         if user.last_builder_or_trainer_mode != builder_or_trainer_mode:
             raise Forbidden("Invalid user relation to builder_or_trainer_mode mode.")
-
-    ### START FILTERS ###
-
     job_type = None
 
     if meta["type"]:
@@ -97,17 +94,7 @@ def job_view_core(session,
 
     project = Project.get(session, meta["project_string_id"])
 
-    if meta["tag_list"]:
-        tag_id_list = []
-        for tag in meta["tag_list"]:
-            if isinstance(tag, int):
-                tag_id_list.append(tag)
-        jobtag_list = JobTag.get_many(
-            session = session,
-            tag_id_list = tag_id_list,
-            project_id = project.id)
-        job_ids = [jobtag.job_id for jobtag in jobtag_list]
-        query = query.filter(Job.id.in_(job_ids))
+    query = add_tag_filters(query, meta, session, project)
 
     if meta["my_jobs_only"]:
 
@@ -137,13 +124,6 @@ def job_view_core(session,
 
     if builder_or_trainer_mode == "builder":
 
-        # Permissions in wrapper on this function
-        # Note: the function filter_by_project() is taking almost 1s (most of this thanks to permissions)
-        if meta["share_type"] == "project":
-            query = filter_by_project(session = session,
-                                      project_string_id = meta["project_string_id"],
-                                      query = query)
-
         # Status can be seperate from project...
         if meta["status"]:
             if meta["status"] != "All":
@@ -151,17 +131,13 @@ def job_view_core(session,
                     meta["status"] = [meta["status"]]
                 query = query.filter(Job.status.in_(meta["status"]))
 
-        # Also assumes org is None.
-        # Actually this should be complimentary still
         if meta["share_type"] == "Market":
             query = query.filter(Job.status.in_(("active", "complete")))
 
     if builder_or_trainer_mode == "trainer":
         query = query.filter(Job.status.in_(("active", "complete")))
 
-    if meta["search"] is not None:
-        search_text = f"%{meta['search']}%"
-        query = query.filter(Job.name.ilike(search_text))
+    query = add_name_search_filter(query, meta)
 
     query = query.order_by(Job.time_created.desc())
 
@@ -178,10 +154,6 @@ def job_view_core(session,
 
         for job in job_list:
 
-            # optional place can re run this
-            # more for edge cases
-            # job.update_file_count_statistic(session)
-
             if meta["data_mode"] == "name_and_id_only":
                 serialized = job.serialize_minimal_info()
             else:
@@ -190,17 +162,37 @@ def job_view_core(session,
             output_file_list.append(serialized)
             limit_counter += 1
 
-    timer = time.time()
-
     meta['end_index'] = meta['start_index'] + len(job_list)
     meta['length_current_page'] = len(output_file_list)
 
     if limit_counter == 0:
         meta['no_results_match_meta'] = True
 
-    end_time = time.time()
-
     return output_file_list, meta
+
+
+def add_tag_filters(query, meta, session, project):
+    if meta["tag_list"]:
+        tag_id_list = []
+        for tag in meta["tag_list"]:
+            if isinstance(tag, int):
+                tag_id_list.append(tag)
+        jobtag_list = JobTag.get_many(
+            session = session,
+            tag_id_list = tag_id_list,
+            project_id = project.id)
+        job_ids = [jobtag.job_id for jobtag in jobtag_list]
+        query = query.filter(Job.id.in_(job_ids))
+
+    return query
+
+
+def add_name_search_filter(query, meta):
+    if meta["search"] is not None:
+        search_text = f"%{meta['search']}%"
+        query = query.filter(Job.name.ilike(search_text))
+
+    return query
 
 
 def default_metadata(meta_proposed):
@@ -235,9 +227,7 @@ def default_metadata(meta_proposed):
 
     meta["share_type"] = meta_proposed.get("share_type", None)
 
-    # Temp check here...
     if meta["share_type"] not in ["market", "project", "org"]:
-        # TODO prefer returning an error I think
         meta["share_type"] = "project"
 
     """
