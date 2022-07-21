@@ -18,9 +18,6 @@ from shared.database.tag.tag import JobTag
 
 @routes.route('/api/v1/job/list',
               methods = ['POST'])
-@General_permissions.grant_permission_for(
-    Roles = ['normal_user'],
-    apis_user_list = ["builder_or_trainer"])
 def job_list_api():
 
     spec_list = [{"metadata": dict}]
