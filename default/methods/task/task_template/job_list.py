@@ -55,10 +55,7 @@ def job_view_core(session,
     output_file_list = []
     limit_counter = 0
 
-    builder_or_trainer_mode = meta['builder_or_trainer']['mode']
-
-    if builder_or_trainer_mode not in ["builder", "trainer"]:
-        raise Forbidden("Invalid builder_or_trainer_mode mode.")
+    builder_or_trainer_mode = "builder"
 
     query = session.query(Job)
 
