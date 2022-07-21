@@ -11,7 +11,7 @@
               :disabled="loading || view_only"
               @input="$emit('input', $event)"
               @change="$emit('change', $event)"
-              @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+              @focus="$emit('focus', $event); $store.commit('set_user_is_typing_or_menu_open', true)"
               @blur="$store.commit('set_user_is_typing_or_menu_open')"
               :filter="on_filter"
               clearable

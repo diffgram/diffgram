@@ -155,6 +155,8 @@
               v-model="tag_selected_list"
               :tag_list="tag_list"
               @change="search_jobs()"
+              @focus="tag_list_api()"
+
             >
             </tag_select>
 
@@ -885,7 +887,7 @@
       },
 
       created() {
-
+        this.tag_list_api()
       },
 
       async mounted() {
@@ -956,7 +958,6 @@
         },
         async mount() {
           await this.job_list_api()
-          this.tag_list_api()
         },
 
         item_changed() {
