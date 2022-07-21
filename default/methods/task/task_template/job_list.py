@@ -88,8 +88,9 @@ def job_view_core(session,
 
     user = User.get(session)
 
-    if user.last_builder_or_trainer_mode != builder_or_trainer_mode:
-        raise Forbidden("Invalid user relation to builder_or_trainer_mode mode.")
+    if user:
+        if user.last_builder_or_trainer_mode != builder_or_trainer_mode:
+            raise Forbidden("Invalid user relation to builder_or_trainer_mode mode.")
 
     ### START FILTERS ###
 
