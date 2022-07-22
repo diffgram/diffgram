@@ -1,6 +1,6 @@
-from authzed.api.v1 import Client, WriteSchemaRequest
+from spicedb.api.v1 import Client, WriteSchemaRequest
 from grpcutil import insecure_bearer_token_credentials
-from authzed.api.v1 import (
+from spicedb.api.v1 import (
     Client,
     ObjectReference,
     Relationship,
@@ -9,22 +9,6 @@ from authzed.api.v1 import (
     WriteRelationshipsRequest,
 )
 
-SCHEMA = """definition blog/user {}
-
-definition blog/post {
-    relation reader: blog/user
-    relation writer: blog/user
-
-    permission read = reader + writer
-    permission write = writer
-}"""
-
-client = Client(
-    "localhost:50051",
-    # For SpiceDB behind TLS, use:
-    # bearer_token_credentials("diffgram"),
-    insecure_bearer_token_credentials("diffgram"),
-)
 
 
 def write_schema():

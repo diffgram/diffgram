@@ -1,4 +1,4 @@
-from authzed.api.v1 import (
+from spicedb.api.v1 import (
     CheckPermissionRequest,
     CheckPermissionResponse,
     Client,

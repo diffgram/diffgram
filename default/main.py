@@ -141,6 +141,14 @@ startup_checker = DefaultServiceSystemStartupChecker()
 startup_checker.execute_startup_checks()
 print("Startup in", time.time() - start_time)
 
+# from shared.casbin_auth.poc import DiffgramPermissions
+# perms = DiffgramPermissions()
+# perms.test_file_relations()
+from shared.spicedb.authz_client import DiffgramPermissions
+perms = DiffgramPermissions()
+perms.test_rels()
+
+
 # Debug
 if __name__ == '__main__':
 
