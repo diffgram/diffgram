@@ -28,6 +28,9 @@ class WorkingDir(Base):
 
     """
     __tablename__ = 'working_dir'
+
+    __permissions__ = ["view", "edit", "delete"]
+
     id = Column(Integer, primary_key = True)
     created_time = Column(DateTime, default = datetime.datetime.utcnow)
 
