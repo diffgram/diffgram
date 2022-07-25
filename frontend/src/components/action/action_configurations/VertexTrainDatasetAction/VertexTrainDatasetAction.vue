@@ -8,10 +8,11 @@
       @open_action_selector="$emit('open_action_selector')"
       :steps_config="steps_config.generate()"
       :actions_list="actions_list"
+      :select_dataset="true"
       :action="action">
 
       <template v-slot:wizard_action_config>
-
+        <h3>Select Vertex AI dataset</h3>
       </template>
 
       <template v-slot:ongoing_usage>
@@ -42,10 +43,13 @@ export default {
     },
   },
   data (){
-    return {}
+    return {
+      steps_config: null,
+    }
   },
   mounted() {
     this.steps_config = new ActionStepsConfig()
+    this.steps_config.hide_step('pre_conditions')
   }
 }
 </script>
