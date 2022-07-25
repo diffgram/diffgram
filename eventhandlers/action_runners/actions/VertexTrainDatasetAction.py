@@ -13,8 +13,8 @@ class VertexTrainDatasetAction(ActionRunner):
     category = 'training'  # Optional
 
     # What events can this action listen to?
-    trigger_data = ActionTrigger(default_event = 'some_diffgram_event',
-                            event_list = ['some_diffgram_event'])
+    trigger_data = ActionTrigger(default_event = 'manual_trigger',
+                            event_list = ['manual_trigger'])
 
     # What pre-conditions can this action have?
     condition_data = ActionCondition(default_event = 'some_diffgram_event',
@@ -29,5 +29,6 @@ class VertexTrainDatasetAction(ActionRunner):
         return True
 
     def execute_action(self, session):
+        print("triggered")
         # Your core Action logic will go here.
         pass

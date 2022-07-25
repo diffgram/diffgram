@@ -13,6 +13,7 @@ class ActionTriggerEventTypes(Enum):
     input_file_uploaded = 'input_file_uploaded'
     input_instance_uploaded = 'input_instance_uploaded'
     action_completed = 'action_completed'
+    manual_trigger = 'manual_trigger'
 
 
 class ActionKinds(Enum):
