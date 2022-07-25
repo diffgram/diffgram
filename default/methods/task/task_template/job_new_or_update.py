@@ -8,6 +8,7 @@ from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.task.job.job import Job
 from shared.utils.task import task_file_observers
 from shared.database.userscript.userscript import UserScript
+from shared.database.tag.tag import Tag
 
 
 job_new_spec_list = [
@@ -138,7 +139,14 @@ job_new_spec_list = [
         'kind': int,
         'required': False
         }
-    }
+    },
+    {"tag_list": {
+        'default': None,
+        'allow_empty': True,
+        'kind': list,
+        'required': False
+        }
+    },
 ]
 
 """
@@ -589,6 +597,7 @@ def new_web(project_string_id):
             default_userscript_id=input['default_userscript_id'],
             allow_reviews=input.get('allow_reviews'),
             review_chance=input.get('review_chance'),
+            tag_list=input.get('tag_list')
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log=log), 400
@@ -673,7 +682,8 @@ def new_or_update_core(session,
                        pro_network=False,
                        default_userscript_id=None,
                        allow_reviews=False,
-                       review_chance=0
+                       review_chance=0,
+                       tag_list=None
                        ):
     """
 
@@ -814,6 +824,14 @@ def new_or_update_core(session,
     if completion_directory_id:
         job.completion_directory_id = completion_directory_id
 
+    if tag_list:
+        log = add_tags_to_job(
+            tag_list,
+            session = session,
+            project = project,
+            job = job,
+            log = log)
+
     if is_updating:
         Event.new(
             kind="update_job",
@@ -830,6 +848,34 @@ def new_or_update_core(session,
         )
     return job, log
 
+
+
+def add_tags_to_job(tag_list,
+                    session,
+                    project,
+                    job,
+                    log):
+
+
+    if len(tag_list) > 100: 
+        log['error']['tag_list_length'] = f"Over limit, tags sent: {len(tag_list)}"
+        return log
+
+    for name in tag_list:
+
+        tag = Tag.get_or_new(
+            name = name,
+            project_id = project.id,
+            session = session)
+
+        if tag.id is None:
+            session.add(tag)
+
+        jobtag = tag.add_to_job(job_id = job.id)
+
+        session.add(jobtag)
+
+    return log
 
 
 def email_about_new_pro_job(job, user):
