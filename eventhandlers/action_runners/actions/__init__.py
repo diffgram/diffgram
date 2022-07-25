@@ -37,3 +37,9 @@ except:
 
 
 
+
+try:
+    from .VertexTrainDatasetAction import VertexTrainDatasetAction
+    ACTION_RUNNERS_KIND_MAPPER[VertexTrainDatasetAction.kind] = VertexTrainDatasetAction
+except:
+    logger.error(traceback.format_exc())
