@@ -117,6 +117,13 @@ def setSecureCookie(user_db):
     login_session['user_id'] = cookie_hash
 
 
+def get_session_string():
+    if settings.USE_OAUTH2:
+        return get_decoded_jwt_from_session()
+    else:
+        return login_session['user_id']
+
+
 def get_current_version(session):
     user = session.query(User).filter_by(id = getUserID(session = session)).first()
     project = session.query(Project).filter_by(id = user.project_id_current).first()

@@ -183,7 +183,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
         )
 
     if strategy == "connection":
-        logger.info(f'Generate Signed Url with connection {connection_id} on bucket {bucket_name}')
+        logger.debug(f'Generate Signed Url with connection {connection_id} on bucket {bucket_name}')
         blob_object, log = connection_url_regenerate(
             session = session,
             blob_object = blob_object,
