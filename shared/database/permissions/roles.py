@@ -16,39 +16,26 @@ class Role(Base, SerializerMixin):
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project", back_populates = "star_list",
                            foreign_keys = project_id)
-    occupation_list = Column((ARRAY(String)))
+    permissions_list = Column((ARRAY(String)))
 
 
-class RolePermission(Base, SerializerMixin):
+class RoleMemberObject(Base, SerializerMixin):
     """
-        Represents a mapping between a role an a permission over an object.
+        Represents a mapping between a role and a user over an object.
         For example:
-            an admin_rol can delete dataset ID 5
+            Member ID 1 has an admin_rol on dataset ID 5
             would have
             object_id=5
             object_type=dataset
             role_id=1
-            permission="delete"
+            member_id=1
     """
-    __tablename__ = 'role_permission'
+    __tablename__ = 'role_member_object'
     member_id = Column(Integer, ForeignKey('member.id'))
     member = relationship('Member', foreign_keys = [member_id])
-
 
     object_id = Column(Integer)
     object_type = Column(String())
 
     role_id = Column(Integer, ForeignKey('role.id'))
     role = relationship("Role", foreign_keys = role_id)
-
-    permission = Column(String())
-
-
-class RoleMember(Base, SerializerMixin):
-    """
-        Mapping between a role and a member of Diffgram.
-    """
-    __tablename__ = 'role_member'
-    role_id = Column(Integer, ForeignKey('role.id'))
-    role = relationship("Role", foreign_keys = role_id)
-
