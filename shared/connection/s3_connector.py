@@ -250,8 +250,8 @@ class S3Connector(Connector):
             'Authorization': f'JWT {access_token}'
         }
         blob_name_encoded = urllib.parse.quote(blob_name, safe='')
-        url_path = f'{self.url_signer_service}/{bucket_name}/{blob_name_encoded}'
-        result = requests.get(url = url_path, headers=headers)
+        url_path = f'{self.url_signer_service}/{bucket_name}'
+        result = requests.get(url = url_path, headers=headers, params = {'key': blob_name_encoded})
         if result.status_code == 200:
             logger.debug(f'Signer URL response {result.text}')
             data = result.json()
