@@ -61,11 +61,10 @@ def get_url_from_connector(connector, params, log):
     :return:
     """
     connector.connect()
-    print('params', params)
     response = connector.fetch_data(params)
     if response is None or response.get('result') is None:
         msg = f'Error regenerating URL: {params}. Response: {response}'
-        log['error']['connector_s3_client'] = msg
+        log['error']['connector_client'] = msg
         logger.error(msg)
         return None, log
     signed_url = response.get('result')
