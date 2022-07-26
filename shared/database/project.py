@@ -1,4 +1,4 @@
-# OPENCORE - ADD
+from enum import Enum
 from shared.database.common import *
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.user import UserbaseProject
@@ -69,12 +69,6 @@ class Project(Base, Caching):
 
     api_billing_enabled = Column(Boolean)
 
-    # File list?
-
-    # May still be useful if we want to see all labels over time?
-    # But recall labels are assigned via Version now
-    # label_list = relationship("Label", back_populates="project")
-
     tag_list = association_proxy('project_tag_junction', 'tag')
 
     annotations_feedback_loop_trigger_check = Column(Boolean())
@@ -83,10 +77,6 @@ class Project(Base, Caching):
     # Does every project have a seperate settings table?
     settings = relationship("Project_settings", uselist = False, back_populates = "project")
 
-    # For now just putting it here
-    # Until process / research on optimal way to represent 1:1 relation
-
-    # Frames per second
     settings_input_video_fps = Column(Integer, default = 30)  # ie 10,  0 == all
 
     readme = Column(String())
@@ -129,6 +119,13 @@ class Project(Base, Caching):
     plan_id = Column(Integer, ForeignKey('plan.id'))
     plan = relationship('Plan',
                         foreign_keys = [plan_id])
+
+    @staticmethod
+    def get_permissions_list() -> list:
+        result = []
+        for elm in list(ProjectPermissions):
+            result.append(elm.value)
+        return result
 
     @staticmethod
     def new(session,
@@ -239,6 +236,12 @@ class Project(Base, Caching):
             name == name
         ).first()
         return project
+
+    def has_member(self, member_id) -> bool:
+        for user in self.users:
+            if user.member_id == member_id:
+                return True
+        return False
 
     @staticmethod
     def list(
@@ -516,7 +519,7 @@ class Project(Base, Caching):
         return attribute_groups_serialized_list
 
     def get_default_schema(self, session):
-        return LabelSchema.get_default(session=session, project_id=self.id)
+        return LabelSchema.get_default(session = session, project_id = self.id)
 
     def get_label_list(self, session, directory, schema_id = None):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
@@ -766,3 +769,12 @@ class ProjectStar(Base):
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project", back_populates = "star_list",
                            foreign_keys = project_id)
+
+
+class ProjectPermissions(Enum):
+    project_create_billing_account = 'project_create_billing_account'
+    project_list_inputs = 'project_list_inputs'
+    project_job_list = 'project_job_list'
+    project_delete = 'project_delete'
+    project_edit = 'project_edit'
+    project_invite_members = 'project_invite_members'

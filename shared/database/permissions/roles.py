@@ -1,6 +1,13 @@
 # OPENCORE - ADD
 from shared.database.common import *
 from sqlalchemy_serializer import SerializerMixin
+from shared.shared_logger import get_shared_logger
+from shared.database.project import Project
+from shared.database.source_control.working_dir import WorkingDir
+from shared.database.auth.member import Member
+from sqlalchemy.orm.attributes import flag_modified
+
+logger = get_shared_logger()
 
 
 class Role(Base, SerializerMixin):
@@ -12,11 +19,96 @@ class Role(Base, SerializerMixin):
     __tablename__ = 'role'
 
     id = Column(Integer, primary_key = True)
-    name = Column(String(250))
+    name = Column(String())
     project_id = Column(Integer, ForeignKey('project.id'))
-    project = relationship("Project", back_populates = "star_list",
-                           foreign_keys = project_id)
-    permissions_list = Column((ARRAY(String)))
+    project = relationship("Project", foreign_keys = project_id)
+    permissions_list = Column((ARRAY(String)), server_default="{}")
+
+    @staticmethod
+    def new(session, project_id, name, permissions_list = None, add_to_session = True, flush_session = True):
+        print('AAA', project_id, name, permissions_list)
+        role = Role(
+            name = name,
+            project_id = project_id,
+            permissions_list = permissions_list
+        )
+        if add_to_session:
+            session.add(role)
+        if flush_session:
+            session.flush()
+        return role
+
+    @staticmethod
+    def list(session, project_id):
+        role_list = session.query(Role).filter(
+            Role.project_id == project_id
+        ).all()
+        return role_list
+
+    @staticmethod
+    def get_by_name_and_project(session: 'Session', project_id: int, name: str):
+        role = session.query(Role).filter(
+            Role.project_id == project_id,
+            Role.name == name
+        ).first()
+        return role
+
+    @staticmethod
+    def get_by_id(session, role_id):
+        role = session.query(Role).filter(
+            Role.id == role_id
+        ).first()
+        return role
+
+    def serialize(self):
+        data = self.to_dict(rules = ('-project',))
+        return data
+
+    def check_permission_for_object_type(self, permission: str, obj_type: str, log: dict) -> [bool, dict]:
+        if obj_type == 'project':
+            class_type = Project
+
+        elif obj_type == 'dataset':
+            class_type = WorkingDir
+        else:
+            msg = f'Invalid object type {obj_type}'
+            log['error']['permission'] = msg
+            logger.error(msg)
+
+        perms_list = class_type.get_permissions_list()
+        if permission in perms_list:
+            return True, log
+        else:
+            msg = f'permission {permission} not in permission list {perms_list} for type{obj_type}'
+            log['error']['permission'] = msg
+            logger.error(msg)
+            return False, log
+
+    def add_permission(self, session, perm: str, obj_type: str, log: dict) -> ['Role', dict]:
+        valid, log = self.check_permission_for_object_type(
+            permission = perm,
+            obj_type = obj_type,
+            log = log
+        )
+        if not valid:
+            return None, log
+        self.permissions_list.append(perm)
+        flag_modified(self, 'permissions_list')
+        session.add(self)
+        return self
+
+    def remove_permission(self, session, perm: str, obj_type: str, log: dict) -> ['Role', dict]:
+        valid, log = self.check_permission_for_object_type(
+            permission = perm,
+            obj_type = obj_type,
+            log = log
+        )
+        if not valid:
+            return None, log
+        self.permissions_list.remove(perm)
+        flag_modified(self, 'permissions_list')
+        session.add(self)
+        return self
 
 
 class RoleMemberObject(Base, SerializerMixin):
@@ -31,6 +123,7 @@ class RoleMemberObject(Base, SerializerMixin):
             member_id=1
     """
     __tablename__ = 'role_member_object'
+    id = Column(Integer, primary_key = True)
     member_id = Column(Integer, ForeignKey('member.id'))
     member = relationship('Member', foreign_keys = [member_id])
 
@@ -39,3 +132,39 @@ class RoleMemberObject(Base, SerializerMixin):
 
     role_id = Column(Integer, ForeignKey('role.id'))
     role = relationship("Role", foreign_keys = role_id)
+
+    @staticmethod
+    def check_object_type(self, obj_type: str, log: dict) -> [bool, dict]:
+        if obj_type == 'project':
+            return True, log
+        elif obj_type == 'dataset':
+            return True, log
+        else:
+            msg = f'Invalid object type {obj_type}'
+            log['error']['permission'] = msg
+            logger.error(msg)
+            return False, log
+
+    @staticmethod
+    def new(session,
+            member_id: int,
+            object_id: int,
+            object_type: str,
+            role_id: int,
+            add_to_session = True,
+            flush_session = True):
+        role = RoleMemberObject(
+            member_id = member_id,
+            object_id = object_id,
+            object_type = object_type,
+            role_id = role_id,
+        )
+        if add_to_session:
+            session.add(role)
+        if flush_session:
+            session.flush()
+        return role
+
+    def serialize(self):
+        data = self.to_dict(rules = ('-member', '-role',))
+        return data

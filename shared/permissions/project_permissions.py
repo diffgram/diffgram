@@ -22,7 +22,8 @@ class Project_permissions():
     @staticmethod
     def user_has_project(Roles: list,
                          apis_project_list = [],
-                         apis_user_list = ["security_email_verified"]):
+                         apis_user_list = ["security_email_verified"],
+                         with_permission: str = None):
         """
         Defaults to forbidden if no match found
 

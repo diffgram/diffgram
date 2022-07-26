@@ -20,8 +20,8 @@ def upgrade():
     op.create_table('role',
                     sa.Column('id', sa.Integer(), nullable = False),
                     sa.Column('project_id', sa.Integer(), sa.ForeignKey('project.id')),
-                    sa.Column('permissions_list', sa.Integer(), sa.ForeignKey('userbase.id')),
-                    sa.Column('name', ARRAY(sa.String)),
+                    sa.Column('name', sa.String()),
+                    sa.Column('permissions_list', ARRAY(sa.String)),
                     sa.PrimaryKeyConstraint('id')
                     )
     op.create_index('index__role_project', 'role', ['project_id'])

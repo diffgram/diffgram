@@ -12,7 +12,7 @@ stripe.api_key = settings.STRIPE_API_KEY
 @routes.route('/api/v1/project/<string:project_string_id>/account/billing/stripe/token',
               methods = ['POST'])
 @Project_permissions.user_has_project(["admin",
-                                       "Editor"])
+                                       "Editor"], with_permission = "project_create_billing_account")
 @limiter.limit("5 per day")
 def stripe_new_customer_api(project_string_id):
     spec_list = [{"account_id": int},

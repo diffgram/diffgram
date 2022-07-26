@@ -178,3 +178,10 @@ def do_routes_importing():
     from methods.labels.label_schema_list import api_label_schema_list
     from methods.labels.label_schema_new import api_label_schema_new
     from methods.labels.label_schema_update import api_label_schema_update
+
+    from methods.roles.role_new import new_role_web
+    from methods.roles.role_remove_permission import role_remove_permission_web
+    from methods.roles.role_add_permission import role_add_permission_web
+    from methods.roles.role_add_user_object import new_role_member_object_web
+    from methods.roles.role_list import list_roles_web
+    from methods.roles.role_delete import role_delete_web
