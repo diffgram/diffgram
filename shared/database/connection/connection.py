@@ -56,6 +56,7 @@ class Connection(Base):
     is_active = Column(Boolean, default=False)
     aws_v4_signature = Column(Boolean, default=False)
     aws_region = Column(String, default="us-west-1")
+    url_signer_service = Column(String, default=None)
 
     # In [project, org, diffgram_wide, future]
     permission_scope = Column(String, default="project")
@@ -114,7 +115,8 @@ class Connection(Base):
             # use built in bool to return True/False so we don't reveal (even) the encrypted info
             'exists_private_secret': bool(self.private_secret_encrypted),
             'integration_name': self.integration_name,
-            'integration_version': self.integration_version
+            'integration_version': self.integration_version,
+            'url_signer_service': self.url_signer_service
 
         }
 
