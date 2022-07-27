@@ -303,6 +303,13 @@ def validate_input_from_blob_path(project: Project, input: dict, session: Sessio
         log['error'] = {}
         log['error']['bucket_name'] = 'Provide bucket name for blob'
 
+    if input.get('media') is None or input.get('media') == {}:
+        log['error'] = {}
+        log['error']['media'] = 'Provide media data. Needs to be {"media_type": str, "url": str<optional>}'
+
+    if input.get('media') is not None and input['media'].get('type') is None:
+        log['error'] = {}
+        log['error']['media.type'] = 'Provide media type needs to be ["image", "video", "text", "audio", "csv", "sensor_fusion", "geo_tiff"]'
     if input.get('raw_data_blob_path') is None:
         log['error'] = {}
         log['error']['raw_data_blob_path'] = 'Provide raw_data_blob_path for blob'
