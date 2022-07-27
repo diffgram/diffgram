@@ -241,6 +241,19 @@
               </v-text-field>
             </v-col>
           </v-row>
+          <v-row
+            v-if="connection.integration_name && connection_form_specs[connection.integration_name].url_signer_service"
+            no-gutters>
+            <v-col>
+              <v-text-field
+                label="Optional: AWS Custom URL Signer (Empty will default to use AWS API)"
+                v-model="connection.url_signer_service"
+                @input="has_changes = true"
+                flat
+              >
+              </v-text-field>
+            </v-col>
+          </v-row>
           <v-row>
             <v-col cols="12" class="d-flex align-center">
               <p>
@@ -383,6 +396,7 @@
               private_secret: true,
               aws_v4_signature: true,
               aws_region: true,
+              url_signer_service: true,
             },
             'datasaur': {
               name: true,
@@ -485,7 +499,7 @@
           this.success_run = false
           this.loading_test = true
           this.error = {}
-
+          console.log('connectionconnectionconnectionconnection', this.connection)
           axios.post('/api/walrus/v1/connection/test', {
             connection_id: parseInt(connection_id),
 
@@ -498,7 +512,8 @@
             integration_name: this.connection.integration_name ? this.connection.integration_name : undefined,
             project_id_external: this.connection.project_id_external ? this.connection.project_id_external : undefined,
             aws_v4_signature: this.connection.aws_v4_signature ? this.connection.aws_v4_signature : undefined,
-            aws_region: this.connection.aws_region ? this.connection.aws_region : "us-west-1"
+            aws_region: this.connection.aws_region ? this.connection.aws_region : "us-west-1",
+            url_signer_service: this.connection.url_signer_service
 
           }).then(response => {
             this.success_run = true

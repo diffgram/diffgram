@@ -4,7 +4,7 @@ import traceback
 import threading
 import io
 import requests
-
+import urllib.parse
 from shared.regular.regular_api import *
 
 from shared.helpers import sessionMaker
@@ -17,7 +17,7 @@ from shared.export.export_view import export_view_core
 from shared.database.export import Export
 from shared.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.regular import regular_log
-
+from shared.helpers.permissions import get_session_string
 from shared.data_tools_core_s3 import DataToolsS3
 from botocore.config import Config
 
@@ -48,6 +48,7 @@ def with_s3_exception_handler(f):
 
 
 class S3Connector(Connector):
+    url_signer_service: str or None
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -73,6 +74,12 @@ class S3Connector(Connector):
                 config = config,
                 region_name = self.auth_data.get('aws_region')
             )
+            self.url_signer_service = None
+            if self.auth_data.get('url_signer_service') is not None and self.auth_data.get('url_signer_service') != '':
+                self.url_signer_service = self.auth_data.get('url_signer_service')
+                if self.url_signer_service.endswith('/'):
+                    # Remove trailing slash
+                    self.url_signer_service = self.url_signer_service.rstrip(self.url_signer_service[-1])
 
             return {'result': True}
         except Exception as e:
@@ -237,8 +244,26 @@ class S3Connector(Connector):
                 keys.append(content.get('Key'))
         return keys
 
+    def __custom_presign_url(self, bucket_name: str, blob_name: str) -> str or None:
+        access_token = get_session_string()
+        headers = {
+            'Authorization': f'JWT {access_token}'
+        }
+        blob_name_encoded = urllib.parse.quote(blob_name, safe='')
+        url_path = f'{self.url_signer_service}/{bucket_name}'
+        result = requests.get(url = url_path, headers=headers, params = {'key': blob_name_encoded})
+        if result.status_code == 200:
+            logger.debug(f'Signer URL response {result.text}')
+            data = result.json()
+            url_result = data['url']
+            logger.debug(f'Signer URL JSON {data}')
+            return url_result
+        else:
+            logger.error(f'Error generating signed url with: {url_path}')
+            logger.error(f'Error payload: {result.text}')
+            return None
+
     @with_connection
-    @with_s3_exception_handler
     def __get_pre_signed_url(self, opts):
         spec_list = [{'bucket_name': str, 'path': str, 'expiration_offset': int}]
         log = regular_log.default()
@@ -251,6 +276,11 @@ class S3Connector(Connector):
         expiration_offset = opts['expiration_offset']
         filename = blob_name.split("/")[-1]
         bucket_name = opts['bucket_name']
+
+        if self.url_signer_service:
+            signed_url = self.__custom_presign_url(bucket_name=bucket_name,
+                                                   blob_name=blob_name)
+            return {'result': signed_url}
 
         signed_url = self.connection_client.generate_presigned_url('get_object',
                                                                    Params = {
