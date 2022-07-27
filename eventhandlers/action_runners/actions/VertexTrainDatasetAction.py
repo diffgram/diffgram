@@ -2,8 +2,10 @@ from eventhandlers.action_runners.base.ActionRunner import ActionRunner
 from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
 from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
-
-
+from shared.database.source_control.working_dir import WorkingDir
+from google.cloud import aiplatform
+from google.oauth2 import service_account
+        
 class VertexTrainDatasetAction(ActionRunner):
     public_name = 'Vertex Ai Train Dataset'
     description = 'Train model with Vertex AI'
@@ -29,6 +31,30 @@ class VertexTrainDatasetAction(ActionRunner):
         return True
 
     def execute_action(self, session):
-        print("triggered")
-        # Your core Action logic will go here.
+        dir_id = self.action.config_data.get('directory_id')
+        dir = WorkingDir.get_by_id(session = session, directory_id=dir_id)
+
+        credentials = service_account.Credentials.from_service_account_info(auth)
+
+        aiplatform.init(
+            project='coastal-set-357115',
+            location='us-central1',
+            credentials=credentials,
+            staging_bucket='gs://mandmc-tria-backet',
+            experiment='diffgram-vertexai-integration',
+            experiment_description='This is trial for diffgram and vertext api integration'
+        )
+
+        datasets_list = aiplatform.datasets.ImageDataset.list()
+
+        existing_datasets = []
+
+        for dataset in datasets_list:
+            existing_datasets.append(dataset.__dict__['_gca_resource'].__dict__['_pb'].display_name)
+
+        if dir.nickname in existing_datasets:
+            print("Here we create a new dataset on the Vertex AI")
+        else:
+            print("Here we reuse old dataset on Vertex AI")
+
         pass
