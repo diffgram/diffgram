@@ -17,7 +17,7 @@ from shared.export.export_view import export_view_core
 from shared.database.export import Export
 from shared.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.regular import regular_log
-from shared.helpers.permissions import get_session_string
+
 from shared.data_tools_core_s3 import DataToolsS3
 from botocore.config import Config
 
@@ -245,22 +245,29 @@ class S3Connector(Connector):
         return keys
 
     def __custom_presign_url(self, bucket_name: str, blob_name: str) -> str or None:
+        from shared.helpers.permissions import get_session_string
         access_token = get_session_string()
         headers = {
             'Authorization': f'JWT {access_token}'
         }
         blob_name_encoded = urllib.parse.quote(blob_name, safe='')
         url_path = f'{self.url_signer_service}/{bucket_name}'
-        result = requests.get(url = url_path, headers=headers, params = {'key': blob_name_encoded})
-        if result.status_code == 200:
-            logger.debug(f'Signer URL response {result.text}')
-            data = result.json()
-            url_result = data['url']
-            logger.debug(f'Signer URL JSON {data}')
-            return url_result
-        else:
+        try:
+            result = requests.get(url = url_path, headers=headers, params = {'key': blob_name_encoded})
+            if result.status_code == 200:
+                logger.debug(f'Signer URL response {result.text}')
+                data = result.json()
+                url_result = data['url']
+                logger.debug(f'Signer URL JSON {data}')
+                return url_result
+            else:
+                logger.error(f'Error generating signed url with: {url_path}')
+                logger.error(f'Error payload: {result.text}')
+                return None
+        except Exception as e:
+            err = traceback.format_exc()
             logger.error(f'Error generating signed url with: {url_path}')
-            logger.error(f'Error payload: {result.text}')
+            logger.error(f'Error payload: {err}')
             return None
 
     @with_connection
