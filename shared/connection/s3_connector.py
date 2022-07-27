@@ -244,16 +244,19 @@ class S3Connector(Connector):
                 keys.append(content.get('Key'))
         return keys
 
-    def __custom_presign_url(self, bucket_name: str, blob_name: str) -> str or None:
+    def __custom_presign_url(self, bucket_name: str, blob_name: str, access_token_param: str = None) -> str or None:
         from shared.helpers.permissions import get_session_string
-        access_token = get_session_string()
+        if access_token_param is None:
+            access_token = get_session_string()
+        else:
+            access_token = access_token_param
         headers = {
-            'Authorization': f'JWT {access_token}'
+            'Authorization': f'{access_token}'
         }
-        blob_name_encoded = urllib.parse.quote(blob_name, safe='')
+        blob_name_encoded = urllib.parse.quote(blob_name, safe = '')
         url_path = f'{self.url_signer_service}/{bucket_name}'
         try:
-            result = requests.get(url = url_path, headers=headers, params = {'key': blob_name_encoded})
+            result = requests.get(url = url_path, headers = headers, params = {'key': blob_name_encoded})
             if result.status_code == 200:
                 logger.debug(f'Signer URL response {result.text}')
                 data = result.json()
@@ -285,8 +288,8 @@ class S3Connector(Connector):
         bucket_name = opts['bucket_name']
 
         if self.url_signer_service:
-            signed_url = self.__custom_presign_url(bucket_name=bucket_name,
-                                                   blob_name=blob_name)
+            signed_url = self.__custom_presign_url(bucket_name = bucket_name,
+                                                   blob_name = blob_name)
             return {'result': signed_url}
 
         signed_url = self.connection_client.generate_presigned_url('get_object',

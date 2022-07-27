@@ -121,7 +121,7 @@ def get_session_string():
     if settings.USE_OAUTH2:
         return get_decoded_jwt_from_session()
     else:
-        return login_session['user_id']
+        return login_session.get('user_id')
 
 
 def get_current_version(session):

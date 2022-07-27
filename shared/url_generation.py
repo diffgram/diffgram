@@ -13,6 +13,7 @@ from shared.database.connection.connection import Connection
 from shared.connection.connection_strategy import ConnectionStrategy
 from shared.connection.s3_connector import S3Connector
 from shared.regular.regular_member import get_member
+
 logger = get_shared_logger()
 
 ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS = ['amazon_aws']
@@ -39,10 +40,12 @@ def default_url_regenerate(session: Session,
 
         # Extra assets (Depending on type)
         if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path:
-            blob_object.url_signed_thumb = data_tools.build_secure_url(blob_object.url_signed_thumb_blob_path, new_offset_in_seconds)
+            blob_object.url_signed_thumb = data_tools.build_secure_url(blob_object.url_signed_thumb_blob_path,
+                                                                       new_offset_in_seconds)
             blob_object.url_ = time.time() + new_offset_in_seconds
         if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
-            blob_object.tokens_url_signed = data_tools.build_secure_url(blob_object.tokens_url_signed_blob_path, new_offset_in_seconds)
+            blob_object.tokens_url_signed = data_tools.build_secure_url(blob_object.tokens_url_signed_blob_path,
+                                                                        new_offset_in_seconds)
 
     except Exception as e:
         msg = traceback.format_exc()
@@ -76,6 +79,7 @@ def connection_url_regenerate(session: Session,
                               connection_id: int,
                               bucket_name: int,
                               new_offset_in_seconds: int,
+                              access_token: str = None,
                               reference_file: File = None) -> [DiffgramBlobObjectType, dict]:
     """
         Regenerates signed url from the given connection ID, bucket and blob path.
@@ -99,6 +103,7 @@ def connection_url_regenerate(session: Session,
         'bucket_name': bucket_name,
         'path': blob_object.url_signed_blob_path if reference_file is None else reference_file.get_blob_path(),
         'expiration_offset': new_offset_in_seconds,
+        'access_token': access_token,
         'action_type': 'get_pre_signed_url',
         'event_data': {
             'request_user': member.user_id
@@ -151,7 +156,8 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
                         session: Session,
                         connection_id = None,
                         bucket_name = None,
-                        reference_file: File = None):
+                        access_token = None,
+                        reference_file: File = None) -> [str, dict]:
     """
         Regenerates the signed url of the given blob object.
     :param blob_object:
@@ -165,7 +171,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
 
     should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(blob_object, session)
 
-    if should_regenerate is not True: 
+    if should_regenerate is not True:
         return
 
     strategy = determine_url_regenerate_strategy(
@@ -174,7 +180,6 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
 
     logger.debug(f"Regenerating with {strategy} strategy")
     if strategy == "default":
-
         blob_object, log = default_url_regenerate(
             session = session,
             blob_object = blob_object,
@@ -189,7 +194,8 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
             connection_id = connection_id,
             bucket_name = bucket_name,
             new_offset_in_seconds = new_offset_in_seconds,
-            reference_file = reference_file
+            reference_file = reference_file,
+            access_token = access_token
         )
 
     if regular_log.log_has_error(log):
@@ -201,11 +207,10 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
 
 def determine_url_regenerate_strategy(connection_id,
                                       bucket_name) -> str:
-
     default_strategy = "default"
     strategy = default_strategy
 
     if connection_id is not None and bucket_name is not None:
         strategy = "connection"
 
-    return strategy 
+    return strategy
