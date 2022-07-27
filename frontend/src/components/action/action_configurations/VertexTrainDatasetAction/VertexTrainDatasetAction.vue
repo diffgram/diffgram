@@ -27,6 +27,7 @@
 import action_config_base from "@/components/action/actions_config_base/action_config_base";
 import action_config_mixin from "../action_config_mixin";
 import ActionStepsConfig from '../ActionStepsConfig';
+import axios from 'axios'
 
 export default {
   name: "VertexTrainDatasetAction",
@@ -47,9 +48,11 @@ export default {
       steps_config: null,
     }
   },
-  mounted() {
+  async mounted() {
     this.steps_config = new ActionStepsConfig()
     this.steps_config.hide_step('pre_conditions')
+    await axios.put(`/api/v1/project/${this.project_string_id}/workflow/89/actions/203/manual_trigger`)
+    console.log("HERE", this.action)
   }
 }
 </script>
