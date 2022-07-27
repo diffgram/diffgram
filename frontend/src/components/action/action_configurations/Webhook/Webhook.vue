@@ -1,0 +1,63 @@
+<template>
+  <div class="d-flex flex-column" style="height: 100%">
+
+    <action_config_base
+      v-if="steps_config"
+      :project_string_id="project_string_id"
+      :display_mode="display_mode"
+      @open_action_selector="$emit('open_action_selector')"
+      :steps_config="steps_config.generate()"
+      :actions_list="actions_list"
+      :action="action">
+
+      <template v-slot:wizard_action_config>
+        <v-text-field
+          label="URL"
+          :value="action.config_data."
+          hint="eg: https://myservice.com/process-event"
+        ></v-text-field>
+        <v-text-field
+          label="TOKEN"
+          value=""
+          hint="eg: https://myservice.com/process-event"
+        ></v-text-field>
+      </template>
+
+      <template v-slot:ongoing_usage>
+
+      </template>
+
+    </action_config_base>
+  </div>
+</template>
+
+<script>
+import action_config_base from "@/components/action/actions_config_base/action_config_base";
+import action_config_mixin from "../action_config_mixin";
+import ActionStepsConfig from '../ActionStepsConfig';
+
+export default {
+  name: "Webhook",
+  mixins: [action_config_mixin],
+  components: {
+    action_config_base,
+  },
+  props: {
+    action:{
+      required: true,
+    },
+    project_string_id: {
+      required: true
+    },
+  },
+  data (){
+    return {
+      steps_config: null,
+    }
+  },
+  mounted() {
+    this.steps_config = new ActionStepsConfig()
+    this.steps_config.hide_step('pre_conditions')
+  }
+}
+</script>
