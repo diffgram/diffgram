@@ -1,4 +1,5 @@
 from shared.database.common import *
+from enum import Enum
 from shared.database.source_control.file import File
 from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.discussion.discussion import Discussion
@@ -73,6 +74,14 @@ class WorkingDir(Base):
     default_external_map = relationship("ExternalMap",
                                         uselist = False,
                                         foreign_keys = [default_external_map_id])
+
+    @staticmethod
+    def get_permissions_list() -> list:
+        result = []
+        for elm in list(WorkingDirPermissions):
+            result.append(elm.value)
+        return result
+
 
     @staticmethod
     def new_user_working_dir(
@@ -851,3 +860,9 @@ class WorkingDirFileLink(Base):
                                       existing_file_link.file_id)
 
         return True, log
+
+
+class WorkingDirPermissions(Enum):
+    dataset_view = 'dataset_view'
+    dataset_edit = 'dataset_edit'
+    dataset_delete = 'dataset_delete'

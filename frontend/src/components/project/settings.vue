@@ -133,8 +133,7 @@
 
               <!-- Shutdown project start -->
                 <v-flex>
-              <v-dialog v-model="project_delete_dialog"
-                        >
+              <v-dialog v-model="project_delete_dialog">
                 <template v-slot:activator="{ on }">
                   <v-btn color="error"
                          v-on="on">
