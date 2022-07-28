@@ -49,11 +49,25 @@ class WebhookAction(ActionRunner):
         try:
             # Your core Action logic will go here.
             self.event_data['token'] = token
-            response = requests.post(json = self.event_data)
+            response = requests.post(json = self.event_data, url=url)
             if response.status_code == 200:
-                return True
+                data = {}
+                try:
+                    data['response'] = response.json()
+                except Exception as e:
+                    data['response'] = 'No JSON Response found.'
+                data['event_payload'] = self.event_data
+                data['status_code'] = response.status_code
+                data['url'] = url
+                print('SUCCEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEESS')
+                return data
             else:
                 logger.error(f'Error on Webhook. Invalid Response {response.status_code}')
+                self.save_error_output(data={'status_code': response.status_code,
+                                             'response': response.text,
+                                             'url': url,
+                                             'event_payload': self.event_data},
+                                       session = self.session)
                 return False
         except Exception as e:
             msg = traceback.format_exc()

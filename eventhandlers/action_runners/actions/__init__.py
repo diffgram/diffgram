@@ -40,6 +40,7 @@ except:
 
 try:
     from .Webhook import WebhookAction
+    print('starttttttttttttttt', WebhookAction.kind)
     ACTION_RUNNERS_KIND_MAPPER[WebhookAction.kind] = WebhookAction
 except:
     logger.error(traceback.format_exc())

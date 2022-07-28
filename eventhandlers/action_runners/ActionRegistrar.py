@@ -30,7 +30,8 @@ def get_runner(session: Session, action: Action, event_data) -> ActionRunner:
         Returns actions runner object based on action kind.
     :return:
     """
-
+    print('aaaaaaaaaaaaaaaaaaaaaaaa', ACTION_RUNNERS_KIND_MAPPER)
+    print('aaaaaaaaaaaaaaaaaaaaaaaa', action.kind)
     class_name = ACTION_RUNNERS_KIND_MAPPER[action.kind]
 
     runner = class_name(session = session, action = action, event_data = event_data)

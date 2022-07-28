@@ -368,7 +368,7 @@ class Action(Base, SerializerMixin):
     @staticmethod
     def get_by_id(session,
                   id,
-                  project_id = None):
+                  project_id = None) -> 'Action':
         """
         Must include project id for security check
 
