@@ -4,8 +4,7 @@ from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 from shared.database.source_control.working_dir import WorkingDir
 from google.cloud import aiplatform
-from google.oauth2 import service_account
-        
+from google.oauth2 import service_account        
 class VertexTrainDatasetAction(ActionRunner):
     public_name = 'Vertex Ai Train Dataset'
     description = 'Train model with Vertex AI'
@@ -34,6 +33,7 @@ class VertexTrainDatasetAction(ActionRunner):
         dir_id = self.action.config_data.get('directory_id')
         dir = WorkingDir.get_by_id(session = session, directory_id=dir_id)
 
+
         credentials = service_account.Credentials.from_service_account_info(auth)
 
         aiplatform.init(
@@ -52,9 +52,17 @@ class VertexTrainDatasetAction(ActionRunner):
         for dataset in datasets_list:
             existing_datasets.append(dataset.__dict__['_gca_resource'].__dict__['_pb'].display_name)
 
-        if dir.nickname in existing_datasets:
-            print("Here we create a new dataset on the Vertex AI")
+        working_dataset = None
+        if dir.nickname not in existing_datasets:
+            working_dataset = aiplatform.ImageDataset.create(
+                display_name=dir.nickname,
+                gcs_source=[],
+                import_schema_uri=aiplatform.schema.dataset.ioformat.image.image_segmentation
+            )
+            print("New dataset has been created on Vertex AI")
         else:
-            print("Here we reuse old dataset on Vertex AI")
+            dataset_index = existing_datasets.index(dir.nickname)
+            working_dataset = datasets_list[dataset_index]
 
+        print(working_dataset)
         pass
