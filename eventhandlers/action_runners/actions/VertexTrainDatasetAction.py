@@ -4,7 +4,25 @@ from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 from shared.database.source_control.working_dir import WorkingDir
 from google.cloud import aiplatform
-from google.oauth2 import service_account        
+from google.oauth2 import service_account
+
+# GCP auth example
+        # auth = {
+        #     "project_id": "project id",
+        #     "private_key_id": "prokect_key_id",
+        #     "private_key": "priveate key",
+        #     "client_email": "cliend email",
+        #     "client_id": "client if",
+        #     "token_uri": "https://oauth2.googleapis.com/token"
+        # }
+
+# Sudo code
+#         - Get directory that was chosen for action
+#         - Get all files objects from that directory
+#         - Get all the file instances (format is here: https://cloud.google.com/vertex-ai/docs/datasets/prepare-image?hl=en_US&_ga=2.163634871.-945446037.1653695686&_gac=1.187635162.1658943405.Cj0KCQjwxIOXBhCrARIsAL1QFCaQ0nAU08M_3wqaG0gDVPfWwPz2v0ne5HkrokPSSvkXFog0Gl97QcoaAhYQEALw_wcB#json-lines_2)
+#         - Convert instances to the bounding boxes
+#         - Download files to the temp folder and then send it to GCP with newly created bund boxes
+
 class VertexTrainDatasetAction(ActionRunner):
     public_name = 'Vertex Ai Train Dataset'
     description = 'Train model with Vertex AI'
@@ -34,6 +52,9 @@ class VertexTrainDatasetAction(ActionRunner):
         dir = WorkingDir.get_by_id(session = session, directory_id=dir_id)
 
 
+        auth = {
+        }
+
         credentials = service_account.Credentials.from_service_account_info(auth)
 
         aiplatform.init(
@@ -56,8 +77,8 @@ class VertexTrainDatasetAction(ActionRunner):
         if dir.nickname not in existing_datasets:
             working_dataset = aiplatform.ImageDataset.create(
                 display_name=dir.nickname,
-                gcs_source=[],
-                import_schema_uri=aiplatform.schema.dataset.ioformat.image.image_segmentation
+                gcs_source=['gs://mandmc-tria-backet/3 (10).JPG', 'gs://mandmc-tria-backet/3 (870).JPG'],
+                import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
             )
             print("New dataset has been created on Vertex AI")
         else:
