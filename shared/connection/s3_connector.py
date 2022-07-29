@@ -257,6 +257,8 @@ class S3Connector(Connector):
         url_path = f'{self.url_signer_service}/{bucket_name}'
         try:
             result = requests.get(url = url_path, headers = headers, params = {'key': blob_name_encoded})
+            params = {'key': blob_name_encoded, "method": "get"}
+            result = requests.get(url = url_path, headers = headers, params = params)
             if result.status_code == 200:
                 logger.debug(f'Signer URL response {result.text}')
                 data = result.json()
