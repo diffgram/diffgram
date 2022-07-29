@@ -5,6 +5,7 @@ import threading
 import io
 import requests
 import urllib.parse
+import mimetypes
 from shared.regular.regular_api import *
 
 from shared.helpers import sessionMaker
@@ -250,8 +251,15 @@ class S3Connector(Connector):
             access_token = get_session_string()
         else:
             access_token = access_token_param
+        content_type = mimetypes.guess_type(blob_name)
+
+        if content_type is None:
+            content_type = "image/png"
+        elif len(content_type) > 1:
+            content_type = content_type[0]
         headers = {
-            'Authorization': f'{access_token}'
+            'Authorization': f'{access_token}',
+            'Content-Type': content_type
         }
         blob_name_encoded = urllib.parse.quote(blob_name, safe = '')
         url_path = f'{self.url_signer_service}/{bucket_name}'

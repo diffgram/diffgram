@@ -77,6 +77,7 @@ class Image(Base):
                                      connection_id = None,
                                      bucket_name = None,
                                      reference_file: 'File' = None):
+
         from shared.url_generation import blob_regenerate_url
         blob_regenerate_url(blob_object = self,
                             session = session,

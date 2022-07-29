@@ -200,7 +200,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
 
     if regular_log.log_has_error(log):
         logger.error(f'Failed to regenerate Blob URL {log}')
-        blob_object.url_signed_blob_path = None
+        blob_object.url_signed = None
         return blob_object, log
     return blob_object, log
 
