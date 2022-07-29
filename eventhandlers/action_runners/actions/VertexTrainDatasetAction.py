@@ -2,7 +2,9 @@ from eventhandlers.action_runners.base.ActionRunner import ActionRunner
 from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
 from eventhandlers.action_runners.base.ActionCondition import ActionCondition
 from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
-from shared.database.source_control.working_dir import WorkingDir
+from shared.database.source_control.working_dir import WorkingDir, WorkingDirFileLink
+from shared.database.annotation.instance import Instance
+from shared.database.source_control.file import File
 from google.cloud import aiplatform
 from google.oauth2 import service_account
 
@@ -51,8 +53,31 @@ class VertexTrainDatasetAction(ActionRunner):
         dir_id = self.action.config_data.get('directory_id')
         dir = WorkingDir.get_by_id(session = session, directory_id=dir_id)
 
+        dir_files = WorkingDirFileLink.file_list(session=session, working_dir_id=dir.id, limit=None)
+
+        for file in dir_files:
+            file_annootations = []
+            annotatoions = Instance.list(session=session, file_id=file.id)
+            for instance in annotatoions:
+                label = File.get_by_id(session=session, file_id=instance.label_file_id)
+                file_annotation = {
+                    "displayName": label.label.name,
+                    "xMin": instance.x_min,
+                    "xMax": instance.x_max,
+                    "yMin": instance.y_min,
+                    "yMax": instance.y_max
+                }
+                file_annootations.append(file_annotation)
+
+            image_annotation = {
+                "imageGcsUri": "gs://mandmc-tria-backet/3 (10).JPG",
+                "boundingBoxAnnotations": file_annootations
+            }
+
+            print(image_annotation)
 
         auth = {
+
         }
 
         credentials = service_account.Credentials.from_service_account_info(auth)
@@ -79,6 +104,8 @@ class VertexTrainDatasetAction(ActionRunner):
                 display_name=dir.nickname,
                 gcs_source=['gs://mandmc-tria-backet/3 (10).JPG', 'gs://mandmc-tria-backet/3 (870).JPG'],
                 import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
+                data_item_labels=image_annotation #this is throwing error and I'm not sure why
+                # the type sepcified is dict: https://github.com/googleapis/python-aiplatform/blob/main/google/cloud/aiplatform/datasets/image_dataset.py#L42
             )
             print("New dataset has been created on Vertex AI")
         else:
