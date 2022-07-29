@@ -20,6 +20,12 @@ class WebhookAction(ActionRunner):
     trigger_data = ActionTrigger(default_event = 'input_file_uploaded',
                                  event_list = ['input_file_uploaded',
                                                'task_created',
+                                               'task_completed',
+                                               'task_review_start',
+                                               'task_request_changes',
+                                               'task_review_complete',
+                                               'task_in_progress',
+                                               'task_comment_created',
                                                'task_template_completed',
                                                'file_copy',
                                                'file_move',
@@ -59,7 +65,6 @@ class WebhookAction(ActionRunner):
                 data['event_payload'] = self.event_data
                 data['status_code'] = response.status_code
                 data['url'] = url
-                print('SUCCEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEESS')
                 return data
             else:
                 logger.error(f'Error on Webhook. Invalid Response {response.status_code}')

@@ -2,7 +2,7 @@ from shared.database.common import *
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy import desc
 from shared.database.discussion.discussion_comment import DiscussionComment
-
+from shared.database.event.event import Event
 
 class TaskEvent(Base, SerializerMixin):
     """
@@ -26,7 +26,7 @@ class TaskEvent(Base, SerializerMixin):
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys = [task_id])
 
-    event_type = Column(String())  # ["completed", "archived",  "in_review", "created", "comment"]
+    event_type = Column(String())  # ["completed", "archived",  "in_review", "created", "task_comment_created"]
 
     comment_id = Column(Integer, ForeignKey('discussion_comment.id'))
     comment = relationship("DiscussionComment", foreign_keys = [comment_id])
@@ -67,7 +67,7 @@ class TaskEvent(Base, SerializerMixin):
             TaskEvent.task_id == task_id,
             TaskEvent.job_id == job_id,
             TaskEvent.project_id == project_id,
-            TaskEvent.event_type == 'comment'
+            TaskEvent.event_type == 'task_comment_created'
         ).order_by(desc(TaskEvent.time_created)).first()
 
         if (latest_comment == None):
@@ -153,7 +153,7 @@ class TaskEvent(Base, SerializerMixin):
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
-            event_type = 'comment',
+            event_type = 'task_comment_created',
             member_created_id = member.id if member else None,
             comment_id = comment.id
 
@@ -182,6 +182,20 @@ class TaskEvent(Base, SerializerMixin):
             user_reviewer_id = user_reviewer_id,
             user_assignee_id = user_assignee_id,
             comment_id = comment_id
+        )
+
+        event = Event.new(
+            session = session,
+            project_id = project_id,
+            job_id = job_id,
+            task_id = task_id,
+            kind = event_type,
+            member_id = member_created_id,
+            extra_metadata = {
+                'user_reviewer_id': user_reviewer_id,
+                'user_assignee_id': user_assignee_id,
+
+            }
         )
 
         if add_to_session:
