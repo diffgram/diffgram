@@ -51,17 +51,29 @@
             >
               <td>{{ item.output.url }}</td>
               <td>
-                <v-chip color="success" v-if="item.output && item.output.status_code===200">{{ item.output.status_code }}</v-chip>
+                <v-chip color="success" v-if="item.output && item.output.status_code===200">{{
+                    item.output.status_code
+                  }}
+                </v-chip>
                 <v-chip color="warning" v-else>{{ item.output.status_code }}</v-chip>
               </td>
-              <td>
-                <div>
+              <td class="hover-pointer" width="250px">
+                <div @click="open_full_payload_dialog(item.output.event_payload)">
                   <code>
-                    {{ item.output.event_payload }}
+                    {{ JSON.stringify(item.output.event_payload, 2) | truncate(75) }}
                   </code>
                 </div>
               </td>
-              <td>{{ item.output.response }}</td>
+              <td class="hover-pointer" width="250px">
+                <div @click="open_full_payload_dialog(item.output.response)">
+                  <code>
+                    <pre>
+                      {{ JSON.stringify(item.output.response, 2) | truncate(75) }}
+                    </pre>
+                  </code>
+                </div>
+
+              </td>
             </tr>
             </tbody>
           </template>
@@ -70,6 +82,23 @@
       </template>
 
     </action_config_base>
+
+    <v-dialog v-model="payload_dialog_open"
+              width="800">
+
+      <v-card>
+        <v-card-text>
+          <div>
+            <code>
+          <pre>
+            {{ payload_detail }}
+          </pre>
+            </code>
+          </div>
+        </v-card-text>
+      </v-card>
+
+    </v-dialog>
   </div>
 </template>
 
@@ -86,16 +115,18 @@ export default {
     action_config_base,
   },
   props: {
-    action:{
+    action: {
       required: true,
     },
     project_string_id: {
       required: true
     },
   },
-  data (){
+  data() {
     return {
       steps_config: null,
+      payload_detail: null,
+      payload_dialog_open: false,
       action_run_list: [],
     }
   },
@@ -105,13 +136,38 @@ export default {
     this.get_action_runs()
   },
   methods: {
-    get_action_runs: async function(){
+    open_full_payload_dialog: function (data) {
+      this.payload_detail = data;
+      this.payload_dialog_open = true
+    },
+    close_full_payload_dialog: function () {
+      this.payload_detail = null;
+      this.payload_dialog_open = false
+    },
+    get_action_runs: async function () {
       let [data, err] = await get_action_run_list(this.project_string_id, this.action.id)
-      if (err) {
+      if (err) {truncate(50)
         console.error(err)
       }
       this.action_run_list = data
     }
-  }
+  },
+  filters: {
+    truncate: function (value, numchars) {
+      console.log('AAAA', value)
+      let result = value
+      if(typeof value === 'object'){
+        result = JSON.stringify(value)
+      }
+      console.log('AAAA222', result)
+      return result && result.length > numchars ? result.substring(0, numchars) + "..." : result
+    },
+  },
 }
 </script>
+
+<style scoped>
+.hover-pointer{
+  cursor: pointer !important;
+}
+</style>
