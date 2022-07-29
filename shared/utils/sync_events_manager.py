@@ -121,8 +121,8 @@ class SyncEventManager:
         event = Event.new(
             session = session,
             kind = f'file_{transfer_action}',
-            file_id = file.id,
-            job_id = job.id,
+            file_id = file.id if file else None,
+            job_id = job.id if job else None,
             project_id = project.id,
             extra_metadata = {
                 'new_copied_file': new_file_copy.id if new_file_copy is not None else None
