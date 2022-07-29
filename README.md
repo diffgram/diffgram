@@ -327,7 +327,7 @@ Latest AI + More
 [Ecosystem](https://diffgram.readme.io/docs/ecosystem)
 
 # Contributing
-We welcome contributions! Please see our [contributing documentation](https://diffgram.readme.io/docs/contributing-guide).
+We welcome contributions! Please see our [contributing documentation](https://diffgram.readme.io/docs/contribute).
 
 # Architecture & Design Docs
 We plan to release more internal architecture docs over time. Please see the [general docs](https://diffgram.readme.io/docs) in the mean time.
