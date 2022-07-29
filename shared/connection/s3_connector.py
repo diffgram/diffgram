@@ -283,6 +283,44 @@ class S3Connector(Connector):
             logger.error(f'Error payload: {err}')
             return None
 
+    def __custom_image_upload(self, bucket_name: str, blob_name: str, access_token_param: str = None) -> str or None:
+        from shared.helpers.permissions import get_session_string
+        if access_token_param is None:
+            access_token = get_session_string()
+        else:
+            access_token = access_token_param
+        content_type = mimetypes.guess_type(blob_name)
+
+        if content_type is None:
+            content_type = "image/png"
+        elif len(content_type) > 1:
+            content_type = content_type[0]
+        headers = {
+            'Authorization': f'{access_token}',
+            'Content-Type': content_type
+        }
+        blob_name_encoded = urllib.parse.quote(blob_name, safe = '')
+        url_path = f'{self.url_signer_service}/{bucket_name}'
+        try:
+            result = requests.get(url = url_path, headers = headers, params = {'key': blob_name_encoded})
+            params = {'key': blob_name_encoded, "method": "put"}
+            result = requests.get(url = url_path, headers = headers, params = params)
+            if result.status_code == 200:
+                logger.debug(f'Signer URL response {result.text}')
+                data = result.json()
+                url_result = data['url']
+                logger.debug(f'Signer URL JSON {data}')
+                return url_result
+            else:
+                logger.error(f'Error generating signed url with: {url_path}')
+                logger.error(f'Error payload: {result.text}')
+                return None
+        except Exception as e:
+            err = traceback.format_exc()
+            logger.error(f'Error generating signed url with: {url_path}')
+            logger.error(f'Error payload: {err}')
+            return None
+
     @with_connection
     def __get_pre_signed_url(self, opts):
         spec_list = [{'bucket_name': str, 'path': str, 'expiration_offset': int}]
