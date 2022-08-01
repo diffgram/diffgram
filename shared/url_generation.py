@@ -13,12 +13,26 @@ from shared.database.connection.connection import Connection
 from shared.connection.connection_strategy import ConnectionStrategy
 from shared.connection.s3_connector import S3Connector
 from shared.regular.regular_member import get_member
+from shared.database.auth.member import Member
+import tempfile
 
 logger = get_shared_logger()
 
 ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS = ['amazon_aws']
 
+def get_blob_file_extension(blob_path: str) -> str:
+    splitted = blob_path.split('.')
+    if len(splitted) == 1:
+        return None
+    return splitted[len(splitted) - 1]
 
+def get_blob_file_name(blob_path: str) -> str:
+    splitted = blob_path.split('/')
+    return splitted[len(splitted) - 1]
+
+def get_blob_file_path_without_name(blob_path: str) -> str:
+    file_name = get_blob_file_name(blob_path)
+    return blob_path.split(file_name)[0]
 def default_url_regenerate(session: Session,
                            blob_object: DiffgramBlobObjectType,
                            new_offset_in_seconds: int) -> [DiffgramBlobObjectType, dict]:
@@ -74,10 +88,87 @@ def get_url_from_connector(connector, params, log):
     return signed_url, log
 
 
+def upload_thumbnail_for_connection_image(session: Session,
+                                          blob_object: DiffgramBlobObjectType,
+                                          connection_id: int,
+                                          bucket_name: str,
+                                          new_offset_in_seconds: int,
+                                          member: Member,
+                                          access_token: str = None,
+                                          reference_file: File = None) -> [DiffgramBlobObjectType, dict]:
+    log = regular_log.default()
+    extension = get_blob_file_extension(blob_path = blob_object.url_signed_blob_path)
+    file_dir = get_blob_file_path_without_name(blob_path = blob_object.url_signed_blob_path)
+    file_name = get_blob_file_name(blob_path = blob_object.url_signed_blob_path)
+    blob_path_thumb = get_blob_file_path_without_name(blob_path = blob_object.url_signed_blob_path)
+    params = {
+        'bucket_name': bucket_name,
+        'path': blob_object.url_signed_blob_path if reference_file is None else reference_file.get_blob_path(),
+        'expiration_offset': new_offset_in_seconds,
+        'access_token': access_token,
+        'action_type': 'custom_image_upload_url',
+        'event_data': {
+            'request_user': member.user_id
+        }
+    }
+    client, log = get_custom_url_supported_connector(
+        session = session,
+        log = log,
+        connection_id = connection_id,
+    )
+    if regular_log.log_has_error(log):
+        return blob_object, log
+    put_data, log = get_url_from_connector(connector = client, params = params, log = log)
+    if put_data is None:
+        return blob_object, log
+    url = put_data.get('url')
+    fields = put_data.get('fields')
+    if not url:
+        return blob_object, log
+    # Download Asset and re upload to url
+    temp_dir = tempfile.mkdtemp()
+
+
+    temp_dir_path_and_filename = f"{temp_dir}/{str(time.time())}/{extension}"
+
+
+def get_custom_url_supported_connector(session: Session, log: dict, connection_id: int) -> [object, dict]:
+    """
+        Gets the connector object and checks if it supports custom signed urls with a custom service.
+    :param session:
+    :param log:
+    :param connection_id:
+    :param connection:
+    :return:
+    """
+    connection = Connection.get_by_id(session = session, id = connection_id)
+    if connection is None:
+        msg = f'connection id: {connection_id} not found.'
+        log['error']['connection_id'] = msg
+        logger.error(msg)
+        return None, log
+    if connection.integration_name not in ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS:
+        msg = f'Unsupported connection provider for URL regeneration {connection.id}:{connection.integration_name}'
+        log['error']['unsupported'] = msg
+        logger.error(msg)
+        return None, log
+
+    connection_strategy = ConnectionStrategy(
+        connector_id = connection_id,
+        session = session)
+
+    client, success = connection_strategy.get_connector(connector_id = connection_id)
+    if not success:
+        msg = f'Failed to get connector for connection {connection_id}'
+        log['error']['connector'] = msg
+        logger.error(msg)
+        return None, log
+
+
 def connection_url_regenerate(session: Session,
                               blob_object: DiffgramBlobObjectType,
                               connection_id: int,
-                              bucket_name: int,
+                              bucket_name: str,
                               new_offset_in_seconds: int,
                               access_token: str = None,
                               reference_file: File = None) -> [DiffgramBlobObjectType, dict]:
@@ -92,12 +183,7 @@ def connection_url_regenerate(session: Session,
     """
 
     log = regular_log.default()
-    connection = Connection.get_by_id(session = session, id = connection_id)
-    if connection is None:
-        msg = f'connection id: {connection_id} not found.'
-        log['error']['connection_id'] = msg
-        logger.error(msg)
-        return blob_object, log
+
     member = get_member(session = session)
     params = {
         'bucket_name': bucket_name,
@@ -109,23 +195,14 @@ def connection_url_regenerate(session: Session,
             'request_user': member.user_id
         }
     }
-
-    if connection.integration_name not in ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS:
-        msg = f'Unsupported connection provider for URL regeneration {connection.id}:{connection.integration_name}'
-        log['error']['unsupported'] = msg
-        logger.error(msg)
+    client, log = get_custom_url_supported_connector(
+        session = session,
+        log = log,
+        connection_id = connection_id,
+    )
+    if regular_log.log_has_error(log):
         return blob_object, log
 
-    connection_strategy = ConnectionStrategy(
-        connector_id = connection_id,
-        session = session)
-
-    client, success = connection_strategy.get_connector(connector_id = connection_id)
-    if not success:
-        msg = f'Failed to get connector for connection {connection_id}'
-        log['error']['connector'] = msg
-        logger.error(msg)
-        return blob_object, log
     signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
     if regular_log.log_has_error(log):
         return blob_object, log

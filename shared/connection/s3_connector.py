@@ -289,10 +289,14 @@ class S3Connector(Connector):
             logger.error(f'Error payload: {err}')
             return None
 
-    def __custom_image_upload(self, bucket_name: str, blob_name: str, access_token_param: str = None) -> str or None:
+    def __custom_image_upload_url(self, bucket_name: str, blob_name: str, access_token_param: str = None) -> dict or None:
         from shared.helpers.permissions import get_session_string
         if access_token_param is None:
-            access_token = get_session_string()
+            oauth2 = OAuth2Provider()
+            rf_token = get_session_string()
+            oauth2_client = oauth2.get_client()
+            access_token_data = oauth2_client.refresh_token(token = rf_token)
+            access_token = oauth2_client.get_access_token_from_jwt(jwt_data = access_token_data)
         else:
             access_token = access_token_param
         content_type = mimetypes.guess_type(blob_name)
@@ -312,11 +316,9 @@ class S3Connector(Connector):
             params = {'key': blob_name_encoded, "method": "put"}
             result = requests.get(url = url_path, headers = headers, params = params)
             if result.status_code == 200:
-                logger.debug(f'Signer URL response {result.text}')
                 data = result.json()
-                url_result = data['url']
-                logger.debug(f'Signer URL JSON {data}')
-                return url_result
+                logger.info(f'Signer Upload URL JSON {data}')
+                return data
             else:
                 logger.error(f'Error generating signed url with: {url_path}')
                 logger.error(f'Error payload: {result.text}')
@@ -578,6 +580,8 @@ class S3Connector(Connector):
             return self.__get_folder_contents(opts)
         if action_type == 'get_pre_signed_url':
             return self.__get_pre_signed_url(opts)
+        if action_type == 'custom_image_upload_url':
+            return self.__custom_image_upload_url(opts)
 
     @with_connection
     def put_data(self, opts):
