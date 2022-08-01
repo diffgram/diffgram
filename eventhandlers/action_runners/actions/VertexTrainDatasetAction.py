@@ -59,6 +59,19 @@ class VertexTrainDatasetAction(ActionRunner):
         return file_list
 
 
+    def build_vertex_format_instance(self, instance, session):
+        label = File.get_by_id(session=session, 
+                               file_id=instance.label_file_id)
+        vertex_format_instance = {
+            "displayName": label.label.name,
+            "xMin": instance.x_min,
+            "xMax": instance.x_max,
+            "yMin": instance.y_min,
+            "yMax": instance.y_max
+        }
+        return vertex_format_instance
+
+
     def execute_action(self, session):
 
         file_list = self.get_file_list(session)
@@ -66,16 +79,10 @@ class VertexTrainDatasetAction(ActionRunner):
         for file in file_list:
             vertex_format_instance_list = []
             instance_list = Instance.list(session=session, file_id=file.id)
+
             for instance in instance_list:
-                label = File.get_by_id(session=session, file_id=instance.label_file_id)
-                file_annotation = {
-                    "displayName": label.label.name,
-                    "xMin": instance.x_min,
-                    "xMax": instance.x_max,
-                    "yMin": instance.y_min,
-                    "yMax": instance.y_max
-                }
-                vertex_format_instance_list.append(file_annotation)
+                vertex_format_instance = self.build_vertex_format_instance(instance, session)
+                vertex_format_instance_list.append(vertex_format_instance)
 
             image_annotation = {
                 "imageGcsUri": "gs://mandmc-tria-backet/3 (10).JPG",
