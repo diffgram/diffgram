@@ -3,6 +3,7 @@ from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy import desc
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.event.event import Event
+from shared.database.project import Project
 
 class TaskEvent(Base, SerializerMixin):
     """
@@ -183,7 +184,7 @@ class TaskEvent(Base, SerializerMixin):
             user_assignee_id = user_assignee_id,
             comment_id = comment_id
         )
-
+        project = Project.get_by_id(session = session, id = project_id)
         event = Event.new(
             session = session,
             project_id = project_id,
@@ -194,6 +195,7 @@ class TaskEvent(Base, SerializerMixin):
             extra_metadata = {
                 'user_reviewer_id': user_reviewer_id,
                 'user_assignee_id': user_assignee_id,
+                'project_string_id': project.project_string_id,
 
             }
         )
