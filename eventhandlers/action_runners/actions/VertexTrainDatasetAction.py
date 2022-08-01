@@ -10,15 +10,10 @@ from google.cloud import aiplatform
 from shared.connection.connection_strategy import ConnectionStrategy
 from shared.connection.google_cloud_storage_connector import GoogleCloudStorageConnector
 
-# GCP auth example
-        # auth = {
-        #     "project_id": "project id",
-        #     "private_key_id": "prokect_key_id",
-        #     "private_key": "priveate key",
-        #     "client_email": "cliend email",
-        #     "client_id": "client if",
-        #     "token_uri": "https://oauth2.googleapis.com/token"
-        # }
+import tempfile
+import gc
+import shutil
+import time
 
 # Sudo code
 #         - Get directory that was chosen for action
@@ -87,10 +82,9 @@ class VertexTrainDatasetAction(ActionRunner):
                 vertex_format_instance = self.build_vertex_format_instance(instance, session)
                 vertex_format_instance_list.append(vertex_format_instance)
 
-            # TODO load bucket from connection
-            # TODO load file list from original filename
             single_file = {
-                "imageGcsUri": "gs://mandmc-tria-backet/3 (10).JPG",
+                "imageGcsUri": "gs://" + self.action.config_data.get('image_folder_path_with_bucket_without_gs_prefix') 
+                        +  "/" + file.original_filename,
                 "boundingBoxAnnotations": vertex_format_instance_list
             }
 
@@ -99,16 +93,25 @@ class VertexTrainDatasetAction(ActionRunner):
         export_data.append(single_file)
         return export_data
 
+
     def write_vertex_format_jsonl_file(self, export_data):
 
-        # TODO write to temporary bytes
+        temp_dir = tempfile.mkdtemp()
+        temp_local_path = temp_dir + F'/google_format_{time.time()}.jsonl'
 
-        with open(F'google_format_{time.time()}.jsonl', 'w') as outfile:
+        with open(temp_local_path, 'w') as outfile:
             for entry in export_data:
                 json.dump(entry, outfile)
                 outfile.write('\n')
 
-        # TODO upload this file to cloud storage using connection
+        blob_path = "TBD"
+
+        data_tools.upload_to_cloud_storage(
+            temp_local_path = temp_local_path,
+            blob_path = blob_path,
+            content_type = 'application/json')
+
+        VertexTrainDatasetAction.clean_up_temp_dir(path = temp_dir)
 
 
     def init_ai_platform(self, credentials):
@@ -120,6 +123,11 @@ class VertexTrainDatasetAction(ActionRunner):
             experiment = self.action.config_data.get('experiment'),
             experiment_description = self.action.config_data.get('experiment_description')
         )
+
+
+    def write_diffgram_blob_to_gcp():
+        pass
+
 
     def execute_action(self, session):
 
@@ -160,3 +168,13 @@ class VertexTrainDatasetAction(ActionRunner):
 
         print(working_dataset)
         pass
+
+    def clean_up_temp_dir(path):
+        gc.collect()
+        time.sleep(240)
+        try:
+            shutil.rmtree(path)  # delete directory
+            logger.info("Cleaned successfully")
+        except OSError as exc:
+            logger.error(f"shutil error {str(exc)}")
+            pass
