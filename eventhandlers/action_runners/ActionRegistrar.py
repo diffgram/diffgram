@@ -5,7 +5,9 @@ from shared.database.action.action import Action
 from shared.shared_logger import get_shared_logger
 from .actions import ACTION_RUNNERS_KIND_MAPPER
 from sqlalchemy.orm.session import Session
+
 logger = get_shared_logger()
+
 
 def register_all():
     with sessionMaker.session_scope() as session:
@@ -30,8 +32,6 @@ def get_runner(session: Session, action: Action, event_data) -> ActionRunner:
         Returns actions runner object based on action kind.
     :return:
     """
-    print('aaaaaaaaaaaaaaaaaaaaaaaa', ACTION_RUNNERS_KIND_MAPPER)
-    print('aaaaaaaaaaaaaaaaaaaaaaaa', action.kind)
     class_name = ACTION_RUNNERS_KIND_MAPPER[action.kind]
 
     runner = class_name(session = session, action = action, event_data = event_data)

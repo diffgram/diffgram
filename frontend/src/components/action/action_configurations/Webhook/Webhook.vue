@@ -154,12 +154,10 @@ export default {
   },
   filters: {
     truncate: function (value, numchars) {
-      console.log('AAAA', value)
       let result = value
       if(typeof value === 'object'){
         result = JSON.stringify(value)
       }
-      console.log('AAAA222', result)
       return result && result.length > numchars ? result.substring(0, numchars) + "..." : result
     },
   },
