@@ -1,7 +1,7 @@
 import time
 import traceback
 import requests
-
+import shutil
 from shared.data_tools_core import data_tools
 from shared.data_tools_core import DiffgramBlobObjectType
 from sqlalchemy.orm.session import Session
@@ -84,14 +84,15 @@ def get_url_from_connector(connector, params, log):
     :return:
     """
     connector.connect()
+    print('PARAMSS', params)
     response = connector.fetch_data(params)
     if response is None or response.get('result') is None:
-        msg = f'Error regenerating URL: {params}. Response: {response}'
+        msg = f'Error from connector: {params}. Response: {response}'
         log['error']['connector_client'] = msg
         logger.error(msg)
         return None, log
-    signed_url = response.get('result')
-    return signed_url, log
+    response_data = response.get('result')
+    return response_data, log
 
 
 def upload_thumbnail_for_connection_image(session: Session,
@@ -106,10 +107,12 @@ def upload_thumbnail_for_connection_image(session: Session,
     extension = get_blob_file_extension(blob_path = blob_object.url_signed_blob_path)
     file_dir = get_blob_file_path_without_name(blob_path = blob_object.url_signed_blob_path)
     file_name = get_blob_file_name(blob_path = blob_object.url_signed_blob_path)
-    blob_path_thumb = get_blob_file_path_without_name(blob_path = blob_object.url_signed_blob_path)
+    blob_path_dirs = get_blob_file_path_without_name(blob_path = blob_object.url_signed_blob_path)
+    blob_path_thumb = f'{blob_path_dirs}thumb/{file_name}'
+
     params = {
         'bucket_name': bucket_name,
-        'path': blob_object.url_signed_blob_path if reference_file is None else reference_file.get_blob_path(),
+        'path': blob_path_thumb,
         'expiration_offset': new_offset_in_seconds,
         'access_token': access_token,
         'action_type': 'custom_image_upload_url',
@@ -133,7 +136,7 @@ def upload_thumbnail_for_connection_image(session: Session,
         return blob_object, log
     # Download Asset and re upload to url
     temp_dir = tempfile.mkdtemp()
-    temp_dir_path_and_filename = f"{temp_dir}/{str(time.time())}/{extension}"
+    temp_dir_path_and_filename = f"{temp_dir}/{file_name}.{extension}"
     # Get image
 
     response = requests.get(blob_object.url_signed)
@@ -146,14 +149,17 @@ def upload_thumbnail_for_connection_image(session: Session,
     with open(temp_dir_path_and_filename, 'wb') as file_handler:
         file_handler.write(img_data)
         # Now upload file to blob storage
-        upload_resp = requests.post(url, data=fields, files=[file_handler])
+    with open(temp_dir_path_and_filename, 'rb') as file_handler:
+        upload_resp = requests.post(url, data=fields, files={'file': file_handler})
         if not upload_resp.ok:
             msg = f'Failed to upload thumb. Error posting [{upload_resp.status_code}] {upload_resp.text}'
             logger.error(msg)
             log['error']['upload_thumb'] = msg
             return blob_object, log
-        
-
+        blob_object.url_signed_thumb_blob_path = blob_path_thumb
+        session.add(blob_object)
+    shutil.rmtree(temp_dir)  # delete directory
+    return blob_object, log
 
 def get_custom_url_supported_connector(session: Session, log: dict, connection_id: int) -> [object, dict]:
     """
@@ -244,7 +250,7 @@ def connection_url_regenerate(session: Session,
         blob_object.url_signed_thumb = thumb_signed_url
     if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path is None:
         # Try uploading thumbnails and then generating URL for them
-        upload_thumbnail_for_connection_image(
+        blob_object, log = upload_thumbnail_for_connection_image(
             session = session,
             blob_object = blob_object,
             connection_id = connection_id,
@@ -254,7 +260,15 @@ def connection_url_regenerate(session: Session,
             access_token = access_token,
             reference_file = reference_file
         )
-
+        params['path'] = blob_object.url_signed_thumb_blob_path
+        params['action_type'] = 'get_pre_signed_url'
+        thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+        if regular_log.log_has_error(log):
+            print('wererererere')
+            blob_object.url_signed_thumb_blob_path = None
+            session.add(blob_object)
+            return blob_object, log
+        blob_object.url_signed_thumb = thumb_signed_url
     # Extra assets (Depending on type)
     if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
         params['path'] = blob_object.tokens_url_signed_blob_path

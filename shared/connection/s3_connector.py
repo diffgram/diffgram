@@ -5,6 +5,7 @@ import threading
 import io
 import requests
 import urllib.parse
+
 import mimetypes
 from shared.regular.regular_api import *
 from shared.auth.OAuth2Provider import OAuth2Provider
@@ -277,6 +278,7 @@ class S3Connector(Connector):
             else:
                 logger.error(f'Error generating signed url with: {url_path}')
                 logger.error(f'Error payload: {result.text}')
+                logger.error(f'Request payload: {params}')
                 return None
         except Exception as e:
             err = traceback.format_exc()
@@ -284,14 +286,20 @@ class S3Connector(Connector):
             logger.error(f'Error payload: {err}')
             return None
 
-    def __custom_image_upload_url(self, bucket_name: str, blob_name: str, access_token_param: str = None) -> dict or None:
+    def __custom_image_upload_url(self, opts: dict) -> dict or None:
+        spec_list = [{'bucket_name': str, 'path': str}]
+        log = regular_log.default()
+        log, input = regular_input.input_check_many(untrusted_input = opts,
+                                                    spec_list = spec_list,
+                                                    log = log)
+        if regular_log.log_has_error(log):
+            return {'log': log}
+        bucket_name = opts.get('bucket_name')
+        blob_name = opts.get('path')
+        access_token_param = opts.get('access_token')
         from shared.helpers.permissions import get_session_string
         if access_token_param is None:
-            oauth2 = OAuth2Provider()
-            rf_token = get_session_string()
-            oauth2_client = oauth2.get_client()
-            access_token_data = oauth2_client.refresh_token(token = rf_token)
-            access_token = oauth2_client.get_access_token_from_jwt(jwt_data = access_token_data)
+            access_token = get_session_string()
         else:
             access_token = access_token_param
         content_type = mimetypes.guess_type(blob_name)
@@ -307,13 +315,12 @@ class S3Connector(Connector):
         blob_name_encoded = urllib.parse.quote(blob_name, safe = '')
         url_path = f'{self.url_signer_service}/{bucket_name}'
         try:
-            result = requests.get(url = url_path, headers = headers, params = {'key': blob_name_encoded})
             params = {'key': blob_name_encoded, "method": "put"}
             result = requests.get(url = url_path, headers = headers, params = params)
             if result.status_code == 200:
                 data = result.json()
                 logger.info(f'Signer Upload URL JSON {data}')
-                return data
+                return {'result': data}
             else:
                 logger.error(f'Error generating signed url with: {url_path}')
                 logger.error(f'Error payload: {result.text}')
@@ -335,6 +342,7 @@ class S3Connector(Connector):
             return {'log': log}
         blob_name = opts['path']
         expiration_offset = opts['expiration_offset']
+        print('AAAA', blob_name)
         filename = blob_name.split("/")[-1]
         bucket_name = opts['bucket_name']
 
