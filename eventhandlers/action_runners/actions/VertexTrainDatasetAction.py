@@ -6,7 +6,9 @@ from shared.database.source_control.working_dir import WorkingDir, WorkingDirFil
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
 from google.cloud import aiplatform
-from google.oauth2 import service_account
+
+from shared.connection.connection_strategy import ConnectionStrategy
+from shared.connection.google_cloud_storage_connector import GoogleCloudStorageConnector
 
 # GCP auth example
         # auth = {
@@ -72,9 +74,10 @@ class VertexTrainDatasetAction(ActionRunner):
         return vertex_format_instance
 
 
-    def execute_action(self, session):
 
-        file_list = self.get_file_list(session)
+    def build_vertex_format_jsonl_file(self, file_list, session):
+
+        export_data = []
 
         for file in file_list:
             vertex_format_instance_list = []
@@ -84,21 +87,47 @@ class VertexTrainDatasetAction(ActionRunner):
                 vertex_format_instance = self.build_vertex_format_instance(instance, session)
                 vertex_format_instance_list.append(vertex_format_instance)
 
-            image_annotation = {
+            # TODO load bucket from connection
+            # TODO load file list from original filename
+            single_file = {
                 "imageGcsUri": "gs://mandmc-tria-backet/3 (10).JPG",
                 "boundingBoxAnnotations": vertex_format_instance_list
             }
 
-            print(image_annotation)
+            print(single_file)
 
-        auth = {
+        export_data.append(single_file)
+        return export_data
 
-        }
+    def write_vertex_format_jsonl_file(self, export_data):
 
-        credentials = service_account.Credentials.from_service_account_info(auth)
+        # TODO write to temporary bytes
+
+        with open(F'google_format_{time.time()}.jsonl', 'w') as outfile:
+            for entry in export_data:
+                json.dump(entry, outfile)
+                outfile.write('\n')
+
+        # TODO upload this file to cloud storage using connection
+
+
+
+    def execute_action(self, session):
+
+        connection_strategy = ConnectionStrategy(
+            connection_class = GoogleCloudStorageConnector,
+            connector_id = connector_id,
+            session = self.session)
+
+        google_vertex_connector = connection_strategy.get_connector()
+        credentials = google_vertex_connector.get_credentials()
+
+        file_list = self.get_file_list(session)
+        export_data = self.build_vertex_format_jsonl_file(file_list, session)
+        self.write_vertex_format_jsonl_file(export_data)
 
         aiplatform.init(
-            project='coastal-set-357115',
+            project='coastal-set-357115',       # load from connection
             location='us-central1',
             credentials=credentials,
             staging_bucket='gs://mandmc-tria-backet',
