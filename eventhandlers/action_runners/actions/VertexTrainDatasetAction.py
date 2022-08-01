@@ -126,8 +126,15 @@ class VertexTrainDatasetAction(ActionRunner):
 
 
     def write_diffgram_blob_to_gcp():
-        pass
-
+        blob_bytes = data_tools.get_bytes(blob_path)
+        # TODO how we want to avoid extra writes here...
+        # e.g. avoid going to numpy and stick with bytes...
+        # may need to add more functions on cloud tools
+        	data_tools.upload_from_string(
+			temp_local_path = image_out_filename,
+			blob_path = instance.preview_image_blob_dir,
+			content_type = 'image/jpg'
+		)
 
     def execute_action(self, session):
 
