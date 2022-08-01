@@ -123,7 +123,7 @@ class SyncEventManager:
             kind = f'file_{transfer_action}',
             file_id = file.id if file else None,
             job_id = job.id if job else None,
-            project_id = project.id,
+            project_id = project.id if project else None,
             extra_metadata = {
                 'new_copied_file': new_file_copy.id if new_file_copy is not None else None
             },
