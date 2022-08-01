@@ -64,7 +64,7 @@ class VertexTrainDatasetAction(ActionRunner):
         file_list = self.get_file_list(session)
 
         for file in file_list:
-            file_annootations = []
+            vertex_format_instance_list = []
             instance_list = Instance.list(session=session, file_id=file.id)
             for instance in instance_list:
                 label = File.get_by_id(session=session, file_id=instance.label_file_id)
@@ -75,11 +75,11 @@ class VertexTrainDatasetAction(ActionRunner):
                     "yMin": instance.y_min,
                     "yMax": instance.y_max
                 }
-                file_annootations.append(file_annotation)
+                vertex_format_instance_list.append(file_annotation)
 
             image_annotation = {
                 "imageGcsUri": "gs://mandmc-tria-backet/3 (10).JPG",
-                "boundingBoxAnnotations": file_annootations
+                "boundingBoxAnnotations": vertex_format_instance_list
             }
 
             print(image_annotation)
