@@ -7,7 +7,7 @@ import requests
 import urllib.parse
 import mimetypes
 from shared.regular.regular_api import *
-
+from shared.auth.OAuth2Provider import OAuth2Provider
 from shared.helpers import sessionMaker
 from shared.database.project import Project
 from shared.database.auth.member import Member
@@ -248,7 +248,11 @@ class S3Connector(Connector):
     def __custom_presign_url(self, bucket_name: str, blob_name: str, access_token_param: str = None) -> str or None:
         from shared.helpers.permissions import get_session_string
         if access_token_param is None:
-            access_token = get_session_string()
+            oauth2 = OAuth2Provider()
+            rf_token = get_session_string()
+            oauth2_client = oauth2.get_client()
+            access_token_data = oauth2_client.refresh_token(token = rf_token)
+            access_token = oauth2_client.get_access_token_from_jwt(jwt_data = access_token_data)
         else:
             access_token = access_token_param
         content_type = mimetypes.guess_type(blob_name)
@@ -261,8 +265,10 @@ class S3Connector(Connector):
             'Authorization': f'{access_token}',
             'Content-Type': content_type
         }
+        logger.info(f'Custom Signer Headers: {headers}')
         blob_name_encoded = urllib.parse.quote(blob_name, safe = '')
         url_path = f'{self.url_signer_service}/{bucket_name}'
+
         try:
             result = requests.get(url = url_path, headers = headers, params = {'key': blob_name_encoded})
             params = {'key': blob_name_encoded, "method": "get"}
