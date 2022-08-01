@@ -119,7 +119,12 @@ def setSecureCookie(user_db):
 
 def get_session_string():
     if settings.USE_OAUTH2:
-        return get_decoded_jwt_from_session()
+        oauth2 = OAuth2Provider()
+        oauth2_client = oauth2.get_client()
+        rf_token = get_decoded_jwt_from_session()
+        access_token_data = oauth2_client.refresh_token(token = rf_token)
+        access_token = oauth2_client.get_access_token_from_jwt(jwt_data = access_token_data)
+        return access_token
     else:
         return login_session.get('user_id')
 
