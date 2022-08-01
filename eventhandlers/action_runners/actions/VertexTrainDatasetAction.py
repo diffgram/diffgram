@@ -111,16 +111,15 @@ class VertexTrainDatasetAction(ActionRunner):
         # TODO upload this file to cloud storage using connection
 
 
-    def init_ai_platform(self):
+    def init_ai_platform(self, credentials):
         aiplatform.init(
+            credentials = credentials,
             project = self.action.config_data.get('gcp_project_name'),
             location = self.action.config_data.get('location'),
-            credentials = self.credentials,
             staging_bucket = 'gs://' + self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
             experiment = self.action.config_data.get('experiment'),
             experiment_description = self.action.config_data.get('experiment_description')
         )
-
 
     def execute_action(self, session):
 
@@ -132,11 +131,11 @@ class VertexTrainDatasetAction(ActionRunner):
         google_vertex_connector = connection_strategy.get_connector()
         credentials = google_vertex_connector.get_credentials()
 
+        self.init_ai_platform(credentials)
+
         file_list = self.get_file_list(session)
         export_data = self.build_vertex_format_jsonl_file(file_list, session)
         self.write_vertex_format_jsonl_file(export_data)
-
-        self.init_ai_platform()
 
         datasets_list = aiplatform.datasets.ImageDataset.list()
 
