@@ -68,6 +68,23 @@ class GoogleCloudStorageConnector(Connector):
             'project_id': project_id
         }
 
+
+    def get_auth_data_from_parent_connector(self):
+        auth = self.generate_auth_data(
+            email=self.auth_data['client_email'],
+            client_id=self.auth_data['client_id'],
+            client_secret=self.auth_data['client_secret'],
+            project_id=self.auth_data['project_id'])
+        return auth
+
+
+    @with_google_exception_handler
+    def get_credentials(self):
+        auth = self.get_auth_data_from_parent_connector()
+        credentials = service_account.Credentials.from_service_account_info(auth)
+        return credentials
+
+
     @with_google_exception_handler
     def connect(self):
         log = regular_log.default()
