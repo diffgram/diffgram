@@ -49,16 +49,24 @@ class VertexTrainDatasetAction(ActionRunner):
         # Return true if no pre-conditions are needed.
         return True
 
-    def execute_action(self, session):
+
+    def get_file_list(self, session):
+
         directory_id = self.action.config_data.get('directory_id')
         directory = WorkingDir.get_by_id(session = session, directory_id=directory_id)
+        file_list = WorkingDirFileLink.file_list(session=session, working_dir_id=directory.id, limit=None)
 
-        dir_files = WorkingDirFileLink.file_list(session=session, working_dir_id=directory.id, limit=None)
+        return file_list
 
-        for file in dir_files:
+
+    def execute_action(self, session):
+
+        file_list = self.get_file_list(session)
+
+        for file in file_list:
             file_annootations = []
-            annotatoions = Instance.list(session=session, file_id=file.id)
-            for instance in annotatoions:
+            instance_list = Instance.list(session=session, file_id=file.id)
+            for instance in instance_list:
                 label = File.get_by_id(session=session, file_id=instance.label_file_id)
                 file_annotation = {
                     "displayName": label.label.name,
