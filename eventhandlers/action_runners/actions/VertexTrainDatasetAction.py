@@ -26,7 +26,7 @@ from google.oauth2 import service_account
 #         - Download files to the temp folder and then send it to GCP with newly created bund boxes
 
 class VertexTrainDatasetAction(ActionRunner):
-    public_name = 'Vertex Ai Train Dataset'
+    public_name = 'Vertex AI Train Dataset (Google / GCP)'
     description = 'Train model with Vertex AI'
     icon = 'https://www.svgrepo.com/show/375510/vertexai.svg'
     precondition = ActionCondition(default_event = None, event_list = [])
@@ -50,10 +50,10 @@ class VertexTrainDatasetAction(ActionRunner):
         return True
 
     def execute_action(self, session):
-        dir_id = self.action.config_data.get('directory_id')
-        dir = WorkingDir.get_by_id(session = session, directory_id=dir_id)
+        directory_id = self.action.config_data.get('directory_id')
+        directory = WorkingDir.get_by_id(session = session, directory_id=directory_id)
 
-        dir_files = WorkingDirFileLink.file_list(session=session, working_dir_id=dir.id, limit=None)
+        dir_files = WorkingDirFileLink.file_list(session=session, working_dir_id=directory.id, limit=None)
 
         for file in dir_files:
             file_annootations = []
@@ -99,9 +99,9 @@ class VertexTrainDatasetAction(ActionRunner):
             existing_datasets.append(dataset.__dict__['_gca_resource'].__dict__['_pb'].display_name)
 
         working_dataset = None
-        if dir.nickname not in existing_datasets:
+        if directory.nickname not in existing_datasets:
             working_dataset = aiplatform.ImageDataset.create(
-                display_name=dir.nickname,
+                display_name=directory.nickname,
                 gcs_source=['gs://mandmc-tria-backet/3 (10).JPG', 'gs://mandmc-tria-backet/3 (870).JPG'],
                 import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
                 data_item_labels=image_annotation #this is throwing error and I'm not sure why
@@ -109,7 +109,7 @@ class VertexTrainDatasetAction(ActionRunner):
             )
             print("New dataset has been created on Vertex AI")
         else:
-            dataset_index = existing_datasets.index(dir.nickname)
+            dataset_index = existing_datasets.index(directory.nickname)
             working_dataset = datasets_list[dataset_index]
 
         print(working_dataset)
