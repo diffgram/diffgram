@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from functools import wraps
 import datetime
 from shared.database.sync_events.sync_event import SyncEvent
-
+from shared.database.event.event import Event
 
 @dataclass
 class SyncEventManager:
@@ -118,6 +118,18 @@ class SyncEventManager:
             member_updated=member_updated,
             status=status
         )
+        event = Event.new(
+            session = session,
+            kind = f'file_{transfer_action}',
+            file_id = file.id if file else None,
+            job_id = job.id if job else None,
+            project_id = project.id if project else None,
+            extra_metadata = {
+                'new_copied_file': new_file_copy.id if new_file_copy is not None else None
+            },
+        )
+
+        session.add(event)
         session.add(sync_event)
         session.flush()
         manager = SyncEventManager(session=session, sync_event=sync_event)
