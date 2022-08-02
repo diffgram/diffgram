@@ -1,47 +1,45 @@
-"""Add System Events
+"""Add File Annotations Aggregate Table
 
-Revision ID: ee39eac32ff8
-Revises: 7ff038954a96
-Create Date: 2021-07-23 10:58:04.819668
+Revision ID: ed8dea09f743
+Revises: 73fd663f4914
+Create Date: 2022-08-02 09:03:13.735264
 
 """
 from alembic import op
 import sqlalchemy as sa
-import datetime
 
 # revision identifiers, used by Alembic.
-revision = 'ee39eac32ff8'
-down_revision = '7ff038954a96'
+revision = 'ed8dea09f743'
+down_revision = '73fd663f4914'
 branch_labels = None
 depends_on = None
 
 
 def upgrade():
-    op.create_table('system_events',
+    op.create_table('file_annotations',
                     sa.Column('id', sa.Integer(), nullable = False),
-                    sa.Column('kind', sa.String()),
-                    sa.Column('description', sa.String()),
-                    sa.Column('install_fingerprint', sa.String()),
-                    sa.Column('previous_version', sa.String()),
-                    sa.Column('diffgram_version', sa.String()),
+                    sa.Column('created_time', sa.DateTime, default = datetime.datetime.utcnow),
+                    sa.Column('count_instances', sa.Integer()),
+                    sa.Column('label_file_id', sa.Integer(), sa.ForeignKey('file.id')),
+
+                    sa.Column('annotators_member_list', sa.ARRAY(sa.Integer), nullable = True, default = []),
+                    sa.Column('attribute_value_selected', sa.String(), sa.ForeignKey('file.id')),
+
                     sa.Column('host_os', sa.String()),
                     sa.Column('storage_backend', sa.String()),
                     sa.Column('service_name', sa.String()),
                     sa.Column('startup_time', sa.DateTime, default = None, nullable = True),
                     sa.Column('shut_down_time', sa.DateTime, default = None, nullable = True),
-                    sa.Column('created_date', sa.DateTime, default = datetime.datetime.utcnow),
+
                     sa.PrimaryKeyConstraint('id')
                     )
 
     op.add_column('event', sa.Column('install_fingerprint', sa.String))
     op.add_column('event', sa.Column('diffgram_version', sa.String))
-    op.create_index('index__task_user_task_id', 'task_user', ['task_id'])
-    op.create_index('index__task_user_user_id', 'task_user', ['user_id'])
 
 
 def downgrade():
     op.drop_column('event', 'install_fingerprint')
     op.drop_column('event', 'diffgram_version')
-    op.drop_index('index__task_user_user_id', 'task_user')
-    op.drop_index('index__task_user_task_id', 'task_user')
+
     op.drop_table('system_events')

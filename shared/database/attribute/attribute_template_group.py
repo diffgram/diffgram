@@ -6,6 +6,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import joinedload
 from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
 
+
 class Attribute_Template_Group(Base):
     """
 
@@ -210,7 +211,7 @@ class Attribute_Template_Group(Base):
     def get_group_relations_list(session, file_id_list):
 
         result = session.query(Attribute_Template_Group_to_File).options(
-            joinedload(Attribute_Template_Group_to_File.attribute_template_group)).\
+            joinedload(Attribute_Template_Group_to_File.attribute_template_group)). \
             filter(Attribute_Template_Group_to_File.file_id.in_(file_id_list)).all()
 
         return result
@@ -290,7 +291,6 @@ class Attribute_Template_Group(Base):
 
         if return_kind == "objects":
             return query.all()
-
 
     @staticmethod
     def get_by_id(session,
