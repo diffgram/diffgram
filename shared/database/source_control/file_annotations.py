@@ -1,5 +1,6 @@
 # OPENCORE - ADD
 from shared.database.common import *
+from sqlalchemy.orm.session import Session
 import hashlib
 import json
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
@@ -49,14 +50,19 @@ class FileAnnotations(Base, Caching):
     # Number of instances (Of all types) in the file.
     count_instances = Column(Integer, default = None, nullable = True)
 
+    file_id = Column(Integer, ForeignKey('file.id'))
+    file = relationship("File")
+
     label_file_id = Column(Integer, ForeignKey('file.id'))
     label_file = relationship("File")
 
     annotators_member_list = Column(ARRAY(Integer), nullable = True, default = [])
 
-    attribute_value_selected = Column(String, ForeignKey('attribute.id'))
+    attribute_value_text = Column(String, nullable = True)
 
-    attribute_value_selected_date = Column(String, ForeignKey('attribute.id'))
+    attribute_value_selected = Column(Boolean, nullable = True)
+
+    attribute_value_selected_date = Column(DateTime, nullable = True)
 
     # The Option Selected for cases where there are options to select. (treeview, radio, select)
     attribute_template_id = Column(Integer, ForeignKey('attribute_template.id'))
@@ -69,3 +75,66 @@ class FileAnnotations(Base, Caching):
 
     member_updated_id = Column(Integer, ForeignKey('member.id'))
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
+
+    @staticmethod
+    def new(session: Session,
+            file_id: int,
+            label_file_id: int,
+            count_instances: int,
+            annotators_member_list: list,
+            attribute_value_text: str = None,
+            attribute_value_selected: bool = None,
+            attribute_value_selected_date: datetime.datetime = None,
+            add_to_session: bool = True,
+            flush_session: bool = True):
+
+        file_annotation = FileAnnotations(
+            file_id = file_id,
+            label_file_id = label_file_id,
+            count_instances = count_instances,
+            annotators_member_list = annotators_member_list,
+            attribute_value_text = attribute_value_text,
+            attribute_value_selected = attribute_value_selected,
+            attribute_value_selected_date = attribute_value_selected_date
+        )
+
+        if add_to_session:
+            session.add(file_annotation)
+
+        if flush_session:
+            session.flush()
+
+        return file_annotation
+
+    @staticmethod
+    def update_file_annotations_data(session: Session, instance_list: list, file_id: int):
+        # First Delete existing
+        session.query(FileAnnotations).filter(
+            FileAnnotations.file_id == file_id
+        ).delete()
+        members_list = []
+
+        # Build label count entries based on instance list
+        label_counts = {}
+        for instance in instance_list:
+            label_file_id = instance['label_file_id']
+            if label_counts.get(label_file_id):
+                label_counts[label_file_id] += 1
+            else:
+                label_counts[label_file_id] = 1
+            members_list.append(instance['member_created_id'])
+
+        for key, val in label_counts.items():
+            file_annotation = FileAnnotations.new(
+                session = session,
+                file_id = file_id,
+                label_file_id = key,
+                count_instances = val,
+            )
+
+        # Build Attribute Entries
+        for instance in instance_list:
+            for attribute_groups in instance_list.get('attribute_groups'):
+                if attribute_groups is None:
+                    continue
+                print('attributeee', attribute_groups)
