@@ -175,10 +175,6 @@ export const project_list = {
 
 export const project = {
 
-  // TODO merge name and string methods in project
-  // TODO clarify why using phrase "current", is it becuase
-  // needs some variable can't store in "root" of project?
-
   state: {
     project_name: null,
     project_string_id: null,
@@ -202,15 +198,15 @@ export const project = {
     },
     clear_project(state) {
       state.project_name = null,
-        state.project_string_id = null,
-        // careful to reset dict here
-        // otherwise can get "null" issue errors
-        state.current = {
-          user_primary: {
-            username: null
-          },
-          last_patched_directory: null
-        }
+      state.project_string_id = null,
+      // careful to reset dict here
+      // otherwise can get "null" issue errors
+      state.current = {
+        user_primary: {
+          username: null
+        },
+        last_patched_directory: null
+      }
 
       state.current_directory = {}
     },
@@ -222,17 +218,13 @@ export const project = {
 
     set_project(state, project) {
 
-      // default here, in future for more advanced permissions thing may need to review
-      // (but not actually project state itself, which is done below
-      // therefore no race conditions)
       this.dispatch('reset_project_related_state')
 
       state.current = project
 
-      // Key to handle this here since we may call
-      // set project from different spots
+      state.project_name = project.name
+      state.project_string_id = project.project_string_id
 
-      // TODO handle failure case ie no directory in list
       state.current_directory = project.directory_list[0]
     },
     set_current_directory_list(state, directory_list) {
