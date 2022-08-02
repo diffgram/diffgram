@@ -315,7 +315,7 @@ class S3Connector(Connector):
         blob_name_encoded = urllib.parse.quote(blob_name, safe = '')
         url_path = f'{self.url_signer_service}/{bucket_name}'
         try:
-            params = {'key': blob_name_encoded, "method": "put"}
+            params = {'key': blob_name, "method": "put"}
             result = requests.get(url = url_path, headers = headers, params = params)
             if result.status_code == 200:
                 data = result.json()
