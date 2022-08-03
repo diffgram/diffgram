@@ -311,7 +311,6 @@
                   colour: color_obj,
                   name: label_name
                 });
-              this.new_label_name = null
 
               // only if success?
               this.$store.commit('init_label_refresh');
