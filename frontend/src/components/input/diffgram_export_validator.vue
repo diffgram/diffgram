@@ -247,7 +247,6 @@
             this.errors_export_data = {};
             this.instances_data_state = 'error';
             this.errors_export_data['instance_validation'] = e.toString();
-            this.errors_export_data['instance_validation'] = e.toString();
           }
 
         },
