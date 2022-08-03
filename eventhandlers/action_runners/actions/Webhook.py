@@ -1,9 +1,9 @@
 import requests
 import traceback
-from eventhandlers.action_runners.base.ActionRunner import ActionRunner
-from eventhandlers.action_runners.base.ActionTrigger import ActionTrigger
-from eventhandlers.action_runners.base.ActionCondition import ActionCondition
-from eventhandlers.action_runners.base.ActionCompleteCondition import ActionCompleteCondition
+from action_runners.base.ActionRunner import ActionRunner
+from action_runners.base.ActionTrigger import ActionTrigger
+from action_runners.base.ActionCondition import ActionCondition
+from action_runners.base.ActionCompleteCondition import ActionCompleteCondition
 from shared.shared_logger import get_shared_logger
 
 logger = get_shared_logger()
