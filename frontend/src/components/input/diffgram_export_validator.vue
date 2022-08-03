@@ -404,6 +404,81 @@
             this.instances_data_state = 'error'
           }
         },
+        create_attribute_templates: async function(attr_group, new_group, attribute_template_list){
+          for(const attribute of attribute_template_list){
+            let new_attribute = {
+              ...attribute,
+              id: null,
+              group_id: new_group.id,
+            }
+            if (new_attribute.parent_id) {
+              new_attribute.parent_id = new_group.parent_id
+            }
+            const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
+              {
+                attribute: new_attribute,
+                mode: 'NEW'
+              }
+            )
+            if(response_attributes.status === 200){
+              new_group.attribute_template_list.push(response_attributes.data.attribute_template)
+            }
+          }
+        },
+
+        create_attribute_templates_tree_view: async function(attr_group, new_group, sorted_attribute_template_list){
+          for(const attribute of sorted_attribute_template_list){
+            let old_id = attribute.id;
+            let new_attribute = {
+              ...attribute,
+              id: null,
+              group_id: new_group.id,
+            }
+            const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
+              {
+                attribute: new_attribute,
+                mode: 'NEW'
+              }
+            )
+            if(response_attributes.status === 200){
+              let new_attr_template = response_attributes.data.attribute_template;
+              new_group.attribute_template_list.push(new_attr_template)
+              // Replace new ID
+              sorted_attribute_template_list.map(attr_temp => {
+                if(attr_temp.parent_id === old_id){
+                  attr_temp.parent_id = new_attr_template.id
+                }
+              })
+            }
+          }
+
+        },
+        topological_sort_attribute_template_list: function(attribute_template_list){
+          /*
+          * Sorts the list of attribute templates so that the parents are created first and all dependencies are created
+          * afterwards
+          * */
+          const findParent = (id) => attribute_template_list.find(x => x.id === id);
+          const getLevel = (parent_id, lvl) =>
+          {
+            console.log('GET LEVEL', parent_id, lvl)
+            let parent = findParent(parent_id)
+            return parent_id ? getLevel(parent.parent_id, lvl + 1) : lvl;
+          }
+          let new_attribute_template_list = attribute_template_list.map((attribute_template) =>
+          {
+            return {
+              ...attribute_template,
+              parent_id: findParent(attribute_template.parent_id) ? findParent(attribute_template.parent_id).id : null,
+              lvl: getLevel(attribute_template.parent_id, 0)
+            };
+          });
+          let sorted_attribute_template_list = new_attribute_template_list.sort((a, b) =>
+          {
+            return (a.lvl - b.lvl) ? a.lvl - b.lvl : a.id - b.id;
+          });
+          return sorted_attribute_template_list
+        },
         create_missing_attributes: async function(){
           if(!this.missing_attributes){
             return
@@ -426,6 +501,7 @@
                 new_group.default_value = attr_group.default_value
                 new_group.min_value = attr_group.min_value
                 new_group.max_value = attr_group.max_value
+                new_group.is_global = attr_group.is_global
 
                 const response_update = await axios.post(`/api/v1/project/${this.project_string_id }/attribute/group/update`,
                   {
@@ -438,25 +514,14 @@
                   this.diffgram_export_ingestor.add_new_attr_id_mapping(attr_group.id, new_group.id);
                   if(attr_group.attribute_template_list){
                     new_group.attribute_template_list = []
-                    for(const attribute of attr_group.attribute_template_list){
-                      let new_attribute = {
-                            ...attribute,
-                            id: null,
-                            group_id: new_group.id
-                          }
-                      if (new_attribute.parent_id) {
-                        new_attribute.parent_id = new_group.parent_id
-                      }
-                      const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
-                        {
-                          attribute: new_attribute,
-                          mode: 'NEW'
-                        }
-                      )
-                      if(response_attributes.status === 200){
-                        new_group.attribute_template_list.push(response_attributes.data.attribute_template)
-                      }
+                    if(new_group.kind === 'tree'){
+                      let sorted_attr_template_list = this.topological_sort_attribute_template_list(attr_group.attribute_template_list)
+                      this.create_attribute_templates_tree_view(attr_group, new_group, sorted_attr_template_list)
                     }
+                    else{
+                      this.create_attribute_templates(attr_group, new_group, attr_group.attribute_template_list)
+                    }
+
                     this.diffgram_export_ingestor.map_attribute_options(attr_group, new_group);
                   }
 
