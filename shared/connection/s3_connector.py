@@ -321,8 +321,12 @@ class S3Connector(Connector):
                 data = result.json()
                 logger.info(f'Signer Upload URL JSON {data}')
                 return {'result': data}
+            elif result.status_code == 409:
+                log['error']['blob_exists'] = 'Thumbnail blob already exists'
+                logger.error(f'Error Thumbnail blob already exists: [{result.status_code}] {result.text}')
+                return {'log': log}
             else:
-                logger.error(f'Error generating signed url with: {url_path}')
+                logger.error(f'Error generating signed url with: [{result.status_code}] {url_path}')
                 logger.error(f'Error payload: {result.text}')
                 return None
         except Exception as e:

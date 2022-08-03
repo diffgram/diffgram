@@ -87,6 +87,8 @@ def get_url_from_connector(connector, params, log):
     response = connector.fetch_data(params)
     if response is None or response.get('result') is None:
         msg = f'Error from connector: {params}. Response: {response}'
+        if response.get('log') is not None:
+            log = response.get('log')
         log['error']['connector_client'] = msg
         logger.error(msg)
         return None, log
@@ -127,6 +129,12 @@ def upload_thumbnail_for_connection_image(session: Session,
     if regular_log.log_has_error(log):
         return blob_object, log
     put_data, log = get_url_from_connector(connector = client, params = params, log = log)
+    if regular_log.log_has_error(log):
+        if 'blob_exists' in log['error']:
+            log = regular_log.default()
+            blob_object.url_signed_blob_path = blob_path_thumb
+            session.add(blob_object)
+        return blob_object, log
     if put_data is None:
         return blob_object, log
     url = put_data.get('url')
