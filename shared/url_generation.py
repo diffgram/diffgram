@@ -261,6 +261,9 @@ def connection_url_regenerate(session: Session,
             access_token = access_token,
             reference_file = reference_file
         )
+        if regular_log.log_has_error(log):
+            session.add(blob_object)
+            return blob_object, log
         params['path'] = blob_object.url_signed_thumb_blob_path
         params['action_type'] = 'get_pre_signed_url'
         thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
