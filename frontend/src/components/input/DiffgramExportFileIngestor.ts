@@ -193,9 +193,11 @@ export default class DiffgramExportFileIngestor {
     if (!('label_file_id' in instance)) {
       throw new Error(`Label File ID missing. Provide 'label_file_id'. Data is: ${JSON.stringify(instance)}`)
     }
-    let label_name = this.export_raw_obj.label_map[instance.label_file_id];
-    if (!label_name) {
-      throw new Error(`Invalid label_file_id ${instance.label_file_id}. ID not available in label_map.`)
+    if (instance.label_file_id) {
+      let label_name = this.export_raw_obj.label_map[instance.label_file_id];
+      if (!label_name) {
+        throw new Error(`Invalid label_file_id ${instance.label_file_id}. ID not available in label_map.`)
+      }
     }
   }
 
