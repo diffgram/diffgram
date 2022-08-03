@@ -41,7 +41,7 @@ class LabelSchema(Base, SerializerMixin):
         ).first()
         return result
 
-    def get_default(session, project_id):
+    def get_default(session: Session, project_id: int):
 
         schema = session.query(LabelSchema).filter(
             LabelSchema.project_id == project_id,
@@ -111,6 +111,7 @@ class LabelSchema(Base, SerializerMixin):
             member_created_id = member_created_id
         )
         return rel
+
 
     @staticmethod
     def list(session: Session, project_id: int, is_default: bool = None):
