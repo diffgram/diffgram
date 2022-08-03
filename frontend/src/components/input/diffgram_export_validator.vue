@@ -439,13 +439,17 @@
                   if(attr_group.attribute_template_list){
                     new_group.attribute_template_list = []
                     for(const attribute of attr_group.attribute_template_list){
-                      const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
-                        {
-                          attribute:{
+                      let new_attribute = {
                             ...attribute,
                             id: null,
                             group_id: new_group.id
-                          },
+                          }
+                      if (new_attribute.parent_id) {
+                        new_attribute.parent_id = new_group.parent_id
+                      }
+                      const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
+                        {
+                          attribute: new_attribute,
                           mode: 'NEW'
                         }
                       )

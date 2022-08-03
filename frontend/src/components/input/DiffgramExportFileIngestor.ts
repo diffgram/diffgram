@@ -455,6 +455,7 @@ export default class DiffgramExportFileIngestor {
       for (let attr_existing_option of attribute_existing.attribute_template_list) {
         if (attr_export_option.name === attr_existing_option.name) {
           this.attribute_new_id_mapping[attribute_export.id].attributes_mapping[attr_export_option.id] = attr_existing_option.id
+          this.attribute_new_id_mapping[attribute_export.id].attributes_mapping[attr_export_option.parent_id] = attr_existing_option.parent_id
         }
       }
     }
@@ -496,22 +497,30 @@ export default class DiffgramExportFileIngestor {
         // The only case were a mapping would not be found is if the ID is from an archived attribute.
         continue
       }
+
+      let group_id = this.attribute_new_id_mapping[key].attribute_group_id
+
       if(typeof instance.attribute_groups[key] === 'object'){
-        new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] = {
+        new_attribute_group[group_id] = {
           ...instance.attribute_groups[key]
         }
       }
       else{
-        new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] = instance.attribute_groups[key]
+        new_attribute_group[group_id] = instance.attribute_groups[key]
       }
 
-
       // Change attribute options IDs (for select, radio buttons, multiple selects)
-      if (typeof new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] === 'object') {
-        let old_id = new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id].id
+      if (typeof new_attribute_group[group_id] === 'object') {
+        let old_id = new_attribute_group[group_id].id
         if (old_id) {
-          new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id].id =
+          new_attribute_group[group_id].id =
             this.attribute_new_id_mapping[key].attributes_mapping[old_id];
+        }
+
+        // Tree view
+        let old_parent_id = new_attribute_group[group_id].parent_id
+        if (old_parent_id) {
+          new_attribute_group[group_id].parent_id = this.attribute_new_id_mapping[key].attributes_mapping[old_id]
         }
       }
 
