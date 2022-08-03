@@ -24,7 +24,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import UniqueConstraint
 from shared.database.geospatial.geo_asset import GeoAsset
 from shared.helpers.performance import timeit
-
+from sqlalchemy import Time
 logger = get_shared_logger()
 
 from sqlalchemy.schema import Index
@@ -63,6 +63,8 @@ class FileAnnotations(Base, Caching):
     attribute_value_selected = Column(Boolean, nullable = True)
 
     attribute_value_selected_date = Column(DateTime, nullable = True)
+
+    attribute_value_selected_time = Column(Time, nullable = True)
 
     # The Option Selected for cases where there are options to select. (treeview, radio, select)
     attribute_template_id = Column(Integer, ForeignKey('attribute_template.id'))
@@ -138,3 +140,7 @@ class FileAnnotations(Base, Caching):
                 if attribute_groups is None:
                     continue
                 print('attributeee', attribute_groups)
+                for key, val in attribute_groups.items():
+                    value, type = get_tree_attribute_value(key, val)
+
+

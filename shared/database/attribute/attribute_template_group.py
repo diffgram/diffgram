@@ -295,7 +295,7 @@ class Attribute_Template_Group(Base):
     @staticmethod
     def get_by_id(session,
                   id,
-                  project_id = None):
+                  project_id = None) -> 'Attribute_Template_Group':
         """
         Must include project id for security check
 

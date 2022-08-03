@@ -94,6 +94,7 @@
                 </v-layout>
               </template>
             </button_with_confirm>
+            <v-chip x-small>ID {{group.id}}</v-chip>
           </h4>
           <!-- Archive button -->
           <!-- TODO maybe, play with this more

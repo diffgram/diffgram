@@ -28,6 +28,7 @@ def upgrade():
                     sa.Column('attribute_value_text', sa.String(), nullable = True),
                     sa.Column('attribute_value_selected', sa.Boolean(), nullable = True),
                     sa.Column('attribute_value_selected_date', sa.DateTime(), nullable = True),
+                    sa.Column('attribute_value_selected_time', sa.Time(), nullable = True),
 
                     sa.Column('attribute_template_id', sa.Integer(), sa.ForeignKey('attribute_template.id')),
                     sa.Column('attribute_template_group_id', sa.Integer(),

@@ -181,9 +181,9 @@
               selectionType="independent"
             >
               <template v-slot:prepend="{ item }">
-                  <v-checkbox 
+                  <v-checkbox
                     :input-value="internal_selected.includes(item.id)"
-                    @change="tree_input(item)" style="margin-top: 0" hide-details 
+                    @change="tree_input(item)" style="margin-top: 0" hide-details
                   />
               </template>
             </v-treeview>
@@ -475,6 +475,7 @@
               </v-layout>
             </template>
           </button_with_confirm>
+
           <!-- Archive button -->
 
 
