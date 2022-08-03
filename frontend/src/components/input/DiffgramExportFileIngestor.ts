@@ -451,7 +451,6 @@ export default class DiffgramExportFileIngestor {
       attribute_group_id: new_id,
       attributes_mapping: {}
     }
-    console.log('attribute_new_id_mapping', this.attribute_new_id_mapping)
   }
 
   public map_attribute_options(attribute_export, attribute_existing) {
@@ -498,8 +497,7 @@ export default class DiffgramExportFileIngestor {
     let new_attribute_group = {};
 
     for (let key_str of Object.keys(instance.attribute_groups)) {
-      console.log('update atribute gtouppsss', instance.attribute_groups)
-      console.log('attribute_new_id_mapping', this.attribute_new_id_mapping)
+
       let key = parseInt(key_str, 10)
       let mapping = this.attribute_new_id_mapping[key];
       if(!mapping){
