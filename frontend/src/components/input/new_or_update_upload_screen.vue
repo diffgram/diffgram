@@ -657,6 +657,7 @@
               return limit(() => this.create_input_for_export_data(file_data, file_key))
             });
             const result = await Promise.all(promises);
+            this.$emit('declare_success', true)
             return result
 
           } catch (error) {
