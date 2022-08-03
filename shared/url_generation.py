@@ -87,6 +87,8 @@ def get_url_from_connector(connector, params, log):
     response = connector.fetch_data(params)
     if response is None or response.get('result') is None:
         msg = f'Error from connector: {params}. Response: {response}'
+        if response.get('log') is not None:
+            log = response.get('log')
         log['error']['connector_client'] = msg
         logger.error(msg)
         return None, log
@@ -127,6 +129,12 @@ def upload_thumbnail_for_connection_image(session: Session,
     if regular_log.log_has_error(log):
         return blob_object, log
     put_data, log = get_url_from_connector(connector = client, params = params, log = log)
+    if regular_log.log_has_error(log):
+        if 'blob_exists' in log['error']:
+            log = regular_log.default()
+            blob_object.url_signed_blob_path = blob_path_thumb
+            session.add(blob_object)
+        return blob_object, log
     if put_data is None:
         return blob_object, log
     url = put_data.get('url')
@@ -261,11 +269,13 @@ def connection_url_regenerate(session: Session,
             access_token = access_token,
             reference_file = reference_file
         )
+        if regular_log.log_has_error(log):
+            session.add(blob_object)
+            return blob_object, log
         params['path'] = blob_object.url_signed_thumb_blob_path
         params['action_type'] = 'get_pre_signed_url'
         thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
         if regular_log.log_has_error(log):
-            blob_object.url_signed_thumb_blob_path = None
             session.add(blob_object)
             return blob_object, log
         blob_object.url_signed_thumb = thumb_signed_url
