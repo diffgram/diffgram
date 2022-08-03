@@ -405,51 +405,67 @@
           }
         },
         create_attribute_templates: async function(attr_group, new_group, attribute_template_list){
-          for(const attribute of attribute_template_list){
-            let new_attribute = {
-              ...attribute,
-              id: null,
-              group_id: new_group.id,
-            }
-            if (new_attribute.parent_id) {
-              new_attribute.parent_id = new_group.parent_id
-            }
-            const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
-              {
-                attribute: new_attribute,
-                mode: 'NEW'
+          try {
+            for(const attribute of attribute_template_list){
+              let new_attribute = {
+                ...attribute,
+                id: null,
+                group_id: new_group.id,
               }
-            )
-            if(response_attributes.status === 200){
-              new_group.attribute_template_list.push(response_attributes.data.attribute_template)
+              if (new_attribute.parent_id) {
+                new_attribute.parent_id = new_group.parent_id
+              }
+              const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
+                {
+                  attribute: new_attribute,
+                  mode: 'NEW'
+                }
+              )
+              if(response_attributes.status === 200){
+                new_group.attribute_template_list.push(response_attributes.data.attribute_template)
+              }
             }
+          }
+          catch (e) {
+            this.catch_attribute_errors(e)
+          }
+          finally {
+            this.declare_success_attributes()
           }
         },
 
         create_attribute_templates_tree_view: async function(attr_group, new_group, sorted_attribute_template_list){
-          for(const attribute of sorted_attribute_template_list){
-            let old_id = attribute.id;
-            let new_attribute = {
-              ...attribute,
-              id: null,
-              group_id: new_group.id,
-            }
-            const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
-              {
-                attribute: new_attribute,
-                mode: 'NEW'
+          try {
+            for(const attribute of sorted_attribute_template_list){
+              let old_id = attribute.id;
+              let new_attribute = {
+                ...attribute,
+                id: null,
+                group_id: new_group.id,
               }
-            )
-            if(response_attributes.status === 200){
-              let new_attr_template = response_attributes.data.attribute_template;
-              new_group.attribute_template_list.push(new_attr_template)
-              // Replace new ID
-              sorted_attribute_template_list.map(attr_temp => {
-                if(attr_temp.parent_id === old_id){
-                  attr_temp.parent_id = new_attr_template.id
+              const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
+                {
+                  attribute: new_attribute,
+                  mode: 'NEW'
                 }
-              })
+              )
+              if(response_attributes.status === 200){
+                let new_attr_template = response_attributes.data.attribute_template;
+                new_group.attribute_template_list.push(new_attr_template)
+                // Replace new ID
+                sorted_attribute_template_list.map(attr_temp => {
+                  if(attr_temp.parent_id === old_id){
+                    attr_temp.parent_id = new_attr_template.id
+                  }
+                })
+              }
             }
+          }
+          catch (e) {
+            this.catch_attribute_errors(e)
+          }
+          finally {
+            this.declare_success_attributes()
           }
 
         },
@@ -489,6 +505,7 @@
             this.loading_attributes_creation = true;
             this.diffgram_export_ingestor.substitute_label_file_ids_on_attributes(this.existing_label_file_list)
             for(let attr_group of this.missing_attributes){
+              console.log("Running")
               const response = await axios.post(`/api/v1/project/${this.project_string_id}/attribute/group/new`,{})
               if(response.status === 200){
                 let new_group = response.data.attribute_template_group;
@@ -533,20 +550,27 @@
             }
           }
           catch (e) {
-            console.error(e);
-            this.errors_export_data = {};
-            this.errors_export_data['create_attribute'] = this.$route_api_errors(e)
-            this.valid_attributes = false;
-            this.loading_attributes_creation = false;
-          }
-          finally {
-            this.$store.commit('attribute_refresh_group_list')
-            this.loading_attributes_creation = false;
-            this.success_missing_attributes = true;
-            this.retry_all_checks();
+            this.catch_attribute_errors(e)
           }
 
         },
+
+        catch_attribute_errors(e){
+          console.error(e);
+          this.errors_export_data = {};
+          this.errors_export_data['create_attribute'] = this.$route_api_errors(e)
+          this.valid_attributes = false;
+          this.loading_attributes_creation = false;
+        },
+
+        declare_success_attributes(){
+
+          this.$store.commit('attribute_refresh_group_list')
+          this.loading_attributes_creation = false;
+          this.success_missing_attributes = true;
+          this.retry_all_checks();
+        },
+
         validate_attribute_groups: async function(){
           try{
             this.attributes_data_state = 'loading'
