@@ -87,7 +87,7 @@ def get_url_from_connector(connector, params, log):
     response = connector.fetch_data(params)
     if response is None or response.get('result') is None:
         msg = f'Error from connector: {params}. Response: {response}'
-        if response.get('log') is not None:
+        if response.get('log') is not None and type(response.get('log')) == dict:
             log = response.get('log')
         log['error']['connector_client'] = msg
         logger.error(msg)

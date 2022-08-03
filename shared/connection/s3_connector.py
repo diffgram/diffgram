@@ -347,7 +347,7 @@ class S3Connector(Connector):
         blob_name = opts['path']
         expiration_offset = opts['expiration_offset']
         if blob_name is None:
-            log['error'] = 'blob path cannot be None'
+            log['error']['blob_path'] = 'blob path cannot be None'
             return {'log': log}
         filename = blob_name.split("/")[-1]
         bucket_name = opts['bucket_name']
