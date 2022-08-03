@@ -270,8 +270,12 @@ export default class DiffgramExportFileIngestor {
       file_data.line_instances.push(instance)
     } else if (instance.type === 'cuboid') {
       file_data.cuboid_instances.push(instance)
+    } else if (instance.type === 'cuboid_3d') {
+      file_data.cuboid_3d_instances.push(instance)
     } else if (instance.type === 'ellipse') {
       file_data.ellipse_instances.push(instance)
+    }else if (instance.type === 'global') {
+      file_data.global_instances.push(instance)
     } else {
       throw new Error(`Invalid instance type ${instance.type}`)
     }
@@ -400,7 +404,9 @@ export default class DiffgramExportFileIngestor {
         polygon_instances: [],
         line_instances: [],
         cuboid_instances: [],
+        cuboid_3d_instances: [],
         ellipse_instances: [],
+        global_instances: [],
         instances: [],
         labels: {},
       }
