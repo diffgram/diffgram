@@ -461,7 +461,6 @@
           const findParent = (id) => attribute_template_list.find(x => x.id === id);
           const getLevel = (parent_id, lvl) =>
           {
-            console.log('GET LEVEL', parent_id, lvl)
             let parent = findParent(parent_id)
             return parent_id ? getLevel(parent.parent_id, lvl + 1) : lvl;
           }
