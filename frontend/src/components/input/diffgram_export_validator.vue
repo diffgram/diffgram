@@ -3,9 +3,9 @@
 
     <div class="d-flex align-center">
 
-      <v_error_multiple :error="errors_export_data" >
+      <v_info_multiple :info="errors_export_data" >
 
-      </v_error_multiple>
+      </v_info_multiple>
       <v-progress-circular indeterminate v-if="loading_attributes_creation || loading_labels_creation"></v-progress-circular>
       <v-alert dismissible type="success" v-if="success_missing_labels">Labels created successfully.</v-alert>
       <v-alert dismissible type="success" v-if="success_missing_attributes">Attributes created successfully.</v-alert>
@@ -526,24 +526,25 @@
 
 
                   this.created_attribute_groups.push(new_group)
-                  this.$store.commit('attribute_refresh_group_list')
-
                 }
 
 
               }
             }
-            this.success_missing_attributes = true;
-            this.retry_all_checks();
           }
           catch (e) {
             console.error(e);
             this.errors_export_data = {};
             this.errors_export_data['create_attribute'] = this.$route_api_errors(e)
             this.valid_attributes = false;
-
+            this.loading_attributes_creation = false;
           }
-          this.loading_attributes_creation = false;
+          finally {
+            this.$store.commit('attribute_refresh_group_list')
+            this.loading_attributes_creation = false;
+            this.success_missing_attributes = true;
+            this.retry_all_checks();
+          }
 
         },
         validate_attribute_groups: async function(){
