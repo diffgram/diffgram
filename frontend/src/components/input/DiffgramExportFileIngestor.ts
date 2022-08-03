@@ -451,6 +451,7 @@ export default class DiffgramExportFileIngestor {
       attribute_group_id: new_id,
       attributes_mapping: {}
     }
+    console.log('attribute_new_id_mapping', this.attribute_new_id_mapping)
   }
 
   public map_attribute_options(attribute_export, attribute_existing) {
@@ -497,6 +498,8 @@ export default class DiffgramExportFileIngestor {
     let new_attribute_group = {};
 
     for (let key_str of Object.keys(instance.attribute_groups)) {
+      console.log('update atribute gtouppsss', instance.attribute_groups)
+      console.log('attribute_new_id_mapping', this.attribute_new_id_mapping)
       let key = parseInt(key_str, 10)
       let mapping = this.attribute_new_id_mapping[key];
       if(!mapping){
@@ -524,9 +527,13 @@ export default class DiffgramExportFileIngestor {
         }
 
         // Tree view
-        let old_parent_id = new_attribute_group[group_id].parent_id
-        if (old_parent_id) {
-          new_attribute_group[group_id].parent_id = this.attribute_new_id_mapping[key].attributes_mapping[old_id]
+        for(let key_option of Object.keys(new_attribute_group[group_id])){
+            // Change Selected parent ID
+            if(typeof new_attribute_group[group_id] === 'object'){
+              let new_key =  this.attribute_new_id_mapping[key].attributes_mapping[parseInt(key_option)]
+              new_attribute_group[group_id][new_key] = new_attribute_group[group_id][key_option]
+              delete new_attribute_group[group_id][key_option]
+            }
         }
       }
 
