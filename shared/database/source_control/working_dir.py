@@ -305,18 +305,6 @@ class WorkingDir(Base):
                             project_id = None,
                             project_default = False
                             ):
-        """
-        Create a new directory
-
-        Trys to make as few assumptions as possible about directory use
-
-        This may seem a little overbearing but likely in future other things we will want
-        to add to blank directory and would prefer to include the stuff here
-        rather then directly calling Dir()???
-
-        """
-        start_time = time.time()
-
         working_dir = WorkingDir(
             nickname = nickname,
             project_id = project_id,
@@ -327,9 +315,6 @@ class WorkingDir(Base):
 
         session.add(working_dir)
         session.flush()
-
-        end_time = time.time()
-        # print("new working dir in", end_time - start_time)
 
         return working_dir
 
