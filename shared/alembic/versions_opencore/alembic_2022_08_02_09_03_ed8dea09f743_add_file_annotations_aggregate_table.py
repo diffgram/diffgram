@@ -26,6 +26,7 @@ def upgrade():
 
                     sa.Column('annotators_member_list', sa.ARRAY(sa.Integer), nullable = True, default = []),
                     sa.Column('attribute_value_text', sa.String(), nullable = True),
+                    sa.Column('attribute_value_number', sa.Integer(), nullable = True),
                     sa.Column('attribute_value_selected', sa.Boolean(), nullable = True),
                     sa.Column('attribute_value_selected_date', sa.DateTime(), nullable = True),
                     sa.Column('attribute_value_selected_time', sa.Time(), nullable = True),

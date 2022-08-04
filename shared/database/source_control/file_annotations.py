@@ -25,6 +25,8 @@ from sqlalchemy import UniqueConstraint
 from shared.database.geospatial.geo_asset import GeoAsset
 from shared.helpers.performance import timeit
 from sqlalchemy import Time
+from shared.utils.attributes.attributes_values_parsing import get_attribute_value
+from shared.database.project import Project
 logger = get_shared_logger()
 
 from sqlalchemy.schema import Index
@@ -38,12 +40,6 @@ class FileAnnotations(Base, Caching):
 
     __tablename__ = 'file_annotations'
 
-    __table_args__ = (
-        Index('index__video_parent_file_id__and__frame_number',
-              "video_parent_file_id",
-              "frame_number"),
-    )
-
     id = Column(BIGINT, primary_key = True)
     created_time = Column(DateTime, default = datetime.datetime.utcnow)
 
@@ -51,14 +47,16 @@ class FileAnnotations(Base, Caching):
     count_instances = Column(Integer, default = None, nullable = True)
 
     file_id = Column(Integer, ForeignKey('file.id'))
-    file = relationship("File")
+    file = relationship("File", foreign_keys = [file_id])
 
     label_file_id = Column(Integer, ForeignKey('file.id'))
-    label_file = relationship("File")
+    label_file = relationship("File", foreign_keys = [label_file_id])
 
     annotators_member_list = Column(ARRAY(Integer), nullable = True, default = [])
 
     attribute_value_text = Column(String, nullable = True)
+
+    attribute_value_number = Column(Integer, nullable = True)
 
     attribute_value_selected = Column(Boolean, nullable = True)
 
@@ -82,11 +80,15 @@ class FileAnnotations(Base, Caching):
     def new(session: Session,
             file_id: int,
             label_file_id: int,
-            count_instances: int,
             annotators_member_list: list,
+            count_instances: int = None,
             attribute_value_text: str = None,
             attribute_value_selected: bool = None,
+            attribute_template_id: int = None,
+            attribute_template_group_id: int = None,
+            attribute_value_number: int = None,
             attribute_value_selected_date: datetime.datetime = None,
+            attribute_value_selected_time: time = None,
             add_to_session: bool = True,
             flush_session: bool = True):
 
@@ -97,7 +99,11 @@ class FileAnnotations(Base, Caching):
             annotators_member_list = annotators_member_list,
             attribute_value_text = attribute_value_text,
             attribute_value_selected = attribute_value_selected,
-            attribute_value_selected_date = attribute_value_selected_date
+            attribute_value_selected_date = attribute_value_selected_date,
+            attribute_value_selected_time = attribute_value_selected_time,
+            attribute_value_number = attribute_value_number,
+            attribute_template_id = attribute_template_id,
+            attribute_template_group_id = attribute_template_group_id
         )
 
         if add_to_session:
@@ -109,38 +115,107 @@ class FileAnnotations(Base, Caching):
         return file_annotation
 
     @staticmethod
-    def update_file_annotations_data(session: Session, instance_list: list, file_id: int):
+    def update_file_annotations_data(session: Session, instance_list: list, file_id: int, project: Project):
         # First Delete existing
         session.query(FileAnnotations).filter(
             FileAnnotations.file_id == file_id
         ).delete()
         members_list = []
-
         # Build label count entries based on instance list
         label_counts = {}
         for instance in instance_list:
+            if instance.get('soft_delete') is True:
+                continue
             label_file_id = instance['label_file_id']
             if label_counts.get(label_file_id):
                 label_counts[label_file_id] += 1
             else:
                 label_counts[label_file_id] = 1
-            members_list.append(instance['member_created_id'])
+            if instance['member_created_id'] not in members_list:
+                members_list.append(instance['member_created_id'])
 
         for key, val in label_counts.items():
-            file_annotation = FileAnnotations.new(
+            FileAnnotations.new(
                 session = session,
                 file_id = file_id,
                 label_file_id = key,
                 count_instances = val,
+                annotators_member_list = members_list,
             )
 
         # Build Attribute Entries
         for instance in instance_list:
-            for attribute_groups in instance_list.get('attribute_groups'):
-                if attribute_groups is None:
-                    continue
-                print('attributeee', attribute_groups)
-                for key, val in attribute_groups.items():
-                    value, type = get_tree_attribute_value(key, val)
+            if not instance.get('attribute_groups'):
+                continue
+            if instance.get('soft_delete') is True:
+                continue
+            for key, val in instance.get('attribute_groups').items():
+                value, attr_type = get_attribute_value(session, int(key), val, project)
+                if attr_type in ['select', 'radio']:
+                    FileAnnotations.new(
+                        session = session,
+                        file_id = file_id,
+                        label_file_id = instance['label_file_id'],
+                        count_instances = None,
+                        annotators_member_list = members_list,
+                        attribute_value_selected = True,
+                        attribute_template_id = int(value),
+                        attribute_template_group_id = int(key)
+                    )
+                if attr_type in ['tree', 'multiple_select']:
+                    for attr_template_id in value:
+                        FileAnnotations.new(
+                            session = session,
+                            file_id = file_id,
+                            label_file_id = instance['label_file_id'],
+                            count_instances = None,
+                            annotators_member_list = members_list,
+                            attribute_value_selected = True,
+                            attribute_template_id = int(attr_template_id),
+                            attribute_template_group_id = int(key)
+                        )
+                if attr_type in ['time']:
+                    import time
+                    print('AAAAA', value, type(value))
+                    print('AAAAA', time.time(), type(time.time()))
 
+                    FileAnnotations.new(
+                        session = session,
+                        file_id = file_id,
+                        label_file_id = instance['label_file_id'],
+                        count_instances = None,
+                        annotators_member_list = members_list,
+                        attribute_value_selected_time = value,
+                        attribute_template_group_id = int(key)
+                    )
+                if attr_type in ['date']:
+                    FileAnnotations.new(
+                        session = session,
+                        file_id = file_id,
+                        label_file_id = instance['label_file_id'],
+                        count_instances = None,
+                        annotators_member_list = members_list,
+                        attribute_value_selected_date = value,
+                        attribute_template_group_id = int(key)
+                    )
+                if attr_type in ['slider']:
+                    FileAnnotations.new(
+                        session = session,
+                        file_id = file_id,
+                        label_file_id = instance['label_file_id'],
+                        count_instances = None,
+                        annotators_member_list = members_list,
+                        attribute_value_number = value,
+                        attribute_template_group_id = int(key)
+                    )
+                if attr_type in ['text']:
+                    FileAnnotations.new(
+                        session = session,
+                        file_id = file_id,
+                        label_file_id = instance['label_file_id'],
+                        count_instances = None,
+                        annotators_member_list = members_list,
+                        attribute_value_text = value,
+                        attribute_template_group_id = int(key)
+                    )
 

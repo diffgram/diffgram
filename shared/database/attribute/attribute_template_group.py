@@ -5,7 +5,7 @@ from shared.database.attribute.attribute_template_group_to_file import Attribute
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import joinedload
 from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
-
+from sqlalchemy.orm.session import Session
 
 class Attribute_Template_Group(Base):
     """
@@ -306,6 +306,21 @@ class Attribute_Template_Group(Base):
         return session.query(Attribute_Template_Group).filter(
             Attribute_Template_Group.id == id,
             Attribute_Template_Group.project_id == project_id).first()
+
+    @staticmethod
+    def get_by_name_and_project(session: Session, name: str, project_id: int,) -> 'Attribute_Template_Group':
+        """
+        Must include project id for security check
+
+        (This assumes untrusted source)...
+
+        """
+
+        return session.query(Attribute_Template_Group).filter(
+            Attribute_Template_Group.project_id == project_id,
+            Attribute_Template_Group.name == name,
+            Attribute_Template_Group.archived == False
+        ).first()
 
     # WIP
 

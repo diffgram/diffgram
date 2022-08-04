@@ -9,9 +9,13 @@ from shared.shared_logger import get_shared_logger
 import operator
 from shared.regular import regular_log
 from sqlalchemy.sql.expression import and_, or_
+from sqlalchemy.sql.operators import in_op
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.permissions.project_permissions import Project_permissions
+from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.query_engine.query_creator import ENTITY_TYPES
+from shared.database.source_control.file_annotations import FileAnnotations
+from shared.utils.attributes.attributes_values_parsing import get_file_annotations_column_from_attribute_kind
 logger = get_shared_logger()
 
 
@@ -23,18 +27,27 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         the DiffgramQueryExecutor.
     """
 
-
     def __init__(self, session, diffgram_query: DiffgramQuery):
         self.diffgram_query = diffgram_query
         self.log = regular_log.default()
         self.session = session
-        self.final_query = self.session.query(File).join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id).filter(
+        self.final_query = self.session.query(File).join(WorkingDirFileLink,
+                                                         WorkingDirFileLink.file_id == File.id).filter(
+            File.project_id == self.diffgram_query.project.id,
+            File.state != 'removed',
+            File.type.in_(['video', 'image'])
+        )
+        self.unfiltered_query = self.session.query(File.id).join(WorkingDirFileLink,
+                                                         WorkingDirFileLink.file_id == File.id).filter(
             File.project_id == self.diffgram_query.project.id,
             File.state != 'removed',
             File.type.in_(['video', 'image'])
         )
         if diffgram_query.directory:
             self.final_query = self.final_query.filter(
+                WorkingDirFileLink.working_dir_id == self.diffgram_query.directory.id
+            )
+            self.unfiltered_query = self.unfiltered_query.filter(
                 WorkingDirFileLink.working_dir_id == self.diffgram_query.directory.id
             )
         # Additional security check just for sanity
@@ -131,8 +144,12 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         # If it is not an int then it should be a string entity type (like "file" or "labels")
         value = name_token.value
         value = value.split('.')[0]
-        if value == "label":
+        if value == "label" or value == "labels":
             value = "labels"  # cast to plural
+        if value == "attributes" or value == "attribute":
+            value = "attribute"
+        if value == "files" or value == "file":
+            value = "file"
         return value
 
     def get_compare_op(self, token):
@@ -148,6 +165,29 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             return operator.ge
         if token.value == '<=':
             return operator.le
+
+    def __get_attribute_kind_from_token(self, token: str) -> str or None:
+        attr_group_name = token.value.split('.')[1]
+        attribute_group = Attribute_Template_Group.get_by_name_and_project(
+            session = self.session,
+            name = attr_group_name,
+            project_id = self.diffgram_query.project.id
+        )
+
+        if not attribute_group:
+            # Strip underscores
+            attr_group_name = attr_group_name.replace('_', ' ')
+            attribute_group = Attribute_Template_Group.get_by_name_and_project(
+                session = self.session,
+                name = attr_group_name,
+                project_id = self.diffgram_query.project.id
+            )
+        if not attribute_group:
+            error_string = f"Attribute Group {str(attr_group_name)} does not exists"
+            logger.error(error_string)
+            self.log['error']['attr_group_name'] = error_string
+            return None
+        return attribute_group.kind
 
     def __parse_value(self, token):
         """
@@ -182,22 +222,38 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 logger.error(error_string)
                 self.log['error']['label_name'] = error_string
                 return
-            instance_list_count_subquery = (self.session.query(func.count(Instance.id)).filter(
-                or_(
-                   and_(
-                       Instance.file_id == File.id,
-                       Instance.label_file_id == label_file.id,
-                       Instance.soft_delete != True
-                   ),
-                    and_(
-                        Instance.parent_file_id == File.id,
-                        Instance.label_file_id == label_file.id,
-                        Instance.soft_delete != True
-                    )
-                )
-
+            instance_count_query = (self.session.query(FileAnnotations.file_id).filter(
+                FileAnnotations.label_file_id == label_file.id
             ))
-            return instance_list_count_subquery.as_scalar()
+            return instance_count_query
+        if entity_type == 'attribute':
+            attr_group_name = token.value.split('.')[1]
+
+            attribute_group = Attribute_Template_Group.get_by_name_and_project(
+                session = self.session,
+                name = attr_group_name,
+                project_id = self.diffgram_query.project.id
+            )
+
+            if not attribute_group:
+                # Strip underscores
+                attr_group_name = attr_group_name.replace('_', ' ')
+                attribute_group = Attribute_Template_Group.get_by_name_and_project(
+                    session = self.session,
+                    name = attr_group_name,
+                    project_id = self.diffgram_query.project.id
+                )
+            if not attribute_group:
+                error_string = f"Attribute Group {str(attr_group_name)} does not exists"
+                logger.error(error_string)
+                self.log['error']['attr_group_name'] = error_string
+                return
+
+            attr_group_query = (self.session.query(FileAnnotations.file_id).filter(
+                FileAnnotations.attribute_template_group_id == attribute_group.id
+            ))
+            # return instance_count_subquery.as_scalar()
+            return attr_group_query
         elif entity_type == 'file':
             # Case for metadata
             metadata_key = token.value.split('.')[1]
@@ -235,11 +291,9 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 return False
 
             if type(value_1) == int and type(value_2) == int:
-                logger.error('Error: at least 1 value must be a label.') 
+                logger.error('Error: at least 1 value must be a label.')
 
         return True
-
-
 
     def compare_expr(self, *args):
         if len(self.log['error'].keys()) > 0:
@@ -257,30 +311,48 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 if len(self.log['error'].keys()) > 0:
                     return
 
-                self.conditions.append(
-                    self.get_compare_op(compare_op)(
-                        value_1,
-                        value_2
-                    )
-                )
+                compare_operator = None
+                self.conditions.append(compare_operator)
                 if entity_type == "labels":
-                    local_tree.query_condition = self.get_compare_op(compare_op)(value_1, value_2)
-                    # self.final_query = self.final_query.filter(
-                    #     self.get_compare_op(compare_op)(
-                    #         value_1,
-                    #         value_2
-                    #     )
-                    # )
+                    if type(value_1) == int or type(value_1) == str:
+                        scalar_op = value_1
+                        query_op = value_2
+                    else:
+                        query_op = value_1
+                        scalar_op = value_2
+                    sql_compare_operator = self.get_compare_op(compare_op)
+                    new_filter_subquery = (query_op.filter(
+                        sql_compare_operator(FileAnnotations.count_instances, scalar_op)).subquery()
+                    )
+                    condition_operator = in_op(File.id, new_filter_subquery)
+                    local_tree.query_condition = condition_operator
+
                     return local_tree
+                elif entity_type == 'attribute':
+                    if type(value_1) == int or type(value_1) == str:
+                        scalar_op = value_1
+                        query_op = value_2
+                        attribute_kind = self.__get_attribute_kind_from_token(name2)
+                    else:
+                        query_op = value_1
+                        scalar_op = value_2
+                        attribute_kind = self.__get_attribute_kind_from_token(name1)
+                    sql_compare_operator = self.get_compare_op(compare_op)
+                    file_annotations_column = get_file_annotations_column_from_attribute_kind(attribute_kind)
+                    new_filter_subquery = (query_op.filter(
+                        sql_compare_operator(file_annotations_column, scalar_op)).subquery()
+                    )
+                    condition_operator = in_op(File.id, new_filter_subquery)
+                    local_tree.query_condition = condition_operator
+
                 elif entity_type == 'file':
-                    local_tree.query_condition = self.get_compare_op(compare_op)(value_1, str(value_2))
-                    # self.final_query = self.final_query.filter(
-                    #     self.get_compare_op(compare_op)(
-                    #         value_1,
-                    #         str(value_2) # TODO: asummption that we just accept JSON string comparison (no numbers)
-                    #     )
-                    # )
-                    return local_tree
+                    condition_operator = self.get_compare_op(compare_op)(value_1, str(value_2))
+                    local_tree.query_condition = condition_operator
+                else:
+                    msg = f'Invalid entity type {entity_type}'
+                    raise Exception(msg)
+                self.conditions.append(compare_operator)
+                return local_tree
             else:
                 return
 
