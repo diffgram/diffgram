@@ -168,3 +168,47 @@ class JobTag(Base):
 
         return jobtag
 
+
+
+class DatasetTag(Base):
+    __tablename__ = 'dataset_tag'
+
+    dataset_id = Column(Integer, ForeignKey('working_dir.id'), primary_key = True)
+    tag_id = Column(Integer, ForeignKey('tag.id'), primary_key = True)
+    project_id = Column(Integer, ForeignKey('project.id'), primary_key = True)
+
+    dataset = relationship("WorkingDir")
+    tag = relationship("Tag")
+    project = relationship("Project")
+
+    time_created = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+    @staticmethod
+    def new(dataset_id: int,
+            project_id: int,
+            tag
+            ):
+
+        dataset_tag = DatasetTag(
+            dataset_id=dataset_id,
+            tag=tag,
+            project_id=project_id
+        )
+
+        return dataset_tag
+
+
+    @staticmethod
+    def get_many(
+            tag_id_list: list,
+            project_id: int,
+            session):
+        
+        dataset_tag = session.query(DatasetTag).filter(
+            DatasetTag.tag_id.in_(tag_id_list),
+            DatasetTag.project_id == project_id).all()
+
+        return dataset_tag
+
+
