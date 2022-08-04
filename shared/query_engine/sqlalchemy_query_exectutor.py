@@ -248,7 +248,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 logger.error(error_string)
                 self.log['error']['attr_group_name'] = error_string
                 return
-
+            print('AAAAA', attribute_group.id)
             attr_group_query = (self.session.query(FileAnnotations.file_id).filter(
                 FileAnnotations.attribute_template_group_id == attribute_group.id
             ))
@@ -339,6 +339,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                         attribute_kind = self.__get_attribute_kind_from_token(name1)
                     sql_compare_operator = self.get_compare_op(compare_op)
                     file_annotations_column = get_file_annotations_column_from_attribute_kind(attribute_kind)
+                    if attribute_kind in ['radio', 'multiple_select', 'select', 'tree']:
+                        scalar_op = int(scalar_op)
                     new_filter_subquery = (query_op.filter(
                         sql_compare_operator(file_annotations_column, scalar_op)).subquery()
                     )

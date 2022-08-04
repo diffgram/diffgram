@@ -13,7 +13,7 @@ logger = get_shared_logger()
 
 def get_file_annotations_column_from_attribute_kind(attr_kind: str) -> Column or None:
     from shared.database.source_control.file_annotations import FileAnnotations
-    value = None
+    val = None
     if attr_kind == 'tree':
         val = FileAnnotations.attribute_template_id
 
@@ -34,7 +34,7 @@ def get_file_annotations_column_from_attribute_kind(attr_kind: str) -> Column or
     else:
         logger.error(f'Invalid attribute kind {attr_kind}')
         return None
-    return value
+    return val
 
 
 def get_attribute_value(session: Session, attr_id: int, attribute_value: any, project: Project) -> [any, str]:

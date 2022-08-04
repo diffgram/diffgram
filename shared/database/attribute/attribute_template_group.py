@@ -318,7 +318,7 @@ class Attribute_Template_Group(Base):
 
         return session.query(Attribute_Template_Group).filter(
             Attribute_Template_Group.project_id == project_id,
-            Attribute_Template_Group.name == name,
+            Attribute_Template_Group.prompt == name,
             Attribute_Template_Group.archived == False
         ).first()
 

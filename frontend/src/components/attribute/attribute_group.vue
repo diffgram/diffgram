@@ -43,7 +43,7 @@
               :disabled="view_only_mode"
               v-for="item in select_format"
               :key="item.name"
-              :label="`${item.display_name}`"
+              :label="`${item.display_name} [${item.id}]`"
               :value="item"
             ></v-radio>
           </v-radio-group>
