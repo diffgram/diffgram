@@ -13,18 +13,6 @@ from shared.database.user import UserbaseProject
 
 class WorkingDir(Base):
     """
-    A working directory is a very important part of the system
-
-    It is distinct from a version, in that it's mutable.
-
-    Files may be changed etc.
-
-    To avoid confusion a user's working directory should be the single source of truth of what they
-    are wanting to commit
-
-
-    # TODO rename to "Directory"... as general concept...
-
 
     """
     __tablename__ = 'working_dir'
@@ -41,9 +29,6 @@ class WorkingDir(Base):
     nickname = Column(String())
 
     count_changes = Column(Integer, default = 0)
-    # TODO
-    # Option to share a working directory?
-    # Feel like lose some of advantages though...
 
     user_id = Column(Integer, ForeignKey('userbase.id'))
     user = relationship("User")
@@ -57,16 +42,13 @@ class WorkingDir(Base):
 
     export_list = relationship("Export")
 
-    # The "map" trend  is actually a really good thing
-    # As it's building up a map that we can use
-    # ie for video to reduce db calls by large amount.
     label_file_colour_map = Column(MutableDict.as_mutable(JSONEncodedDict),
                                    default = {})
 
     jobs_to_sync = Column(MutableDict.as_mutable(JSONEncodedDict), default = {'job_ids': []})
 
     # External ID's for referencing on integrations like Labelbox, Supervisely, etc.
-    default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))  # TODO: add to production
+    default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))
     default_external_map = relationship("ExternalMap",
                                         uselist = False,
                                         foreign_keys = [default_external_map_id])
@@ -94,8 +76,6 @@ class WorkingDir(Base):
         working_dir.type = 'standard'
         if project_default_dir:
             working_dir.type = 'project_default'
-
-        # working_dir.branch_id = branch.id
 
         # Since this is created at project creation
         # There is no label list
