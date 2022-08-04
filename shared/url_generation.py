@@ -248,13 +248,16 @@ def connection_url_regenerate(session: Session,
     if regular_log.log_has_error(log):
         return blob_object, log
     blob_object.url_signed = signed_url
-
+    session.add(blob_object)
     # Extra assets (Depending on type)
     if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path:
         params['path'] = blob_object.url_signed_thumb_blob_path
         params['action_type'] = 'get_pre_signed_url'
         thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
         if regular_log.log_has_error(log):
+            logger.error(log)
+            # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
+            log = regular_log.default()
             return blob_object, log
         blob_object.url_signed_thumb = thumb_signed_url
     if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path is None:
@@ -270,22 +273,27 @@ def connection_url_regenerate(session: Session,
             reference_file = reference_file
         )
         if regular_log.log_has_error(log):
+            logger.error(log)
+            # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
+            log = regular_log.default()
             session.add(blob_object)
             return blob_object, log
         params['path'] = blob_object.url_signed_thumb_blob_path
         params['action_type'] = 'get_pre_signed_url'
         thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
         if regular_log.log_has_error(log):
+            # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
+            log = regular_log.default()
             session.add(blob_object)
             return blob_object, log
         blob_object.url_signed_thumb = thumb_signed_url
     # Extra assets (Depending on type)
     if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
         params['path'] = blob_object.tokens_url_signed_blob_path
-        thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+        token_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
         if regular_log.log_has_error(log):
             return blob_object, log
-        blob_object.url_signed_thumb = thumb_signed_url
+        blob_object.tokens_url_signed = token_signed_url
 
     return blob_object, log
 
@@ -339,6 +347,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
     if regular_log.log_has_error(log):
         logger.error(f'Failed to regenerate Blob URL {log}')
         blob_object.url_signed = None
+        session.add(blob_object)
         return blob_object, log
     return blob_object, log
 
