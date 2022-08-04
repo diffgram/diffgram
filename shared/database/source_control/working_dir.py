@@ -77,13 +77,6 @@ class WorkingDir(Base):
         if project_default_dir:
             working_dir.type = 'project_default'
 
-        # Since this is created at project creation
-        # There is no label list
-        # Labels are applied to a new version
-
-        # Could use this if you wanted to copy non committed files, otherwise it's a blank slate
-        # This is an issue if you go to edit something
-
         session.add(working_dir)
         session.flush()
 
@@ -94,8 +87,6 @@ class WorkingDir(Base):
 
             for file in file_list:
 
-                # Don't add older versions of files
-                # TODO use time stamp instead here?
                 if file.child_primary_id:
                     continue
 
@@ -139,11 +130,6 @@ class WorkingDir(Base):
 
         query = session.query(WorkingDir).filter(
             WorkingDir.project_id == project_id)
-
-        # HAVING STRANGE ISSUES / not working as expected
-        # Leaving it for now.
-        # if exclude_archived is True:
-        #	query = query.filter(WorkingDir.archived != False)
 
         if nickname:
             if nickname_match_type == "ilike":
@@ -209,21 +195,11 @@ class WorkingDir(Base):
 
     def serialize(self):
 
-        # TODO clarify why branch here
-        branch = None
-
-        # hide returning branch
-        # while not using it / only for beta features?
-        # this could break some of the source control side
-        # if self.branch:
-        #	branch = self.branch.serialize(),
-
         return {
             'id': self.id,
             'directory_id': self.id,  # hack to remove at some point
             'nickname': self.nickname,
             'jobs_to_sync': self.jobs_to_sync,
-            # 'branch' : branch,
             'has_changes': self.has_changes,
             'created_time': self.created_time.isoformat()
         }
@@ -231,7 +207,6 @@ class WorkingDir(Base):
     def serialize_with_labels(self):
         return {
             'id': self.id,
-            # 'branch' : self.branch.serialize(),
             'has_changes': self.has_changes,
             'label_list': self.build_label_list()
         }
@@ -245,12 +220,6 @@ class WorkingDir(Base):
             WorkingDirFileLink.working_dir_id == self.id,
             WorkingDirFileLink.type == file_type).count()
 
-    """
-    See File file_view_core for serialization methods
-    (Logic is centralized there)
-    We don't typically searilize a working dir directly since there
-    are so many variables to consider.
-    """
 
     def verify_directory_in_project(session, project, directory_id):
         """
@@ -374,8 +343,6 @@ class WorkingDirFileLink(Base):
 
     TODO should we have project in here too
     Now that we generally restrict directories to have a project?
-
-
     """
 
     working_dir_id = Column(Integer, ForeignKey('working_dir.id'), primary_key = True)
@@ -462,8 +429,6 @@ class WorkingDirFileLink(Base):
     # TODO too many options here, gotta maybe think about a way to
     # break this up.
 
-    # file list def list  files
-    # def file list
     @staticmethod
     def file_list(session,
                   working_dir_id = None,
