@@ -183,6 +183,7 @@
                 :dataset="current_directory"
                 :object_id="current_directory.directory_id"
                 :object_type="'dataset'"
+                :apply_upon_selection="true"
           >
           </tag_select>
 

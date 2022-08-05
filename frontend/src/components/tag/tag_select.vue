@@ -114,7 +114,11 @@ Where is a dict in data() eg  tag: {}
         },
         'object_type':{
           default: null
+        },
+        'apply_upon_selection':{
+          default: false
         }
+
       },
 
       watch: {
@@ -204,6 +208,8 @@ Where is a dict in data() eg  tag: {}
 
 
         apply_tag_api(tag_name, object_id, object_type) {
+
+          if (this.$props.apply_upon_selection == false) { return }
 
           this.apply_tag_api_loading = true
           this.error = {}
