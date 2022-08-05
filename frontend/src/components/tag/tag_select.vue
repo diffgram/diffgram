@@ -227,6 +227,7 @@ Where is a dict in data() eg  tag: {}
           let tag_object = undefined
           if (typeof newly_selected_tag === 'string' || newly_selected_tag instanceof String) {
             tag_object = await this.new_tag_api(newly_selected_tag)
+            console.log(tag_object)
           } else {
             tag_object = newly_selected_tag
           }
@@ -252,6 +253,8 @@ Where is a dict in data() eg  tag: {}
             console.log(response)
             this.list_applied_tags_api_loading = false
 
+            this.selected = response.data.tag_list
+
           })
             .catch(error => {
               console.error(error);
@@ -273,7 +276,7 @@ Where is a dict in data() eg  tag: {}
           this.new_tag_api_loading = true
           this.error = {}
 
-          axios.post('/api/v1/project/' + this.$store.state.project.current.project_string_id +
+          return await axios.post('/api/v1/project/' + this.$store.state.project.current.project_string_id +
               '/tag/new', {
             'name': name
           }).then(response => {
