@@ -147,6 +147,30 @@
                          >
             </tag_display>
 
+            <button_with_menu
+              tooltip_message="Apply Tags"
+              icon="mdi-tag"
+              :small="true"
+              color="primary"
+              :close_by_button="true"
+              offset="x"
+              menu_direction="left"
+              :commit_menu_status="true">
+
+              <template slot="content">
+
+                <tag_select
+                      :project_string_id="project_string_id"
+                      :object_id="job.id"
+                      :object_type="'job'"
+                      :apply_upon_selection="true"
+                >
+                </tag_select>
+
+              </template>
+
+            </button_with_menu>
+
             <v-row class="mb-4" dense>
               <v-col cols="12" class="d-flex pa-0" v-if="job.member_list_ids.length > 0">
                 <v_user_icon v-if="member_id != 'all'"
