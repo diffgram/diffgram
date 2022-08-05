@@ -300,6 +300,8 @@ Where is a dict in data() eg  tag: {}
             this.selected.push(response.data.tag)
             this.remove_string_from_internal(response.data.tag.name)
 
+            this.$emit('new_tag_created')
+
             return response.data.tag
 
           })
