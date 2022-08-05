@@ -11,7 +11,7 @@
               :multiple="true"
               :disabled="loading || view_only"
               @input="$emit('input', $event)"
-              @change="$emit('change', $event); determine_if_new_tag_and_create()"
+              @change="$emit('change', $event); apply_tag()"
               @focus="$emit('focus', $event); $store.commit('set_user_is_typing_or_menu_open', true)"
               @blur="$store.commit('set_user_is_typing_or_menu_open')"
               :filter="on_filter"
@@ -216,39 +216,42 @@ Where is a dict in data() eg  tag: {}
             });
         },
 
-        determine_if_new_tag_and_create(){
+        apply_tag(){
           // Difference between newly selected and new to overall system
-          let new_tag_name = this.get_new_tag()
-          console.log(new_tag_name)
-          if (new_tag_name) {
-            let new_tag = this.new_tag_api(new_tag_name)
+          let newly_selected_tag = this.get_newly_selected_tag()
+          console.log(newly_selected_tag)
+
+          let tag_object = undefined
+          if (typeof newly_selected_tag === 'string' || newly_selected_tag instanceof String) {
+            tag_object = this.new_tag_api(newly_selected_tag)
+          } else {
+            tag_object = newly_selected_tag
           }
+          // object
           this.apply_tag_api(
-              new_tag_name,
+              tag_object.name,
               this.$props.object_id,
               this.$props.object_type
-              )
+          )
         },
 
         get_tags_already_on_object_api(){
 
         },
 
-        get_new_tag(){
-          console.log(this.selected)
+        get_newly_selected_tag(){
+
           for (let tag of this.selected){
             if (typeof tag === 'string' || tag instanceof String) {
-              let existing = this.tag_list_internal.find(x => x.name === tag)
+              let string_name = tag
+              let existing = this.tag_list_internal.find(x => x.name === string_name)
               if (existing) {
-                //if (existing.id) {
-                 // this.remove_string_from_internal(tag)  // already exists
-                //}
+                return existing
               } else {
-                return tag
+                return string_name
               }
             }
           }
-          return false
         },
 
         new_tag_api(name) {
