@@ -89,7 +89,6 @@
       </v-tab>
       <v-tabs-items v-model="tab">
         <v-tab-item class="pt-2">
-          <stats_panel/>
           <v_job_detail_builder
             v-if="$store.state.builder_or_trainer.mode == 'builder'"
             :job_id="job_id"
@@ -111,7 +110,9 @@
         </v-tab-item>
 
         <v-tab-item>
-          <!-- TODO update to use new reporting pattern-->
+
+          <stats_panel/>
+
           <v_stats_task :job_id="job_id"
                         :project_string_id="$store.state.project.current.project_string_id">
           </v_stats_task>
