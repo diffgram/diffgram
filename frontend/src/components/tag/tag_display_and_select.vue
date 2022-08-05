@@ -9,7 +9,7 @@
       </tag_display>
 
       <button_with_menu
-        tooltip_message="Apply Tags"
+        tooltip_message="Apply or Create Tags"
         icon="mdi-tag"
         :small="true"
         color="primary"

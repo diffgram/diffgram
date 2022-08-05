@@ -109,7 +109,7 @@ Where is a dict in data() eg  tag: {}
           default: undefined,
         },
         'label': {
-          default: 'Select or Create Tags'
+          default: 'Apply or Create Tags'
         },
         'datacy':{
           default: 'tag-select'
