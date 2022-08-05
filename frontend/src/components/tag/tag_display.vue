@@ -105,7 +105,6 @@
 
           }).then(response => {
 
-            console.log(response)
             this.list_applied_tags_api_loading = false
 
             this.selected = response.data.tag_list
