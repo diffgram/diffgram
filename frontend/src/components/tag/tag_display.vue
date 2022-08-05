@@ -1,18 +1,21 @@
 <template>
   <div v-cloak>
 
-    <div v-for="tag in selected">
+    <v-layout>
 
-        <v-chip
-          v-if="tag.name"
-          :data-cy="`${datacy}__select-tag`"
-          :style="style_color(tag.color_hex)"
-          color="white"
-                  >
-          {{ tag.name }}
-        </v-chip>
+      <div v-for="tag in selected">
 
-    </div>
+          <v-chip
+            v-if="tag.name"
+            :data-cy="`${datacy}__select-tag`"
+            :style="style_color(tag.color_hex)"
+            color="white"
+                    >
+            {{ tag.name }}
+          </v-chip>
+      </div>
+
+    </v-layout>
 
     <v_error_multiple :error="error">
     </v_error_multiple>
