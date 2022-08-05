@@ -43,10 +43,18 @@
       </template>
 
       <template slot="no-data">
-        <v-list-item>
+        <v-list-item v-if="allow_new_creation">
           <v-list-item-content>
             <v-list-item-title>
               Press <kbd>enter</kbd> to create. <strong>{{ search }}</strong>
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item v-if="!allow_new_creation">
+          <v-list-item-content>
+            <v-list-item-title>
+               No results found.
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
@@ -117,6 +125,9 @@ Where is a dict in data() eg  tag: {}
         },
         'apply_upon_selection':{
           default: false
+        },
+        'allow_new_creation':{  // e.g. search context
+          default: true
         }
 
       },
@@ -246,12 +257,14 @@ Where is a dict in data() eg  tag: {}
           } else {
             tag_object = newly_selected_tag
           }
-          // object
-          this.apply_tag_api(
-              tag_object.name,
-              this.$props.object_id,
-              this.$props.object_type
-          )
+          if (tag_object) {
+            // object
+            this.apply_tag_api(
+                tag_object.name,
+                this.$props.object_id,
+                this.$props.object_type
+            )
+          }
         },
 
         list_applied_tags_api(object_id, object_type){
@@ -286,6 +299,11 @@ Where is a dict in data() eg  tag: {}
         },
 
         async new_tag_api(name) {
+
+          if (this.allow_new_creation == false) {
+            this.remove_string_from_internal(name)
+            return
+          }
 
           this.new_tag_api_loading = true
           this.error = {}

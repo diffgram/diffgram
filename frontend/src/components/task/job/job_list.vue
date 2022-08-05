@@ -154,6 +154,8 @@
             <tag_select
               v-model="tag_selected_list"
               :tag_list="tag_list"
+              :allow_new_creation="false"
+              :label="'Search by tags'"
               @change="search_jobs()"
               @focus="tag_list_api()"
 
