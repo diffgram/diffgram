@@ -63,8 +63,27 @@
         </v-card-title>
 
         <v-card-subtitle>
-          <v-chip :color="status_color(job.status)" x-small>{{job.status | capitalize }}</v-chip>
-          <span>Created: {{job.time_created | moment("DD-MM-YYYY H:mm:ss a")}}</span>
+          <v-layout>
+            <div class="pt-1">
+              <v-chip small :color="status_color(job.status)">
+                {{job.status | capitalize }}
+              </v-chip>
+            </div>
+
+            <v-spacer></v-spacer>
+
+            <v-tooltip bottom color="info">
+              <template v-slot:activator="{ on }">
+                <v-chip v-on="on" color="white" small text-color="primary">
+                  {{job.time_created | moment("DD-MMM")}}
+                </v-chip>
+              </template>
+
+              Created: {{job.time_created | moment("H:mm:ss DD-MM-YYYY")}}
+            </v-tooltip>
+
+          </v-layout>
+
         </v-card-subtitle>
         <v-card-text class="">
           <v-container fluid class="d-flex flex-column pa-0">
