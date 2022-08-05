@@ -16,6 +16,7 @@ from shared.database.attribute.attribute_template_group import Attribute_Templat
 from shared.query_engine.query_creator import ENTITY_TYPES
 from shared.database.source_control.file_annotations import FileAnnotations
 from shared.utils.attributes.attributes_values_parsing import get_file_annotations_column_from_attribute_kind
+
 logger = get_shared_logger()
 
 
@@ -38,18 +39,19 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             File.type.in_(['video', 'image'])
         )
         self.unfiltered_query = self.session.query(File.id).join(WorkingDirFileLink,
-                                                         WorkingDirFileLink.file_id == File.id).filter(
+                                                                 WorkingDirFileLink.file_id == File.id).filter(
             File.project_id == self.diffgram_query.project.id,
             File.state != 'removed',
             File.type.in_(['video', 'image'])
         )
-        if diffgram_query.directory:
-            self.final_query = self.final_query.filter(
-                WorkingDirFileLink.working_dir_id == self.diffgram_query.directory.id
-            )
-            self.unfiltered_query = self.unfiltered_query.filter(
-                WorkingDirFileLink.working_dir_id == self.diffgram_query.directory.id
-            )
+
+        # if diffgram_query.directory:
+        #     self.final_query = self.final_query.filter(
+        #         WorkingDirFileLink.working_dir_id == self.diffgram_query.directory.id
+        #     )
+        #     self.unfiltered_query = self.unfiltered_query.filter(
+        #         WorkingDirFileLink.working_dir_id == self.diffgram_query.directory.id
+        #     )
         # Additional security check just for sanity
         Project_permissions.by_project_core(
             project_string_id = self.diffgram_query.project.project_string_id,
@@ -135,14 +137,29 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 logger.error('Invalid child count for factor. Must be 1')
                 self.log['error']['factor'] = 'Invalid child count for factor. Must be 1'
 
+    def array(self, args):
+        local_tree = args
+        id_values = []
+        for token in local_tree.children:
+            id_values.append(int(token.value))
+        local_tree.value = id_values
+        return local_tree
     def __determine_entity_type(self, name_token):
+
         try:
             int(name_token.value)
             return int
+        except AttributeError:
+            return name_token.id_values
+        except TypeError:
+            pass
         except ValueError:
             pass
         # If it is not an int then it should be a string entity type (like "file" or "labels")
+
         value = name_token.value
+        if type(value) == list:
+            return list
         value = value.split('.')[0]
         if value == "label" or value == "labels":
             value = "labels"  # cast to plural
@@ -150,6 +167,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             value = "attribute"
         if value == "files" or value == "file":
             value = "file"
+        if value == "dataset" or value == "datasets":
+            value = "dataset"
         return value
 
     def get_compare_op(self, token):
@@ -165,6 +184,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             return operator.ge
         if token.value == '<=':
             return operator.le
+        if token.value == 'in':
+            return in_op
 
     def __get_attribute_kind_from_token(self, token: str) -> str or None:
         attr_group_name = token.value.split('.')[1]
@@ -189,6 +210,64 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             return None
         return attribute_group.kind
 
+    def __parse_labels_value(self, token: str):
+        label_name = token.value.split('.')[1]
+
+        label_file = File.get_by_label_name(session = self.session,
+                                            label_name = label_name,
+                                            project_id = self.diffgram_query.project.id)
+        if not label_file:
+            # Strip underscores
+            label_name = label_name.replace('_', ' ')
+            label_file = File.get_by_label_name(session = self.session,
+                                                label_name = label_name,
+                                                project_id = self.diffgram_query.project.id)
+        if not label_file:
+            error_string = f"Label {str(label_name)} does not exists"
+            logger.error(error_string)
+            self.log['error']['label_name'] = error_string
+            return
+        instance_count_query = (self.session.query(FileAnnotations.file_id).filter(
+            FileAnnotations.label_file_id == label_file.id
+        ))
+        return instance_count_query
+
+    def __parse_attributes_value(self, token: str):
+        attr_group_name = token.value.split('.')[1]
+
+        attribute_group = Attribute_Template_Group.get_by_name_and_project(
+            session = self.session,
+            name = attr_group_name,
+            project_id = self.diffgram_query.project.id
+        )
+
+        if not attribute_group:
+            # Strip underscores
+            attr_group_name = attr_group_name.replace('_', ' ')
+            attribute_group = Attribute_Template_Group.get_by_name_and_project(
+                session = self.session,
+                name = attr_group_name,
+                project_id = self.diffgram_query.project.id
+            )
+        if not attribute_group:
+            error_string = f"Attribute Group {str(attr_group_name)} does not exists"
+            logger.error(error_string)
+            self.log['error']['attr_group_name'] = error_string
+            return
+        attr_group_query = (self.session.query(FileAnnotations.file_id).filter(
+            FileAnnotations.attribute_template_group_id == attribute_group.id
+        ))
+        return attr_group_query
+
+    def __parse_dataset_value(self, token):
+        dataset_property = token.value.split('.')[1]
+        dataset_col = None
+        if dataset_property == "id":
+            dataset_col = WorkingDirFileLink.working_dir_id
+        else:
+            raise NotImplemented("Dataset filters just support ID column.")
+        return dataset_col
+
     def __parse_value(self, token):
         """
             Transforms the token into an integer or appropriate diffgram value (instance count, issue count, etc)
@@ -199,6 +278,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         try:
             result = int(token.value)
             return result
+        except TypeError:
+            pass
         except ValueError:
             pass
 
@@ -206,58 +287,21 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         # TODO: for now we assume no "nested" names are allowed. In other words, the dot syntax just has 1 level deep.
         entity_type = self.__determine_entity_type(token)
         if entity_type == 'labels':
-            label_name = token.value.split('.')[1]
-
-            label_file = File.get_by_label_name(session = self.session,
-                                                label_name = label_name,
-                                                project_id = self.diffgram_query.project.id)
-            if not label_file:
-                # Strip underscores
-                label_name = label_name.replace('_', ' ')
-                label_file = File.get_by_label_name(session = self.session,
-                                                    label_name = label_name,
-                                                    project_id = self.diffgram_query.project.id)
-            if not label_file:
-                error_string = f"Label {str(label_name)} does not exists"
-                logger.error(error_string)
-                self.log['error']['label_name'] = error_string
-                return
-            instance_count_query = (self.session.query(FileAnnotations.file_id).filter(
-                FileAnnotations.label_file_id == label_file.id
-            ))
+            instance_count_query = self.__parse_labels_value(token)
             return instance_count_query
         if entity_type == 'attribute':
-            attr_group_name = token.value.split('.')[1]
-
-            attribute_group = Attribute_Template_Group.get_by_name_and_project(
-                session = self.session,
-                name = attr_group_name,
-                project_id = self.diffgram_query.project.id
-            )
-
-            if not attribute_group:
-                # Strip underscores
-                attr_group_name = attr_group_name.replace('_', ' ')
-                attribute_group = Attribute_Template_Group.get_by_name_and_project(
-                    session = self.session,
-                    name = attr_group_name,
-                    project_id = self.diffgram_query.project.id
-                )
-            if not attribute_group:
-                error_string = f"Attribute Group {str(attr_group_name)} does not exists"
-                logger.error(error_string)
-                self.log['error']['attr_group_name'] = error_string
-                return
-            print('AAAAA', attribute_group.id)
-            attr_group_query = (self.session.query(FileAnnotations.file_id).filter(
-                FileAnnotations.attribute_template_group_id == attribute_group.id
-            ))
-            # return instance_count_subquery.as_scalar()
+            attr_group_query = self.__parse_attributes_value(token)
             return attr_group_query
         elif entity_type == 'file':
             # Case for metadata
             metadata_key = token.value.split('.')[1]
             return File.file_metadata[metadata_key].astext
+        elif entity_type == 'dataset':
+            dataset_col_filter = self.__parse_dataset_value(token)
+            return dataset_col_filter
+        elif entity_type == list:
+            list_value = token.value
+            return list_value
         else:
             return token.value
 
@@ -295,6 +339,18 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         return True
 
+    def __build_dataset_compare_expr(self, value_1, value_2, compare_op):
+        if type(value_1) == int or type(value_1) == str or type(value_1) == list:
+            scalar_op = value_1
+            query_op = value_2
+        else:
+            query_op = value_1
+            scalar_op = value_2
+
+        compare_op_sql = self.get_compare_op(compare_op)
+        new_filter_subquery = compare_op_sql(query_op, scalar_op)
+        return new_filter_subquery
+
     def compare_expr(self, *args):
         if len(self.log['error'].keys()) > 0:
             return
@@ -323,7 +379,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                     sql_compare_operator = self.get_compare_op(compare_op)
                     new_filter_subquery = (query_op.filter(
                         sql_compare_operator(FileAnnotations.count_instances, scalar_op)).subquery()
-                    )
+                                           )
                     condition_operator = in_op(File.id, new_filter_subquery)
                     local_tree.query_condition = condition_operator
 
@@ -343,10 +399,12 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                         scalar_op = int(scalar_op)
                     new_filter_subquery = (query_op.filter(
                         sql_compare_operator(file_annotations_column, scalar_op)).subquery()
-                    )
+                                           )
                     condition_operator = in_op(File.id, new_filter_subquery)
                     local_tree.query_condition = condition_operator
-
+                elif entity_type == "dataset":
+                    condition_operator = self.__build_dataset_compare_expr(value_1, value_2, compare_op)
+                    local_tree.query_condition = condition_operator
                 elif entity_type == 'file':
                     condition_operator = self.get_compare_op(compare_op)(value_1, str(value_2))
                     local_tree.query_condition = condition_operator
@@ -370,9 +428,9 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             grammar defined in grammar.py
         :return:
         """
-
-        self.visit(self.diffgram_query.tree)
-        if len(self.conditions) == 0 or len(self.log['error'].keys()) > 0 or not self.valid:
-            logger.error('Invalid query. Please check your syntax and try again.')
-            return None, self.log
+        if self.diffgram_query.tree:
+            self.visit(self.diffgram_query.tree)
+            if len(self.conditions) == 0 or len(self.log['error'].keys()) > 0 or not self.valid:
+                logger.error('Invalid query. Please check your syntax and try again.')
+                return None, self.log
         return self.final_query, self.log

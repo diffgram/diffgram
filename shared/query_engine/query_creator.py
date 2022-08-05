@@ -108,7 +108,9 @@ class QueryCreator:
 
     def create_query(self, query_string):
         try:
-            tree = self.parser.parse(query_string)
+            tree = None
+            if query_string:
+                tree = self.parser.parse(query_string)
             # print(tree.pretty())
             return DiffgramQuery(tree, self.project, self.member, directory = self.directory)
         except Exception as e:
