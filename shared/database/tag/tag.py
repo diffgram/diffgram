@@ -53,6 +53,36 @@ class Tag(Base):
 
 
     @staticmethod
+    def get_from_junction_table_object(
+            junction_tag_list: list,
+            session):
+        
+        tag_id_list = []
+        for junction in junction_tag_list:
+            tag_id_list.append(junction.tag_id)
+
+        tag_list = session.query(Tag).filter(
+            Tag.id.in_(tag_id_list)).all()
+
+        return tag_list
+
+    @staticmethod
+    def marshal_serialized_from_junction(
+            junction_tag_list, 
+            session):
+
+        tag_list = Tag.get_from_junction_table_object(
+            junction_tag_list = junction_tag_list,
+            session = session)
+
+        tag_list_serailized = []
+        for tag in tag_list:
+            tag_list_serailized.append(tag.serialize())
+
+        return tag_list_serailized
+
+
+    @staticmethod
     def get_many(
             name_list: list,
             project_id: int,
@@ -214,15 +244,28 @@ class DatasetTag(Base):
 
 
     @staticmethod
-    def get_many(
+    def get_by_tag_ids(
             tag_id_list: list,
             project_id: int,
             session):
         
-        dataset_tag = session.query(DatasetTag).filter(
+        dataset_tag_list = session.query(DatasetTag).filter(
             DatasetTag.tag_id.in_(tag_id_list),
             DatasetTag.project_id == project_id).all()
 
-        return dataset_tag
+        return dataset_tag_list
+
+
+    @staticmethod
+    def get_by_dataset_id(
+            dataset_id: int,
+            project_id: int,
+            session):
+        
+        dataset_tag_list = session.query(DatasetTag).filter(
+            DatasetTag.dataset_id == dataset_id,
+            DatasetTag.project_id == project_id).all()
+
+        return dataset_tag_list
 
 

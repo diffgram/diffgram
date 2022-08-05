@@ -9,6 +9,7 @@ from sqlalchemy import or_
 from sqlalchemy import and_
 from shared.regular import regular_log
 from shared.database.user import UserbaseProject
+from shared.database.tag.tag import Tag
 
 
 class WorkingDir(Base):
@@ -340,7 +341,7 @@ class WorkingDir(Base):
             if tag.id is None:
                 session.add(tag)
 
-            dataset_tag = tag.add_to_dataset(job_id = self.id)
+            dataset_tag = tag.add_to_dataset(self.id)
 
             session.add(dataset_tag)
             log['success'] = True

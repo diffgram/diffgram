@@ -6,7 +6,8 @@ from flask import jsonify
 from shared.database.user import User
 from shared.database.project import Project
 from shared.database.project import ProjectStar
-from shared.database.project import Tag
+from shared.database.tag.tag import Tag
+from shared.database.tag.tag import DatasetTag
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.task.job.job import Job
 
@@ -134,7 +135,7 @@ def apply_tag_to_object_api(project_string_id):
         if input['object_type'] == 'dataset':
             dataset = WorkingDir.get(session, input['object_id'], project.id)
             log = dataset.add_tags(
-                tag_list = [tag_name], session=session, project=project, log=log)
+                tag_list = [input['tag_name']], session=session, project=project, log=log)
 
         if input['object_type'] == 'job':
             job = Job.get(session, input['object_id'], project.id)
@@ -169,4 +170,55 @@ def tag_view_by_project(project_string_id):
 						tag_list=tag_list_serailized)
 
 		return out, 200, {'ContentType':'application/json'}
+
+
+@routes.route('/api/v1/project/<string:project_string_id>/tag/list/applied', 
+			  methods=['POST'])
+@Project_permissions.user_has_project(["admin", "Editor"])
+def tag_list_applied_api(project_string_id):
+    
+    update_tags_specification = [
+        {"object_id": {
+            'kind': int,
+            'required': True
+            }
+        },
+        {"object_type": {
+            'kind': str,
+            'required': True
+            }
+        }
+    ]
+
+    log, input, untrusted_input = regular_input.master(
+        request=request,
+        spec_list=update_tags_specification)
+
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log=log), 400
+
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, project_string_id)
+
+        if input['object_type'] == 'dataset':
+            dataset = WorkingDir.get(session, input['object_id'], project.id)
+            junction_tag_list = DatasetTag.get_by_dataset_id(
+                dataset_id = dataset.id, 
+                project_id = project.id, 
+                session = session)
+
+        if input['object_type'] == 'job':
+            job = Job.get(session, input['object_id'], project.id)
+            raise NotImplemented
+
+        tag_list_serailized = Tag.marshal_serialized_from_junction(
+            junction_tag_list = junction_tag_list,
+            session = session)
+
+        out = jsonify(	success=True,
+						tag_list=tag_list_serailized)
+        return out, 200
+
+
+
 
