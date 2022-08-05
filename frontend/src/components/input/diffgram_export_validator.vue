@@ -185,7 +185,9 @@
       mounted() {
         if(this.$props.diffgram_export_ingestor){
           this.current_validation = 'export_metadata';
+
           this.validate_export_metadata();
+          Object.freeze(this.$props.diffgram_export_ingestor.export_raw_obj)
         }
 
       },
