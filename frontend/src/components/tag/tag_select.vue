@@ -124,7 +124,14 @@ Where is a dict in data() eg  tag: {}
         },
         tag_list: function(new_val, old_val){
             this.tag_list_internal = new_val;
-        }
+        },
+        object_id: function (item) {
+          this.list_applied_tags_api(this.object_id, this.object_type)
+        },
+        object_type: function (item) {    // either case could cause change
+          this.list_applied_tags_api(this.object_id, this.object_type)
+        },
+
 
       },
       created() {
