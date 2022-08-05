@@ -15,81 +15,121 @@ from shared.helpers.permissions import LoggedIn, defaultRedirect, getUserID
 
 from shared.permissions.general import General_permissions
 from shared.permissions.project_permissions import Project_permissions
+from shared.regular import regular_input
 
 
 
-
-# LEGACY Route TBD
-@routes.route('/api/project/<string:project_string_id>/tags/update', 
+@routes.route('/api/project/<string:project_string_id>/tag/update', 
 			  methods=['POST'])
 @Project_permissions.user_has_project(["admin", "Editor"])
 def update_tags(project_string_id):
+    
+    update_tags_specification = [
+        {"name": {
+            'default': str(time.time()),
+            'kind': str
+            }
+        }
+    ]
+
+    log, input, untrusted_input = regular_input.master(
+        request=request,
+        spec_list=update_job_spec_list)
+
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log=log), 400
+
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, project_string_id)
+
+        """
+        Update tag name
+        Remove a tag from system
+        """
 
 
-	"""
-	Update tags to latest
+        job = Job.get_by_id(session, input['job_id'])
 
-	"""
-	return
+        out = jsonify(job=job.serialize_new(),
+                      log=log)
 
-	have_error = False
-	error_message_list = []
+        return out, 200
 
-	with sessionMaker.session_scope() as session:
 
-		data = request.get_json(force=True)
+@routes.route('/api/v1/project/<string:project_string_id>/tag/new', 
+			  methods=['POST'])
+@Project_permissions.user_has_project(["admin", "Editor"])
+def new_tag_api(project_string_id):
+    
+    new_tag_specification = [
+        {"name": {
+            'kind': str,
+            'required': True
+            }
+        }
+    ]
 
-		tag_list = data.get('tag_list', None)
+    log, input, untrusted_input = regular_input.master(
+        request=request,
+        spec_list=new_tag_specification)
 
-		# tag_list could be none, ie deleted all tags...
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log=log), 400
 
-		#if tag_list is None:
-			#error_message_list.append("tag list is None")
-			#return jsonify(error_message_list), 400, {'ContentType' : 'application/json'}
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, project_string_id)
 
-		project = Project.get(session, project_string_id)
-		
-	
-		print(tag_list)
-		
-		rebuilt_tag_list = []
+        tag = Tag.get_or_new(
+            name = input.get('name'),
+            project_id = project.id,
+            session = session)
 
-		for tag in tag_list:
-			if valid_tag(tag):
+        if tag.id is None:
+            session.add(tag)
+            session.flush()
 
-				name = tag.lower()
-				
-				#Check if tag with same name already exists
-				#If so can just add that database object to
-				tag_db = session.query(Tag).filter(
-									Tag.name == name).first()
+        out = jsonify(tag=tag.serialize(),
+                      log=log)
 
-				if not tag_db:
+        return out, 200
 
-					tag_db = Tag()
-					tag_db.name = name
 
-					tag_db.is_public = project.is_public
 
-					session.add(tag_db)
+@routes.route('/api/project/<string:project_string_id>/tag/apply', 
+			  methods=['POST'])
+@Project_permissions.user_has_project(["admin", "Editor"])
+def apply_tag_to_object_api(project_string_id):
+    
+    update_tags_specification = [
+        {"tag_id": {
+            'kind': int,
+            'required': False
+            }
+        }
+    ]
 
-				if tag_db:
-					session.add(tag_db)
+    log, input, untrusted_input = regular_input.master(
+        request=request,
+        spec_list=update_tags_specification)
 
-				# TODO handle counts properly ie on tag being removed etc.
-				#tag_db.count += 1
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log=log), 400
 
-				rebuilt_tag_list.append(tag_db)
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, project_string_id)
 
-		session.add(project)
-			
+        """
+        Add tags to Object (job, dataset, etc)
+        Remove tags from an OBject
+        """
 
-		# This handles removing link to tag that's no longer in project
 
-		project.tag_list = rebuilt_tag_list
-		
+        job = Job.get_by_id(session, input['job_id'])
 
-	return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+        out = jsonify(job=job.serialize_new(),
+                      log=log)
+
+        return out, 200
 
 
 
