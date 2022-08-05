@@ -11,7 +11,7 @@
             :style="style_color(tag.color_hex)"
             color="white"
                     >
-            {{ tag.name }}
+            {{ tag.name | truncate(30) }}
           </v-chip>
       </div>
 
@@ -87,6 +87,12 @@
           list_applied_tags_api_loading: false,
           error: {},
         }
+      },
+
+      filters: {
+        truncate: function (value, numchars) {
+          return value && value.length > numchars ? value.substring(0, numchars) + "..." : value
+          }
       },
 
       methods: {
