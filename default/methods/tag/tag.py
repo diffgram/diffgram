@@ -7,6 +7,9 @@ from shared.database.user import User
 from shared.database.project import Project
 from shared.database.project import ProjectStar
 from shared.database.project import Tag
+from shared.database.source_control.working_dir import WorkingDir
+from shared.database.task.job.job import Job
+
 import logging
 import sys
 import json
@@ -95,15 +98,25 @@ def new_tag_api(project_string_id):
 
 
 
-@routes.route('/api/project/<string:project_string_id>/tag/apply', 
+@routes.route('/api/v1/project/<string:project_string_id>/tag/apply', 
 			  methods=['POST'])
 @Project_permissions.user_has_project(["admin", "Editor"])
 def apply_tag_to_object_api(project_string_id):
     
     update_tags_specification = [
-        {"tag_id": {
+        {"tag_name": {
+            'kind': str,
+            'required': True
+            }
+        },
+        {"object_id": {
             'kind': int,
-            'required': False
+            'required': True
+            }
+        },
+        {"object_type": {
+            'kind': str,
+            'required': True
             }
         }
     ]
@@ -118,16 +131,15 @@ def apply_tag_to_object_api(project_string_id):
     with sessionMaker.session_scope() as session:
         project = Project.get(session, project_string_id)
 
-        """
-        Add tags to Object (job, dataset, etc)
-        Remove tags from an OBject
-        """
+        if input['object_type'] == 'dataset':
+            dataset = WorkingDir.get(session, input['object_id'], project.id)
+            log = dataset.add_tags(
+                tag_list = [tag_name], session=session, project=project, log=log)
 
+        if input['object_type'] == 'job':
+            job = Job.get(session, input['object_id'], project.id)
 
-        job = Job.get_by_id(session, input['job_id'])
-
-        out = jsonify(job=job.serialize_new(),
-                      log=log)
+        out = jsonify(log=log)
 
         return out, 200
 

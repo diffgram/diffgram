@@ -108,6 +108,12 @@ Where is a dict in data() eg  tag: {}
         },
         'dataset':{
           default: null
+        },
+        'object_id':{
+          default: null
+        },
+        'object_type':{
+          default: null
         }
       },
 
@@ -186,17 +192,20 @@ Where is a dict in data() eg  tag: {}
         },
 
 
-        apply_tag_api() {
+        apply_tag_api(tag_name, object_id, object_type) {
 
           this.apply_tag_api_loading = true
           this.error = {}
 
           axios.post('/api/v1/project/' + this.$store.state.project.current.project_string_id +
               '/tag/apply', {
+                'tag_name' : tag_name,
+                'object_id' : object_id,
+                'object_type' : object_type
 
           }).then(response => {
 
-            
+            console.log(response)
             this.apply_tag_api_loading = false
 
           })
@@ -207,13 +216,22 @@ Where is a dict in data() eg  tag: {}
             });
         },
 
-
         determine_if_new_tag_and_create(){
+          // Difference between newly selected and new to overall system
           let new_tag_name = this.get_new_tag()
           console.log(new_tag_name)
           if (new_tag_name) {
             let new_tag = this.new_tag_api(new_tag_name)
           }
+          this.apply_tag_api(
+              new_tag_name,
+              this.$props.object_id,
+              this.$props.object_type
+              )
+        },
+
+        get_tags_already_on_object_api(){
+
         },
 
         get_new_tag(){

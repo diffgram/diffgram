@@ -343,6 +343,8 @@ class WorkingDir(Base):
             dataset_tag = tag.add_to_dataset(job_id = self.id)
 
             session.add(dataset_tag)
+            log['success'] = True
+            #log['dataset_tag'] = dataset_tag.serialize()
 
         return log
 

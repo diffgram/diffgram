@@ -181,6 +181,8 @@
           <tag_select
                 :project_string_id="project_string_id"
                 :dataset="current_directory"
+                :object_id="current_directory.id"
+                :object_type="'dataset'"
           >
           </tag_select>
 
