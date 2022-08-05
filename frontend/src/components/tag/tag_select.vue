@@ -134,6 +134,10 @@ Where is a dict in data() eg  tag: {}
           this.tag_list_api()
         }
 
+        if (this.object_id){
+          this.list_applied_tags_api(this.object_id, this.object_type)
+        }
+
       },
       mounted(){
         if(this.$props.initial_value){
@@ -216,14 +220,13 @@ Where is a dict in data() eg  tag: {}
             });
         },
 
-        apply_tag(){
+        async apply_tag(){
           // Difference between newly selected and new to overall system
           let newly_selected_tag = this.get_newly_selected_tag()
-          console.log(newly_selected_tag)
 
           let tag_object = undefined
           if (typeof newly_selected_tag === 'string' || newly_selected_tag instanceof String) {
-            tag_object = this.new_tag_api(newly_selected_tag)
+            tag_object = await this.new_tag_api(newly_selected_tag)
           } else {
             tag_object = newly_selected_tag
           }
@@ -235,26 +238,37 @@ Where is a dict in data() eg  tag: {}
           )
         },
 
-        get_tags_already_on_object_api(){
+        list_applied_tags_api(object_id, object_type){
+          this.list_applied_tags_api_loading = true
+          this.error = {}
 
+          axios.post('/api/v1/project/' + this.$store.state.project.current.project_string_id +
+              '/tag/list/applied', {
+                'object_id' : object_id,
+                'object_type' : object_type
+
+          }).then(response => {
+
+            console.log(response)
+            this.list_applied_tags_api_loading = false
+
+          })
+            .catch(error => {
+              console.error(error);
+              this.$route_api_errors(error)
+              this.list_applied_tags_api_loading = false
+            });
         },
 
         get_newly_selected_tag(){
+          // because veutify returns list with all elements
+          let most_recent = this.selected.at(-1)
+          console.log(most_recent)
+          return most_recent
 
-          for (let tag of this.selected){
-            if (typeof tag === 'string' || tag instanceof String) {
-              let string_name = tag
-              let existing = this.tag_list_internal.find(x => x.name === string_name)
-              if (existing) {
-                return existing
-              } else {
-                return string_name
-              }
-            }
-          }
         },
 
-        new_tag_api(name) {
+        async new_tag_api(name) {
 
           this.new_tag_api_loading = true
           this.error = {}
@@ -269,6 +283,8 @@ Where is a dict in data() eg  tag: {}
             this.tag_list_internal.push(response.data.tag)
             this.selected.push(response.data.tag)
             this.remove_string_from_internal(response.data.tag.name)
+
+            return response.data.tag
 
           })
             .catch(error => {
