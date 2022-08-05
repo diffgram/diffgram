@@ -222,8 +222,9 @@ Where is a dict in data() eg  tag: {}
 
           }).then(response => {
 
-            console.log(response)
             this.apply_tag_api_loading = false
+
+            this.$emit('tag_applied')
 
           })
             .catch(error => {
