@@ -264,7 +264,8 @@
         v-if="view_mode === 'cards'"
         :project_string_id="project_string"
         :loading="loading"
-        :job_list="Job_list"></job_list_card_display>
+        :job_list="Job_list">
+      </job_list_card_display>
 
       <v-data-table :headers="headers_view"
                     v-if="view_mode === 'table'"
