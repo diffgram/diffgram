@@ -141,6 +141,12 @@
               </v-col>
             </v-row>
 
+            <tag_display
+                 :object_id="job.id"
+                 :object_type="'job'"
+                         >
+            </tag_display>
+
             <v-row class="mb-4" dense>
               <v-col cols="12" class="d-flex pa-0" v-if="job.member_list_ids.length > 0">
                 <v_user_icon v-if="member_id != 'all'"
@@ -290,12 +296,17 @@
   import axios from '../../../services/customInstance';
   import job_pipelines_dialog from '../job/job_pipelines_dialog';
   import label_select_only from '../../label/label_select_only.vue'
+  import tag_select from '@/components/tag/tag_select.vue'
+  import tag_display from '@/components/tag/tag_display.vue'
+
 
   export default Vue.extend({
       name: 'job_list_card_display',
       components: {
         job_pipelines_dialog,
-        label_select_only
+        label_select_only,
+        tag_select,
+        tag_display
       },
       props: {
         'project_string_id': {
