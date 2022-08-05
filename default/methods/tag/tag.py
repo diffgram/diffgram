@@ -88,6 +88,9 @@ def new_tag_api(project_string_id):
             project_id = project.id,
             session = session)
 
+        if isinstance(tag, str):
+            return jsonify(tag), 400
+
         if tag.id is None:
             session.add(tag)
             session.flush()
