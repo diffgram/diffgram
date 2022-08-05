@@ -149,14 +149,23 @@ class Tag(Base):
 
     def add_to_dataset(
             self,
-            dataset_id: int
+            dataset_id: int,
+            session
             ):
 
-        dataset_tag = DatasetTag.new(
+        dataset_tag = DatasetTag.get(
             dataset_id = dataset_id,
             tag = self,
-            project_id = self.project_id
-            )
+            project_id = self.project_id,
+            session = session
+        )
+
+        if not dataset_tag:
+            dataset_tag = DatasetTag.new(
+                dataset_id = dataset_id,
+                tag = self,
+                project_id = self.project_id
+                )
 
         return dataset_tag
 
@@ -244,6 +253,11 @@ class DatasetTag(Base):
 
 
     @staticmethod
+    def delete(self):
+        session.delete(self)
+
+
+    @staticmethod
     def get_by_tag_ids(
             tag_id_list: list,
             project_id: int,
@@ -254,6 +268,18 @@ class DatasetTag(Base):
             DatasetTag.project_id == project_id).all()
 
         return dataset_tag_list
+
+    @staticmethod
+    def get(dataset_id: int,
+            project_id: int,
+            tag,
+            session
+            ):
+
+        return session.query(DatasetTag).filter(
+            DatasetTag.dataset_id == dataset_id,
+            DatasetTag.tag==tag,
+            DatasetTag.project_id == project_id).first()
 
 
     @staticmethod

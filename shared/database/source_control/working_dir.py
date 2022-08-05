@@ -341,7 +341,7 @@ class WorkingDir(Base):
             if tag.id is None:
                 session.add(tag)
 
-            dataset_tag = tag.add_to_dataset(self.id)
+            dataset_tag = tag.add_to_dataset(dataset_id=self.id, session=session)
 
             session.add(dataset_tag)
             log['success'] = True
