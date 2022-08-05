@@ -139,6 +139,7 @@
             <tag_display
                   :object_id="data.item.directory_id"
                   :object_type="'dataset'"
+                  :tag_display_refresh_trigger="tag_display_refresh_trigger"
                           >
             </tag_display>
 
