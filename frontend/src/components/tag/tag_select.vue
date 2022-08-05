@@ -236,6 +236,7 @@ Where is a dict in data() eg  tag: {}
         async apply_tag(){
           // Difference between newly selected and new to overall system
           let newly_selected_tag = this.get_newly_selected_tag()
+          if (!newly_selected_tag) { return }
 
           let tag_object = undefined
           if (typeof newly_selected_tag === 'string' || newly_selected_tag instanceof String) {
@@ -279,7 +280,6 @@ Where is a dict in data() eg  tag: {}
         get_newly_selected_tag(){
           // because veutify returns list with all elements
           let most_recent = this.selected.at(-1)
-          console.log(most_recent)
           return most_recent
 
         },
