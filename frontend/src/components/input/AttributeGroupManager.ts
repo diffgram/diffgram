@@ -97,7 +97,7 @@ export default class AttributeGroupManager {
       return false
     }
 
-    // Check default id
+    // Check max_value
     if(attr_obj_1.max_value !== attr_obj_2.max_value){
       return false
     }

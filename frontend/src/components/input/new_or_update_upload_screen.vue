@@ -648,7 +648,7 @@
           }
         },
         upload_export: async function(file_data){
-          const limit = pLimit(10); // 10 Max concurrent request.
+          const limit = pLimit(2); // Max concurrent request.
           try {
             this.processed_files = 0;
             this.total_files_update = Object.keys(file_data).length;
@@ -657,6 +657,7 @@
               return limit(() => this.create_input_for_export_data(file_data, file_key))
             });
             const result = await Promise.all(promises);
+            this.$emit('declare_success', true)
             return result
 
           } catch (error) {
