@@ -684,9 +684,14 @@ export default Vue.extend( {
     },
     delete_tree_item: function(item_id) {
       const all_relatives = find_all_relatives(item_id, this.tree_items_list)
-      const list_copy = [...this.tree_items_list].filter(item => !all_relatives.includes(item.get_id()))
-      const list_to_delete = [...this.tree_items_list].filter(item => all_relatives.includes(item.get_id()))
+      let relative_node_ids = all_relatives.related_nodes.map(elm => elm.id)
+      console.log('ALLL', all_relatives)
+      console.log('tree_items_list', this.tree_items_list)
+      console.log('relative_node_ids', relative_node_ids)
+      const list_copy = [...this.tree_items_list].filter(item => !relative_node_ids.includes(item.get_id()))
+      const list_to_delete = [...this.tree_items_list].filter(item => relative_node_ids.includes(item.get_id()))
       this.tree_items_list = list_copy
+      console.log('list_to_delete', list_to_delete)
       this.save_tree_item("ARCHIVE", list_to_delete)
     },
     change_tree_item_name: function(e, item_id) {
