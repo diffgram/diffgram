@@ -48,6 +48,9 @@
         },
         'object_type':{
           default: null
+        },
+        'tag_display_refresh_trigger':{
+          default: null
         }
       },
 
@@ -57,10 +60,13 @@
           this.selected = item
         },
         object_id: function (item) {
-          this.list_applied_tags_api(this.object_id, this.object_type)
+          this.get_applied_tags_api(this.object_id, this.object_type)
         },
         object_type: function (item) {    // either case could cause change
-          this.list_applied_tags_api(this.object_id, this.object_type)
+          this.get_applied_tags_api(this.object_id, this.object_type)
+        },
+        tag_display_refresh_trigger: function (item) { 
+          this.get_applied_tags_api(this.object_id, this.object_type)
         },
 
 
