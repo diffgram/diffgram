@@ -2,8 +2,6 @@ from shared.database.common import *
 import re
 import random
 
-tag_format = "^[a-zA-Z0-9_-]{1,40}$"
-
 
 class Tag(Base):
     __tablename__ = 'tag'
@@ -31,9 +29,6 @@ class Tag(Base):
             'id': self.id
         }
 
-    def valid_tag(string):
-        if not re.match(tag_format, string):
-            return False
 
     @staticmethod
     def get_random_color():
@@ -50,6 +45,41 @@ class Tag(Base):
             Tag.project_id == project_id).first()
 
         return tag
+
+
+    def apply_tags(
+            object_id: int,
+            object_type: str,
+            tag_list: list,
+            session,
+            project,
+            log):
+
+        if len(tag_list) > 100: 
+            log['error']['tag_list_length'] = f"Over limit, tags sent: {len(tag_list)}"
+            return log
+
+        for name in tag_list:
+
+            tag = Tag.get_or_new(
+                name = name,
+                project_id = project.id,
+                session = session)
+
+            if tag.id is None:
+                session.add(tag)
+
+            dataset_tag = tag.add_to_junction_table(
+                object_id = object_id,
+                object_type = object_type,
+                project_id = project.id,
+                session = session)
+
+            session.add(dataset_tag)
+            log['success'] = True
+            #log['dataset_tag'] = dataset_tag.serialize()
+
+        return log
 
 
     @staticmethod
@@ -120,9 +150,6 @@ class Tag(Base):
             project_id: int,            
             color_hex: str = None):
 
-        if Tag.valid_tag(name) is False:
-            return "Invalid tag format, format is regular expression of: " + tag_format
-
         tag = Tag()
         tag.name = name
         tag.project_id = project_id
@@ -131,6 +158,39 @@ class Tag(Base):
             tag.color_hex = Tag.get_random_color()
 
         return tag
+
+
+    def add_to_junction_table(
+            self,
+            object_id,
+            object_type,
+            project_id,
+            session):
+
+        junction_class = None
+
+        if object_type == "job":
+            junction_class = JobTag
+
+        if object_type == "dataset":
+            junction_class = DatasetTag
+
+        junction_tag = junction_class.get(
+            object_id,
+            project_id,
+            self,
+            session
+        )
+        if junction_tag: 
+            return junction_tag
+
+        else:
+            junction_tag = junction_class.new(
+                object_id,
+                project_id,
+                self
+                )
+            return junction_tag
 
 
     def add_to_job(
@@ -210,6 +270,18 @@ class JobTag(Base):
 
 
     @staticmethod
+    def get(job_id: int,
+            project_id: int,
+            tag,
+            session
+            ):
+
+        return session.query(JobTag).filter(
+            JobTag.job_id == job_id,
+            JobTag.tag==tag,
+            JobTag.project_id == project_id).first()
+
+    @staticmethod
     def get_many(
             tag_id_list: list,
             project_id: int,
@@ -220,6 +292,20 @@ class JobTag(Base):
             JobTag.project_id == project_id).all()
 
         return jobtag
+
+
+    @staticmethod
+    def get_by_job_id(
+            job_id: int,
+            project_id: int,
+            session):
+        
+        junction_tag_list = session.query(JobTag).filter(
+            JobTag.job_id == job_id,
+            JobTag.project_id == project_id).all()
+
+        return junction_tag_list
+
 
 
 

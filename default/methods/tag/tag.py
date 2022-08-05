@@ -8,6 +8,7 @@ from shared.database.project import Project
 from shared.database.project import ProjectStar
 from shared.database.tag.tag import Tag
 from shared.database.tag.tag import DatasetTag
+from shared.database.tag.tag import JobTag
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.task.job.job import Job
 
@@ -135,13 +136,24 @@ def apply_tag_to_object_api(project_string_id):
     with sessionMaker.session_scope() as session:
         project = Project.get(session, project_string_id)
 
+        object_id = None
+        object_type = input['object_type']
+
         if input['object_type'] == 'dataset':
             dataset = WorkingDir.get(session, input['object_id'], project.id)
-            log = dataset.add_tags(
-                tag_list = [input['tag_name']], session=session, project=project, log=log)
+            object_id = dataset.id
 
         if input['object_type'] == 'job':
             job = Job.get(session, input['object_id'], project.id)
+            object_id = job.id
+
+        log = Tag.apply_tags(
+            object_id = object_id,
+            object_type = object_type,
+            tag_list = [input['tag_name']], 
+            session=session,
+            project=project, 
+            log=log)
 
         out = jsonify(log=log)
 
@@ -212,7 +224,10 @@ def tag_list_applied_api(project_string_id):
 
         if input['object_type'] == 'job':
             job = Job.get(session, input['object_id'], project.id)
-            raise NotImplemented
+            junction_tag_list = JobTag.get_by_job_id(
+                job_id = job.id, 
+                project_id = project.id, 
+                session = session)
 
         tag_list_serailized = Tag.marshal_serialized_from_junction(
             junction_tag_list = junction_tag_list,

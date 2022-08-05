@@ -113,13 +113,21 @@
 
                (<span>{{data.item.created_time | moment("ddd, MMM D h:mm:ss a")}} </span>)
 
+              <tag_display
+                    :object_id="data.item.directory_id"
+                    :object_type="'dataset'"
+                    :tag_display_refresh_trigger="tag_display_refresh_trigger"
+                            >
+              </tag_display>
 
             </v-skeleton-loader>
 
           </template>
 
           <template v-slot:selection="data">
-            <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">ID: {{ data.item.directory_id }}</v-chip>
+            <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">
+                ID: {{ data.item.directory_id }}
+            </v-chip>
 
             <v-icon left
                     color="primary">
@@ -127,6 +135,13 @@
             </v-icon>
 
            <span> {{data.item.nickname}} </span>
+
+            <tag_display
+                  :object_id="data.item.directory_id"
+                  :object_type="'dataset'"
+                  :tag_display_refresh_trigger="tag_display_refresh_trigger"
+                          >
+            </tag_display>
 
           </template>
 
@@ -184,6 +199,7 @@
                 :object_id="current_directory.directory_id"
                 :object_type="'dataset'"
                 :apply_upon_selection="true"
+                @tag_applied="tag_display_refresh_trigger=Date.now()"
           >
           </tag_select>
 
@@ -203,6 +219,7 @@
   import v_new_directory from './directory_new'
   import v_update_directory from './directory_update'
   import tag_select from '@/components/tag/tag_select'
+  import tag_display from '@/components/tag/tag_display'
   import Vue from "vue";
 
   export default Vue.extend({
@@ -256,7 +273,8 @@
     components: {
       v_new_directory,
       v_update_directory,
-      tag_select
+      tag_select,
+      tag_display
     },
     data() {
       return {
@@ -269,7 +287,9 @@
         date: undefined,
         error_directory_list: {},
         internal_directory_list: undefined,
-        loading_directory_list: false
+        loading_directory_list: false,
+
+        tag_display_refresh_trigger: null
 
       }
     },

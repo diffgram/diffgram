@@ -43,10 +43,18 @@
       </template>
 
       <template slot="no-data">
-        <v-list-item>
+        <v-list-item v-if="allow_new_creation">
           <v-list-item-content>
             <v-list-item-title>
               Press <kbd>enter</kbd> to create. <strong>{{ search }}</strong>
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+
+        <v-list-item v-if="!allow_new_creation">
+          <v-list-item-content>
+            <v-list-item-title>
+               No results found.
             </v-list-item-title>
           </v-list-item-content>
         </v-list-item>
@@ -101,7 +109,7 @@ Where is a dict in data() eg  tag: {}
           default: undefined,
         },
         'label': {
-          default: 'Select or Create Tags'
+          default: 'Apply or Create Tags'
         },
         'datacy':{
           default: 'tag-select'
@@ -117,6 +125,9 @@ Where is a dict in data() eg  tag: {}
         },
         'apply_upon_selection':{
           default: false
+        },
+        'allow_new_creation':{  // e.g. search context
+          default: true
         }
 
       },
@@ -222,8 +233,9 @@ Where is a dict in data() eg  tag: {}
 
           }).then(response => {
 
-            console.log(response)
             this.apply_tag_api_loading = false
+
+            this.$emit('tag_applied')
 
           })
             .catch(error => {
@@ -236,6 +248,7 @@ Where is a dict in data() eg  tag: {}
         async apply_tag(){
           // Difference between newly selected and new to overall system
           let newly_selected_tag = this.get_newly_selected_tag()
+          if (!newly_selected_tag) { return }
 
           let tag_object = undefined
           if (typeof newly_selected_tag === 'string' || newly_selected_tag instanceof String) {
@@ -244,12 +257,14 @@ Where is a dict in data() eg  tag: {}
           } else {
             tag_object = newly_selected_tag
           }
-          // object
-          this.apply_tag_api(
-              tag_object.name,
-              this.$props.object_id,
-              this.$props.object_type
-          )
+          if (tag_object) {
+            // object
+            this.apply_tag_api(
+                tag_object.name,
+                this.$props.object_id,
+                this.$props.object_type
+            )
+          }
         },
 
         list_applied_tags_api(object_id, object_type){
@@ -279,12 +294,16 @@ Where is a dict in data() eg  tag: {}
         get_newly_selected_tag(){
           // because veutify returns list with all elements
           let most_recent = this.selected.at(-1)
-          console.log(most_recent)
           return most_recent
 
         },
 
         async new_tag_api(name) {
+
+          if (this.allow_new_creation == false) {
+            this.remove_string_from_internal(name)
+            return
+          }
 
           this.new_tag_api_loading = true
           this.error = {}
@@ -299,6 +318,8 @@ Where is a dict in data() eg  tag: {}
             this.tag_list_internal.push(response.data.tag)
             this.selected.push(response.data.tag)
             this.remove_string_from_internal(response.data.tag.name)
+
+            this.$emit('new_tag_created')
 
             return response.data.tag
 
