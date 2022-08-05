@@ -6,7 +6,11 @@ from flask import jsonify
 from shared.database.user import User
 from shared.database.project import Project
 from shared.database.project import ProjectStar
-from shared.database.project import Tag
+from shared.database.tag.tag import Tag
+from shared.database.tag.tag import DatasetTag
+from shared.database.source_control.working_dir import WorkingDir
+from shared.database.task.job.job import Job
+
 import logging
 import sys
 import json
@@ -15,81 +19,133 @@ from shared.helpers.permissions import LoggedIn, defaultRedirect, getUserID
 
 from shared.permissions.general import General_permissions
 from shared.permissions.project_permissions import Project_permissions
+from shared.regular import regular_input
 
 
 
-
-# LEGACY Route TBD
-@routes.route('/api/project/<string:project_string_id>/tags/update', 
+@routes.route('/api/project/<string:project_string_id>/tag/update', 
 			  methods=['POST'])
 @Project_permissions.user_has_project(["admin", "Editor"])
 def update_tags(project_string_id):
+    
+    update_tags_specification = [
+        {"name": {
+            'default': str(time.time()),
+            'kind': str
+            }
+        }
+    ]
+
+    log, input, untrusted_input = regular_input.master(
+        request=request,
+        spec_list=update_job_spec_list)
+
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log=log), 400
+
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, project_string_id)
+
+        """
+        Update tag name
+        Remove a tag from system
+        """
 
 
-	"""
-	Update tags to latest
+        job = Job.get_by_id(session, input['job_id'])
 
-	"""
-	return
+        out = jsonify(job=job.serialize_new(),
+                      log=log)
 
-	have_error = False
-	error_message_list = []
+        return out, 200
 
-	with sessionMaker.session_scope() as session:
 
-		data = request.get_json(force=True)
+@routes.route('/api/v1/project/<string:project_string_id>/tag/new', 
+			  methods=['POST'])
+@Project_permissions.user_has_project(["admin", "Editor"])
+def new_tag_api(project_string_id):
+    
+    new_tag_specification = [
+        {"name": {
+            'kind': str,
+            'required': True
+            }
+        }
+    ]
 
-		tag_list = data.get('tag_list', None)
+    log, input, untrusted_input = regular_input.master(
+        request=request,
+        spec_list=new_tag_specification)
 
-		# tag_list could be none, ie deleted all tags...
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log=log), 400
 
-		#if tag_list is None:
-			#error_message_list.append("tag list is None")
-			#return jsonify(error_message_list), 400, {'ContentType' : 'application/json'}
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, project_string_id)
 
-		project = Project.get(session, project_string_id)
-		
-	
-		print(tag_list)
-		
-		rebuilt_tag_list = []
+        tag = Tag.get_or_new(
+            name = input.get('name'),
+            project_id = project.id,
+            session = session)
 
-		for tag in tag_list:
-			if valid_tag(tag):
+        if isinstance(tag, str):
+            return jsonify(tag), 400
 
-				name = tag.lower()
-				
-				#Check if tag with same name already exists
-				#If so can just add that database object to
-				tag_db = session.query(Tag).filter(
-									Tag.name == name).first()
+        if tag.id is None:
+            session.add(tag)
+            session.flush()
 
-				if not tag_db:
+        out = jsonify(tag=tag.serialize(),
+                      log=log)
 
-					tag_db = Tag()
-					tag_db.name = name
+        return out, 200
 
-					tag_db.is_public = project.is_public
 
-					session.add(tag_db)
 
-				if tag_db:
-					session.add(tag_db)
+@routes.route('/api/v1/project/<string:project_string_id>/tag/apply', 
+			  methods=['POST'])
+@Project_permissions.user_has_project(["admin", "Editor"])
+def apply_tag_to_object_api(project_string_id):
+    
+    update_tags_specification = [
+        {"tag_name": {
+            'kind': str,
+            'required': True
+            }
+        },
+        {"object_id": {
+            'kind': int,
+            'required': True
+            }
+        },
+        {"object_type": {
+            'kind': str,
+            'required': True
+            }
+        }
+    ]
 
-				# TODO handle counts properly ie on tag being removed etc.
-				#tag_db.count += 1
+    log, input, untrusted_input = regular_input.master(
+        request=request,
+        spec_list=update_tags_specification)
 
-				rebuilt_tag_list.append(tag_db)
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log=log), 400
 
-		session.add(project)
-			
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, project_string_id)
 
-		# This handles removing link to tag that's no longer in project
+        if input['object_type'] == 'dataset':
+            dataset = WorkingDir.get(session, input['object_id'], project.id)
+            log = dataset.add_tags(
+                tag_list = [input['tag_name']], session=session, project=project, log=log)
 
-		project.tag_list = rebuilt_tag_list
-		
+        if input['object_type'] == 'job':
+            job = Job.get(session, input['object_id'], project.id)
 
-	return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
+        out = jsonify(log=log)
+
+        return out, 200
 
 
 
@@ -117,4 +173,55 @@ def tag_view_by_project(project_string_id):
 						tag_list=tag_list_serailized)
 
 		return out, 200, {'ContentType':'application/json'}
+
+
+@routes.route('/api/v1/project/<string:project_string_id>/tag/list/applied', 
+			  methods=['POST'])
+@Project_permissions.user_has_project(["admin", "Editor"])
+def tag_list_applied_api(project_string_id):
+    
+    update_tags_specification = [
+        {"object_id": {
+            'kind': int,
+            'required': True
+            }
+        },
+        {"object_type": {
+            'kind': str,
+            'required': True
+            }
+        }
+    ]
+
+    log, input, untrusted_input = regular_input.master(
+        request=request,
+        spec_list=update_tags_specification)
+
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log=log), 400
+
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, project_string_id)
+
+        if input['object_type'] == 'dataset':
+            dataset = WorkingDir.get(session, input['object_id'], project.id)
+            junction_tag_list = DatasetTag.get_by_dataset_id(
+                dataset_id = dataset.id, 
+                project_id = project.id, 
+                session = session)
+
+        if input['object_type'] == 'job':
+            job = Job.get(session, input['object_id'], project.id)
+            raise NotImplemented
+
+        tag_list_serailized = Tag.marshal_serialized_from_junction(
+            junction_tag_list = junction_tag_list,
+            session = session)
+
+        out = jsonify(	success=True,
+						tag_list=tag_list_serailized)
+        return out, 200
+
+
+
 

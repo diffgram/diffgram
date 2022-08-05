@@ -53,6 +53,36 @@ class Tag(Base):
 
 
     @staticmethod
+    def get_from_junction_table_object(
+            junction_tag_list: list,
+            session):
+        
+        tag_id_list = []
+        for junction in junction_tag_list:
+            tag_id_list.append(junction.tag_id)
+
+        tag_list = session.query(Tag).filter(
+            Tag.id.in_(tag_id_list)).all()
+
+        return tag_list
+
+    @staticmethod
+    def marshal_serialized_from_junction(
+            junction_tag_list, 
+            session):
+
+        tag_list = Tag.get_from_junction_table_object(
+            junction_tag_list = junction_tag_list,
+            session = session)
+
+        tag_list_serailized = []
+        for tag in tag_list:
+            tag_list_serailized.append(tag.serialize())
+
+        return tag_list_serailized
+
+
+    @staticmethod
     def get_many(
             name_list: list,
             project_id: int,
@@ -117,6 +147,29 @@ class Tag(Base):
         return jobtag
 
 
+    def add_to_dataset(
+            self,
+            dataset_id: int,
+            session
+            ):
+
+        dataset_tag = DatasetTag.get(
+            dataset_id = dataset_id,
+            tag = self,
+            project_id = self.project_id,
+            session = session
+        )
+
+        if not dataset_tag:
+            dataset_tag = DatasetTag.new(
+                dataset_id = dataset_id,
+                tag = self,
+                project_id = self.project_id
+                )
+
+        return dataset_tag
+
+
     @staticmethod
     def get_by_project(project_id: int, 
                        session):
@@ -167,4 +220,78 @@ class JobTag(Base):
             JobTag.project_id == project_id).all()
 
         return jobtag
+
+
+
+class DatasetTag(Base):
+    __tablename__ = 'dataset_tag'
+
+    dataset_id = Column(Integer, ForeignKey('working_dir.id'), primary_key = True)
+    tag_id = Column(Integer, ForeignKey('tag.id'), primary_key = True)
+    project_id = Column(Integer, ForeignKey('project.id'), primary_key = True)
+
+    dataset = relationship("WorkingDir")
+    tag = relationship("Tag")
+    project = relationship("Project")
+
+    time_created = Column(DateTime, default=datetime.datetime.utcnow)
+
+
+    @staticmethod
+    def new(dataset_id: int,
+            project_id: int,
+            tag
+            ):
+
+        dataset_tag = DatasetTag(
+            dataset_id=dataset_id,
+            tag=tag,
+            project_id=project_id
+        )
+
+        return dataset_tag
+
+
+    @staticmethod
+    def delete(self):
+        session.delete(self)
+
+
+    @staticmethod
+    def get_by_tag_ids(
+            tag_id_list: list,
+            project_id: int,
+            session):
+        
+        dataset_tag_list = session.query(DatasetTag).filter(
+            DatasetTag.tag_id.in_(tag_id_list),
+            DatasetTag.project_id == project_id).all()
+
+        return dataset_tag_list
+
+    @staticmethod
+    def get(dataset_id: int,
+            project_id: int,
+            tag,
+            session
+            ):
+
+        return session.query(DatasetTag).filter(
+            DatasetTag.dataset_id == dataset_id,
+            DatasetTag.tag==tag,
+            DatasetTag.project_id == project_id).first()
+
+
+    @staticmethod
+    def get_by_dataset_id(
+            dataset_id: int,
+            project_id: int,
+            session):
+        
+        dataset_tag_list = session.query(DatasetTag).filter(
+            DatasetTag.dataset_id == dataset_id,
+            DatasetTag.project_id == project_id).all()
+
+        return dataset_tag_list
+
 

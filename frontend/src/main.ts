@@ -195,7 +195,6 @@ import project_star from './components/project/star'
 import user_follow from './components/user/follow'
 import user_follow_list from './components/user/follow_list'
 import search_query from './components/search/query'
-import project_tags from './components/project/tags'
 
 
 import bar_chart from './components/report/charts/bar_chart'
@@ -325,7 +324,6 @@ Vue.component('v_user_follow', user_follow)
 Vue.component('v_user_follow_list', user_follow_list)
 
 Vue.component('v_search_query', search_query)
-Vue.component('v_project_tags', project_tags)
 
 Vue.component('v_export_view', export_view)
 

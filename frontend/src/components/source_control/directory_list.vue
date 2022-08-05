@@ -161,6 +161,37 @@
 
       </button_with_menu>
 
+      <button_with_menu
+        tooltip_message="Apply Tags to this Dataset"
+        icon="mdi-tag"
+        :small="true"
+        :large="undefined"
+        :button_text="undefined"
+        color="primary"
+        :close_by_button="true"
+        v-if="!view_only_mode && show_tag == true"
+        offset="x"
+        :outlined="true"
+        background="white"
+        menu_direction="left"
+        :commit_menu_status="true">
+
+        <template slot="content">
+
+          <tag_select
+                :project_string_id="project_string_id"
+                :dataset="current_directory"
+                :object_id="current_directory.directory_id"
+                :object_type="'dataset'"
+                :apply_upon_selection="true"
+          >
+          </tag_select>
+
+        </template>
+
+      </button_with_menu>
+
+
     </v-layout>
 
   </div>
@@ -168,14 +199,10 @@
 
 <script lang="ts">
 
-  // TODO combine directory list elements into single component
-  // look at props for passing some of stuff...
-
-  // TODO pass loading or?
-
   import axios from '../../services/customInstance';
   import v_new_directory from './directory_new'
   import v_update_directory from './directory_update'
+  import tag_select from '@/components/tag/tag_select'
   import Vue from "vue";
 
   export default Vue.extend({
@@ -209,10 +236,13 @@
         default: true
       },
       'show_new': {
-        default: false
+        default: true
       },
       'show_update': {
-        default: false
+        default: true
+      },
+      'show_tag': {
+        default: true
       },
       'set_from_id': {
         default: null,
@@ -225,7 +255,8 @@
     },
     components: {
       v_new_directory,
-      v_update_directory
+      v_update_directory,
+      tag_select
     },
     data() {
       return {
