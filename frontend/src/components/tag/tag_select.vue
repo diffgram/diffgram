@@ -1,16 +1,17 @@
 <template>
   <div v-cloak>
 
-    <v-autocomplete
+    <v-combobox
               :items="tag_list_internal"
-              v-model="item_internal"
+              v-model="selected"
               :label="label"
               :data-cy="datacy"
+              :search-input.sync="search"
               item-value="id"
               :multiple="true"
               :disabled="loading || view_only"
               @input="$emit('input', $event)"
-              @change="$emit('change', $event)"
+              @change="$emit('change', $event); determine_if_new_tag_and_create()"
               @focus="$emit('focus', $event); $store.commit('set_user_is_typing_or_menu_open', true)"
               @blur="$store.commit('set_user_is_typing_or_menu_open')"
               :filter="on_filter"
@@ -39,10 +40,22 @@
           </template>
         </v-chip>
 
-
       </template>
 
-    </v-autocomplete>
+      <template slot="no-data">
+        <v-list-item>
+          <v-list-item-content>
+            <v-list-item-title>
+              Press <kbd>enter</kbd> to create. <strong>{{ search }}</strong>
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+      </template>
+
+    </v-combobox>
+
+    <v_error_multiple :error="error">
+    </v_error_multiple>
   
 
   </div>
@@ -64,6 +77,7 @@ Where is a dict in data() eg  tag: {}
 <script lang="ts">
 
   import Vue from "vue";
+  import axios from '../../services/customInstance';
 
   export default Vue.extend({
 
@@ -87,17 +101,20 @@ Where is a dict in data() eg  tag: {}
           default: undefined,
         },
         'label': {
-          default: 'Select Tags'
+          default: 'Select or Create Tags'
         },
         'datacy':{
           default: 'tag-select'
+        },
+        'dataset':{
+          default: null
         }
       },
 
       watch: {
 
         value: function (item) {
-          this.item_internal = item
+          this.selected = item
         },
         tag_list: function(new_val, old_val){
             this.tag_list_internal = new_val;
@@ -105,11 +122,16 @@ Where is a dict in data() eg  tag: {}
 
       },
       created() {
-        this.item_internal = this.value
+        this.selected = this.value
+
+        if (!this.$props.tag_list){
+          this.tag_list_api()
+        }
+
       },
       mounted(){
         if(this.$props.initial_value){
-          this.item_internal = this.$props.initial_value;
+          this.selected = this.$props.initial_value;
         }
       },
 
@@ -118,9 +140,14 @@ Where is a dict in data() eg  tag: {}
       },
       data() {
         return {
-          item_internal: null,
+          selected: null,
           loading: false,
-          tag_list_internal: []
+          tag_list_internal: [],
+          search: null,
+          tag_list_api_loading: false,
+          apply_tag_api_loading: false,
+          new_tag_api_loading: false,
+          error: {},
         }
       },
 
@@ -132,6 +159,115 @@ Where is a dict in data() eg  tag: {}
         style_color: function (hex) {
           return "color: #" + hex
         },
+
+        tag_list_api() {
+
+          this.tag_list_api_loading = true
+          this.error = {}
+
+          axios.get('/api/v1/project/' + this.$store.state.project.current.project_string_id +
+              '/tags/list', {
+
+          }).then(response => {
+
+            if (response.data['tag_list'] != null) {
+
+              this.tag_list_internal = response.data['tag_list']
+            }
+
+            this.tag_list_api_loading = false
+
+          })
+            .catch(error => {
+              console.error(error);
+              this.$route_api_errors(error)
+              this.tag_list_api_loading = false
+            });
+        },
+
+
+        apply_tag_api() {
+
+          this.apply_tag_api_loading = true
+          this.error = {}
+
+          axios.post('/api/v1/project/' + this.$store.state.project.current.project_string_id +
+              '/tag/apply', {
+
+          }).then(response => {
+
+            
+            this.apply_tag_api_loading = false
+
+          })
+            .catch(error => {
+              console.error(error);
+              this.$route_api_errors(error)
+              this.apply_tag_api_loading = false
+            });
+        },
+
+
+        determine_if_new_tag_and_create(){
+          let new_tag_name = this.get_new_tag()
+          console.log(new_tag_name)
+          if (new_tag_name) {
+            let new_tag = this.new_tag_api(new_tag_name)
+          }
+        },
+
+        get_new_tag(){
+          console.log(this.selected)
+          for (let tag of this.selected){
+            if (typeof tag === 'string' || tag instanceof String) {
+              let existing = this.tag_list_internal.find(x => x.name === tag)
+              if (existing) {
+                //if (existing.id) {
+                 // this.remove_string_from_internal(tag)  // already exists
+                //}
+              } else {
+                return tag
+              }
+            }
+          }
+          return false
+        },
+
+        new_tag_api(name) {
+
+          this.new_tag_api_loading = true
+          this.error = {}
+
+          axios.post('/api/v1/project/' + this.$store.state.project.current.project_string_id +
+              '/tag/new', {
+            'name': name
+          }).then(response => {
+            
+            this.new_tag_api_loading = false
+
+            this.tag_list_internal.push(response.data.tag)
+            this.selected.push(response.data.tag)
+            this.remove_string_from_internal(response.data.tag.name)
+
+          })
+            .catch(error => {
+              console.error(error);
+              this.$route_api_errors(error)
+              this.new_tag_api_loading = false
+            });
+        },
+
+        remove_string_from_internal(name){
+          let index = this.selected.indexOf(name);
+          console.log(index)
+          if (index > -1) {
+            this.selected.splice(index, 1);
+          }
+          console.log(this.selected)
+        }
+
+
+
       }
     }
   )
