@@ -1,6 +1,7 @@
 <template>
   <div class="job-detail-container">
-    <div class="d-flex justify-space-between align-center mb-6">
+    <div class="d-flex justify-space-between align-center mb-1">
+      <v-col>
       <h1 class="pa-2">
         <v-layout>
           <div
@@ -68,8 +69,18 @@
             :disabled="loading"
           >
           </tooltip_button>
+              
         </v-layout>
       </h1>
+ 
+      <tag_display_and_select
+          :project_string_id="project_string_id"
+          :object_id="parseInt(job_id)"
+          :object_type="'job'"
+      >
+      </tag_display_and_select>
+
+      </v-col>
 
       <v-btn
         @click="api_get_next_task_scoped_to_job(job_id)"
@@ -89,6 +100,7 @@
       </v-tab>
       <v-tabs-items v-model="tab">
         <v-tab-item class="pt-2">
+
           <v_job_detail_builder
             v-if="$store.state.builder_or_trainer.mode == 'builder'"
             :job_id="job_id"
@@ -212,6 +224,8 @@ import Vue from "vue";
 import No_credentials_dialog from "./no_credentials_dialog.vue";
 import task_template_ui_schema_editor from "./task_template_ui_schema_editor.vue";
 import Label_schema_selector from "../../label/label_schema_selector.vue";
+import tag_display_and_select from '@/components/tag/tag_display_and_select.vue'
+
 
 export default Vue.extend({
   name: "job_detail",
@@ -230,6 +244,7 @@ export default Vue.extend({
     label_select_only,
     job_type,
     stats_panel,
+    tag_display_and_select
   },
 
   data() {

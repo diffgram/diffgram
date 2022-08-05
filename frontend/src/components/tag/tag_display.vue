@@ -65,7 +65,7 @@
         object_type: function (item) {    // either case could cause change
           this.get_applied_tags_api(this.object_id, this.object_type)
         },
-        tag_display_refresh_trigger: function (item) { 
+        tag_display_refresh_trigger: function (item) {    // either case could cause change
           this.get_applied_tags_api(this.object_id, this.object_type)
         },
 
