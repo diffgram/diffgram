@@ -141,37 +141,13 @@
               </v-col>
             </v-row>
 
-            <v-layout>
-              <tag_display
-                   :object_id="job.id"
-                   :object_type="'job'"
-                           >
-              </tag_display>
 
-              <button_with_menu
-                tooltip_message="Apply Tags"
-                icon="mdi-tag"
-                :small="true"
-                color="primary"
-                :close_by_button="true"
-                offset="x"
-                menu_direction="left"
-                :commit_menu_status="true">
-
-                <template slot="content">
-
-                  <tag_select
-                        :project_string_id="project_string_id"
-                        :object_id="job.id"
-                        :object_type="'job'"
-                        :apply_upon_selection="true"
-                  >
-                  </tag_select>
-
-                </template>
-
-              </button_with_menu>
-            </v-layout>
+            <tag_display_and_select
+                :project_string_id="project_string_id"
+                :object_id="job.id"
+                :object_type="'job'"
+            >
+            </tag_display_and_select>
 
 
             <v-row class="mb-4" dense>
@@ -323,8 +299,7 @@
   import axios from '../../../services/customInstance';
   import job_pipelines_dialog from '../job/job_pipelines_dialog';
   import label_select_only from '../../label/label_select_only.vue'
-  import tag_select from '@/components/tag/tag_select.vue'
-  import tag_display from '@/components/tag/tag_display.vue'
+  import tag_display_and_select from '@/components/tag/tag_display_and_select.vue'
 
 
   export default Vue.extend({
@@ -332,8 +307,7 @@
       components: {
         job_pipelines_dialog,
         label_select_only,
-        tag_select,
-        tag_display
+        tag_display_and_select
       },
       props: {
         'project_string_id': {
@@ -416,6 +390,8 @@
         }
       },
       methods: {
+
+
         resync_job: async function(job){
           try {
             this.loading_resync_job = true;
