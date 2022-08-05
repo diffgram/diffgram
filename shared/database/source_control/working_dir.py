@@ -319,6 +319,34 @@ class WorkingDir(Base):
         return working_dir
 
 
+    def add_tags(
+            self,
+            tag_list,
+            session,
+            project,
+            log):
+
+        if len(tag_list) > 100: 
+            log['error']['tag_list_length'] = f"Over limit, tags sent: {len(tag_list)}"
+            return log
+
+        for name in tag_list:
+
+            tag = Tag.get_or_new(
+                name = name,
+                project_id = project.id,
+                session = session)
+
+            if tag.id is None:
+                session.add(tag)
+
+            dataset_tag = tag.add_to_dataset(job_id = self.id)
+
+            session.add(dataset_tag)
+
+        return log
+
+
 class WorkingDirFileLink(Base):
     __tablename__ = 'workingdir_file_link'
 
