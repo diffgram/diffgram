@@ -8,6 +8,7 @@ from shared.database.project import Project
 from shared.database.project import ProjectStar
 from shared.database.tag.tag import Tag
 from shared.database.tag.tag import DatasetTag
+from shared.database.tag.tag import JobTag
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.task.job.job import Job
 
@@ -212,7 +213,10 @@ def tag_list_applied_api(project_string_id):
 
         if input['object_type'] == 'job':
             job = Job.get(session, input['object_id'], project.id)
-            raise NotImplemented
+            junction_tag_list = JobTag.get_by_job_id(
+                job_id = job.id, 
+                project_id = project.id, 
+                session = session)
 
         tag_list_serailized = Tag.marshal_serialized_from_junction(
             junction_tag_list = junction_tag_list,

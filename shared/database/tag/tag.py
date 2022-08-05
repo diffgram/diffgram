@@ -222,6 +222,20 @@ class JobTag(Base):
         return jobtag
 
 
+    @staticmethod
+    def get_by_job_id(
+            job_id: int,
+            project_id: int,
+            session):
+        
+        junction_tag_list = session.query(JobTag).filter(
+            JobTag.job_id == job_id,
+            JobTag.project_id == project_id).all()
+
+        return junction_tag_list
+
+
+
 
 class DatasetTag(Base):
     __tablename__ = 'dataset_tag'
