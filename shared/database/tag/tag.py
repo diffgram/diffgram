@@ -117,6 +117,20 @@ class Tag(Base):
         return jobtag
 
 
+    def add_to_dataset(
+            self,
+            dataset_id: int
+            ):
+
+        dataset_tag = DatasetTag.new(
+            dataset_id = dataset_id,
+            tag = self,
+            project_id = self.project_id
+            )
+
+        return dataset_tag
+
+
     @staticmethod
     def get_by_project(project_id: int, 
                        session):
