@@ -92,7 +92,9 @@
 
       methods: {
          new_tag_applied: function (event, object_id, object_type){
-          this.$refs.tag_display_literal.get_applied_tags_api(object_id, object_type)
+          if (this.$refs.tag_display_literal) {
+            this.$refs.tag_display_literal.get_applied_tags_api(object_id, object_type)
+          }
         }
       }
     }
