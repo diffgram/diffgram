@@ -143,6 +143,13 @@ def apply_tag_to_object_api(project_string_id):
 
         if input['object_type'] == 'job':
             job = Job.get(session, input['object_id'], project.id)
+            log = Tag.apply_tags(
+                object_id = job.id,
+                object_type = "job",
+                tag_list = [input['tag_name']], 
+                session=session,
+                project=project, 
+                log=log)
 
         out = jsonify(log=log)
 
