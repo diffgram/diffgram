@@ -1,13 +1,16 @@
 <template>
   <div v-cloak>
 
-    <div v-for tag in tag_list_internal>
+    <div v-for="tag in selected">
 
-        <v-layout :data-cy="`${datacy}__select-tag`"
-                  :style="style_color(data.item.color_hex)"
+        <v-chip
+          v-if="tag.name"
+          :data-cy="`${datacy}__select-tag`"
+          :style="style_color(tag.color_hex)"
+          color="white"
                   >
-            {{ data.item.name }}
-        </v-layout>
+          {{ tag.name }}
+        </v-chip>
 
     </div>
 
@@ -34,12 +37,8 @@
         'project_string_id': {
           type: String
         },
-        'tag_list': {
-          default: null,
-          type: Array
-        },
-        'view_only': {
-          default: false
+        'datacy':{
+          default: 'tag-display'
         },
         'object_id':{
           default: null
@@ -53,9 +52,6 @@
 
         value: function (item) {
           this.selected = item
-        },
-        tag_list: function(new_val, old_val){
-            this.tag_list_internal = new_val;
         },
         object_id: function (item) {
           this.list_applied_tags_api(this.object_id, this.object_type)
@@ -75,9 +71,6 @@
 
       },
       mounted(){
-        if(this.$props.initial_value){
-          this.selected = this.$props.initial_value;
-        }
       },
 
       computed: {
@@ -87,7 +80,7 @@
         return {
           selected: null,
           loading: false,
-          tag_list_internal: [],
+          selected: [],
           list_applied_tags_api_loading: false,
           error: {},
         }
