@@ -1,7 +1,7 @@
 <template>
   <div v-cloak>
 
-    <v-layout>
+    <v-row class="pa-4">
 
       <div v-for="tag in selected">
 
@@ -15,7 +15,7 @@
           </v-chip>
       </div>
 
-    </v-layout>
+    </v-row>
 
     <v_error_multiple :error="error">
     </v_error_multiple>
