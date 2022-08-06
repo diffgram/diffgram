@@ -183,7 +183,7 @@ Where is a dict in data() eg  tag: {}
           apply_tag_api_loading: false,
           new_tag_api_loading: false,
           error: {},
-          previous_tag_list_selected: []
+          previous_selected: []
         }
       },
 
@@ -309,13 +309,13 @@ Where is a dict in data() eg  tag: {}
           let user_wants_to_apply_tag = true
           let user_wants_to_remove_applied_tag = false
 
-          if (this.previous_tag_list_selected.length >
+          if (this.previous_selected.length >
               this.selected.length) {
             user_wants_to_remove_applied_tag = true
             user_wants_to_apply_tag = false
           }
 
-          this.previous_tag_list_selected = this.selected.slice()
+          this.previous_selected = this.selected.slice()
           if (!changed_tag) { return }
 
           if (user_wants_to_apply_tag){
@@ -344,7 +344,7 @@ Where is a dict in data() eg  tag: {}
             this.list_applied_tags_api_loading = false
 
             this.selected = response.data.tag_list
-
+            this.previous_selected = response.data.tag_list
           })
             .catch(error => {
               console.error(error);
@@ -356,14 +356,13 @@ Where is a dict in data() eg  tag: {}
         get_changed_tag(){
           // because veutify returns list with all elements
 
-          console.log(this.previous_tag_list_selected)
-
-          if (this.previous_tag_list_selected.length >
-              this.tag_list_internal.length) {
-            for (let previous_tag of this.previous_tag_list_selected){
-              let removed_tag = this.selected.find(x => x.id == previous_tag.id)
-              if (removed_tag) {
-                return removed_tag
+          if (this.previous_selected.length >
+              this.selected.length) {
+            for (let previous_tag of this.previous_selected){
+              
+              let does_tag_exist = this.selected.find(x => x.id === previous_tag.id)
+              if (!does_tag_exist) {
+                return previous_tag
               }
             }
           } else {
@@ -396,7 +395,7 @@ Where is a dict in data() eg  tag: {}
             this.new_tag_api_loading = false
 
             this.tag_list_internal.push(response.data.tag)
-            this.previous_tag_list_selected.push(response.data.tag) 
+            this.previous_selected.push(response.data.tag) 
             this.selected.push(response.data.tag)
             this.remove_string_from_internal(response.data.tag.name)
 
