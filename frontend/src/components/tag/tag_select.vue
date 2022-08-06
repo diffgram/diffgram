@@ -11,11 +11,11 @@
               :multiple="true"
               :disabled="loading || view_only"
               @input="$emit('input', $event)"
-              @change="$emit('change', $event); apply_tag()"
+              @change="$emit('change', $event); user_change_event()"
               @focus="$emit('focus', $event); $store.commit('set_user_is_typing_or_menu_open', true)"
               @blur="$store.commit('set_user_is_typing_or_menu_open')"
               :filter="on_filter"
-              clearable
+              :clearable="clearable"
               return-object
     >
 
@@ -123,11 +123,14 @@ Where is a dict in data() eg  tag: {}
         'object_type':{
           default: null
         },
-        'apply_upon_selection':{
+        'modify_upon_selection':{
           default: false
         },
         'allow_new_creation':{  // e.g. search context
           default: true
+        },
+        'clearable':{  
+          default: false
         }
 
       },
@@ -180,6 +183,7 @@ Where is a dict in data() eg  tag: {}
           apply_tag_api_loading: false,
           new_tag_api_loading: false,
           error: {},
+          previous_selected: []
         }
       },
 
@@ -217,10 +221,39 @@ Where is a dict in data() eg  tag: {}
             });
         },
 
+        remove_applied_tag_api(tag_id, object_id, object_type) {
+
+ 
+          if (this.$props.modify_upon_selection == false) { return }
+
+          this.remove_tag_api_loading = true
+          this.error = {}
+
+          axios.post('/api/v1/project/' + this.$store.state.project.current.project_string_id +
+              '/tag/applied/remove', {
+                'tag_id' : tag_id,
+                'object_id' : object_id,
+                'object_type' : object_type
+
+          }).then(response => {
+
+            this.remove_tag_api_loading = false
+
+            this.$emit('tag_prior_applied_removed')
+
+          })
+            .catch(error => {
+              console.error(error);
+              this.$route_api_errors(error)
+              this.remove_tag_api_loading = false
+            });
+        },
+
+
 
         apply_tag_api(tag_name, object_id, object_type) {
 
-          if (this.$props.apply_upon_selection == false) { return }
+          if (this.$props.modify_upon_selection == false) { return }
 
           this.apply_tag_api_loading = true
           this.error = {}
@@ -245,17 +278,13 @@ Where is a dict in data() eg  tag: {}
             });
         },
 
-        async apply_tag(){
-          // Difference between newly selected and new to overall system
-          let newly_selected_tag = this.get_newly_selected_tag()
-          if (!newly_selected_tag) { return }
-
+        async apply_tag(changed_tag){
           let tag_object = undefined
-          if (typeof newly_selected_tag === 'string' || newly_selected_tag instanceof String) {
-            tag_object = await this.new_tag_api(newly_selected_tag)
+          if (typeof changed_tag === 'string' || changed_tag instanceof String) {
+            tag_object = await this.new_tag_api(changed_tag)
             console.log(tag_object)
           } else {
-            tag_object = newly_selected_tag
+            tag_object = changed_tag
           }
           if (tag_object) {
             // object
@@ -265,6 +294,39 @@ Where is a dict in data() eg  tag: {}
                 this.$props.object_type
             )
           }
+
+        },
+
+        async remove_applied_tag(changed_tag){
+          let tag_object = await this.remove_applied_tag_api(
+            changed_tag.id, this.object_id, this.object_type)
+        },
+
+        async user_change_event(){
+          // Difference between newly selected and new to overall system
+          let changed_tag = this.get_changed_tag()
+
+          let user_wants_to_apply_tag = true
+          let user_wants_to_remove_applied_tag = false
+
+          if (this.previous_selected.length >
+              this.selected.length) {
+            user_wants_to_remove_applied_tag = true
+            user_wants_to_apply_tag = false
+          }
+
+          this.previous_selected = this.selected.slice()
+          if (!changed_tag) { return }
+
+          if (user_wants_to_apply_tag){
+            this.apply_tag(changed_tag)
+          }
+
+          if (user_wants_to_remove_applied_tag){
+            this.remove_applied_tag(changed_tag)
+          }
+
+
         },
 
         list_applied_tags_api(object_id, object_type){
@@ -282,7 +344,7 @@ Where is a dict in data() eg  tag: {}
             this.list_applied_tags_api_loading = false
 
             this.selected = response.data.tag_list
-
+            this.previous_selected = response.data.tag_list
           })
             .catch(error => {
               console.error(error);
@@ -291,10 +353,22 @@ Where is a dict in data() eg  tag: {}
             });
         },
 
-        get_newly_selected_tag(){
+        get_changed_tag(){
           // because veutify returns list with all elements
-          let most_recent = this.selected.at(-1)
-          return most_recent
+
+          if (this.previous_selected.length >
+              this.selected.length) {
+            for (let previous_tag of this.previous_selected){
+              
+              let does_tag_exist = this.selected.find(x => x.id === previous_tag.id)
+              if (!does_tag_exist) {
+                return previous_tag
+              }
+            }
+          } else {
+            let most_recent = this.selected.at(-1)
+            return most_recent
+          }
 
         },
 
@@ -303,6 +377,11 @@ Where is a dict in data() eg  tag: {}
           if (this.allow_new_creation == false) {
             this.remove_string_from_internal(name)
             return
+          }
+
+          let already_exists = this.tag_list_internal.find(x => x.name == name)
+          if (already_exists) {
+            return already_exists
           }
 
           this.new_tag_api_loading = true
@@ -316,6 +395,7 @@ Where is a dict in data() eg  tag: {}
             this.new_tag_api_loading = false
 
             this.tag_list_internal.push(response.data.tag)
+            this.previous_selected.push(response.data.tag) 
             this.selected.push(response.data.tag)
             this.remove_string_from_internal(response.data.tag.name)
 

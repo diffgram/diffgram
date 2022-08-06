@@ -158,6 +158,7 @@
               :label="'Search by tags'"
               @change="search_jobs()"
               @focus="tag_list_api()"
+              :clearable="true"
 
             >
             </tag_select>

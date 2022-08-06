@@ -24,8 +24,9 @@
             :project_string_id="project_string_id"
             :object_id="object_id"
             :object_type="object_type"
-            :apply_upon_selection="true"
-            @tag_applied="new_tag_applied($event, object_id, object_type)"
+            :modify_upon_selection="true"
+            @tag_applied="get_applied_tags_api($event, object_id, object_type)"
+            @tag_prior_applied_removed="get_applied_tags_api($event, object_id, object_type)"
           >
           </tag_select>
 
@@ -91,7 +92,7 @@
       },
 
       methods: {
-         new_tag_applied: function (event, object_id, object_type){
+         get_applied_tags_api: function (event, object_id, object_type){
           if (this.$refs.tag_display_literal) {
             this.$refs.tag_display_literal.get_applied_tags_api(object_id, object_type)
           }

@@ -198,8 +198,9 @@
                 :dataset="current_directory"
                 :object_id="current_directory.directory_id"
                 :object_type="'dataset'"
-                :apply_upon_selection="true"
+                :modify_upon_selection="true"
                 @tag_applied="tag_display_refresh_trigger=Date.now()"
+                @tag_prior_applied_removed="tag_display_refresh_trigger=Date.now()"
           >
           </tag_select>
 

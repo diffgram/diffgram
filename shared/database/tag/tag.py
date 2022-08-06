@@ -47,6 +47,19 @@ class Tag(Base):
         return tag
 
 
+    @staticmethod
+    def get_by_id(
+            id: int,
+            project_id: int,
+            session):
+        
+        tag = session.query(Tag).filter(
+            Tag.id == id,
+            Tag.project_id == project_id).first()
+
+        return tag
+
+
     def apply_tags(
             object_id: int,
             object_type: str,
@@ -159,6 +172,46 @@ class Tag(Base):
 
         return tag
 
+    
+    def remove_applied(
+            self,
+            object_id: int,
+            object_type: str,
+            session,
+            project,
+            log):
+
+        junction_class = Tag.get_junction_class(object_type)
+
+        junction_tag = junction_class.get(
+            object_id,
+            project.id,
+            self,
+            session
+        )
+        if junction_tag: 
+            print(junction_tag)
+            session.delete(junction_tag)
+            log['info']['tag'] = "success"
+            log['success'] = True
+
+        else:
+            log['info']['tag'] = "Nothing to delete"
+
+        return log
+
+
+    def get_junction_class(object_type):
+        junction_class = None
+
+        if object_type == "job":
+            junction_class = JobTag
+
+        if object_type == "dataset":
+            junction_class = DatasetTag
+
+        return junction_class
+
 
     def add_to_junction_table(
             self,
@@ -167,13 +220,7 @@ class Tag(Base):
             project_id,
             session):
 
-        junction_class = None
-
-        if object_type == "job":
-            junction_class = JobTag
-
-        if object_type == "dataset":
-            junction_class = DatasetTag
+        junction_class = Tag.get_junction_class(object_type)
 
         junction_tag = junction_class.get(
             object_id,
