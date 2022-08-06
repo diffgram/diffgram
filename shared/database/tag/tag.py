@@ -47,6 +47,19 @@ class Tag(Base):
         return tag
 
 
+    @staticmethod
+    def get_by_id(
+            id: int,
+            project_id: int,
+            session):
+        
+        tag = session.query(Tag).filter(
+            Tag.id == id,
+            Tag.project_id == project_id).first()
+
+        return tag
+
+
     def apply_tags(
             object_id: int,
             object_type: str,
@@ -159,17 +172,28 @@ class Tag(Base):
 
         return tag
 
-
     
     def remove_applied_tag(
+            self,
             object_id: int,
             object_type: str,
-            tag_list: list,
             session,
             project,
             log):
 
-        pass
+        junction_class = Tag.get_junction_class(object_type)
+
+        junction_tag = junction_class.get(
+            object_id,
+            project_id,
+            self,
+            session
+        )
+        if junction_tag: 
+            session.delete(junction_tag)
+            log['info']['tag'] = "success"
+
+        return log
 
 
     def get_junction_class(object_type):

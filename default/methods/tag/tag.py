@@ -161,6 +161,72 @@ def apply_tag_to_object_api(project_string_id):
 
 
 
+@routes.route('/api/v1/project/<string:project_string_id>/tag/applied/remove', 
+			  methods=['POST'])
+@Project_permissions.user_has_project(["admin", "Editor"])
+def apply_tag_to_object_api(project_string_id):
+    
+    update_tags_specification = [
+        {"tag_id": {
+            'kind': int,
+            'required': True
+            }
+        },
+        {"object_id": {
+            'kind': int,
+            'required': True
+            }
+        },
+        {"object_type": {
+            'kind': str,
+            'required': True
+            }
+        }
+    ]
+
+    log, input, untrusted_input = regular_input.master(
+        request=request,
+        spec_list=update_tags_specification)
+
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log=log), 400
+
+    with sessionMaker.session_scope() as session:
+        project = Project.get(session, project_string_id)
+
+        object_id = None
+        object_type = input['object_type']
+
+        if input['object_type'] == 'dataset':
+            dataset = WorkingDir.get(session, input['object_id'], project.id)
+            object_id = dataset.id
+
+        if input['object_type'] == 'job':
+            job = Job.get(session, input['object_id'], project.id)
+            object_id = job.id
+
+        tag = Tag.get_by_id(
+            id = input['tag_id'],
+            project_id = project.id,
+            session = session)
+
+        if not tag:
+            log['error']['tag'] = "bad tag id"
+            return jsonify(log=log), 400
+
+        log = tag.remove_applied(
+            object_id = object_id,
+            object_type = object_type,
+            session=session,
+            project=project, 
+            log=log)
+
+        out = jsonify(log=log)
+
+        return out, 200
+
+
+
 @routes.route('/api/v1/project/<string:project_string_id>/tags/list', 
 			  methods=['GET'])
 @Project_permissions.user_has_project(["allow_if_project_is_public",
