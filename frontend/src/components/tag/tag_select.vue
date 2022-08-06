@@ -11,7 +11,7 @@
               :multiple="true"
               :disabled="loading || view_only"
               @input="$emit('input', $event)"
-              @change="$emit('change', $event); apply_tag()"
+              @change="$emit('change', $event); user_change_event()"
               @focus="$emit('focus', $event); $store.commit('set_user_is_typing_or_menu_open', true)"
               @blur="$store.commit('set_user_is_typing_or_menu_open')"
               :filter="on_filter"
@@ -139,6 +139,7 @@ Where is a dict in data() eg  tag: {}
         },
         tag_list: function(new_val, old_val){
             this.tag_list_internal = new_val;
+            this.previous_tag_list_internal = new_val
         },
         object_id: function (item) {
           this.list_applied_tags_api(this.object_id, this.object_type)
@@ -180,6 +181,7 @@ Where is a dict in data() eg  tag: {}
           apply_tag_api_loading: false,
           new_tag_api_loading: false,
           error: {},
+          previous_tag_list_internal: []
         }
       },
 
@@ -205,6 +207,7 @@ Where is a dict in data() eg  tag: {}
             if (response.data['tag_list'] != null) {
 
               this.tag_list_internal = response.data['tag_list']
+              this.previous_tag_list_internal = response.data['tag_list']
             }
 
             this.tag_list_api_loading = false
@@ -245,7 +248,7 @@ Where is a dict in data() eg  tag: {}
             });
         },
 
-        async apply_tag(){
+        async user_change_event(){
           // Difference between newly selected and new to overall system
           let newly_selected_tag = this.get_newly_selected_tag()
           if (!newly_selected_tag) { return }
@@ -293,8 +296,14 @@ Where is a dict in data() eg  tag: {}
 
         get_newly_selected_tag(){
           // because veutify returns list with all elements
-          let most_recent = this.selected.at(-1)
-          return most_recent
+
+          if (this.previous_tag_list_internal.length >
+              this.tag_list_internal) {
+
+          } else {
+            let most_recent = this.selected.at(-1)
+            return most_recent
+          }
 
         },
 
@@ -303,6 +312,11 @@ Where is a dict in data() eg  tag: {}
           if (this.allow_new_creation == false) {
             this.remove_string_from_internal(name)
             return
+          }
+
+          let already_exists = this.tag_list_internal.find(x => x.name == name)
+          if (already_exists) {
+            return already_exists
           }
 
           this.new_tag_api_loading = true
@@ -316,6 +330,7 @@ Where is a dict in data() eg  tag: {}
             this.new_tag_api_loading = false
 
             this.tag_list_internal.push(response.data.tag)
+            this.previous_tag_list_internal.push(response.data.tag) 
             this.selected.push(response.data.tag)
             this.remove_string_from_internal(response.data.tag.name)
 
