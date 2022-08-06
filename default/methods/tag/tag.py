@@ -164,7 +164,7 @@ def apply_tag_to_object_api(project_string_id):
 @routes.route('/api/v1/project/<string:project_string_id>/tag/applied/remove', 
 			  methods=['POST'])
 @Project_permissions.user_has_project(["admin", "Editor"])
-def apply_tag_to_object_api(project_string_id):
+def remove_applied_tag_from_object_api(project_string_id):
     
     update_tags_specification = [
         {"tag_id": {

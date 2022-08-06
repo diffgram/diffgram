@@ -173,7 +173,7 @@ class Tag(Base):
         return tag
 
     
-    def remove_applied_tag(
+    def remove_applied(
             self,
             object_id: int,
             object_type: str,
@@ -185,13 +185,18 @@ class Tag(Base):
 
         junction_tag = junction_class.get(
             object_id,
-            project_id,
+            project.id,
             self,
             session
         )
         if junction_tag: 
+            print(junction_tag)
             session.delete(junction_tag)
             log['info']['tag'] = "success"
+            log['success'] = True
+
+        else:
+            log['info']['tag'] = "Nothing to delete"
 
         return log
 
