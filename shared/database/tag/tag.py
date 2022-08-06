@@ -160,13 +160,19 @@ class Tag(Base):
         return tag
 
 
-    def add_to_junction_table(
-            self,
-            object_id,
-            object_type,
-            project_id,
-            session):
+    
+    def remove_applied_tag(
+            object_id: int,
+            object_type: str,
+            tag_list: list,
+            session,
+            project,
+            log):
 
+        pass
+
+
+    def get_junction_class(object_type):
         junction_class = None
 
         if object_type == "job":
@@ -174,6 +180,18 @@ class Tag(Base):
 
         if object_type == "dataset":
             junction_class = DatasetTag
+
+        return junction_class
+
+
+    def add_to_junction_table(
+            self,
+            object_id,
+            object_type,
+            project_id,
+            session):
+
+        junction_class = Tag.get_junction_class(object_type)
 
         junction_tag = junction_class.get(
             object_id,
