@@ -69,10 +69,16 @@ def get_attribute_value(session: Session, attr_id: int, attribute_value: any, pr
         value = int(attribute_value['id'])
     elif attribute_group.kind == 'multiple_select':
         value = []
+        if not isinstance(attribute_value, list):
+            attribute_value = [attribute_value]
         for option in attribute_value:
-            value.append(option['id'])
+            id = option.get('id')
+            if id:
+                value.append(int(id))
     elif attribute_group.kind == 'text':
         value = str(attribute_value)
     elif attribute_group.kind == 'select':
-        value = int(attribute_value['id'])
+        value = option.get('id')
+        if id:
+            value = int(id)
     return value, attribute_group.kind
