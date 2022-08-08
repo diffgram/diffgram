@@ -48,9 +48,16 @@
         </tooltip_button>
       </v-layout>
 
+      <label_select_only
+        :project_string_id="project_string_id"
+        :mode="'multiple'"
+        @label_file="label_change_event($event)"
+                          >
+      </label_select_only>
+
       <v_directory_list
           :project_string_id="project_string_id"
-          @change_directory="on_change_ground_truth_dir"
+          @change_directory="dataset_change_event($event)"
           ref="ground_truth_dir_list"
           :change_on_mount="false"
           :show_new="false"
@@ -164,6 +171,7 @@
   import directory_icon_selector from '../source_control/directory_icon_selector'
   import model_run_selector from "../model_runs/model_run_selector";
   import query_suggestion_menu from "./query_suggestion_menu";
+  import label_select_only from '@/components/label/label_select_only.vue'
 
   export default Vue.extend({
     name: "dataset_explorer",
@@ -171,6 +179,7 @@
       model_run_selector,
       directory_icon_selector,
       query_suggestion_menu,
+      label_select_only
     },
     props: [
       'project_string_id',
@@ -241,7 +250,8 @@
           'search_term': this.search_term
         },
 
-        datasets_selected: []
+        datasets_selected: [],
+        labels_selected: []
 
       }
     },
@@ -271,8 +281,15 @@
         let query = ""
 
         let dir_list_query = this.generate_directory_list_query(this.datasets_selected)
+        if (dir_list_query) {
+          query += dir_list_query
+        }
 
-        query += dir_list_query
+        let label_query = this.generate_label_query(this.labels_selected)
+        if (label_query) {
+          if (dir_list_query) { query += " and " }
+          query += label_query
+        }
 
         return query
 
@@ -280,7 +297,8 @@
 
       generate_directory_list_query: function (datasets_selected){
 
-        if (!Array.isArray(datasets_selected)) { return "" } 
+        if (!Array.isArray(datasets_selected)) { return } 
+        if (datasets_selected.length === 0) { return }
 
         let query = "dataset.id in ["
 
@@ -300,7 +318,34 @@
 
       },
 
-      on_change_ground_truth_dir: function(datasets_selected){
+      generate_label_query: function (labels_selected){
+
+        if (labels_selected.length === 0 ) {return }
+
+        let query = ""
+
+        for (let label of labels_selected) {
+          query += "labels."
+          query += label.label.name
+          query += " >= 1"
+          query += " and "
+        }
+
+        if (labels_selected.length === 1 || labels_selected.length >= 1) {
+          query = query.slice(0, -4) // remove trailing 
+        }
+
+        return query
+
+      },
+
+      label_change_event: function(label_file_list){
+        this.labels_selected = label_file_list
+        this.refresh_query()
+
+      },
+
+      dataset_change_event: function(datasets_selected){
 
         this.datasets_selected = datasets_selected
         this.refresh_query()
