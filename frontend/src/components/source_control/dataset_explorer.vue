@@ -14,6 +14,7 @@
               z-index="99999999"
               >
         <template v-slot:activator="{ on, attrs }">
+
           <v-text-field
             class="pt-4"
             label="Query your data: "
@@ -23,7 +24,9 @@
             @blur="on_blur_query"
             @keydown.enter="execute_query($event.target.value)"
           ></v-text-field>
+
         </template>
+        <!--
         <query_suggestion_menu
           ref="query_suggestions"
           @update_query="update_query"
@@ -31,6 +34,7 @@
           @execute_query="execute_query"
           :project_string_id="project_string_id"
           :query="query" ></query_suggestion_menu>
+        -->
       </v-menu>
  
         <tooltip_button
@@ -44,17 +48,20 @@
         </tooltip_button>
       </v-layout>
 
-      <v_directory_list :project_string_id="project_string_id"
-                        @change_directory="on_change_ground_truth_dir"
-                        ref="ground_truth_dir_list"
-                        :change_on_mount="true"
-                        :show_new="false"
-                        :initial_dir_from_state="true"
-                        :update_from_state="false"
-                        :set_current_dir_on_change="false"
-                        :view_only_mode="false"
-                        :show_update="false"
-                        :set_from_id="current_dir_id">
+      <v_directory_list
+          :project_string_id="project_string_id"
+          @change_directory="on_change_ground_truth_dir"
+          ref="ground_truth_dir_list"
+          :change_on_mount="false"
+          :show_new="false"
+          :initial_dir_from_state="false"
+          :update_from_state="false"
+          :set_current_dir_on_change="false"
+          :view_only_mode="false"
+          :show_update="false"
+          :show_tag="false"
+          :multiple="true"
+                        >
       </v_directory_list>
 
       <v-switch
@@ -68,9 +75,6 @@
         :label="`Compare Models`"
       ></v-switch>
     
-<!--      <v-btn icon disabled>-->
-<!--        <v-icon>mdi-filter</v-icon>-->
-<!--      </v-btn>-->
 
     <div v-if="compare_models == true">
       <v-layout column>
@@ -235,7 +239,9 @@
           'file_view_mode': 'explorer',
           'previous': undefined,
           'search_term': this.search_term
-        }
+        },
+
+        datasets_selected: []
 
       }
     },
@@ -253,6 +259,54 @@
           this.query += value;
         }
       },
+
+      refresh_query: function() {
+
+        this.query = this.generate_query()
+
+      },
+
+      generate_query: function(){
+
+        let query = ""
+
+        let dir_list_query = this.generate_directory_list_query(this.datasets_selected)
+
+        query += dir_list_query
+
+        return query
+
+      },
+
+      generate_directory_list_query: function (datasets_selected){
+
+        if (!Array.isArray(datasets_selected)) { return "" } 
+
+        let query = "dataset.id in ["
+
+        for (let dataset of datasets_selected) {
+          let id = (dataset.id || dataset.directory_id)
+          query += id
+          query += ","
+        }
+
+        if (datasets_selected.length >=1) {
+          query = query.slice(0, -1) // remove trailing comma
+        }
+
+        query += "]"
+
+        return query
+
+      },
+
+      on_change_ground_truth_dir: function(datasets_selected){
+
+        this.datasets_selected = datasets_selected
+        this.refresh_query()
+
+      },
+
       on_focus_query: function(){
         this.$store.commit('set_user_is_typing_or_menu_open', true);
         this.query_menu_open = true
@@ -352,12 +406,7 @@
         }
 
       },
-      on_change_ground_truth_dir: function(dir){
-        this.file_list = [];
-        this.metadata.directory_id = dir.directory_id;
-        this.selected_dir = dir;
 
-      },
       view_detail: function(file, model_runs, color_list){
         this.$emit('view_detail', file, model_runs, color_list)
       }

@@ -49,6 +49,7 @@
               @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
               @change="change_directory(), $store.commit('set_user_is_typing_or_menu_open', false)"
               :menu-props="{ auto: true }"
+              :multiple="multiple"
                   >
 
             <!-- For :menu-props="{ auto: true }" see
@@ -113,12 +114,14 @@
 
                (<span>{{data.item.created_time | moment("ddd, MMM D h:mm:ss a")}} </span>)
 
+
               <tag_display
                     :object_id="data.item.directory_id"
                     :object_type="'dataset'"
                     :tag_display_refresh_trigger="tag_display_refresh_trigger"
                             >
               </tag_display>
+       
 
             </v-skeleton-loader>
 
@@ -136,12 +139,14 @@
 
            <span> {{data.item.nickname}} </span>
 
+          <div v-if="multiple == false">
             <tag_display
                   :object_id="data.item.directory_id"
                   :object_type="'dataset'"
                   :tag_display_refresh_trigger="tag_display_refresh_trigger"
                           >
             </tag_display>
+          </div>
 
           </template>
 
@@ -262,6 +267,9 @@
       'show_tag': {
         default: true
       },
+      'multiple': {
+        default: false
+      },
       'set_from_id': {
         default: null,
         type: Number
@@ -294,7 +302,16 @@
 
       }
     },
+
+    created() {
+
+      if (this.multiple == true) {
+        this.current_directory = []
+      }
+
+    },
     mounted() {
+
       if (this.set_from_id && this.$store.state.project.current.directory_list_filtered) {
         this.current_directory = this.directory_list_filtered.find(
           x => {return x.directory_id == this.set_from_id});
@@ -455,11 +472,13 @@
       },
 
       change_directory() {
-        if (this.$props.set_current_dir_on_change) {
-          this.$store.commit('set_current_directory', this.current_directory)
+
+        if (this.multiple == false){
+          if (this.$props.set_current_dir_on_change) {
+            this.$store.commit('set_current_directory', this.current_directory)
+          }
         }
-        // TODO change type?
-        // ie if just rename may handle differently...
+
         this.$emit('change_directory', this.current_directory)
 
       },
