@@ -16,6 +16,8 @@ from shared.database.attribute.attribute_template_group import Attribute_Templat
 from shared.query_engine.query_creator import ENTITY_TYPES
 from shared.database.source_control.file_stats import FileStats
 from shared.utils.attributes.attributes_values_parsing import get_file_stats_column_from_attribute_kind
+from shared.database.tag.tag import DatasetTag
+from shared.database.tag.tag import JobTag
 
 logger = get_shared_logger()
 
@@ -268,6 +270,20 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             raise NotImplemented("Dataset filters just support ID column.")
         return dataset_col
 
+
+    def __parse_tag_value(self, token):
+        property = token.value.split('.')[1]
+        column = None
+
+        if property == "dataset.id":
+            return WorkingDirFileLink.working_dir_id            
+        elif property == "job.id":
+            #column = JobTag.tag_id
+            raise NotImplemented("Job ID tag filtering not yet Implemented")
+        else:
+            raise NotImplemented("Must be ID")
+        return column
+
     def __parse_value(self, token):
         """
             Transforms the token into an integer or appropriate diffgram value (instance count, issue count, etc)
@@ -299,6 +315,9 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         elif entity_type == 'dataset':
             dataset_col_filter = self.__parse_dataset_value(token)
             return dataset_col_filter
+        elif entity_type == 'tag':
+            tag_col_filter = self.__parse_tag_value(token)
+            return tag_col_filter
         elif entity_type == list:
             list_value = token.value
             return list_value
@@ -404,6 +423,19 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                     local_tree.query_condition = condition_operator
                 elif entity_type == "dataset":
                     condition_operator = self.__build_dataset_compare_expr(value_1, value_2, compare_op)
+                    local_tree.query_condition = condition_operator
+                elif entity_type == "tag":
+                    column = self.__build_dataset_compare_expr(value_1, value_2, compare_op)
+                    
+                    # Get tag id list from value 2?
+                    
+                    junction_tag_list = DatasetTag.get_by_tag_ids(tag_id_list)
+                    dataset_id_list = [junction_tag.dataset_id for junction_tag in junction_tag_list]
+
+                    # Filter with column in dataset ID thing? dataset_id_list
+
+                    #condition_operator = in_op(File.id, new_filter_subquery)
+                    
                     local_tree.query_condition = condition_operator
                 elif entity_type == 'file':
                     condition_operator = self.get_compare_op(compare_op)(value_1, str(value_2))
