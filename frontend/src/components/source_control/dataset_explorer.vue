@@ -48,6 +48,15 @@
         </tooltip_button>
       </v-layout>
 
+      <tag_select
+        v-model="tag_selected_list"
+        :allow_new_creation="false"
+        :label="'Search by tags'"
+        @change="tag_change_event()"
+        :clearable="true"
+      >
+      </tag_select>
+
       <label_select_only
         :project_string_id="project_string_id"
         :mode="'multiple'"
@@ -172,6 +181,8 @@
   import model_run_selector from "../model_runs/model_run_selector";
   import query_suggestion_menu from "./query_suggestion_menu";
   import label_select_only from '@/components/label/label_select_only.vue'
+  import tag_select from '@/components/tag/tag_select.vue'
+
 
   export default Vue.extend({
     name: "dataset_explorer",
@@ -179,7 +190,8 @@
       model_run_selector,
       directory_icon_selector,
       query_suggestion_menu,
-      label_select_only
+      label_select_only,
+      tag_select
     },
     props: [
       'project_string_id',
@@ -251,8 +263,8 @@
         },
 
         datasets_selected: [],
-        labels_selected: []
-
+        labels_selected: [],
+        tag_selected_list: []
       }
     },
     watch:{
@@ -272,7 +284,9 @@
 
       refresh_query: function() {
 
-        this.query = this.generate_query()
+        let new_query = this.generate_query()
+        this.query = new_query
+        this.execute_query(new_query)
 
       },
 
@@ -336,6 +350,11 @@
         }
 
         return query
+
+      },
+
+       tag_change_event: function(){
+        this.refresh_query()
 
       },
 
