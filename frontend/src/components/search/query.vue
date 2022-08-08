@@ -84,24 +84,6 @@ import Vue from "vue"; export default Vue.extend( {
 
 
     },
-    get_available_tags: function () {
-
-      this.loading = true
-
-      axios.get('/api/tags/public/list')
-        .then(response => {
-          if (response.data['success'] == true) {
-            this.available_tags_list = response.data.tag_list
-          } else {
-
-          }
-          this.loading = false
-        })
-        .catch(error => {
-          console.log(error);
-
-        });
-    }
   }
 }
 
