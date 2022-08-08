@@ -403,7 +403,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                     condition_operator = in_op(File.id, new_filter_subquery)
                     local_tree.query_condition = condition_operator
                 elif entity_type == "dataset":
-                    condition_operator = self.__build_datasdetermineet_compare_expr(value_1, value_2, compare_op)
+                    condition_operator = self.__build_dataset_compare_expr(value_1, value_2, compare_op)
                     local_tree.query_condition = condition_operator
                 elif entity_type == 'file':
                     condition_operator = self.get_compare_op(compare_op)(value_1, str(value_2))
