@@ -12,8 +12,6 @@ _________________
 ![](./github_assets/slack.PNG)
 •
 [Enterprise](https://diffgram.com/main/enterprise)
-•
-[Twitter](https://twitter.com/diffgram)
 
 # Support & Community
 1. [Open an issue](https://github.com/diffgram/diffgram/issues) (Technical, bugs, etc)
