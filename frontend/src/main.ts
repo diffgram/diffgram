@@ -194,7 +194,6 @@ import user_new_otp from './components/user/one_time_pass/new_otp'
 import project_star from './components/project/star'
 import user_follow from './components/user/follow'
 import user_follow_list from './components/user/follow_list'
-import search_query from './components/search/query'
 
 
 import bar_chart from './components/report/charts/bar_chart'
@@ -322,8 +321,6 @@ Vue.component('v_video', video)
 Vue.component('v_project_star', project_star)
 Vue.component('v_user_follow', user_follow)
 Vue.component('v_user_follow_list', user_follow_list)
-
-Vue.component('v_search_query', search_query)
 
 Vue.component('v_export_view', export_view)
 
