@@ -11,7 +11,7 @@ from shared.regular.regular_member import get_member
 from shared.database.event.event import Event
 from shared.database.source_control.file import File
 from shared.settings import settings
-from shared.database.source_control.file_annotations import FileAnnotations
+from shared.database.source_control.file_stats import FileStats
 from flask import request
 try:
     # The walrus service doesn't have task_complete
@@ -644,7 +644,7 @@ class Annotation_Update():
             value = self.instance_list_kept_serialized
         )
 
-        FileAnnotations.update_file_annotations_data(
+        FileStats.update_file_stats_data(
             session = self.session,
             instance_list = self.instance_list_kept_serialized,
             file_id = self.file.id,

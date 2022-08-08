@@ -32,13 +32,13 @@ logger = get_shared_logger()
 from sqlalchemy.schema import Index
 
 
-class FileAnnotations(Base, Caching):
+class FileStats(Base, Caching):
     """
         This is an aggregate table that relates the label_file ID and attributes ID
         with a file ID.
     """
 
-    __tablename__ = 'file_annotations'
+    __tablename__ = 'file_stats'
 
     id = Column(BIGINT, primary_key = True)
     created_time = Column(DateTime, default = datetime.datetime.utcnow)
@@ -92,7 +92,7 @@ class FileAnnotations(Base, Caching):
             add_to_session: bool = True,
             flush_session: bool = True):
 
-        file_annotation = FileAnnotations(
+        file_stat = FileStats(
             file_id = file_id,
             label_file_id = label_file_id,
             count_instances = count_instances,
@@ -107,18 +107,20 @@ class FileAnnotations(Base, Caching):
         )
 
         if add_to_session:
-            session.add(file_annotation)
+            session.add(file_stat)
 
         if flush_session:
             session.flush()
 
-        return file_annotation
+        return file_stat
 
     @staticmethod
-    def update_file_annotations_data(session: Session, instance_list: list, file_id: int, project: Project):
+    def update_file_stats_data(session: Session, instance_list: list, file_id: int, project: Project):
         # First Delete existing
-        session.query(FileAnnotations).filter(
-            FileAnnotations.file_id == file_id
+        if instance_list is None:
+            return
+        session.query(FileStats).filter(
+            FileStats.file_id == file_id
         ).delete()
         members_list = []
         # Build label count entries based on instance list
@@ -135,7 +137,7 @@ class FileAnnotations(Base, Caching):
                 members_list.append(instance['member_created_id'])
 
         for key, val in label_counts.items():
-            FileAnnotations.new(
+            FileStats.new(
                 session = session,
                 file_id = file_id,
                 label_file_id = key,
@@ -152,7 +154,7 @@ class FileAnnotations(Base, Caching):
             for key, val in instance.get('attribute_groups').items():
                 value, attr_type = get_attribute_value(session, int(key), val, project)
                 if attr_type in ['select', 'radio']:
-                    FileAnnotations.new(
+                    FileStats.new(
                         session = session,
                         file_id = file_id,
                         label_file_id = instance['label_file_id'],
@@ -164,7 +166,7 @@ class FileAnnotations(Base, Caching):
                     )
                 if attr_type in ['tree', 'multiple_select']:
                     for attr_template_id in value:
-                        FileAnnotations.new(
+                        FileStats.new(
                             session = session,
                             file_id = file_id,
                             label_file_id = instance['label_file_id'],
@@ -179,7 +181,7 @@ class FileAnnotations(Base, Caching):
                     print('AAAAA', value, type(value))
                     print('AAAAA', time.time(), type(time.time()))
 
-                    FileAnnotations.new(
+                    FileStats.new(
                         session = session,
                         file_id = file_id,
                         label_file_id = instance['label_file_id'],
@@ -189,7 +191,7 @@ class FileAnnotations(Base, Caching):
                         attribute_template_group_id = int(key)
                     )
                 if attr_type in ['date']:
-                    FileAnnotations.new(
+                    FileStats.new(
                         session = session,
                         file_id = file_id,
                         label_file_id = instance['label_file_id'],
@@ -199,7 +201,7 @@ class FileAnnotations(Base, Caching):
                         attribute_template_group_id = int(key)
                     )
                 if attr_type in ['slider']:
-                    FileAnnotations.new(
+                    FileStats.new(
                         session = session,
                         file_id = file_id,
                         label_file_id = instance['label_file_id'],
@@ -209,7 +211,7 @@ class FileAnnotations(Base, Caching):
                         attribute_template_group_id = int(key)
                     )
                 if attr_type in ['text']:
-                    FileAnnotations.new(
+                    FileStats.new(
                         session = session,
                         file_id = file_id,
                         label_file_id = instance['label_file_id'],

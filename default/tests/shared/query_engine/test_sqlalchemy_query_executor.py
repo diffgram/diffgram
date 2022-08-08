@@ -11,7 +11,7 @@ from sqlalchemy.sql.selectable import ScalarSelect
 from sqlalchemy.sql.elements import BinaryExpression
 from sqlalchemy.orm.query import Query
 import flask
-
+from sqlalchemy.orm.query import Query
 class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
     """
 
@@ -174,6 +174,7 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
         token = Token(value = 'labels.apple', type_ = 'dummy')
         token2 = Token(value = 'files.metadata', type_ = 'dummy')
         token3 = Token(value = 'issues.count', type_ = 'dummy')
+        token4 = Token(value = 'attribute.something', type_ = 'dummy')
         query_string = 'labels.x > 5'  # dummy query
         with self.app.test_request_context():
             common_actions.add_auth_to_session(flask.session, self.project.users[0])
@@ -183,9 +184,11 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
             e_type = executor._SqlAlchemyQueryExecutor__determine_entity_type(token)
         self.assertEqual(e_type, 'labels')
         e_type = executor._SqlAlchemyQueryExecutor__determine_entity_type(token2)
-        self.assertEqual(e_type, 'files')
+        self.assertEqual(e_type, 'file')
         e_type = executor._SqlAlchemyQueryExecutor__determine_entity_type(token3)
         self.assertEqual(e_type, 'issues')
+        e_type = executor._SqlAlchemyQueryExecutor__determine_entity_type(token4)
+        self.assertEqual(e_type, 'attribute')
 
     def test_get_compare_op(self):
         query_string = 'labels.x > 5'  # dummy query
@@ -236,7 +239,7 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
 
             token = Token(value = 'labels.apple', type_ = 'dummy')
             value = executor._SqlAlchemyQueryExecutor__parse_value(token)
-            self.assertEqual(type(value), ScalarSelect)
+            self.assertEqual(type(value), Query)
 
             token = Token(value = 'file.something', type_ = 'dummy')
             value = executor._SqlAlchemyQueryExecutor__parse_value(token)

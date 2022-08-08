@@ -35,13 +35,8 @@ def upgrade():
 
     op.add_column('event', sa.Column('install_fingerprint', sa.String))
     op.add_column('event', sa.Column('diffgram_version', sa.String))
-    op.create_index('index__task_user_task_id', 'task_user', ['task_id'])
-    op.create_index('index__task_user_user_id', 'task_user', ['user_id'])
-
 
 def downgrade():
     op.drop_column('event', 'install_fingerprint')
     op.drop_column('event', 'diffgram_version')
-    op.drop_index('index__task_user_user_id', 'task_user')
-    op.drop_index('index__task_user_task_id', 'task_user')
     op.drop_table('system_events')

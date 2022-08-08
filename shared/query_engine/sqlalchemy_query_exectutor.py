@@ -14,8 +14,8 @@ from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.permissions.project_permissions import Project_permissions
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.query_engine.query_creator import ENTITY_TYPES
-from shared.database.source_control.file_annotations import FileAnnotations
-from shared.utils.attributes.attributes_values_parsing import get_file_annotations_column_from_attribute_kind
+from shared.database.source_control.file_stats import FileStats
+from shared.utils.attributes.attributes_values_parsing import get_file_stats_column_from_attribute_kind
 
 logger = get_shared_logger()
 
@@ -227,8 +227,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             logger.error(error_string)
             self.log['error']['label_name'] = error_string
             return
-        instance_count_query = (self.session.query(FileAnnotations.file_id).filter(
-            FileAnnotations.label_file_id == label_file.id
+        instance_count_query = (self.session.query(FileStats.file_id).filter(
+            FileStats.label_file_id == label_file.id
         ))
         return instance_count_query
 
@@ -254,8 +254,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             logger.error(error_string)
             self.log['error']['attr_group_name'] = error_string
             return
-        attr_group_query = (self.session.query(FileAnnotations.file_id).filter(
-            FileAnnotations.attribute_template_group_id == attribute_group.id
+        attr_group_query = (self.session.query(FileStats.file_id).filter(
+            FileStats.attribute_template_group_id == attribute_group.id
         ))
         return attr_group_query
 
@@ -378,7 +378,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                         scalar_op = value_2
                     sql_compare_operator = self.get_compare_op(compare_op)
                     new_filter_subquery = (query_op.filter(
-                        sql_compare_operator(FileAnnotations.count_instances, scalar_op)).subquery()
+                        sql_compare_operator(FileStats.count_instances, scalar_op)).subquery()
                                            )
                     condition_operator = in_op(File.id, new_filter_subquery)
                     local_tree.query_condition = condition_operator
@@ -394,16 +394,16 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                         scalar_op = value_2
                         attribute_kind = self.__get_attribute_kind_from_token(name1)
                     sql_compare_operator = self.get_compare_op(compare_op)
-                    file_annotations_column = get_file_annotations_column_from_attribute_kind(attribute_kind)
+                    file_stats_column = get_file_stats_column_from_attribute_kind(attribute_kind)
                     if attribute_kind in ['radio', 'multiple_select', 'select', 'tree']:
                         scalar_op = int(scalar_op)
                     new_filter_subquery = (query_op.filter(
-                        sql_compare_operator(file_annotations_column, scalar_op)).subquery()
+                        sql_compare_operator(file_stats_column, scalar_op)).subquery()
                                            )
                     condition_operator = in_op(File.id, new_filter_subquery)
                     local_tree.query_condition = condition_operator
                 elif entity_type == "dataset":
-                    condition_operator = self.__build_dataset_compare_expr(value_1, value_2, compare_op)
+                    condition_operator = self.__build_datasdetermineet_compare_expr(value_1, value_2, compare_op)
                     local_tree.query_condition = condition_operator
                 elif entity_type == 'file':
                     condition_operator = self.get_compare_op(compare_op)(value_1, str(value_2))

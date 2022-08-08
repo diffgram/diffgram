@@ -11,26 +11,26 @@ from time import mktime
 logger = get_shared_logger()
 
 
-def get_file_annotations_column_from_attribute_kind(attr_kind: str) -> Column or None:
-    from shared.database.source_control.file_annotations import FileAnnotations
+def get_file_stats_column_from_attribute_kind(attr_kind: str) -> Column or None:
+    from shared.database.source_control.file_stats import FileStats
     val = None
     if attr_kind == 'tree':
-        val = FileAnnotations.attribute_template_id
+        val = FileStats.attribute_template_id
 
     elif attr_kind == 'date':
-        val = FileAnnotations.attribute_value_selected_date
+        val = FileStats.attribute_value_selected_date
     elif attr_kind == 'time':
-        val = FileAnnotations.attribute_value_selected_time
+        val = FileStats.attribute_value_selected_time
     elif attr_kind == 'slider':
-        val = FileAnnotations.attribute_value_number
+        val = FileStats.attribute_value_number
     elif attr_kind == 'radio':
-        val = FileAnnotations.attribute_template_id
+        val = FileStats.attribute_template_id
     elif attr_kind == 'multiple_select':
-        val = FileAnnotations.attribute_template_id
+        val = FileStats.attribute_template_id
     elif attr_kind == 'text':
-        val = FileAnnotations.attribute_value_text
+        val = FileStats.attribute_value_text
     elif attr_kind == 'select':
-        val = FileAnnotations.attribute_template_id
+        val = FileStats.attribute_template_id
     else:
         logger.error(f'Invalid attribute kind {attr_kind}')
         return None
