@@ -29,8 +29,11 @@ class CognitoDiffgramClient(OAuth2ClientBase):
             'grant_type': 'authorization_code',
             'client_id': settings.OAUTH2_PROVIDER_CLIENT_ID,
             'code': code,
+            'scope': 'email openid phone id_token',
             'redirect_uri': settings.OAUTH2_DEFAULT_REDIRECT_URL
         }
+        if settings.OAUTH2_PROVIDER_CLIENT_SECRET:
+            payload['client_secret'] = settings.OAUTH2_PROVIDER_CLIENT_SECRET
         response = requests.post(url = url, data = payload)
         if response.status_code == 200:
             return response.json()
@@ -102,8 +105,11 @@ class CognitoDiffgramClient(OAuth2ClientBase):
         """
         if type(jwt_data) != dict:
             return None
-        return jwt_data.get('access_token')
-
+        token = jwt_data.get('id_token')
+        if token is None:
+            logger.warning('ID token not available on /token response. Defaulting to access token. Please check cognito config')
+            # token = jwt_data.get('access_token')
+        return token
     def get_refresh_token_from_jwt(self, jwt_data: dict):
         """
             Extract the refresh token from given JWT

@@ -25,8 +25,10 @@ def set_jwt_in_session(token_data: dict):
 
     oidc = OAuth2Provider()
     oidc_client = oidc.get_client()
-    refresh_token = oidc_client.get_refresh_token_from_jwt(jwt_data = token_data)
-    str_comp = zlib.compress(refresh_token.encode())
+    # refresh_token = oidc_client.get_refresh_token_from_jwt(jwt_data = token_data)
+    token = oidc_client.get_access_token_from_jwt(jwt_data = token_data)
+    str_comp = zlib.compress(token.encode())
+    # str_comp = zlib.compress(refresh_token.encode())
     login_session['jwt'] = str_comp
 
 
@@ -36,13 +38,13 @@ def get_decoded_jwt_from_session() -> str or None:
     :return: String representing the refresh token
     """
 
-    jwt_refresh_token = login_session.get('jwt')
-    if type(jwt_refresh_token) == str:
-        return jwt_refresh_token
-    if jwt_refresh_token is None:
+    jwt_token = login_session.get('jwt')
+    if type(jwt_token) == str:
+        return jwt_token
+    if jwt_token is None:
         return None
-    refresh_token_string = zlib.decompress(jwt_refresh_token).decode()
-    return refresh_token_string
+    token_string = zlib.decompress(jwt_token).decode()
+    return token_string
 
 
 def LoggedIn():
@@ -119,12 +121,12 @@ def setSecureCookie(user_db):
 
 def get_session_string():
     if settings.USE_OAUTH2:
-        oauth2 = OAuth2Provider()
-        oauth2_client = oauth2.get_client()
-        rf_token = get_decoded_jwt_from_session()
-        access_token_data = oauth2_client.refresh_token(token = rf_token)
-        access_token = oauth2_client.get_access_token_from_jwt(jwt_data = access_token_data)
-        return access_token
+        # oauth2 = OAuth2Provider()
+        # oauth2_client = oauth2.get_client()
+        token = get_decoded_jwt_from_session()
+        # access_token_data = oauth2_client.refresh_token(token = token)
+        # access_token = oauth2_client.get_access_token_from_jwt(jwt_data = access_token_data)
+        return token
     else:
         return login_session.get('user_id')
 
