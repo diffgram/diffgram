@@ -1333,6 +1333,7 @@ import Vue from "vue";
         this.media_loading = false;
         this.loading = false;
         this.current_file = current_file;
+        await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
         return current_file;
       }
       else if (this.$props.project_string_id)  {
@@ -1360,6 +1361,9 @@ import Vue from "vue";
       this.$emit('file_list_length', this.file_list.length);
     },
     fetch_single_file_signed_url: async function(file, project_string_id){
+      if(!file){
+        return
+      }
       let [url_data, err] = await get_file_signed_url(project_string_id, file.id);
       if (err){
         this.error = this.$route_api_errors(err)
@@ -1617,17 +1621,13 @@ import Vue from "vue";
 
         }
         this.current_file = this.file_list[i]
-        if(this.current_file){
-          await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
-        }
+        await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
 
         this.$emit('file_changed', this.current_file)
       }
       else{
         this.current_file = file;
-        if(this.current_file){
-          await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
-        }
+        await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
 
         this.$emit('file_changed', this.current_file)
       }
