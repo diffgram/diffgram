@@ -522,9 +522,15 @@
                  class="d-flex flex-column justify-center align-center"
                  style="min-width: 750px; min-height: 750px; border: 1px solid #e0e0e0">
               <v-icon size="450">mdi-download-off</v-icon>
-              <div v-if="file && file.image">
-               <p>
-                 URL Attempted To be Used: {{file.image.url_signed ? file.image.url_signed : "null"}}
+              <div v-if="file && file.image" style="max-width: 500px">
+               <p class="primary--text font-weight-medium" >
+                 URL Attempted To be Used:
+                 <div>
+                  <a target="_blank"  v-if="file.image.url_signed" class="secondary--text font-weight-medium" :href="file.image.url_signed">
+                    {{file.image.url_signed ? file.image.url_signed : "null"}}
+                  </a>
+                  <p v-else>   {{file.image.url_signed ? file.image.url_signed : "null"}}</p>
+                  </div>
                </p>
               </div>
               <v_error_multiple :error="file_cant_be_accessed_error"> </v_error_multiple>
