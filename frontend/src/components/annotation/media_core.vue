@@ -1376,16 +1376,14 @@ import Vue from "vue";
     },
     fetch_file_list_signed_urls: async function(file_list){
       const limit = pLimit(25); // 25 Max concurrent request.
-      const promises = file_list.map((file) => {
-        return limit(() => {
-          return this.fetch_single_file_signed_url(file, this.$props.project_string_id)
-        });
-      });
-      let new_images_responses = await Promise.all(promises);
-      for (let result of new_images_responses){
-        if(result){
-          this.frame_image_buffer[result.frame_num] = result.image
-        }
+      // const promises = file_list.map((file) => {
+      //   return limit(() => {
+      //     return this.fetch_single_file_signed_url(file, this.$props.project_string_id)
+      //   });
+      // });
+      // await Promise.all(promises);
+      for (let file of file_list){
+        this.fetch_single_file_signed_url(file, this.$props.project_string_id)
       }
     },
     fetch_project_file_list: async function(){
