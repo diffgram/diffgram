@@ -1701,14 +1701,7 @@ class Process_Media():
         self.input.file = self.create_image_file_from_input()
 
         self.populate_new_models_and_runs()
-        # access_token = self.input.image_metadata['connection_id_access_token']
-        # from shared.url_generation import blob_regenerate_url
-        # url, self.log = blob_regenerate_url(blob_object = self.new_image,
-        #                                     session = self.session,
-        #                                     connection_id = self.input.connection_id,
-        #                                     bucket_name = self.input.bucket_name,
-        #                                     access_token=access_token,
-        #                                     reference_file = self.input.file)
+
         if log_has_error(self.log):
             self.input.status = 'failed'
             logger.error(f"failed to generation URL. Log: {self.log}")

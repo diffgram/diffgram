@@ -875,7 +875,9 @@
 import axios from '../../services/customInstance';
 import v_file_transfer from '../source_control/file_transfer'
 import directory_icon_selector from '../source_control/directory_icon_selector'
+import {get_file_list, get_file_signed_url} from '../../services/fileServices'
 import dir_attach from '../task/file/dir_attach'
+import pLimit from "p-limit";
 
 import Vue from "vue";
 
@@ -1357,22 +1359,42 @@ import Vue from "vue";
       }
       this.$emit('file_list_length', this.file_list.length);
     },
-    fetch_project_file_list: async function(){
-      this.error_no_permissions = {};
-      try{
-        const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
-          '/user/' + this.$store.state.user.current.username + '/file/list', {
+    fetch_single_file_signed_url: async function(file, project_string_id){
+      let [url_data, err] = await get_file_signed_url(project_string_id, file.id);
+      if (err){
+        this.error = this.$route_api_errors(err)
+      }
+      let new_file_data = url_data.file
+      if(new_file_data.type === 'sensor_fusion'){
+        file.point_cloud = new_file_data.point_cloud
+      }
+      else{
+        file[url_data.type] = new_file_data[new_file_data.type]
+      }
+      console.log('NEW URL DATA', file)
 
-          'metadata': this.metadata,
-          'project_string_id': this.$props.project_string_id
-
-        })
-        if (response.data['file_list'] != null) {
-          return response.data;
+    },
+    fetch_file_list_signed_urls: async function(file_list){
+      const limit = pLimit(25); // 25 Max concurrent request.
+      const promises = file_list.map((file) => {
+        return limit(() => {
+          return this.fetch_single_file_signed_url(file, this.$props.project_string_id)
+        });
+      });
+      let new_images_responses = await Promise.all(promises);
+      for (let result of new_images_responses){
+        if(result){
+          this.frame_image_buffer[result.frame_num] = result.image
         }
       }
-      catch(error){
-        const { response } = error;
+    },
+    fetch_project_file_list: async function(){
+      this.error_no_permissions = {};
+      this.metadata.regen_url = false;
+      // Get Files
+      let [file_list_data, err] = await get_file_list(this.$props.project_string_id, this.$store.state.user.current.username, this.metadata)
+      if (err) {
+        const { response } = err;
         if(response.status === 403){
           this.error_no_permissions = {
             data: response.data,
@@ -1381,10 +1403,16 @@ import Vue from "vue";
           };
           this.$emit('permissions_error', this.error_no_permissions)
         }
-        console.error(error);
+        console.error(err);
         this.loading = false
-        // this.logout()
+        return
       }
+      // Now get File Urls
+      let file_list_objs = file_list_data.file_list
+      await this.fetch_file_list_signed_urls(file_list_objs)
+
+      return file_list_data
+
     },
     fetch_single_file: async function(file_id){
       // why would we need metadata from request media here?
@@ -1596,6 +1624,10 @@ import Vue from "vue";
       else{
         this.current_file = file;
         this.$emit('file_changed', this.current_file)
+      }
+
+      if(this.current_file){
+        await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
       }
 
 

@@ -116,7 +116,7 @@ def try_refreshing_tokens() -> str or None:
         # if new_id_token is not None:
         #     login_session['id_token'] = new_id_token
         if new_access_token is not None:
-            login_session['new_access_token'] = new_access_token
+            login_session['access_token'] = new_access_token
         return new_access_token
     except:
         msg = traceback.format_exc()
