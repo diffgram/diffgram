@@ -1369,7 +1369,7 @@ import Vue from "vue";
         file.point_cloud = new_file_data.point_cloud
       }
       else{
-        file[url_data.type] = new_file_data[new_file_data.type]
+        file[new_file_data.type] = new_file_data[new_file_data.type]
       }
       console.log('NEW URL DATA', file)
 
@@ -1617,16 +1617,21 @@ import Vue from "vue";
 
         }
         this.current_file = this.file_list[i]
+        if(this.current_file){
+          await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
+        }
+
         this.$emit('file_changed', this.current_file)
       }
       else{
         this.current_file = file;
+        if(this.current_file){
+          await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
+        }
+
         this.$emit('file_changed', this.current_file)
       }
 
-      if(this.current_file){
-        await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
-      }
 
 
     },
