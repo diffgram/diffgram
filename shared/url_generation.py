@@ -203,6 +203,7 @@ def get_custom_url_supported_connector(session: Session, log: dict, connection_i
 
     return client, log
 
+def generate_thumbnails_image():
 
 def connection_url_regenerate(session: Session,
                               blob_object: DiffgramBlobObjectType,
@@ -250,50 +251,50 @@ def connection_url_regenerate(session: Session,
     blob_object.url_signed = signed_url
     session.add(blob_object)
     # Extra assets (Depending on type)
-    if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path:
-        params['path'] = blob_object.url_signed_thumb_blob_path
-        params['action_type'] = 'get_pre_signed_url'
-        thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
-        if regular_log.log_has_error(log):
-            logger.error(log)
-            # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
-            log = regular_log.default()
-            return blob_object, log
-        blob_object.url_signed_thumb = thumb_signed_url
-    if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path is None:
-        # Try uploading thumbnails and then generating URL for them
-        blob_object, log = upload_thumbnail_for_connection_image(
-            session = session,
-            blob_object = blob_object,
-            connection_id = connection_id,
-            bucket_name = bucket_name,
-            new_offset_in_seconds = new_offset_in_seconds,
-            member = member,
-            access_token = access_token,
-            reference_file = reference_file
-        )
-        if regular_log.log_has_error(log):
-            logger.error(log)
-            # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
-            log = regular_log.default()
-            session.add(blob_object)
-            return blob_object, log
-        params['path'] = blob_object.url_signed_thumb_blob_path
-        params['action_type'] = 'get_pre_signed_url'
-        thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
-        if regular_log.log_has_error(log):
-            # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
-            log = regular_log.default()
-            session.add(blob_object)
-            return blob_object, log
-        blob_object.url_signed_thumb = thumb_signed_url
+    # if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path:
+    #     params['path'] = blob_object.url_signed_thumb_blob_path
+    #     params['action_type'] = 'get_pre_signed_url'
+    #     thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+    #     if regular_log.log_has_error(log):
+    #         logger.error(log)
+    #         # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
+    #         log = regular_log.default()
+    #         return blob_object, log
+    #     blob_object.url_signed_thumb = thumb_signed_url
+    # if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path is None:
+    #     # Try uploading thumbnails and then generating URL for them
+    #     blob_object, log = upload_thumbnail_for_connection_image(
+    #         session = session,
+    #         blob_object = blob_object,
+    #         connection_id = connection_id,
+    #         bucket_name = bucket_name,
+    #         new_offset_in_seconds = new_offset_in_seconds,
+    #         member = member,
+    #         access_token = access_token,
+    #         reference_file = reference_file
+    #     )
+    #     if regular_log.log_has_error(log):
+    #         logger.error(log)
+    #         # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
+    #         log = regular_log.default()
+    #         session.add(blob_object)
+    #         return blob_object, log
+    #     params['path'] = blob_object.url_signed_thumb_blob_path
+    #     params['action_type'] = 'get_pre_signed_url'
+    #     thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+    #     if regular_log.log_has_error(log):
+    #         # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
+    #         log = regular_log.default()
+    #         session.add(blob_object)
+    #         return blob_object, log
+    #     blob_object.url_signed_thumb = thumb_signed_url
     # Extra assets (Depending on type)
-    if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
-        params['path'] = blob_object.tokens_url_signed_blob_path
-        token_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
-        if regular_log.log_has_error(log):
-            return blob_object, log
-        blob_object.tokens_url_signed = token_signed_url
+    # if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
+    #     params['path'] = blob_object.tokens_url_signed_blob_path
+    #     token_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+    #     if regular_log.log_has_error(log):
+    #         return blob_object, log
+    #     blob_object.tokens_url_signed = token_signed_url
 
     return blob_object, log
 
