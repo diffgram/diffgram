@@ -12,8 +12,9 @@ def oauth2_logout() -> [dict, int]:
     oauth_client = oauth2.get_client()
     login_session['refresh_token'] = None
     login_session['id_token'] = None
-    url_data = oauth_client.logout(refresh_token = refresh_token)
-    return {"url_redirect": url_data}, 200
+    login_session.clear()
+    # url_data = oauth_client.logout(refresh_token = refresh_token)
+    return {"url_redirect": None}, 200
 
 
 @routes.route('/api/v1/user/logout', methods = ['GET'])
