@@ -203,8 +203,6 @@ def get_custom_url_supported_connector(session: Session, log: dict, connection_i
 
     return client, log
 
-def generate_thumbnails_image():
-
 def connection_url_regenerate(session: Session,
                               blob_object: DiffgramBlobObjectType,
                               connection_id: int,
