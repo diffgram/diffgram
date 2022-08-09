@@ -5,6 +5,8 @@ import time
 import abc
 import traceback
 from shared.shared_logger import get_shared_logger
+import datetime
+import jwt
 
 logger = get_shared_logger()
 
@@ -77,6 +79,31 @@ class OAuth2ClientBase(metaclass = SingletonABC):
         :return:
         """
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def get_id_token_from_jwt(self, jwt_data: dict):
+        """
+            Extract the ID token from given JWT
+        :param jwt_data:
+        :return:
+        """
+        raise NotImplementedError
+
+    def id_token_has_expired(self, id_token: str) -> bool:
+        token_decoded = self.get_decoded_id_token(id_token = id_token)
+        print('TOKEN token_decoded', token_decoded)
+        expiry = token_decoded.get('exp')
+        if expiry is None:
+            return False
+        expiry_datetime = datetime.datetime.fromtimestamp(expiry)
+        if datetime.datetime.now() > expiry_datetime:
+            return True
+        else:
+            return False
+
+    def get_decoded_id_token(self, id_token: str) -> dict:
+        decoded_token = jwt.decode(id_token, verify = False)
+        return decoded_token
 
     @abc.abstractmethod
     def get_access_token_from_jwt(self, jwt_data: dict):

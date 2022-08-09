@@ -12,6 +12,8 @@ import base64
 from shared.shared_logger import get_shared_logger
 import ast
 import zlib
+import bz2
+import gzip
 
 logger = get_shared_logger()
 
@@ -25,43 +27,91 @@ def set_jwt_in_session(token_data: dict):
 
     oidc = OAuth2Provider()
     oidc_client = oidc.get_client()
-    # refresh_token = oidc_client.get_refresh_token_from_jwt(jwt_data = token_data)
-    token = oidc_client.get_access_token_from_jwt(jwt_data = token_data)
-    str_comp = zlib.compress(token.encode())
-    # str_comp = zlib.compress(refresh_token.encode())
-    login_session['jwt'] = str_comp
+
+    id_token = oidc_client.get_id_token_from_jwt(jwt_data = token_data)
+    refresh_token = oidc_client.get_refresh_token_from_jwt(jwt_data = token_data)
+    access_token = oidc_client.get_access_token_from_jwt(jwt_data = token_data)
+
+    str_id_comp = gzip.compress(id_token.encode())
+    str_refresh_comp = gzip.compress(refresh_token.encode())
+    str_access_comp = gzip.compress(access_token.encode())
+
+    # import sys
+    # print('SIZE BEF AFTER', sys.getsizeof(id_token), sys.getsizeof(str_id_comp))
+    # print('SIZE REFRESH AFTER', sys.getsizeof(refresh_token), sys.getsizeof(str_refresh_comp))
+    logger.info(f'ID Token Original size: {sys.getsizeof(id_token)} - Compressed Size: {sys.getsizeof(str_id_comp)}')
+    logger.info(f'Access_token Token Original size: {sys.getsizeof(access_token)} - Compressed Size: {sys.getsizeof(str_access_comp)}')
+    logger.info(f'Refresh Token Original size: {sys.getsizeof(refresh_token)} - Compressed Size: {sys.getsizeof(str_refresh_comp)}')
+
+    login_session.clear()
+    login_session['refresh_token'] = str_refresh_comp
+    login_session['id_token'] = str_id_comp
 
 
-def get_decoded_jwt_from_session() -> str or None:
+def get_decoded_refresh_token_from_session() -> str or None:
     """
         Gets the JWT from the client cookie.
     :return: String representing the refresh token
     """
 
-    jwt_token = login_session.get('jwt')
+    jwt_token = login_session.get('refresh_token')
     if type(jwt_token) == str:
         return jwt_token
     if jwt_token is None:
         return None
-    token_string = zlib.decompress(jwt_token).decode()
+    token_string = gzip.decompress(jwt_token).decode()
     return token_string
+
+
+def get_decoded_id_token_from_session() -> str or None:
+    """
+        Gets the JWT from the client cookie.
+    :return: String representing the ID token
+    """
+    oidc = OAuth2Provider()
+    oidc_client = oidc.get_client()
+    id_token = login_session.get('id_token')
+    if type(id_token) == str:
+        return id_token
+    if id_token is None:
+        return None
+    token_string = gzip.decompress(id_token).decode()
+    expired = oidc_client.id_token_has_expired(id_token = token_string)
+    if expired:
+        token_string = try_refreshing_id_token()
+
+    return token_string
+
+def try_refreshing_id_token() -> str or None:
+    try:
+        oidc = OAuth2Provider()
+        oidc_client = oidc.get_client()
+        refresh_token = get_decoded_refresh_token_from_session()
+        new_token = oidc_client.refresh_token(refresh_token)
+        new_refresh_token = oidc_client.get_refresh_token_from_jwt(jwt_data = new_token)
+        new_id_token = oidc_client.get_id_token_from_jwt(jwt_data = new_token)
+        if new_refresh_token is not None:
+            login_session['refresh_token'] = new_refresh_token
+        if new_id_token is not None:
+            print('REFRESSHH ID OKTNENNNNN')
+            login_session['id_token'] = new_id_token
+        return new_id_token
+    except:
+        msg = traceback.format_exc()
+        logger.warning(f'Refresh token failed {msg}')
+        return None
+
+
+
 
 
 def LoggedIn():
     if settings.USE_OAUTH2:
-        oidc = OAuth2Provider()
-        oidc_client = oidc.get_client()
-        refresh_token = get_decoded_jwt_from_session()
-        if refresh_token is None:
-            return False
-
         try:
-            new_token = oidc_client.refresh_token(refresh_token)
-            if not new_token:
+            id_token = get_decoded_id_token_from_session()
+            print('id token', id_token)
+            if not id_token:
                 return False
-            new_refresh_token = oidc_client.get_refresh_token_from_jwt(jwt_data = new_token)
-            if new_refresh_token is not None:
-                login_session['jwt'] = new_refresh_token
             return True
         except Exception as e:
             err_data = traceback.format_exc()
@@ -82,18 +132,14 @@ def get_user_from_oauth2(session):
     from shared.database.user import User
     oauth2 = OAuth2Provider()
     oauth2_client = oauth2.get_client()
-    refresh_token = get_decoded_jwt_from_session()
-    if refresh_token is None:
+    id_token = get_decoded_id_token_from_session()
+    if id_token is None:
         return None
-    access_token_data = oauth2_client.refresh_token(token = refresh_token)
-    access_token = oauth2_client.get_access_token_from_jwt(jwt_data = access_token_data)
-    if access_token_data is None:
-        return None
-    oauth2_user = oauth2_client.get_user(access_token = access_token)
-    if not oauth2_user:
+    decoded_token = oauth2_client.get_decoded_id_token(id_token = id_token)
+    if not decoded_token:
         return None
     diffgram_user = User.get_user_by_oauth2_id(session = session,
-                                               oidc_id = oauth2_user.get('sub'))
+                                               oidc_id = decoded_token.get('sub'))
     if not diffgram_user:
         return None
     return diffgram_user.id
@@ -123,7 +169,7 @@ def get_session_string():
     if settings.USE_OAUTH2:
         # oauth2 = OAuth2Provider()
         # oauth2_client = oauth2.get_client()
-        token = get_decoded_jwt_from_session()
+        token = get_decoded_id_token_from_session()
         # access_token_data = oauth2_client.refresh_token(token = token)
         # access_token = oauth2_client.get_access_token_from_jwt(jwt_data = access_token_data)
         return token
