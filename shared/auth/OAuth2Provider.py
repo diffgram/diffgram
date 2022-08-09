@@ -90,8 +90,7 @@ class OAuth2ClientBase(metaclass = SingletonABC):
         raise NotImplementedError
 
     def id_token_has_expired(self, id_token: str) -> bool:
-        token_decoded = self.get_decoded_id_token(id_token = id_token)
-        print('TOKEN token_decoded', token_decoded)
+        token_decoded = self.get_decoded_jwt_token(id_token = id_token)
         expiry = token_decoded.get('exp')
         if expiry is None:
             return False
@@ -101,7 +100,7 @@ class OAuth2ClientBase(metaclass = SingletonABC):
         else:
             return False
 
-    def get_decoded_id_token(self, id_token: str) -> dict:
+    def get_decoded_jwt_token(self, id_token: str) -> dict:
         decoded_token = jwt.decode(id_token, verify = False)
         return decoded_token
 

@@ -262,6 +262,7 @@ class S3Connector(Connector):
             'Authorization': f'{access_token}',
             'Content-Type': content_type
         }
+
         logger.info(f'Custom Signer Headers: {headers}')
         blob_name_encoded = urllib.parse.quote(blob_name, safe = '')
         url_path = f'{self.url_signer_service}/{bucket_name}'
