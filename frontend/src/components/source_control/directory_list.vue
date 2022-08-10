@@ -104,7 +104,9 @@
               :loading="loading_directory_list"
               type="text"
             >
-              <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">ID: {{ data.item.directory_id }}</v-chip>
+              <v-chip x-small v-if="$store.state.user.settings.show_ids == true">
+                  ID: {{ data.item.directory_id }}
+              </v-chip>
 
               <v-icon left>
                 mdi-folder-network
@@ -128,7 +130,7 @@
           </template>
 
           <template v-slot:selection="data">
-            <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">
+            <v-chip x-small v-if="$store.state.user.settings.show_ids == true">
                 ID: {{ data.item.directory_id }}
             </v-chip>
 

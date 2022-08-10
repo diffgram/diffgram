@@ -148,7 +148,7 @@
         </div>
       </div>
 
-      <div v-if="$store.state.user.current.is_super_admin == true">
+      <div v-if="$store.state.user.settings.show_ids == true">
         Project ID {{$store.state.project.current.id}}
       </div>
     </div>

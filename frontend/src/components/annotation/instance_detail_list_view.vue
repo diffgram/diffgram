@@ -116,7 +116,7 @@
           <v-expansion-panel-content class="ml-2">
             <v-chip v-if="current_instance
                       && current_instance.id
-                      && $store.state.user.current.is_super_admin == true" x-small class="ma-2" color="secondary">
+                      && $store.state.user.settings.show_ids == true" x-small class="ma-2" color="secondary">
               <span class="font-weight-bold mr-2">Selected: </span> <span>{{ current_instance.id }}</span>
             </v-chip>
             <v-data-table v-if="grouped_list &&
