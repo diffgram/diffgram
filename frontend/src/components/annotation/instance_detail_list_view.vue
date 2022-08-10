@@ -234,7 +234,7 @@
                           icon="mdi-chart-bell-curve-cumulative"
                           :icon_style="get_instance_color(props.item)">
                         </tooltip_icon>
-                        <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">
+                        <v-chip x-small v-if="$store.state.user.settings.show_ids == true">
                           ID: {{ props.item.id }}
                         </v-chip>
                         <v-chip v-if="props.item.soft_delete == true"
