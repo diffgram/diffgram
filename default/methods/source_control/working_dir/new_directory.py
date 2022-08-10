@@ -10,7 +10,7 @@ from shared.database.user import UserbaseProject
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
     apis_user_list=['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("400 per day")
+@limiter.limit("2000 per day")
 def new_directory_api(project_string_id):
     """
 
@@ -38,7 +38,7 @@ def new_directory_api(project_string_id):
             kind="counts"
         )
 
-        if count_existing >= 500:
+        if count_existing >= 2000:
             log['error']["limit"] = "Limit of directories. " + \
                                     "Please archive a directory or upgrade plan or contact us."
             return jsonify(log=log), 400
