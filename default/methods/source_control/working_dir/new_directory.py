@@ -38,7 +38,7 @@ def new_directory_api(project_string_id):
             kind="counts"
         )
 
-        if count_existing >= 150:
+        if count_existing >= 500:
             log['error']["limit"] = "Limit of directories. " + \
                                     "Please archive a directory or upgrade plan or contact us."
             return jsonify(log=log), 400
