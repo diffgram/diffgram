@@ -8,6 +8,7 @@ from shared.query_engine.diffgram_query_exectutor import BaseDiffgramQueryExecut
 from shared.shared_logger import get_shared_logger
 import operator
 from shared.regular import regular_log
+from lark.tree import Token
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql.operators import in_op
 from shared.database.source_control.working_dir import WorkingDirFileLink
@@ -18,6 +19,7 @@ from shared.database.source_control.file_stats import FileStats
 from shared.utils.attributes.attributes_values_parsing import get_file_stats_column_from_attribute_kind
 from shared.database.tag.tag import DatasetTag
 from shared.database.tag.tag import JobTag
+from shared.query_engine.sql_alchemy_query_elements import QueryElement, Expression, LabelQueryElement
 
 logger = get_shared_logger()
 
@@ -146,6 +148,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             id_values.append(int(token.value))
         local_tree.value = id_values
         return local_tree
+
     def __determine_entity_type(self, name_token):
 
         try:
@@ -173,21 +176,10 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             value = "dataset"
         return value
 
-    def get_compare_op(self, token):
-        if token.value == '>':
-            return operator.gt
-        if token.value == '<':
-            return operator.lt
-        if token.value == '=':
-            return operator.eq
-        if token.value == '!=':
-            return operator.ne
-        if token.value == '>=':
-            return operator.ge
-        if token.value == '<=':
-            return operator.le
-        if token.value == 'in':
-            return in_op
+    def get_compare_op(self, token) -> QueryElement:
+        query_element = QueryElement()
+        compare_operator = query_element.set_sql_operator_from_token(token)
+        return query_element
 
     def __get_attribute_kind_from_token(self, token: str) -> str or None:
         attr_group_name = token.value.split('.')[1]
@@ -212,79 +204,47 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             return None
         return attribute_group.kind
 
-    def __parse_labels_value(self, token: str):
-        label_name = token.value.split('.')[1]
+    def __parse_labels_value(self, token: Token) -> LabelQueryElement:
+        label_query_element = LabelQueryElement.create_from_token(
+            session = self.session,
+            log = self.log,
+            project_id = self.diffgram_query.project.id,
+            token = token
+        )
+        return label_query_element
 
-        label_file = File.get_by_label_name(session = self.session,
-                                            label_name = label_name,
-                                            project_id = self.diffgram_query.project.id)
-        if not label_file:
-            # Strip underscores
-            label_name = label_name.replace('_', ' ')
-            label_file = File.get_by_label_name(session = self.session,
-                                                label_name = label_name,
-                                                project_id = self.diffgram_query.project.id)
-        if not label_file:
-            error_string = f"Label {str(label_name)} does not exists"
-            logger.error(error_string)
-            self.log['error']['label_name'] = error_string
-            return
-        instance_count_query = (self.session.query(FileStats.file_id).filter(
-            FileStats.label_file_id == label_file.id
-        ))
-        return instance_count_query
 
     def __parse_attributes_value(self, token: str):
-        attr_group_name = token.value.split('.')[1]
 
-        attribute_group = Attribute_Template_Group.get_by_name_and_project(
-            session = self.session,
-            name = attr_group_name,
-            project_id = self.diffgram_query.project.id
-        )
-
-        if not attribute_group:
-            # Strip underscores
-            attr_group_name = attr_group_name.replace('_', ' ')
-            attribute_group = Attribute_Template_Group.get_by_name_and_project(
-                session = self.session,
-                name = attr_group_name,
-                project_id = self.diffgram_query.project.id
-            )
-        if not attribute_group:
-            error_string = f"Attribute Group {str(attr_group_name)} does not exists"
-            logger.error(error_string)
-            self.log['error']['attr_group_name'] = error_string
-            return
-        attr_group_query = (self.session.query(FileStats.file_id).filter(
-            FileStats.attribute_template_group_id == attribute_group.id
-        ))
-        return attr_group_query
 
     def __parse_dataset_value(self, token):
         dataset_property = token.value.split('.')[1]
         dataset_col = None
         if dataset_property == "id":
             dataset_col = WorkingDirFileLink.working_dir_id
+        if dataset_property == "id":
+            dataset_tag_query = (self.session.query(DatasetTag).filter(
+                DatasetTag.tag == attribute_group.id
+            ))
+            dataset_col = WorkingDirFileLink.working_dir_id
         else:
             raise NotImplemented("Dataset filters just support ID column.")
         return dataset_col
-
 
     def __parse_tag_value(self, token):
         property = token.value.split('.')[1]
         column = None
 
         if property == "dataset.id":
-            return WorkingDirFileLink.working_dir_id            
+            return WorkingDirFileLink.working_dir_id
         elif property == "job.id":
-            #column = JobTag.tag_id
+            # column = JobTag.tag_id
             raise NotImplemented("Job ID tag filtering not yet Implemented")
         else:
             raise NotImplemented("Must be ID")
         return column
 
-    def __parse_value(self, token):
+    def __parse_value(self, token) -> QueryElement:
         """
             Transforms the token into an integer or appropriate diffgram value (instance count, issue count, etc)
         :param token:
@@ -370,10 +330,45 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         new_filter_subquery = compare_op_sql(query_op, scalar_op)
         return new_filter_subquery
 
-    def compare_expr(self, *args):
+    def __build_label_compare_expression(self, value_1: any, value_2: any, compare_op: str):
+        if type(value_1) == int or type(value_1) == str:
+            scalar_op = value_1
+            query_op = value_2
+        else:
+            query_op = value_1
+            scalar_op = value_2
+        sql_compare_operator = self.get_compare_op(compare_op)
+        new_filter_subquery = (query_op.filter(
+            sql_compare_operator(FileStats.count_instances, scalar_op)).subquery()
+                               )
+        condition_operator = in_op(File.id, new_filter_subquery)
+
+        return condition_operator
+
+    def __build_attribute_compare_expression(self, name1: str, name2: str, value_1: any, value_2: any, compare_op: str):
+        if type(value_1) == int or type(value_1) == str:
+            scalar_op = value_1
+            query_op = value_2
+            attribute_kind = self.__get_attribute_kind_from_token(name2)
+        else:
+            query_op = value_1
+            scalar_op = value_2
+            attribute_kind = self.__get_attribute_kind_from_token(name1)
+        sql_compare_operator = self.get_compare_op(compare_op)
+        file_stats_column = get_file_stats_column_from_attribute_kind(attribute_kind)
+        if attribute_kind in ['radio', 'multiple_select', 'select', 'tree']:
+            scalar_op = int(scalar_op)
+        new_filter_subquery = (query_op.filter(
+            sql_compare_operator(file_stats_column, scalar_op)).subquery()
+                               )
+        condition_operator = in_op(File.id, new_filter_subquery)
+        return condition_operator
+
+    def compare_expr(self, *args) -> QueryElement:
         if len(self.log['error'].keys()) > 0:
             return
         local_tree = args[0]
+        result = QueryElement()
         if len(local_tree.children) == 3:
             children = local_tree.children
             name1 = children[0]
@@ -389,53 +384,33 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 compare_operator = None
                 self.conditions.append(compare_operator)
                 if entity_type == "labels":
-                    if type(value_1) == int or type(value_1) == str:
-                        scalar_op = value_1
-                        query_op = value_2
-                    else:
-                        query_op = value_1
-                        scalar_op = value_2
-                    sql_compare_operator = self.get_compare_op(compare_op)
-                    new_filter_subquery = (query_op.filter(
-                        sql_compare_operator(FileStats.count_instances, scalar_op)).subquery()
-                                           )
-                    condition_operator = in_op(File.id, new_filter_subquery)
-                    local_tree.query_condition = condition_operator
-
+                    label_condition_operator = self.__build_label_compare_expression(value_1, value_2, compare_op)
+                    local_tree.query_condition = label_condition_operator
                     return local_tree
                 elif entity_type == 'attribute':
-                    if type(value_1) == int or type(value_1) == str:
-                        scalar_op = value_1
-                        query_op = value_2
-                        attribute_kind = self.__get_attribute_kind_from_token(name2)
-                    else:
-                        query_op = value_1
-                        scalar_op = value_2
-                        attribute_kind = self.__get_attribute_kind_from_token(name1)
-                    sql_compare_operator = self.get_compare_op(compare_op)
-                    file_stats_column = get_file_stats_column_from_attribute_kind(attribute_kind)
-                    if attribute_kind in ['radio', 'multiple_select', 'select', 'tree']:
-                        scalar_op = int(scalar_op)
-                    new_filter_subquery = (query_op.filter(
-                        sql_compare_operator(file_stats_column, scalar_op)).subquery()
-                                           )
-                    condition_operator = in_op(File.id, new_filter_subquery)
-                    local_tree.query_condition = condition_operator
+                    attribute_condition_op = self.__build_attribute_compare_expression(
+                        name1 = name1,
+                        name2 = name2,
+                        value_1 = value_1,
+                        value_2 = value_2,
+                        compare_op = compare_op
+                    )
+                    local_tree.query_condition = attribute_condition_op
                 elif entity_type == "dataset":
                     condition_operator = self.__build_dataset_compare_expr(value_1, value_2, compare_op)
                     local_tree.query_condition = condition_operator
                 elif entity_type == "tag":
                     column = self.__build_dataset_compare_expr(value_1, value_2, compare_op)
-                    
+
                     # Get tag id list from value 2?
-                    
+
                     junction_tag_list = DatasetTag.get_by_tag_ids(tag_id_list)
                     dataset_id_list = [junction_tag.dataset_id for junction_tag in junction_tag_list]
 
                     # Filter with column in dataset ID thing? dataset_id_list
 
-                    #condition_operator = in_op(File.id, new_filter_subquery)
-                    
+                    # condition_operator = in_op(File.id, new_filter_subquery)
+
                     local_tree.query_condition = condition_operator
                 elif entity_type == 'file':
                     condition_operator = self.get_compare_op(compare_op)(value_1, str(value_2))
