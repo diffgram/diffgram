@@ -875,7 +875,9 @@
 import axios from '../../services/customInstance';
 import v_file_transfer from '../source_control/file_transfer'
 import directory_icon_selector from '../source_control/directory_icon_selector'
+import {get_file_list, get_file_signed_url} from '../../services/fileServices'
 import dir_attach from '../task/file/dir_attach'
+import pLimit from "p-limit";
 
 import Vue from "vue";
 
@@ -1031,8 +1033,8 @@ import Vue from "vue";
       annotation_status_options: ["All", "Completed", "Not completed"],
       annotation_status: "All",
 
-      metadata_limit_options: [10, 25, 100, 250, 950],
-      metadata_limit: 25, // TODO attach to vue store.
+      metadata_limit_options: [10, 15, 25, 100, 250, 950],
+      metadata_limit: 15, // TODO attach to vue store.
 
       job_list: [],
       date: undefined,
@@ -1304,6 +1306,7 @@ import Vue from "vue";
           await this.fetch_single_file(this.$props.file_id_prop);
         }
         const current_file = {...this.file_list[0]};
+        await this.fetch_single_file_signed_url(current_file, this.$props.project_string_id)
         const file_list_data = await this.fetch_project_file_list();
         const is_current_file_in_list = file_list_data.file_list.filter(f => f.id === current_file.id).length > 0;
         if(!is_current_file_in_list){
@@ -1331,6 +1334,7 @@ import Vue from "vue";
         this.media_loading = false;
         this.loading = false;
         this.current_file = current_file;
+        await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
         return current_file;
       }
       else if (this.$props.project_string_id)  {
@@ -1357,22 +1361,36 @@ import Vue from "vue";
       }
       this.$emit('file_list_length', this.file_list.length);
     },
+    fetch_single_file_signed_url: async function(file, project_string_id){
+      if(!file){
+        return
+      }
+      let [url_data, err] = await get_file_signed_url(project_string_id, file.id);
+      if (err){
+        this.error = this.$route_api_errors(err)
+      }
+      let new_file_data = url_data.file
+      if(new_file_data.type === 'sensor_fusion'){
+        file.point_cloud = new_file_data.point_cloud
+      }
+      else{
+        file[new_file_data.type] = new_file_data[new_file_data.type]
+      }
+      console.log('NEW URL DATA', file)
+
+    },
+    fetch_file_list_signed_urls: async function(file_list){
+      for (let file of file_list){
+        this.fetch_single_file_signed_url(file, this.$props.project_string_id)
+      }
+    },
     fetch_project_file_list: async function(){
       this.error_no_permissions = {};
-      try{
-        const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
-          '/user/' + this.$store.state.user.current.username + '/file/list', {
-
-          'metadata': this.metadata,
-          'project_string_id': this.$props.project_string_id
-
-        })
-        if (response.data['file_list'] != null) {
-          return response.data;
-        }
-      }
-      catch(error){
-        const { response } = error;
+      this.metadata.regen_url = false;
+      // Get Files
+      let [file_list_data, err] = await get_file_list(this.$props.project_string_id, this.$store.state.user.current.username, this.metadata)
+      if (err) {
+        const { response } = err;
         if(response.status === 403){
           this.error_no_permissions = {
             data: response.data,
@@ -1381,10 +1399,16 @@ import Vue from "vue";
           };
           this.$emit('permissions_error', this.error_no_permissions)
         }
-        console.error(error);
+        console.error(err);
         this.loading = false
-        // this.logout()
+        return
       }
+      // Now get File Urls
+      let file_list_objs = file_list_data.file_list
+      this.fetch_file_list_signed_urls(file_list_objs)
+
+      return file_list_data
+
     },
     fetch_single_file: async function(file_id){
       // why would we need metadata from request media here?
@@ -1591,12 +1615,17 @@ import Vue from "vue";
 
         }
         this.current_file = this.file_list[i]
+        await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
+
         this.$emit('file_changed', this.current_file)
       }
       else{
         this.current_file = file;
+        await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
+
         this.$emit('file_changed', this.current_file)
       }
+
 
 
     },

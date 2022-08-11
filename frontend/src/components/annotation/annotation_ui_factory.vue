@@ -600,6 +600,7 @@ export default Vue.extend({
 
     fetch_single_file: async function () {
       this.loading = true;
+
       if (this.$refs.file_manager_sheet) {
         this.current_file = await this.$refs.file_manager_sheet.get_media();
       }

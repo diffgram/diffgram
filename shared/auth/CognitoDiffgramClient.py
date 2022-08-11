@@ -1,3 +1,5 @@
+import datetime
+
 from shared.auth.OAuth2Provider import OAuth2ClientBase
 from shared.settings import settings
 import requests
@@ -5,6 +7,7 @@ import boto3
 import base64
 from shared.shared_logger import get_shared_logger
 import urllib
+import jwt
 
 logger = get_shared_logger()
 
@@ -16,10 +19,11 @@ class CognitoDiffgramClient(OAuth2ClientBase):
 
     def __init__(self):
         self.client_id = settings.OAUTH2_PROVIDER_CLIENT_ID
+        self.client_secret = None
         if settings.OAUTH2_PROVIDER_CLIENT_SECRET is not None and settings.OAUTH2_PROVIDER_CLIENT_SECRET != 'none':
             self.client_secret = settings.OAUTH2_PROVIDER_CLIENT_SECRET
             str_credentials = f'{self.client_id}:{self.client_secret}'
-            encoded_credentials = base64.b64encode(str_credentials.encode('utf-8'))
+            encoded_credentials = base64.b64encode(str_credentials.encode('utf-8')).decode("utf-8")
             self.auth_header = f'Basic: {encoded_credentials}'
 
     def get_access_token_with_code_grant(self, code: str) -> dict:
@@ -31,7 +35,16 @@ class CognitoDiffgramClient(OAuth2ClientBase):
             'code': code,
             'redirect_uri': settings.OAUTH2_DEFAULT_REDIRECT_URL
         }
-        response = requests.post(url = url, data = payload)
+        if self.client_secret:
+            payload['client_secret'] = self.client_secret
+            # headers = {
+            #     'Authorization': self.auth_header
+            # }
+            # print('authhhh0,0', headers)
+            print('asdasdas', payload)
+            response = requests.post(url = url, data = payload)
+        else:
+            response = requests.post(url = url, data = payload)
         if response.status_code == 200:
             return response.json()
         else:
@@ -94,6 +107,17 @@ class CognitoDiffgramClient(OAuth2ClientBase):
             logger.error(f'Error on cognito userinfo: {response.status_code}')
             logger.error(f'{response.text}')
 
+    def get_id_token_from_jwt(self, jwt_data: dict):
+        """
+            Extract the access token from given JWT
+        :param jwt_data:
+        :return:
+        """
+        if type(jwt_data) != dict:
+            return None
+        token = jwt_data.get('id_token')
+        return token
+
     def get_access_token_from_jwt(self, jwt_data: dict):
         """
             Extract the access token from given JWT
@@ -102,7 +126,8 @@ class CognitoDiffgramClient(OAuth2ClientBase):
         """
         if type(jwt_data) != dict:
             return None
-        return jwt_data.get('access_token')
+        token = jwt_data.get('access_token')
+        return token
 
     def get_refresh_token_from_jwt(self, jwt_data: dict):
         """
@@ -113,6 +138,8 @@ class CognitoDiffgramClient(OAuth2ClientBase):
         if jwt_data is None:
             return None
         return jwt_data.get('refresh_token')
+
+
 
     def refresh_token(self, token: str) -> dict:
         """

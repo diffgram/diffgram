@@ -469,6 +469,7 @@ class File_Browser():
         self.metadata['label']["start_index"] = 0
 
         self.metadata['file_view_mode'] = self.metadata_proposed.get("file_view_mode", None)
+        self.metadata['regen_url'] = self.metadata_proposed.get("regen_url", True)
 
         self.metadata['search_term'] = self.metadata_proposed.get('search_term', None)
         self.metadata['machine_made_setting'] = self.metadata_proposed.get('annotations_are_machine_made_setting', None)
@@ -692,7 +693,7 @@ class File_Browser():
                 elif self.metadata['file_view_mode'] == 'base':
                     file_serialized = file.serialize_base_file()
                 else:
-                    file_serialized = file.serialize_with_type(self.session)
+                    file_serialized = file.serialize_with_type(self.session, regen_url = self.metadata["regen_url"])
                 output_file_list.append(file_serialized)
 
                 limit_counter += 1
