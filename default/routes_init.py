@@ -179,3 +179,4 @@ def do_routes_importing():
     from methods.labels.label_schema_update import api_label_schema_update
 
     from methods.tag.tag import tag_view_by_project
+    from methods.source_control.file.file_get_signed_url import api_file_get_signed_url

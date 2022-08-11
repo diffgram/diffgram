@@ -217,6 +217,10 @@ class KeycloakDiffgramClient(OAuth2ClientBase):
 
         return jwt_data.get('access_token')
 
+    def get_id_token_from_jwt(self, jwt_data: dict) -> str:
+
+        return jwt_data.get('id_token')
+
     def get_refresh_token_from_jwt(self, jwt_data: dict) -> str:
 
         return jwt_data.get('refresh_token')

@@ -157,7 +157,7 @@ def upload_thumbnail_for_connection_image(session: Session,
         file_handler.write(img_data)
         # Now upload file to blob storage
     with open(temp_dir_path_and_filename, 'rb') as file_handler:
-        upload_resp = requests.post(url, data=fields, files={'file': file_handler})
+        upload_resp = requests.post(url, data = fields, files = {'file': file_handler})
         if not upload_resp.ok:
             msg = f'Failed to upload thumb. Error posting [{upload_resp.status_code}] {upload_resp.text}'
             logger.error(msg)
@@ -204,6 +204,67 @@ def get_custom_url_supported_connector(session: Session, log: dict, connection_i
     return client, log
 
 
+def generate_thumbnails_for_image(
+    session: Session,
+    blob_object: DiffgramBlobObjectType,
+    log: dict,
+    params: dict,
+    connection_id: int,
+    bucket_name: str,
+    new_offset_in_seconds: int,
+    member: Member,
+    client: any,
+    access_token: str = None,
+    reference_file: File = None
+):
+    if type(blob_object) != Image:
+        return blob_object, log
+
+    if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path is None:
+        # Try uploading thumbnails and then generating URL for them
+        blob_object, log = upload_thumbnail_for_connection_image(
+            session = session,
+            blob_object = blob_object,
+            connection_id = connection_id,
+            bucket_name = bucket_name,
+            new_offset_in_seconds = new_offset_in_seconds,
+            member = member,
+            access_token = access_token,
+            reference_file = reference_file
+        )
+        if regular_log.log_has_error(log):
+            logger.error(log)
+            # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
+            log = regular_log.default()
+            session.add(blob_object)
+            return blob_object, log
+    params['path'] = blob_object.url_signed_thumb_blob_path
+    params['action_type'] = 'get_pre_signed_url'
+    thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+    if regular_log.log_has_error(log):
+        # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
+        log = regular_log.default()
+        session.add(blob_object)
+        return blob_object, log
+    blob_object.url_signed_thumb = thumb_signed_url
+    return blob_object, log
+
+
+def generate_text_token_url(
+    session: Session,
+    blob_object: DiffgramBlobObjectType,
+    params: dict,
+    log: dict,
+    client: any,
+):
+    params['path'] = blob_object.tokens_url_signed_blob_path
+    token_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+    if regular_log.log_has_error(log):
+        return blob_object, log
+    blob_object.tokens_url_signed = token_signed_url
+    session.add(blob_object)
+
+
 def connection_url_regenerate(session: Session,
                               blob_object: DiffgramBlobObjectType,
                               connection_id: int,
@@ -248,53 +309,31 @@ def connection_url_regenerate(session: Session,
     if regular_log.log_has_error(log):
         return blob_object, log
     blob_object.url_signed = signed_url
-    session.add(blob_object)
+
     # Extra assets (Depending on type)
-    if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path:
-        params['path'] = blob_object.url_signed_thumb_blob_path
-        params['action_type'] = 'get_pre_signed_url'
-        thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
-        if regular_log.log_has_error(log):
-            logger.error(log)
-            # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
-            log = regular_log.default()
-            return blob_object, log
-        blob_object.url_signed_thumb = thumb_signed_url
-    if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path is None:
-        # Try uploading thumbnails and then generating URL for them
-        blob_object, log = upload_thumbnail_for_connection_image(
+    if type(blob_object) == Image:
+        blob_object, url = generate_thumbnails_for_image(
             session = session,
+            log = log,
             blob_object = blob_object,
+            params = params,
+            client = client,
             connection_id = connection_id,
             bucket_name = bucket_name,
             new_offset_in_seconds = new_offset_in_seconds,
             member = member,
-            access_token = access_token,
+            access_token = None,
             reference_file = reference_file
         )
-        if regular_log.log_has_error(log):
-            logger.error(log)
-            # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
-            log = regular_log.default()
-            session.add(blob_object)
-            return blob_object, log
-        params['path'] = blob_object.url_signed_thumb_blob_path
-        params['action_type'] = 'get_pre_signed_url'
-        thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
-        if regular_log.log_has_error(log):
-            # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
-            log = regular_log.default()
-            session.add(blob_object)
-            return blob_object, log
-        blob_object.url_signed_thumb = thumb_signed_url
-    # Extra assets (Depending on type)
     if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
-        params['path'] = blob_object.tokens_url_signed_blob_path
-        token_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
-        if regular_log.log_has_error(log):
-            return blob_object, log
-        blob_object.tokens_url_signed = token_signed_url
-
+        blob_object, log = generate_text_token_url(
+            session = session,
+            blob_object = blob_object,
+            params = params,
+            log = log,
+            client = client,
+        )
+    session.add(blob_object)
     return blob_object, log
 
 
