@@ -1380,13 +1380,6 @@ import Vue from "vue";
 
     },
     fetch_file_list_signed_urls: async function(file_list){
-      const limit = pLimit(25); // 25 Max concurrent request.
-      // const promises = file_list.map((file) => {
-      //   return limit(() => {
-      //     return this.fetch_single_file_signed_url(file, this.$props.project_string_id)
-      //   });
-      // });
-      // await Promise.all(promises);
       for (let file of file_list){
         this.fetch_single_file_signed_url(file, this.$props.project_string_id)
       }
@@ -1412,7 +1405,7 @@ import Vue from "vue";
       }
       // Now get File Urls
       let file_list_objs = file_list_data.file_list
-      await this.fetch_file_list_signed_urls(file_list_objs)
+      this.fetch_file_list_signed_urls(file_list_objs)
 
       return file_list_data
 

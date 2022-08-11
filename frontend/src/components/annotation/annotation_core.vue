@@ -1117,7 +1117,12 @@ export default Vue.extend({
       handler(newVal, oldVal) {
         if (newVal != oldVal) {
           this.on_change_current_file();
+        } else{
+          if(newVal.image.url_signed != oldVal.image.url_signed){
+            this.current_file_updates(newVal);
+          }
         }
+
       },
       deep: true
     },

@@ -271,10 +271,10 @@ class S3Connector(Connector):
             params = {'key': blob_name, "method": "get"}
             result = requests.get(url = url_path, headers = headers, params = params)
             if result.status_code == 200:
-                logger.debug(f'Signer URL response {result.text}')
+
                 data = result.json()
                 url_result = data['url']
-                logger.debug(f'Signer URL JSON {data}')
+                logger.debug(f'GET Presign URL response {result.text}')
                 return url_result
             else:
                 logger.error(f'Error generating signed url with: {url_path}')
