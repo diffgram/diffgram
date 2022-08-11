@@ -45,7 +45,7 @@ class QueryElement:
         if self.subquery:
             return self.subquery
         if self.token:
-            return self.toke.value
+            return self.token.value
 
     def generate_query_element(self,
                                session: Session,
