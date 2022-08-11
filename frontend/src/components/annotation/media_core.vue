@@ -1033,7 +1033,7 @@ import Vue from "vue";
       annotation_status_options: ["All", "Completed", "Not completed"],
       annotation_status: "All",
 
-      metadata_limit_options: [10, 25, 100, 250, 950],
+      metadata_limit_options: [10, 15, 25, 100, 250, 950],
       metadata_limit: 15, // TODO attach to vue store.
 
       job_list: [],
