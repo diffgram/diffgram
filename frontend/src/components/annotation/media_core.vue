@@ -1306,6 +1306,7 @@ import Vue from "vue";
           await this.fetch_single_file(this.$props.file_id_prop);
         }
         const current_file = {...this.file_list[0]};
+        await this.fetch_single_file_signed_url(current_file, this.$props.project_string_id)
         const file_list_data = await this.fetch_project_file_list();
         const is_current_file_in_list = file_list_data.file_list.filter(f => f.id === current_file.id).length > 0;
         if(!is_current_file_in_list){

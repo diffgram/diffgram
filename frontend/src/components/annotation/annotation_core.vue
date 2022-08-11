@@ -1119,6 +1119,7 @@ export default Vue.extend({
           this.on_change_current_file();
         }
       },
+      deep: true
     },
     task: {
       handler(newVal, oldVal) {
