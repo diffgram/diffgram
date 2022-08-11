@@ -205,10 +205,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             return None
         return attribute_group.kind
 
-    def __parse_labels_value(self, token: Token) -> LabelQueryElement:
-
-        return label_query_element
-
     def __parse_attributes_value(self, token: Token) -> AttributeQueryElement:
         attr_query_element, self.log = AttributeQueryElement.create_from_token(
             session = self.session,
@@ -272,13 +268,12 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 token = token
             )
         if entity_type == 'attribute':
-            attr_query_element, self.log = AttributeQueryElement.create_from_token(
+            query_element, self.log = AttributeQueryElement.create_from_token(
                 session = self.session,
                 log = self.log,
                 project_id = self.diffgram_query.project.id,
                 token = token
             )
-            return attr_query_element
         elif entity_type == 'file':
             # Case for metadata
             metadata_key = token.value.split('.')[1]

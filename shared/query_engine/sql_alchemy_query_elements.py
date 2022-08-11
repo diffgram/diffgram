@@ -8,6 +8,8 @@ from shared.database.source_control.file import File
 from shared.shared_logger import get_shared_logger
 from shared.database.source_control.file_stats import FileStats
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
+from shared.database.source_control.working_dir import WorkingDirFileLink
+from shared.database.tag.tag import DatasetTag
 import operator
 
 logger = get_shared_logger()
@@ -129,36 +131,17 @@ class AttributeQueryElement(QueryElement):
 
 class DatasetQueryElement(QueryElement):
 
-    def __init__(self, column: Subquery):
-        self.subquery = subquery
+    def __init__(self, column: Column):
+        self.column = column
 
     @staticmethod
-    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['AttributeQueryElement',
-                                                                                          dict]:
+    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['DatasetQueryElement', dict]:
 
-        attr_group_name = token.value.split('.')[1]
-
-        attribute_group = Attribute_Template_Group.get_by_name_and_project(
-            session = session,
-            name = attr_group_name,
-            project_id = project_id
-        )
-
-        if not attribute_group:
-            # Strip underscores
-            attr_group_name = attr_group_name.replace('_', ' ')
-            attribute_group = Attribute_Template_Group.get_by_name_and_project(
-                session = session,
-                name = attr_group_name,
-                project_id = project_id
-            )
-        if not attribute_group:
-            error_string = f"Attribute Group {str(attr_group_name)} does not exists"
-            logger.error(error_string)
-            log['error']['attr_group_name'] = error_string
+        dataset_property = token.value.split('.')[1]
+        dataset_col = None
+        if dataset_property == "id":
+            dataset_col = WorkingDirFileLink.working_dir_id
+        else:
+            log['error']['not_supported'] = 'Dataset filters just support ID column.'
             return None, log
-        attr_group_query = (session.query(FileStats.file_id).filter(
-            FileStats.attribute_template_group_id == attribute_group.id
-        ))
-        result = AttributeQueryElement(subquery = attr_group_query)
-        return result, log
+        return dataset_col, log
