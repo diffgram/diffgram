@@ -513,7 +513,6 @@ def update_tasks(job, session, log):
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
     apis_user_list=["api_enabled_builder"])
-@limiter.limit("40 per day")
 def new_web(project_string_id):
     """
     Create "partial" task so that it can be saved as draft?
