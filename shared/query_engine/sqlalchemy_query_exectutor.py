@@ -20,7 +20,7 @@ from shared.utils.attributes.attributes_values_parsing import get_file_stats_col
 from shared.database.tag.tag import DatasetTag
 from shared.database.tag.tag import JobTag
 from shared.query_engine.sql_alchemy_query_elements import QueryElement, Expression, LabelQueryElement, \
-    AttributeQueryElement
+    AttributeQueryElement, DatasetQueryElement, FileQueryElement
 
 logger = get_shared_logger()
 
@@ -205,29 +205,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             return None
         return attribute_group.kind
 
-    def __parse_attributes_value(self, token: Token) -> AttributeQueryElement:
-        attr_query_element, self.log = AttributeQueryElement.create_from_token(
-            session = self.session,
-            log = self.log,
-            project_id = self.diffgram_query.project.id,
-            token = token
-        )
-        return attr_query_element
-
-    def __parse_dataset_value(self, token: Token):
-        dataset_property = token.value.split('.')[1]
-        dataset_col = None
-        if dataset_property == "id":
-            dataset_col = WorkingDirFileLink.working_dir_id
-        if dataset_property == "id":
-            dataset_tag_query = (self.session.query(DatasetTag).filter(
-                DatasetTag.tag == attribute_group.id
-            ))
-            dataset_col = WorkingDirFileLink.working_dir_id
-        else:
-            raise NotImplemented("Dataset filters just support ID column.")
-        return dataset_col
-
     def __parse_tag_value(self, token):
         property = token.value.split('.')[1]
         column = None
@@ -247,48 +224,9 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :param token:
         :return:
         """
-        # First try to convert into int.
-        try:
-            result = int(token.value)
-            return result
-        except TypeError:
-            pass
-        except ValueError:
-            pass
-
-        # If value is not a number then it's a variable name (such as a label name)
-        # TODO: for now we assume no "nested" names are allowed. In other words, the dot syntax just has 1 level deep.
         entity_type = self.__determine_entity_type(token)
-        query_element = None
-        if entity_type == 'labels':
-            query_element, self.log = LabelQueryElement.create_from_token(
-                session = self.session,
-                log = self.log,
-                project_id = self.diffgram_query.project.id,
-                token = token
-            )
-        if entity_type == 'attribute':
-            query_element, self.log = AttributeQueryElement.create_from_token(
-                session = self.session,
-                log = self.log,
-                project_id = self.diffgram_query.project.id,
-                token = token
-            )
-        elif entity_type == 'file':
-            # Case for metadata
-            metadata_key = token.value.split('.')[1]
-            return File.file_metadata[metadata_key].astext
-        elif entity_type == 'dataset':
-            dataset_col_filter = self.__parse_dataset_value(token)
-            return dataset_col_filter
-        elif entity_type == 'tag':
-            tag_col_filter = self.__parse_tag_value(token)
-            return tag_col_filter
-        elif entity_type == list:
-            list_value = token.value
-            return list_value
-        else:
-            return token.value
+        query_element, self.log = QueryElement.generate_query_element(entity_type = entity_type)
+        return query_element
 
     def __validate_expression(self, token1, token2, operator):
         """
@@ -384,11 +322,13 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             if self.__validate_expression(name1, name2, compare_op):
                 value_1 = self.__parse_value(name1)
                 value_2 = self.__parse_value(name2)
+
                 if len(self.log['error'].keys()) > 0:
                     return
 
+
                 compare_operator = None
-                self.conditions.append(compare_operator)
+
                 if entity_type == "labels":
                     label_condition_operator = self.__build_label_compare_expression(value_1, value_2, compare_op)
                     local_tree.query_condition = label_condition_operator

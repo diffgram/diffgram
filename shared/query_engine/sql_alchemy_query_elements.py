@@ -15,10 +15,6 @@ import operator
 logger = get_shared_logger()
 
 
-class Expression:
-    pass
-
-
 class AndStatement:
     expression_list: List[Expression]
 
@@ -38,8 +34,78 @@ class QueryElement:
     and_statement: AndStatement or None
     or_statement: OrStatement or None
     expression: Expression or None
+    list_value: list
     column: Column or None
     subquery: Subquery
+    token: Token
+
+    def get_sql_alchemy_query_value(self) -> Column or Subquery or Expression or AndStatement or OrStatement or str:
+        if self.column:
+            return self.column
+        if self.subquery:
+            return self.subquery
+        if self.token:
+            return self.toke.value
+
+    def generate_query_element(self,
+                               session: Session,
+                               log: dict,
+                               project_id: int,
+                               entity_type: str,
+                               token: Token) -> ['QueryElement', dict]:
+        """
+            Generates a query element from the given entity type.
+        :param session:
+        :param log:
+        :param project_id:
+        :param entity_type:
+        :param token:
+        :return:
+        """
+        if entity_type == 'labels':
+            query_element, log = LabelQueryElement.create_from_token(
+                session = session,
+                log = log,
+                project_id = project_id,
+                token = token
+            )
+        if entity_type == 'attribute':
+            query_element, log = AttributeQueryElement.create_from_token(
+                session = session,
+                log = log,
+                project_id = project_id
+                ,
+                token = token
+            )
+        elif entity_type == 'file':
+            # Case for metadata
+            query_element, log = FileQueryElement.create_from_token(
+                session = session,
+                log = log,
+                project_id = project_id
+                ,
+                token = token
+            )
+        elif entity_type == 'dataset':
+            query_element, log = DatasetQueryElement.create_from_token(
+                session = session,
+                log = log,
+                project_id = project_id
+                ,
+                token = token
+            )
+        elif entity_type == 'tag':
+            raise NotImplementedError
+
+        elif entity_type == list:
+            query_element, log = ListQueryElement.create_from_token(
+                session = session,
+                log = log,
+                project_id = project_id,
+                token = token
+            )
+        else:
+            return token.value
 
     def set_sql_operator_from_token(self, token: Token) -> CompareOperator:
         if token.value == '>':
@@ -145,3 +211,65 @@ class DatasetQueryElement(QueryElement):
             log['error']['not_supported'] = 'Dataset filters just support ID column.'
             return None, log
         return dataset_col, log
+
+
+class FileQueryElement(QueryElement):
+
+    def __init__(self, column: Column):
+        self.column = column
+
+    @staticmethod
+    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['FileQueryElement', dict]:
+        file_key = token.value.split('.')[1]
+        column = None
+        if file_key == 'type':
+            column = File.type
+        else:
+            # Any non-default columns are considered as metadata.
+            column = File.file_metadata[file_key].astext
+        query_element = FileQueryElement(column = column)
+        return query_element, log
+
+
+class ListQueryElement(QueryElement):
+
+    def __init__(self, list_value: list):
+        self.list_value = list_value
+
+    @staticmethod
+    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['ListQueryElement', dict]:
+        # Token value here is already a list. Parsed by array() function on sqlalchemy_query_executor.py
+        list_value = token.value
+        if type(list_value) != list:
+            log['error']['list_value'] = f'Invalid token value {token.value}. Not a list.'
+            return None, log
+        query_element = ListQueryElement(list_value = list_value)
+        return query_element, log
+
+
+class TokenQueryElement(QueryElement):
+
+    def __init__(self, token: Token):
+        self.token = token
+
+    @staticmethod
+    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['ListQueryElement', dict]:
+        # Token value here is already a list. Parsed by array() function on sqlalchemy_query_executor.py
+        list_value = token.value
+        if type(list_value) != list:
+            log['error']['list_value'] = f'Invalid token value {token.value}. Not a list.'
+            return None, log
+        query_element = ListQueryElement(list_value = list_value)
+        return query_element, log
+
+
+class Expression(QueryElement):
+    operand1: QueryElement
+    operator: CompareOperator
+    operand2: QueryElement
+
+    @staticmethod
+    def build_expression_from_operands() -> Expression:
+        pass
+
+
