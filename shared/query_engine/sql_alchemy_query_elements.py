@@ -62,51 +62,28 @@ class QueryElement:
         :param token:
         :return:
         """
-        if entity_type == 'labels':
-            query_element, log = LabelQueryElement.create_from_token(
+
+        string_entity_to_class = {
+            'labels' : LabelQueryElement,
+            'attribute' : AttributeQueryElement,
+            'file' : FileQueryElement,
+            'dataset' : DatasetQueryElement,
+            'tag': NotImplementedError,
+            'list': ListQueryElement
+            }
+
+        entity_class = string_entity_to_class.get(entity_type)
+
+        if entity_class is None: return token.value
+
+        query_element, log = entity_class.create_from_token(
                 session = session,
                 log = log,
                 project_id = project_id,
                 token = token
             )
-        if entity_type == 'attribute':
-            query_element, log = AttributeQueryElement.create_from_token(
-                session = session,
-                log = log,
-                project_id = project_id
-                ,
-                token = token
-            )
-        elif entity_type == 'file':
-            # Case for metadata
-            query_element, log = FileQueryElement.create_from_token(
-                session = session,
-                log = log,
-                project_id = project_id
-                ,
-                token = token
-            )
-        elif entity_type == 'dataset':
-            query_element, log = DatasetQueryElement.create_from_token(
-                session = session,
-                log = log,
-                project_id = project_id
-                ,
-                token = token
-            )
-        elif entity_type == 'tag':
-            raise NotImplementedError
 
-        elif entity_type == list:
-            query_element, log = ListQueryElement.create_from_token(
-                session = session,
-                log = log,
-                project_id = project_id,
-                token = token
-            )
-        else:
-            return token.value
-
+ 
     def set_sql_operator_from_token(self, token: Token) -> CompareOperator:
         if token.value == '>':
             value = operator.gt
