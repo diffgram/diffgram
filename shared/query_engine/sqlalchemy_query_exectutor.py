@@ -19,7 +19,8 @@ from shared.database.source_control.file_stats import FileStats
 from shared.utils.attributes.attributes_values_parsing import get_file_stats_column_from_attribute_kind
 from shared.database.tag.tag import DatasetTag
 from shared.database.tag.tag import JobTag
-from shared.query_engine.sql_alchemy_query_elements import QueryElement, Expression, LabelQueryElement
+from shared.query_engine.sql_alchemy_query_elements import QueryElement, Expression, LabelQueryElement, \
+    AttributeQueryElement
 
 logger = get_shared_logger()
 
@@ -205,19 +206,19 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         return attribute_group.kind
 
     def __parse_labels_value(self, token: Token) -> LabelQueryElement:
-        label_query_element = LabelQueryElement.create_from_token(
+
+        return label_query_element
+
+    def __parse_attributes_value(self, token: Token) -> AttributeQueryElement:
+        attr_query_element, self.log = AttributeQueryElement.create_from_token(
             session = self.session,
             log = self.log,
             project_id = self.diffgram_query.project.id,
             token = token
         )
-        return label_query_element
+        return attr_query_element
 
-
-    def __parse_attributes_value(self, token: str):
-
-
-    def __parse_dataset_value(self, token):
+    def __parse_dataset_value(self, token: Token):
         dataset_property = token.value.split('.')[1]
         dataset_col = None
         if dataset_property == "id":
@@ -262,12 +263,22 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         # If value is not a number then it's a variable name (such as a label name)
         # TODO: for now we assume no "nested" names are allowed. In other words, the dot syntax just has 1 level deep.
         entity_type = self.__determine_entity_type(token)
+        query_element = None
         if entity_type == 'labels':
-            instance_count_query = self.__parse_labels_value(token)
-            return instance_count_query
+            query_element, self.log = LabelQueryElement.create_from_token(
+                session = self.session,
+                log = self.log,
+                project_id = self.diffgram_query.project.id,
+                token = token
+            )
         if entity_type == 'attribute':
-            attr_group_query = self.__parse_attributes_value(token)
-            return attr_group_query
+            attr_query_element, self.log = AttributeQueryElement.create_from_token(
+                session = self.session,
+                log = self.log,
+                project_id = self.diffgram_query.project.id,
+                token = token
+            )
+            return attr_query_element
         elif entity_type == 'file':
             # Case for metadata
             metadata_key = token.value.split('.')[1]
