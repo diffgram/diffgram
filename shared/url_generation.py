@@ -247,7 +247,6 @@ def generate_thumbnails_for_image(
         session.add(blob_object)
         return blob_object, log
     blob_object.url_signed_thumb = thumb_signed_url
-
     return blob_object, log
 
 
@@ -310,7 +309,7 @@ def connection_url_regenerate(session: Session,
     if regular_log.log_has_error(log):
         return blob_object, log
     blob_object.url_signed = signed_url
-    session.add(blob_object)
+
     # Extra assets (Depending on type)
     if type(blob_object) == Image:
         blob_object, url = generate_thumbnails_for_image(
@@ -334,7 +333,7 @@ def connection_url_regenerate(session: Session,
             log = log,
             client = client,
         )
-
+    session.add(blob_object)
     return blob_object, log
 
 
