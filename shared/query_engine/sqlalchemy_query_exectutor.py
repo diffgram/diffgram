@@ -205,18 +205,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             return None
         return attribute_group.kind
 
-    def __parse_tag_value(self, token):
-        property = token.value.split('.')[1]
-        column = None
-
-        if property == "dataset.id":
-            return WorkingDirFileLink.working_dir_id
-        elif property == "job.id":
-            # column = JobTag.tag_id
-            raise NotImplemented("Job ID tag filtering not yet Implemented")
-        else:
-            raise NotImplemented("Must be ID")
-        return column
 
     def __parse_value(self, token) -> QueryElement:
         """
