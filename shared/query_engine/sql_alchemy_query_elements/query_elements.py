@@ -1,7 +1,7 @@
 from typing import List
-from lark.tree import Token
+from lark.lark import Token
 from sqlalchemy.sql.operators import in_op, comparison_op
-from sqlalchemy.sql import Subquery
+from sqlalchemy.sql import Selectable
 from sqlalchemy import Column
 from sqlalchemy.orm.session import Session
 from shared.database.source_control.file import File
@@ -11,16 +11,9 @@ from shared.database.attribute.attribute_template_group import Attribute_Templat
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.tag.tag import DatasetTag
 import operator
+from shared.utils.attributes.attributes_values_parsing import get_file_stats_column_from_attribute_kind
 
 logger = get_shared_logger()
-
-
-class AndStatement:
-    expression_list: List[Expression]
-
-
-class OrStatement:
-    expression_list: List[Expression]
 
 
 class CompareOperator:
@@ -46,15 +39,14 @@ class CompareOperator:
 
 
 class QueryElement:
-    and_statement: AndStatement or None
-    or_statement: OrStatement or None
-    expression: Expression or None
     list_value: list
     column: Column or None
-    subquery: Subquery
+    subquery: Selectable
+
     token: Token
 
-    def get_sql_alchemy_query_value(self) -> Subquery:
+    def get_sql_alchemy_query_value(self) -> Selectable \
+        :
         if self.column:
             return self.column
         if self.subquery:
@@ -100,9 +92,10 @@ class QueryElement:
 
 
 class LabelQueryElement(QueryElement):
-    subquery: Subquery
+    subquery: Selectable
 
-    def __init__(self, subquery: Subquery):
+    def __init__(self, subquery: Selectable
+                 ):
         self.subquery = subquery
 
     @staticmethod
@@ -133,7 +126,8 @@ class LabelQueryElement(QueryElement):
 
 class AttributeQueryElement(QueryElement):
 
-    def __init__(self, subquery: Subquery):
+    def __init__(self, subquery: Selectable
+                 ):
         self.subquery = subquery
 
     @staticmethod
@@ -237,33 +231,3 @@ class TokenQueryElement(QueryElement):
         return query_element, log
 
 
-class Expression(QueryElement):
-    operand1: QueryElement
-    operator: CompareOperator
-    operand2: QueryElement
-
-    def build_subquery_from_expression(self):
-        pass
-
-    def get_scalar_and_query_op(self, value_1: any, value_2: any, compare_op: str) -> [Subquery, int or str]:
-        if type(value_1) == int or type(value_1) == str:
-            scalar_op = value_1
-            query_op = value_2
-        else:
-            query_op = value_1
-            scalar_op = value_2
-
-    @staticmethod
-    def build_label_compare_expression(value_1: any, value_2: any, compare_op: str):
-        query_op,
-        sql_compare_operator = CompareOperator.create_sql_operator_from_token(compare_op)
-        new_filter_subquery = (query_op.filter(
-            sql_compare_operator(FileStats.count_instances, scalar_op)).subquery()
-                               )
-        condition_operator = in_op(File.id, new_filter_subquery)
-
-        return condition_operator
-
-    @staticmethod
-    def build_expression_from_operands() -> Expression:
-        pass

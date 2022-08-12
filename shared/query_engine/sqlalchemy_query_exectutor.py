@@ -8,7 +8,6 @@ from shared.query_engine.diffgram_query_exectutor import BaseDiffgramQueryExecut
 from shared.shared_logger import get_shared_logger
 import operator
 from shared.regular import regular_log
-from lark.tree import Token
 from sqlalchemy.sql.expression import and_, or_
 from sqlalchemy.sql.operators import in_op
 from shared.database.source_control.working_dir import WorkingDirFileLink
