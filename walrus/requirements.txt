@@ -40,5 +40,5 @@ GDAL==2.2.3
 pika
 azure-ai-textanalytics
 python-keycloak
-pyjwt==2.4.0
+pyjwt==1.7.1
 imageio-ffmpeg==0.2.0
