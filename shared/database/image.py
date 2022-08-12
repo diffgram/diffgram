@@ -79,7 +79,6 @@ class Image(Base):
                                      bucket_name = None,
                                      reference_file: 'File' = None,
                                      regen_url = True):
-        print('AAAA', regen_url)
         if regen_url:
             from shared.url_generation import blob_regenerate_url
             blob_regenerate_url(blob_object = self,
