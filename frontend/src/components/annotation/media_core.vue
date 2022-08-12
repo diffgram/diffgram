@@ -1288,12 +1288,15 @@ import Vue from "vue";
     update_file_list_and_set_current_file: async function (file_list_data) {
       this.metadata_previous = file_list_data.metadata;
       this.file_list = file_list_data.file_list;
-      this.$emit('file_list_length', this.file_list.length);
+
       this.current_file = this.file_list[0]
+      await this.fetch_single_file_signed_url(this.current_file, this.$props.project_string_id)
+      this.$emit('file_list_length', this.file_list.length);
+
     },
 
     get_media: async function (fetch_single_file = true, file_id) {
-
+      console.log('GET MEDIA', fetch_single_file, file_id)
       this.loading = true
       this.error = {}   // reset
       this.media_loading = true;
@@ -1340,8 +1343,10 @@ import Vue from "vue";
       else if (this.$props.project_string_id)  {
         const file_list_data = await this.fetch_project_file_list();
         await this.update_file_list_and_set_current_file(file_list_data);
+
         this.media_loading = false;
         this.loading = false;
+
         return this.current_file;
       }
 
