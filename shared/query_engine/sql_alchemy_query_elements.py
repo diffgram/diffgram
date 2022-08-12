@@ -26,6 +26,21 @@ class OrStatement:
 class CompareOperator:
     operator_value: operator or comparison_op
 
+    @staticmethod
+    def create_sql_operator_from_token(self, token: Token) -> 'CompareOperator':
+        string_operator_mapping = {
+            '>': operator.gt,
+            '<': operator.lt,
+            '=': operator.eq,
+            '!=': operator.ne,
+            '>=': operator.ge,
+            '<=': operator.le,
+            'in': in_op,
+        }
+        value = string_operator_mapping[token.value]
+        result = CompareOperator(operator_value = value)
+        return result
+
     def __init__(self, operator_value: operator or comparison_op):
         self.operator_value = operator_value
 
@@ -39,7 +54,7 @@ class QueryElement:
     subquery: Subquery
     token: Token
 
-    def get_sql_alchemy_query_value(self) -> Column or Subquery or Expression or AndStatement or OrStatement or str:
+    def get_sql_alchemy_query_value(self) -> Subquery:
         if self.column:
             return self.column
         if self.subquery:
@@ -64,43 +79,24 @@ class QueryElement:
         """
 
         string_entity_to_class = {
-            'labels' : LabelQueryElement,
-            'attribute' : AttributeQueryElement,
-            'file' : FileQueryElement,
-            'dataset' : DatasetQueryElement,
+            'labels': LabelQueryElement,
+            'attribute': AttributeQueryElement,
+            'file': FileQueryElement,
+            'dataset': DatasetQueryElement,
             'tag': NotImplementedError,
             'list': ListQueryElement
-            }
+        }
 
         entity_class = string_entity_to_class.get(entity_type)
 
         if entity_class is None: return token.value
 
         query_element, log = entity_class.create_from_token(
-                session = session,
-                log = log,
-                project_id = project_id,
-                token = token
-            )
-
- 
-    def set_sql_operator_from_token(self, token: Token) -> CompareOperator:
-        if token.value == '>':
-            value = operator.gt
-        if token.value == '<':
-            value = operator.lt
-        if token.value == '=':
-            value = operator.eq
-        if token.value == '!=':
-            value = operator.ne
-        if token.value == '>=':
-            value = operator.ge
-        if token.value == '<=':
-            value = operator.le
-        if token.value == 'in':
-            value = in_op
-
-        self.compare_operator = CompareOperator
+            session = session,
+            log = log,
+            project_id = project_id,
+            token = token
+        )
 
 
 class LabelQueryElement(QueryElement):
@@ -192,8 +188,8 @@ class DatasetQueryElement(QueryElement):
 
 class FileQueryElement(QueryElement):
 
-    def __init__(self, column: Column):
-        self.column = column
+    def __init__(self, subquery: Column):
+        self.subquery = subquery
 
     @staticmethod
     def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['FileQueryElement', dict]:
@@ -204,7 +200,8 @@ class FileQueryElement(QueryElement):
         else:
             # Any non-default columns are considered as metadata.
             column = File.file_metadata[file_key].astext
-        query_element = FileQueryElement(column = column)
+            subquery = session.query(File.id).filter(File.file_metadata[file_key].astext).subquery()
+        query_element = FileQueryElement(subquery = subquery)
         return query_element, log
 
 
@@ -245,8 +242,28 @@ class Expression(QueryElement):
     operator: CompareOperator
     operand2: QueryElement
 
+    def build_subquery_from_expression(self):
+        pass
+
+    def get_scalar_and_query_op(self, value_1: any, value_2: any, compare_op: str) -> [Subquery, int or str]:
+        if type(value_1) == int or type(value_1) == str:
+            scalar_op = value_1
+            query_op = value_2
+        else:
+            query_op = value_1
+            scalar_op = value_2
+
+    @staticmethod
+    def build_label_compare_expression(value_1: any, value_2: any, compare_op: str):
+        query_op,
+        sql_compare_operator = CompareOperator.create_sql_operator_from_token(compare_op)
+        new_filter_subquery = (query_op.filter(
+            sql_compare_operator(FileStats.count_instances, scalar_op)).subquery()
+                               )
+        condition_operator = in_op(File.id, new_filter_subquery)
+
+        return condition_operator
+
     @staticmethod
     def build_expression_from_operands() -> Expression:
         pass
-
-
