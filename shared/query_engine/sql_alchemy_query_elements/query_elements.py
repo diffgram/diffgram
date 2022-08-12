@@ -20,7 +20,7 @@ class CompareOperator:
     operator_value: operator or comparison_op
 
     @staticmethod
-    def create_sql_operator_from_token(self, token: Token) -> 'CompareOperator':
+    def create_sql_operator_from_token(token: Token) -> 'CompareOperator':
         string_operator_mapping = {
             '>': operator.gt,
             '<': operator.lt,
@@ -54,8 +54,8 @@ class QueryElement:
         if self.token:
             return self.token.value
 
-    def generate_query_element(self,
-                               session: Session,
+    @staticmethod
+    def generate_query_element(session: Session,
                                log: dict,
                                project_id: int,
                                entity_type: str,
@@ -81,7 +81,8 @@ class QueryElement:
 
         entity_class = string_entity_to_class.get(entity_type)
 
-        if entity_class is None: return token.value
+        if entity_class is None:
+            return token.value, log
 
         query_element, log = entity_class.create_from_token(
             session = session,
@@ -89,6 +90,7 @@ class QueryElement:
             project_id = project_id,
             token = token
         )
+        return query_element, log
 
 
 class LabelQueryElement(QueryElement):
