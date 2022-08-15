@@ -119,11 +119,29 @@
         :task_id="task ? task.id : undefined"
       >
       </v_is_complete>
-
+      <div>
+        <tooltip_button
+          v-if="task && task.id && (task.status == 'complete')"
+          ui_schema_name="incomplete_btn"
+          @click="$emit('task_update_toggle_incomplete')"
+          :loading="save_loading"
+          :disabled="
+            save_loading ||
+            view_only_mode ||
+            (file == undefined && task == undefined)
+          "
+          color="primary"
+          :icon_style="true"
+          icon="mdi-cancel"
+          tooltip_message="Mark as incompleted"
+          :bottom="true"
+        >
+        </tooltip_button>
+      </div>
       <!-- Defer, In Task Context Only -->
       <div>
         <tooltip_button
-          v-if="task && task.id && task.status == 'available'"
+          v-if="task && task.id && ( task.status == 'available' || task.status == 'in_progress')"
           ui_schema_name="defer"
           @click="$emit('task_update_toggle_deferred')"
           :loading="save_loading"
@@ -140,7 +158,14 @@
         >
         </tooltip_button>
       </div>
-
+      <div>
+        <task_status
+          v-if="task && task.id && task.job"
+          :task_status="task.status"
+          :task_comment="task.task_comment"
+          :allow_reviews="task.job.allow_reviews"
+        />
+      </div>
       <v-divider vertical></v-divider>
 
       <ui_schema name="zoom" data-cy="toolbar_zoom_info">
@@ -351,14 +376,7 @@
         </tooltip_button>
       </div>
 
-      <div>
-            <task_status
-              v-if="task && task.id && task.job"
-              :task_status="task.status"
-              :task_comment="task.task_comment"
-              :allow_reviews="task.job.allow_reviews"
-            />
-      </div>
+
       <v-divider vertical v-if="task && task.id && task.job"></v-divider>
 
           <time_tracker
