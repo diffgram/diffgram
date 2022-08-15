@@ -57,7 +57,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 self.final_query = self.final_query.filter(
                     or_expression.sql_or_statement
                 )
-                print('aaa', self.final_query)
                 self.valid = True
                 return self.final_query
 

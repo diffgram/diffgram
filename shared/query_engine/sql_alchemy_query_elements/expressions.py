@@ -103,7 +103,6 @@ class CompareExpression(QueryElement):
             if tag:
                 tag_id_list.append(tag.id)
         AliasFile = aliased(File)
-        print(query_op, scalar_op, 'aaaa')
         new_filter_subquery = session.query(AliasFile.id)\
             .join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id)\
             .join(DatasetTag, DatasetTag.dataset_id == WorkingDirFileLink.working_dir_id)\
