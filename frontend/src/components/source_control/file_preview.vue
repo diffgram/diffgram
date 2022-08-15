@@ -1,13 +1,12 @@
 <template>
 
-  <v-card class="ma-2"
-          :elevation="0"
-          style="background: #f6f7f8"
-          :height="file_preview_height">
+  <div class="ma-1 pa-0">
 
-    <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg"
+    <div class="pa-0 ma-0 drawable-wrapper"
+                 :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: '98.7%'}"
                  ref="file_card">
       <drawable_canvas
+
         v-if="image_bg"
         ref="drawable_canvas"
         :allow_zoom="false"
@@ -38,8 +37,9 @@
 
 
       </drawable_canvas>
-    </v-card-text>
-    <v-card-text class="pa-0 ma-0" v-if="file.video" ref="file_card">
+      <v-skeleton-loader  v-else type="image" :width="file_preview_width" :height="file_preview_height"> </v-skeleton-loader>
+    </div>
+    <div class="pa-0 ma-0" v-if="file.video" ref="file_card">
       <video_drawable_canvas
         :allow_zoom="false"
         :preview_mode="true"
@@ -61,8 +61,8 @@
         @update_instance_list="set_video_instance_list"
       >
       </video_drawable_canvas>
-    </v-card-text>
-  </v-card>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -95,6 +95,9 @@
         default: 440
       },
       'selectable': {
+        default: false
+      },
+      'selected': {
         default: false
       },
       'file_preview_height': {
@@ -140,16 +143,20 @@
     created() {
       this.prepare_filtered_instance_list();
     },
+
     async mounted() {
       console.log('aaaaaa')
       if (this.$props.file) {
-        await this.set_bg(this.$props.file);
+        console.log('this.$refs.222')
+        this.set_bg(this.$props.file);
+        console.log('this.$refs.3333')
       }
       console.log('this.$refs.file_card', this.$refs.file_card)
       if(this.$refs.file_card){
         if(this.$props.selectable){
           console.log('this.$refs.file_card', this.$refs.file_card)
           this.$refs.file_card.addEventListener('dblclick', this.view_file_details)
+          this.$refs.file_card.addEventListener('click', this.select_file)
         }
         else{
           this.$refs.file_card.addEventListener('click', this.view_file_details)
@@ -158,9 +165,13 @@
 
     },
     watch: {
-      file: function (newFile, oldFile) {
-        this.set_bg(newFile);
-        this.prepare_filtered_instance_list();
+      file: {
+        deep: true,
+        handler: function(new_val, old_val){
+          this.set_bg();
+          this.prepare_filtered_instance_list();
+
+        }
       },
       base_model_run: function () {
 
@@ -174,6 +185,10 @@
       }
     },
     methods: {
+      select_file: function(){
+
+        this.$emit('file_selected', this.$props.file)
+      },
       set_video_instance_list: function(new_list){
         this.video_instance_list = new_list;
         this.prepare_filtered_instance_list();
@@ -260,6 +275,7 @@
           if (!newFile) {
             this.image_bg = undefined;
             this.refresh = new Date();
+            resolve();
           }
           else {
             if (newFile.image) {

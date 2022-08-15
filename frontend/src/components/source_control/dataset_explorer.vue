@@ -135,11 +135,10 @@
 
     <v-container
               id="infinite-list"
-              v-if="file_list && file_list.length > 0"
               fluid
               class="files-container d-flex justify-start"
               data-cy="file_review_container"
-              :style="{height: full_screen ? '100%' : '350px',
+              :style="{height: files_container_height,
               width: '100%',
               overflowY: 'auto', ['flex-flow']: 'row wrap',
               position: 'absolute',
@@ -147,13 +146,16 @@
 
 
       <file_preview
-        style="border: 2px solid #e0e0e0"
+
         class="file-preview"
         v-if="file_list && file_list.length > 0"
         v-for="(file, index) in file_list"
+
         :base_model_run="base_model_run"
+        :selectable="true"
         :compare_to_model_run_list="compare_to_model_run_list"
         :key="file.id"
+        :selected="file.selected"
         :project_string_id="project_string_id"
         :file="file"
         :instance_list="file.instance_list"
@@ -161,6 +163,7 @@
         :file_preview_height="450"
         :show_ground_truth="show_ground_truth"
         @view_file_detail="view_detail"
+        @file_selected="on_file_selected"
       ></file_preview>
     </v-container>
     <div indeterminate v-if="infinite_scroll_loading">.
@@ -277,6 +280,19 @@
     watch:{
       selected_dir: function () {
         this.fetch_file_list();
+      }
+    },
+    computed:{
+      files_container_height: function(){
+        if(this.file_list.length === 0){
+          return '0px'
+        }
+        if(this.full_screen){
+          return '100%'
+        }
+        else{
+          return '1000px'
+        }
       }
     },
     methods: {
@@ -478,7 +494,17 @@
         }
 
       },
-
+      on_file_selected: function(file){
+        for(let file_elm of this.file_list){
+          if(file.id === file_elm.id){
+            continue
+          }
+          file_elm.selected = false;
+        }
+        file.selected = !file.selected;
+        console.log(file, file.selected)
+        this.$forceUpdate()
+      },
       view_detail: function(file, model_runs, color_list){
         this.$emit('view_detail', file, model_runs, color_list)
       }
