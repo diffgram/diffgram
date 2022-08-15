@@ -25,7 +25,7 @@ def task_update_api():
         },
         {'mode': {
             'kind': str,
-            'valid_values_list': ['toggle_deferred']
+            'valid_values_list': ['toggle_deferred', 'incomplete']
         }
         },
         {'status': {
