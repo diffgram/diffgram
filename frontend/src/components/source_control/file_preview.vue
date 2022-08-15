@@ -3,7 +3,7 @@
   <div class="ma-1 pa-0">
 
     <div class="pa-0 ma-0 drawable-wrapper"
-                 :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: '98.7%'}"
+                 :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
                  ref="file_card">
       <drawable_canvas
 
