@@ -138,7 +138,7 @@ export default Vue.extend( {
 
       })
       .catch(error => {
-        console.log(error);
+        console.error(error);
         this.error = this.$route_api_errors(error)
       });
 

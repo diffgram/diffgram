@@ -1062,7 +1062,9 @@ export default Vue.extend({
       load_stats: function (stats) {
 
         this.stats = stats
-
+        if(!this.stats){
+          return
+        }
         // assumes project scope
 
         if (this.report_template.group_by == 'user') {
@@ -1086,7 +1088,9 @@ export default Vue.extend({
           /*
          * assumes stats is a dict
          */
-
+          if(!stats){
+            return
+          }
           this.labels = stats.labels
           this.values = stats.values
           this.second_grouping = stats.second_grouping
@@ -1134,6 +1138,7 @@ export default Vue.extend({
         })
           .catch(error => {
             this.loading = false
+            console.error(error)
             this.error = this.$route_api_errors(error)
 
           });
@@ -1340,7 +1345,7 @@ export default Vue.extend({
         })
           .catch(error => {
             this.loading = false
-
+            console.error(error)
             this.error = this.$route_api_errors(error)
 
 
