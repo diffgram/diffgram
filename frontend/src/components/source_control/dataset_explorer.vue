@@ -117,7 +117,7 @@
 
   </v-sheet>
 
-  <div style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:600px; width: 100%; overflow-y: auto">
+  <div style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:600px; width: 100%;height: 1000px; overflow-y: auto">
     <v-progress-linear indeterminate
                        v-if="loading"
                        height="10"
@@ -127,7 +127,7 @@
 
     <v-container v-if="none_found == true && metadata && metadata.page == 1"
                  fluid
-                 style="width: 100%; min-height: 750px; position: relative"
+                 style="width: 100%; min-height: 750px;  position: relative"
                  class="d-flex flex-column align-center justify-center ma-0">
       <h1 class="pt-4">No Results</h1>
       <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
@@ -205,7 +205,7 @@
       'full_screen'
 
     ],
-    mounted() {
+    async mounted() {
       if (window.Cypress) {
         window.DatasetExplorer = this;
       }
@@ -223,8 +223,10 @@
       if(this.$route.query.query){
         this.query = this.$route.query.query;
       }
-      this.fetch_file_list(true);
-      this.fetch_model_run_list();
+      await this.fetch_file_list(true);
+      await this.fetch_model_run_list();
+      await this.$nextTick()
+      await this.$nextTick()
       // Detect when scrolled to bottom.
       const listElm = document.querySelector('#infinite-list');
       listElm.addEventListener('scroll', e => {

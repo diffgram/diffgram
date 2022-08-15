@@ -6,7 +6,7 @@
           :height="file_preview_height">
 
     <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg"
-                 @click="view_file_details(undefined)" >
+                 ref="file_card">
       <drawable_canvas
         v-if="image_bg"
         ref="drawable_canvas"
@@ -39,7 +39,7 @@
 
       </drawable_canvas>
     </v-card-text>
-    <v-card-text class="pa-0 ma-0" v-if="file.video">
+    <v-card-text class="pa-0 ma-0" v-if="file.video" ref="file_card">
       <video_drawable_canvas
         :allow_zoom="false"
         :preview_mode="true"
@@ -94,6 +94,9 @@
       'file_preview_width': {
         default: 440
       },
+      'selectable': {
+        default: false
+      },
       'file_preview_height': {
         default: 325
       },
@@ -138,9 +141,21 @@
       this.prepare_filtered_instance_list();
     },
     async mounted() {
+      console.log('aaaaaa')
       if (this.$props.file) {
         await this.set_bg(this.$props.file);
       }
+      console.log('this.$refs.file_card', this.$refs.file_card)
+      if(this.$refs.file_card){
+        if(this.$props.selectable){
+          console.log('this.$refs.file_card', this.$refs.file_card)
+          this.$refs.file_card.addEventListener('dblclick', this.view_file_details)
+        }
+        else{
+          this.$refs.file_card.addEventListener('click', this.view_file_details)
+        }
+      }
+
     },
     watch: {
       file: function (newFile, oldFile) {
