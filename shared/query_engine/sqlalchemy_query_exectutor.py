@@ -24,8 +24,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         self.diffgram_query = diffgram_query
         self.log = regular_log.default()
         self.session = session
-        self.final_query = self.session.query(File).join(WorkingDirFileLink,
-                                                         WorkingDirFileLink.file_id == File.id).filter(
+        self.final_query = self.session.query(File).filter(
             File.project_id == self.diffgram_query.project.id,
             File.state != 'removed',
             File.type.in_(['video', 'image'])
@@ -58,6 +57,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 self.final_query = self.final_query.filter(
                     or_expression.sql_or_statement
                 )
+                print('aaa', self.final_query)
                 self.valid = True
                 return self.final_query
 
@@ -120,7 +120,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             if len(local_tree.children) == 1:
                 compare_expr = local_tree.children[0].compare_expression
                 AliasFile = aliased(File)
-                filter_value = self.session.query(AliasFile.id).filter(AliasFile.id.in_(compare_expr.subquery))
+                filter_value = File.id.in_(compare_expr.subquery)
                 result = Factor(filter_value = filter_value)
                 local_tree.factor = result
                 return local_tree

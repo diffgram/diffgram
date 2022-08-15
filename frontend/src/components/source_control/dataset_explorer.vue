@@ -2,7 +2,7 @@
   <v-layout>
   <v-sheet
       class="pl-4 pt-2"
-      style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px"
+      style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px; max-width: 400px"
       >
       <v_error_multiple :error="query_error"></v_error_multiple>
 
@@ -36,7 +36,7 @@
           :query="query" ></query_suggestion_menu>
         -->
       </v-menu>
- 
+
         <tooltip_button
           tooltip_message="Refresh"
           datacy="refresh_explorer"
@@ -90,7 +90,7 @@
         v-model="compare_models"
         :label="`Compare Models`"
       ></v-switch>
-    
+
 
     <div v-if="compare_models == true">
       <v-layout column>
@@ -117,7 +117,7 @@
 
   </v-sheet>
 
-  <v-sheet style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:600px">
+  <div style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:600px; width: 100%; overflow-y: auto">
     <v-progress-linear indeterminate
                        v-if="loading"
                        height="10"
@@ -126,20 +126,28 @@
     </v-progress-linear>
 
     <v-container v-if="none_found == true && metadata && metadata.page == 1"
-                 fluid style="border: 1px solid #ababab"
+                 fluid
+                 style="width: 100%; min-height: 750px; position: relative"
                  class="d-flex flex-column align-center justify-center ma-0">
       <h1 class="pt-4">No Results</h1>
       <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
     </v-container>
 
-    <v-layout id="infinite-list"
+    <v-container
+              id="infinite-list"
+              v-if="file_list && file_list.length > 0"
               fluid
               class="files-container d-flex justify-start"
               data-cy="file_review_container"
-              :style="{height: full_screen ? '760px' : '350px', overflowY: 'auto', ['flex-flow']: 'row wrap', oveflowX: 'hidden'}">
+              :style="{height: full_screen ? '100%' : '350px',
+              width: '100%',
+              overflowY: 'auto', ['flex-flow']: 'row wrap',
+              position: 'absolute',
+              oveflowX: 'hidden'}">
 
 
       <file_preview
+        style="border: 2px solid #e0e0e0"
         class="file-preview"
         v-if="file_list && file_list.length > 0"
         v-for="(file, index) in file_list"
@@ -149,28 +157,25 @@
         :project_string_id="project_string_id"
         :file="file"
         :instance_list="file.instance_list"
+        :file_preview_width="450"
+        :file_preview_height="450"
         :show_ground_truth="show_ground_truth"
         @view_file_detail="view_detail"
       ></file_preview>
-      <v-container fluid v-else-if="this.file_list.length === 0" class="d-flex flex-column justify-center">
-        <h1 class="text-center">There are no files available</h1>
-        <v-icon class="text-center" size="86">mdi-text-box-search-outline</v-icon>
-      </v-container>
-
-
-    </v-layout>
-    <v-snackbar indeterminate v-if="infinite_scroll_loading">.
-      Loading...<v-progress-circular indeterminate></v-progress-circular>
-    </v-snackbar>
+    </v-container>
+    <div indeterminate v-if="infinite_scroll_loading">.
+      Loading...
+      <v-progress-circular indeterminate></v-progress-circular>
+    </div>
 
     <v-container v-if="none_found == true && metadata && metadata.page > 1"
-                 fluid style="border: 1px solid #ababab"
+                 fluid style="border: 1px solid #ababab; width: 100%"
                  class="d-flex flex-column align-center justify-center ma-0">
       <h1 class="pt-4">End of Results</h1>
       <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
     </v-container>
-  
-   </v-sheet>  
+
+   </div>
   </v-layout>
 </template>
 
@@ -311,7 +316,7 @@
 
       generate_directory_list_query: function (datasets_selected){
 
-        if (!Array.isArray(datasets_selected)) { return } 
+        if (!Array.isArray(datasets_selected)) { return }
         if (datasets_selected.length === 0) { return }
 
         let query = "dataset.id in ["
@@ -346,7 +351,7 @@
         }
 
         if (labels_selected.length === 1 || labels_selected.length >= 1) {
-          query = query.slice(0, -4) // remove trailing 
+          query = query.slice(0, -4) // remove trailing
         }
 
         return query
@@ -419,6 +424,7 @@
           })
           if (response.data['file_list'] == false) {
             this.none_found = true
+            this.file_list = []
           }
           else {
             if(reload_all){

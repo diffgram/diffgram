@@ -20,7 +20,7 @@ class CompareOperator:
     operator_value: operator or comparison_op
 
     @staticmethod
-    def create_sql_operator_from_token(token: Token) -> 'CompareOperator':
+    def create_compare_operator_from_token(token: Token) -> 'CompareOperator':
         string_operator_mapping = {
             '>': operator.gt,
             '<': operator.lt,
@@ -119,9 +119,9 @@ class LabelQueryElement(QueryElement):
             logger.error(error_string)
             log['error']['label_name'] = error_string
             return None, log
-        instance_count_query = (session.query(FileStats.file_id).filter(
+        instance_count_query = session.query(FileStats.file_id).filter(
             FileStats.label_file_id == label_file.id
-        ))
+        )
         result = LabelQueryElement(subquery = instance_count_query)
         return result, log
 

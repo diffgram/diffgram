@@ -12,10 +12,11 @@ from shared.database.source_control.file_stats import FileStats
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from sqlalchemy.sql.elements import FunctionFilter
 from shared.database.tag.tag import DatasetTag
+from shared.database.source_control.working_dir import WorkingDirFileLink
 from sqlalchemy.sql.expression import and_, or_
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator
 from shared.utils.attributes.attributes_values_parsing import get_file_stats_column_from_attribute_kind
-
+from shared.query_engine.sql_alchemy_query_elements.query_elements import LabelQueryElement
 logger = get_shared_logger()
 
 class Factor:
@@ -77,12 +78,14 @@ class CompareExpression(QueryElement):
     def build_dataset_compare_expression(session: Session, log: dict, project_id: int, value_1: any, value_2: any,
                                          compare_op_token: Token) -> ['CompareExpression', dict]:
         query_op, scalar_op = CompareExpression.get_scalar_and_query_op(value_1, value_2)
-        compare_op = CompareOperator.create_sql_operator_from_token(compare_op_token)
+        compare_op = CompareOperator.create_compare_operator_from_token(compare_op_token)
         sql_compare_operator = compare_op.operator_value
         AliasFile = aliased(File)
         print('VALUE1', value_1, type(value_1))
         print('VALUE2', value_2, type(value_2))
-        new_filter_subquery = session.query(AliasFile.id).filter(sql_compare_operator(value_1, value_2)).subquery()
+        new_filter_subquery = session.query(AliasFile.id)\
+            .join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id)\
+            .filter(sql_compare_operator(value_1, value_2)).subquery(name = "ds_compare")
         result = CompareExpression(operand1 = query_op,
                                    operand2 = scalar_op,
                                    operator = sql_compare_operator,
@@ -93,7 +96,7 @@ class CompareExpression(QueryElement):
     def build_file_compare_expression(session: Session, log: dict, project_id: int, value_1: any, value_2: any,
                                       compare_op_token: Token) -> ['CompareExpression', dict]:
         query_op, scalar_op = CompareExpression.get_scalar_and_query_op(value_1, value_2)
-        compare_op = CompareOperator.create_sql_operator_from_token(compare_op_token)
+        compare_op = CompareOperator.create_compare_operator_from_token(compare_op_token)
         sql_compare_operator = compare_op.operator_value
         AliasFile = aliased(File)
         new_filter_subquery = session.query(AliasFile.id).filter(sql_compare_operator(value_1, value_2)).subquery()
@@ -113,7 +116,7 @@ class CompareExpression(QueryElement):
             project_id = project_id,
             string_value = scalar_op
         )
-        sql_compare_operator = CompareOperator.create_sql_operator_from_token(compare_op_token)
+        sql_compare_operator = CompareOperator.create_compare_operator_from_token(compare_op_token)
         file_stats_column = get_file_stats_column_from_attribute_kind(attribute_kind)
         if attribute_kind in ['radio', 'multiple_select', 'select', 'tree']:
             scalar_op = int(scalar_op)
@@ -130,15 +133,15 @@ class CompareExpression(QueryElement):
         'CompareExpression', dict]:
 
         query_op, scalar_op = CompareExpression.get_scalar_and_query_op(value_1, value_2)
-        sql_compare_operator = CompareOperator.create_sql_operator_from_token(compare_op_token)
-        new_filter_subquery = query_op.filter(sql_compare_operator(FileStats.count_instances, scalar_op)).subquery()
-
-        condition_operator = session.query(File.id).filter(in_op(File.id, new_filter_subquery)).subquery()
+        compare_operator: CompareOperator = CompareOperator.create_compare_operator_from_token(compare_op_token)
+        sql_compare_operator = compare_operator.operator_value
+        label_query_element: LabelQueryElement = query_op
+        new_filter_subquery = label_query_element.subquery.filter(sql_compare_operator(FileStats.count_instances, scalar_op)).subquery()
         result = CompareExpression(operand1 = query_op,
                                    operand2 = scalar_op,
                                    operator = sql_compare_operator,
-                                   subquery = condition_operator)
-        return result
+                                   subquery = new_filter_subquery)
+        return result, log
 
     @staticmethod
     def build_expression_from_entity_type(session: Session, log: dict, project_id: int, entity_type: str, value_1: any,
