@@ -67,6 +67,7 @@
             @next_issue_task="next_issue_task(task)"
             @refresh_all_instances="refresh_all_instances"
             @task_update_toggle_deferred="task_update('toggle_deferred')"
+            @task_update_toggle_incomplete="task_update('incomplete')"
             @complete_task="complete_task()"
             @clear__new_and_no_ids="clear__new_and_no_ids()"
             @new_tag_instance="insert_tag_type()"
@@ -7880,6 +7881,13 @@ export default Vue.extend({
             this.snackbar_success_text = "Deferred for review. Moved to next.";
 
             this.trigger_task_change("next", this.$props.task, true);
+          }
+          if(mode === 'incomplete'){
+            this.task.status = 'in_progress'
+            this.$store.commit('display_snackbar', {
+              text: 'Task marked as incomplete.',
+              color: 'primary'
+            })
           }
         })
         .catch((error) => {

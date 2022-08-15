@@ -33,6 +33,9 @@ class Task_Update():
         old_status = self.task.status
         if self.mode == 'toggle_deferred':
             self.defer()
+        if self.mode == 'incomplete':
+            self.status = 'in_progress'
+            self.change_status()
         if self.status:
             self.change_status()
         regular_methods.try_to_commit(self)
