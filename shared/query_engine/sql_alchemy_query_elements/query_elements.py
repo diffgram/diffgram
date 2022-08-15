@@ -9,7 +9,7 @@ from shared.shared_logger import get_shared_logger
 from shared.database.source_control.file_stats import FileStats
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.source_control.working_dir import WorkingDirFileLink
-from shared.database.tag.tag import DatasetTag
+from shared.database.tag.tag import DatasetTag, Tag
 import operator
 from shared.utils.attributes.attributes_values_parsing import get_file_stats_column_from_attribute_kind
 
@@ -75,7 +75,7 @@ class QueryElement:
             'attribute': AttributeQueryElement,
             'file': FileQueryElement,
             'dataset': DatasetQueryElement,
-            'tag': NotImplementedError,
+            'dataset_tag': TagDatasetQueryElement,
             'list': ListQueryElement
         }
 
@@ -91,6 +91,7 @@ class QueryElement:
             token = token
         )
         return query_element, log
+
 
 
 class LabelQueryElement(QueryElement):
@@ -163,6 +164,22 @@ class AttributeQueryElement(QueryElement):
         result = AttributeQueryElement(subquery = attr_group_query)
         return result, log
 
+
+class TagDatasetQueryElement(QueryElement):
+
+    def __init__(self, column: Column):
+        self.column = column
+
+    @staticmethod
+    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['DatasetQueryElement', dict]:
+
+        dataset_property = token.value.split('.')[1]
+        if dataset_property == "tag":
+            dataset_col = DatasetTag.tag_id
+        else:
+            log['error']['not_supported'] = 'Dataset filters just support ID column.'
+            return None, log
+        return dataset_col, log
 
 class DatasetQueryElement(QueryElement):
 

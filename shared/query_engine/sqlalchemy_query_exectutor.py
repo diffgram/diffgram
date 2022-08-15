@@ -132,7 +132,12 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         local_tree = args
         id_values = []
         for token in local_tree.children:
-            id_values.append(int(token.value))
+            s = token.value
+            try:
+                int_val = int(s)
+                id_values.append(int_val)
+            except ValueError as verr:
+                id_values.append(s)
         local_tree.value = id_values
         return local_tree
 
@@ -160,7 +165,11 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         if value == "files" or value == "file":
             value = "file"
         if value == "dataset" or value == "datasets":
-            value = "dataset"
+            sub_value = name_token.value.split('.')[1]
+            if sub_value == "tag":
+                value = "dataset_tag"
+            else:
+                value = "dataset"
         return value
 
     def __parse_value(self, token) -> QueryElement:

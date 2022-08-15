@@ -11,7 +11,7 @@ from shared.shared_logger import get_shared_logger
 from shared.database.source_control.file_stats import FileStats
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from sqlalchemy.sql.elements import FunctionFilter
-from shared.database.tag.tag import DatasetTag
+from shared.database.tag.tag import DatasetTag, Tag
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from sqlalchemy.sql.expression import and_, or_
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator
@@ -81,11 +81,33 @@ class CompareExpression(QueryElement):
         compare_op = CompareOperator.create_compare_operator_from_token(compare_op_token)
         sql_compare_operator = compare_op.operator_value
         AliasFile = aliased(File)
-        print('VALUE1', value_1, type(value_1))
-        print('VALUE2', value_2, type(value_2))
         new_filter_subquery = session.query(AliasFile.id)\
             .join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id)\
             .filter(sql_compare_operator(value_1, value_2)).subquery(name = "ds_compare")
+        result = CompareExpression(operand1 = query_op,
+                                   operand2 = scalar_op,
+                                   operator = sql_compare_operator,
+                                   subquery = new_filter_subquery)
+        return result, log
+
+    @staticmethod
+    def build_dataset_tag_compare_expression(session: Session, log: dict, project_id: int, value_1: any, value_2: any,
+                                      compare_op_token: Token) -> ['CompareExpression', dict]:
+        query_op, scalar_op = CompareExpression.get_scalar_and_query_op(value_1, value_2)
+        compare_op = CompareOperator.create_compare_operator_from_token(compare_op_token)
+        sql_compare_operator = compare_op.operator_value
+        # Build tag ID list
+        tag_id_list = []
+        for tag_name in scalar_op:
+            tag = Tag.get(session = session, name = tag_name, project_id = project_id)
+            if tag:
+                tag_id_list.append(tag.id)
+        AliasFile = aliased(File)
+        print(query_op, scalar_op, 'aaaa')
+        new_filter_subquery = session.query(AliasFile.id)\
+            .join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id)\
+            .join(DatasetTag, DatasetTag.dataset_id == WorkingDirFileLink.working_dir_id)\
+            .filter(sql_compare_operator(value_1, tag_id_list)).subquery(name = "ds_tag_compare")
         result = CompareExpression(operand1 = query_op,
                                    operand2 = scalar_op,
                                    operator = sql_compare_operator,
@@ -152,6 +174,7 @@ class CompareExpression(QueryElement):
             "attribute": CompareExpression.build_attribute_compare_expression,
             "dataset": CompareExpression.build_dataset_compare_expression,
             "file": CompareExpression.build_file_compare_expression,
+            "dataset_tag": CompareExpression.build_dataset_tag_compare_expression,
         }
         expression_builder_func = build_expression_func_mapper.get(entity_type)
         if not expression_builder_func:
