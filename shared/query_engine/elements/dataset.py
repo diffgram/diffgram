@@ -3,7 +3,7 @@ from shared.query_engine.query_elements import QueryElement
 class DatasetQuery(QueryElement):
 
     def __init__(self):
-        self = self
+        pass
 
     def build_query(self, session) -> Selectable:
 
