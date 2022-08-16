@@ -1,3 +1,4 @@
+from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement
 
 class TagDatasetQueryElement(QueryElement):
 
