@@ -258,8 +258,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         logger.info(str(name1))
         logger.info(str(name2))
 
-        compare_expression.query_left = self.__build_query_element(name1)
-        compare_expression.query_right = self.__build_query_element(name2)
+        compare_expression.query_left = self.__build_query_element(compare_expression.left_raw)
+        compare_expression.query_right = self.__build_query_element(compare_expression.right_raw)
 
         if len(self.log['error'].keys()) > 0:
             return
@@ -267,6 +267,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         compare_expression.set_scalar_and_query_op()
 
         compare_expression.compare_op = CompareOperator.create_compare_operator_from_token(compare_op_token)
+        
         compare_expression.sql_compare_operator = compare_expression.compare_op.operator_value
 
         # Get left right, since could be either
