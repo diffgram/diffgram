@@ -44,6 +44,7 @@ class QueryElement:
     subquery: Selectable
 
     token: Token
+    type: None
 
     def get_sql_alchemy_query_value(self) -> Selectable \
         :
@@ -82,7 +83,7 @@ class QueryElement:
         entity_class = string_entity_to_class.get(entity_type)
 
         if entity_class is None:
-            return False, log
+            return token.value, log
 
         query_element, log = entity_class.create_from_token(
             session = session,
@@ -164,39 +165,6 @@ class AttributeQueryElement(QueryElement):
         result = AttributeQueryElement(subquery = attr_group_query)
         return result, log
 
-
-class TagDatasetQueryElement(QueryElement):
-
-    def __init__(self, column: Column):
-        self.column = column
-
-    @staticmethod
-    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['DatasetQueryElement', dict]:
-
-        dataset_property = token.value.split('.')[1]
-        if dataset_property == "tag":
-            dataset_col = DatasetTag.tag_id
-        else:
-            log['error']['not_supported'] = 'Dataset filters just support ID column.'
-            return None, log
-        return dataset_col, log
-
-class DatasetQueryElement(QueryElement):
-
-    def __init__(self, column: Column):
-        self.column = column
-
-    @staticmethod
-    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['DatasetQueryElement', dict]:
-
-        dataset_property = token.value.split('.')[1]
-        dataset_col = None
-        if dataset_property == "id":
-            dataset_col = WorkingDirFileLink.working_dir_id
-        else:
-            log['error']['not_supported'] = 'Dataset filters just support ID column.'
-            return None, log
-        return dataset_col, log
 
 
 class FileQueryElement(QueryElement):

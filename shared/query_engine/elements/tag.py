@@ -20,9 +20,7 @@ class TagDatasetQueryElement(QueryElement):
     @staticmethod
     def build_dataset_tag_compare_expression(session: Session, log: dict, project_id: int, value_1: any, value_2: any,
                                       compare_op_token: Token) -> ['CompareExpression', dict]:
-        query_op, scalar_op = CompareExpression.get_scalar_and_query_op(value_1, value_2)
-        compare_op = CompareOperator.create_compare_operator_from_token(compare_op_token)
-        sql_compare_operator = compare_op.operator_value
+
         # Build tag ID list
         tag_id_list = []
         for tag_name in scalar_op:
