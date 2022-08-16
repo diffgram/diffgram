@@ -266,11 +266,11 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         compare_expression.set_scalar_and_query_op()
 
-        compare_op = CompareOperator.create_compare_operator_from_token(compare_op_token)
+        compare_expression.compare_op = CompareOperator.create_compare_operator_from_token(compare_op_token)
+        compare_expression.sql_compare_operator = compare_expression.compare_op.operator_value
 
-        sql_compare_operator = compare_op.operator_value
-
-        compare_expression.subquery = query_left.build_query(session)
+        # Get left right, since could be either
+        compare_expression.subquery = compare_expression.compare_op.build_query(session)
                
 
         # Not sure where we want to pass log and project
