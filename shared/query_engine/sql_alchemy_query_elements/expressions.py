@@ -71,31 +71,6 @@ class CompareExpression():
                                    subquery = new_filter_subquery)
         return result, log
 
-    @staticmethod
-    def build_expression_from_entity_type(session: Session, log: dict, project_id: int, entity_type: str, value_1: any,
-                                          value_2: any, compare_op: str) -> ['CompareExpression', dict]:
-        expression = None
-        build_expression_func_mapper = {
-            "labels": CompareExpression.build_label_compare_expression,
-            "attribute": CompareExpression.build_attribute_compare_expression,
-            "dataset": CompareExpression.build_dataset_compare_expression,
-            "file": CompareExpression.build_file_compare_expression,
-            "dataset_tag": CompareExpression.build_dataset_tag_compare_expression,
-        }
-        expression_builder_func = build_expression_func_mapper.get(entity_type)
-        if not expression_builder_func:
-            msg = f'Invalid entity type {entity_type}'
-            raise Exception(msg)
-        expression, log = expression_builder_func(
-            session = session,
-            value_1 = value_1,
-            value_2 = value_2,
-            log = log,
-            project_id = project_id,
-            compare_op_token = compare_op,
-        )
-        return expression, log
-
 
 class AndExpression:
     expression_list: List[CompareExpression]
