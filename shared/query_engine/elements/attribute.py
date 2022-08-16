@@ -11,7 +11,7 @@ class AttributeQueryElement(QueryElement):
     def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['AttributeQueryElement',
                                                                                           dict]:
 
-        attr_group_name = token.value.split('.')[1]
+        attr_group_name = self.top_level_key
 
         attribute_group = Attribute_Template_Group.get_by_name_and_project(
             session = session,
