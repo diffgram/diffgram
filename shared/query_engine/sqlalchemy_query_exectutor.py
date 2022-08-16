@@ -140,7 +140,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         local_tree.value = id_values
         return local_tree
 
-    def __determine_entity_type(self, name_token):
+    def __format_entity(self, name_token):
 
         try:
             int(name_token.value)
@@ -156,13 +156,20 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         value = name_token.value
         if type(value) == list:
             return list
+        
         value = value.split('.')[0]
-        if value == "label" or value == "labels":
-            value = "labels"  # cast to plural
-        if value == "attributes" or value == "attribute":
-            value = "attribute"
-        if value == "files" or value == "file":
-            value = "file"
+
+        return value
+
+
+    def NOT_NAMED_YET():
+        #if value == "label" or value == "labels":
+        #    value = "labels"  # cast to plural
+        #if value == "attributes" or value == "attribute":
+        #    value = "attribute"
+        #if value == "files" or value == "file":
+        #    value = "file"
+
         if value == "dataset" or value == "datasets":
             sub_value = name_token.value.split('.')[1]
             if sub_value == "tag":
@@ -176,16 +183,40 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             Transforms the token into an integer or appropriate diffgram value (instance count, issue count, etc)
         :param token:
         :return:
+
         """
-        entity_type = self.__determine_entity_type(token)
-        query_element, self.log = QueryElement.generate_query_element(
-            session = self.session,
-            log = self.log,
-            project_id = self.diffgram_query.project.id,
-            entity_type = entity_type,
-            token = token
-        )
-        return query_element
+
+        formatted_entity = self.__format_entity(token)
+        logger.info(str(formatted_entity))
+
+        if type(formatted_entity) == str:
+
+            is_reservered_word = self.determine_if_reserved_word(formatted_entity)
+            if is_reservered_word:
+                query_element, self.log = QueryElement.generate_query_element(
+                    session = self.session,
+                    log = self.log,
+                    project_id = self.diffgram_query.project.id,
+                    entity_type = formatted_entity,
+                    token = token
+                )
+                return query_element
+
+            else:
+                raise NotImplementedError   
+
+        else:
+            # Assumes it is a scaler, or list, etc.
+            # Using formattted thing errors
+            return token.value
+
+
+    def determine_if_reserved_word(self, word: str):
+
+        reserved_words = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
+        if word in reserved_words:
+            return True
+
 
     def __validate_expression(self, token1, token2, operator):
         """
@@ -197,8 +228,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :return:
         """
 
-        entity_type1 = self.__determine_entity_type(token1)
-        entity_type2 = self.__determine_entity_type(token2)
+        entity_type1 = self.__format_entity(token1)
+        entity_type2 = self.__format_entity(token2)
         if len(token1.value.split('.')) == 1:
             error_string = f"Error with token: {token1.value}. Should specify the label name or global count"
             logger.error(error_string)
@@ -230,8 +261,10 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             name1 = children[0]
             compare_op = children[1]
             name2 = children[2]
-            entity_type = self.__determine_entity_type(name1)
+            entity_type = self.__format_entity(name1)
             if self.__validate_expression(name1, name2, compare_op):
+                logger.info(str(name1))
+                logger.info(str(name2))
                 value_1 = self.__parse_value(name1)
                 value_2 = self.__parse_value(name2)
 
@@ -248,6 +281,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                     value_2 = value_2,
                     compare_op = compare_op
                 )
+                logger.info(str(compare_expression))
 
                 local_tree.compare_expression = compare_expression
 
@@ -276,4 +310,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             if len(self.conditions) == 0 or len(self.log['error'].keys()) > 0 or not self.valid:
                 logger.error('Invalid query. Please check your syntax and try again.')
                 return None, self.log
+
+        logger.info(str(self.final_query))
+
         return self.final_query, self.log

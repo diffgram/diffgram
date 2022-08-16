@@ -82,7 +82,7 @@ class QueryElement:
         entity_class = string_entity_to_class.get(entity_type)
 
         if entity_class is None:
-            return token.value, log
+            return False, log
 
         query_element, log = entity_class.create_from_token(
             session = session,
