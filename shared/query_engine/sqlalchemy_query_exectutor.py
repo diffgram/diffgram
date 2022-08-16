@@ -151,7 +151,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             pass
         except ValueError:
             pass
-        # If it is not an int then it should be a string entity type (like "file" or "labels")
 
         value = name_token.value
         if type(value) == list:
@@ -200,6 +199,9 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                     entity_type = formatted_entity,
                     token = token
                 )
+                query_element.is_reservered_word = True
+                query_element.type = formatted_entity
+                query_element.raw_token = token
                 return query_element
 
             else:
@@ -208,6 +210,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         else:
             # Assumes it is a scaler, or list, etc.
             # Using formattted thing errors
+
+            # or query_element.scaler = formatted_entity
             return token.value
 
 
@@ -216,6 +220,12 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         reserved_words = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
         if word in reserved_words:
             return True
+
+
+    def determine_if_scaler_or_reserved(token):
+
+        if entity_class is None:
+            return token.value, log
 
 
     def __validate_expression(self, token1, token2, operator):
