@@ -1,6 +1,7 @@
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement
 
 class DatasetQuery(QueryElement):
+    top_level_key = "dataset"
 
     def __init__(self):
         pass

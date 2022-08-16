@@ -1,6 +1,7 @@
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement
 
 class FileQueryElement(QueryElement):
+    top_level_key = "file"
 
     def __init__(self):
         pass

@@ -2,6 +2,7 @@ from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryE
 
 
 class AttributeQueryElement(QueryElement):
+    top_level_key = "attribute"
 
     def __init__(self):
         pass

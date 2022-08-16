@@ -4,6 +4,7 @@ from shared.database.tag.tag import DatasetTag, Tag
 from shared.database.source_control.file import File
 
 class TagDatasetQueryElement(QueryElement):
+    top_level_key = "dataset_tag"
 
     def __init__(self):
         pass
