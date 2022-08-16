@@ -42,6 +42,70 @@ class CompareOperator:
         self.operator_value = operator_value
 
 
+class QueryEntity:
+    key: any            # any type, a scaler, or a string reserved word etc.
+    parent_key: QueryEntity    
+    kind: str           # scaler or reserved
+    key_has_been_type_corrected: bool
+
+    def remove_plural(self, entity.key):
+
+        if type(self.key) == str:
+            if self.key.endswith('s'):
+                self.key = self.key[ : - 1]
+
+    def build_tree(entity_string):
+        if entity_string == "dataset":
+            sub_value = token_value.value.split('.')[1]
+            if sub_value == "tag":
+                entity_string = "dataset_tag"
+            else:
+                entity_string = "dataset"
+        return entity_string
+
+    @staticmethod
+    def cast_int_from_unknown_type(value : any):
+        try:
+            return int(value)
+        except:
+            return value
+
+    def set_key_from_token_with_unknown_type(self, value):
+
+        value = QueryEntity.cast_int_from_unknown_type(value)
+        
+        new_value = None
+
+        if type(value) == int:
+            new_value = value
+
+        if type(value) == list:
+            new_value = value
+
+        if type(value) == str:
+            new_value = token_value.split('.')[0]
+
+        self.key = new_value
+        self.key_has_been_type_corrected = True
+
+        if type(value) not in [int, str, list]:
+            raise NotImplmentedError
+
+
+    def new(token):
+
+        entity = QueryEntity()
+
+        QueryEntity.set_key_from_token_with_unknown_type(token)
+
+        self.remove_plural(entity.key)
+        
+        entity.build_tree()
+        
+        return entity
+
+
+
 class QueryElement:
     list_value: list
     column: Column or None
@@ -50,11 +114,16 @@ class QueryElement:
     token: Token
     type: None
     top_level_key: None
+    reserved_words: list
+    query_entity: None
+    query_entity_children: list
+
+    def __init__():
+        self.reserved_words = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
 
     def determine_if_reserved_word(self, word: str):
-
-        reserved_words = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
-        if word in reserved_words:
+  
+        if word in self.reserved_words:
             return True
 
     def get_sql_alchemy_query_value(self) -> Selectable:
@@ -67,7 +136,6 @@ class QueryElement:
     def new(session: Session,
             log: dict,
             project_id: int,
-            formatted_entity: str,
             token: Token) -> 'QueryElement':
         """
            Generates a query element from the given entity type.
@@ -78,17 +146,20 @@ class QueryElement:
        :param token:
        :return:
        """
-        q = QueryElement()
-        if type(formatted_entity) != str:
-            q.is_reserved_word = False
-            q.type = 'scalar'
-            q.raw_token = token
-            q.project_id = project_id
-            return q
+        query_element = QueryElement()
 
-        is_reserved_word = q.determine_if_reserved_word(formatted_entity)
-        if not is_reserved_word:
-            return False
+        entity = QueryEntity.new(token)
+
+        query_element.query_entity = entity
+        query_element.query_entity_list = [] # SOMETHING
+
+        if type(formatted_entity) == str:
+            is_reserved_word = q.determine_if_reserved_word(formatted_entity)
+            if not is_reserved_word:
+                self.log['error']['is_reserved_word'] = f"Entity: {formatted_entity} is not valid. Valid options are {self.reserved_words}"
+                return query_element
+        else:
+            formatted_entity = "scaler"
 
         string_query_class = {
             'labels': LabelQueryElement,
@@ -96,7 +167,7 @@ class QueryElement:
             'file': FileQueryElement,
             'dataset': DatasetQuery,
             'dataset_tag': TagDatasetQueryElement,
-            'list': ListQueryElement
+            'scaler': ScalerQueryElement
         }
 
         QueryClass = string_query_class.get(formatted_entity)
@@ -106,7 +177,7 @@ class QueryElement:
 
         query_class = QueryClass()
         query_class.type = formatted_entity
-        query_class.raw_token = token
+        query_class.token = token
         query_class.project_id = project_id
         query_class.is_reserved_word = is_reserved_word
         query_class.top_level_key = token.value.split('.')[1]
@@ -149,33 +220,5 @@ class LabelQueryElement(QueryElement):
         return result, log
 
 
-class ListQueryElement(QueryElement):
-
-    def __init__(self, list_value: list):
-        self.list_value = list_value
-
-    @staticmethod
-    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['ListQueryElement', dict]:
-        # Token value here is already a list. Parsed by array() function on sqlalchemy_query_executor.py
-        list_value = token.value
-        if type(list_value) != list:
-            log['error']['list_value'] = f'Invalid token value {token.value}. Not a list.'
-            return None, log
-        query_element = ListQueryElement(list_value = list_value)
-        return query_element, log
 
 
-class TokenQueryElement(QueryElement):
-
-    def __init__(self, token: Token):
-        self.token = token
-
-    @staticmethod
-    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['ListQueryElement', dict]:
-        # Token value here is already a list. Parsed by array() function on sqlalchemy_query_executor.py
-        list_value = token.value
-        if type(list_value) != list:
-            log['error']['list_value'] = f'Invalid token value {token.value}. Not a list.'
-            return None, log
-        query_element = ListQueryElement(list_value = list_value)
-        return query_element, log

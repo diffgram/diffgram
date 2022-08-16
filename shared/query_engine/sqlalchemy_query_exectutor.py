@@ -131,52 +131,18 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
     def array(self, args):
         local_tree = args
-        id_values = []
+        values = []
         for token in local_tree.children:
             s = token.value
             try:
                 int_val = int(s)
-                id_values.append(int_val)
+                values.append(int_val)
             except ValueError as verr:
-                id_values.append(s)
-        local_tree.value = id_values
+                values.append(s)
+        local_tree.value = values
         return local_tree
 
-    def __format_entity(self, name_token):
 
-        try:
-            int(name_token.value)
-            return int
-        except AttributeError:
-            return name_token.id_values
-        except TypeError:
-            pass
-        except ValueError:
-            pass
-
-        value = name_token.value
-        if type(value) == list:
-            return list
-
-        value = self.get_filtering_type_from_token_value(value)
-        return value
-
-    def get_filtering_type_from_token_value(self, token_value):
-        entity_string = token_value.split('.')[0]
-        if entity_string == "label" or entity_string == "labels":
-            entity_string = "labels"  # cast to plural
-        if entity_string == "attributes" or entity_string == "attribute":
-            entity_string = "attribute"
-        if entity_string == "files" or entity_string == "file":
-            entity_string = "file"
-
-        if entity_string == "dataset" or entity_string == "datasets":
-            sub_value = token_value.value.split('.')[1]
-            if sub_value == "tag":
-                entity_string = "dataset_tag"
-            else:
-                entity_string = "dataset"
-        return entity_string
 
     def __build_query_element(self, token) -> QueryElement:
         """
@@ -185,15 +151,10 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :return:
 
         """
-
-        formatted_entity = self.__format_entity(token)
-        logger.info(str(formatted_entity))
-
-        query_element, self.log = QueryElement(
+        query_element, self.log = QueryElement.new(
             session = self.session,
             log = self.log,
             project_id = self.diffgram_query.project.id,
-            entity_type = formatted_entity,
             token = token
         )
         return query_element

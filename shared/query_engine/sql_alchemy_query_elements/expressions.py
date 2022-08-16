@@ -60,13 +60,16 @@ class CompareExpression:
     def get_query_op(self) -> QueryElement:
         return self.query_op
 
-    def set_scalar_and_query_op(self, value_1: any, value_2: any) -> [Selectable, int or str]:
-        if type(value_1) == int or type(value_1) == str:
-            self.scalar_op = value_1
-            self.query_op = value_2
+    def set_scalar_and_query_op(self, 
+                                entity_left: QueryEntity, 
+                                entity_right: QueryEntity):
+        if entity_left.type ='scaler':
+            self.scalar_op = entity_left
+            self.query_op = entity_right
         else:
-            self.query_op = value_1
-            self.scalar_op = value_2
+            self.query_op = entity_right
+            self.scalar_op = entity_left
+
 
     def build_label_compare_expression(self,
                                        log: dict,
