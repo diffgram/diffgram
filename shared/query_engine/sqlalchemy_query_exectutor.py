@@ -4,10 +4,12 @@ from shared.query_engine.diffgram_query_exectutor import BaseDiffgramQueryExecut
 from shared.shared_logger import get_shared_logger
 from shared.regular import regular_log
 from sqlalchemy.orm import aliased
+from lark import Token
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.permissions.project_permissions import Project_permissions
-from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement
-from shared.query_engine.sql_alchemy_query_elements.expressions import CompareExpression, AndExpression, OrExpression, Factor
+from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator
+from shared.query_engine.sql_alchemy_query_elements.expressions import CompareExpression, AndExpression, OrExpression, \
+    Factor
 
 logger = get_shared_logger()
 
@@ -105,7 +107,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 if hasattr(child, 'factor'):
                     factor = child.factor
                     expression.append(factor.filter_value)
-            and_expr = AndExpression(expression_list=expression)
+            and_expr = AndExpression(expression_list = expression)
             local_tree.and_expression = and_expr
         else:
             logger.error(f"Invalid child count for term. Must be 1 and is {len(args)}")
@@ -155,27 +157,26 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         value = name_token.value
         if type(value) == list:
             return list
-        
-        value = value.split('.')[0]
 
+        value = self.get_filtering_type_from_token_value(value)
         return value
 
+    def get_filtering_type_from_token_value(self, token_value):
+        entity_string = token_value.split('.')[0]
+        if entity_string == "label" or entity_string == "labels":
+            entity_string = "labels"  # cast to plural
+        if entity_string == "attributes" or entity_string == "attribute":
+            entity_string = "attribute"
+        if entity_string == "files" or entity_string == "file":
+            entity_string = "file"
 
-    def NOT_NAMED_YET():
-        #if value == "label" or value == "labels":
-        #    value = "labels"  # cast to plural
-        #if value == "attributes" or value == "attribute":
-        #    value = "attribute"
-        #if value == "files" or value == "file":
-        #    value = "file"
-
-        if value == "dataset" or value == "datasets":
-            sub_value = name_token.value.split('.')[1]
+        if entity_string == "dataset" or entity_string == "datasets":
+            sub_value = token_value.value.split('.')[1]
             if sub_value == "tag":
-                value = "dataset_tag"
+                entity_string = "dataset_tag"
             else:
-                value = "dataset"
-        return value
+                entity_string = "dataset"
+        return entity_string
 
     def __build_query_element(self, token) -> QueryElement:
         """
@@ -197,18 +198,19 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         )
         return query_element
 
-
-    def __validate_expression(self, compare_expression):
+    def __validate_expression(self, compare_expression: CompareExpression):
         """
-            This functions has the reponsability of checking that the expression operators
+            This functions has the responsibility of checking that the expression operators
             are semantically valid for each of the different contexts.
+        :param compare_expression:
         :return:
         """
 
-        entity_type1 = self.__format_entity(compare_expression.left_raw)
-        entity_type2 = self.__format_entity(compare_expression.right_raw)
-        if len(token1.value.split('.')) == 1:
-            error_string = f"Error with token: {token1.value}. Should specify the label name or global count"
+        entity_type1: Token = self.__format_entity(compare_expression.left_raw)
+        entity_type2: Token = self.__format_entity(compare_expression.right_raw)
+        compare_op_token: Token = self.__format_entity(compare_expression.compare_op_raw)
+        if len(entity_type1.value.split('.')) == 1:
+            error_string = f"Error with token: {entity_type1.value}. Should specify the label name or global count"
             logger.error(error_string)
             self.log['error']['compare_expr'] = error_string
             return False
@@ -217,9 +219,10 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             value_1 = self.__build_query_element(compare_expression.left_raw)
             value_2 = self.__build_query_element(compare_expression.right_raw)
 
-            if operator.value not in ["=", "!="]:
-                error_string = 'Invalid operator for file entity {}, valid operators are {}'.format(compare_expression.operator_raw.value,
-                                                                                                    str(["=", "!="]))
+            if compare_op_token.value not in ["=", "!="]:
+                error_string = 'Invalid operator for file entity {}, valid operators are {}'.format(
+                    compare_expression.operator_raw.value,
+                    str(["=", "!="]))
                 logger.error(error_string)
                 self.log['error']['compare_expr'] = error_string
                 return False
@@ -229,19 +232,19 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         return True
 
-
-    def init_compare_expression(children) -> CompareExpression:
+    def init_compare_expression(self, children) -> CompareExpression:
 
         compare_expression = CompareExpression(
+            session = self.session,
             left_raw = children[0],
             compare_op_raw = children[1],
             right_raw = children[2]
-            )
+        )
         return compare_expression
-
 
     def compare_expr(self, *args) -> QueryElement:
         if len(self.log['error'].keys()) > 0:
+            logger.error(self.log)
             return
 
         local_tree = args[0]
@@ -250,29 +253,24 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         children = local_tree.children
 
-        compare_expression = init_compare_expression(children)
+        compare_expression: CompareExpression = self.init_compare_expression(children)
 
         if not self.__validate_expression(compare_expression):
             return
-
-        logger.info(str(name1))
-        logger.info(str(name2))
-
+        compare_op_token = children[1]
         compare_expression.query_left = self.__build_query_element(compare_expression.left_raw)
         compare_expression.query_right = self.__build_query_element(compare_expression.right_raw)
 
         if len(self.log['error'].keys()) > 0:
+            logger.error(self.log)
             return
 
-        compare_expression.set_scalar_and_query_op()
-
-        compare_expression.compare_op = CompareOperator.create_compare_operator_from_token(compare_op_token)
-        
-        compare_expression.sql_compare_operator = compare_expression.compare_op.operator_value
+        compare_expression.set_scalar_and_query_op(compare_expression.left_raw, compare_expression.right_raw)
+        compare_op = compare_expression.set_compare_op_from_token(compare_op_token)
 
         # Get left right, since could be either
-        compare_expression.subquery = compare_expression.compare_op.build_query(session)
-               
+        query_op: QueryElement = compare_expression.get_query_op()
+        compare_expression.subquery = compare_expression.build_query()
 
         # Not sure where we want to pass log and project
         #    log = self.log,
@@ -286,9 +284,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             msg = f'Error generating expression {self.log}'
             logger.error(msg)
 
-        self.conditions.append(compare_operator)
-
-
+        self.conditions.append(compare_expression)
 
     def execute_query(self):
         """

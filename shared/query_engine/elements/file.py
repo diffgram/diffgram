@@ -1,5 +1,5 @@
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement
-
+from shared.database.source_control.file import File
 class FileQueryElement(QueryElement):
     top_level_key = "file"
 

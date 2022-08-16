@@ -12,7 +12,10 @@ from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.tag.tag import DatasetTag, Tag
 import operator
 from shared.utils.attributes.attributes_values_parsing import get_file_stats_column_from_attribute_kind
-
+from shared.query_engine.elements.tag import TagDatasetQueryElement
+from shared.query_engine.elements.file import FileQueryElement
+from shared.query_engine.elements.attribute import AttributeQueryElement
+from shared.query_engine.elements.dataset import DatasetQuery
 logger = get_shared_logger()
 
 
@@ -61,57 +64,57 @@ class QueryElement:
 
     @staticmethod
     def __init__(
-            session: Session,
-            log: dict,
-            project_id: int,
-            formatted_entity: str,
-            token: Token) -> 'QueryElement':
-         """
-            Generates a query element from the given entity type.
-        :param session:
-        :param log:
-        :param project_id:
-        :param entity_type:
-        :param token:
-        :return:
+        self,
+        session: Session,
+        log: dict,
+        project_id: int,
+        formatted_entity: str,
+        token: Token) -> 'QueryElement':
         """
+           Generates a query element from the given entity type.
+       :param session:
+       :param log:
+       :param project_id:
+       :param entity_type:
+       :param token:
+       :return:
+       """
 
         if type(formatted_entity) != str:
-            self.is_reservered_word = False
+            self.is_reserved_word = False
             self.type = 'scaler'
             self.raw_token = token
             self.project_id = project_id
             return self.raw_token.value
 
-        is_reservered_word = self.determine_if_reserved_word(formatted_entity)
-        if not is_reservered_word:
+        is_reserved_word = self.determine_if_reserved_word(formatted_entity)
+        if not is_reserved_word:
             return False
 
         string_query_class = {
             'labels': LabelQueryElement,
             'attribute': AttributeQueryElement,
             'file': FileQueryElement,
-            'dataset': DatasetQueryElement,
+            'dataset': DatasetQuery,
             'dataset_tag': TagDatasetQueryElement,
             'list': ListQueryElement
         }
 
-        QueryClass = string_query_class.get(entity_type)
+        QueryClass = string_query_class.get(formatted_entity)
 
         if QueryClass is None:
-            raise NotImplmentedException
+            raise NotImplementedError
 
         query_class = QueryClass()
         query_class.type = formatted_entity
         query_class.raw_token = token
         query_class.project_id = project_id
-        query_class.is_reservered_word = is_reservered_word
+        query_class.is_reserved_word = is_reserved_word
         query_class.top_level_key = token.value.split('.')[1]
         query_class.session = session
         query_class.log = log
 
         return query_class
-
 
 
 class LabelQueryElement(QueryElement):
@@ -147,7 +150,6 @@ class LabelQueryElement(QueryElement):
         return result, log
 
 
-
 class ListQueryElement(QueryElement):
 
     def __init__(self, list_value: list):
@@ -178,5 +180,3 @@ class TokenQueryElement(QueryElement):
             return None, log
         query_element = ListQueryElement(list_value = list_value)
         return query_element, log
-
-

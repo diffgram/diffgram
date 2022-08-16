@@ -17,7 +17,9 @@ from sqlalchemy.sql.expression import and_, or_
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator
 from shared.utils.attributes.attributes_values_parsing import get_file_stats_column_from_attribute_kind
 from shared.query_engine.sql_alchemy_query_elements.query_elements import LabelQueryElement
+
 logger = get_shared_logger()
+
 
 class Factor:
     filter_value: FunctionFilter
@@ -25,28 +27,40 @@ class Factor:
     def __init__(self, filter_value: FunctionFilter):
         self.filter_value = filter_value
 
-class CompareExpression():
+
+class CompareExpression:
     query_left: QueryElement
     operator: CompareOperator
     query_right: QueryElement
     subquery: Selectable
+    session: Session
 
-    left_raw: Any
-    compare_op_raw: Any
-    right_raw: Any
+    left_raw: Token or object
+    compare_op_raw: Token or object
+    right_raw: Token or object
+    scalar_op: list or str or int or float
+    query_op: QueryElement
 
-    def __init__(self, operand1: QueryElement, operand2: QueryElement, operator: CompareOperator, subquery: Selectable
-                 ):
+    def __init__(self,
+                 session: Session,
+                 left_raw: Token or object,
+                 right_raw: Token or object,
+                 compare_op_raw: Token or object,
+                 subquery: Selectable):
+        self.session = session
         self.subquery = subquery
-        self.operand2 = operand2
-        self.operand1 = operand1
-        self.operator = operator
+        self.left_raw = left_raw
+        self.right_raw = right_raw
+        self.compare_op_raw = compare_op_raw
 
-    def build_subquery_from_expression(self):
-        pass
+    def set_compare_op_from_token(self, compare_op_token: Token):
+        self.operator = CompareOperator.create_compare_operator_from_token(compare_op_token)
+        return self.compare_op
 
+    def get_query_op(self) -> QueryElement:
+        return self.query_op
 
-    def set_scalar_and_query_op(value_1: any, value_2: any) -> [Selectable, int or str]:
+    def set_scalar_and_query_op(self, value_1: any, value_2: any) -> [Selectable, int or str]:
         if type(value_1) == int or type(value_1) == str:
             self.scalar_op = value_1
             self.query_op = value_2
@@ -54,19 +68,22 @@ class CompareExpression():
             self.query_op = value_1
             self.scalar_op = value_2
 
-
-    @staticmethod
-    def build_label_compare_expression(session: Session, log: dict, project_id: int, value_1: any, value_2: any,
-                                       compare_op_token: Token) -> [
-        'CompareExpression', dict]:
-
-        query_op, scalar_op = CompareExpression.get_scalar_and_query_op(value_1, value_2)
+    def build_label_compare_expression(self,
+                                       log: dict,
+                                       project_id: int,
+                                       value_1: any,
+                                       value_2: any,
+                                       compare_op_token: Token) -> ['CompareExpression', dict]:
+        if not self.query_op or not self.scalar_op:
+            log['error']['scalar_query_ops'] = 'scalar_op or query_op are None in the compare expression'
+            return None, log
         compare_operator: CompareOperator = CompareOperator.create_compare_operator_from_token(compare_op_token)
         sql_compare_operator = compare_operator.operator_value
-        label_query_element: LabelQueryElement = query_op
-        new_filter_subquery = label_query_element.subquery.filter(sql_compare_operator(FileStats.count_instances, scalar_op)).subquery()
-        result = CompareExpression(operand1 = query_op,
-                                   operand2 = scalar_op,
+        label_query_element: QueryElement = self.query_op
+        new_filter_subquery = label_query_element.subquery.filter(
+            sql_compare_operator(FileStats.count_instances, self.scalar_op)).subquery()
+        result = CompareExpression(operand1 = self.query_op,
+                                   operand2 = self.scalar_op,
                                    operator = sql_compare_operator,
                                    subquery = new_filter_subquery)
         return result, log
