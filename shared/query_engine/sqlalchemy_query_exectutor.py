@@ -270,19 +270,15 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         # Get left right, since could be either
         query_op: QueryElement = compare_expression.get_query_op()
-        compare_expression.subquery = compare_expression.build_query()
-
-        # Not sure where we want to pass log and project
-        #    log = self.log,
-        #    project_id = self.diffgram_query.project.id,
-
-        logger.info(str(compare_expression))
-
-        local_tree.compare_expression = compare_expression
+        compare_expression.subquery = query_op.build_query(session = Session, project_id = int, log = dict, token = Token)
 
         if len(self.log['error'].keys()) > 0:
             msg = f'Error generating expression {self.log}'
             logger.error(msg)
+
+        logger.info(str(compare_expression))
+
+        local_tree.compare_expression = compare_expression
 
         self.conditions.append(compare_expression)
 

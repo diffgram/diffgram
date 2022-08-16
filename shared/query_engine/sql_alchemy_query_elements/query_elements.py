@@ -16,6 +16,7 @@ from shared.query_engine.elements.tag import TagDatasetQueryElement
 from shared.query_engine.elements.file import FileQueryElement
 from shared.query_engine.elements.attribute import AttributeQueryElement
 from shared.query_engine.elements.dataset import DatasetQuery
+
 logger = get_shared_logger()
 
 
@@ -63,13 +64,11 @@ class QueryElement:
             return self.token.value
 
     @staticmethod
-    def __init__(
-        self,
-        session: Session,
-        log: dict,
-        project_id: int,
-        formatted_entity: str,
-        token: Token) -> 'QueryElement':
+    def new(session: Session,
+            log: dict,
+            project_id: int,
+            formatted_entity: str,
+            token: Token) -> 'QueryElement':
         """
            Generates a query element from the given entity type.
        :param session:
@@ -79,15 +78,15 @@ class QueryElement:
        :param token:
        :return:
        """
-
+        q = QueryElement()
         if type(formatted_entity) != str:
-            self.is_reserved_word = False
-            self.type = 'scaler'
-            self.raw_token = token
-            self.project_id = project_id
-            return self.raw_token.value
+            q.is_reserved_word = False
+            q.type = 'scalar'
+            q.raw_token = token
+            q.project_id = project_id
+            return q
 
-        is_reserved_word = self.determine_if_reserved_word(formatted_entity)
+        is_reserved_word = q.determine_if_reserved_word(formatted_entity)
         if not is_reserved_word:
             return False
 
