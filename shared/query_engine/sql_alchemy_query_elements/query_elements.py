@@ -148,46 +148,6 @@ class LabelQueryElement(QueryElement):
         return result, log
 
 
-class AttributeQueryElement(QueryElement):
-
-    def __init__(self, subquery: Selectable
-                 ):
-        self.subquery = subquery
-
-    @staticmethod
-    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['AttributeQueryElement',
-                                                                                          dict]:
-
-        attr_group_name = token.value.split('.')[1]
-
-        attribute_group = Attribute_Template_Group.get_by_name_and_project(
-            session = session,
-            name = attr_group_name,
-            project_id = project_id
-        )
-
-        if not attribute_group:
-            # Strip underscores
-            attr_group_name = attr_group_name.replace('_', ' ')
-            attribute_group = Attribute_Template_Group.get_by_name_and_project(
-                session = session,
-                name = attr_group_name,
-                project_id = project_id
-            )
-        if not attribute_group:
-            error_string = f"Attribute Group {str(attr_group_name)} does not exists"
-            logger.error(error_string)
-            log['error']['attr_group_name'] = error_string
-            return None, log
-        attr_group_query = (session.query(FileStats.file_id).filter(
-            FileStats.attribute_template_group_id == attribute_group.id
-        ))
-        result = AttributeQueryElement(subquery = attr_group_query)
-        return result, log
-
-
-
-
 
 class ListQueryElement(QueryElement):
 
