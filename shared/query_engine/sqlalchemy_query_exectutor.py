@@ -177,7 +177,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 value = "dataset"
         return value
 
-    def __parse_value(self, token) -> QueryElement:
+    def __build_query_element(self, token) -> QueryElement:
         """
             Transforms the token into an integer or appropriate diffgram value (instance count, issue count, etc)
         :param token:
@@ -228,7 +228,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             return token.value, log
 
 
-    def __validate_expression(self, token1, token2, operator):
+    def __validate_expression(self, compare_expression):
         """
             This functions has the reponsability of checking that the expression operators
             are semantically valid for each of the different contexts.
@@ -238,8 +238,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :return:
         """
 
-        entity_type1 = self.__format_entity(token1)
-        entity_type2 = self.__format_entity(token2)
+        entity_type1 = self.__format_entity(compare_expression.left_raw)
+        entity_type2 = self.__format_entity(compare_expression.right_raw)
         if len(token1.value.split('.')) == 1:
             error_string = f"Error with token: {token1.value}. Should specify the label name or global count"
             logger.error(error_string)
@@ -247,11 +247,11 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             return False
 
         if "file" in [entity_type1, entity_type2]:
-            value_1 = self.__parse_value(token1)
-            value_2 = self.__parse_value(token2)
+            value_1 = self.__build_query_element(compare_expression.left_raw)
+            value_2 = self.__build_query_element(compare_expression.right_raw)
 
             if operator.value not in ["=", "!="]:
-                error_string = 'Invalid operator for file entity {}, valid operators are {}'.format(operator.value,
+                error_string = 'Invalid operator for file entity {}, valid operators are {}'.format(compare_expression.operator_raw.value,
                                                                                                     str(["=", "!="]))
                 logger.error(error_string)
                 self.log['error']['compare_expr'] = error_string
@@ -262,49 +262,65 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         return True
 
+
+    def init_compare_expression(children) -> CompareExpression:
+
+        compare_expression = CompareExpression(
+            left_raw = children[0],
+            compare_op_raw = children[1],
+            right_raw = children[2]
+            )
+        return compare_expression
+
+
     def compare_expr(self, *args) -> QueryElement:
         if len(self.log['error'].keys()) > 0:
             return
+
         local_tree = args[0]
-        if len(local_tree.children) == 3:
-            children = local_tree.children
-            name1 = children[0]
-            compare_op = children[1]
-            name2 = children[2]
-            entity_type = self.__format_entity(name1)
-            if self.__validate_expression(name1, name2, compare_op):
-                logger.info(str(name1))
-                logger.info(str(name2))
-                value_1 = self.__parse_value(name1)
-                value_2 = self.__parse_value(name2)
-
-                if len(self.log['error'].keys()) > 0:
-                    return
-
-                compare_operator = None
-                compare_expression, self.log = CompareExpression.build_expression_from_entity_type(
-                    session = self.session,
-                    log = self.log,
-                    project_id = self.diffgram_query.project.id,
-                    entity_type = entity_type,
-                    value_1 = value_1,
-                    value_2 = value_2,
-                    compare_op = compare_op
-                )
-                logger.info(str(compare_expression))
-
-                local_tree.compare_expression = compare_expression
-
-                if len(self.log['error'].keys()) > 0:
-                    msg = f'Error generating expression {self.log}'
-                    logger.error(msg)
-
-                self.conditions.append(compare_operator)
-            else:
-                return
-
-        else:
+        if len(local_tree.children) != 3:
             self.log['error']['compare_expr'] = f"Invalid compare expression {str(args)}"
+
+        children = local_tree.children
+
+        compare_expression = init_compare_expression(children)
+
+        if not self.__validate_expression(compare_expression):
+            return
+
+        logger.info(str(name1))
+        logger.info(str(name2))
+
+        compare_expression.query_left = self.__build_query_element(name1)
+        compare_expression.query_right = self.__build_query_element(name2)
+
+        if len(self.log['error'].keys()) > 0:
+            return
+
+        compare_expression.set_scalar_and_query_op()
+
+        compare_op = CompareOperator.create_compare_operator_from_token(compare_op_token)
+
+        sql_compare_operator = compare_op.operator_value
+
+        compare_expression.subquery = query_left.build_query(session)
+               
+
+        # Not sure where we want to pass log and project
+        #    log = self.log,
+        #    project_id = self.diffgram_query.project.id,
+
+        logger.info(str(compare_expression))
+
+        local_tree.compare_expression = compare_expression
+
+        if len(self.log['error'].keys()) > 0:
+            msg = f'Error generating expression {self.log}'
+            logger.error(msg)
+
+        self.conditions.append(compare_operator)
+
+
 
     def execute_query(self):
         """
