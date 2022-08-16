@@ -53,10 +53,7 @@ class QueryElement:
         if word in reserved_words:
             return True
 
-    def get_sql_alchemy_query_value(self) -> Selectable \
-        :
-        if self.column:
-            return self.column
+    def get_sql_alchemy_query_value(self) -> Selectable:
         if self.subquery:
             return self.subquery
         if self.token:
