@@ -45,6 +45,7 @@ class QueryElement:
 
     token: Token
     type: None
+    top_level_key: None
 
     def determine_if_reserved_word(self, word: str):
 
@@ -108,6 +109,7 @@ class QueryElement:
         query_class.raw_token = token
         query_class.project_id = project_id
         query_class.is_reservered_word = is_reservered_word
+        query_class.top_level_key = token.value.split('.')[1]
 
         return query_class
 
@@ -185,23 +187,6 @@ class AttributeQueryElement(QueryElement):
 
 
 
-class FileQueryElement(QueryElement):
-
-    def __init__(self, subquery: Column):
-        self.subquery = subquery
-
-    @staticmethod
-    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['FileQueryElement', dict]:
-        file_key = token.value.split('.')[1]
-        column = None
-        if file_key == 'type':
-            column = File.type
-        else:
-            # Any non-default columns are considered as metadata.
-            column = File.file_metadata[file_key].astext
-            subquery = session.query(File.id).filter(File.file_metadata[file_key].astext).subquery()
-        query_element = FileQueryElement(subquery = subquery)
-        return query_element, log
 
 
 class ListQueryElement(QueryElement):
