@@ -46,6 +46,12 @@ class QueryElement:
     token: Token
     type: None
 
+    def determine_if_reserved_word(self, word: str):
+
+        reserved_words = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
+        if word in reserved_words:
+            return True
+
     def get_sql_alchemy_query_value(self) -> Selectable \
         :
         if self.column:
@@ -56,12 +62,13 @@ class QueryElement:
             return self.token.value
 
     @staticmethod
-    def generate_query_element(session: Session,
-                               log: dict,
-                               project_id: int,
-                               entity_type: str,
-                               token: Token) -> ['QueryElement', dict]:
-        """
+    def __init__(
+            session: Session,
+            log: dict,
+            project_id: int,
+            formatted_entity: str,
+            token: Token) -> 'QueryElement':
+         """
             Generates a query element from the given entity type.
         :param session:
         :param log:
@@ -71,7 +78,18 @@ class QueryElement:
         :return:
         """
 
-        string_entity_to_class = {
+        if type(formatted_entity) != str:
+            self.is_reservered_word = False
+            self.type = 'scaler'
+            self.raw_token = token
+            self.project_id = project_id
+            return self.raw_token.value
+
+        is_reservered_word = self.determine_if_reserved_word(formatted_entity)
+        if not is_reservered_word:
+            return False
+
+        string_query_class = {
             'labels': LabelQueryElement,
             'attribute': AttributeQueryElement,
             'file': FileQueryElement,
@@ -80,18 +98,18 @@ class QueryElement:
             'list': ListQueryElement
         }
 
-        entity_class = string_entity_to_class.get(entity_type)
+        QueryClass = string_query_class.get(entity_type)
 
-        if entity_class is None:
-            return token.value, log
+        if QueryClass is None:
+            raise NotImplmentedException
 
-        query_element, log = entity_class.create_from_token(
-            session = session,
-            log = log,
-            project_id = project_id,
-            token = token
-        )
-        return query_element, log
+        query_class = QueryClass()
+        query_class.type = formatted_entity
+        query_class.raw_token = token
+        query_class.project_id = project_id
+        query_class.is_reservered_word = is_reservered_word
+
+        return query_class
 
 
 

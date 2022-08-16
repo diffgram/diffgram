@@ -188,53 +188,20 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         formatted_entity = self.__format_entity(token)
         logger.info(str(formatted_entity))
 
-        if type(formatted_entity) == str:
-
-            is_reservered_word = self.determine_if_reserved_word(formatted_entity)
-            if is_reservered_word:
-                query_element, self.log = QueryElement.generate_query_element(
-                    session = self.session,
-                    log = self.log,
-                    project_id = self.diffgram_query.project.id,
-                    entity_type = formatted_entity,
-                    token = token
-                )
-                query_element.is_reservered_word = True
-                query_element.type = formatted_entity
-                query_element.raw_token = token
-                return query_element
-
-            else:
-                raise NotImplementedError   
-
-        else:
-            # Assumes it is a scaler, or list, etc.
-            # Using formattted thing errors
-
-            # or query_element.scaler = formatted_entity
-            return token.value
-
-
-    def determine_if_reserved_word(self, word: str):
-
-        reserved_words = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
-        if word in reserved_words:
-            return True
-
-
-    def determine_if_scaler_or_reserved(token):
-
-        if entity_class is None:
-            return token.value, log
+        query_element, self.log = QueryElement(
+            session = self.session,
+            log = self.log,
+            project_id = self.diffgram_query.project.id,
+            entity_type = formatted_entity,
+            token = token
+        )
+        return query_element
 
 
     def __validate_expression(self, compare_expression):
         """
             This functions has the reponsability of checking that the expression operators
             are semantically valid for each of the different contexts.
-        :param token1:
-        :param token2:
-        :param operator:
         :return:
         """
 
