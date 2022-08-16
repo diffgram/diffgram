@@ -3,9 +3,8 @@ from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryE
 
 class AttributeQueryElement(QueryElement):
 
-    def __init__(self, subquery: Selectable
-                 ):
-        self.subquery = subquery
+    def __init__(self):
+        pass
 
     @staticmethod
     def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['AttributeQueryElement',
@@ -66,9 +65,9 @@ class AttributeQueryElement(QueryElement):
 
 
     @staticmethod
-    def build_attribute_compare_expression(session: Session, log: dict, project_id: int, value_1: any, value_2: any,
+    def build_query(session: Session, log: dict, project_id: int, value_1: any, value_2: any,
                                            compare_op_token: Token) -> ['CompareExpression', dict]:
-        query_op, scalar_op = CompareExpression.get_scalar_and_query_op(value_1, value_2)
+        
         attribute_kind, log = CompareExpression.get_attribute_kind_from_string(
             session = session,
             log = log,
@@ -77,13 +76,11 @@ class AttributeQueryElement(QueryElement):
         )
         sql_compare_operator = CompareOperator.create_compare_operator_from_token(compare_op_token)
         file_stats_column = get_file_stats_column_from_attribute_kind(attribute_kind)
+
         if attribute_kind in ['radio', 'multiple_select', 'select', 'tree']:
             scalar_op = int(scalar_op)
-        new_filter_subquery = query_op.filter(sql_compare_operator(file_stats_column, scalar_op)).subquery()
-        result = CompareExpression(operand1 = query_op,
-                                   operand2 = scalar_op,
-                                   operator = sql_compare_operator,
-                                   subquery = new_filter_subquery)
-        return result, log
+
+        self.subquery = query_op.filter(sql_compare_operator(file_stats_column, scalar_op)).subquery()
+        return self.subquery
 
 
