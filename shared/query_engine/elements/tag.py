@@ -1,26 +1,15 @@
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement
+from shared.database.source_control.working_dir import WorkingDirFileLink
+from shared.database.tag.tag import DatasetTag, Tag
+from shared.database.source_control.file import File
 
 class TagDatasetQueryElement(QueryElement):
 
-    def __init__(self, column: Column):
-        self.column = column
-
-
-    @staticmethod
-    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['DatasetQueryElement', dict]:
-
-        dataset_property = token.value.split('.')[1]
-        if dataset_property == "tag":
-            dataset_col = DatasetTag.tag_id
-        else:
-            log['error']['not_supported'] = 'Dataset filters just support ID column.'
-            return None, log
-        return dataset_col, log
-
+    def __init__(self):
+        pass
 
     @staticmethod
-    def build_dataset_tag_compare_expression(session: Session, log: dict, project_id: int, value_1: any, value_2: any,
-                                      compare_op_token: Token) -> ['CompareExpression', dict]:
+    def build_query() -> TagDatasetQueryElement:
 
         # Build tag ID list
         tag_id_list = []
@@ -29,12 +18,8 @@ class TagDatasetQueryElement(QueryElement):
             if tag:
                 tag_id_list.append(tag.id)
         AliasFile = aliased(File)
-        new_filter_subquery = session.query(AliasFile.id)\
+        self.subquery = session.query(AliasFile.id)\
             .join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id)\
             .join(DatasetTag, DatasetTag.dataset_id == WorkingDirFileLink.working_dir_id)\
             .filter(sql_compare_operator(value_1, tag_id_list)).subquery(name = "ds_tag_compare")
-        result = CompareExpression(operand1 = query_op,
-                                   operand2 = scalar_op,
-                                   operator = sql_compare_operator,
-                                   subquery = new_filter_subquery)
-        return result, log
+        return self.subquery

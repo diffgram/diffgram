@@ -110,6 +110,8 @@ class QueryElement:
         query_class.project_id = project_id
         query_class.is_reservered_word = is_reservered_word
         query_class.top_level_key = token.value.split('.')[1]
+        query_class.session = session
+        query_class.log = log
 
         return query_class
 
