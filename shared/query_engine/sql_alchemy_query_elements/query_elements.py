@@ -16,6 +16,7 @@ from shared.query_engine.elements.tag import TagDatasetQueryElement
 from shared.query_engine.elements.file import FileQueryElement
 from shared.query_engine.elements.attribute import AttributeQueryElement
 from shared.query_engine.elements.dataset import DatasetQuery
+from shared.query_engine.elements.scaler import ScalarQueryElement
 
 logger = get_shared_logger()
 
@@ -43,37 +44,39 @@ class CompareOperator:
 
 
 class QueryEntity:
-    key: any            # any type, a scaler, or a string reserved word etc.
-    parent_key: QueryEntity    
-    kind: str           # scaler or reserved
+    key: any  # any type, a scaler, or a string reserved word etc.
+    parent_key: 'QueryEntity'
+    kind: str  # scaler or reserved
     key_has_been_type_corrected: bool
 
-    def remove_plural(self, entity.key):
-
+    def remove_plural(self):
         if type(self.key) == str:
             if self.key.endswith('s'):
-                self.key = self.key[ : - 1]
+                self.key = self.key[: - 1]
 
-    def build_tree(entity_string):
-        if entity_string == "dataset":
-            sub_value = token_value.value.split('.')[1]
-            if sub_value == "tag":
-                entity_string = "dataset_tag"
-            else:
-                entity_string = "dataset"
-        return entity_string
+    def build_tree(self) -> 'QueryEntity':
+        list_items = self.key.split('.')
+        i = 0
+        query_entity_list = [self]
+        for item in reversed(list_items):
+            ent = QueryEntity()
+            ent.key = item
+            if i > 0:
+                ent.parent_key = query_entity_list[i - 1]
+            if i < len(list_items) - 1:
+                query_entity_list.append(ent)
+        return query_entity_list[0]
 
     @staticmethod
-    def cast_int_from_unknown_type(value : any):
+    def cast_int_from_unknown_type(value: any):
         try:
             return int(value)
         except:
             return value
 
-    def set_key_from_token_with_unknown_type(self, value):
+    def set_key_from_token_with_unknown_type(self, token: Token):
+        value = QueryEntity.cast_int_from_unknown_type(token.value)
 
-        value = QueryEntity.cast_int_from_unknown_type(value)
-        
         new_value = None
 
         if type(value) == int:
@@ -83,27 +86,25 @@ class QueryEntity:
             new_value = value
 
         if type(value) == str:
-            new_value = token_value.split('.')[0]
+            new_value = value.split('.')[0]
 
         self.key = new_value
         self.key_has_been_type_corrected = True
 
         if type(value) not in [int, str, list]:
-            raise NotImplmentedError
+            raise NotImplementedError
 
-
-    def new(token):
-
+    @staticmethod
+    def new(token) -> 'QueryEntity':
         entity = QueryEntity()
 
-        QueryEntity.set_key_from_token_with_unknown_type(token)
+        entity.set_key_from_token_with_unknown_type(token)
 
-        self.remove_plural(entity.key)
-        
+        entity.remove_plural(entity.key)
+
         entity.build_tree()
-        
-        return entity
 
+        return entity
 
 
 class QueryElement:
@@ -114,15 +115,13 @@ class QueryElement:
     token: Token
     type: None
     top_level_key: None
-    reserved_words: list
+    log: dict
     query_entity: None
     query_entity_children: list
-
-    def __init__():
-        self.reserved_words = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
+    reserved_words: list = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
 
     def determine_if_reserved_word(self, word: str):
-  
+
         if word in self.reserved_words:
             return True
 
@@ -151,15 +150,15 @@ class QueryElement:
         entity = QueryEntity.new(token)
 
         query_element.query_entity = entity
-        query_element.query_entity_list = [] # SOMETHING
 
-        if type(formatted_entity) == str:
-            is_reserved_word = q.determine_if_reserved_word(formatted_entity)
+        if type(entity.key) == str:
+            is_reserved_word = query_element.determine_if_reserved_word(entity.key)
             if not is_reserved_word:
-                self.log['error']['is_reserved_word'] = f"Entity: {formatted_entity} is not valid. Valid options are {self.reserved_words}"
+                log['error'][
+                    'is_reserved_word'] = f"Entity: {entity.key} is not valid. Valid options are {query_element.reserved_words}"
                 return query_element
         else:
-            formatted_entity = "scaler"
+            formatted_entity = "scalar"
 
         string_query_class = {
             'labels': LabelQueryElement,
@@ -167,7 +166,7 @@ class QueryElement:
             'file': FileQueryElement,
             'dataset': DatasetQuery,
             'dataset_tag': TagDatasetQueryElement,
-            'scaler': ScalerQueryElement
+            'scalar': ScalarQueryElement
         }
 
         QueryClass = string_query_class.get(formatted_entity)
@@ -218,7 +217,3 @@ class LabelQueryElement(QueryElement):
         )
         result = LabelQueryElement(subquery = instance_count_query)
         return result, log
-
-
-
-

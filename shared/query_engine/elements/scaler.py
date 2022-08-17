@@ -1,5 +1,6 @@
+from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement
 
-class ScalerQueryElement(QueryElement):
+class ScalarQueryElement(QueryElement):
 
     def __init__(self):
 

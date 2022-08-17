@@ -7,7 +7,7 @@ from sqlalchemy.orm import aliased
 from lark import Token
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.permissions.project_permissions import Project_permissions
-from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator
+from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator, QueryEntity
 from shared.query_engine.sql_alchemy_query_elements.expressions import CompareExpression, AndExpression, OrExpression, \
     Factor
 
@@ -142,8 +142,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         local_tree.value = values
         return local_tree
 
-
-
     def __build_query_element(self, token) -> QueryElement:
         """
             Transforms the token into an integer or appropriate diffgram value (instance count, issue count, etc)
@@ -167,16 +165,16 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :return:
         """
 
-        entity_type1: Token = self.__format_entity(compare_expression.left_raw)
-        entity_type2: Token = self.__format_entity(compare_expression.right_raw)
-        compare_op_token: Token = self.__format_entity(compare_expression.compare_op_raw)
-        if len(entity_type1.value.split('.')) == 1:
-            error_string = f"Error with token: {entity_type1.value}. Should specify the label name or global count"
+        entity_type_left: QueryEntity = QueryEntity.new(compare_expression.left_raw)
+        entity_type_right: QueryEntity = QueryEntity.new(compare_expression.right_raw)
+        compare_op_token: Token = compare_expression.compare_op_raw
+        if len(entity_type_left.value.split('.')) == 1:
+            error_string = f"Error with token: {entity_type_left.value}. Should specify the label name or global count"
             logger.error(error_string)
             self.log['error']['compare_expr'] = error_string
             return False
 
-        if "file" in [entity_type1, entity_type2]:
+        if "file" in [entity_type_left, entity_type_right]:
             value_1 = self.__build_query_element(compare_expression.left_raw)
             value_2 = self.__build_query_element(compare_expression.right_raw)
 
@@ -231,7 +229,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         # Get left right, since could be either
         query_op: QueryElement = compare_expression.get_query_op()
-        compare_expression.subquery = query_op.build_query(session = Session, project_id = int, log = dict, token = Token)
+        compare_expression.subquery = query_op.build_query(session = Session, project_id = int, log = dict,
+                                                           token = Token)
 
         if len(self.log['error'].keys()) > 0:
             msg = f'Error generating expression {self.log}'
