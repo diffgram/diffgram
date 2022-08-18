@@ -62,6 +62,7 @@ class CompareExpression:
         from shared.query_engine.expressions.dataset import DatasetCompareExpression
         from shared.query_engine.expressions.file import FileCompareExpression
         from shared.query_engine.expressions.attribute import AttributeCompareExpression
+        from shared.query_engine.expressions.dataset_tag import DatasetTagCompareExpression
         query_element_left, log = QueryElement.new(
             session = session,
             log = log,
@@ -88,6 +89,7 @@ class CompareExpression:
             'dataset': DatasetCompareExpression,
             'file': FileCompareExpression,
             'attribute': AttributeCompareExpression,
+            'dataset_tag': DatasetTagCompareExpression,
         }
         CompareExpClass = string_query_class.get(query_entity_key)
         if CompareExpClass is None:

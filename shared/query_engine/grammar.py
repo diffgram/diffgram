@@ -5,7 +5,7 @@ grammar_definition = """
     factor: compare_expr
     ?quoted_string  : DOUBLE_QUOTED_STRING | SINGLE_QUOTED_STRING
     compare_expr: (NAME | array | quoted_string)  COMPARE_OP (NAME | array | quoted_string) 
-    VALUE: NUMBER | CNAME
+    VALUE: NUMBER | CNAME | SINGLE_QUOTED_STRING | DOUBLE_QUOTED_STRING
     COMPARE_OP:  "!=" | ">=" | "<=" | ">" | "<" | "="  | "in"
     OR: "or"
     AND: "and"

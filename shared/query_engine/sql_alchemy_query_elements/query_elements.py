@@ -43,17 +43,17 @@ class QueryEntity:
     kind: str  # scaler or reserved
     key_has_been_type_corrected: bool
     child_list: []
-
+    reserved_sub_words: list = ['id', 'tag']
     def remove_plural(self):
         if type(self.key) == str:
             if self.key.endswith('s'):
                 self.key = self.key[: - 1]
 
-    def build_tree(self) -> list:
+    def build_tree(self, token: Token) -> list:
         self.child_list = []
         if type(self.key) != str:
             return self.child_list
-        list_items = self.key.split('.')
+        list_items = token.value.split('.')
         i = 0
         query_entity_list = [self]
 
@@ -97,6 +97,18 @@ class QueryEntity:
         if type(value) not in [int, str, list]:
             raise NotImplementedError
 
+    def change_key_based_on_sub_elements(self):
+
+        final_key = self.key
+        if len(self.child_list) > 1:
+            for i in range(len(self.child_list) - 1, -1, -1):
+                child = self.child_list[i]
+                if i == len(self.child_list) - 1:
+                    continue
+
+                if child.key in self.reserved_sub_words:
+                    final_key += '_' + child.key
+        self.key = final_key
     @staticmethod
     def new(token) -> 'QueryEntity':
         entity = QueryEntity()
@@ -105,7 +117,9 @@ class QueryEntity:
 
         entity.remove_plural()
 
-        entity.build_tree()
+        entity.build_tree(token)
+
+        entity.change_key_based_on_sub_elements()
 
         return entity
 
@@ -151,7 +165,7 @@ class QueryElement:
        :param token:
        :return:
        """
-        from shared.query_engine.sql_alchemy_query_elements.tag import TagDatasetQueryElement
+        from shared.query_engine.sql_alchemy_query_elements.dataset_tag import TagDatasetQueryElement
         from shared.query_engine.sql_alchemy_query_elements.file import FileQueryElement
         from shared.query_engine.sql_alchemy_query_elements.attribute import AttributeQueryElement
         from shared.query_engine.sql_alchemy_query_elements.dataset import DatasetQuery
@@ -162,7 +176,7 @@ class QueryElement:
 
         query_element.query_entity = entity
         is_reserved_word = False
-
+        print('KEYYYYYY', entity.key)
         if type(entity.key) == str and not has_quotes(entity.key):
             is_reserved_word = query_element.determine_if_reserved_word(entity.key)
             if not is_reserved_word:
