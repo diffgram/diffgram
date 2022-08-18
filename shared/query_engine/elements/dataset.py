@@ -1,7 +1,7 @@
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement
 from sqlalchemy.sql import Selectable
-from sqlalchemy.orm import aliased
-from shared.database.source_control.file import File
+from lark import Token
+from sqlalchemy.orm.session import Session
 from shared.database.source_control.working_dir import WorkingDirFileLink
 
 
@@ -11,9 +11,13 @@ class DatasetQuery(QueryElement):
     def __init__(self):
         pass
 
-    def build_query(self, session) -> Selectable:
-        AliasFile = aliased(File)
-        self.subquery = session.query(AliasFile.id) \
-            .join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id) \
-            .filter(sql_compare_operator(value_1, value_2)).subquery(name = "ds_compare")
-        return self.subquery
+    def build_query(self, session, token: Token) -> Selectable:
+        dataset_property = token.value.split('.')[1]
+        dataset_col = None
+        if dataset_property == "id":
+            dataset_col = WorkingDirFileLink.working_dir_id
+
+        else:
+            self.log['error']['not_supported'] = 'Dataset filters just support ID column.'
+        self.column = dataset_col
+        return self.column

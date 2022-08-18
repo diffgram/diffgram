@@ -142,13 +142,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         local_tree.value = values
         return local_tree
 
-    def __build_query_element(self, token) -> QueryElement:
-        """
-            Transforms the token into an integer or appropriate diffgram value (instance count, issue count, etc)
-        :param token:
-        :return:
-
-        """
+    def __build_query_element(self, token: Token) -> QueryElement:
         query_element, self.log = QueryElement.new(
             session = self.session,
             log = self.log,
@@ -164,12 +158,11 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :param compare_expression:
         :return:
         """
-
         entity_type_left: QueryEntity = QueryEntity.new(compare_expression.left_raw)
         entity_type_right: QueryEntity = QueryEntity.new(compare_expression.right_raw)
         compare_op_token: Token = compare_expression.compare_op_raw
-        if len(entity_type_left.value.split('.')) == 1:
-            error_string = f"Error with token: {entity_type_left.value}. Should specify the label name or global count"
+        if len(entity_type_left.full_key.split('.')) == 1:
+            error_string = f"Error with entity: {entity_type_left.key}. Should specify the label name or global count"
             logger.error(error_string)
             self.log['error']['compare_expr'] = error_string
             return False
@@ -193,15 +186,17 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
     def init_compare_expression(self, children) -> CompareExpression:
 
-        compare_expression = CompareExpression(
+        compare_expression, self.log = CompareExpression.new(
             session = self.session,
             left_raw = children[0],
             compare_op_raw = children[1],
-            right_raw = children[2]
+            right_raw = children[2],
+            project_id = self.diffgram_query.project.id,
+            log = self.log
         )
         return compare_expression
 
-    def compare_expr(self, *args) -> QueryElement:
+    def compare_expr(self, *args):
         if len(self.log['error'].keys()) > 0:
             logger.error(self.log)
             return
@@ -216,27 +211,11 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         if not self.__validate_expression(compare_expression):
             return
-        compare_op_token = children[1]
-        compare_expression.query_left = self.__build_query_element(compare_expression.left_raw)
-        compare_expression.query_right = self.__build_query_element(compare_expression.right_raw)
-
-        if len(self.log['error'].keys()) > 0:
-            logger.error(self.log)
-            return
-
-        compare_expression.set_scalar_and_query_op(compare_expression.left_raw, compare_expression.right_raw)
-        compare_op = compare_expression.set_compare_op_from_token(compare_op_token)
-
-        # Get left right, since could be either
-        query_op: QueryElement = compare_expression.get_query_op()
-        compare_expression.subquery = query_op.build_query(session = Session, project_id = int, log = dict,
-                                                           token = Token)
-
-        if len(self.log['error'].keys()) > 0:
+        compare_expression.build_expression_subquery(session = self.session)
+        if regular_log.log_has_error(self.log):
             msg = f'Error generating expression {self.log}'
             logger.error(msg)
-
-        logger.info(str(compare_expression))
+            return
 
         local_tree.compare_expression = compare_expression
 

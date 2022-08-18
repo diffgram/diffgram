@@ -1,23 +1,16 @@
 from typing import List
 from lark import Token
-from sqlalchemy.orm import aliased
-from sqlalchemy.sql.operators import in_op, comparison_op
 from sqlalchemy.sql import Selectable
-from sqlalchemy import Column
 from sqlalchemy.orm.session import Session
 from sqlalchemy.sql.expression import BooleanClauseList
-from shared.database.source_control.file import File
 from shared.shared_logger import get_shared_logger
 from shared.database.source_control.file_stats import FileStats
-from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from sqlalchemy.sql.elements import FunctionFilter
-from shared.database.tag.tag import DatasetTag, Tag
-from shared.database.source_control.working_dir import WorkingDirFileLink
 from sqlalchemy.sql.expression import and_, or_
-from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator
-from shared.utils.attributes.attributes_values_parsing import get_file_stats_column_from_attribute_kind
-from shared.query_engine.sql_alchemy_query_elements.query_elements import LabelQueryElement
+from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator, QueryEntity
+from shared.query_engine.elements.scalar import ScalarQueryElement
 
+from shared.regular import regular_log
 logger = get_shared_logger()
 
 
@@ -33,43 +26,92 @@ class CompareExpression:
     operator: CompareOperator
     query_right: QueryElement
     subquery: Selectable
-    session: Session
-
     left_raw: Token or object
     compare_op_raw: Token or object
     right_raw: Token or object
-    scalar_op: list or str or int or float
+    scalar_op: QueryElement
     query_op: QueryElement
 
     def __init__(self,
                  session: Session,
                  left_raw: Token or object,
                  right_raw: Token or object,
-                 compare_op_raw: Token or object,
-                 subquery: Selectable):
+                 compare_op_raw: Token or object):
         self.session = session
-        self.subquery = subquery
         self.left_raw = left_raw
         self.right_raw = right_raw
         self.compare_op_raw = compare_op_raw
 
-    def set_compare_op_from_token(self, compare_op_token: Token):
-        self.operator = CompareOperator.create_compare_operator_from_token(compare_op_token)
-        return self.compare_op
-
-    def get_query_op(self) -> QueryElement:
-        return self.query_op
-
-    def set_scalar_and_query_op(self, 
-                                entity_left: QueryEntity, 
-                                entity_right: QueryEntity):
-        if entity_left.type ='scaler':
-            self.scalar_op = entity_left
-            self.query_op = entity_right
+    @staticmethod
+    def determine_entity_from_query_operator(left_elm: QueryElement, right_elm: QueryElement) -> str:
+        if type(left_elm) == ScalarQueryElement:
+            result = right_elm.query_entity.key
         else:
-            self.query_op = entity_right
-            self.scalar_op = entity_left
+            result = left_elm.query_entity.key
+        return result
 
+    @staticmethod
+    def new(session: Session,
+            left_raw: Token,
+            compare_op_raw: Token,
+            right_raw: Token,
+            project_id: int,
+            log: dict) -> ['CompareExpression', dict]:
+        from shared.query_engine.expressions.dataset import DatasetCompareExpression
+        query_element_left, log = QueryElement.new(
+            session = session,
+            log = log,
+            project_id = project_id,
+            token = left_raw
+        )
+        if regular_log.log_has_error(log):
+            return None, log
+
+        query_element_right, log = QueryElement.new(
+            session = session,
+            log = log,
+            project_id = project_id,
+            token = right_raw
+        )
+
+        if regular_log.log_has_error(log):
+            return None, log
+        query_entity_key = CompareExpression.determine_entity_from_query_operator(query_element_left,
+                                                                                  query_element_right)
+        string_query_class = {
+            'dataset': DatasetCompareExpression,
+        }
+        CompareExpClass = string_query_class.get(query_entity_key)
+        if CompareExpClass is None:
+            raise NotImplementedError
+
+        compare_expression = CompareExpClass(
+            session = session,
+            left_raw = left_raw,
+            compare_op_raw = compare_op_raw,
+            right_raw = right_raw
+        )
+        compare_expression.query_left = query_element_left
+        compare_expression.query_right = query_element_right
+        compare_expression.set_compare_op_from_token(compare_expression.compare_op_raw)
+        compare_expression.set_scalar_and_query_op()
+        return compare_expression, log
+
+    def build_expression_subquery(self, session: Session):
+        raise NotImplementedError
+
+    def set_compare_op_from_token(self, compare_op_token: Token) -> CompareOperator:
+        self.operator = CompareOperator.create_compare_operator_from_token(compare_op_token)
+        return self.operator
+
+    def set_scalar_and_query_op(self):
+        print('aaaaa', self.query_right, self.query_right)
+        if type(self.query_left) == ScalarQueryElement:
+            self.scalar_op = self.query_left
+            self.query_op = self.query_right
+        else:
+            self.query_op = self.query_left
+            self.scalar_op = self.query_right
 
     def build_label_compare_expression(self,
                                        log: dict,
@@ -91,7 +133,6 @@ class CompareExpression:
                                    subquery = new_filter_subquery)
         return result, log
 
-
 class AndExpression:
     expression_list: List[CompareExpression]
     sql_and_statement: BooleanClauseList
@@ -99,7 +140,6 @@ class AndExpression:
     def __init__(self, expression_list: List[CompareExpression]):
         self.expression_list = expression_list
         self.sql_and_statement = and_(*expression_list)
-
 
 class OrExpression:
     expression_list: List[AndExpression]

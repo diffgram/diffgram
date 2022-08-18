@@ -1,4 +1,11 @@
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement
+from sqlalchemy.orm import Session
+from shared.database.attribute.attribute_template_group import Attribute_Template_Group
+from shared.database.source_control.file_stats import FileStats
+from shared.shared_logger import get_shared_logger
+from lark import Token
+
+logger = get_shared_logger()
 
 
 class AttributeQueryElement(QueryElement):
@@ -7,9 +14,8 @@ class AttributeQueryElement(QueryElement):
     def __init__(self):
         pass
 
-    @staticmethod
-    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['AttributeQueryElement',
-                                                                                          dict]:
+    def create_from_token(self, session: Session, project_id: int, log: dict, token: Token) -> ['AttributeQueryElement',
+                                                                                                dict]:
 
         attr_group_name = self.top_level_key
 
@@ -38,7 +44,6 @@ class AttributeQueryElement(QueryElement):
         result = AttributeQueryElement(subquery = attr_group_query)
         return result, log
 
-
     @staticmethod
     def get_attribute_kind_from_string(session: Session, log: dict, project_id: int, string_value: str) -> [str, dict]:
         attr_group_name = string_value.split('.')[1]
@@ -63,12 +68,10 @@ class AttributeQueryElement(QueryElement):
             return None, log
         return attribute_group.kind, log
 
-
-
     @staticmethod
     def build_query(session: Session, log: dict, project_id: int, value_1: any, value_2: any,
-                                           compare_op_token: Token) -> ['CompareExpression', dict]:
-        
+                    compare_op_token: Token) -> ['CompareExpression', dict]:
+
         attribute_kind, log = CompareExpression.get_attribute_kind_from_string(
             session = session,
             log = log,
@@ -83,5 +86,3 @@ class AttributeQueryElement(QueryElement):
 
         self.subquery = query_op.filter(sql_compare_operator(file_stats_column, scalar_op)).subquery()
         return self.subquery
-
-

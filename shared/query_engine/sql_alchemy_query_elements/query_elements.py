@@ -1,4 +1,3 @@
-from typing import List
 from lark.lark import Token
 from sqlalchemy.sql.operators import in_op, comparison_op
 from sqlalchemy.sql import Selectable
@@ -7,17 +6,8 @@ from sqlalchemy.orm.session import Session
 from shared.database.source_control.file import File
 from shared.shared_logger import get_shared_logger
 from shared.database.source_control.file_stats import FileStats
-from shared.database.attribute.attribute_template_group import Attribute_Template_Group
-from shared.database.source_control.working_dir import WorkingDirFileLink
-from shared.database.tag.tag import DatasetTag, Tag
+from typing import List
 import operator
-from shared.utils.attributes.attributes_values_parsing import get_file_stats_column_from_attribute_kind
-from shared.query_engine.elements.tag import TagDatasetQueryElement
-from shared.query_engine.elements.file import FileQueryElement
-from shared.query_engine.elements.attribute import AttributeQueryElement
-from shared.query_engine.elements.dataset import DatasetQuery
-from shared.query_engine.elements.scaler import ScalarQueryElement
-
 logger = get_shared_logger()
 
 
@@ -45,19 +35,25 @@ class CompareOperator:
 
 class QueryEntity:
     key: any  # any type, a scaler, or a string reserved word etc.
+    full_key: any  # any type, a scaler, or a string reserved word etc.
     parent_key: 'QueryEntity'
     kind: str  # scaler or reserved
     key_has_been_type_corrected: bool
+    child_list: []
 
     def remove_plural(self):
         if type(self.key) == str:
             if self.key.endswith('s'):
                 self.key = self.key[: - 1]
 
-    def build_tree(self) -> 'QueryEntity':
+    def build_tree(self) -> list:
+        self.child_list = []
+        if type(self.key) != str:
+            return self.child_list
         list_items = self.key.split('.')
         i = 0
         query_entity_list = [self]
+
         for item in reversed(list_items):
             ent = QueryEntity()
             ent.key = item
@@ -65,7 +61,8 @@ class QueryEntity:
                 ent.parent_key = query_entity_list[i - 1]
             if i < len(list_items) - 1:
                 query_entity_list.append(ent)
-        return query_entity_list[0]
+                self.child_list.append(ent)
+        return self.child_list
 
     @staticmethod
     def cast_int_from_unknown_type(value: any):
@@ -78,6 +75,7 @@ class QueryEntity:
         value = QueryEntity.cast_int_from_unknown_type(token.value)
 
         new_value = None
+        full_key = None
 
         if type(value) == int:
             new_value = value
@@ -87,8 +85,10 @@ class QueryEntity:
 
         if type(value) == str:
             new_value = value.split('.')[0]
+            full_key = value
 
         self.key = new_value
+        self.full_key = full_key
         self.key_has_been_type_corrected = True
 
         if type(value) not in [int, str, list]:
@@ -100,7 +100,7 @@ class QueryEntity:
 
         entity.set_key_from_token_with_unknown_type(token)
 
-        entity.remove_plural(entity.key)
+        entity.remove_plural()
 
         entity.build_tree()
 
@@ -109,17 +109,19 @@ class QueryEntity:
 
 class QueryElement:
     list_value: list
+    raw_value: any
     column: Column or None
     subquery: Selectable
 
     token: Token
-    type: None
     top_level_key: None
     log: dict
-    query_entity: None
-    query_entity_children: list
-    reserved_words: list = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
+    query_entity: QueryEntity
+    query_entity_children: List[QueryEntity]
+    reserved_words: List[str] = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
 
+    def build_query(self, session: Session, token: Token):
+        raise NotImplementedError
     def determine_if_reserved_word(self, word: str):
 
         if word in self.reserved_words:
@@ -135,7 +137,7 @@ class QueryElement:
     def new(session: Session,
             log: dict,
             project_id: int,
-            token: Token) -> 'QueryElement':
+            token: Token) -> ['QueryElement', dict]:
         """
            Generates a query element from the given entity type.
        :param session:
@@ -145,12 +147,17 @@ class QueryElement:
        :param token:
        :return:
        """
+        from shared.query_engine.elements.tag import TagDatasetQueryElement
+        from shared.query_engine.elements.file import FileQueryElement
+        from shared.query_engine.elements.attribute import AttributeQueryElement
+        from shared.query_engine.elements.dataset import DatasetQuery
+        from shared.query_engine.elements.scalar import ScalarQueryElement
         query_element = QueryElement()
 
         entity = QueryEntity.new(token)
 
         query_element.query_entity = entity
-
+        is_reserved_word = False
         if type(entity.key) == str:
             is_reserved_word = query_element.determine_if_reserved_word(entity.key)
             if not is_reserved_word:
@@ -158,7 +165,7 @@ class QueryElement:
                     'is_reserved_word'] = f"Entity: {entity.key} is not valid. Valid options are {query_element.reserved_words}"
                 return query_element
         else:
-            formatted_entity = "scalar"
+            entity.key = "scalar"
 
         string_query_class = {
             'labels': LabelQueryElement,
@@ -169,21 +176,22 @@ class QueryElement:
             'scalar': ScalarQueryElement
         }
 
-        QueryClass = string_query_class.get(formatted_entity)
+        QueryClass = string_query_class.get(entity.key)
 
         if QueryClass is None:
             raise NotImplementedError
 
         query_class = QueryClass()
-        query_class.type = formatted_entity
+        query_class.query_entity = entity
         query_class.token = token
         query_class.project_id = project_id
         query_class.is_reserved_word = is_reserved_word
-        query_class.top_level_key = token.value.split('.')[1]
         query_class.session = session
         query_class.log = log
 
-        return query_class
+        query_class.build_query(session = session, token = token)
+
+        return query_class, log
 
 
 class LabelQueryElement(QueryElement):
