@@ -1,6 +1,7 @@
 from lark.lark import Token
 from sqlalchemy.sql.operators import in_op, comparison_op
 from sqlalchemy.sql import Selectable
+from sqlalchemy.orm import Query
 from sqlalchemy import Column
 from sqlalchemy.orm.session import Session
 from shared.database.source_control.file import File
@@ -10,6 +11,8 @@ from typing import List
 import operator
 logger = get_shared_logger()
 
+def has_quotes(s: str) -> bool:
+    return (s.startswith('"') and s.endswith('"')) or (s.startswith("'") and s.endswith("'"))
 
 class CompareOperator:
     operator_value: operator or comparison_op
@@ -111,7 +114,8 @@ class QueryElement:
     list_value: list
     raw_value: any
     column: Column or None
-    subquery: Selectable
+    subquery: Query
+    project_id: int
 
     token: Token
     top_level_key: None
@@ -120,7 +124,7 @@ class QueryElement:
     query_entity_children: List[QueryEntity]
     reserved_words: List[str] = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
 
-    def build_query(self, session: Session, token: Token):
+    def build_query(self, session: Session, token: Token) -> Selectable:
         raise NotImplementedError
     def determine_if_reserved_word(self, word: str):
 
@@ -147,26 +151,26 @@ class QueryElement:
        :param token:
        :return:
        """
-        from shared.query_engine.elements.tag import TagDatasetQueryElement
-        from shared.query_engine.elements.file import FileQueryElement
-        from shared.query_engine.elements.attribute import AttributeQueryElement
-        from shared.query_engine.elements.dataset import DatasetQuery
-        from shared.query_engine.elements.scalar import ScalarQueryElement
+        from shared.query_engine.sql_alchemy_query_elements.tag import TagDatasetQueryElement
+        from shared.query_engine.sql_alchemy_query_elements.file import FileQueryElement
+        from shared.query_engine.sql_alchemy_query_elements.attribute import AttributeQueryElement
+        from shared.query_engine.sql_alchemy_query_elements.dataset import DatasetQuery
+        from shared.query_engine.sql_alchemy_query_elements.scalar import ScalarQueryElement
         query_element = QueryElement()
 
         entity = QueryEntity.new(token)
 
         query_element.query_entity = entity
         is_reserved_word = False
-        if type(entity.key) == str:
+
+        if type(entity.key) == str and not has_quotes(entity.key):
             is_reserved_word = query_element.determine_if_reserved_word(entity.key)
             if not is_reserved_word:
                 log['error'][
                     'is_reserved_word'] = f"Entity: {entity.key} is not valid. Valid options are {query_element.reserved_words}"
-                return query_element
+                return query_element, log
         else:
             entity.key = "scalar"
-
         string_query_class = {
             'labels': LabelQueryElement,
             'attribute': AttributeQueryElement,

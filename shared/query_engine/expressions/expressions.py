@@ -8,7 +8,7 @@ from shared.database.source_control.file_stats import FileStats
 from sqlalchemy.sql.elements import FunctionFilter
 from sqlalchemy.sql.expression import and_, or_
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator, QueryEntity
-from shared.query_engine.elements.scalar import ScalarQueryElement
+from shared.query_engine.sql_alchemy_query_elements.scalar import ScalarQueryElement
 
 from shared.regular import regular_log
 logger = get_shared_logger()
@@ -31,6 +31,8 @@ class CompareExpression:
     right_raw: Token or object
     scalar_op: QueryElement
     query_op: QueryElement
+    project_id: int
+    log: dict
 
     def __init__(self,
                  session: Session,
@@ -58,6 +60,8 @@ class CompareExpression:
             project_id: int,
             log: dict) -> ['CompareExpression', dict]:
         from shared.query_engine.expressions.dataset import DatasetCompareExpression
+        from shared.query_engine.expressions.file import FileCompareExpression
+        from shared.query_engine.expressions.attribute import AttributeCompareExpression
         query_element_left, log = QueryElement.new(
             session = session,
             log = log,
@@ -65,6 +69,7 @@ class CompareExpression:
             token = left_raw
         )
         if regular_log.log_has_error(log):
+            logger.error(log)
             return None, log
 
         query_element_right, log = QueryElement.new(
@@ -75,11 +80,14 @@ class CompareExpression:
         )
 
         if regular_log.log_has_error(log):
+            logger.error(log)
             return None, log
         query_entity_key = CompareExpression.determine_entity_from_query_operator(query_element_left,
                                                                                   query_element_right)
         string_query_class = {
             'dataset': DatasetCompareExpression,
+            'file': FileCompareExpression,
+            'attribute': AttributeCompareExpression,
         }
         CompareExpClass = string_query_class.get(query_entity_key)
         if CompareExpClass is None:
@@ -92,7 +100,9 @@ class CompareExpression:
             right_raw = right_raw
         )
         compare_expression.query_left = query_element_left
+        compare_expression.project_id = project_id
         compare_expression.query_right = query_element_right
+        compare_expression.log = log
         compare_expression.set_compare_op_from_token(compare_expression.compare_op_raw)
         compare_expression.set_scalar_and_query_op()
         return compare_expression, log
@@ -105,7 +115,6 @@ class CompareExpression:
         return self.operator
 
     def set_scalar_and_query_op(self):
-        print('aaaaa', self.query_right, self.query_right)
         if type(self.query_left) == ScalarQueryElement:
             self.scalar_op = self.query_left
             self.query_op = self.query_right

@@ -7,7 +7,7 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.sql import Selectable
 
 
-class DatasetCompareExpression(CompareExpression):
+class FileCompareExpression(CompareExpression):
 
     def build_expression_subquery(self, session) -> Selectable:
         query_op: QueryElement = self.query_op
@@ -19,7 +19,6 @@ class DatasetCompareExpression(CompareExpression):
         sql_compare_operator = self.operator.operator_value
 
         AliasFile = aliased(File)
-        self.subquery = session.query(AliasFile.id) \
-            .join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id) \
-            .filter(sql_compare_operator(sql_column, raw_scalar_value)).subquery(name = "ds_compare")
+        new_filter_subquery = session.query(AliasFile.id).filter(sql_compare_operator(sql_column, raw_scalar_value)).subquery()
+        self.subquery = new_filter_subquery
         return self.subquery

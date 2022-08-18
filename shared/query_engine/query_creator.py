@@ -101,8 +101,7 @@ class QueryCreator:
                 suggestions = ENTITY_TYPES
                 suggest_type = 'text'
                 return suggestions, suggest_type
-            for x in self.parser.terminals:
-                print(x.user_repr())
+
             logger.error(f"Unexpected token {str(token_exception)}")
             return False, None
 

@@ -8,7 +8,7 @@ from lark import Token
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.permissions.project_permissions import Project_permissions
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator, QueryEntity
-from shared.query_engine.sql_alchemy_query_elements.expressions import CompareExpression, AndExpression, OrExpression, \
+from shared.query_engine.expressions.expressions import CompareExpression, AndExpression, OrExpression, \
     Factor
 
 logger = get_shared_logger()
@@ -48,7 +48,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         self.valid = False
 
     def start(self, *args):
-        if len(self.log['error'].keys()) > 0:
+        if regular_log.log_has_error(self.log):
             return
         self.valid = False
         if len(args) == 1:
@@ -77,7 +77,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :param args:
         :return:
         """
-        if len(self.log['error'].keys()) > 0:
+        if regular_log.log_has_error(self.log):
             return
         if len(args) == 1:
             local_tree = args[0]
@@ -98,7 +98,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :param args:
         :return:
         """
-        if len(self.log['error'].keys()) > 0:
+        if regular_log.log_has_error(self.log):
             return
         if len(args) == 1:
             local_tree = args[0]
@@ -114,7 +114,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             self.log['error']['term'] = 'Invalid child count for factor. Must be 1'
 
     def factor(self, *args):
-        if len(self.log['error'].keys()) > 0:
+        if regular_log.log_has_error(self.log):
             return
         if len(args) == 1:
             local_tree = args[0]
@@ -208,12 +208,16 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         children = local_tree.children
 
         compare_expression: CompareExpression = self.init_compare_expression(children)
+        if regular_log.log_has_error(self.log):
+            msg = f'Error creating expression {self.log}'
+            logger.error(msg)
+            return
 
         if not self.__validate_expression(compare_expression):
             return
         compare_expression.build_expression_subquery(session = self.session)
         if regular_log.log_has_error(self.log):
-            msg = f'Error generating expression {self.log}'
+            msg = f'Error build_expression_subquery() {self.log}'
             logger.error(msg)
             return
 
