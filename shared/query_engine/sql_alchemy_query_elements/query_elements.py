@@ -177,7 +177,6 @@ class QueryElement:
 
         query_element.query_entity = entity
         is_reserved_word = False
-        print('KEYYYYYY', entity.key)
         if type(entity.key) == str and not has_quotes(entity.key):
             is_reserved_word = query_element.determine_if_reserved_word(entity.key)
             if not is_reserved_word:

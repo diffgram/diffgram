@@ -100,8 +100,11 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         """
         if regular_log.log_has_error(self.log):
             return
+        print('len args', len(args))
         if len(args) == 1:
             local_tree = args[0]
+            print('len local_tree', local_tree)
+            print('len children', local_tree.children)
             expression = []
             for child in local_tree.children:
                 if hasattr(child, 'factor'):
@@ -158,6 +161,11 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :param compare_expression:
         :return:
         """
+        if compare_expression is None:
+            error_string = "Error compare expression must not be None"
+            logger.error(error_string)
+            self.log['error']['compare_expr'] = error_string
+            return False
         entity_type_left: QueryEntity = QueryEntity.new(compare_expression.left_raw)
         entity_type_right: QueryEntity = QueryEntity.new(compare_expression.right_raw)
         compare_op_token: Token = compare_expression.compare_op_raw
