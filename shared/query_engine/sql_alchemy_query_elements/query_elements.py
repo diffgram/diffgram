@@ -136,7 +136,7 @@ class QueryElement:
     log: dict
     query_entity: QueryEntity
     query_entity_children: List[QueryEntity]
-    reserved_words: List[str] = ['labels', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
+    reserved_words: List[str] = ['label', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
 
     def build_query(self, session: Session, token: Token) -> Selectable:
         raise NotImplementedError
@@ -170,6 +170,7 @@ class QueryElement:
         from shared.query_engine.sql_alchemy_query_elements.attribute import AttributeQueryElement
         from shared.query_engine.sql_alchemy_query_elements.dataset import DatasetQuery
         from shared.query_engine.sql_alchemy_query_elements.scalar import ScalarQueryElement
+        from shared.query_engine.sql_alchemy_query_elements.labels import LabelsQueryElement
         query_element = QueryElement()
 
         entity = QueryEntity.new(token)
@@ -186,7 +187,7 @@ class QueryElement:
         else:
             entity.key = "scalar"
         string_query_class = {
-            'labels': LabelQueryElement,
+            'label': LabelsQueryElement,
             'attribute': AttributeQueryElement,
             'file': FileQueryElement,
             'dataset': DatasetQuery,
@@ -210,36 +211,3 @@ class QueryElement:
         query_class.build_query(session = session, token = token)
 
         return query_class, log
-
-
-class LabelQueryElement(QueryElement):
-    subquery: Selectable
-
-    def __init__(self, subquery: Selectable
-                 ):
-        self.subquery = subquery
-
-    @staticmethod
-    def create_from_token(session: Session, project_id: int, log: dict, token: Token) -> ['LabelQueryElement', dict]:
-
-        label_name = token.value.split('.')[1]
-
-        label_file = File.get_by_label_name(session = session,
-                                            label_name = label_name,
-                                            project_id = project_id)
-        if not label_file:
-            # Strip underscores
-            label_name = label_name.replace('_', ' ')
-            label_file = File.get_by_label_name(session = session,
-                                                label_name = label_name,
-                                                project_id = project_id)
-        if not label_file:
-            error_string = f"Label {str(label_name)} does not exists"
-            logger.error(error_string)
-            log['error']['label_name'] = error_string
-            return None, log
-        instance_count_query = session.query(FileStats.file_id).filter(
-            FileStats.label_file_id == label_file.id
-        )
-        result = LabelQueryElement(subquery = instance_count_query)
-        return result, log

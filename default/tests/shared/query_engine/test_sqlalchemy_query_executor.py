@@ -21,7 +21,7 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
 
     def setUp(self):
         # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
-        # For future tests a mechanism of setting up and tearing down the database should be created.
+        # For future tests a meexchanism of setting up and tearing down the database should be created.
         super(TestQueryCreator, self).setUp()
         project_data = data_mocking.create_project_with_context(
             {
@@ -169,81 +169,6 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(len(execution_log['error'].keys()), 0)
         self.assertIsNotNone(result)
         self.assertTrue(executor.valid)
-
-    def test__determine_entity_type(self):
-        token = Token(value = 'labels.apple', type_ = 'dummy')
-        token2 = Token(value = 'files.metadata', type_ = 'dummy')
-        token3 = Token(value = 'issues.count', type_ = 'dummy')
-        token4 = Token(value = 'attribute.something', type_ = 'dummy')
-        query_string = 'labels.x > 5'  # dummy query
-        with self.app.test_request_context():
-            common_actions.add_auth_to_session(flask.session, self.project.users[0])
-            query_creator = QueryCreator(session = self.session, project = self.project, member = self.member)
-            diffgram_query_obj = query_creator.create_query(query_string = query_string)
-            executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
-            e_type = executor._SqlAlchemyQueryExecutor__determine_entity_type(token)
-        self.assertEqual(e_type, 'labels')
-        e_type = executor._SqlAlchemyQueryExecutor__determine_entity_type(token2)
-        self.assertEqual(e_type, 'file')
-        e_type = executor._SqlAlchemyQueryExecutor__determine_entity_type(token3)
-        self.assertEqual(e_type, 'issues')
-        e_type = executor._SqlAlchemyQueryExecutor__determine_entity_type(token4)
-        self.assertEqual(e_type, 'attribute')
-
-    def test_get_compare_op(self):
-        query_string = 'labels.x > 5'  # dummy query
-        with self.app.test_request_context():
-            common_actions.add_auth_to_session(flask.session, self.project.users[0])
-            query_creator = QueryCreator(session = self.session, project = self.project, member = self.member)
-            diffgram_query_obj = query_creator.create_query(query_string = query_string)
-            executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
-
-            token = Token(value = '>=', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.ge)
-
-            token = Token(value = '=', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.eq)
-
-            token = Token(value = '>=', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.ge)
-
-            token = Token(value = '<', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.lt)
-
-            token = Token(value = '<=', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.le)
-
-            token = Token(value = '!=', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.ne)
-
-    def test__parse_value(self):
-        label = data_mocking.create_label({
-            'name': 'apple',
-        }, self.session)
-        label_file = data_mocking.create_label_file({
-            'label': label,
-            'project_id': self.project.id
-        }, self.session)
-        with self.app.test_request_context():
-            common_actions.add_auth_to_session(flask.session, self.project.users[0])
-            query_string = 'labels.x > 5'  # dummy query
-            query_creator = QueryCreator(session = self.session, project = self.project, member = self.member)
-            diffgram_query_obj = query_creator.create_query(query_string = query_string)
-            executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
-
-            token = Token(value = 'labels.apple', type_ = 'dummy')
-            value = executor._SqlAlchemyQueryExecutor__parse_value(token)
-            self.assertEqual(type(value), Query)
-
-            token = Token(value = 'file.something', type_ = 'dummy')
-            value = executor._SqlAlchemyQueryExecutor__parse_value(token)
-            self.assertEqual(type(value), BinaryExpression)
 
     def test__validate_expression(self):
         label = data_mocking.create_label({
