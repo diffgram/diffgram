@@ -87,7 +87,7 @@ class CompareExpression:
         query_entity_key = CompareExpression.determine_entity_from_query_operator(query_element_left,
                                                                                   query_element_right)
         string_query_class = {
-            'dataset': DatasetCompareExpression,
+            'dataset_id': DatasetCompareExpression,
             'file': FileCompareExpression,
             'attribute': AttributeCompareExpression,
             'label': LabelsCompareExpression,

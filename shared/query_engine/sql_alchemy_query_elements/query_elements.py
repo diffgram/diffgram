@@ -136,7 +136,7 @@ class QueryElement:
     log: dict
     query_entity: QueryEntity
     query_entity_children: List[QueryEntity]
-    reserved_words: List[str] = ['label', 'attribute', 'file', 'dataset', 'dataset_tag', 'list']
+    reserved_words: List[str] = ['label', 'attribute', 'file', 'dataset_id', 'dataset_tag', 'list']
 
     def build_query(self, session: Session, token: Token) -> Selectable:
         raise NotImplementedError
@@ -144,12 +144,6 @@ class QueryElement:
 
         if word in self.reserved_words:
             return True
-
-    def get_sql_alchemy_query_value(self) -> Selectable:
-        if self.subquery:
-            return self.subquery
-        if self.token:
-            return self.token.value
 
     @staticmethod
     def new(session: Session,
@@ -182,14 +176,14 @@ class QueryElement:
             if not is_reserved_word:
                 log['error'][
                     'is_reserved_word'] = f"Entity: {entity.key} is not valid. Valid options are {query_element.reserved_words}"
-                return query_element, log
+                return None, log
         else:
             entity.key = "scalar"
         string_query_class = {
             'label': LabelsQueryElement,
             'attribute': AttributeQueryElement,
             'file': FileQueryElement,
-            'dataset': DatasetQuery,
+            'dataset_id': DatasetQuery,
             'dataset_tag': TagDatasetQueryElement,
             'scalar': ScalarQueryElement
         }
