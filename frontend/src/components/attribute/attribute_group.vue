@@ -773,8 +773,14 @@
           if (already_selected) {
             const index_to_delete = this.internal_selected.indexOf(e.id);
             this.internal_selected.splice(index_to_delete, 1);
+            
+            const index_to_delete_name = this.internal_selected_names.indexOf(e.name);
+            this.internal_selected_names.splice(index_to_delete_name, 1);
           }
-          else this.internal_selected.push(e.id)
+          else {
+            this.internal_selected.push(e.id)
+            this.internal_selected_names.push(e.name)
+          }
 
           this.attribute_change()
         },
