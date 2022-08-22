@@ -2,11 +2,12 @@
 
   <div class="ma-1 pa-0">
 
-    <div class="pa-0 ma-0 drawable-wrapper"
-                 :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
-                 ref="file_card">
+    <div 
+      class="pa-0 ma-0 drawable-wrapper"
+      :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
+      ref="file_card"
+    >
       <drawable_canvas
-
         v-if="image_bg"
         ref="drawable_canvas"
         :allow_zoom="false"
@@ -18,8 +19,7 @@
         :refresh="refresh"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}__${file_preview_width}__${file_preview_height}`"
         :canvas_id="`canvas__${file.id}__${file_preview_width}__${file_preview_height}`"
-
-                       >
+      >
 
         <instance_list
           slot-scope="props"
@@ -32,12 +32,16 @@
           :draw_mode="false"
           :canvas_transform="props.canvas_transform"
           slot="instance_drawer"
-        >
-        </instance_list>
-
+        />
 
       </drawable_canvas>
-      <v-skeleton-loader  v-else type="image" :width="file_preview_width" :height="file_preview_height"> </v-skeleton-loader>
+
+      <v-skeleton-loader  
+        v-else 
+        type="image" 
+        :width="file_preview_width" 
+        :height="file_preview_height"
+      />
     </div>
     <div class="pa-0 ma-0" v-if="file.video" ref="file_card">
       <video_drawable_canvas
@@ -145,16 +149,11 @@
     },
 
     async mounted() {
-      console.log('aaaaaa')
       if (this.$props.file) {
-        console.log('this.$refs.222')
         this.set_bg(this.$props.file);
-        console.log('this.$refs.3333')
       }
-      console.log('this.$refs.file_card', this.$refs.file_card)
       if(this.$refs.file_card){
         if(this.$props.selectable){
-          console.log('this.$refs.file_card', this.$refs.file_card)
           this.$refs.file_card.addEventListener('dblclick', this.view_file_details)
           this.$refs.file_card.addEventListener('click', this.select_file)
         }
@@ -168,9 +167,8 @@
       file: {
         deep: true,
         handler: function(new_val, old_val){
-          this.set_bg();
+          this.set_bg(new_val);
           this.prepare_filtered_instance_list();
-
         }
       },
       base_model_run: function () {
