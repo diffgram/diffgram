@@ -78,7 +78,7 @@ def get_attribute_value(session: Session, attr_id: int, attribute_value: any, pr
     elif attribute_group.kind == 'text':
         value = str(attribute_value)
     elif attribute_group.kind == 'select':
-        value = option.get('id')
-        if id:
-            value = int(id)
+        value = attribute_value.get('id')
+        if value is not None:
+            value = int(value)
     return value, attribute_group.kind
