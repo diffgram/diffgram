@@ -152,6 +152,16 @@
             width="100%"
             v-if="group.kind === 'tree'"
           >
+            <div style="padding: 5px">
+              <v-chip 
+                class="ma-1"
+                x-small
+                v-for="(name, index) in internal_selected_names"
+                :key="`${name}_${index}`"
+              >
+                {{ name }}
+              </v-chip>
+            </div>
             <v-sheet class="pa-4 primary lighten-2">
               <v-text-field
                 v-model="search"
@@ -183,7 +193,9 @@
               <template v-slot:prepend="{ item }">
                   <v-checkbox 
                     :input-value="internal_selected.includes(item.id)"
-                    @change="tree_input(item)" style="margin-top: 0" hide-details 
+                    @change="tree_input(item)" 
+                    style="margin-top: 0" 
+                    hide-details 
                   />
               </template>
             </v-treeview>
@@ -575,6 +587,7 @@
           success: false,
 
           internal_selected: [],
+          internal_selected_names: [],
 
           kind_list: [
 
@@ -1001,6 +1014,7 @@
 
           } else if(this.group.kind == "tree") {
             this.internal_selected = Object.keys(this.current_instance.attribute_groups[this.group.id]).map(key => parseInt(key))
+            this.internal_selected_names = this.internal_selected.map(key => this.current_instance.attribute_groups[this.group.id][key]['name'])
           } else if (this.group.kind == "text") {
             // in this case nothing to change we are only storing text
             this.internal_selected = value
