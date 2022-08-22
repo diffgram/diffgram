@@ -154,8 +154,11 @@
             <tag_select
               v-model="tag_selected_list"
               :tag_list="tag_list"
+              :allow_new_creation="false"
+              :label="'Search by tags'"
               @change="search_jobs()"
               @focus="tag_list_api()"
+              :clearable="true"
 
             >
             </tag_select>
@@ -264,7 +267,8 @@
         v-if="view_mode === 'cards'"
         :project_string_id="project_string"
         :loading="loading"
-        :job_list="Job_list"></job_list_card_display>
+        :job_list="Job_list">
+      </job_list_card_display>
 
       <v-data-table :headers="headers_view"
                     v-if="view_mode === 'table'"

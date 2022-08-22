@@ -49,6 +49,7 @@
               @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
               @change="change_directory(), $store.commit('set_user_is_typing_or_menu_open', false)"
               :menu-props="{ auto: true }"
+              :multiple="multiple"
                   >
 
             <!-- For :menu-props="{ auto: true }" see
@@ -103,7 +104,9 @@
               :loading="loading_directory_list"
               type="text"
             >
-              <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">ID: {{ data.item.directory_id }}</v-chip>
+              <v-chip x-small v-if="$store.state.user.settings.show_ids == true">
+                  ID: {{ data.item.directory_id }}
+              </v-chip>
 
               <v-icon left>
                 mdi-folder-network
@@ -114,12 +117,22 @@
                (<span>{{data.item.created_time | moment("ddd, MMM D h:mm:ss a")}} </span>)
 
 
+              <tag_display
+                    :object_id="data.item.directory_id"
+                    :object_type="'dataset'"
+                    :tag_display_refresh_trigger="tag_display_refresh_trigger"
+                            >
+              </tag_display>
+       
+
             </v-skeleton-loader>
 
           </template>
 
           <template v-slot:selection="data">
-            <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">ID: {{ data.item.directory_id }}</v-chip>
+            <v-chip x-small v-if="$store.state.user.settings.show_ids == true">
+                ID: {{ data.item.directory_id }}
+            </v-chip>
 
             <v-icon left
                     color="primary">
@@ -127,6 +140,15 @@
             </v-icon>
 
            <span> {{data.item.nickname}} </span>
+
+          <div v-if="multiple == false">
+            <tag_display
+                  :object_id="data.item.directory_id"
+                  :object_type="'dataset'"
+                  :tag_display_refresh_trigger="tag_display_refresh_trigger"
+                          >
+            </tag_display>
+          </div>
 
           </template>
 
@@ -161,6 +183,39 @@
 
       </button_with_menu>
 
+      <button_with_menu
+        tooltip_message="Apply Tags to this Dataset"
+        icon="mdi-tag"
+        :small="true"
+        :large="undefined"
+        :button_text="undefined"
+        color="primary"
+        :close_by_button="true"
+        v-if="!view_only_mode && show_tag == true"
+        offset="x"
+        :outlined="true"
+        background="white"
+        menu_direction="left"
+        :commit_menu_status="true">
+
+        <template slot="content">
+
+          <tag_select
+                :project_string_id="project_string_id"
+                :dataset="current_directory"
+                :object_id="current_directory.directory_id"
+                :object_type="'dataset'"
+                :modify_upon_selection="true"
+                @tag_applied="tag_display_refresh_trigger=Date.now()"
+                @tag_prior_applied_removed="tag_display_refresh_trigger=Date.now()"
+          >
+          </tag_select>
+
+        </template>
+
+      </button_with_menu>
+
+
     </v-layout>
 
   </div>
@@ -168,14 +223,11 @@
 
 <script lang="ts">
 
-  // TODO combine directory list elements into single component
-  // look at props for passing some of stuff...
-
-  // TODO pass loading or?
-
   import axios from '../../services/customInstance';
   import v_new_directory from './directory_new'
   import v_update_directory from './directory_update'
+  import tag_select from '@/components/tag/tag_select'
+  import tag_display from '@/components/tag/tag_display'
   import Vue from "vue";
 
   export default Vue.extend({
@@ -209,9 +261,15 @@
         default: true
       },
       'show_new': {
-        default: false
+        default: true
       },
       'show_update': {
+        default: true
+      },
+      'show_tag': {
+        default: true
+      },
+      'multiple': {
         default: false
       },
       'set_from_id': {
@@ -225,7 +283,9 @@
     },
     components: {
       v_new_directory,
-      v_update_directory
+      v_update_directory,
+      tag_select,
+      tag_display
     },
     data() {
       return {
@@ -238,11 +298,22 @@
         date: undefined,
         error_directory_list: {},
         internal_directory_list: undefined,
-        loading_directory_list: false
+        loading_directory_list: false,
+
+        tag_display_refresh_trigger: null
 
       }
     },
+
+    created() {
+
+      if (this.multiple == true) {
+        this.current_directory = []
+      }
+
+    },
     mounted() {
+
       if (this.set_from_id && this.$store.state.project.current.directory_list_filtered) {
         this.current_directory = this.directory_list_filtered.find(
           x => {return x.directory_id == this.set_from_id});
@@ -403,11 +474,13 @@
       },
 
       change_directory() {
-        if (this.$props.set_current_dir_on_change) {
-          this.$store.commit('set_current_directory', this.current_directory)
+
+        if (this.multiple == false){
+          if (this.$props.set_current_dir_on_change) {
+            this.$store.commit('set_current_directory', this.current_directory)
+          }
         }
-        // TODO change type?
-        // ie if just rename may handle differently...
+
         this.$emit('change_directory', this.current_directory)
 
       },

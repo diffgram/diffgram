@@ -198,32 +198,11 @@
             >
 
               <template slot="content">
-                <v-layout column>
-
-                  <v-btn @click="$router.push('/admin/')">
-                    Projects
-                  </v-btn>
-
-                  <v-btn @click="$router.push('/admin/install/info')">
-                    Install Info
-                  </v-btn>
-
-                  <v-btn @click="$router.push('/admin/mock')">
-                    Mock Data
-                  </v-btn>
-
-                  <!--
-                  <v-btn @click="builder_or_trainer_toggle()">
-                    Builder / Trainer Toggle
-                  </v-btn>
-                  -->
-
-                  <v-btn @click="toggle_super_admin_mode()">
-                    Super Admin Toggle
-                  </v-btn>
 
 
-                </v-layout>
+                  <menu_super_admin> </menu_super_admin>
+
+
               </template>
 
             </button_with_menu>
@@ -312,6 +291,7 @@
   import pending_files_dialog from "../input/pending_files_dialog";
   import {getProjectList} from "../../services/projectServices";
   import menu_marketing from './menu_marketing'
+  import menu_super_admin from "./menu_super_admin";
 
   import Vue from "vue";
 
@@ -321,7 +301,8 @@
       main_menu_project,
       menu_tasks,
       pending_files_dialog,
-      menu_marketing
+      menu_marketing,
+      menu_super_admin
     },
     props: {
       'height': {
@@ -439,9 +420,6 @@
       },
       builder_or_trainer_toggle: function () {
         this.$store.commit("builder_or_trainer_toggle");
-      },
-      toggle_super_admin_mode: function () {
-        this.$store.commit("super_admin_toggle");
       },
       route_home_new_tab: function () {
         if (this.$store.state.user.logged_in == true) {

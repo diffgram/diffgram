@@ -2,7 +2,7 @@
   <v-layout>
   <v-sheet
       class="pl-4 pt-2"
-      style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px"
+      style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px; max-width: 400px"
       >
       <v_error_multiple :error="query_error"></v_error_multiple>
 
@@ -14,6 +14,7 @@
               z-index="99999999"
               >
         <template v-slot:activator="{ on, attrs }">
+
           <v-text-field
             class="pt-4"
             label="Query your data: "
@@ -23,7 +24,9 @@
             @blur="on_blur_query"
             @keydown.enter="execute_query($event.target.value)"
           ></v-text-field>
+
         </template>
+        <!--
         <query_suggestion_menu
           ref="query_suggestions"
           @update_query="update_query"
@@ -31,8 +34,9 @@
           @execute_query="execute_query"
           :project_string_id="project_string_id"
           :query="query" ></query_suggestion_menu>
+        -->
       </v-menu>
- 
+
         <tooltip_button
           tooltip_message="Refresh"
           datacy="refresh_explorer"
@@ -44,17 +48,36 @@
         </tooltip_button>
       </v-layout>
 
-      <v_directory_list :project_string_id="project_string_id"
-                        @change_directory="on_change_ground_truth_dir"
-                        ref="ground_truth_dir_list"
-                        :change_on_mount="true"
-                        :show_new="false"
-                        :initial_dir_from_state="true"
-                        :update_from_state="false"
-                        :set_current_dir_on_change="false"
-                        :view_only_mode="false"
-                        :show_update="false"
-                        :set_from_id="current_dir_id">
+      <tag_select
+        v-model="tag_selected_list"
+        :allow_new_creation="false"
+        :label="'Search by tags'"
+        @change="tag_change_event()"
+        :clearable="true"
+      >
+      </tag_select>
+
+      <label_select_only
+        :project_string_id="project_string_id"
+        :mode="'multiple'"
+        @label_file="label_change_event($event)"
+                          >
+      </label_select_only>
+
+      <v_directory_list
+          :project_string_id="project_string_id"
+          @change_directory="dataset_change_event($event)"
+          ref="ground_truth_dir_list"
+          :change_on_mount="false"
+          :show_new="false"
+          :initial_dir_from_state="false"
+          :update_from_state="false"
+          :set_current_dir_on_change="false"
+          :view_only_mode="false"
+          :show_update="false"
+          :show_tag="false"
+          :multiple="true"
+                        >
       </v_directory_list>
 
       <v-switch
@@ -67,10 +90,7 @@
         v-model="compare_models"
         :label="`Compare Models`"
       ></v-switch>
-    
-<!--      <v-btn icon disabled>-->
-<!--        <v-icon>mdi-filter</v-icon>-->
-<!--      </v-btn>-->
+
 
     <div v-if="compare_models == true">
       <v-layout column>
@@ -97,7 +117,7 @@
 
   </v-sheet>
 
-  <v-sheet style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:600px">
+  <div style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:600px; width: 100%;height: 1000px; overflow-y: auto">
     <v-progress-linear indeterminate
                        v-if="loading"
                        height="10"
@@ -106,51 +126,59 @@
     </v-progress-linear>
 
     <v-container v-if="none_found == true && metadata && metadata.page == 1"
-                 fluid style="border: 1px solid #ababab"
+                 fluid
+                 style="width: 100%; min-height: 750px;  position: relative"
                  class="d-flex flex-column align-center justify-center ma-0">
       <h1 class="pt-4">No Results</h1>
       <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
     </v-container>
 
-    <v-layout id="infinite-list"
+    <v-container
+              id="infinite-list"
               fluid
               class="files-container d-flex justify-start"
               data-cy="file_review_container"
-              :style="{height: full_screen ? '760px' : '350px', overflowY: 'auto', ['flex-flow']: 'row wrap', oveflowX: 'hidden'}">
+              :style="{height: files_container_height,
+              width: '100%',
+              overflowY: 'auto', ['flex-flow']: 'row wrap',
+              position: 'absolute',
+              oveflowX: 'hidden'}">
 
 
       <file_preview
+
         class="file-preview"
         v-if="file_list && file_list.length > 0"
         v-for="(file, index) in file_list"
+
         :base_model_run="base_model_run"
+        :selectable="true"
         :compare_to_model_run_list="compare_to_model_run_list"
         :key="file.id"
+        :selected="file.selected"
         :project_string_id="project_string_id"
         :file="file"
         :instance_list="file.instance_list"
+        :file_preview_width="450"
+        :file_preview_height="450"
         :show_ground_truth="show_ground_truth"
         @view_file_detail="view_detail"
+        @file_selected="on_file_selected"
       ></file_preview>
-      <v-container fluid v-else-if="this.file_list.length === 0" class="d-flex flex-column justify-center">
-        <h1 class="text-center">There are no files available</h1>
-        <v-icon class="text-center" size="86">mdi-text-box-search-outline</v-icon>
-      </v-container>
-
-
-    </v-layout>
-    <v-snackbar indeterminate v-if="infinite_scroll_loading">.
-      Loading...<v-progress-circular indeterminate></v-progress-circular>
-    </v-snackbar>
+    </v-container>
+    <div indeterminate v-if="infinite_scroll_loading">.
+      Loading...
+      <v-progress-circular indeterminate></v-progress-circular>
+    </div>
 
     <v-container v-if="none_found == true && metadata && metadata.page > 1"
-                 fluid style="border: 1px solid #ababab"
+                 fluid style="border: 1px solid #ababab; width: 100%"
                  class="d-flex flex-column align-center justify-center ma-0">
       <h1 class="pt-4">End of Results</h1>
       <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
     </v-container>
-  
-   </v-sheet>  
+
+   </div>
   </v-layout>
 </template>
 
@@ -160,6 +188,9 @@
   import directory_icon_selector from '../source_control/directory_icon_selector'
   import model_run_selector from "../model_runs/model_run_selector";
   import query_suggestion_menu from "./query_suggestion_menu";
+  import label_select_only from '@/components/label/label_select_only.vue'
+  import tag_select from '@/components/tag/tag_select.vue'
+
 
   export default Vue.extend({
     name: "dataset_explorer",
@@ -167,6 +198,8 @@
       model_run_selector,
       directory_icon_selector,
       query_suggestion_menu,
+      label_select_only,
+      tag_select
     },
     props: [
       'project_string_id',
@@ -175,7 +208,7 @@
       'full_screen'
 
     ],
-    mounted() {
+    async mounted() {
       if (window.Cypress) {
         window.DatasetExplorer = this;
       }
@@ -193,8 +226,10 @@
       if(this.$route.query.query){
         this.query = this.$route.query.query;
       }
-      this.fetch_file_list(true);
-      this.fetch_model_run_list();
+      await this.fetch_file_list(true);
+      await this.fetch_model_run_list();
+      await this.$nextTick()
+      await this.$nextTick()
       // Detect when scrolled to bottom.
       const listElm = document.querySelector('#infinite-list');
       listElm.addEventListener('scroll', e => {
@@ -235,13 +270,29 @@
           'file_view_mode': 'explorer',
           'previous': undefined,
           'search_term': this.search_term
-        }
+        },
 
+        datasets_selected: [],
+        labels_selected: [],
+        tag_selected_list: []
       }
     },
     watch:{
       selected_dir: function () {
         this.fetch_file_list();
+      }
+    },
+    computed:{
+      files_container_height: function(){
+        if(this.file_list.length === 0){
+          return '0px'
+        }
+        if(this.full_screen){
+          return '100%'
+        }
+        else{
+          return '1000px'
+        }
       }
     },
     methods: {
@@ -253,6 +304,96 @@
           this.query += value;
         }
       },
+
+      refresh_query: function() {
+
+        let new_query = this.generate_query()
+        this.query = new_query
+        this.execute_query(new_query)
+
+      },
+
+      generate_query: function(){
+
+        let query = ""
+
+        let dir_list_query = this.generate_directory_list_query(this.datasets_selected)
+        if (dir_list_query) {
+          query += dir_list_query
+        }
+
+        let label_query = this.generate_label_query(this.labels_selected)
+        if (label_query) {
+          if (dir_list_query) { query += " and " }
+          query += label_query
+        }
+
+        return query
+
+      },
+
+      generate_directory_list_query: function (datasets_selected){
+
+        if (!Array.isArray(datasets_selected)) { return }
+        if (datasets_selected.length === 0) { return }
+
+        let query = "dataset.id in ["
+
+        for (let dataset of datasets_selected) {
+          let id = (dataset.id || dataset.directory_id)
+          query += id
+          query += ","
+        }
+
+        if (datasets_selected.length >=1) {
+          query = query.slice(0, -1) // remove trailing comma
+        }
+
+        query += "]"
+
+        return query
+
+      },
+
+      generate_label_query: function (labels_selected){
+
+        if (labels_selected.length === 0 ) {return }
+
+        let query = ""
+
+        for (let label of labels_selected) {
+          query += "labels."
+          query += label.label.name
+          query += " >= 1"
+          query += " and "
+        }
+
+        if (labels_selected.length === 1 || labels_selected.length >= 1) {
+          query = query.slice(0, -4) // remove trailing
+        }
+
+        return query
+
+      },
+
+       tag_change_event: function(){
+        this.refresh_query()
+
+      },
+
+      label_change_event: function(label_file_list){
+        this.labels_selected = label_file_list
+        this.refresh_query()
+
+      },
+
+      dataset_change_event: function(datasets_selected){
+
+        this.datasets_selected = datasets_selected
+        this.refresh_query()
+
+      },
+
       on_focus_query: function(){
         this.$store.commit('set_user_is_typing_or_menu_open', true);
         this.query_menu_open = true
@@ -301,6 +442,7 @@
           })
           if (response.data['file_list'] == false) {
             this.none_found = true
+            this.file_list = []
           }
           else {
             if(reload_all){
@@ -352,11 +494,16 @@
         }
 
       },
-      on_change_ground_truth_dir: function(dir){
-        this.file_list = [];
-        this.metadata.directory_id = dir.directory_id;
-        this.selected_dir = dir;
-
+      on_file_selected: function(file){
+        for(let file_elm of this.file_list){
+          if(file.id === file_elm.id){
+            continue
+          }
+          file_elm.selected = false;
+        }
+        file.selected = !file.selected;
+        console.log(file, file.selected)
+        this.$forceUpdate()
       },
       view_detail: function(file, model_runs, color_list){
         this.$emit('view_detail', file, model_runs, color_list)
