@@ -27,6 +27,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         self.log = regular_log.default()
         self.session = session
         self.and_expression = None
+        self.or_expression = None
         self.final_query = self.session.query(File).filter(
             File.project_id == self.diffgram_query.project.id,
             File.state != 'removed',
@@ -83,12 +84,16 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         if len(args) == 1:
             local_tree = args[0]
             expressions = []
+            if not self.or_expression:
+                self.or_expression = OrExpression(expression_list = [])
+            print('OR EXPRESSION', local_tree)
             for child in local_tree.children:
                 if hasattr(child, 'and_expression'):
-                    print('AND EXPRESSION', child.and_expression)
                     expressions.append(child.and_expression)
-            or_expr = OrExpression(expression_list = expressions)
-            local_tree.or_expression = or_expr
+                    self.or_expression.add_expression(child.and_expression)
+                    # Reset and expressions list
+                    self.and_expression = AndExpression(expression_list = [])
+            local_tree.or_expression = self.or_expression
             return local_tree
         else:
             logger.error(f"Invalid child count for expr. Must be 1 and is {len(args)}")
@@ -102,17 +107,16 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         """
         if regular_log.log_has_error(self.log):
             return
-        print('TERM len args', len(args))
         if len(args) == 1:
+
             local_tree = args[0]
+            print('andddd EXPRESSION', local_tree)
             if not self.and_expression:
                 self.and_expression = AndExpression(expression_list = [])
             expression_list = []
             for child in local_tree.children:
                 if hasattr(child, 'factor'):
                     factor = child.factor
-                    print('factor', factor.filter_value)
-                    print('----\n')
                     expression_list.append(factor.filter_value)
                     self.and_expression.add_expression(factor.filter_value)
 
