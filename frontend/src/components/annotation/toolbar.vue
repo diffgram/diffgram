@@ -189,6 +189,7 @@
       <div v-if="!task">
         <div class="pl-2 pr-3 pt-4">
           <label_schema_selector
+            ref="label_scehma_selector"
             :project_string_id="project_string_id"
             :initial_schema="label_schema"
             @change="$emit('change_label_schema', $event)"
@@ -223,7 +224,7 @@
       <!-- TODO in task mode, this can be force set by Schema
           and optionally hidden-->
 
-      <ui_schema name="instance_selector">
+      <ui_schema name="instance_selector" v-if="!loading_instance_type">
         <div class="pl-3 pr-3 pt-4" style="max-width: 200px">
           <!-- instance_selector -->
           <diffgram_select
@@ -1077,6 +1078,7 @@ export default Vue.extend({
         canvas_scale_global_is_automatic: true,
       },
       draw_mode_local: true,
+      loading_instance_type: true,
       instance_type: "box",
       numberValue: 1,
       duration_labels: ["1", "2", "3", "4", "5"],
@@ -1096,10 +1098,14 @@ export default Vue.extend({
       this.draw_mode_local = event;
     },
   },
-  mounted() {
+  async mounted() {
     this.label_settings_local = this.$props.label_settings;
     this.draw_mode_local = this.$props.draw_mode;
+
+
+    this.loading_instance_type = false;
   },
+
   computed: {
     mode_text: function () {
       if (this.draw_mode_local == true) {
@@ -1114,6 +1120,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    set_instance_type: function(inst_type){
+      this.instance_type = inst_type
+    },
     on_mode_set: function(mode){
       this.$emit('keypoints_mode_set', mode)
     },
