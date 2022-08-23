@@ -141,6 +141,7 @@
 
             </v-text-field>
 
+
             <job_status_select
               class="ml-4"
               v-model="status"
@@ -150,6 +151,14 @@
             >
             </job_status_select>
 
+            <tag_select
+              v-model="tag_selected_list"
+              :tag_list="tag_list"
+              @change="search_jobs()"
+              @focus="tag_list_api()"
+
+            >
+            </tag_select>
 
             <job_type_select
               class="ml-4"
@@ -583,8 +592,11 @@
   import job_list_card_display from '../job/job_list_card_display'
   import label_select_only from '../../label/label_select_only.vue'
 
+  import tag_select from '@/components/tag/tag_select.vue'
+
   import Vue from "vue";
   import {create_event} from "../../event/create_event";
+
 
   export default Vue.extend({
       name: 'job_list',
@@ -594,7 +606,8 @@
         job_type_select,
         project_pipelines_dialog,
         job_list_card_display,
-        label_select_only
+        label_select_only,
+        tag_select
       },
 
       props: {
@@ -663,6 +676,10 @@
           metadata_limit_options: [10, 25, 100, 250],
           metadata_limit: 10,
           error_sample_data: {},
+
+          tag_loading: false,
+          tag_list: [],
+          tag_selected_list: [],
 
           request_next_page_flag: false,
           request_next_page_available: true,
@@ -834,6 +851,14 @@
 
         },
 
+        tag_selected_list_ids_only: function() {
+          let id_list = []
+          for (let tag of this.tag_selected_list) {
+            id_list.push(tag.id)
+          }
+          return id_list
+        },
+
         metadata: function () {
 
           let project_string_id = this.project_string;
@@ -853,7 +878,8 @@
             'instance_type': this.instance_type,
             'project_string_id': project_string_id,
             'org': this.org,
-            'share_type': this.share_type
+            'share_type': this.share_type,
+            'tag_list': this.tag_selected_list_ids_only
           }
 
         }
@@ -861,7 +887,7 @@
       },
 
       created() {
-
+        this.tag_list_api()
       },
 
       async mounted() {
@@ -940,6 +966,32 @@
         search_jobs: debounce(async function () {
           this.job_list_api();
         }, 200),
+
+
+        tag_list_api() {
+
+          this.tag_loading = true
+
+          axios.get('/api/v1/project/' + this.$store.state.project.current.project_string_id +
+              '/tags/list', {
+
+          }).then(response => {
+
+            if (response.data['tag_list'] != null) {
+
+              this.tag_list = response.data['tag_list']
+            }
+
+            this.tag_loading = false
+
+          })
+            .catch(error => {
+              console.error(error);
+              this.tag_loading = false
+            });
+        },
+
+
         job_list_api() {
 
           this.loading = true

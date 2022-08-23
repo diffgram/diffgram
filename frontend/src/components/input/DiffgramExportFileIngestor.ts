@@ -193,9 +193,11 @@ export default class DiffgramExportFileIngestor {
     if (!('label_file_id' in instance)) {
       throw new Error(`Label File ID missing. Provide 'label_file_id'. Data is: ${JSON.stringify(instance)}`)
     }
-    let label_name = this.export_raw_obj.label_map[instance.label_file_id];
-    if (!label_name) {
-      throw new Error(`Invalid label_file_id ${instance.label_file_id}. ID not available in label_map.`)
+    if (instance.label_file_id) {
+      let label_name = this.export_raw_obj.label_map[instance.label_file_id];
+      if (!label_name) {
+        throw new Error(`Invalid label_file_id ${instance.label_file_id}. ID not available in label_map.`)
+      }
     }
   }
 
@@ -268,8 +270,12 @@ export default class DiffgramExportFileIngestor {
       file_data.line_instances.push(instance)
     } else if (instance.type === 'cuboid') {
       file_data.cuboid_instances.push(instance)
+    } else if (instance.type === 'cuboid_3d') {
+      file_data.cuboid_3d_instances.push(instance)
     } else if (instance.type === 'ellipse') {
       file_data.ellipse_instances.push(instance)
+    }else if (instance.type === 'global') {
+      file_data.global_instances.push(instance)
     } else {
       throw new Error(`Invalid instance type ${instance.type}`)
     }
@@ -398,7 +404,9 @@ export default class DiffgramExportFileIngestor {
         polygon_instances: [],
         line_instances: [],
         cuboid_instances: [],
+        cuboid_3d_instances: [],
         ellipse_instances: [],
+        global_instances: [],
         instances: [],
         labels: {},
       }
@@ -453,6 +461,7 @@ export default class DiffgramExportFileIngestor {
       for (let attr_existing_option of attribute_existing.attribute_template_list) {
         if (attr_export_option.name === attr_existing_option.name) {
           this.attribute_new_id_mapping[attribute_export.id].attributes_mapping[attr_export_option.id] = attr_existing_option.id
+          this.attribute_new_id_mapping[attribute_export.id].attributes_mapping[attr_export_option.parent_id] = attr_existing_option.parent_id
         }
       }
     }
@@ -488,28 +497,41 @@ export default class DiffgramExportFileIngestor {
     let new_attribute_group = {};
 
     for (let key_str of Object.keys(instance.attribute_groups)) {
+
       let key = parseInt(key_str, 10)
       let mapping = this.attribute_new_id_mapping[key];
       if(!mapping){
         // The only case were a mapping would not be found is if the ID is from an archived attribute.
         continue
       }
+
+      let group_id = this.attribute_new_id_mapping[key].attribute_group_id
+
       if(typeof instance.attribute_groups[key] === 'object'){
-        new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] = {
+        new_attribute_group[group_id] = {
           ...instance.attribute_groups[key]
         }
       }
       else{
-        new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] = instance.attribute_groups[key]
+        new_attribute_group[group_id] = instance.attribute_groups[key]
       }
 
-
       // Change attribute options IDs (for select, radio buttons, multiple selects)
-      if (typeof new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id] === 'object') {
-        let old_id = new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id].id
+      if (typeof new_attribute_group[group_id] === 'object') {
+        let old_id = new_attribute_group[group_id].id
         if (old_id) {
-          new_attribute_group[this.attribute_new_id_mapping[key].attribute_group_id].id =
+          new_attribute_group[group_id].id =
             this.attribute_new_id_mapping[key].attributes_mapping[old_id];
+        }
+
+        // Tree view
+        for(let key_option of Object.keys(new_attribute_group[group_id])){
+            // Change Selected parent ID
+            if(typeof new_attribute_group[group_id] === 'object'){
+              let new_key =  this.attribute_new_id_mapping[key].attributes_mapping[parseInt(key_option)]
+              new_attribute_group[group_id][new_key] = new_attribute_group[group_id][key_option]
+              delete new_attribute_group[group_id][key_option]
+            }
         }
       }
 

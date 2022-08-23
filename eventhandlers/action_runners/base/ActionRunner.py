@@ -50,6 +50,12 @@ class ActionRunner:
         session.add(self.action)
         session.add(self.action_run)
 
+    def save_error_output(self, session, data: dict):
+        self.action.output = data
+        self.action_run.output = data
+        session.add(self.action)
+        session.add(self.action_run)
+
     def execute_pre_conditions(self, session: Session) -> bool:
         """
         Function to determine if pre conditions for execution are met.
@@ -148,7 +154,8 @@ class ActionRunner:
             self.declare_action_complete(session, output)
         else:
             self.declare_action_failed(session)
-
+        self.session.add(self.action)
+        self.session.add(self.action_run)
     def declare_action_failed(self, session: Session) -> None:
         Event.new(
             session = session,

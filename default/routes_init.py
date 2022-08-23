@@ -16,6 +16,7 @@ def do_routes_importing():
     from methods.action.action_manual import api_action_manual
     from methods.action.action_template_get import api_get_action_template
     from methods.action.action_stat import api_action_stat
+    from methods.action.action_run_list import api_action_list_web
 
     from methods.project.project_update import api_project_update
     from methods.source_control.file.file_update import api_file_update
@@ -45,7 +46,6 @@ def do_routes_importing():
     from methods.task.task.task_review import task_review_api
     from methods.task.task.task_complete import api_task_complete
 
-    from methods.task.file.file_attach import add_files_to_job_api
     from methods.task.file.dir_attach import update_dirs_to_job_api
     from methods.source_control.file.file_exists import file_list_exists_api
 
@@ -110,7 +110,6 @@ def do_routes_importing():
     from methods.source_control.working_dir.directory_update import update_directory_api
 
     from methods.project.star import star_status
-    from methods.project.tags import update_tags
 
     from methods.video.video_view import get_video_single_image
     from methods.video.sequence import get_sequence
@@ -178,6 +177,9 @@ def do_routes_importing():
     from methods.labels.label_schema_list import api_label_schema_list
     from methods.labels.label_schema_new import api_label_schema_new
     from methods.labels.label_schema_update import api_label_schema_update
+
+    from methods.tag.tag import tag_view_by_project
+    from methods.source_control.file.file_get_signed_url import api_file_get_signed_url
 
     from methods.roles.role_new import new_role_web
     from methods.roles.role_remove_permission import role_remove_permission_web

@@ -1,2 +1,2 @@
 
-## [Contributing Guide](https://diffgram.readme.io/docs/contributing-guide)
+## [Contributing Guide](https://diffgram.readme.io/docs/contribute)

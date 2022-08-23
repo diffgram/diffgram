@@ -17,7 +17,7 @@ from shared.regular import regular_methods, regular_log
 from methods.input.upload import Upload
 from shared.database.connection.connection import Connection
 from sqlalchemy.orm.session import Session
-
+from shared.helpers.permissions import get_session_string
 
 @routes.route('/api/walrus/v1/project/<string:project_string_id>/input/packet',
               methods = ['POST'])
@@ -127,6 +127,7 @@ def input_packet(project_string_id):
         if not valid_file_data:
             return jsonify(log = log), 400
         log = regular_log.default()
+        connection_id_access_token = get_session_string()
         diffgram_input = enqueue_packet(project_string_id = project_string_id,
                                         session = session,
                                         media_url = media_url,
@@ -144,6 +145,7 @@ def input_packet(project_string_id):
                                         batch_id = untrusted_input.get('batch_id', None),
                                         type = input.get('type', None),
                                         enqueue_immediately = False,
+                                        connection_id_access_token = connection_id_access_token,
                                         mode = mode,
                                         member = member)
         auth_api = None
@@ -202,6 +204,7 @@ def enqueue_packet(project_string_id,
                    allow_duplicates = False,
                    auto_correct_instances_from_image_metadata = False,
                    extract_labels_from_batch = False,
+                   connection_id_access_token = False,
                    member = None):
     """
         Creates Input() object and enqueues it for media processing
@@ -212,6 +215,8 @@ def enqueue_packet(project_string_id,
     diffgram_input = Input()
     project = Project.get(session, project_string_id)
     diffgram_input.file_id = file_id
+    if connection_id_access_token is not None:
+        image_metadata['connection_id_access_token'] = connection_id_access_token
     diffgram_input.image_metadata = image_metadata
     diffgram_input.auto_correct_instances_from_image_metadata = auto_correct_instances_from_image_metadata
     diffgram_input.task_id = task_id
@@ -303,6 +308,13 @@ def validate_input_from_blob_path(project: Project, input: dict, session: Sessio
         log['error'] = {}
         log['error']['bucket_name'] = 'Provide bucket name for blob'
 
+    if input.get('media') is None or input.get('media') == {}:
+        log['error'] = {}
+        log['error']['media'] = 'Provide media data. Needs to be {"media_type": str, "url": str<optional>}'
+
+    if input.get('media') is not None and input['media'].get('type') is None:
+        log['error'] = {}
+        log['error']['media.type'] = 'Provide media type needs to be ["image", "video", "text", "audio", "csv", "sensor_fusion", "geo_tiff"]'
     if input.get('raw_data_blob_path') is None:
         log['error'] = {}
         log['error']['raw_data_blob_path'] = 'Provide raw_data_blob_path for blob'

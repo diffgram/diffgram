@@ -9,10 +9,18 @@ from sqlalchemy_serializer import SerializerMixin
 class ActionTriggerEventTypes(Enum):
     task_completed = 'task_completed'
     task_created = 'task_created'
+    task_review_start = 'task_review_start'
+    task_request_changes = 'task_request_changes'
+    task_review_complete = 'task_review_complete'
+    task_in_progress = 'task_in_progress'
+    task_comment_created = 'task_comment_created'
     task_template_completed = 'task_template_completed'
     input_file_uploaded = 'input_file_uploaded'
     input_instance_uploaded = 'input_instance_uploaded'
     action_completed = 'action_completed'
+    file_copy = 'file_copy'
+    file_move = 'file_move'
+    file_mirror = 'file_mirror'
 
 
 class ActionKinds(Enum):
@@ -368,7 +376,7 @@ class Action(Base, SerializerMixin):
     @staticmethod
     def get_by_id(session,
                   id,
-                  project_id = None):
+                  project_id = None) -> 'Action':
         """
         Must include project id for security check
 

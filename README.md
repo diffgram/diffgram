@@ -12,8 +12,6 @@ _________________
 ![](./github_assets/slack.PNG)
 •
 [Enterprise](https://diffgram.com/main/enterprise)
-•
-[Twitter](https://twitter.com/diffgram)
 
 # Support & Community
 1. [Open an issue](https://github.com/diffgram/diffgram/issues) (Technical, bugs, etc)
@@ -30,6 +28,20 @@ a single application.
 Open Source Data Labeling, Workflow, Automation, Exploring, Streaming, and so much more!
 
 Watch a high level [video explanation](https://www.youtube.com/watch?v=dws6J3bDbcU).
+
+
+# New 1st Class AI/ML Integrations
+Integrate and share your machine learning. Event driven backed by RabbitMQ.
+Learn more [Workflow](https://diffgram.readme.io/docs/workflows)
+
+## Hugging Face
+[Hugging Face Zero Shot](https://diffgram.readme.io/docs/hugging-face-zero-shot)
+
+## Deepchecks
+[Deepchecks Image Properties Outliers ](https://diffgram.readme.io/docs/deepchecks-image-properties-outliers)
+
+## Build your Own
+[Custom Actions](https://diffgram.readme.io/docs/developing-you-custom-actions)
 
 # Annotate Anything - Images, Video, 3D, Text, Geo, Audio And more
 
@@ -72,19 +84,11 @@ Alpha Release: [Geospatial labeling docs](https://diffgram.readme.io/docs/geospa
 
 ## Documents
 
-
 ### More
 Build your own UI or [contact us](https://diffgram.com/main/contact). Our intent is to build and cover all major media types in 2022, including timeseries, DICOM, and more.
 
 # Manage all of your training data
 Manage multiple Schemas, Users, Datasets, Process, and so much more. 
-
-## Process Manager
-Organize and surface your machine learning processes. 
-From start, through pre-label ingestion, multiple task stages, training, and back again.
-Event driven backed by AMQP (RabbitMQ).
-Preview available now [Workflow](https://diffgram.readme.io/docs/workflows)
-Example Actions coming June 2022.
 
 ## Customize Everything
 With Diffgram you can get the exact branded experience you want through the what-you-see-is-what-you-get editor.
@@ -321,7 +325,7 @@ Latest AI + More
 [Ecosystem](https://diffgram.readme.io/docs/ecosystem)
 
 # Contributing
-We welcome contributions! Please see our [contributing documentation](https://diffgram.readme.io/docs/contributing-guide).
+We welcome contributions! Please see our [contributing documentation](https://diffgram.readme.io/docs/contribute).
 
 # Architecture & Design Docs
 We plan to release more internal architecture docs over time. Please see the [general docs](https://diffgram.readme.io/docs) in the mean time.

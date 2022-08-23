@@ -3,16 +3,15 @@ import Vuex from 'vuex'
 import createPersistedState from 'vuex-persistedstate'
 
 
-
 Vue.use(Vuex)
 
 
 const default_user_settings = {
-
-      studio_box_info: true,
-      studio_left_nav_width: 350,
-      smooth_canvas: true
-    }
+  last_selected_annotation_tool: 'box',
+  studio_box_info: true,
+  studio_left_nav_width: 350,
+  smooth_canvas: true
+}
 
 // TODO should we use a dic object here for some of user properties?
 // ie like you did with ai links?
@@ -34,20 +33,23 @@ export const user_module = {
     is_typing_or_menu_open: false,
     settings: default_user_settings,
     history: undefined
-	},
+  },
   getters: {
-    get_project_roles: function(state){
-      return function(project_string_id){
-        if(state.current.permissions_projects[project_string_id]
-          && state.current.permissions_projects[project_string_id].length > 0){
+    get_project_roles: function (state) {
+      return function (project_string_id) {
+        if (state.current.permissions_projects[project_string_id]
+          && state.current.permissions_projects[project_string_id].length > 0) {
           return state.current.permissions_projects[project_string_id];
         }
       }
     },
+    get_last_selected_tool: function(state){
+      return state.settings.last_selected_annotation_tool
+    }
   },
-	mutations: {
+  mutations: {
     // TODO get user settings from storage (also TODO create user storage for settings)
-		log_in: state => state.logged_in = true,
+    log_in: state => state.logged_in = true,
     log_out(state) {
       state.logged_in = false
       state.user_name = null
@@ -72,6 +74,9 @@ export const user_module = {
     },
     set_current_user(state, user) {
       state.current = user
+    },
+    set_last_selected_tool(state, last_selected_tool) {
+      state.settings.last_selected_annotation_tool = last_selected_tool
     },
     patch_current_user(state, key_value_array) {
       let key = key_value_array[0]
@@ -138,21 +143,20 @@ export const user_module = {
 
 export const public_project = {
   state: {
-    project:{
+    project: {
       project_string_id: undefined
     }
   },
-  mutations:{
+  mutations: {
     set_current_public_project(state, project) {
       state.project = project
     }
   },
-  getters:{
-    is_on_public_project(state){
-      if(state.project.project_string_id){
+  getters: {
+    is_on_public_project(state) {
+      if (state.project.project_string_id) {
         return true
-      }
-      else{
+      } else {
         return false
       }
     }
@@ -174,10 +178,6 @@ export const project_list = {
 }
 
 export const project = {
-
-  // TODO merge name and string methods in project
-  // TODO clarify why using phrase "current", is it becuase
-  // needs some variable can't store in "root" of project?
 
   state: {
     project_name: null,
@@ -222,17 +222,13 @@ export const project = {
 
     set_project(state, project) {
 
-      // default here, in future for more advanced permissions thing may need to review
-      // (but not actually project state itself, which is done below
-      // therefore no race conditions)
       this.dispatch('reset_project_related_state')
 
       state.current = project
 
-      // Key to handle this here since we may call
-      // set project from different spots
+      state.project_name = project.name
+      state.project_string_id = project.project_string_id
 
-      // TODO handle failure case ie no directory in list
       state.current_directory = project.directory_list[0]
     },
     set_current_directory_list(state, directory_list) {
@@ -242,8 +238,8 @@ export const project = {
       state.current_directory = directory
     },
     patch_single_directory(state, directory) {
-       state.current.last_patched_directory = directory
-       state.current.directory_list.splice(0, 0, directory)
+      state.current.last_patched_directory = directory
+      state.current.directory_list.splice(0, 0, directory)
     }
   }
 }
@@ -262,7 +258,6 @@ const org = {
     }
   }
 }
-
 
 
 const job = {
@@ -312,16 +307,16 @@ const integration_spec_list_template = [
     'image-icon': 'https://uploads-ssl.webflow.com/5f07389521600425ba513006/5f1750e39c67ad3dd7c69015_logo_scale.png',
   },
   {
-   'display_name': 'Microsoft Azure',
-   'name': 'microsoft_azure',
-   'icon': 'mdi-microsoft-azure',
-   'color': 'blue'
+    'display_name': 'Microsoft Azure',
+    'name': 'microsoft_azure',
+    'icon': 'mdi-microsoft-azure',
+    'color': 'blue'
   },
   {
-   'display_name': 'Microsoft Azure Text Analytics',
-   'name': 'microsoft_azure_text_analytics',
-   'icon': 'mdi-microsoft-azure',
-   'color': 'blue'
+    'display_name': 'Microsoft Azure Text Analytics',
+    'name': 'microsoft_azure_text_analytics',
+    'icon': 'mdi-microsoft-azure',
+    'color': 'blue'
   },
   {
     'display_name': 'Minio',
@@ -427,12 +422,12 @@ const network = {
   state: {
     network_error: null
   },
-  getters:{
+  getters: {
     get_network_error: state => state.network_error,
   },
   mutations: {
     set_connection_error(state, error) {
-      state.network_error =error;
+      state.network_error = error;
     },
     clear_connection_error(state) {
       state.network_error = null;
@@ -508,7 +503,7 @@ const annotation_state = {
     view_issue_mode: false,
 
   },
-  getters:{
+  getters: {
     get_instance_select_for_issue: state => state.instance_select_for_issue,
     get_instance_select_for_merge: state => state.instance_select_for_merge,
     get_view_issue_mode: state => state.view_issue_mode
@@ -568,13 +563,11 @@ const auth = {
 }
 
 
-
-
 const builder_or_trainer = {
   state: {
     mode: null
   },
-  getters:{
+  getters: {
     get_current_mode: state => {
       return state.mode;
     }
@@ -603,7 +596,7 @@ const clipboard = {
   state: {
     clipboard_data: undefined,
   },
-  getters:{
+  getters: {
     get_clipboard: state => {
       return state.clipboard_data;
     }
@@ -627,7 +620,7 @@ const ui_schema = {
     refresh: undefined,
     refresh_mouse_over_event: undefined
   },
-  getters:{
+  getters: {
     get_ui_schema: (state) => (element, string_key) => {
       if (state.current[element] == undefined) {
         return "element is undefined"
@@ -647,14 +640,14 @@ const ui_schema = {
       }
       state.refresh = Date.now()
     },
-    reset_ui_schema(state, current){  // restore
+    reset_ui_schema(state, current) {  // restore
       const allow_list = ["logo", "home", "task_list", "undo", "redo", "complete",
         "defer", "zoom", "label_selector", "instance_selector", "edit_instance_template",
         "draw_edit", "save", "next_task", "previous_task", "guide", "brightness_contrast_filters", "time_tracking"
-        ]
+      ]
       for (const [key, value] of Object.entries(state.current)) {
         if (allow_list.includes(key)) {
-          state.current[key] = {'visible' : true}
+          state.current[key] = {'visible': true}
         }
       }
       state.refresh = Date.now()
@@ -765,8 +758,7 @@ export const system = {
     check_is_open_source(state) {
       if (window.location && window.location.hostname == "127.0.0.1") {
         state.is_open_source = true
-        }
-      else {
+      } else {
         state.is_open_source = false
       }
     },
@@ -805,8 +797,8 @@ const my_store = new Vuex.Store({
 
     reducer: (state) => {
       let reducer = Object.assign({}, state)
-      for(const key of Object.keys(reducer)){
-        if(modulesToOmit.includes(key)){
+      for (const key of Object.keys(reducer)) {
+        if (modulesToOmit.includes(key)) {
           delete reducer[key];
         }
       }

@@ -9,7 +9,6 @@ from shared.database.project import ProjectStar
 from shared.database.project import Tag
 import logging
 import sys
-import re
 import json
 from shared.helpers import sessionMaker, query_val
 from shared.helpers.permissions import LoggedIn, defaultRedirect, getUserID
@@ -20,13 +19,7 @@ from shared.permissions.project_permissions import Project_permissions
 
 
 
-KEYWORD_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-
-def valid_tag(string):
-	if KEYWORD_RE.match(string):
-		return string
-
-
+# LEGACY Route TBD
 @routes.route('/api/project/<string:project_string_id>/tags/update', 
 			  methods=['POST'])
 @Project_permissions.user_has_project(["admin", "Editor"])
@@ -37,6 +30,8 @@ def update_tags(project_string_id):
 	Update tags to latest
 
 	"""
+	return
+
 	have_error = False
 	error_message_list = []
 
@@ -98,7 +93,7 @@ def update_tags(project_string_id):
 
 
 
-@routes.route('/api/project/<string:project_string_id>/tags/list', 
+@routes.route('/api/v1/project/<string:project_string_id>/tags/list', 
 			  methods=['GET'])
 @Project_permissions.user_has_project(["allow_if_project_is_public",
 									   "admin", 
@@ -109,37 +104,17 @@ def tag_view_by_project(project_string_id):
 	with sessionMaker.session_scope() as session:
 
 		project = Project.get_project(session, project_string_id)
-		if project is None:
-			return jsonify(success=False), 400, {'ContentType':'application/json'}
 		
-		tag_list = project.serialize_tag_list_PUBLIC()
-		out = jsonify(	success=True,
-						tag_list=tag_list)
-
-		return out, 200, {'ContentType':'application/json'}
-
-
-# TODO add general permissions
-# TODO review permissions for private project tags
-
-# Handling tag privacy may be slightly complex
-# As projects change and tags many to many
-
-
-@routes.route('/api/tags/public/list', 
-			  methods=['GET'])
-def tag_view_all_public():        
-
-	with sessionMaker.session_scope() as session:
-
-		tag_list = session.query(Tag).filter(
-					Tag.is_public == True).all()
+		tag_list = Tag.get_by_project(
+            session = session,
+            project_id = project.id)
 
 		tag_list_serailized = []
 		for tag in tag_list:
-			tag_list_serailized.append(tag.name)
+		    tag_list_serailized.append(tag.serialize())
 
 		out = jsonify(	success=True,
 						tag_list=tag_list_serailized)
 
 		return out, 200, {'ContentType':'application/json'}
+
