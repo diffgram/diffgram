@@ -21,6 +21,5 @@ class LabelsCompareExpression(CompareExpression):
         raw_scalar_value = scalar_op.raw_value
         sql_filter = query_op.subquery
         sql_compare_operator = self.operator.operator_value
-
         new_filter_subquery = sql_filter.filter(sql_compare_operator(FileStats.count_instances, raw_scalar_value)).subquery()
         self.subquery = new_filter_subquery

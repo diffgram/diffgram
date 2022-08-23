@@ -26,6 +26,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         self.diffgram_query = diffgram_query
         self.log = regular_log.default()
         self.session = session
+        self.and_expression = None
         self.final_query = self.session.query(File).filter(
             File.project_id == self.diffgram_query.project.id,
             File.state != 'removed',
@@ -84,6 +85,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             expressions = []
             for child in local_tree.children:
                 if hasattr(child, 'and_expression'):
+                    print('AND EXPRESSION', child.and_expression)
                     expressions.append(child.and_expression)
             or_expr = OrExpression(expression_list = expressions)
             local_tree.or_expression = or_expr
@@ -100,18 +102,21 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         """
         if regular_log.log_has_error(self.log):
             return
-        print('len args', len(args))
+        print('TERM len args', len(args))
         if len(args) == 1:
             local_tree = args[0]
-            print('len local_tree', local_tree)
-            print('len children', local_tree.children)
-            expression = []
+            if not self.and_expression:
+                self.and_expression = AndExpression(expression_list = [])
+            expression_list = []
             for child in local_tree.children:
                 if hasattr(child, 'factor'):
                     factor = child.factor
-                    expression.append(factor.filter_value)
-            and_expr = AndExpression(expression_list = expression)
-            local_tree.and_expression = and_expr
+                    print('factor', factor.filter_value)
+                    print('----\n')
+                    expression_list.append(factor.filter_value)
+                    self.and_expression.add_expression(factor.filter_value)
+
+            local_tree.and_expression = self.and_expression
         else:
             logger.error(f"Invalid child count for term. Must be 1 and is {len(args)}")
             self.log['error']['term'] = 'Invalid child count for factor. Must be 1'

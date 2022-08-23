@@ -504,8 +504,9 @@ class File_Browser():
         diffgram_query_obj = query_creator.create_query(query_string = query_string)
 
         if len(query_creator.log['error'].keys()) > 0:
+            self.log = query_creator.log
             logger.error(f'Error making query {query_creator.log}')
-            return False, query_creator.log, None
+            return False, None
         executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
         sql_alchemy_query, self.log = executor.execute_query()
         if regular_log.log_has_error(self.log):

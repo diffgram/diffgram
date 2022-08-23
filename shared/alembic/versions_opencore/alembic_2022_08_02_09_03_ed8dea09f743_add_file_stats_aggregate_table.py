@@ -9,8 +9,7 @@ from alembic import op
 import sqlalchemy as sa
 import datetime
 from sqlalchemy import orm
-from shared.database.source_control.file import File
-from shared.database.source_control.file_stats import FileStats
+
 
 # revision identifiers, used by Alembic.
 revision = 'ed8dea09f743'
@@ -20,6 +19,8 @@ depends_on = None
 
 
 def migrate_existing_file_stats():
+    from shared.database.source_control.file import File
+    from shared.database.source_control.file_stats import FileStats
     bind = op.get_bind()
     session = orm.Session(bind = bind)
     files = session.query(File).all()

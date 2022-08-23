@@ -11,6 +11,7 @@ from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryE
 from shared.query_engine.sql_alchemy_query_elements.scalar import ScalarQueryElement
 
 from shared.regular import regular_log
+
 logger = get_shared_logger()
 
 
@@ -146,6 +147,7 @@ class CompareExpression:
                                    subquery = new_filter_subquery)
         return result, log
 
+
 class AndExpression:
     expression_list: List[CompareExpression]
     sql_and_statement: BooleanClauseList
@@ -153,6 +155,13 @@ class AndExpression:
     def __init__(self, expression_list: List[CompareExpression]):
         self.expression_list = expression_list
         self.sql_and_statement = and_(*expression_list)
+        print(len(expression_list), "LEEEEND")
+        print('sql and statement', self.sql_and_statement)
+
+    def add_expression(self, selectable_expr_elm: Selectable):
+        self.expression_list.append(selectable_expr_elm)
+        self.sql_and_statement = and_(*self.expression_list)
+
 
 class OrExpression:
     expression_list: List[AndExpression]

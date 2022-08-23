@@ -1,7 +1,7 @@
 grammar_definition = """
     start: expr
-    expr: term [OR term]
-    term: factor [AND factor]
+    expr: term | expr OR term
+    term: factor | term AND factor
     factor: compare_expr
     ?quoted_string  : DOUBLE_QUOTED_STRING | SINGLE_QUOTED_STRING
     compare_expr: (NAME | array | quoted_string)  COMPARE_OP (NAME | array | quoted_string) 

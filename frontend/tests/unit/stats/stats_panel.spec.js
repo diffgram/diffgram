@@ -56,20 +56,6 @@ describe("Test stats panel component", () => {
         expect(spy).toHaveBeenCalled();
     })
 
-    it("Renders show stats button when the stats is hidden", () => {
-        const wrapper = shallowMount(stats_panel, {
-          data: function() {
-          return {
-            stats_visibility: false,
-
-          }
-        },
-        ...props
-      }, localVue);
-
-      expect(wrapper.text().toLowerCase()).toContain("show")
-    })
-
     it("Should render all the headers of the stats elements correctly", () => {
       const wrapper = shallowMount(stats_panel, props, localVue);
 
