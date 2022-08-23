@@ -146,11 +146,8 @@
 
 
       <file_preview
-
         class="file-preview"
-        v-if="file_list && file_list.length > 0"
-        v-for="(file, index) in file_list"
-
+        v-for="file in file_list"
         :base_model_run="base_model_run"
         :selectable="true"
         :compare_to_model_run_list="compare_to_model_run_list"
@@ -164,7 +161,7 @@
         :show_ground_truth="show_ground_truth"
         @view_file_detail="view_detail"
         @file_selected="on_file_selected"
-      ></file_preview>
+      />
     </v-container>
     <div indeterminate v-if="infinite_scroll_loading">.
       Loading...
