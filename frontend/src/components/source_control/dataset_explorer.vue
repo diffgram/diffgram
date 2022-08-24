@@ -48,15 +48,6 @@
         </tooltip_button>
       </v-layout>
 
-      <tag_select
-        v-model="tag_selected_list"
-        :allow_new_creation="false"
-        :label="'Search by tags'"
-        @change="tag_change_event()"
-        :clearable="true"
-      >
-      </tag_select>
-
       <label_schema_selector 
         :icon="false"
         :project_string_id="project_string_id"
@@ -84,8 +75,15 @@
           :show_update="false"
           :show_tag="false"
           :multiple="true"
-                        >
-      </v_directory_list>
+      />
+
+      <tag_select
+        v-model="tag_selected_list"
+        :allow_new_creation="false"
+        :label="'Search by tags'"
+        @change="tag_change_event()"
+        :clearable="true"
+      />
 
       <v-switch
         class="pr-4"
