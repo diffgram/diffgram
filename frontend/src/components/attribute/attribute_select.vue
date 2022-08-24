@@ -1,9 +1,20 @@
 <template>
   <div id="">
       <diffgram_select
+        v-model="selected_attributes"
+        :multiple="true"
         :label="label"
-        :item_list="[]"
+        :item_list="[{ name: 'One' }, { name: 'Two' }, { name: 'Tree' }]"
       />
+      <div v-if="selected_attributes.length > 0">
+          <diffgram_select 
+            v-for="attribute in selected_attributes"
+            :key="attribute"
+            :multiple="true"
+            :label="`Attribute: ${attribute}`"
+            :item_list="[{ name: 'One' }, { name: 'Two' }, { name: 'Tree' }]"
+          />
+      </div>
   </div>
 </template>
 
@@ -30,7 +41,9 @@ export default Vue.extend( {
       }
     },
     data() {
-      return {}
+      return {
+          selected_attributes: []
+      }
     },
     mounted() {
         console.log("Munted")

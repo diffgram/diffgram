@@ -62,7 +62,8 @@
       />
 
       <attribute_select
-        label="Global attribute"
+        label="Global attributes"
+        global
         :project_string_id="project_string_id"
         :schema_id="label_schema ? label_schema.id : null"
       />
