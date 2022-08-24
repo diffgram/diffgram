@@ -59,8 +59,13 @@
         :schema_id="label_schema ? label_schema.id : null"
         :mode="'multiple'"
         @label_file="label_change_event($event)"
-                          >
-      </label_select_only>
+      />
+
+      <attribute_select
+        label="Global attribute"
+        :project_string_id="project_string_id"
+        :schema_id="label_schema ? label_schema.id : null"
+      />
 
       <v_directory_list
           :project_string_id="project_string_id"
@@ -193,7 +198,7 @@
   import label_select_only from '@/components/label/label_select_only.vue'
   import tag_select from '@/components/tag/tag_select.vue'
   import label_schema_selector from "../label/label_schema_selector.vue"
-
+  import attribute_select from "../attribute/attribute_select.vue"
 
   export default Vue.extend({
     name: "dataset_explorer",
@@ -203,7 +208,8 @@
       query_suggestion_menu,
       label_select_only,
       tag_select,
-      label_schema_selector
+      label_schema_selector,
+      attribute_select
     },
     props: [
       'project_string_id',

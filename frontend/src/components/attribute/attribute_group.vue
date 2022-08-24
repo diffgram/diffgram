@@ -193,13 +193,9 @@
               <template v-slot:prepend="{ item }">
                   <v-checkbox
                     :input-value="internal_selected.includes(item.id)"
-<<<<<<< HEAD
                     @change="tree_input(item)" 
                     style="margin-top: 0" 
                     hide-details 
-=======
-                    @change="tree_input(item)" style="margin-top: 0" hide-details
->>>>>>> f52f4fd59f1c1f1f06f441cb78c6bda71c7b2ce8
                   />
               </template>
             </v-treeview>
