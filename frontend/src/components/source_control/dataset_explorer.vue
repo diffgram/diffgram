@@ -57,7 +57,9 @@
       >
       </tag_select>
 
-      <label_schema_selector />
+      <label_schema_selector 
+        :icon="false"
+      />
 
       <label_select_only
         :project_string_id="project_string_id"
