@@ -48,17 +48,15 @@
         </tooltip_button>
       </v-layout>
 
-      <tag_select
-        v-model="tag_selected_list"
-        :allow_new_creation="false"
-        :label="'Search by tags'"
-        @change="tag_change_event()"
-        :clearable="true"
-      >
-      </tag_select>
+      <label_schema_selector 
+        :icon="false"
+        :project_string_id="project_string_id"
+        @change="change_schema"
+      />
 
       <label_select_only
         :project_string_id="project_string_id"
+        :schema_id="label_schema ? label_schema.id : null"
         :mode="'multiple'"
         @label_file="label_change_event($event)"
                           >
@@ -77,8 +75,15 @@
           :show_update="false"
           :show_tag="false"
           :multiple="true"
-                        >
-      </v_directory_list>
+      />
+
+      <tag_select
+        v-model="tag_selected_list"
+        :allow_new_creation="false"
+        :label="'Search by tags'"
+        @change="tag_change_event()"
+        :clearable="true"
+      />
 
       <v-switch
         class="pr-4"
@@ -187,6 +192,7 @@
   import query_suggestion_menu from "./query_suggestion_menu";
   import label_select_only from '@/components/label/label_select_only.vue'
   import tag_select from '@/components/tag/tag_select.vue'
+  import label_schema_selector from "../label/label_schema_selector.vue"
 
 
   export default Vue.extend({
@@ -196,14 +202,14 @@
       directory_icon_selector,
       query_suggestion_menu,
       label_select_only,
-      tag_select
+      tag_select,
+      label_schema_selector
     },
     props: [
       'project_string_id',
       'project_string_id',
       'directory',
       'full_screen'
-
     ],
     async mounted() {
       if (window.Cypress) {
@@ -258,6 +264,7 @@
         compare_models: false,
         base_model_run: undefined,
         compare_to_model_run_list: undefined,
+        label_schema: null,
         metadata: {
           'directory_id': undefined,
           'limit': 28,
@@ -268,7 +275,6 @@
           'previous': undefined,
           'search_term': this.search_term
         },
-
         datasets_selected: [],
         labels_selected: [],
         tag_selected_list: []
@@ -504,6 +510,9 @@
       },
       view_detail: function(file, model_runs, color_list){
         this.$emit('view_detail', file, model_runs, color_list)
+      },
+      change_schema: function(e) {
+        this.label_schema = e
       }
     }
 

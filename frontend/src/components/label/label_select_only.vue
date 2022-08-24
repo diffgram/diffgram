@@ -178,7 +178,9 @@
       },
 
       watch: {
-
+        schema_id: function() {
+          this.refresh_label_list_from_project()
+        },
         request_refresh_from_project: function () {
           this.refresh_label_list_from_project()
         },
