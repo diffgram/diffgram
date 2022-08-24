@@ -57,6 +57,8 @@
       >
       </tag_select>
 
+      <label_schema_selector />
+
       <label_select_only
         :project_string_id="project_string_id"
         :mode="'multiple'"
@@ -187,6 +189,7 @@
   import query_suggestion_menu from "./query_suggestion_menu";
   import label_select_only from '@/components/label/label_select_only.vue'
   import tag_select from '@/components/tag/tag_select.vue'
+  import label_schema_selector from "../label/label_schema_selector.vue"
 
 
   export default Vue.extend({
@@ -196,7 +199,8 @@
       directory_icon_selector,
       query_suggestion_menu,
       label_select_only,
-      tag_select
+      tag_select,
+      label_schema_selector
     },
     props: [
       'project_string_id',
