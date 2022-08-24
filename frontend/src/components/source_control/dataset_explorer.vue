@@ -59,6 +59,7 @@
 
       <label_schema_selector 
         :icon="false"
+        :project_string_id="project_string_id"
       />
 
       <label_select_only
