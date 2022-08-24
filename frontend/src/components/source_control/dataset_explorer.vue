@@ -32,7 +32,7 @@
           :project_string_id="project_string_id"
           :query="query" ></query_suggestion_menu>
       </v-menu>
- 
+
         <tooltip_button
           tooltip_message="Refresh"
           datacy="refresh_explorer"
@@ -44,7 +44,7 @@
         </tooltip_button>
       </v-layout>
 
-      <v_directory_list :project_string_id="project_string_id"
+      <directory_selector :project_string_id="project_string_id"
                         @change_directory="on_change_ground_truth_dir"
                         ref="ground_truth_dir_list"
                         :change_on_mount="true"
@@ -55,7 +55,7 @@
                         :view_only_mode="false"
                         :show_update="false"
                         :set_from_id="current_dir_id">
-      </v_directory_list>
+      </directory_selector>
 
       <v-switch
         class="pr-4"
@@ -67,7 +67,7 @@
         v-model="compare_models"
         :label="`Compare Models`"
       ></v-switch>
-    
+
 <!--      <v-btn icon disabled>-->
 <!--        <v-icon>mdi-filter</v-icon>-->
 <!--      </v-btn>-->
@@ -149,8 +149,8 @@
       <h1 class="pt-4">End of Results</h1>
       <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
     </v-container>
-  
-   </v-sheet>  
+
+   </v-sheet>
   </v-layout>
 </template>
 

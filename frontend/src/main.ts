@@ -37,8 +37,8 @@ Vue.component('file_preview', file_preview)
 import file_preview_with_hover_expansion from './components/regular/file_preview_with_hover_expansion'
 Vue.component('file_preview_with_hover_expansion', file_preview_with_hover_expansion)
 
-import v_directory_list from './components/source_control/directory_list'
-Vue.component('v_directory_list', v_directory_list)
+import directory_selector from './components/source_control/directory_selector.vue'
+Vue.component('directory_selector', directory_selector)
 
 import VueMarkDown from 'vue-markdown'
 

@@ -5,32 +5,6 @@
         here it can make it look funny with other things ie the media window-->
     <v-layout class="d-flex align-center">
 
-      <button_with_menu
-        :tooltip_message="show_text_buttons ? undefined : 'Create Dataset'"
-        icon="add"
-        :button_text="show_text_buttons ? 'Create Dataset' : undefined"
-        :close_by_button="true"
-        v-if="!view_only_mode && show_new === true"
-        offset="x"
-        :small="true"
-        :large="undefined"
-        :color="show_text_buttons ? 'white' : 'primary'"
-        menu_direction="left"
-        background="primary"
-        :commit_menu_status="true"
-        :text_style="undefined"
-      >
-
-        <template slot="content">
-
-          <v_new_directory
-            @directory_created="on_directory_created"
-            :project_string_id="project_string_id">
-          </v_new_directory>
-
-        </template>
-
-      </button_with_menu>
 
       <div class="pl-4 pr-2">
 
@@ -57,30 +31,60 @@
               -->
 
         <template v-slot:prepend-item v-slot:no-data>
-          <v-container>
-            <v-layout>
-              <div class="pt-4 pr-4">
-                <tooltip_button
-                    tooltip_message="Refresh"
-                    @click="refresh_directory_list"
-                    icon="refresh"
-                    :icon_style="true"
-                    color="primary">
-                </tooltip_button>
-                 {{directory_list_filtered.length}}
+          <div class="pl-2 pr-2">
+            <div class=" d-flex  align-center pr-4" >
+              <div>
+                <button_with_menu
+                  :tooltip_message="show_text_buttons ? undefined : 'Create Dataset'"
+                  icon="add"
+                  :button_text="show_text_buttons ? 'Create Dataset' : undefined"
+                  :close_by_button="true"
+                  v-if="!view_only_mode && show_new === true"
+                  offset="x"
+                  :small="true"
+                  :large="undefined"
+                  :color="show_text_buttons ? 'white' : 'primary'"
+                  menu_direction="left"
+                  background="primary"
+                  :commit_menu_status="true"
+                  :text_style="undefined"
+                >
+
+                  <template slot="content">
+
+                    <v_new_directory
+                      @directory_created="on_directory_created"
+                      :project_string_id="project_string_id">
+                    </v_new_directory>
+
+                  </template>
+
+                </button_with_menu>
+              </div>
+              <tooltip_button
+                tooltip_message="Refresh"
+                @click="refresh_directory_list"
+                icon="refresh"
+                :icon_style="true"
+                color="primary">
+              </tooltip_button>
+              <div class="mr-4">
+                <v-chip color="secondary" small> Total: {{directory_list_filtered.length}}</v-chip>
               </div>
               <v-text-field label="Name"
+                            style="width: 275px"
                             v-model="nickname"
                             @change="refresh_directory_list"
                             clearable
               >
               </v-text-field>
               <date_picker
-                    @date="store_date_and_refresh($event)"
-                    :with_spacer="false"
-                    :initialize_empty="true">
+                style="width: 450px;"
+                @date="store_date_and_refresh($event)"
+                :with_spacer="false"
+                :initialize_empty="true">
               </date_picker>
-            </v-layout>
+            </div>
 
             <v-progress-linear
               v-if="loading_directory_list"
@@ -93,7 +97,7 @@
             <v_error_multiple :error="error_directory_list">
             </v_error_multiple>
 
-          </v-container>
+          </div>
 
         </template>
 
@@ -103,7 +107,12 @@
               :loading="loading_directory_list"
               type="text"
             >
-              <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">ID: {{ data.item.directory_id }}</v-chip>
+            <div class="d-flex" >
+              <div  style="width: 75px">
+                <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">
+                  ID: {{ data.item.directory_id }}
+                </v-chip>
+              </div>
 
               <v-icon left>
                 mdi-folder-network
@@ -111,7 +120,8 @@
 
               {{data.item.nickname}}
 
-               (<span>{{data.item.created_time | moment("ddd, MMM D h:mm:ss a")}} </span>)
+              (<span>{{data.item.created_time | moment("ddd, MMM D h:mm:ss a")}} </span>)
+            </div>
 
 
             </v-skeleton-loader>
@@ -119,7 +129,7 @@
           </template>
 
           <template v-slot:selection="data">
-            <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">ID: {{ data.item.directory_id }}</v-chip>
+            <v-chip  x-small v-if="$store.state.user.current.is_super_admin == true">ID: {{ data.item.directory_id }}</v-chip>
 
             <v-icon left
                     color="primary">

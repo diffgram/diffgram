@@ -153,7 +153,7 @@ class WorkingDir(Base):
         session,
         project_id,
         exclude_archived = True,
-        limit = 100,
+        limit = None,
         return_kind = "objects",
         date_to = None,  # datetime
         date_from = None,  # datetime
