@@ -60,10 +60,12 @@
       <label_schema_selector 
         :icon="false"
         :project_string_id="project_string_id"
+        @change="change_schema"
       />
 
       <label_select_only
         :project_string_id="project_string_id"
+        :schema_id="label_schema ? label_schema.id : null"
         :mode="'multiple'"
         @label_file="label_change_event($event)"
                           >
@@ -210,7 +212,6 @@
       'project_string_id',
       'directory',
       'full_screen'
-
     ],
     async mounted() {
       if (window.Cypress) {
@@ -265,6 +266,7 @@
         compare_models: false,
         base_model_run: undefined,
         compare_to_model_run_list: undefined,
+        label_schema: null,
         metadata: {
           'directory_id': undefined,
           'limit': 28,
@@ -275,7 +277,6 @@
           'previous': undefined,
           'search_term': this.search_term
         },
-
         datasets_selected: [],
         labels_selected: [],
         tag_selected_list: []
@@ -511,6 +512,9 @@
       },
       view_detail: function(file, model_runs, color_list){
         this.$emit('view_detail', file, model_runs, color_list)
+      },
+      change_schema: function(e) {
+        this.label_schema = e
       }
     }
 
