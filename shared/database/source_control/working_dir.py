@@ -10,6 +10,8 @@ from sqlalchemy import or_
 from sqlalchemy import and_
 from shared.regular import regular_log
 from shared.database.user import UserbaseProject
+from shared.permissions.PermissionsChecker import PermissionsChecker
+
 
 
 class WorkingDir(Base):
@@ -152,6 +154,7 @@ class WorkingDir(Base):
     def list(
         session,
         project_id,
+        member,
         exclude_archived = True,
         limit = None,
         return_kind = "objects",
@@ -166,16 +169,47 @@ class WorkingDir(Base):
 
     ):
         """
-
+            Lists directories/datasets in a project
+        :param session:
+        :param project_id:
+        :param exclude_archived:
+        :param limit:
+        :param return_kind:
+        :param date_to:
+        :param date_from:
+        :param date_to_string:
+        :param date_from_string:
+        :param nickname:
+        :param nickname_match_type:
+        :param order_by_class_and_attribute:
+        :param order_by_direction:
+        :return:
         """
+        from shared.database.project import ProjectValidPermissions
 
         query = session.query(WorkingDir).filter(
             WorkingDir.project_id == project_id)
 
-        # HAVING STRANGE ISSUES / not working as expected
-        # Leaving it for now.
-        # if exclude_archived is True:
-        #	query = query.filter(WorkingDir.archived != False)
+        from shared.database.permissions.roles import ValidObjectTypes
+
+        # Permissions: get datasets that user can see
+        filter_dirs_permissions = False
+        allowed_view_dirs = []
+        if PermissionsChecker.member_has_perm(member = member,
+                                              perm = ProjectValidPermissions.project_view_all_datasets.name):
+            filter_dirs_permissions = True
+        if PermissionsChecker.member_has_any_project_role(member_id=member.id,
+                                                          project_id = project_id,
+                                                          roles=['viewer', 'editor', 'admin']):
+
+            filter_dirs_permissions = True
+        if not filter_dirs_permissions:
+            allowed_view_dirs = PermissionsChecker.get_allowed_object_id_list(
+                session = session,
+                member = member,
+                object_type = ValidObjectTypes.dataset.name,
+                perm = WorkingDirPermissions.dataset_view.name
+            )
 
         if nickname:
             if nickname_match_type == "ilike":
@@ -200,6 +234,10 @@ class WorkingDir(Base):
                 created_time_string = 'created_time'
             )
 
+        if filter_dirs_permissions:
+            query = query.filter(
+                WorkingDir.id.in_(allowed_view_dirs)
+            )
         # Must call order by before limit / offset?
         if order_by_class_and_attribute:
             query = query.order_by(
@@ -866,3 +904,4 @@ class WorkingDirPermissions(Enum):
     dataset_view = 'dataset_view'
     dataset_edit = 'dataset_edit'
     dataset_delete = 'dataset_delete'
+    dataset_list = 'dataset_list'

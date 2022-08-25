@@ -37,6 +37,7 @@ from shared.database.task.job.user_to_job import User_To_Job
 from shared.database.input import Input
 from shared.database.project_migration.project_migration import ProjectMigration
 from shared.database.audio.audio_file import AudioFile
+from shared.database.permissions.roles import Role
 
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
@@ -81,6 +82,12 @@ def create_attribute_template_group(group_data, session):
     return group
 
 
+def create_role(role_data, session):
+    role = Role(*role_data)
+    session.add(role)
+    session.commit()
+
+
 def create_project_migration(migration_data, session):
     p_migration = ProjectMigration(
         created_time = migration_data.get('created_time'),
@@ -103,6 +110,7 @@ def create_project_migration(migration_data, session):
     session.add(p_migration)
     session.commit()
     return p_migration
+
 
 def create_audio_file(audio_data: dict, session: Session) -> AudioFile:
     audio = AudioFile(
@@ -303,7 +311,8 @@ def create_instance_template(instance_template_data, session):
             )
             session.add(rel)
     if instance_template_data.get('schema_id'):
-        schema = LabelSchema.get_by_id(session, instance_template_data.get('schema_id'), project_id = instance_template_data.get('project_id'))
+        schema = LabelSchema.get_by_id(session, instance_template_data.get('schema_id'),
+                                       project_id = instance_template_data.get('project_id'))
         schema.add_instance_template(session = session,
                                      instance_template_id = instance_template.id,
                                      member_created_id = schema.member_created_id)

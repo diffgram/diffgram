@@ -3,6 +3,7 @@ try:
 except:
     from default.methods.regular.regular_api import *
 from shared.database.permissions.roles import Role
+from shared.database.project import PROJECT_DEFAULT_ROLES
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/roles/new', methods = ['POST'])
@@ -59,6 +60,10 @@ def new_role_core(session,
 
     if name is None:
         log['error']['name'] = 'Provide name for role creation.'
+        return None, log
+
+    if name.lower() in PROJECT_DEFAULT_ROLES:
+        log['error']['name'] = f'Invalid role name. This role name is part of default roles {RESERVED_ROLES}'
         return None, log
 
     existing_role = Role.get_by_name_and_project(

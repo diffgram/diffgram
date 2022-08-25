@@ -14,6 +14,8 @@ from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
 from shared.database.labels.label import Label
 from shared.database.tag.tag import Tag
 
+PROJECT_DEFAULT_ROLES = ['admin', 'editor', 'viewer']
+
 
 class Project(Base, Caching):
     """
@@ -124,7 +126,7 @@ class Project(Base, Caching):
     @staticmethod
     def get_permissions_list() -> list:
         result = []
-        for elm in list(ProjectPermissions):
+        for elm in list(ProjectValidPermissions):
             result.append(elm.value)
         return result
 
@@ -356,6 +358,17 @@ class Project(Base, Caching):
             preview_file_list.append(file.serialize_with_type(self.session))
 
         return preview_file_list
+
+    def create_default_roles(self, session):
+        from shared.database.permissions.roles import Role
+        for role in PROJECT_DEFAULT_ROLES:
+            # We create empty permissions because permissions will be managed in code for default roles.
+            role = Role.new(
+                session = session,
+                permissions_list = [],
+                name = role,
+                project_id = self.id
+            )
 
     def regenerate_member_list(self):
 
@@ -738,7 +751,6 @@ class ProjectTag(Base):
         self.tag = tag
 
 
-
 class ProjectStar(Base):
     """
 
@@ -757,10 +769,12 @@ class ProjectStar(Base):
                            foreign_keys = project_id)
 
 
-class ProjectPermissions(Enum):
+class ProjectValidPermissions(Enum):
     project_create_billing_account = 'project_create_billing_account'
     project_list_inputs = 'project_list_inputs'
     project_job_list = 'project_job_list'
     project_delete = 'project_delete'
     project_edit = 'project_edit'
     project_invite_members = 'project_invite_members'
+    project_list_datasets = 'project_list_datasets'
+    project_view_all_datasets = 'project_view_all_datasets'

@@ -13,8 +13,10 @@ from shared.helpers import sessionMaker
 from flask import request
 from shared.permissions.api_permissions import API_Permissions
 from shared.permissions.user_permissions import User_Permissions
+from shared.permissions.PermissionsChecker import PermissionsChecker
 
 default_denied_message = "(Project Scope) No access."
+from shared.regular.regular_member import get_member
 
 
 class Project_permissions():
@@ -55,7 +57,8 @@ class Project_permissions():
                     project_string_id = project_string_id,
                     Roles = Roles,
                     apis_project_list = apis_project_list,
-                    apis_user_list = apis_user_list
+                    apis_user_list = apis_user_list,
+                    with_permission = with_permission
                 )
 
                 # If we get here in execution it's allowed
@@ -80,7 +83,8 @@ class Project_permissions():
         project_string_id: str,
         Roles: list,
         apis_project_list: list = [],
-        apis_user_list: list = []
+        apis_user_list: list = [],
+        with_permission: str = None
     ):
 
         with sessionMaker.session_scope() as session:
@@ -93,6 +97,14 @@ class Project_permissions():
 
             if Project_permissions.check_if_project_is_public(project, Roles):
                 return True
+
+            if with_permission is not None:
+                member = get_member(session = session)
+                if member is None:
+                    raise Forbidden(f" No member. Please login")
+                granted = PermissionsChecker.member_has_perm(member = member, perm = with_permission)
+                if not granted:
+                    raise Unauthorized(f"Member has no permissions '{with_permission}' on {project_string_id}")
 
             if request.authorization is not None:
 
@@ -170,6 +182,8 @@ class Project_permissions():
             return True
 
         if 'allow_anonymous' in Roles:
+            return True
+        if 'custom_roles' in Roles:
             return True
 
         if project is None:

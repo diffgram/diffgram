@@ -1,5 +1,7 @@
 # OPENCORE - ADD
 from methods.regular.regular_api import *
+from shared.database.source_control.working_dir import WorkingDirPermissions
+from shared.database.project import ProjectValidPermissions
 
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
@@ -7,6 +9,7 @@ from methods.regular.regular_api import *
               methods = ['POST'])
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor", "Viewer"],
+    with_permission = ProjectValidPermissions.project_list_datasets.name,
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
 def list_directory_api(project_string_id):
     """
@@ -47,10 +50,11 @@ def list_directory_api(project_string_id):
     with sessionMaker.session_scope() as session:
 
         project = Project.get(session, project_string_id)
-
+        member = get_member(session)
         directory_list = WorkingDir.list(
             session = session,
             project_id = project.id,
+            member = member,
             limit = input['limit'],
             date_from_string = input['date_from'],
             date_to_string = input['date_to'],

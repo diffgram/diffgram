@@ -2,26 +2,30 @@
 from shared.database.common import *
 from sqlalchemy_serializer import SerializerMixin
 from shared.shared_logger import get_shared_logger
-from shared.database.project import Project
+
 from shared.regular.regular_log import log_has_error
-from shared.database.source_control.working_dir import WorkingDir
-from shared.database.auth.member import Member
+
 from sqlalchemy.orm.attributes import flag_modified
+from enum import Enum
 
 logger = get_shared_logger()
 
 
-def valid_object_type(obj_type: str, log: dict) -> [object, dict]:
-    if obj_type == 'project':
-        class_type = Project
+class ValidObjectTypes(Enum):
+    from shared.database.project import Project
+    from shared.database.source_control.working_dir import WorkingDir
+    project = Project
+    dataset = WorkingDir
 
-    elif obj_type == 'dataset':
-        class_type = WorkingDir
-    else:
+
+def get_valid_object_type(obj_type: str, log: dict) -> [object, dict]:
+    valid_obj_types = [x.value for x in list(ValidObjectTypes)]
+    if obj_type not in valid_obj_types:
         msg = f'Invalid object type {obj_type}'
         log['error']['permission'] = msg
         logger.error(msg)
-    return class_type, log
+        return None, log
+    return ValidObjectTypes[obj_type].value, log
 
 
 class Role(Base, SerializerMixin):
@@ -77,8 +81,9 @@ class Role(Base, SerializerMixin):
         data = self.to_dict(rules = ('-project',))
         return data
 
-    def check_permission_for_object_type(self, permission: str, obj_type: str, log: dict) -> [bool, dict]:
-        class_type, log = valid_object_type(obj_type, log)
+    @staticmethod
+    def check_permission_existence_for_object_type(permission: str, obj_type: str, log: dict) -> [bool, dict]:
+        class_type, log = get_valid_object_type(obj_type, log)
         if log_has_error(log):
             return False, log
         perms_list = class_type.get_permissions_list()
@@ -91,7 +96,7 @@ class Role(Base, SerializerMixin):
             return False, log
 
     def add_permission(self, session, perm: str, obj_type: str, log: dict) -> ['Role', dict]:
-        valid, log = self.check_permission_for_object_type(
+        valid, log = Role.check_permission_existence_for_object_type(
             permission = perm,
             obj_type = obj_type,
             log = log
@@ -106,7 +111,7 @@ class Role(Base, SerializerMixin):
         return self, log
 
     def remove_permission(self, session, perm: str, obj_type: str, log: dict) -> ['Role', dict]:
-        valid, log = self.check_permission_for_object_type(
+        valid, log = Role.check_permission_existence_for_object_type(
             permission = perm,
             obj_type = obj_type,
             log = log
@@ -145,7 +150,7 @@ class RoleMemberObject(Base, SerializerMixin):
 
     @staticmethod
     def check_object_type(obj_type: str, log: dict) -> [bool, dict]:
-        class_type, log = valid_object_type(obj_type, log)
+        class_type, log = get_valid_object_type(obj_type, log)
         if log_has_error(log):
             return False, log
         return True, log

@@ -8,12 +8,40 @@ Create Date: 2022-07-25 10:32:54.987025
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import ARRAY
-
+from sqlalchemy.orm.session import Session
+from shared.database.project import Project
+from shared.database.user import User
+from shared.database.permissions.roles import RoleMemberObject, Role, ValidObjectTypes
 # revision identifiers, used by Alembic.
 revision = 'c6094792feeb'
-down_revision = '625370e1484b'
+down_revision = '73fd663f4914'
 branch_labels = None
 depends_on = None
+
+
+def migrate_roles_from_project(op):
+    bind = op.get_bind()
+    session = Session(bind = bind)
+    all_projects = session.query(Project).all()
+    for project in all_projects:
+        # First Create default Roles for project.
+        project.create_default_roles()
+        print(f'Created default roles for {project.project_string_id}')
+    all_users = session.query(User).all()
+    for user in all_users:
+        permissions_dict = user.permissions_projects
+        for project_string_id, roles_list in permissions_dict.items():
+            project = Project.get_by_string_id(session = session, project_string_id = project_string_id)
+            for role_name in roles_list:
+                role_obj = Role.get_by_name_and_project(session = session, name = role_name, project_id = project.id)
+                RoleMemberObject.new(
+                    session = session,
+                    role_id = role_obj.id,
+                    member_id = user.member_id,
+                    object_id = project.id,
+                    object_type = ValidObjectTypes.project.name
+                )
+                print(f'Added {role_name} to user {user.member_id} on project {project_string_id}')
 
 
 def upgrade():
@@ -30,14 +58,15 @@ def upgrade():
                     sa.Column('id', sa.Integer(), nullable = False),
                     sa.Column('member_id', sa.Integer(), sa.ForeignKey('member.id')),
                     sa.Column('object_id', sa.Integer()),
+                    sa.Column('object_type', sa.String()),
                     sa.Column('role_id', sa.Integer(), sa.ForeignKey('role.id')),
-                    sa.PrimaryKeyConstraint('id')
-                    )
+                    sa.PrimaryKeyConstraint('id'))
     op.create_index('index__role_user_object_member_id', 'role_member_object', ['member_id'])
     op.create_index('index__role_user_object_object_id', 'role_member_object', ['object_id'])
     op.create_index('index__role_user_object_role_id', 'role_member_object', ['role_id'])
     op.create_index('index__role_user_object_role_id_member_id', 'role_member_object', ['role_id', 'member_id'])
     op.create_index('index__role_user_object_role_id_object_id', 'role_member_object', ['role_id', 'object_id'])
+    migrate_roles_from_project(op)
 
 
 def downgrade():
