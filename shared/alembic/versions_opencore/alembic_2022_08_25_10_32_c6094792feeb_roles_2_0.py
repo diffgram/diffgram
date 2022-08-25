@@ -7,7 +7,7 @@ Create Date: 2022-07-25 10:32:54.987025
 """
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy import ARRAY
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm.session import Session
 from shared.database.project import Project
 from shared.database.user import User

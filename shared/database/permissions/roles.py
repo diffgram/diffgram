@@ -2,7 +2,7 @@
 from shared.database.common import *
 from sqlalchemy_serializer import SerializerMixin
 from shared.shared_logger import get_shared_logger
-
+from sqlalchemy.dialects import postgresql
 from shared.regular.regular_log import log_has_error
 
 from sqlalchemy.orm.attributes import flag_modified
@@ -40,7 +40,7 @@ class Role(Base, SerializerMixin):
     name = Column(String())
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project", foreign_keys = project_id)
-    permissions_list = Column((ARRAY(String)), server_default = "{}")
+    permissions_list = Column((postgresql.ARRAY(String)), server_default = "{}")
 
     @staticmethod
     def new(session, project_id, name, permissions_list = None, add_to_session = True, flush_session = True):

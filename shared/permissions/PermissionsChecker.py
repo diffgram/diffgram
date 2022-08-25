@@ -26,7 +26,7 @@ class PermissionsChecker:
         from shared.database.permissions.roles import Role, RoleMemberObject
         role_member_objects = session.query(RoleMemberObject).join(Role, Role.id == RoleMemberObject.role_id).filter(
             RoleMemberObject.object_type == object_type,
-            Role.permissions_list.contains(perm),
+            Role.permissions_list.any(perm),
             RoleMemberObject.member_id == member.id
         )
         obj_id_list = [elm.object_id for elm in role_member_objects]
