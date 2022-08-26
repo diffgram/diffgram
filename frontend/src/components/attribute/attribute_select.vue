@@ -3,6 +3,7 @@
       <diffgram_select
         v-model="selected_attributes"
         name_key="prompt"
+        key_to_seperate_objects="id"
         :multiple="true"
         :label="label"
         :item_list="attribute_list"
@@ -12,7 +13,7 @@
             v-for="attribute in selected_attributes"
             :key="attribute"
             :multiple="true"
-            :label="`Attribute: ${attribute}`"
+            :label="`Attribute: ${attribute.prompt}`"
             :item_list="[{ name: 'One' }, { name: 'Two' }, { name: 'Tree' }]"
           />
       </div>
@@ -51,7 +52,9 @@ export default Vue.extend( {
         selected_attributes: [],
       }
     },
-    mounted() {},
+    mounted() {
+      console.log(this.attribute_list)
+    },
     methods: {}
   }
 ) 
