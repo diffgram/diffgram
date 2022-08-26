@@ -29,19 +29,15 @@ export default Vue.extend( {
       diffgram_select 
     },
     props: {
-      'project_string_id' : {
+      project_string_id : {
         type: String,
         required: true
       },
-      'schema_id': {
+      schema_id: {
         type: Number,
         required: true
       },
-      'global': {
-        type: Boolean,
-        default: false
-      },
-      'label': {
+      label: {
         type: String,
         required: true
       },
