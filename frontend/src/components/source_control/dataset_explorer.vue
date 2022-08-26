@@ -66,6 +66,7 @@
         global
         :project_string_id="project_string_id"
         :schema_id="label_schema ? label_schema.id : null"
+        :attribute_list="global_attribute_list"
       />
 
       <v_directory_list
@@ -200,6 +201,7 @@
   import tag_select from '@/components/tag/tag_select.vue'
   import label_schema_selector from "../label/label_schema_selector.vue"
   import attribute_select from "../attribute/attribute_select.vue"
+import { attribute_group_list } from "../../services/attributesService";
 
   export default Vue.extend({
     name: "dataset_explorer",
@@ -213,7 +215,6 @@
       attribute_select
     },
     props: [
-      'project_string_id',
       'project_string_id',
       'directory',
       'full_screen'
@@ -284,12 +285,17 @@
         },
         datasets_selected: [],
         labels_selected: [],
-        tag_selected_list: []
+        tag_selected_list: [],
+        attribute_list: [],
+        global_attribute_list: [],
       }
     },
     watch:{
       selected_dir: function () {
         this.fetch_file_list();
+      },
+      label_schema: function() {
+        this.get_schema_attributes()
       }
     },
     computed:{
@@ -306,6 +312,14 @@
       }
     },
     methods: {
+      get_schema_attributes: async function() {
+        const [data, error] = await attribute_group_list(this.project_string_id, undefined, this.label_schema.id, 'from_project')
+
+        if (!error) {
+          this.attribute_list = data.attribute_group_list.filter(attribute => !attribute.is_global)
+          this.global_attribute_list = data.attribute_group_list.filter(attribute => attribute.is_global)
+        }
+      },
       update_query: function(value){
         if(!this.query){
           this.query = value;
@@ -512,7 +526,6 @@
           file_elm.selected = false;
         }
         file.selected = !file.selected;
-        console.log(file, file.selected)
         this.$forceUpdate()
       },
       view_detail: function(file, model_runs, color_list){

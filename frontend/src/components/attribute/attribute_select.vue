@@ -2,9 +2,10 @@
   <div id="">
       <diffgram_select
         v-model="selected_attributes"
+        name_key="prompt"
         :multiple="true"
         :label="label"
-        :item_list="[{ name: 'One' }, { name: 'Two' }, { name: 'Tree' }]"
+        :item_list="attribute_list"
       />
       <div v-if="selected_attributes.length > 0">
           <diffgram_select 
@@ -24,12 +25,16 @@ import diffgram_select from "../regular/diffgram_select.vue";
 
 export default Vue.extend( {
     name: 'attribute_select',
-    components: { diffgram_select },
+    components: { 
+      diffgram_select 
+    },
     props: {
       'project_string_id' : {
+        type: String,
         required: true
       },
       'schema_id': {
+        type: Number,
         required: true
       },
       'global': {
@@ -37,17 +42,21 @@ export default Vue.extend( {
         default: false
       },
       'label': {
-          required: true
+        type: String,
+        required: true
+      },
+      attribute_list: {
+        type: Array,
+        default: []
       }
     },
     data() {
       return {
-          selected_attributes: []
+        selected_attributes: [],
       }
     },
-    mounted() {
-        console.log("Munted")
-    },
+    mounted() {},
     methods: {}
   }
-) </script>
+) 
+</script>
