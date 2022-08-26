@@ -4,6 +4,7 @@
         v-model="selected_attributes"
         name_key="prompt"
         key_to_seperate_objects="id"
+        return_object
         :multiple="true"
         :label="label"
         :item_list="attribute_list"
