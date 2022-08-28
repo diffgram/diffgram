@@ -410,7 +410,7 @@ import { attribute_group_list } from "../../services/attributesService";
       generate_attribute_query: function (attributes_selected) {
         let attribute_query = ""
         attributes_selected.map((attribute, index) => {
-          if (attribute.kind === 'select') {
+          if (attribute.kind === 'select' || attribute.kind === 'radio') {
             attribute_query += `attributes.${attribute.id} = ${attribute.value[0].id}`
           }
 
