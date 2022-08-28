@@ -408,14 +408,24 @@ import { attribute_group_list } from "../../services/attributesService";
 
       },
       generate_attribute_query: function (attributes_selected) {
-        return ""
+        let attribute_query = ""
+        attributes_selected.map((attribute, index) => {
+          if (attribute.kind === 'select') {
+            attribute_query += `attributes.${attribute.id} = ${attribute.value[0].id}`
+          }
+
+          if (attributes_selected.length > index + 1) {
+            attribute_query += " and "
+          }
+        })
+        return attribute_query
       },
 
       tag_change_event: function(){
         this.refresh_query()
 
       },
-
+      // WIP: need to finish this function to add/renove attributes from selected attribytes
       attribute_change_event: function(event) {
         const attribute = event[0]
         const attribute_value = event[1]
@@ -436,6 +446,7 @@ import { attribute_group_list } from "../../services/attributesService";
             value: [{...attribute_value}]
           }
           this.attributes_selected.push(append_attribute)
+          console.log(this.attributes_selected)
         }
         this.refresh_query()
       },
