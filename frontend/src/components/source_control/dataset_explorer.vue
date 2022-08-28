@@ -438,10 +438,13 @@ import { attribute_group_list } from "../../services/attributesService";
         if (attribute_is_selected) {
           const value_already_exists = attribute_is_selected.value.find(value => value.id === attribute_value.id)
           if (value_already_exists) {
-            console.log("HERE 2")
+            if (attribute.kind === 'multiple_select') {
+              const index = attribute_is_selected.value.indexOf(value_already_exists)
+              attribute_is_selected.value.splice(index, 1)
+            }
           } else {
             if (attribute.kind === 'multiple_select') {
-              attribute_is_selected.value.push({...attribute_value[0]})
+              attribute_is_selected.value = attribute_value
             }
           }
         }
@@ -459,6 +462,11 @@ import { attribute_group_list } from "../../services/attributesService";
           }
           this.attributes_selected.push(append_attribute)
         }
+
+        this.attributes_selected = this.attributes_selected.filter(attribute => attribute.value.length > 0)
+
+        console.log(this.attributes_selected)
+
         this.refresh_query()
       },
 
