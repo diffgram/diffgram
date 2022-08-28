@@ -285,6 +285,7 @@ import { attribute_group_list } from "../../services/attributesService";
         },
         datasets_selected: [],
         labels_selected: [],
+        attributes_selected: [],
         tag_selected_list: [],
         attribute_list: [],
         global_attribute_list: [],
@@ -352,6 +353,12 @@ import { attribute_group_list } from "../../services/attributesService";
           query += label_query
         }
 
+        let attribute_query = this.generate_attribute_query(this.attributes_selected)
+        if (attribute_query) {
+          if (dir_list_query || label_query) { query += " and " }
+          query += attribute_query
+        }
+
         return query
 
       },
@@ -399,8 +406,11 @@ import { attribute_group_list } from "../../services/attributesService";
         return query
 
       },
+      generate_attribute_query: function (attributes_selected) {
+        return ""
+      },
 
-       tag_change_event: function(){
+      tag_change_event: function(){
         this.refresh_query()
 
       },

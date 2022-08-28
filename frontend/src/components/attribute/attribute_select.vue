@@ -56,9 +56,7 @@ export default Vue.extend( {
         selected_attributes: [],
       }
     },
-    mounted() {
-      console.log(this.attribute_list)
-    },
+    mounted() {},
     methods: {}
   }
 ) 
