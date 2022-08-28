@@ -413,6 +413,9 @@ import { attribute_group_list } from "../../services/attributesService";
           if (attribute.kind === 'select' || attribute.kind === 'radio') {
             attribute_query += `attributes.${attribute.id} = ${attribute.value[0].id}`
           }
+          else if (attribute.kind === 'multiple_select') {
+            attribute_query += `attributes.${attribute.id} in ${JSON.stringify(attribute.value.map(value => value.id))}`
+          }
 
           if (attributes_selected.length > index + 1) {
             attribute_query += " and "
@@ -435,9 +438,11 @@ import { attribute_group_list } from "../../services/attributesService";
         if (attribute_is_selected) {
           const value_already_exists = attribute_is_selected.value.find(value => value.id === attribute_value.id)
           if (value_already_exists) {
-
+            console.log("HERE 2")
           } else {
-            attribute_is_selected.value.push({...attribute_value})
+            if (attribute.kind === 'multiple_select') {
+              attribute_is_selected.value.push({...attribute_value[0]})
+            }
           }
         }
         else {
@@ -445,8 +450,14 @@ import { attribute_group_list } from "../../services/attributesService";
             ...attribute,
             value: [{...attribute_value}]
           }
+
+          if (attribute.kind === 'select' || attribute.kind === 'radio') {
+            append_attribute.value = [{...attribute_value}]
+          } 
+          else if (attribute.kind === 'multiple_select') {
+            append_attribute.value = [{...attribute_value[0]}]
+          }
           this.attributes_selected.push(append_attribute)
-          console.log(this.attributes_selected)
         }
         this.refresh_query()
       },
