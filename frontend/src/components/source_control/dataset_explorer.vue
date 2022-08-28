@@ -67,6 +67,7 @@
         :project_string_id="project_string_id"
         :schema_id="label_schema ? label_schema.id : null"
         :attribute_list="global_attribute_list"
+        @attribute_change="attribute_change_event"
       />
 
       <v_directory_list
@@ -415,10 +416,33 @@ import { attribute_group_list } from "../../services/attributesService";
 
       },
 
+      attribute_change_event: function(event) {
+        const attribute = event[0]
+        const attribute_value = event[1]
+
+        const attribute_is_selected = this.attributes_selected.find(attr => attr.id === attribute.id)
+
+        if (attribute_is_selected) {
+          const value_already_exists = attribute_is_selected.value.find(value => value.id === attribute_value.id)
+          if (value_already_exists) {
+
+          } else {
+            attribute_is_selected.value.push({...attribute_value})
+          }
+        }
+        else {
+          const append_attribute = {
+            ...attribute,
+            value: [{...attribute_value}]
+          }
+          this.attributes_selected.push(append_attribute)
+        }
+        this.refresh_query()
+      },
+
       label_change_event: function(label_file_list){
         this.labels_selected = label_file_list
         this.refresh_query()
-
       },
 
       dataset_change_event: function(datasets_selected){

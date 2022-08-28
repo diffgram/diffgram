@@ -17,6 +17,7 @@
             :schema_id="schema_id"
             :attribute_group_list_prop="selected_attributes"
             key="attribute_groups_list"
+            @attribute_change="$emit('attribute_change', $event)"
         />
       </div>
   </div>
@@ -56,8 +57,6 @@ export default Vue.extend( {
         selected_attributes: [],
       }
     },
-    mounted() {},
-    methods: {}
   }
 ) 
 </script>
