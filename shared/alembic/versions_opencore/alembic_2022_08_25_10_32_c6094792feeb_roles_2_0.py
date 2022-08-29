@@ -25,7 +25,7 @@ def migrate_roles_from_project(op):
     all_projects = session.query(Project).all()
     for project in all_projects:
         # First Create default Roles for project.
-        project.create_default_roles()
+        project.create_default_roles(session = session)
         print(f'Created default roles for {project.project_string_id}')
     all_users = session.query(User).all()
     for user in all_users:
@@ -33,7 +33,7 @@ def migrate_roles_from_project(op):
         for project_string_id, roles_list in permissions_dict.items():
             project = Project.get_by_string_id(session = session, project_string_id = project_string_id)
             for role_name in roles_list:
-                role_obj = Role.get_by_name_and_project(session = session, name = role_name, project_id = project.id)
+                role_obj = Role.get_by_name_and_project(session = session, name = role_name.lower(), project_id = project.id)
                 RoleMemberObject.new(
                     session = session,
                     role_id = role_obj.id,

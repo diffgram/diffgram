@@ -13,7 +13,7 @@ from shared.helpers import sessionMaker
 from flask import request
 from shared.permissions.api_permissions import API_Permissions
 from shared.permissions.user_permissions import User_Permissions
-from shared.permissions.PermissionsChecker import PermissionsChecker
+from shared.permissions.PermissionsChecker import PolicyEngine
 
 default_denied_message = "(Project Scope) No access."
 from shared.regular.regular_member import get_member
@@ -102,7 +102,7 @@ class Project_permissions():
                 member = get_member(session = session)
                 if member is None:
                     raise Forbidden(f" No member. Please login")
-                granted = PermissionsChecker.member_has_perm(member = member, perm = with_permission)
+                granted = PolicyEngine.member_has_perm(member = member, perm = with_permission)
                 if not granted:
                     raise Unauthorized(f"Member has no permissions '{with_permission}' on {project_string_id}")
 

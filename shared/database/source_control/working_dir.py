@@ -10,8 +10,7 @@ from sqlalchemy import or_
 from sqlalchemy import and_
 from shared.regular import regular_log
 from shared.database.user import UserbaseProject
-from shared.permissions.PermissionsChecker import PermissionsChecker
-
+from shared.permissions.policy_engine.policy_engine import PolicyEngine, PermissionResultObjectSet
 
 
 class WorkingDir(Base):
@@ -83,7 +82,6 @@ class WorkingDir(Base):
         for elm in list(WorkingDirPermissions):
             result.append(elm.value)
         return result
-
 
     @staticmethod
     def new_user_working_dir(
@@ -195,16 +193,13 @@ class WorkingDir(Base):
         # Permissions: get datasets that user can see
         filter_dirs_permissions = False
         allowed_view_dirs = []
-        if PermissionsChecker.member_has_perm(member = member,
-                                              perm = ProjectValidPermissions.project_view_all_datasets.name):
+        if PolicyEngine.member_has_perm(member = member,
+                                        perm = ProjectValidPermissions.project_view_all_datasets.name):
             filter_dirs_permissions = True
-        if PermissionsChecker.member_has_any_project_role(member_id=member.id,
-                                                          project_id = project_id,
-                                                          roles=['viewer', 'editor', 'admin']):
 
             filter_dirs_permissions = True
         if not filter_dirs_permissions:
-            allowed_view_dirs = PermissionsChecker.get_allowed_object_id_list(
+            perm_result: PermissionResultObjectSet  = PolicyEngine.get_allowed_object_id_list(
                 session = session,
                 member = member,
                 object_type = ValidObjectTypes.dataset.name,
@@ -900,8 +895,3 @@ class WorkingDirFileLink(Base):
         return True, log
 
 
-class WorkingDirPermissions(Enum):
-    dataset_view = 'dataset_view'
-    dataset_edit = 'dataset_edit'
-    dataset_delete = 'dataset_delete'
-    dataset_list = 'dataset_list'
