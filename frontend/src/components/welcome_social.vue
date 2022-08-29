@@ -17,7 +17,7 @@
                     x-large
                     outlined
                     color="primary"
-                    href="https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg"
+                    href="https://form.jotform.com/222377866413058"
                     target="_blank">
               Join Slack
             </v-btn>
