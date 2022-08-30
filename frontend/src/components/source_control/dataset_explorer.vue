@@ -416,7 +416,7 @@ import { attribute_group_list } from "../../services/attributesService";
           else if (attribute.kind === 'multiple_select' || attribute.kind === 'tree') {
             attribute_query += `attributes.${attribute.id} in ${JSON.stringify(attribute.value.map(value => value.id))}`
           }
-          else if (attribute.kind === 'time' || attribute.kind === 'slider') {
+          else if (attribute.kind === 'time' || attribute.kind === 'slider' || attribute.kind === 'date' || attribute.kind === 'text') {
             attribute_query += `attribute.${attribute.id} = ${attribute.value}`
           }
           if (attributes_selected.length > index + 1) {
@@ -430,7 +430,6 @@ import { attribute_group_list } from "../../services/attributesService";
         this.refresh_query()
 
       },
-      // WIP: need to finish this function to add/renove attributes from selected attribytes
       attribute_change_event: function(event) {
         const attribute = event[0]
         const attribute_value = event[1]
@@ -448,7 +447,7 @@ import { attribute_group_list } from "../../services/attributesService";
         else if (attribute.kind === 'multiple_select') {
           working_attribute.value = attribute_value
         }
-        else if (attribute.kind === 'time' || attribute.kind === 'slider') {
+        else if (attribute.kind === 'time' || attribute.kind === 'slider' || attribute.kind === 'date' || attribute.kind === 'text') {
           working_attribute.value = attribute_value
         }
         else if (attribute.kind === 'tree') {
