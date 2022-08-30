@@ -413,7 +413,7 @@ import { attribute_group_list } from "../../services/attributesService";
           if (attribute.kind === 'select' || attribute.kind === 'radio') {
             attribute_query += `attributes.${attribute.id} = ${attribute.value[0].id}`
           }
-          else if (attribute.kind === 'multiple_select') {
+          else if (attribute.kind === 'multiple_select' || attribute.kind === 'tree') {
             attribute_query += `attributes.${attribute.id} in ${JSON.stringify(attribute.value.map(value => value.id))}`
           }
 
@@ -436,22 +436,19 @@ import { attribute_group_list } from "../../services/attributesService";
         const attribute_is_selected = this.attributes_selected.find(attr => attr.id === attribute.id)
 
         if (attribute_is_selected) {
-          const value_already_exists = attribute_is_selected.value.find(value => value.id === attribute_value.id)
-          if (value_already_exists) {
-            if (attribute.kind === 'multiple_select') {
-              const index = attribute_is_selected.value.indexOf(value_already_exists)
-              attribute_is_selected.value.splice(index, 1)
-            }
-          } else {
-            if (attribute.kind === 'multiple_select') {
+          if (attribute.kind === 'multiple_select') {
               attribute_is_selected.value = attribute_value
             }
+          else if (attribute.kind === 'tree') {
+            const attribute_keys = Object.keys(attribute_value)
+            const values = attribute_keys.map(key => ({id: parseInt(key), ...attribute_value[key]}))
+            attribute_is_selected.value = values
           }
         }
         else {
           const append_attribute = {
             ...attribute,
-            value: [{...attribute_value}]
+            value: []
           }
 
           if (attribute.kind === 'select' || attribute.kind === 'radio') {
@@ -460,12 +457,15 @@ import { attribute_group_list } from "../../services/attributesService";
           else if (attribute.kind === 'multiple_select') {
             append_attribute.value = [{...attribute_value[0]}]
           }
+          else if (attribute.kind === 'tree') {
+            const attribute_keys = Object.keys(attribute_value)
+            const values = attribute_keys.map(key => ({id: parseInt(key), ...attribute_value[key]}))
+            append_attribute.value = values
+          }
           this.attributes_selected.push(append_attribute)
         }
 
         this.attributes_selected = this.attributes_selected.filter(attribute => attribute.value.length > 0)
-
-        console.log(this.attributes_selected)
 
         this.refresh_query()
       },
