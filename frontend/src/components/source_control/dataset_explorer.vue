@@ -416,7 +416,10 @@ import { attribute_group_list } from "../../services/attributesService";
           else if (attribute.kind === 'multiple_select' || attribute.kind === 'tree') {
             attribute_query += `attributes.${attribute.id} in ${JSON.stringify(attribute.value.map(value => value.id))}`
           }
-
+          else if (attribute.kind === 'time' || attribute.kind === 'slider') {
+            console.log("here")
+            attribute_query += `attribute.${attribute.id} = ${attribute.value}`
+          }
           if (attributes_selected.length > index + 1) {
             attribute_query += " and "
           }
@@ -436,9 +439,15 @@ import { attribute_group_list } from "../../services/attributesService";
         const attribute_is_selected = this.attributes_selected.find(attr => attr.id === attribute.id)
 
         if (attribute_is_selected) {
-          if (attribute.kind === 'multiple_select') {
-              attribute_is_selected.value = attribute_value
-            }
+          if (attribute.kind === 'select' || attribute.kind === 'radio') {
+            attribute_is_selected.value = [{...attribute_value}]
+          }
+          else if (attribute.kind === 'multiple_select') {
+            attribute_is_selected.value = attribute_value
+          }
+          else if (attribute.kind === 'time' || attribute.kind === 'slider') {
+            attribute_is_selected.value = attribute_value
+          }
           else if (attribute.kind === 'tree') {
             const attribute_keys = Object.keys(attribute_value)
             const values = attribute_keys.map(key => ({id: parseInt(key), ...attribute_value[key]}))
@@ -450,12 +459,14 @@ import { attribute_group_list } from "../../services/attributesService";
             ...attribute,
             value: []
           }
-
           if (attribute.kind === 'select' || attribute.kind === 'radio') {
             append_attribute.value = [{...attribute_value}]
           } 
           else if (attribute.kind === 'multiple_select') {
             append_attribute.value = [{...attribute_value[0]}]
+          }
+          else if (attribute.kind === 'time' || attribute.kind === 'slider') {
+            append_attribute.value = attribute_value
           }
           else if (attribute.kind === 'tree') {
             const attribute_keys = Object.keys(attribute_value)
@@ -465,7 +476,13 @@ import { attribute_group_list } from "../../services/attributesService";
           this.attributes_selected.push(append_attribute)
         }
 
-        this.attributes_selected = this.attributes_selected.filter(attribute => attribute.value.length > 0)
+        this.attributes_selected = this.attributes_selected.filter(attribute => {
+          if (!attribute.value) return false
+
+          if (Array.isArray(attribute.value) && attribute.value.length === 0) return false
+
+          return true
+        })
 
         this.refresh_query()
       },
