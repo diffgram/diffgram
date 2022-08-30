@@ -417,7 +417,6 @@ import { attribute_group_list } from "../../services/attributesService";
             attribute_query += `attributes.${attribute.id} in ${JSON.stringify(attribute.value.map(value => value.id))}`
           }
           else if (attribute.kind === 'time' || attribute.kind === 'slider') {
-            console.log("here")
             attribute_query += `attribute.${attribute.id} = ${attribute.value}`
           }
           if (attributes_selected.length > index + 1) {
@@ -436,51 +435,33 @@ import { attribute_group_list } from "../../services/attributesService";
         const attribute = event[0]
         const attribute_value = event[1]
 
-        const attribute_is_selected = this.attributes_selected.find(attr => attr.id === attribute.id)
+        let working_attribute;
 
-        if (attribute_is_selected) {
-          if (attribute.kind === 'select' || attribute.kind === 'radio') {
-            attribute_is_selected.value = [{...attribute_value}]
-          }
-          else if (attribute.kind === 'multiple_select') {
-            attribute_is_selected.value = attribute_value
-          }
-          else if (attribute.kind === 'time' || attribute.kind === 'slider') {
-            attribute_is_selected.value = attribute_value
-          }
-          else if (attribute.kind === 'tree') {
-            const attribute_keys = Object.keys(attribute_value)
-            const values = attribute_keys.map(key => ({id: parseInt(key), ...attribute_value[key]}))
-            attribute_is_selected.value = values
-          }
+        const attribute_exists = this.attributes_selected.find(attr => attr.id === attribute.id)
+
+        if (attribute_exists) working_attribute = attribute_exists
+        else working_attribute = { ...attribute }
+
+        if (attribute.kind === 'select' || attribute.kind === 'radio') {
+          working_attribute.value = [{...attribute_value}]
         }
-        else {
-          const append_attribute = {
-            ...attribute,
-            value: []
-          }
-          if (attribute.kind === 'select' || attribute.kind === 'radio') {
-            append_attribute.value = [{...attribute_value}]
-          } 
-          else if (attribute.kind === 'multiple_select') {
-            append_attribute.value = [{...attribute_value[0]}]
-          }
-          else if (attribute.kind === 'time' || attribute.kind === 'slider') {
-            append_attribute.value = attribute_value
-          }
-          else if (attribute.kind === 'tree') {
-            const attribute_keys = Object.keys(attribute_value)
-            const values = attribute_keys.map(key => ({id: parseInt(key), ...attribute_value[key]}))
-            append_attribute.value = values
-          }
-          this.attributes_selected.push(append_attribute)
+        else if (attribute.kind === 'multiple_select') {
+          working_attribute.value = attribute_value
         }
+        else if (attribute.kind === 'time' || attribute.kind === 'slider') {
+          working_attribute.value = attribute_value
+        }
+        else if (attribute.kind === 'tree') {
+          const attribute_keys = Object.keys(attribute_value)
+          const values = attribute_keys.map(key => ({id: parseInt(key), ...attribute_value[key]}))
+          working_attribute.value = values
+        }
+
+        if (!attribute_exists) this.attributes_selected.push(working_attribute)
 
         this.attributes_selected = this.attributes_selected.filter(attribute => {
           if (!attribute.value) return false
-
           if (Array.isArray(attribute.value) && attribute.value.length === 0) return false
-
           return true
         })
 
