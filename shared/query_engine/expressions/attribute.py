@@ -47,7 +47,6 @@ class AttributeCompareExpression(CompareExpression):
         raw_scalar_value = scalar_op.raw_value
         sql_filter = query_op.subquery
         sql_compare_operator = self.operator.operator_value
-        print('aaa', self.compare_op_raw)
         file_stats_column = get_file_stats_column_from_attribute_kind(attribute_kind)
         if attribute_kind in ['radio', 'multiple_select', 'select', 'tree']:
             if self.compare_op_raw == 'in':
