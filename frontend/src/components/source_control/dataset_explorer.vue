@@ -410,13 +410,13 @@ import { attribute_group_list } from "../../services/attributesService";
         let attribute_query = ""
         attributes_selected.map((attribute, index) => {
           if (attribute.kind === 'select' || attribute.kind === 'radio') {
-            attribute_query += `attributes.${attribute.id} = ${attribute.value[0].id}`
+            attribute_query += `attributes.${attribute.prompt.replaceAll(' ', '_')} = ${attribute.value[0].id}`
           }
           else if (attribute.kind === 'multiple_select' || attribute.kind === 'tree') {
-            attribute_query += `attributes.${attribute.id} in ${JSON.stringify(attribute.value.map(value => value.id))}`
+            attribute_query += `attributes.${attribute.prompt.replaceAll(' ', '_')} in ${JSON.stringify(attribute.value.map(value => value.id))}`
           }
           else if (attribute.kind === 'time' || attribute.kind === 'slider' || attribute.kind === 'date' || attribute.kind === 'text') {
-            attribute_query += `attribute.${attribute.id} = ${attribute.value}`
+            attribute_query += `attribute.${attribute.prompt.replaceAll(' ', '_')} = ${attribute.value}`
           }
           if (attributes_selected.length > index + 1) {
             attribute_query += " and "
