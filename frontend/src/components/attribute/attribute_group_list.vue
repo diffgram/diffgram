@@ -1,6 +1,5 @@
 <template>
 <div id="">
-
 <v-progress-linear class="mt-4" indeterminate v-if="loading"></v-progress-linear>
 <div style="overflow-y:auto">
   <v-layout v-if="mode == 'edit' " class="d-flex pa-4 align-center">
@@ -29,7 +28,7 @@
   <!--  Caution     This is for  annotate mode too -->
   <v-layout column v-if="mode == 'edit'
             || current_instance
-            && current_instance.soft_delete != true">
+            && current_instance.soft_delete != true || !current_instance">
 
     <v_error_multiple :error="error">
     </v_error_multiple>
@@ -185,6 +184,10 @@ import attribute_group_new from './attribute_group_new.vue'
 
       'view_only_mode' : {
         default: false
+      },
+      'attribute_list': {
+        type: Array,
+        default: null
       }
 
 
@@ -192,17 +195,13 @@ import attribute_group_new from './attribute_group_new.vue'
 
     data() {
       return {
-
         loading: false,
         error: {},
         success: false,
-
         name: null,
         attribute_group_list: [],
         out_of_schema_attributes: [],
-
-        openedPanel: null
-
+        openedPanel: null,
       }
     },
 
@@ -213,12 +212,15 @@ import attribute_group_new from './attribute_group_new.vue'
       attribute_template_group_id(new_val, old_val) {
         this.api_attribute_group_list("from_project")
       },
-
       attribute_group_list_prop() {
         this.attribute_group_list = this.attribute_group_list_prop
+        this.attribute_group_list_computed
       },
       current_instance(){
         this.fetch_current_instance_missing_attributes("from_project")
+      },
+      attribute_list: function(new_value) {
+        this.attribute_group_list = new_value
       }
 
     },
@@ -342,14 +344,21 @@ import attribute_group_new from './attribute_group_new.vue'
         if(missing_id_list.length === 0){
           return
         }
-        let [attr_data, error] = await attribute_group_list(
-          this.project_string_id,
-          undefined,
-          undefined,
-          mode,
-          missing_id_list,
-          true
-        )
+
+        let attr_data, error;
+
+        if (!this.attribute_list) {
+          [attr_data, error] = await attribute_group_list(
+            this.project_string_id,
+            undefined,
+            undefined,
+            mode,
+            missing_id_list,
+            true
+          )
+        } else {
+          attr_data = this.attribute_list
+        }
 
         if(error){
           if (error.response.status == 400) {
