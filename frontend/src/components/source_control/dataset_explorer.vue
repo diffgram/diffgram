@@ -435,6 +435,7 @@ import { attribute_group_list } from "../../services/attributesService";
         const attribute_value = event[1]
 
         let working_attribute;
+        let values;
 
         const attribute_exists = this.attributes_selected.find(attr => attr.id === attribute.id)
 
@@ -442,19 +443,24 @@ import { attribute_group_list } from "../../services/attributesService";
         else working_attribute = { ...attribute }
 
         if (attribute.kind === 'select' || attribute.kind === 'radio') {
-          working_attribute.value = [{...attribute_value}]
+          values = [{...attribute_value}]
         }
-        else if (attribute.kind === 'multiple_select') {
-          working_attribute.value = attribute_value
-        }
-        else if (attribute.kind === 'time' || attribute.kind === 'slider' || attribute.kind === 'date' || attribute.kind === 'text') {
-          working_attribute.value = attribute_value
+        else if (
+          attribute.kind === 'multiple_select' || 
+          attribute.kind === 'time' || 
+          attribute.kind === 'slider' || 
+          attribute.kind === 'date' || 
+          attribute.kind === 'text'
+        ) {
+          values = attribute_value
         }
         else if (attribute.kind === 'tree') {
           const attribute_keys = Object.keys(attribute_value)
-          const values = attribute_keys.map(key => ({id: parseInt(key), ...attribute_value[key]}))
-          working_attribute.value = values
+          const tree_values = attribute_keys.map(key => ({id: parseInt(key), ...attribute_value[key]}))
+          values = tree_values
         }
+
+        working_attribute.value = values
 
         if (!attribute_exists) this.attributes_selected.push(working_attribute)
 
