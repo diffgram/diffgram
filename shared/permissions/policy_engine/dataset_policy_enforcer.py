@@ -13,7 +13,10 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
         self.policy_engine = policy_engine
 
     def has_perm(self, member_id: int, object_type: str, object_id: int, perm: str) -> PermissionResult:
-        super(self).has_perm(member_id = member_id, object_id = object_id, perm = str )
+        perm_result = super(self).has_perm(member_id = member_id,
+                                           object_id = object_id,
+                                           perm = perm)
+        if
         return result
 
     def get_allowed_object_id_list(self, member: Member, object_type: str, perm: str) -> PermissionResultObjectSet:
@@ -60,6 +63,6 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
             allow_all = False,
             member_id = member.id,
             object_type = object_type,
-            allowed_object_id_list = dataset_id_list
+            allowed_object_id_list = final_dataset_id_list
         )
         return result
