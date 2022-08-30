@@ -145,6 +145,9 @@ class RoleMemberObject(Base, SerializerMixin):
     object_id = Column(Integer)
     object_type = Column(String())
 
+    # In case of an assignment to a default role
+    default_role_name = Column(String(), nullable=True)
+
     role_id = Column(Integer, ForeignKey('role.id'))
     role = relationship("Role", foreign_keys = role_id)
 
@@ -159,16 +162,21 @@ class RoleMemberObject(Base, SerializerMixin):
     def new(session,
             member_id: int,
             object_id: int,
-            object_type: str,
-            role_id: int,
+            object_type: Enum,
+            role_id: int = None,
+            default_role_name: Enum = None,
             add_to_session = True,
             flush_session = True):
+        if role_id is None and default_role_name is None:
+            raise Exception('Role.new() need either a default_role_name or a role_id')
         role = RoleMemberObject(
             member_id = member_id,
             object_id = object_id,
-            object_type = object_type,
+            object_type = object_type.name,
             role_id = role_id,
         )
+        if default_role_name:
+            role.default_role_name = default_role_name.name
         if add_to_session:
             session.add(role)
         if flush_session:

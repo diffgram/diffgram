@@ -10,20 +10,26 @@ class DatasetPermissions(Enum):
 
 
 class DatasetDefaultRoles(Enum):
-    viewer = 'viewer'
-    editor = 'editor'
-    admin = 'admin'
+    """
+        Warning! Changing any of these roles requires developer
+        to create an alembic migration. Otherwise, default roles and
+        stored db roles mapping won't match.
+    """
+
+    dataset_viewer = 'dataset_viewer'
+    dataset_editor = 'dataset_editor'
+    dataset_admin = 'dataset_admin'
 
 
 class DatasetRolesPermissions(Enum):
-    viewer = [
+    dataset_viewer = [
         DatasetPermissions.dataset_view.value,
     ]
-    editor = [
+    dataset_editor = [
         DatasetPermissions.dataset_view.value,
         DatasetPermissions.dataset_edit.value,
     ]
-    admin = [
+    dataset_admin = [
         DatasetPermissions.dataset_invite_user.value,
         DatasetPermissions.dataset_invite_user.value,
     ]

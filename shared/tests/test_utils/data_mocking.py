@@ -37,7 +37,7 @@ from shared.database.task.job.user_to_job import User_To_Job
 from shared.database.input import Input
 from shared.database.project_migration.project_migration import ProjectMigration
 from shared.database.audio.audio_file import AudioFile
-from shared.database.permissions.roles import Role
+from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
 
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
@@ -167,8 +167,20 @@ def register_user(user_data: dict, session):
     )
 
     new_user.permissions_projects = {
-        user_data.get('project_string_id'): ['admin']
+        user_data.get('project_string_id'): user_data.get('project_roles', ['admin'])
     }
+    project = Project.get_by_string_id(session = session, project_string_id = user_data.get('project_string_id'))
+    if project:
+        project.create_default_roles(session = session)
+        for role_name in user_data.get('project_roles', ['admin']):
+            role = Role.get_by_name_and_project(session = session, project_id = project.id, name = role_name)
+            RoleMemberObject.new(
+                session = session,
+                member_id = new_user.member_id,
+                object_id = project.id,
+                object_type = ValidObjectTypes.project,
+                role_id = role.id
+            )
     session.add(new_user)
 
     if 'project_string_id' in user_data:
@@ -278,6 +290,7 @@ def create_task_event(task_event_data: dict, session: 'Session'):
 def create_directory(dir_data, session):
     working_dir = WorkingDir()
     working_dir.user_id = dir_data['user'].id
+    working_dir.access_type = dir_data.get('access_type', 'project')
     working_dir.project_id = dir_data['project'].id
     if dir_data.get('jobs_to_sync'):
         working_dir.jobs_to_sync = dir_data.get('jobs_to_sync')

@@ -1,6 +1,5 @@
 # OPENCORE - ADD
 from methods.regular.regular_api import *
-from shared.database.source_control.working_dir import WorkingDirPermissions
 from shared.database.project import ProjectValidPermissions
 
 

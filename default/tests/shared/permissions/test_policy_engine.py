@@ -2,7 +2,8 @@ from methods.regular.regular_api import *
 from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
-from shared.permissions.PermissionsChecker import PermissionsChecker
+from shared.permissions.policy_engine.policy_engine import PolicyEngine, PermissionResult, PermissionResultObjectSet
+from enum import Enum
 
 
 class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
@@ -41,39 +42,46 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
             permissions_list = ['view_data', 'list_data'],
             project_id = self.project.id,
         )
-    def test_member_has_any_project_role(self):
+        self.policy_engine = PolicyEngine(session = self.session, project = self.project)
 
+    def test_member_has_any_project_role(self):
         RoleMemberObject.new(
             session = self.session,
-            object_type = ValidObjectTypes.project.name,
+            object_type = ValidObjectTypes.project,
             object_id = self.project.id,
             role_id = self.editor_role.id,
             member_id = self.member.id
         )
 
-        result = PermissionsChecker.member_has_any_project_role(
-            session = self.session,
-            member_id = self.member.id,
+        result: PermissionResult = self.policy_engine.member_has_any_project_role(
+            member = self.member,
             roles = ['viewer_test'],
             project_id = self.project.id,
         )
-        self.assertFalse(result)
+        self.assertFalse(result.allowed)
+        self.assertEqual(result.member_id, self.member.id)
+        self.assertEqual(result.object_type, ValidObjectTypes.project.name)
+        self.assertEqual(result.object_id, self.project.id)
 
-        result = PermissionsChecker.member_has_any_project_role(
-            session = self.session,
-            member_id = self.member.id,
+        result = self.policy_engine.member_has_any_project_role(
+            member = self.member,
             roles = ['editor_test'],
             project_id = self.project.id
         )
-        self.assertTrue(result)
+        self.assertTrue(result.allowed)
+        self.assertEqual(result.member_id, self.member.id)
+        self.assertEqual(result.object_type, ValidObjectTypes.project.name)
+        self.assertEqual(result.object_id, self.project.id)
 
-        result = PermissionsChecker.member_has_any_project_role(
-            session = self.session,
-            member_id = self.member.id,
+        result = self.policy_engine.member_has_any_project_role(
+            member = self.member,
             roles = ['editor_test', 'blablab', 'viewer_test'],
             project_id = self.project.id
         )
-        self.assertTrue(result)
+        self.assertTrue(result.allowed)
+        self.assertEqual(result.member_id, self.member.id)
+        self.assertEqual(result.object_type, ValidObjectTypes.project.name)
+        self.assertEqual(result.object_id, self.project.id)
 
     def test_get_allowed_object_id_list(self):
         user = data_mocking.register_user({
@@ -101,30 +109,33 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
         }, self.session)
         RoleMemberObject.new(
             session = self.session,
-            object_type = ValidObjectTypes.dataset.name,
+            object_type = ValidObjectTypes.dataset,
             object_id = ds1.id,
             role_id = self.editor_role.id,
             member_id = self.member.id
         )
         RoleMemberObject.new(
             session = self.session,
-            object_type = ValidObjectTypes.dataset.name,
+            object_type = ValidObjectTypes.dataset,
             object_id = ds2.id,
             role_id = self.editor_role.id,
             member_id = self.member.id
         )
         RoleMemberObject.new(
             session = self.session,
-            object_type = ValidObjectTypes.dataset.name,
+            object_type = ValidObjectTypes.dataset,
             object_id = ds3.id,
             role_id = self.editor_role.id,
             member_id = member2.id
         )
 
-        result = PermissionsChecker.get_allowed_object_id_list(
-            session = self.session,
+        class TestEnum(Enum):
+            unexisting_perm = 'some_perm'
+
+        result = self.policy_engine.get_allowed_object_id_list(
             member = self.member,
-            object_type = ValidObjectTypes.dataset.name,
-            perm = 'an_unexisting_perm'
+            object_type = ValidObjectTypes.dataset,
+            perm = TestEnum.unexisting_perm,
         )
-        self.assertEqual(result, [])
+        self.assertFalse(result.allow_all)
+        self.assertEqual(result.allowed_object_id_list, [])

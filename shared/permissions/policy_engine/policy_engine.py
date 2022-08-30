@@ -1,5 +1,5 @@
 from shared.database.auth.member import Member
-
+from enum import Enum
 from sqlalchemy.orm.session import Session
 from typing import List
 
@@ -39,28 +39,39 @@ class PolicyEngine:
 
     def get_policy_enforcer(self, object_type: str) -> 'BasePolicyEnforcer':
         from shared.permissions.policy_engine.base_policy_enforcer import BasePolicyEnforcer
+        from shared.permissions.policy_engine.dataset_policy_enforcer import DatasetPolicyEnforcer
         POLICY_ENFORCERS_MAPPERS = {
-            'dataset': None
+            'dataset': DatasetPolicyEnforcer
         }
         enforcer_class = POLICY_ENFORCERS_MAPPERS.get(object_type)
         if enforcer_class is None:
             enforcer_class = BasePolicyEnforcer
-        return BasePolicyEnforcer
+        return enforcer_class
 
     def member_has_perm(self,
                         member: Member,
                         object_type: str,
                         object_id: int,
-                        perm: str) -> PermissionResult:
+                        perm: Enum) -> PermissionResult:
+        if member.user and member.user.is_super_admin:
+            result = PermissionResult(
+                allowed = True,
+                member_id = member.id,
+                object_type = object_type,
+                object_id = object_id
+            )
+            return result
         PolicyEnforcer = self.get_policy_enforcer(object_type = object_type)
-        enforcer = PolicyEnforcer(session = self.session)
+        enforcer = PolicyEnforcer(session = self.session, project = self.project)
         perm_result = enforcer.has_perm(member_id = member.id,
                                         object_type = object_type,
                                         object_id = object_id,
-                                        perm = perm)
+                                        perm = perm.name)
         return perm_result
 
-    def member_has_any_project_role(self, member_id: int, roles: List[str],
+    def member_has_any_project_role(self,
+                                    member: Member,
+                                    roles: List[str],
                                     project_id: int) -> PermissionResult:
         from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
         if not roles:
@@ -70,43 +81,28 @@ class PolicyEngine:
             RoleMemberObject.object_type == ValidObjectTypes.project.name,
             Role.name.in_(roles),
             RoleMemberObject.object_id == project_id,
-            RoleMemberObject.member_id == member_id
+            RoleMemberObject.member_id == member.id
         )
         allowed = role_member_objects.first() is not None
+        if member.user and member.user.is_super_admin:
+            allowed = True
         result = PermissionResult(
             allowed = allowed,
-            member_id = member_id,
+            member_id = member.id,
             object_type = ValidObjectTypes.project.name,
             object_id = project_id
         )
         return result
 
-    def __check_member_has_default_project_role(self, member: Member, object_type: str) -> PermissionResultObjectSet:
-        perm_result: PermissionResult = self.member_has_any_project_role(member_id = member.id,
-                                                                         project_id = self.project.id,
-                                                                         roles = ['viewer', 'editor', 'admin'])
-        result = PermissionResultObjectSet(allowed_object_id_list = [],
-                                           object_type = object_type,
-                                           member_id = member.id,
-                                           allow_all = perm_result.allowed)
-        return result
-
     def get_allowed_object_id_list(self,
                                    member: Member,
                                    object_type: 'ValidObjectTypes',
-                                   perm: str) -> PermissionResultObjectSet:
-        default_roles_perm: PermissionResultObjectSet = self.__check_member_has_default_project_role(
-            member = member,
-            object_type = object_type
-        )
-        if default_roles_perm.allow_all:
-            return default_roles_perm
+                                   perm: Enum) -> PermissionResultObjectSet:
 
         PolicyEnforcer = self.get_policy_enforcer(object_type = object_type)
-        enforcer = PolicyEnforcer(session = self.session)
-        perm_set_result = enforcer.get_allowed_object_id_list(member_id = member.id,
-                                        object_type = object_type,
-                                        object_id = object_id,
-                                        perm = perm)
+        enforcer = PolicyEnforcer(session = self.session, project = self.project, policy_engine = self)
+        perm_set_result = enforcer.get_allowed_object_id_list(member = member,
+                                                              object_type = object_type,
+                                                              perm = perm)
 
         return perm_set_result

@@ -13,7 +13,7 @@ from shared.helpers import sessionMaker
 from flask import request
 from shared.permissions.api_permissions import API_Permissions
 from shared.permissions.user_permissions import User_Permissions
-from shared.permissions.PermissionsChecker import PolicyEngine
+from shared.permissions.policy_engine.policy_engine import PolicyEngine
 
 default_denied_message = "(Project Scope) No access."
 from shared.regular.regular_member import get_member
