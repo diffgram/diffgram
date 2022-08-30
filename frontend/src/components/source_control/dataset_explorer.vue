@@ -66,7 +66,7 @@
         v-if="label_schema"
         :project_string_id="project_string_id"
         :schema_id="label_schema ? label_schema.id : null"
-        :attribute_list="global_attribute_list"
+        :attribute_list="attribute_list"
         @attribute_change="attribute_change_event"
       />
 
@@ -289,7 +289,7 @@ import { attribute_group_list } from "../../services/attributesService";
         attributes_selected: [],
         tag_selected_list: [],
         attribute_list: [],
-        global_attribute_list: [],
+        attribute_list: [],
       }
     },
     watch:{
@@ -318,8 +318,7 @@ import { attribute_group_list } from "../../services/attributesService";
         const [data, error] = await attribute_group_list(this.project_string_id, undefined, this.label_schema.id, 'from_project')
 
         if (!error) {
-          this.attribute_list = data.attribute_group_list.filter(attribute => !attribute.is_global)
-          this.global_attribute_list = data.attribute_group_list.filter(attribute => attribute.is_global)
+          this.attribute_list = [...data.attribute_group_list]
         }
       },
       update_query: function(value){
