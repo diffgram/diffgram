@@ -23,12 +23,23 @@ def view_working_dir_web(project_string_id, username):
 
 		project = Project.get(session, project_string_id)
 		
+		working_dir_name = request.args.get('name')
 		working_dir_id = request.args.get('working_dir_id')
 		working_dir_ids = request.args.getlist('working_dir_ids[]')
 
-		if working_dir_id:
-			logger.info('Fetching single directory')
-			working_dir = session.query(WorkingDir).filter(WorkingDir.id == working_dir_id).first()
+		if working_dir_id or working_dir_name:
+			logger.debug('Fetching single directory')
+
+			query = session.query(WorkingDir)
+
+			if working_dir_name:
+				query = query.filter(WorkingDir.nickname == working_dir_name)
+
+			if working_dir_id:
+				query = query.filter(WorkingDir.id == working_dir_id)
+
+			working_dir = query.first()
+
 			if working_dir is None:
 				logger.warning('Warning request did not find any directories from given input')
 				return "Dataset not found", 400
