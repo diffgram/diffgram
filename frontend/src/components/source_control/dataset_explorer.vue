@@ -7,35 +7,6 @@
       <v_error_multiple :error="query_error"></v_error_multiple>
 
       <v-layout>
-      <v-menu :value="query_menu_open"
-              :offset-y="true"
-              :close-on-content-click="false"
-              :close-on-click="false"
-              z-index="99999999"
-              >
-        <template v-slot:activator="{ on, attrs }">
-
-          <v-text-field
-            class="pt-4"
-            label="Query your data: "
-            v-model="query"
-            data-cy="query_input_field"
-            @focus="on_focus_query"
-            @blur="on_blur_query"
-            @keydown.enter="execute_query($event.target.value)"
-          ></v-text-field>
-
-        </template>
-        <!--
-        <query_suggestion_menu
-          ref="query_suggestions"
-          @update_query="update_query"
-          @close="close_suggestion_menu"
-          @execute_query="execute_query"
-          :project_string_id="project_string_id"
-          :query="query" ></query_suggestion_menu>
-        -->
-      </v-menu>
 
         <tooltip_button
           tooltip_message="Refresh"
@@ -127,6 +98,22 @@
         </model_run_selector>
       </v-layout>
     </div>
+
+    <v-checkbox
+      v-model="show_advanced_query_settings"
+      :label="`Advanced query settings`"
+    />
+
+    <v-text-field
+      v-if="show_advanced_query_settings"
+      class="pt-4"
+      label="Query your data: "
+      v-model="query"
+      data-cy="query_input_field"
+      @focus="on_focus_query"
+      @blur="on_blur_query"
+      @keydown.enter="execute_query($event.target.value)"
+    />
 
   </v-sheet>
 
@@ -260,6 +247,7 @@ import { attribute_group_list } from "../../services/attributesService";
         metadata_previous: {
           file_count: null
         },
+        show_advanced_query_settings: false,
         loading: false,
         query: undefined,
         query_error: undefined,
