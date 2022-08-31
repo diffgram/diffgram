@@ -9,7 +9,7 @@ from shared.database.task.guide import Guide
 
 @routes.route('/api/v1/guide/attach/job',
               methods = ['POST'])
-@limiter.limit("20 per day")
+@limiter.limit("50000 per day")
 def guide_attach_to_job_api():
     """
     API to attach guide to a job
