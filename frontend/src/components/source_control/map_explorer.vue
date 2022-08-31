@@ -12,15 +12,16 @@
             :style="`height: calc(100vh - 48px); z-index: 0; width: 100%;`"
         />
         <div class="ol-popup" id="popup" ref="popup">
-            <file_preview
-                class="file-preview"
-                v-if="file_list && file_list.length > 0"
-                :key="file_list[1].id"
-                :project_string_id="project_string_id"
-                :file="file_list[1]"
-                :instance_list="file_list[1].instance_list"
-                :show_ground_truth="true"
-            />
+            <div v-if="active_file">
+                <file_preview
+                    class="file-preview"
+                    :key="active_file.id"
+                    :project_string_id="project_string_id"
+                    :file="active_file"
+                    :instance_list="active_file.instance_list"
+                    :show_ground_truth="true"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -40,6 +41,7 @@ import VectorLayer from 'ol/layer/Vector'
 import VectorSource from 'ol/source/Vector'
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Overlay from 'ol/Overlay';
+import { fromLonLat } from 'ol/proj';
 
 export default Vue.extend({
     name: 'map_explorer',
@@ -66,6 +68,7 @@ export default Vue.extend({
             render_source: null,
             overlay: null,
             file_list: [],
+            active_file: null,
             metadata: {
                 'directory_id': undefined,
                 'limit': 28,
@@ -78,9 +81,12 @@ export default Vue.extend({
                 }
         }
     },
-    mounted() {
+    async mounted() {
         this.initialize_map()
+        await this.fetch_file_list()
         this.place_items_on_map()
+
+        this.active_file = this.file_list[1]
     },
     methods: {
         initialize_map: function() {
@@ -105,7 +111,6 @@ export default Vue.extend({
 
             this.map = map
             this.handle_popup_open()
-            this.fetch_file_list()
         },
         place_items_on_map: function() {
             // WIP: this function should get data from the backend and place it to the map
@@ -126,9 +131,16 @@ export default Vue.extend({
                 })
             })
 
-            const pointFeature = new Feature(new Point([-109.89, 45.02]));
-            pointFeature.setStyle(style)
-            this.render_source.addFeature(pointFeature)
+            const getRandomNumber = function (min, ref) {
+                return Math.random() * ref + min;
+            }
+
+            this.file_list.map(file => {                
+                const pointFeature = new Feature(new Point(fromLonLat([-getRandomNumber(50, 50), getRandomNumber(10, 50)])));
+                pointFeature.setStyle(style)
+                this.render_source.addFeature(pointFeature)
+            })
+
         },
         handle_popup_open: function() {
             const container = document.getElementById('popup');
