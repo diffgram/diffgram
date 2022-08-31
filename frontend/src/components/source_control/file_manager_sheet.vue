@@ -104,6 +104,15 @@
                                   ref="dataset_explorer">
                 </dataset_explorer>
               </v-tab-item>
+              <v-tab-item>
+                <map_explorer
+                  v-if="show_sheet"
+                  :project_string_id="project_string_id"
+                  :full_screen="full_screen"
+                  :directory="$store.state.project.current_directory"
+                  ref="map_explorer"
+                />
+              </v-tab-item>
             </v-tabs-items>
           </v-tabs>
         </v-card-text>
@@ -135,6 +144,8 @@
 <script>
   import Vue from "vue";
   import dataset_explorer from "./dataset_explorer";
+  import map_explorer from "./map_explorer"
+
   export default Vue.extend({
     name: "file_manager_sheet",
     props: [
@@ -147,10 +158,10 @@
       'show_explorer_full_screen',
       'enabled_edit_schema',
       'initializing',
-
     ],
     components:{
-      dataset_explorer
+      dataset_explorer,
+      map_explorer
     },
     mounted() {
       if (this.$props.show_explorer_full_screen) {
