@@ -49,49 +49,55 @@ export default Vue.extend({
         }
     },
     mounted() {
-        this.render_source = new VectorSource({})
-        const draw_layer = new VectorLayer({
-            source: this.render_source
-        })
-
-        // WIP render some points on the map
-
-        const styleSet = {
-            fill: new Fill({
-                color: `rgba(${0}, ${0}, ${0}, 0.5)`
-            }),
-            stroke: new Stroke({
-                color: `rgba(${0}, ${0}, ${0}, 1)`
+        this.initialize_map()
+        this.place_items_on_map()
+    },
+    methods: {
+        initialize_map: function() {
+            this.render_source = new VectorSource({})
+                const draw_layer = new VectorLayer({
+                source: this.render_source
             })
-        }
-        
-        const style = new Style({
-            ...styleSet,
-            image: new CircleStyle({
-                radius: 5,
-                ...styleSet
-            })
-        })
 
-        const pointFeature = new Feature(new Point([-109.89, 45.02]));
-        pointFeature.setStyle(style)
-        this.render_source.addFeature(pointFeature)
-
-        const map = new Map({
-            target: 'map',
-            view: new View({
-                center: [0, 0],
-                zoom: 1,
-            }),
-            layers: [
-                new TileLayer({
-                    source: new OSM(),
+            const map = new Map({
+                target: 'map',
+                view: new View({
+                    center: [0, 0],
+                    zoom: 1,
                 }),
-                draw_layer
-            ]
-        });
+                layers: [
+                    new TileLayer({
+                        source: new OSM(),
+                    }),
+                    draw_layer
+                ]
+            });
 
-        this.map = map
+            this.map = map 
+        },
+        place_items_on_map: function() {
+            // WIP: this function should get data from the backend and place it to the map
+            const styleSet = {
+                fill: new Fill({
+                    color: `rgba(${0}, ${0}, ${0}, 0.5)`
+                }),
+                stroke: new Stroke({
+                    color: `rgba(${0}, ${0}, ${0}, 1)`
+                })
+            }
+                    
+            const style = new Style({
+                ...styleSet,
+                image: new CircleStyle({
+                    radius: 5,
+                    ...styleSet
+                })
+            })
+
+            const pointFeature = new Feature(new Point([-109.89, 45.02]));
+            pointFeature.setStyle(style)
+            this.render_source.addFeature(pointFeature)
+        }
     }
 })
 </script>
