@@ -28,6 +28,20 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 
 export default Vue.extend({
     name: 'map_explorer',
+    props: {
+        project_string_id: {
+            type: String,
+            required: true
+        },
+        full_screen: {
+            type: Boolean,
+            default: true
+        },
+        directory: {
+            type: Number,
+            required: true
+        }
+    },
     data() {
         return {
             map: null,
