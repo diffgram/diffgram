@@ -168,6 +168,10 @@
           {
             text: 'Dataset Explorer',
             icon: 'mdi-folder'
+          },
+          {
+            text: 'Map explorer',
+            icon: 'mdi-map'
           }
         ],
         persistent_bottom_sheet: true,
