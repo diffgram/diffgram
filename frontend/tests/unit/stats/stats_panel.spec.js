@@ -34,26 +34,11 @@ describe("Test stats panel component", () => {
         };
       });
 
-    it("Renders stats panel when no localStorage variable is set", () => {
-        const wrapper = shallowMount(stats_panel, props, localVue);
-        expect(wrapper.text()).toContain("Hide statistics")
-    })
-
     it("Checks local storage on creation", () => {
         jest.spyOn(window.localStorage.__proto__, 'getItem');
         window.localStorage.__proto__.getItem = jest.fn();
         shallowMount(stats_panel, props, localVue);
         expect(localStorage.getItem).toHaveBeenCalled();
-    })
-
-    it("Sets new local storage variable after clicking the button", async () => {
-
-        window.localStorage.__proto__.setItem = jest.fn();
-        const wrapper = mount(stats_panel, props, localVue);
-        let spy = jest.spyOn(wrapper.vm, 'change_stats_visibility');
-        await wrapper.find('[data-cy="change_stats_visibility_button"]').trigger('click')
-        await wrapper.vm.$nextTick()
-        expect(spy).toHaveBeenCalled();
     })
 
     it("Should render all the headers of the stats elements correctly", () => {

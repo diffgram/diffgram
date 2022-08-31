@@ -1,41 +1,12 @@
 <template>
   <v-layout>
   <v-sheet
-      class="pl-4 pt-2"
-      style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px; max-width: 400px"
+      class="pl-4 pt-2 overflow-y-auto"
+      :style="`border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px; max-width: 400px; height: calc(100vh - 48px);`"
       >
       <v_error_multiple :error="query_error"></v_error_multiple>
 
       <v-layout>
-      <v-menu :value="query_menu_open"
-              :offset-y="true"
-              :close-on-content-click="false"
-              :close-on-click="false"
-              z-index="99999999"
-              >
-        <template v-slot:activator="{ on, attrs }">
-
-          <v-text-field
-            class="pt-4"
-            label="Query your data: "
-            v-model="query"
-            data-cy="query_input_field"
-            @focus="on_focus_query"
-            @blur="on_blur_query"
-            @keydown.enter="execute_query($event.target.value)"
-          ></v-text-field>
-
-        </template>
-        <!--
-        <query_suggestion_menu
-          ref="query_suggestions"
-          @update_query="update_query"
-          @close="close_suggestion_menu"
-          @execute_query="execute_query"
-          :project_string_id="project_string_id"
-          :query="query" ></query_suggestion_menu>
-        -->
-      </v-menu>
 
         <tooltip_button
           tooltip_message="Refresh"
@@ -59,8 +30,16 @@
         :schema_id="label_schema ? label_schema.id : null"
         :mode="'multiple'"
         @label_file="label_change_event($event)"
-                          >
-      </label_select_only>
+      />
+
+      <attribute_select
+        label="Global attributes"
+        v-if="label_schema"
+        :project_string_id="project_string_id"
+        :schema_id="label_schema ? label_schema.id : null"
+        :attribute_list="attribute_list"
+        @attribute_change="attribute_change_event"
+      />
 
       <v_directory_list
           :project_string_id="project_string_id"
@@ -119,6 +98,22 @@
         </model_run_selector>
       </v-layout>
     </div>
+
+    <v-checkbox
+      v-model="show_advanced_query_settings"
+      :label="`Advanced query settings`"
+    />
+
+    <v-textarea
+      v-if="show_advanced_query_settings"
+      class="pt-4"
+      label="Query your data: "
+      v-model="query"
+      data-cy="query_input_field"
+      @focus="on_focus_query"
+      @blur="on_blur_query"
+      @keydown.enter="execute_query($event.target.value)"
+    />
 
   </v-sheet>
 
@@ -193,7 +188,8 @@
   import label_select_only from '@/components/label/label_select_only.vue'
   import tag_select from '@/components/tag/tag_select.vue'
   import label_schema_selector from "../label/label_schema_selector.vue"
-
+  import attribute_select from "../attribute/attribute_select.vue"
+import { attribute_group_list } from "../../services/attributesService";
 
   export default Vue.extend({
     name: "dataset_explorer",
@@ -203,10 +199,10 @@
       query_suggestion_menu,
       label_select_only,
       tag_select,
-      label_schema_selector
+      label_schema_selector,
+      attribute_select
     },
     props: [
-      'project_string_id',
       'project_string_id',
       'directory',
       'full_screen'
@@ -251,6 +247,7 @@
         metadata_previous: {
           file_count: null
         },
+        show_advanced_query_settings: false,
         loading: false,
         query: undefined,
         query_error: undefined,
@@ -277,12 +274,18 @@
         },
         datasets_selected: [],
         labels_selected: [],
-        tag_selected_list: []
+        attributes_selected: [],
+        tag_selected_list: [],
+        attribute_list: [],
+        attribute_list: [],
       }
     },
     watch:{
       selected_dir: function () {
         this.fetch_file_list();
+      },
+      label_schema: function() {
+        this.get_schema_attributes()
       }
     },
     computed:{
@@ -299,6 +302,13 @@
       }
     },
     methods: {
+      get_schema_attributes: async function() {
+        const [data, error] = await attribute_group_list(this.project_string_id, undefined, this.label_schema.id, 'from_project')
+
+        if (!error) {
+          this.attribute_list = [...data.attribute_group_list]
+        }
+      },
       update_query: function(value){
         if(!this.query){
           this.query = value;
@@ -329,6 +339,12 @@
         if (label_query) {
           if (dir_list_query) { query += " and " }
           query += label_query
+        }
+
+        let attribute_query = this.generate_attribute_query(this.attributes_selected)
+        if (attribute_query) {
+          if (dir_list_query || label_query) { query += " and " }
+          query += attribute_query
         }
 
         return query
@@ -378,16 +394,76 @@
         return query
 
       },
+      generate_attribute_query: function (attributes_selected) {
+        let attribute_query = ""
+        attributes_selected.map((attribute, index) => {
+          if (attribute.kind === 'select' || attribute.kind === 'radio') {
+            attribute_query += `attributes.${attribute.prompt.replaceAll(' ', '_')} = ${attribute.value[0].id}`
+          }
+          else if (attribute.kind === 'multiple_select' || attribute.kind === 'tree') {
+            attribute_query += `attributes.${attribute.prompt.replaceAll(' ', '_')} in ${JSON.stringify(attribute.value.map(value => value.id))}`
+          }
+          else if (attribute.kind === 'time' || attribute.kind === 'slider' || attribute.kind === 'date' || attribute.kind === 'text') {
+            const value = attribute.kind === 'text' ? `"${attribute.value}"` : attribute.value
+            attribute_query += `attribute.${attribute.prompt.replaceAll(' ', '_')} = ${value}`
+          }
+          if (attributes_selected.length > index + 1) {
+            attribute_query += " and "
+          }
+        })
+        return attribute_query
+      },
 
-       tag_change_event: function(){
+      tag_change_event: function(){
         this.refresh_query()
 
+      },
+      attribute_change_event: function(event) {
+        const attribute = event[0]
+        const attribute_value = event[1]
+
+        let working_attribute;
+        let values;
+
+        const attribute_exists = this.attributes_selected.find(attr => attr.id === attribute.id)
+
+        if (attribute_exists) working_attribute = attribute_exists
+        else working_attribute = { ...attribute }
+
+        if (attribute.kind === 'select' || attribute.kind === 'radio') {
+          values = [{...attribute_value}]
+        }
+        else if (
+          attribute.kind === 'multiple_select' || 
+          attribute.kind === 'time' || 
+          attribute.kind === 'slider' || 
+          attribute.kind === 'date' || 
+          attribute.kind === 'text'
+        ) {
+          values = attribute_value
+        }
+        else if (attribute.kind === 'tree') {
+          const attribute_keys = Object.keys(attribute_value)
+          const tree_values = attribute_keys.map(key => ({id: parseInt(key), ...attribute_value[key]}))
+          values = tree_values
+        }
+
+        working_attribute.value = values
+
+        if (!attribute_exists) this.attributes_selected.push(working_attribute)
+
+        this.attributes_selected = this.attributes_selected.filter(attribute => {
+          if (!attribute.value) return false
+          if (Array.isArray(attribute.value) && attribute.value.length === 0) return false
+          return true
+        })
+
+        this.refresh_query()
       },
 
       label_change_event: function(label_file_list){
         this.labels_selected = label_file_list
         this.refresh_query()
-
       },
 
       dataset_change_event: function(datasets_selected){
@@ -505,7 +581,6 @@
           file_elm.selected = false;
         }
         file.selected = !file.selected;
-        console.log(file, file.selected)
         this.$forceUpdate()
       },
       view_detail: function(file, model_runs, color_list){

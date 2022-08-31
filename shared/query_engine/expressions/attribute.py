@@ -47,10 +47,20 @@ class AttributeCompareExpression(CompareExpression):
         raw_scalar_value = scalar_op.raw_value
         sql_filter = query_op.subquery
         sql_compare_operator = self.operator.operator_value
-
         file_stats_column = get_file_stats_column_from_attribute_kind(attribute_kind)
         if attribute_kind in ['radio', 'multiple_select', 'select', 'tree']:
-            raw_scalar_value = int(raw_scalar_value)
+            if self.compare_op_raw == 'in':
+                try:
+                    raw_scalar_value = list(raw_scalar_value)
+                except:
+                    self.log['error'] = f'Expecting an list value, not {raw_scalar_value}'
+                    return
+            else:
+                try:
+                    raw_scalar_value = int(raw_scalar_value)
+                except:
+                    self.log['error'] = f'Expecting an integer value, not {raw_scalar_value}'
+                    return
         new_filter_subquery = sql_filter.filter(
             sql_compare_operator(file_stats_column, raw_scalar_value)
         ).subquery()

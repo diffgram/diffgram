@@ -929,6 +929,8 @@
           // reset
           this.internal_selected = []
 
+          if (this.group.kind === 'date') this.internal_selected = ''
+
           // set existing if applicable
           if (!this.current_instance) {
             return
