@@ -1,41 +1,12 @@
 <template>
   <v-layout>
   <v-sheet
-      class="pl-4 pt-2"
-      style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px; max-width: 400px"
+      class="pl-4 pt-2 overflow-y-auto"
+      :style="`border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px; max-width: 400px; height: calc(100vh - 48px);`"
       >
       <v_error_multiple :error="query_error"></v_error_multiple>
 
       <v-layout>
-      <v-menu :value="query_menu_open"
-              :offset-y="true"
-              :close-on-content-click="false"
-              :close-on-click="false"
-              z-index="99999999"
-              >
-        <template v-slot:activator="{ on, attrs }">
-
-          <v-text-field
-            class="pt-4"
-            label="Query your data: "
-            v-model="query"
-            data-cy="query_input_field"
-            @focus="on_focus_query"
-            @blur="on_blur_query"
-            @keydown.enter="execute_query($event.target.value)"
-          ></v-text-field>
-
-        </template>
-        <!--
-        <query_suggestion_menu
-          ref="query_suggestions"
-          @update_query="update_query"
-          @close="close_suggestion_menu"
-          @execute_query="execute_query"
-          :project_string_id="project_string_id"
-          :query="query" ></query_suggestion_menu>
-        -->
-      </v-menu>
 
         <tooltip_button
           tooltip_message="Refresh"
@@ -127,6 +98,22 @@
         </model_run_selector>
       </v-layout>
     </div>
+
+    <v-checkbox
+      v-model="show_advanced_query_settings"
+      :label="`Advanced query settings`"
+    />
+
+    <v-textarea
+      v-if="show_advanced_query_settings"
+      class="pt-4"
+      label="Query your data: "
+      v-model="query"
+      data-cy="query_input_field"
+      @focus="on_focus_query"
+      @blur="on_blur_query"
+      @keydown.enter="execute_query($event.target.value)"
+    />
 
   </v-sheet>
 
@@ -260,6 +247,7 @@ import { attribute_group_list } from "../../services/attributesService";
         metadata_previous: {
           file_count: null
         },
+        show_advanced_query_settings: false,
         loading: false,
         query: undefined,
         query_error: undefined,
@@ -416,7 +404,8 @@ import { attribute_group_list } from "../../services/attributesService";
             attribute_query += `attributes.${attribute.prompt.replaceAll(' ', '_')} in ${JSON.stringify(attribute.value.map(value => value.id))}`
           }
           else if (attribute.kind === 'time' || attribute.kind === 'slider' || attribute.kind === 'date' || attribute.kind === 'text') {
-            attribute_query += `attribute.${attribute.prompt.replaceAll(' ', '_')} = ${attribute.value}`
+            const value = attribute.kind === 'text' ? `"${attribute.value}"` : attribute.value
+            attribute_query += `attribute.${attribute.prompt.replaceAll(' ', '_')} = ${value}`
           }
           if (attributes_selected.length > index + 1) {
             attribute_query += " and "
