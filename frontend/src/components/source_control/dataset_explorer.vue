@@ -1,8 +1,8 @@
 <template>
   <v-layout>
   <v-sheet
-      class="pl-4 pt-2"
-      style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px; max-width: 400px"
+      class="pl-4 pt-2 overflow-y-auto"
+      :style="`border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px; max-width: 400px; height: calc(100vh - 48px);`"
       >
       <v_error_multiple :error="query_error"></v_error_multiple>
 
