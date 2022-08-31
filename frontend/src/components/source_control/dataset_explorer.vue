@@ -404,7 +404,8 @@ import { attribute_group_list } from "../../services/attributesService";
             attribute_query += `attributes.${attribute.prompt.replaceAll(' ', '_')} in ${JSON.stringify(attribute.value.map(value => value.id))}`
           }
           else if (attribute.kind === 'time' || attribute.kind === 'slider' || attribute.kind === 'date' || attribute.kind === 'text') {
-            attribute_query += `attribute.${attribute.prompt.replaceAll(' ', '_')} = ${attribute.value}`
+            const value = attribute.kind === 'text' ? `"${attribute.value}"` : attribute.value
+            attribute_query += `attribute.${attribute.prompt.replaceAll(' ', '_')} = ${value}`
           }
           if (attributes_selected.length > index + 1) {
             attribute_query += " and "
