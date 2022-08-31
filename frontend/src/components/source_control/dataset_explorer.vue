@@ -104,7 +104,7 @@
       :label="`Advanced query settings`"
     />
 
-    <v-text-field
+    <v-textarea
       v-if="show_advanced_query_settings"
       class="pt-4"
       label="Query your data: "
