@@ -1,7 +1,7 @@
 <template>
   <div v-cloak class="d-flex align-center justify-start" >
     <v-progress-circular indeterminate class="mr-4" color="primary" v-if="label_refresh_loading"></v-progress-circular>
-    <v-layout >
+    <v-layout class="d-flex">
 
       <v-select :items="label_list_with_limit"
                 style="min-height: 55px"
@@ -82,21 +82,14 @@
         v-if="over_limit"
         icon="mdi-more">
       </tooltip_icon>
-
-      <!-- Select all -->
-
-      <!-- TODO consider this for layout
-         https://codepen.io/aaaaaaaaaaaaaaaaaaa/pen/wvaoeRj?editors=1010
-
-          Downside is it actually requires an extra click
-        -->
-      <div v-if="multiple == true
+      <div  class="ml-2" v-if="multiple == true
        && !view_only_mode
        && show_select_all == true">
         <v-checkbox
+          style="font-size: 88px"
           data-cy="select-all-labels"
           v-model="select_all_state"
-          label="Select All"
+          label="All"
           :disabled="label_refresh_loading"
           @change="select_all_toggle"
         >

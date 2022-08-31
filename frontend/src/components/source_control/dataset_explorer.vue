@@ -1,47 +1,48 @@
 <template>
   <v-layout>
   <v-sheet
-      class="pl-4 pt-2 overflow-y-auto"
+      class="pt-2 overflow-y-auto"
       :style="`border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px; max-width: 400px; height: calc(100vh - 48px);`"
       >
-      <v_error_multiple :error="query_error"></v_error_multiple>
+    <div class="mb-2" style="margin-right: auto; text-align: right; border-bottom: 1px solid #e0e0e0">
+      <tooltip_button
+        tooltip_message="Refresh"
+        datacy="refresh_explorer"
+        @click="fetch_file_list"
+        icon="refresh"
+        :icon_style="true"
+        color="primary"
+      >
+      </tooltip_button>
+    </div>
+      <div class="pl-4" style="width: 385px;">
+        <v_error_multiple :error="query_error"></v_error_multiple>
 
-      <v-layout>
 
-        <tooltip_button
-          tooltip_message="Refresh"
-          datacy="refresh_explorer"
-          @click="fetch_file_list"
-          icon="refresh"
-          :icon_style="true"
-          color="primary"
-        >
-        </tooltip_button>
-      </v-layout>
 
-      <label_schema_selector 
-        :icon="false"
-        :project_string_id="project_string_id"
-        @change="change_schema"
-      />
+        <label_schema_selector
+          :icon="false"
+          :project_string_id="project_string_id"
+          @change="change_schema"
+        />
 
-      <label_select_only
-        :project_string_id="project_string_id"
-        :schema_id="label_schema ? label_schema.id : null"
-        :mode="'multiple'"
-        @label_file="label_change_event($event)"
-      />
+        <label_select_only
+          :project_string_id="project_string_id"
+          :schema_id="label_schema ? label_schema.id : null"
+          :mode="'multiple'"
+          @label_file="label_change_event($event)"
+        />
 
-      <attribute_select
-        label="Global attributes"
-        v-if="label_schema"
-        :project_string_id="project_string_id"
-        :schema_id="label_schema ? label_schema.id : null"
-        :attribute_list="attribute_list"
-        @attribute_change="attribute_change_event"
-      />
+        <attribute_select
+          label="Global attributes"
+          v-if="label_schema"
+          :project_string_id="project_string_id"
+          :schema_id="label_schema ? label_schema.id : null"
+          :attribute_list="attribute_list"
+          @attribute_change="attribute_change_event"
+        />
 
-      <v_directory_list
+        <v_directory_list
           :project_string_id="project_string_id"
           @change_directory="dataset_change_event($event)"
           ref="ground_truth_dir_list"
@@ -54,66 +55,70 @@
           :show_update="false"
           :show_tag="false"
           :multiple="true"
-      />
+        />
 
-      <tag_select
-        v-model="tag_selected_list"
-        :allow_new_creation="false"
-        :label="'Search by tags'"
-        @change="tag_change_event()"
-        :clearable="true"
-      />
+        <tag_select
+          v-model="tag_selected_list"
+          :allow_new_creation="false"
+          :label="'Search by tags'"
+          @change="tag_change_event()"
+          :clearable="true"
+        />
 
-      <v-switch
-        class="pr-4"
-        v-model="show_ground_truth"
-        :label="`Show Ground Truth`"
-      ></v-switch>
+        <v-switch
+          class="pr-4"
+          v-model="show_ground_truth"
+          :label="`Show Ground Truth`"
+        ></v-switch>
 
-      <v-switch
-        v-model="compare_models"
-        :label="`Compare Models`"
-      ></v-switch>
+        <v-switch
+          v-model="compare_models"
+          :label="`Compare Models`"
+        ></v-switch>
 
 
-    <div v-if="compare_models == true">
-      <v-layout column>
-        <h4 class="mt-4 mr-4 mb-3">Compare Inferences: </h4>
-        <model_run_selector
-          class="mt-4"
-          :multi_select="false"
-          :model_run_list="model_run_list"
-          @model_run_change="update_base_model_run"
-          :project_string_id="project_string_id">
+        <div v-if="compare_models == true">
+          <v-layout column>
+            <h4 class="mt-4 mr-4 mb-3">Compare Inferences: </h4>
+            <model_run_selector
+              class="mt-4"
+              :multi_select="false"
+              :model_run_list="model_run_list"
+              @model_run_change="update_base_model_run"
+              :project_string_id="project_string_id">
 
-        </model_run_selector>
-        <h2 class="font-weight-light">VS</h2>
-        <model_run_selector
-          class="mt-4"
-          :multi_select="true"
-          :model_run_list="model_run_list"
-          @model_run_change="update_compare_to_model_runs"
-          :project_string_id="project_string_id">
+            </model_run_selector>
+            <h2 class="font-weight-light">VS</h2>
+            <model_run_selector
+              class="mt-4"
+              :multi_select="true"
+              :model_run_list="model_run_list"
+              @model_run_change="update_compare_to_model_runs"
+              :project_string_id="project_string_id">
 
-        </model_run_selector>
-      </v-layout>
-    </div>
+            </model_run_selector>
+          </v-layout>
+        </div>
 
-    <v-checkbox
-      v-model="show_advanced_query_settings"
-      :label="`Advanced query settings`"
-    />
+        <v-checkbox
+          v-model="show_advanced_query_settings"
+          :label="`Advanced query settings`"
+          data-cy="advanced-query-settings"
+        />
 
-    <v-textarea
-      v-if="show_advanced_query_settings"
-      class="pt-4"
-      label="Query your data: "
-      v-model="query"
-      data-cy="query_input_field"
-      @focus="on_focus_query"
-      @blur="on_blur_query"
-      @keydown.enter="execute_query($event.target.value)"
-    />
+        <v-textarea
+          v-if="show_advanced_query_settings"
+          class="pt-4"
+          label="Query your data: "
+          v-model="query"
+          data-cy="query_input_field"
+          @focus="on_focus_query"
+          @blur="on_blur_query"
+          color="secondary"
+          background-color="#e0e0e0"
+          @keydown.enter="execute_query($event.target.value)"
+        />
+      </div>
 
   </v-sheet>
 
@@ -434,10 +439,10 @@ import { attribute_group_list } from "../../services/attributesService";
           values = [{...attribute_value}]
         }
         else if (
-          attribute.kind === 'multiple_select' || 
-          attribute.kind === 'time' || 
-          attribute.kind === 'slider' || 
-          attribute.kind === 'date' || 
+          attribute.kind === 'multiple_select' ||
+          attribute.kind === 'time' ||
+          attribute.kind === 'slider' ||
+          attribute.kind === 'date' ||
           attribute.kind === 'text'
         ) {
           values = attribute_value
