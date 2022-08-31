@@ -2,6 +2,7 @@ from shared.permissions.policy_engine.policy_engine import PermissionResult, Per
 from shared.permissions.policy_engine.base_policy_enforcer import BasePolicyEnforcer
 from shared.permissions.policy_engine.policy_engine import PolicyEngine
 from shared.database.permissions.roles import Role, RoleMemberObject
+from shared.database.source_control.dataset_perms import DatasetDefaultRoles
 from shared.database.auth.member import Member
 from sqlalchemy.orm.session import Session
 
@@ -13,10 +14,15 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
         self.policy_engine = policy_engine
 
     def has_perm(self, member_id: int, object_type: str, object_id: int, perm: str) -> PermissionResult:
+        # Check Default Permissions
+        roles = Role.list_from_user(session = self.session, member_id = member_id, project_id = self.project.id)
+        default_roles = []
+        for role in roles:
+            if role.name in DatasetDefaultRoles
         perm_result = super(self).has_perm(member_id = member_id,
                                            object_id = object_id,
                                            perm = perm)
-        if
+
         return result
 
     def get_allowed_object_id_list(self, member: Member, object_type: str, perm: str) -> PermissionResultObjectSet:
