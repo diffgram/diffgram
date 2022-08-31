@@ -2992,6 +2992,7 @@ export default Vue.extend({
           if(this.$refs.toolbar){
             this.$refs.toolbar.instance_type = this.instance_type;
           }
+          this.set_default_tool()
 
         }
       }
@@ -3473,6 +3474,7 @@ export default Vue.extend({
       for (const [key, value] of Object.entries(this.$store.state.user.settings)) {
         this.label_settings[key] = value
       }
+
     },
 
     update_window_size_from_listener() {
@@ -3604,7 +3606,16 @@ export default Vue.extend({
       this.start_autosave(); // created() gets called again when the task ID changes eg "go to next"
 
     },
-
+    set_default_tool: function(){
+      // Add Default Selected tool.
+      let last_selected_tool = this.$store.getters.get_last_selected_tool
+      if (!this.filtered_instance_type_list.map(elm => elm.name).includes(last_selected_tool)){
+        return
+      }
+      if(last_selected_tool){
+        this.$refs.toolbar.set_instance_type(last_selected_tool)
+      }
+    },
     fetch_model_run_list: async function () {
       if (!this.$props.model_run_id_list) {
         return;
@@ -3698,6 +3709,7 @@ export default Vue.extend({
       this.current_polygon_point_list = [];
       this.cuboid_face_hover = undefined;
       this.$store.commit("finish_draw");
+      this.$store.commit("set_last_selected_tool", this.instance_type);
       this.set_keypoints_instance_draw_mode();
     },
 
