@@ -21,16 +21,16 @@ class DatasetDefaultRoles(Enum):
     dataset_admin = 'dataset_admin'
 
 
-class DatasetRolesPermissions(Enum):
-    dataset_viewer = [
+DatasetRolesPermissions = {
+    'dataset_viewer': [
         DatasetPermissions.dataset_view.value,
-    ]
-    dataset_editor = [
+    ],
+    'dataset_editor': [
         DatasetPermissions.dataset_view.value,
         DatasetPermissions.dataset_edit.value,
-    ]
-    dataset_admin = [
+    ],
+    'dataset_admin': [
         DatasetPermissions.dataset_invite_user.value,
         DatasetPermissions.dataset_invite_user.value,
-    ]
-
+    ],
+}

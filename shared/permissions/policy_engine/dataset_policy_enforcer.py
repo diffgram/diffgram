@@ -2,9 +2,10 @@ from shared.permissions.policy_engine.policy_engine import PermissionResult, Per
 from shared.permissions.policy_engine.base_policy_enforcer import BasePolicyEnforcer
 from shared.permissions.policy_engine.policy_engine import PolicyEngine
 from shared.database.permissions.roles import Role, RoleMemberObject
-from shared.database.source_control.dataset_perms import DatasetDefaultRoles
+from shared.database.source_control.dataset_perms import DatasetDefaultRoles, DatasetRolesPermissions
 from shared.database.auth.member import Member
 from sqlalchemy.orm.session import Session
+from typing import List
 
 
 class DatasetPolicyEnforcer(BasePolicyEnforcer):
@@ -15,14 +16,31 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
 
     def has_perm(self, member_id: int, object_type: str, object_id: int, perm: str) -> PermissionResult:
         # Check Default Permissions
+
         roles = Role.list_from_user(session = self.session, member_id = member_id, project_id = self.project.id)
-        default_roles = []
         for role in roles:
-            if role.name in DatasetDefaultRoles
+            if DatasetRolesPermissions.get(role.name) is not None:
+                perms_list = DatasetRolesPermissions.get(role.name)
+                if perm in perms_list:
+                    result = PermissionResult(
+                        allowed = True,
+                        member_id = member_id,
+                        object_type = object_type,
+                        object_id = object_id
+                    )
+                    return result
+
         perm_result = super(self).has_perm(member_id = member_id,
                                            object_id = object_id,
                                            perm = perm)
 
+        return perm_result
+
+    def get_default_roles_with_permission(self, perm: str) -> List<str>:
+        result = []
+        for role_name, perms_list in DatasetRolesPermissions:
+            if perm in perms_list:
+                result.append(role_name)
         return result
 
     def get_allowed_object_id_list(self, member: Member, object_type: str, perm: str) -> PermissionResultObjectSet:
@@ -46,8 +64,6 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
         if perm_result_set.allow_all:
             return perm_result_set
 
-        # If user is not admin
-        non_restricted_dataset_id_list = []
         # If all objects are allowed, we further filter to only datasets that are not restricted
         non_restricted_ds = self.session.query(WorkingDir).filter(
             WorkingDir.project_id == self.project.id,
@@ -61,8 +77,21 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
             RoleMemberObject.object_type == object_type.name,
             Role.permissions_list.any(perm),
             RoleMemberObject.member_id == member.id,
-            WorkingDir.member_id == member.id
+            WorkingDir.project_id == self.project.id,
+            WorkingDir.access_type == 'adasdsad',
+
+
         )
+        default_roles = self.get_default_roles_with_permission(perm)
+        dataset_id_from_default_roles = []
+        if len(default_roles) > 0:
+            role_member_objects = self.session.query(RoleMemberObject) \
+                .join(WorkingDir, WorkingDir.id == RoleMemberObject.object_id).filter(
+                RoleMemberObject.object_type == object_type.name,
+                RoleMemberObject.member_id == member.id,
+                WorkingDir.member_id == member.id
+            )
+
         dataset_id_list = [elm.object_id for elm in role_member_objects]
         final_dataset_id_list = dataset_id_list + non_restricted_ds
         result = PermissionResultObjectSet(
