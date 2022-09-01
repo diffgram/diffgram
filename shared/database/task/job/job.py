@@ -13,6 +13,7 @@ from shared.shared_logger import get_shared_logger
 from shared.database.task.exam.exam import Exam
 from shared.database.labels.label_schema import LabelSchema
 from shared.database.task.task import TASK_STATUSES
+from shared.database.tag.tag import JobTag
 
 logger = get_shared_logger()
 
@@ -912,6 +913,13 @@ class Job(Base, Caching):
             query = query.filter(Task.status.in_(status_list))
 
         return query.all()
+
+    def serialize_with_tags(self, session = None) -> dict:
+        result = self.serialize_for_list_view(session = session)
+        tag_rels = JobTag.get_by_job_id(job_id = self.id, project_id = self.project_id, session = session)
+        serialized_tags = [rel.tag.name for rel in tag_rels]
+        result['tags'] = serialized_tags
+        return result
 
     def serialize_for_list_view(self, session = None):
 
