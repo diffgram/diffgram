@@ -133,7 +133,7 @@ class FileStats(Base, Caching):
                 label_counts[label_file_id] += 1
             else:
                 label_counts[label_file_id] = 1
-            if instance['member_created_id'] not in members_list:
+            if instance.get('member_created_id') is not None and instance.get('member_created_id') not in members_list:
                 members_list.append(instance['member_created_id'])
 
         for key, val in label_counts.items():
