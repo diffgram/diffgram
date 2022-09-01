@@ -283,6 +283,13 @@ class Job(Base, Caching):
             return files_to_process.first()
 
     @staticmethod
+    def get(session, job_id, project_id):
+
+        return session.query(Job).filter(
+            Job.id == job_id,
+            Job.project_id == project_id).first()
+
+    @staticmethod
     def get_by_id(session, job_id):
         if job_id is None:
             return None

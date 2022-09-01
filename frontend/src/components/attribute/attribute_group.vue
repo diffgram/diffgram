@@ -43,7 +43,7 @@
               :disabled="view_only_mode"
               v-for="item in select_format"
               :key="item.name"
-              :label="`${item.display_name}`"
+              :label="`${item.display_name} [${item.id}]`"
               :value="item"
             ></v-radio>
           </v-radio-group>
@@ -191,7 +191,7 @@
               selectionType="independent"
             >
               <template v-slot:prepend="{ item }">
-                  <v-checkbox 
+                  <v-checkbox
                     :input-value="internal_selected.includes(item.id)"
                     @change="tree_input(item)" 
                     style="margin-top: 0" 
@@ -487,6 +487,7 @@
               </v-layout>
             </template>
           </button_with_confirm>
+
           <!-- Archive button -->
 
 
@@ -927,6 +928,8 @@
 
           // reset
           this.internal_selected = []
+
+          if (this.group.kind === 'date') this.internal_selected = ''
 
           // set existing if applicable
           if (!this.current_instance) {

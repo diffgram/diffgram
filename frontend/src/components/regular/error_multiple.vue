@@ -3,6 +3,7 @@
        v-if="error != undefined">
 
     <v-alert v-if="Object.keys(error).length"
+             style="overflow-wrap: anywhere"
              v-model="show"
              :type="type"
              :width="width"

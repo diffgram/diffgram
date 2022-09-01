@@ -73,6 +73,8 @@ def create_label_schema(schema_data, session):
 
 
 def create_attribute_template_group(group_data, session):
+    if group_data.get('name') is not None and group_data.get('prompt') is None:
+        group_data['prompt'] = group_data.get('name')
     group = Attribute_Template_Group(
         **group_data
     )
