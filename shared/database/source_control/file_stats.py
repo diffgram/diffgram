@@ -152,6 +152,8 @@ class FileStats(Base, Caching):
             if instance.get('soft_delete') is True:
                 continue
             for key, val in instance.get('attribute_groups').items():
+                if not not key.isnumeric():
+                    continue
                 value, attr_type = get_attribute_value(session, int(key), val, project)
                 if attr_type in ['select', 'radio']:
                     FileStats.new(
