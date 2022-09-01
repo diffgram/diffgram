@@ -3,7 +3,7 @@ from shared.helpers.sessionMaker import session_factory, session_scope
 from shared.database.source_control.file_stats import FileStats
 
 with session_scope() as session:
-    files = session.query(File.id).filter(File.id >= 152849).all()
+    files = session.query(File.id).filter(File.id >= 951988).all()
     print('Files', files)
 
 
