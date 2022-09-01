@@ -23,12 +23,15 @@ def migrate_existing_file_stats():
     from shared.database.source_control.file_stats import FileStats
     bind = op.get_bind()
     session = orm.Session(bind = bind)
-    files = session.query(File).all()
+    files = session.query(File.id).all()
     for file in files:
-        print(f'Creating Stats for file ID: {file.id}')
+        file_id = file[0]
+        print(f'Creating Stats for file ID: {file_id}')
+        file = File.get_by_id(session, file_id = file_id)
+
         FileStats.update_file_stats_data(
             session = session,
-            instance_list = file.cache_dict.get('instance_list', []),
+            instance_list = file.cache_dict.get('instance_list', []) if file.cache_dict else [],
             file_id = file.id,
             project = file.project
         )
