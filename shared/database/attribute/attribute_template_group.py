@@ -5,6 +5,7 @@ from shared.database.attribute.attribute_template_group_to_file import Attribute
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import joinedload
 from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
+from sqlalchemy.orm.session import Session
 
 class Attribute_Template_Group(Base):
     """
@@ -210,7 +211,7 @@ class Attribute_Template_Group(Base):
     def get_group_relations_list(session, file_id_list):
 
         result = session.query(Attribute_Template_Group_to_File).options(
-            joinedload(Attribute_Template_Group_to_File.attribute_template_group)).\
+            joinedload(Attribute_Template_Group_to_File.attribute_template_group)). \
             filter(Attribute_Template_Group_to_File.file_id.in_(file_id_list)).all()
 
         return result
@@ -291,11 +292,10 @@ class Attribute_Template_Group(Base):
         if return_kind == "objects":
             return query.all()
 
-
     @staticmethod
     def get_by_id(session,
                   id,
-                  project_id = None):
+                  project_id = None) -> 'Attribute_Template_Group':
         """
         Must include project id for security check
 
@@ -306,6 +306,21 @@ class Attribute_Template_Group(Base):
         return session.query(Attribute_Template_Group).filter(
             Attribute_Template_Group.id == id,
             Attribute_Template_Group.project_id == project_id).first()
+
+    @staticmethod
+    def get_by_name_and_project(session: Session, name: str, project_id: int,) -> 'Attribute_Template_Group':
+        """
+        Must include project id for security check
+
+        (This assumes untrusted source)...
+
+        """
+
+        return session.query(Attribute_Template_Group).filter(
+            Attribute_Template_Group.project_id == project_id,
+            Attribute_Template_Group.prompt == name,
+            Attribute_Template_Group.archived == False
+        ).first()
 
     # WIP
 

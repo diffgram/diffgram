@@ -397,7 +397,7 @@ def view_file_list_web_route(project_string_id, username):
             mode = "serialize")
 
         if len(file_browser_instance.log['error'].keys()) > 0:
-            return file_browser_instance.log['error'], 400
+            return jsonify(log=file_browser_instance.log), 400
 
         return jsonify(file_list = output_file_list,
                        metadata = file_browser_instance.metadata), 200
@@ -490,24 +490,27 @@ class File_Browser():
         # Index calculation is now done based on page and limit
         self.metadata["start_index"] = (self.metadata["page"] - 1) * self.metadata["limit"]
 
-    def build_and_execute_query(self, limit = 25, offset = None):
+    def build_and_execute_query(self, limit = 25, offset = None) -> [list, dict, int]:
         """
             This functions builds a DiffgramQuery object and executes it with the
             SQLAlchemy executor to get a list of File objects that we can serialized
             and return to the user.
         :return:
         """
+        log = regular_log.default()
         query_string = self.metadata.get('query')
-        if not query_string:
-            return False, {'error': {'query_string': 'Provide query_string'}}, None
+
         query_creator = QueryCreator(session = self.session, project = self.project, member = self.member, directory = self.directory)
         diffgram_query_obj = query_creator.create_query(query_string = query_string)
-        if len(query_creator.log['error'].keys()) > 0:
-            logger.error(f'Error making query {query_creator.log}')
-            return False, query_creator.log, None
-        executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
-        sql_alchemy_query, execution_log = executor.execute_query()
 
+        if len(query_creator.log['error'].keys()) > 0:
+            self.log = query_creator.log
+            logger.error(f'Error making query {query_creator.log}')
+            return False, None
+        executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
+        sql_alchemy_query, self.log = executor.execute_query()
+        if regular_log.log_has_error(self.log):
+            return None, None
         if sql_alchemy_query:
             count = sql_alchemy_query.count()
             if limit is not None:
@@ -518,8 +521,8 @@ class File_Browser():
             file_list = sql_alchemy_query.all()
         else:
             count = None
-            return False, execution_log, count
-        return file_list, query_creator.log, count
+            return False, count
+        return file_list, count
 
     def file_view_core(
         self,
@@ -634,12 +637,14 @@ class File_Browser():
             if requested_order_by == "time_last_updated":
                 order_by_class_and_attribute = File.time_last_updated
 
-        if self.metadata.get('query') and self.metadata.get('query') != '':
-            working_dir_file_list, log, count = self.build_and_execute_query(
+        if self.metadata.get('file_view_mode') == 'explorer':
+            working_dir_file_list, count = self.build_and_execute_query(
                 limit = self.metadata["limit"],
                 offset = self.metadata["start_index"],
             )
-            if not working_dir_file_list or regular_log.log_has_error(log):
+            if regular_log.log_has_error(self.log):
+                return None
+            if not working_dir_file_list or regular_log.log_has_error(self.log):
                 return False
             file_count += count
         else:

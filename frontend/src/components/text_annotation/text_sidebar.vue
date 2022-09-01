@@ -63,7 +63,7 @@
                                     @click="on_select_instance(item)"
                                     :style="current_instance && current_instance.id === item.id && 'background-color: #ecf0f1'"
                                 >
-                                    <td v-if="$store.state.user.current.is_super_admin == true" class="centered-table-items">
+                                    <td v-if="$store.state.user.settings.show_ids == true" class="centered-table-items">
                                         {{ item.id || 'new' }}
                                     </td>
                                     <td class="centered-table-items">
