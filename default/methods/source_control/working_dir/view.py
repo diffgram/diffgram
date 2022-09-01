@@ -34,7 +34,7 @@ def view_working_dir_web(project_string_id, username):
                 query = query.filter(WorkingDir.nickname == working_dir_name)
             if project:
                 query = query.filter(WorkingDir.project_id == project.id)
-                
+
             if working_dir_id:
                 query = query.filter(WorkingDir.id == working_dir_id)
 
