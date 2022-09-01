@@ -178,9 +178,6 @@ class FileStats(Base, Caching):
                         )
                 if attr_type in ['time']:
                     import time
-                    print('AAAAA', value, type(value))
-                    print('AAAAA', time.time(), type(time.time()))
-
                     FileStats.new(
                         session = session,
                         file_id = file_id,
