@@ -54,7 +54,7 @@
               <v_user_icon :user="item"  class="mr-2" :size="25"
                            :font-size="'12px !important'">
               </v_user_icon>
-              <span  style="font-size: 10px">
+              <span   style="font-size: 10px">
                 <template v-if="show_names_on_selected && index === 0"> {{ item.first_name}} {{ item.last_name}}</template>
 
               </span>
