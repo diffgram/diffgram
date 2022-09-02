@@ -58,10 +58,13 @@ def get_attribute_value(session: Session, attr_id: int, attribute_value: any, pr
 
     elif attribute_group.kind == 'date':
         # For date attributes we return a date time.
-        print('datee', attribute_group, attribute_value)
+        if attribute_value is None:
+            return None, None
         value = datetime.datetime.strptime(attribute_value, "%Y-%m-%d")
     elif attribute_group.kind == 'time':
         # For time attributes we return a time object.
+        if attribute_value is None:
+            return None, None
         value = time.strptime(attribute_value, "%H:%M")
         value = datetime.datetime.fromtimestamp(mktime(value))
     elif attribute_group.kind == 'slider':
