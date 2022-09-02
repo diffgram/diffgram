@@ -13,6 +13,7 @@
         />
         <div class="ol-popup" id="popup" ref="popup">
             <div v-if="active_file">
+                <p>{{ active_file.original_filename }}</p>
                 <file_preview
                     class="file-preview"
                     :key="active_file.id"
@@ -157,8 +158,12 @@ export default Vue.extend({
             this.map.addOverlay(overlay)
             this.map.on('singleclick', function (evt) {
                 const coordinate = evt.coordinate;
-
                 overlay.setPosition(coordinate);
+            });
+
+            this.map.on("pointermove", function (evt) {
+                const hit = this.forEachFeatureAtPixel(evt.pixel, () => true); 
+                this.getTargetElement().style.cursor = hit ? 'pointer' : ''
             });
         },
         fetch_file_list: async function(reload_all = true){
@@ -202,7 +207,6 @@ export default Vue.extend({
           this.metadata_previous = response.data.metadata;
         }
         catch (error) {
-          console.error(error);
           this.query_error = this.$route_api_errors(error)
         }
         finally {
