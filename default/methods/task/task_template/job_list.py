@@ -117,7 +117,7 @@ def job_view_core(session,
 
         # Status can be seperate from project...
         if meta["status"]:
-            if meta["status"] != "All":
+            if meta["status"] != "All" and (type(meta['status']) == list and 'All' not in meta['status']):
                 if not isinstance(meta["status"], list):
                     meta["status"] = [meta["status"]]
                 query = query.filter(Job.status.in_(meta["status"]))
@@ -128,6 +128,7 @@ def job_view_core(session,
     if builder_or_trainer_mode == "trainer":
         query = query.filter(Job.status.in_(("active", "complete")))
 
+    query = query.filter(Job.status != 'archived')
     query = add_name_search_filter(query, meta)
 
     query = query.order_by(Job.time_created.desc())
@@ -142,7 +143,6 @@ def job_view_core(session,
     query = query.options(joinedload(Job.label_schema))
 
     job_list = query.all()
-
     if output_mode == "serialize":
 
         for job in job_list:
