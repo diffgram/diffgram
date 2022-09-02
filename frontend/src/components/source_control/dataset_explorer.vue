@@ -174,18 +174,8 @@
       <v-progress-circular indeterminate></v-progress-circular>
     </div>
 
-    <!-- <v-container 
-      v-if="none_found == true && metadata && metadata.page > 1"
-      fluid 
-      style="border: 1px solid #ababab; width: 100%"
-      class="d-flex flex-column align-center justify-center ma-0"
-    >
-      <h1 class="pt-4">End of Results</h1>
-      <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
-    </v-container> -->
-
     <v-snackbar v-model="none_found">
-      End of Results
+      {{ none_found && metadata && metadata.page > 1 ? 'End of Results' : 'No Results' }}
     </v-snackbar>
 
    </div>
