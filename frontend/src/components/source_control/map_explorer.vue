@@ -1,6 +1,6 @@
 <template>
     <div style="display:flex; flex-direction: row">
-        <div class="pl-4 pt-2" style="width: 400px; border-top: 1px grey solid">
+        <div class="pl-4 pt-2" style="width: 400px; border: 1px grey solid">
             <h3>Select area:</h3>
             <v-btn-toggle v-model="toggle_exclusive">
               <v-btn>
