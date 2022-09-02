@@ -36,9 +36,7 @@ def upgrade():
     op.add_column('event', sa.Column('install_fingerprint', sa.String))
     op.add_column('event', sa.Column('diffgram_version', sa.String))
 
-
 def downgrade():
     op.drop_column('event', 'install_fingerprint')
     op.drop_column('event', 'diffgram_version')
-
     op.drop_table('system_events')

@@ -101,14 +101,15 @@ class QueryCreator:
                 suggestions = ENTITY_TYPES
                 suggest_type = 'text'
                 return suggestions, suggest_type
-            for x in self.parser.terminals:
-                print(x.user_repr())
+
             logger.error(f"Unexpected token {str(token_exception)}")
             return False, None
 
     def create_query(self, query_string):
         try:
-            tree = self.parser.parse(query_string)
+            tree = None
+            if query_string:
+                tree = self.parser.parse(query_string)
             # print(tree.pretty())
             return DiffgramQuery(tree, self.project, self.member, directory = self.directory)
         except Exception as e:

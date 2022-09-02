@@ -17,6 +17,7 @@ depends_on = None
 
 def upgrade():
     op.create_index('index__action_run_action_id', 'action_run', ['action_id'])
+
     op.create_index('index__action_run_project_id_action_id', 'action_run', ['project_id', 'action_id'])
     op.create_index('index__action_run_project_id', 'action_run', ['project_id'])
     op.add_column('action_run', sa.Column('status', sa.String()))

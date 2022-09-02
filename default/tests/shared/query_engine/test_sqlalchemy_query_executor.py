@@ -11,7 +11,8 @@ from sqlalchemy.sql.selectable import ScalarSelect
 from sqlalchemy.sql.elements import BinaryExpression
 from sqlalchemy.orm.query import Query
 import flask
-
+from sqlalchemy.orm.query import Query
+from shared.query_engine.expressions.expressions import AndExpression, CompareExpression
 class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
     """
 
@@ -21,7 +22,7 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
 
     def setUp(self):
         # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
-        # For future tests a mechanism of setting up and tearing down the database should be created.
+        # For future tests a meexchanism of setting up and tearing down the database should be created.
         super(TestQueryCreator, self).setUp()
         project_data = data_mocking.create_project_with_context(
             {
@@ -121,9 +122,9 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
             diffgram_query_obj = query_creator.create_query(query_string = query_string)
             executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
             sql_alchemy_query, execution_log = executor.execute_query()
-            result = executor.term(diffgram_query_obj.tree.children[0].children[0])
+            local_tree = diffgram_query_obj.tree.children[0].children[0]
+            executor.term(local_tree)
         self.assertIsNotNone(execution_log['error'].get('label_name'))
-        self.assertIsNone(result)
         self.assertFalse(executor.valid)
 
         # Correct case
@@ -132,9 +133,11 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
             diffgram_query_obj = query_creator.create_query(query_string = query_string2)
             executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
             sql_alchemy_query, execution_log = executor.execute_query()
-            result = executor.term(diffgram_query_obj.tree.children[0].children[0])
+            local_tree = diffgram_query_obj.tree.children[0].children[0]
+            result = executor.term(local_tree)
         self.assertEqual(len(execution_log['error'].keys()), 0)
-        self.assertIsNotNone(result)
+        self.assertIsNotNone(local_tree.and_expression)
+        self.assertEqual(type(local_tree.and_expression), AndExpression)
         self.assertTrue(executor.valid)
 
     def test_factor(self):
@@ -170,78 +173,6 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
         self.assertIsNotNone(result)
         self.assertTrue(executor.valid)
 
-    def test__determine_entity_type(self):
-        token = Token(value = 'labels.apple', type_ = 'dummy')
-        token2 = Token(value = 'files.metadata', type_ = 'dummy')
-        token3 = Token(value = 'issues.count', type_ = 'dummy')
-        query_string = 'labels.x > 5'  # dummy query
-        with self.app.test_request_context():
-            common_actions.add_auth_to_session(flask.session, self.project.users[0])
-            query_creator = QueryCreator(session = self.session, project = self.project, member = self.member)
-            diffgram_query_obj = query_creator.create_query(query_string = query_string)
-            executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
-            e_type = executor._SqlAlchemyQueryExecutor__determine_entity_type(token)
-        self.assertEqual(e_type, 'labels')
-        e_type = executor._SqlAlchemyQueryExecutor__determine_entity_type(token2)
-        self.assertEqual(e_type, 'files')
-        e_type = executor._SqlAlchemyQueryExecutor__determine_entity_type(token3)
-        self.assertEqual(e_type, 'issues')
-
-    def test_get_compare_op(self):
-        query_string = 'labels.x > 5'  # dummy query
-        with self.app.test_request_context():
-            common_actions.add_auth_to_session(flask.session, self.project.users[0])
-            query_creator = QueryCreator(session = self.session, project = self.project, member = self.member)
-            diffgram_query_obj = query_creator.create_query(query_string = query_string)
-            executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
-
-            token = Token(value = '>=', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.ge)
-
-            token = Token(value = '=', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.eq)
-
-            token = Token(value = '>=', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.ge)
-
-            token = Token(value = '<', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.lt)
-
-            token = Token(value = '<=', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.le)
-
-            token = Token(value = '!=', type_ = 'dummy')
-            op = executor.get_compare_op(token)
-            self.assertEqual(op, operator.ne)
-
-    def test__parse_value(self):
-        label = data_mocking.create_label({
-            'name': 'apple',
-        }, self.session)
-        label_file = data_mocking.create_label_file({
-            'label': label,
-            'project_id': self.project.id
-        }, self.session)
-        with self.app.test_request_context():
-            common_actions.add_auth_to_session(flask.session, self.project.users[0])
-            query_string = 'labels.x > 5'  # dummy query
-            query_creator = QueryCreator(session = self.session, project = self.project, member = self.member)
-            diffgram_query_obj = query_creator.create_query(query_string = query_string)
-            executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
-
-            token = Token(value = 'labels.apple', type_ = 'dummy')
-            value = executor._SqlAlchemyQueryExecutor__parse_value(token)
-            self.assertEqual(type(value), ScalarSelect)
-
-            token = Token(value = 'file.something', type_ = 'dummy')
-            value = executor._SqlAlchemyQueryExecutor__parse_value(token)
-            self.assertEqual(type(value), BinaryExpression)
-
     def test__validate_expression(self):
         label = data_mocking.create_label({
             'name': 'apple',
@@ -260,23 +191,48 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
             token = Token(value = 'something', type_ = 'dummy')
             token2 = Token(value = '5', type_ = 'dummy')
             operator = Token(value = '>', type_ = 'dummy')
-            value = executor._SqlAlchemyQueryExecutor__validate_expression(token, token2, operator)
+            comp_expr, log = CompareExpression.new(
+                session = self.session,
+                left_raw = token,
+                right_raw = token2,
+                compare_op_raw = operator,
+                project_id = self.project.id,
+                log = regular_log.default()
+            )
+            value = executor._SqlAlchemyQueryExecutor__validate_expression(comp_expr)
             self.assertFalse(value, False)
             self.assertIsNotNone(executor.log['error'].get('compare_expr'))
 
             token = Token(value = 'labels.apple', type_ = 'dummy')
             token2 = Token(value = '5', type_ = 'dummy')
             operator = Token(value = '>', type_ = 'dummy')
+            comp_expr, log = CompareExpression.new(
+                session = self.session,
+                left_raw = token,
+                right_raw = token2,
+                compare_op_raw = operator,
+                project_id = self.project.id,
+                log = regular_log.default()
+            )
+            print(comp_expr, log)
             executor.log['error'] = {}
-            value = executor._SqlAlchemyQueryExecutor__validate_expression(token, token2, operator)
+            value = executor._SqlAlchemyQueryExecutor__validate_expression(comp_expr)
             self.assertTrue(value)
             self.assertEqual(len(executor.log['error'].keys()), 0)
 
             token = Token(value = 'file.sensor', type_ = 'dummy')
             token2 = Token(value = 'sensorA', type_ = 'dummy')
             operator = Token(value = '>', type_ = 'dummy')
+            comp_expr, log = CompareExpression.new(
+                session = self.session,
+                left_raw = token,
+                right_raw = token2,
+                compare_op_raw = operator,
+                project_id = self.project.id,
+                log = regular_log.default()
+            )
             executor.log['error'] = {}
-            value = executor._SqlAlchemyQueryExecutor__validate_expression(token, token2, operator)
+            value = executor._SqlAlchemyQueryExecutor__validate_expression(comp_expr)
             self.assertFalse(value)
             self.assertEqual(len(executor.log['error'].keys()), 1)
 
@@ -296,10 +252,12 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
             diffgram_query_obj = query_creator.create_query(query_string = query_string2)
             executor = SqlAlchemyQueryExecutor(session = self.session, diffgram_query = diffgram_query_obj)
             sql_alchemy_query, execution_log = executor.execute_query()
-            result = executor.compare_expr(diffgram_query_obj.tree.children[0].children[0].children[0].children[0])
+            local_tree = diffgram_query_obj.tree.children[0].children[0].children[0].children[0]
+            executor.compare_expr(local_tree)
             self.assertEqual(len(execution_log['error'].keys()), 0)
-            self.assertIsNotNone(result)
-            self.assertIsNotNone(result.query_condition)
+            self.assertIsNotNone(local_tree)
+            self.assertIsNotNone(local_tree.compare_expression)
+            self.assertIsNotNone(type(local_tree.compare_expression), CompareExpression)
             self.assertTrue(executor.valid)
 
     def test_execute_query(self):

@@ -118,7 +118,6 @@ export default Vue.extend({
   methods: {
       populate_members: function(){
         this.member_list = [];
-        console.log('POPULATE', this.$props.dialog_type)
         if(this.$props.dialog_type === 'reviewer'){
           this.member_list = this.reviewers_list_prop;
         }

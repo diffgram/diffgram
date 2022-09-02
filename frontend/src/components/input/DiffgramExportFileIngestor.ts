@@ -5,6 +5,8 @@ export default class DiffgramExportFileIngestor {
   public export_raw_obj: any = null;
   public file: any = null;
   public new_label_map: any = null;
+  public total_files: number = 0;
+  public current_file_count: number = 0;
   public attribute_new_id_mapping: object = {};
   private export_ingestor_version: string = '1.0' // This is the ingestor for format v1.0
   public metadata_keys: string[] = ['readme', 'label_map', 'export_info', 'attribute_groups_reference', 'label_colour_map']
@@ -16,17 +18,17 @@ export default class DiffgramExportFileIngestor {
   }
 
   public substitute_label_file_ids_on_attributes(label_file_list_new) {
-    if(!label_file_list_new){
+    if (!label_file_list_new) {
       return
     }
     for (let attribute_group of this.export_raw_obj.attribute_groups_reference) {
       let label_file_list = attribute_group.label_file_list;
-      if(!label_file_list){
+      if (!label_file_list) {
         continue
       }
-      for(let label_file of label_file_list){
-        for(let label_file_2 of label_file_list_new){
-          if(label_file.label.name === label_file_2.label.name){
+      for (let label_file of label_file_list) {
+        for (let label_file_2 of label_file_list_new) {
+          if (label_file.label.name === label_file_2.label.name) {
             label_file.id = label_file_2.id
           }
         }
@@ -274,7 +276,7 @@ export default class DiffgramExportFileIngestor {
       file_data.cuboid_3d_instances.push(instance)
     } else if (instance.type === 'ellipse') {
       file_data.ellipse_instances.push(instance)
-    }else if (instance.type === 'global') {
+    } else if (instance.type === 'global') {
       file_data.global_instances.push(instance)
     } else {
       throw new Error(`Invalid instance type ${instance.type}`)
@@ -380,11 +382,19 @@ export default class DiffgramExportFileIngestor {
     return result;
   }
 
-  public get_instance_count_per_file() {
+  public async get_instance_count_per_file() {
     const result = [];
     const export_obj = this.export_raw_obj;
     const file_names = {};
+    let i = 0;
+    this.current_file_count = 0
+    this.total_files = Object.keys(export_obj).length
     for (const key of Object.keys(export_obj)) {
+      i += 1
+      this.current_file_count += 1
+      if (i % 1000 === 0) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
       if (this.metadata_keys.includes(key)) {
         continue
       }
@@ -500,19 +510,18 @@ export default class DiffgramExportFileIngestor {
 
       let key = parseInt(key_str, 10)
       let mapping = this.attribute_new_id_mapping[key];
-      if(!mapping){
+      if (!mapping) {
         // The only case were a mapping would not be found is if the ID is from an archived attribute.
         continue
       }
 
       let group_id = this.attribute_new_id_mapping[key].attribute_group_id
 
-      if(typeof instance.attribute_groups[key] === 'object'){
+      if (typeof instance.attribute_groups[key] === 'object') {
         new_attribute_group[group_id] = {
           ...instance.attribute_groups[key]
         }
-      }
-      else{
+      } else {
         new_attribute_group[group_id] = instance.attribute_groups[key]
       }
 
@@ -525,13 +534,13 @@ export default class DiffgramExportFileIngestor {
         }
 
         // Tree view
-        for(let key_option of Object.keys(new_attribute_group[group_id])){
-            // Change Selected parent ID
-            if(typeof new_attribute_group[group_id] === 'object'){
-              let new_key =  this.attribute_new_id_mapping[key].attributes_mapping[parseInt(key_option)]
-              new_attribute_group[group_id][new_key] = new_attribute_group[group_id][key_option]
-              delete new_attribute_group[group_id][key_option]
-            }
+        for (let key_option of Object.keys(new_attribute_group[group_id])) {
+          // Change Selected parent ID
+          if (typeof new_attribute_group[group_id] === 'object') {
+            let new_key = this.attribute_new_id_mapping[key].attributes_mapping[parseInt(key_option)]
+            new_attribute_group[group_id][new_key] = new_attribute_group[group_id][key_option]
+            delete new_attribute_group[group_id][key_option]
+          }
         }
       }
 
