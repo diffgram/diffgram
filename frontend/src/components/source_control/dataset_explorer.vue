@@ -162,8 +162,8 @@
         :project_string_id="project_string_id"
         :file="file"
         :instance_list="file.instance_list"
-        :file_preview_width="450"
-        :file_preview_height="450"
+        :file_preview_width="list_item_width"
+        :file_preview_height="list_item_width"
         :show_ground_truth="show_ground_truth"
         @view_file_detail="view_detail"
         @file_selected="on_file_selected"
@@ -211,6 +211,9 @@ import { attribute_group_list } from "../../services/attributesService";
       'full_screen'
     ],
     async mounted() {
+      if (window) {
+        this.list_item_width = (window.innerWidth - 400) / 3
+      }
       if (window.Cypress) {
         window.DatasetExplorer = this;
       }
@@ -246,6 +249,7 @@ import { attribute_group_list } from "../../services/attributesService";
     data: function () {
       return {
         file_list: [],
+        list_item_width: 400,
         model_run_list: [],
         metadata_previous: {
           file_count: null
@@ -297,7 +301,7 @@ import { attribute_group_list } from "../../services/attributesService";
           return '0px'
         }
         if(this.full_screen){
-          return '100%'
+          return `${this.file_list.length / 3 * this.list_item_width}px`
         }
         else{
           return '1000px'
