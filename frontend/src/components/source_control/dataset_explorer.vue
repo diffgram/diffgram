@@ -139,17 +139,18 @@
     </v-container>
 
     <v-container
-              id="infinite-list"
-              fluid
-              class="files-container d-flex justify-start"
-              data-cy="file_review_container"
-              :style="{height: files_container_height,
-              width: '100%',
-              overflowY: 'auto', ['flex-flow']: 'row wrap',
-              position: 'absolute',
-              oveflowX: 'hidden'}">
-
-
+      id="infinite-list"
+      fluid
+      class="files-container d-flex justify-start"
+      data-cy="file_review_container"
+      :style="{
+        height: files_container_height,
+        width: '100%',
+        overflowY: 'auto', ['flex-flow']: 'row wrap',
+        position: 'absolute',
+        oveflowX: 'hidden'
+      }"
+    >
       <file_preview
         class="file-preview"
         v-for="file in file_list"
@@ -173,12 +174,19 @@
       <v-progress-circular indeterminate></v-progress-circular>
     </div>
 
-    <v-container v-if="none_found == true && metadata && metadata.page > 1"
-                 fluid style="border: 1px solid #ababab; width: 100%"
-                 class="d-flex flex-column align-center justify-center ma-0">
+    <!-- <v-container 
+      v-if="none_found == true && metadata && metadata.page > 1"
+      fluid 
+      style="border: 1px solid #ababab; width: 100%"
+      class="d-flex flex-column align-center justify-center ma-0"
+    >
       <h1 class="pt-4">End of Results</h1>
       <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
-    </v-container>
+    </v-container> -->
+
+    <v-snackbar v-model="none_found">
+      End of Results
+    </v-snackbar>
 
    </div>
   </v-layout>
@@ -526,7 +534,7 @@ import { attribute_group_list } from "../../services/attributesService";
           })
           if (response.data['file_list'] == false) {
             this.none_found = true
-            this.file_list = []
+            this.file_list = this.metadata.page === 1 ? [] : this.file_list
           }
           else {
             if(reload_all){
