@@ -141,6 +141,7 @@
     <v-container
       id="infinite-list"
       fluid
+      ref="infinite-list"
       class="files-container d-flex justify-start"
       data-cy="file_review_container"
       :style="{
@@ -236,9 +237,9 @@ import { attribute_group_list } from "../../services/attributesService";
       await this.$nextTick()
       await this.$nextTick()
       // Detect when scrolled to bottom.
-      const listElm = document.querySelector('#infinite-list');
+      const listElm = this.$refs["infinite-list"]
       listElm.addEventListener('scroll', e => {
-        if(listElm.scrollTop + listElm.clientHeight >= listElm.scrollHeight) {
+        if(listElm.scrollTop + listElm.clientHeight + 100 >= listElm.scrollHeight) {
           if(this.file_list.length > 0){
             this.load_more_files();
           }
@@ -301,7 +302,7 @@ import { attribute_group_list } from "../../services/attributesService";
           return '0px'
         }
         if(this.full_screen){
-          return `${this.file_list.length / 3 * this.list_item_width}px`
+          return `100%`
         }
         else{
           return '1000px'
