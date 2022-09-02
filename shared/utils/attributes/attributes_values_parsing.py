@@ -72,6 +72,8 @@ def get_attribute_value(session: Session, attr_id: int, attribute_value: any, pr
         if not isinstance(attribute_value, list):
             attribute_value = [attribute_value]
         for option in attribute_value:
+            if option is None:
+                continue
             id = option.get('id')
             if id:
                 value.append(int(id))
