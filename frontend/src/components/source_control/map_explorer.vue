@@ -89,7 +89,6 @@ export default Vue.extend({
         await this.fetch_file_list()
         this.place_items_on_map()
 
-        this.active_file = this.file_list[1]
         this.remove_event_listeners()
         this.set_event_listeners()
     },
@@ -172,9 +171,13 @@ export default Vue.extend({
               condition: click
             });
 
-            select.on('select', function(evt) {
+            select.on('select', (evt) => {
               if (evt.selected[0]) {
-                const coordinate = evt.selected[0].getGeometry().getCoordinates();
+                const feature = evt.selected[0]
+
+                this.active_file = this.file_list.find(file => file.feature_id === feature.ol_uid)
+
+                const coordinate = feature.getGeometry().getCoordinates();
                 overlay.setPosition(coordinate);
               } else {
                 overlay.setPosition(undefined)
