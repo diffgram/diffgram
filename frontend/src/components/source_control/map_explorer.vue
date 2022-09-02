@@ -3,7 +3,7 @@
         <div class="pl-4 pt-2" style="width: 400px; border: 1px grey solid">
             <h3>Select area:</h3>
             <v-btn-toggle v-model="toggle_exclusive">
-              <v-btn>
+              <v-btn @click="set_custom_view">
                 <v-icon>mdi-rectangle-outline</v-icon>
               </v-btn>
               <v-btn>
@@ -90,6 +90,10 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Overlay from 'ol/Overlay';
 import { fromLonLat } from 'ol/proj';
 import { click } from 'ol/events/condition';
+import Draw, {
+  createBox,
+  createRegularPolygon,
+} from 'ol/interaction/Draw';
 
 export default Vue.extend({
     name: 'map_explorer',
@@ -143,7 +147,8 @@ export default Vue.extend({
     methods: {
         initialize_map: function() {
             this.render_source = new VectorSource({})
-                const draw_layer = new VectorLayer({
+            
+            const draw_layer = new VectorLayer({
                 source: this.render_source
             })
 
@@ -196,7 +201,21 @@ export default Vue.extend({
                 file.feature_id = pointFeature.ol_uid
                 return file
             })
+        },
+        set_custom_view: function() {
+          const selection_source = new VectorSource({})
+          const selection_layer = new VectorLayer({
+            source: selection_source
+          })
 
+          this.map.addLayer(selection_layer)
+
+          const draw = new Draw({
+            source: selection_source,
+            geometryFunction: createBox(),
+          });
+
+          this.map.addInteraction(draw)
         },
         handle_popup_open: function() {
             const container = this.$refs.popup
