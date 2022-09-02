@@ -139,17 +139,19 @@
     </v-container>
 
     <v-container
-              id="infinite-list"
-              fluid
-              class="files-container d-flex justify-start"
-              data-cy="file_review_container"
-              :style="{height: files_container_height,
-              width: '100%',
-              overflowY: 'auto', ['flex-flow']: 'row wrap',
-              position: 'absolute',
-              oveflowX: 'hidden'}">
-
-
+      id="infinite-list"
+      fluid
+      ref="infinite-list"
+      class="files-container d-flex justify-start"
+      data-cy="file_review_container"
+      :style="{
+        height: files_container_height,
+        width: '100%',
+        overflowY: 'auto', ['flex-flow']: 'row wrap',
+        position: 'absolute',
+        oveflowX: 'hidden'
+      }"
+    >
       <file_preview
         class="file-preview"
         v-for="file in file_list"
@@ -161,8 +163,8 @@
         :project_string_id="project_string_id"
         :file="file"
         :instance_list="file.instance_list"
-        :file_preview_width="450"
-        :file_preview_height="450"
+        :file_preview_width="list_item_width"
+        :file_preview_height="list_item_width"
         :show_ground_truth="show_ground_truth"
         @view_file_detail="view_detail"
         @file_selected="on_file_selected"
@@ -173,12 +175,9 @@
       <v-progress-circular indeterminate></v-progress-circular>
     </div>
 
-    <v-container v-if="none_found == true && metadata && metadata.page > 1"
-                 fluid style="border: 1px solid #ababab; width: 100%"
-                 class="d-flex flex-column align-center justify-center ma-0">
-      <h1 class="pt-4">End of Results</h1>
-      <v-icon class="pt-4" size="250">mdi-magnify</v-icon>
-    </v-container>
+    <v-snackbar v-model="none_found">
+      {{ none_found && metadata && metadata.page > 1 ? 'End of Results' : 'No Results' }}
+    </v-snackbar>
 
    </div>
   </v-layout>
@@ -213,6 +212,9 @@ import { attribute_group_list } from "../../services/attributesService";
       'full_screen'
     ],
     async mounted() {
+      if (window) {
+        this.list_item_width = (window.innerWidth - 400) / 3
+      }
       if (window.Cypress) {
         window.DatasetExplorer = this;
       }
@@ -235,9 +237,9 @@ import { attribute_group_list } from "../../services/attributesService";
       await this.$nextTick()
       await this.$nextTick()
       // Detect when scrolled to bottom.
-      const listElm = document.querySelector('#infinite-list');
+      const listElm = this.$refs["infinite-list"]
       listElm.addEventListener('scroll', e => {
-        if(listElm.scrollTop + listElm.clientHeight >= listElm.scrollHeight) {
+        if(listElm.scrollTop + listElm.clientHeight + 100 >= listElm.scrollHeight) {
           if(this.file_list.length > 0){
             this.load_more_files();
           }
@@ -248,6 +250,7 @@ import { attribute_group_list } from "../../services/attributesService";
     data: function () {
       return {
         file_list: [],
+        list_item_width: 400,
         model_run_list: [],
         metadata_previous: {
           file_count: null
@@ -299,7 +302,7 @@ import { attribute_group_list } from "../../services/attributesService";
           return '0px'
         }
         if(this.full_screen){
-          return '100%'
+          return `100%`
         }
         else{
           return '1000px'
@@ -526,7 +529,7 @@ import { attribute_group_list } from "../../services/attributesService";
           })
           if (response.data['file_list'] == false) {
             this.none_found = true
-            this.file_list = []
+            this.file_list = this.metadata.page === 1 ? [] : this.file_list
           }
           else {
             if(reload_all){
