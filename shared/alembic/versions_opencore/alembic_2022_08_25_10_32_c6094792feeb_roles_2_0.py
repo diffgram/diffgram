@@ -12,6 +12,7 @@ from sqlalchemy.orm.session import Session
 
 from shared.database.user import User
 from shared.database.permissions.roles import RoleMemberObject, Role, ValidObjectTypes
+
 # revision identifiers, used by Alembic.
 revision = 'c6094792feeb'
 down_revision = '73fd663f4914'
@@ -20,6 +21,12 @@ depends_on = None
 
 
 def migrate_roles_from_project(op):
+    """
+        Not used. As a backup plan in case a migration is needed.
+        For now, all default roles will be managed in the codebase.
+    :param op:
+    :return:
+    """
     bind = op.get_bind()
     session = Session(bind = bind)
     from shared.database.project import Project
@@ -34,7 +41,8 @@ def migrate_roles_from_project(op):
         for project_string_id, roles_list in permissions_dict.items():
             project = Project.get_by_string_id(session = session, project_string_id = project_string_id)
             for role_name in roles_list:
-                role_obj = Role.get_by_name_and_project(session = session, name = role_name.lower(), project_id = project.id)
+                role_obj = Role.get_by_name_and_project(session = session, name = role_name.lower(),
+                                                        project_id = project.id)
                 RoleMemberObject.new(
                     session = session,
                     role_id = role_obj.id,
@@ -60,7 +68,7 @@ def upgrade():
                     sa.Column('member_id', sa.Integer(), sa.ForeignKey('member.id')),
                     sa.Column('object_id', sa.Integer()),
                     sa.Column('object_type', sa.String()),
-                    sa.Column('default_role_name', sa.String(), nullable=True),
+                    sa.Column('default_role_name', sa.String(), nullable = True),
                     sa.Column('role_id', sa.Integer(), sa.ForeignKey('role.id')),
                     sa.PrimaryKeyConstraint('id'))
     op.create_index('index__role_user_object_member_id', 'role_member_object', ['member_id'])
@@ -68,11 +76,17 @@ def upgrade():
     op.create_index('index__role_user_object_object_id', 'role_member_object', ['object_id'])
     op.create_index('index__role_user_object_role_id', 'role_member_object', ['role_id'])
     op.create_index('index__role_user_object_role_id_member_id', 'role_member_object', ['role_id', 'member_id'])
-    op.create_index('index__role_user_object_default_role_name_member_id', 'role_member_object', ['default_role_name', 'member_id'])
+    op.create_index('index__role_user_object_default_role_name_member_id', 'role_member_object',
+                    ['default_role_name', 'member_id'])
     op.create_index('index__role_user_object_role_id_object_id', 'role_member_object', ['role_id', 'object_id'])
-    op.create_index('index__role_user_object_default_role_name_object_id', 'role_member_object', ['default_role_name', 'object_id'])
-    op.add_column('working_dir', sa.Column('access_type', sa.String(), default='project'))
-    migrate_roles_from_project(op)
+    op.create_index('index__role_user_object_default_role_name_object_id', 'role_member_object',
+                    ['default_role_name', 'object_id'])
+
+    op.add_column('working_dir', sa.Column('access_type', sa.String(), default = 'project'))
+    op.create_index('index__working_dir_access_type_project', 'working_dir', ['project_id', 'access_type'])
+    op.create_index('index__working_dir_access_type', 'working_dir', ['access_type'])
+
+    # migrate_roles_from_project(op)
 
 
 def downgrade():
@@ -81,6 +95,8 @@ def downgrade():
     op.drop_index('index__role_user_object_role_id', 'role_member_object')
     op.drop_index('index__role_user_object_role_id_member_id', 'role_member_object')
     op.drop_index('index__role_user_object_role_id_object_id', 'role_member_object')
+    op.drop_index('index__working_dir_access_type', 'working_dir')
+    op.drop_index('index__working_dir_access_type_project', 'working_dir')
     op.drop_table('role_member_object')
     op.drop_column('working_dir', 'access_type')
 

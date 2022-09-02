@@ -36,7 +36,7 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
 
         return perm_result
 
-    def get_default_roles_with_permission(self, perm: str) -> List<str>:
+    def get_default_roles_with_permission(self, perm: str) -> List[str]:
         result = []
         for role_name, perms_list in DatasetRolesPermissions:
             if perm in perms_list:
@@ -78,22 +78,23 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
             Role.permissions_list.any(perm),
             RoleMemberObject.member_id == member.id,
             WorkingDir.project_id == self.project.id,
-            WorkingDir.access_type == 'adasdsad',
+            WorkingDir.access_type == 'restricted',
 
 
         )
         default_roles = self.get_default_roles_with_permission(perm)
         dataset_id_from_default_roles = []
         if len(default_roles) > 0:
-            role_member_objects = self.session.query(RoleMemberObject) \
+            default_role_member_objects = self.session.query(RoleMemberObject) \
                 .join(WorkingDir, WorkingDir.id == RoleMemberObject.object_id).filter(
                 RoleMemberObject.object_type == object_type.name,
                 RoleMemberObject.member_id == member.id,
                 WorkingDir.member_id == member.id
             )
-
+            dataset_id_from_default_roles = [elm.object_id for elm in default_role_member_objects]
         dataset_id_list = [elm.object_id for elm in role_member_objects]
-        final_dataset_id_list = dataset_id_list + non_restricted_ds
+        final_dataset_id_list = dataset_id_list + non_restricted_ds + dataset_id_from_default_roles
+        final_dataset_id_list = list(set(final_dataset_id_list))
         result = PermissionResultObjectSet(
             allow_all = False,
             member_id = member.id,
