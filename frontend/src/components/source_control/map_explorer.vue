@@ -144,7 +144,7 @@ export default Vue.extend({
             }
 
             this.file_list = this.file_list.map(file => {                
-                const pointFeature = new Feature(new Point(fromLonLat([-getRandomNumber(50, 50), getRandomNumber(10, 50)])));
+                const pointFeature = new Feature(new Point(fromLonLat([-getRandomNumber(85, 30), getRandomNumber(35, 10)])));
                 pointFeature.setStyle(style)
                 this.render_source.addFeature(pointFeature)
                 
