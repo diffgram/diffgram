@@ -150,8 +150,8 @@ export default Vue.extend({
             const map = new Map({
                 target: 'map',
                 view: new View({
-                    center: [0, 0],
-                    zoom: 1,
+                    center: fromLonLat([-95, 40]),
+                    zoom: 4.5,
                 }),
                 layers: [
                     new TileLayer({
