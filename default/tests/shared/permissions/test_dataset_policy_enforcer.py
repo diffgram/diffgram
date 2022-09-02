@@ -3,7 +3,7 @@ from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
 from shared.permissions.policy_engine.policy_engine import PolicyEngine, PermissionResult, PermissionResultObjectSet
-from shared.database.source_control.dataset_perms import DatasetPermissions, DatasetRolesPermissions
+from shared.database.source_control.dataset_perms import DatasetPermissions, DatasetDefaultRoles
 from enum import Enum
 
 
@@ -84,13 +84,13 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
             session = self.session,
             object_id = ds1.id,
             object_type = ValidObjectTypes.dataset,
-            default_role_name = DatasetRolesPermissions.dataset_viewer,
+            default_role_name = DatasetDefaultRoles.dataset_viewer,
             member_id = member2.id
         )
         result = self.policy_engine.get_allowed_object_id_list(
             member = member2,
             object_type = ValidObjectTypes.dataset,
-            perm = TestEnum.unexisting_perm,
+            perm = DatasetPermissions.dataset_view,
         )
         self.assertFalse(result.allow_all)
         self.assertEqual(len(result.allowed_object_id_list), 1)
