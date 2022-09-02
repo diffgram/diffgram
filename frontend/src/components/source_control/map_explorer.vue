@@ -34,6 +34,7 @@ import file_preview from "./file_preview"
 
 import Map from 'ol/Map';
 import TileLayer from 'ol/layer/WebGLTile';
+import Select from 'ol/interaction/Select';
 import OSM from 'ol/source/OSM';
 import View from 'ol/View';
 import Feature from 'ol/Feature'
@@ -43,6 +44,7 @@ import VectorSource from 'ol/source/Vector'
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Overlay from 'ol/Overlay';
 import { fromLonLat } from 'ol/proj';
+import { click } from 'ol/events/condition';
 
 export default Vue.extend({
     name: 'map_explorer',
@@ -88,6 +90,11 @@ export default Vue.extend({
         this.place_items_on_map()
 
         this.active_file = this.file_list[1]
+        this.remove_event_listeners()
+        this.set_event_listeners()
+    },
+    unmounted() {
+      this.remove_event_listeners()
     },
     methods: {
         initialize_map: function() {
@@ -132,14 +139,18 @@ export default Vue.extend({
                 })
             })
 
+            // This is temporarty to seimulate coordinates on the file
             const getRandomNumber = function (min, ref) {
                 return Math.random() * ref + min;
             }
 
-            this.file_list.map(file => {                
+            this.file_list = this.file_list.map(file => {                
                 const pointFeature = new Feature(new Point(fromLonLat([-getRandomNumber(50, 50), getRandomNumber(10, 50)])));
                 pointFeature.setStyle(style)
                 this.render_source.addFeature(pointFeature)
+                
+                file.feature_id = pointFeature.ol_uid
+                return file
             })
 
         },
@@ -156,68 +167,93 @@ export default Vue.extend({
             });
 
             this.map.addOverlay(overlay)
-            this.map.on('singleclick', function (evt) {
-                const coordinate = evt.coordinate;
-                overlay.setPosition(coordinate);
+
+            const select = new Select({
+              condition: click
             });
+
+            select.on('select', function(evt) {
+              if (evt.selected[0]) {
+                const coordinate = evt.selected[0].getGeometry().getCoordinates();
+                overlay.setPosition(coordinate);
+              } else {
+                overlay.setPosition(undefined)
+              }
+            });
+
+            this.map.addInteraction(select);
 
             this.map.on("pointermove", function (evt) {
                 const hit = this.forEachFeatureAtPixel(evt.pixel, () => true); 
                 this.getTargetElement().style.cursor = hit ? 'pointer' : ''
             });
         },
-        fetch_file_list: async function(reload_all = true){
-        if(reload_all){
-          this.metadata.page = 1;
-          this.loading = true
-        }
-        else{
-          this.infinite_scroll_loading = true;
-        }
-        try{
-          this.none_found = undefined
-          const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
-            '/user/' + this.$store.state.user.current.username + '/file/list', {
-            'metadata': {
-              ...this.metadata,
-              query: this.query,
-              previous: this.metadata_previous
-            },
-            'project_string_id': this.$props.project_string_id
-
+        set_event_listeners: function() {
+          window.addEventListener("keyup", this.keyup_listener)
+        },
+        remove_event_listeners: function() {
+          window.removeEventListener("keyup", this.keyup_listener)
+        },
+        keyup_listener: function() {
+          window.addEventListener("keyup", (evt) => {
+            if (evt.keyCode === 27) {
+              this.active_file = null
+              this.map.overlays_.array_[0].setPosition(undefined)
+            }
           })
-          if (response.data['file_list'] == false) {
-            this.none_found = true
-          }
-          else {
-            if(reload_all){
-              this.file_list = response.data.file_list;
-            }
-            else{
-
-              for(const file in response.data.file_list){
-                if(!this.file_list.find(f => f.id === file.id)){
-                  this.file_list.push(file);
-                }
-              }
-              this.file_list = this.file_list.concat(response.data.file_list);
-            }
-
-          }
-          this.metadata_previous = response.data.metadata;
-        }
-        catch (error) {
-          this.query_error = this.$route_api_errors(error)
-        }
-        finally {
+        },
+        fetch_file_list: async function(reload_all = true) {
           if(reload_all){
-            this.loading = false;
+            this.metadata.page = 1;
+            this.loading = true
           }
           else{
-            this.infinite_scroll_loading = false;
+            this.infinite_scroll_loading = true;
           }
+          try{
+            this.none_found = undefined
+            const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
+              '/user/' + this.$store.state.user.current.username + '/file/list', {
+              'metadata': {
+                ...this.metadata,
+                query: this.query,
+                previous: this.metadata_previous
+              },
+              'project_string_id': this.$props.project_string_id
 
-        }
+            })
+            if (response.data['file_list'] == false) {
+              this.none_found = true
+            }
+            else {
+              if(reload_all){
+                this.file_list = response.data.file_list;
+              }
+              else{
+
+                for(const file in response.data.file_list){
+                  if(!this.file_list.find(f => f.id === file.id)){
+                    this.file_list.push(file);
+                  }
+                }
+                this.file_list = this.file_list.concat(response.data.file_list);
+              }
+
+            }
+            this.metadata_previous = response.data.metadata;
+          }
+          catch (error) {
+            this.query_error = this.$route_api_errors(error)
+          }
+          finally {
+            if(reload_all){
+              this.loading = false;
+            }
+            else{
+              this.infinite_scroll_loading = false;
+            }
+
+          }
       },
     }
 })
