@@ -1,9 +1,54 @@
 <template>
     <div style="display:flex; flex-direction: row">
         <div class="pl-4 pt-2" style="width: 400px; border-top: 1px grey solid">
-            <h3>Actions:</h3>
-            <div>
-                <v-btn>Show in area</v-btn>
+            <h3>Select area:</h3>
+            <v-btn-toggle v-model="toggle_exclusive">
+              <v-btn>
+                <v-icon>mdi-rectangle-outline</v-icon>
+              </v-btn>
+              <v-btn>
+                <v-icon>mdi-circle-outline</v-icon>
+              </v-btn>
+              <v-btn>
+                <v-icon>mdi-vector-polygon-variant</v-icon>
+              </v-btn>
+            </v-btn-toggle>
+            <br />
+            <br />
+            <h3>Set view coordinates:</h3>
+            <div style="display: flex; flex-direction: row">
+              <v-text-field
+                hide-details
+                single-line
+                label="Max latitude"
+                type="number"
+                style="max-width: 125px"
+              />
+              <div style="width: 25px" />
+              <v-text-field
+                hide-details
+                single-line
+                label="Max longitude"
+                type="number"
+                style="max-width: 125px"
+              />
+            </div>
+            <div style="display: flex; flex-direction: row">
+              <v-text-field
+                hide-details
+                single-line
+                label="Min latitude"
+                type="number"
+                style="max-width: 125px"
+              />
+              <div style="width: 25px" />
+              <v-text-field
+                hide-details
+                single-line
+                label="Min longitude"
+                type="number"
+                style="max-width: 125px"
+              />
             </div>
         </div>
         <div 
