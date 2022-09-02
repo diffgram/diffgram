@@ -199,7 +199,7 @@ export default Vue.extend({
 
         },
         handle_popup_open: function() {
-            const container = document.getElementById('popup');
+            const container = this.$refs.popup
 
             const overlay = new Overlay({
                 element: container,
