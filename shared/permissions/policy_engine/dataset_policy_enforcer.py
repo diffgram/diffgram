@@ -60,6 +60,7 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
                                                     object_type = object_type,
                                                     member_id = member.id,
                                                     allow_all = perm_result.allowed)
+        print('permrrrr', perm_result_set.allow_all)
         # Only grant all if user is admin
         if perm_result_set.allow_all:
             return perm_result_set
@@ -69,8 +70,8 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
             WorkingDir.project_id == self.project.id,
             WorkingDir.archived == False,
             WorkingDir.access_type == 'project'
-        )
-
+        ).all()
+        print('non_restricted_ds', non_restricted_ds)
         role_member_objects = self.session.query(RoleMemberObject) \
             .join(Role, Role.id == RoleMemberObject.role_id) \
             .join(WorkingDir, WorkingDir.id == RoleMemberObject.object_id).filter(
@@ -81,7 +82,7 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
             WorkingDir.access_type == 'restricted',
 
 
-        )
+        ).all()
         default_roles = self.get_default_roles_with_permission(perm)
         dataset_id_from_default_roles = []
         if len(default_roles) > 0:
@@ -90,7 +91,7 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
                 RoleMemberObject.object_type == object_type.name,
                 RoleMemberObject.member_id == member.id,
                 WorkingDir.member_id == member.id
-            )
+            ).all()
             dataset_id_from_default_roles = [elm.object_id for elm in default_role_member_objects]
         dataset_id_list = [elm.object_id for elm in role_member_objects]
         final_dataset_id_list = dataset_id_list + non_restricted_ds + dataset_id_from_default_roles
