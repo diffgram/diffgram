@@ -191,6 +191,11 @@ class DataToolsGCP:
 
         return image_np
 
+
+    def get_bytes(self, blob_path: str):
+        blob = self.bucket.blob(blob_path)
+        return blob.download_as_string()
+
     def upload_from_string(self,
                            blob_path: str,
                            string_data: str,

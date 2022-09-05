@@ -6,17 +6,14 @@ from shared.database.source_control.working_dir import WorkingDir, WorkingDirFil
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
 from google.cloud import aiplatform
-from google.oauth2 import service_account
 
-# GCP auth example
-        # auth = {
-        #     "project_id": "project id",
-        #     "private_key_id": "prokect_key_id",
-        #     "private_key": "priveate key",
-        #     "client_email": "cliend email",
-        #     "client_id": "client if",
-        #     "token_uri": "https://oauth2.googleapis.com/token"
-        # }
+from shared.connection.connection_strategy import ConnectionStrategy
+from shared.connection.google_cloud_storage_connector import GoogleCloudStorageConnector
+
+import tempfile
+import gc
+import shutil
+import time
 
 # Sudo code
 #         - Get directory that was chosen for action
@@ -26,7 +23,7 @@ from google.oauth2 import service_account
 #         - Download files to the temp folder and then send it to GCP with newly created bund boxes
 
 class VertexTrainDatasetAction(ActionRunner):
-    public_name = 'Vertex Ai Train Dataset'
+    public_name = 'Vertex AI Train Dataset (Google / GCP)'
     description = 'Train model with Vertex AI'
     icon = 'https://www.svgrepo.com/show/375510/vertexai.svg'
     precondition = ActionCondition(default_event = None, event_list = [])
@@ -49,47 +46,111 @@ class VertexTrainDatasetAction(ActionRunner):
         # Return true if no pre-conditions are needed.
         return True
 
-    def execute_action(self, session):
-        dir_id = self.action.config_data.get('directory_id')
-        dir = WorkingDir.get_by_id(session = session, directory_id=dir_id)
 
-        dir_files = WorkingDirFileLink.file_list(session=session, working_dir_id=dir.id, limit=None)
+    def get_file_list(self, session):
 
-        for file in dir_files:
-            file_annootations = []
-            annotatoions = Instance.list(session=session, file_id=file.id)
-            for instance in annotatoions:
-                label = File.get_by_id(session=session, file_id=instance.label_file_id)
-                file_annotation = {
-                    "displayName": label.label.name,
-                    "xMin": instance.x_min,
-                    "xMax": instance.x_max,
-                    "yMin": instance.y_min,
-                    "yMax": instance.y_max
-                }
-                file_annootations.append(file_annotation)
+        directory_id = self.action.config_data.get('directory_id')
+        directory = WorkingDir.get_by_id(session = session, directory_id=directory_id)
+        file_list = WorkingDirFileLink.file_list(session=session, working_dir_id=directory.id, limit=None)
 
-            image_annotation = {
-                "imageGcsUri": "gs://mandmc-tria-backet/3 (10).JPG",
-                "boundingBoxAnnotations": file_annootations
+        return file_list
+
+
+    def build_vertex_format_instance(self, instance, session):
+        label = File.get_by_id(session=session, 
+                               file_id=instance.label_file_id)
+        vertex_format_instance = {
+            "displayName": label.label.name,
+            "xMin": instance.x_min,
+            "xMax": instance.x_max,
+            "yMin": instance.y_min,
+            "yMax": instance.y_max
+        }
+        return vertex_format_instance
+
+
+
+    def build_vertex_format_jsonl_file(self, file_list, session):
+
+        export_data = []
+
+        for file in file_list:
+            vertex_format_instance_list = []
+            instance_list = Instance.list(session=session, file_id=file.id)
+
+            for instance in instance_list:
+                vertex_format_instance = self.build_vertex_format_instance(instance, session)
+                vertex_format_instance_list.append(vertex_format_instance)
+
+            single_file = {
+                "imageGcsUri": "gs://" + self.action.config_data.get('image_folder_path_with_bucket_without_gs_prefix') 
+                        +  "/" + file.original_filename,
+                "boundingBoxAnnotations": vertex_format_instance_list
             }
 
-            print(image_annotation)
+            print(single_file)
 
-        auth = {
+        export_data.append(single_file)
+        return export_data
 
-        }
 
-        credentials = service_account.Credentials.from_service_account_info(auth)
+    def write_vertex_format_jsonl_file(self, export_data):
 
+        temp_dir = tempfile.mkdtemp()
+        temp_local_path = temp_dir + F'/google_format_{time.time()}.jsonl'
+
+        with open(temp_local_path, 'w') as outfile:
+            for entry in export_data:
+                json.dump(entry, outfile)
+                outfile.write('\n')
+
+        blob_path = "TBD"
+
+        data_tools.upload_to_cloud_storage(
+            temp_local_path = temp_local_path,
+            blob_path = blob_path,
+            content_type = 'application/json')
+
+        VertexTrainDatasetAction.clean_up_temp_dir(path = temp_dir)
+
+
+    def init_ai_platform(self, credentials):
         aiplatform.init(
-            project='coastal-set-357115',
-            location='us-central1',
-            credentials=credentials,
-            staging_bucket='gs://mandmc-tria-backet',
-            experiment='diffgram-vertexai-integration',
-            experiment_description='This is trial for diffgram and vertext api integration'
+            credentials = credentials,
+            project = self.action.config_data.get('gcp_project_name'),
+            location = self.action.config_data.get('location'),
+            staging_bucket = 'gs://' + self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
+            experiment = self.action.config_data.get('experiment'),
+            experiment_description = self.action.config_data.get('experiment_description')
         )
+
+
+    def write_diffgram_blob_to_gcp():
+        blob_bytes = data_tools.get_bytes(blob_path)
+        # TODO how we want to avoid extra writes here...
+        # e.g. avoid going to numpy and stick with bytes...
+        # may need to add more functions on cloud tools
+        	data_tools.upload_from_string(
+			temp_local_path = image_out_filename,
+			blob_path = instance.preview_image_blob_dir,
+			content_type = 'image/jpg'
+		)
+
+    def execute_action(self, session):
+
+        connection_strategy = ConnectionStrategy(
+            connection_class = GoogleCloudStorageConnector,
+            connector_id = connector_id,
+            session = self.session)
+
+        google_vertex_connector = connection_strategy.get_connector()
+        credentials = google_vertex_connector.get_credentials()
+
+        self.init_ai_platform(credentials)
+
+        file_list = self.get_file_list(session)
+        export_data = self.build_vertex_format_jsonl_file(file_list, session)
+        self.write_vertex_format_jsonl_file(export_data)
 
         datasets_list = aiplatform.datasets.ImageDataset.list()
 
@@ -99,9 +160,9 @@ class VertexTrainDatasetAction(ActionRunner):
             existing_datasets.append(dataset.__dict__['_gca_resource'].__dict__['_pb'].display_name)
 
         working_dataset = None
-        if dir.nickname not in existing_datasets:
+        if directory.nickname not in existing_datasets:
             working_dataset = aiplatform.ImageDataset.create(
-                display_name=dir.nickname,
+                display_name=directory.nickname,
                 gcs_source=['gs://mandmc-tria-backet/3 (10).JPG', 'gs://mandmc-tria-backet/3 (870).JPG'],
                 import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
                 data_item_labels=image_annotation #this is throwing error and I'm not sure why
@@ -109,8 +170,18 @@ class VertexTrainDatasetAction(ActionRunner):
             )
             print("New dataset has been created on Vertex AI")
         else:
-            dataset_index = existing_datasets.index(dir.nickname)
+            dataset_index = existing_datasets.index(directory.nickname)
             working_dataset = datasets_list[dataset_index]
 
         print(working_dataset)
         pass
+
+    def clean_up_temp_dir(path):
+        gc.collect()
+        time.sleep(240)
+        try:
+            shutil.rmtree(path)  # delete directory
+            logger.info("Cleaned successfully")
+        except OSError as exc:
+            logger.error(f"shutil error {str(exc)}")
+            pass
