@@ -35,8 +35,7 @@ def api_label_new(project_string_id):
     spec_list = [
         {'name': str},
         {'colour': None},
-        {'schema_id': {"type": int, "required": True}},
-
+        {'schema_id': {"type": int, "required": False}},
 
     ]
 
@@ -61,16 +60,15 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
     """
     project = Project.get_project(session, project_string_id)
 
-    if not schema_id:
-        log['error']['schema_id'] = 'Provide Schema_id'
-        return None
+    if schema_id:
+        schema = LabelSchema.get_by_id(session, schema_id,  project.id)
+    else:
+        schema = LabelSchema.get_default(session, project.id)
 
     colour = input['colour']
 
     if not colour:
         colour = default_color()
-
-    schema = LabelSchema.get_by_id(session, schema_id,  project.id)
 
     label_file = File.new_label_file(
         session=session,

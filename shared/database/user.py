@@ -1,11 +1,10 @@
-# OPENCORE - ADD
 from shared.database.common import *
 from shared.helpers.permissions import getUserID
 from shared.database import hashing_functions
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.account.plan import Plan
-
+from shared.data_tools_core import data_tools
 
 class User(Base):
     __tablename__ = 'userbase'

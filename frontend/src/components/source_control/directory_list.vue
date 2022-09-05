@@ -1,73 +1,70 @@
 <template>
-  <div id="">
+  <div>
 
-    <!-- Careful with too much padding around
-        here it can make it look funny with other things ie the media window-->
-    <v-layout class="d-flex align-center">
+    <button_with_menu
+      :tooltip_message="show_text_buttons ? undefined : 'Create Dataset'"
+      icon="add"
+      :button_text="show_text_buttons ? 'Create Dataset' : undefined"
+      :close_by_button="true"
+      v-if="!view_only_mode && show_new === true"
+      offset="x"
+      :small="true"
+      :large="undefined"
+      :color="show_text_buttons ? 'white' : 'primary'"
+      menu_direction="left"
+      background="primary"
+      :commit_menu_status="true"
+      :text_style="undefined"
+    >
 
-      <button_with_menu
-        :tooltip_message="show_text_buttons ? undefined : 'Create Dataset'"
-        icon="add"
-        :button_text="show_text_buttons ? 'Create Dataset' : undefined"
-        :close_by_button="true"
-        v-if="!view_only_mode && show_new === true"
-        offset="x"
-        :small="true"
-        :large="undefined"
+      <template slot="content">
+
+        <v_new_directory
+          @directory_created="on_directory_created"
+          :project_string_id="project_string_id">
+        </v_new_directory>
+
+      </template>
+
+    </button_with_menu>
+
+    <div class="">
+
+      <v-select
+        data-cy="directory_select"
+        :items="directory_list_filtered"
+        v-model="current_directory"
+        :label="label"
+        :item-value="null"
         :color="show_text_buttons ? 'white' : 'primary'"
-        menu_direction="left"
-        background="primary"
-        :commit_menu_status="true"
-        :text_style="undefined"
+        ref="diffgram_select"
+        return-object
+        :disabled="view_only_mode"
+        :clearable="clearable"
+        @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+        @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
+        @change="change_directory(), $store.commit('set_user_is_typing_or_menu_open', false)"
+        :menu-props="{ auto: true }"
+        :multiple="multiple"
       >
 
-        <template slot="content">
-
-          <v_new_directory
-            @directory_created="on_directory_created"
-            :project_string_id="project_string_id">
-          </v_new_directory>
-
-        </template>
-
-      </button_with_menu>
-
-      <div class="pl-4 pr-2">
-
-        <v-select
-              data-cy="directory_select"
-              :items="directory_list_filtered"
-              v-model="current_directory"
-              :label="label"
-              :item-value="null"
-              :color="show_text_buttons ? 'white' : 'primary'"
-              ref="diffgram_select"
-              return-object
-              :disabled="view_only_mode"
-              :clearable="clearable"
-              @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-              @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
-              @change="change_directory(), $store.commit('set_user_is_typing_or_menu_open', false)"
-              :menu-props="{ auto: true }"
-                  >
-
-            <!-- For :menu-props="{ auto: true }" see
-              https://github.com/vuetifyjs/vuetify/issues/10750 (which leads to ->)
-              https://github.com/vuetifyjs/vuetify/issues/2660
-              -->
+        <!-- For :menu-props="{ auto: true }" see
+          https://github.com/vuetifyjs/vuetify/issues/10750 (which leads to ->)
+          https://github.com/vuetifyjs/vuetify/issues/2660
+          -->
 
         <template v-slot:prepend-item v-slot:no-data>
           <v-container>
             <v-layout>
               <div class="pt-4 pr-4">
                 <tooltip_button
-                    tooltip_message="Refresh"
-                    @click="refresh_directory_list"
-                    icon="refresh"
-                    :icon_style="true"
-                    color="primary">
+                  tooltip_message="Refresh"
+                  @click="refresh_directory_list"
+                  icon="refresh"
+                  :icon_style="true"
+                  color="primary">
                 </tooltip_button>
-                 {{directory_list_filtered.length}}
+                {{directory_list_filtered.length}}
               </div>
               <v-text-field label="Name"
                             v-model="nickname"
@@ -76,9 +73,9 @@
               >
               </v-text-field>
               <date_picker
-                    @date="store_date_and_refresh($event)"
-                    :with_spacer="false"
-                    :initialize_empty="true">
+                @date="store_date_and_refresh($event)"
+                :with_spacer="false"
+                :initialize_empty="true">
               </date_picker>
             </v-layout>
 
@@ -97,85 +94,134 @@
 
         </template>
 
-         <template v-slot:item="data">
+        <template v-slot:item="data">
 
-            <v-skeleton-loader
-              :loading="loading_directory_list"
-              type="text"
-            >
-              <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">ID: {{ data.item.directory_id }}</v-chip>
+          <v-skeleton-loader
+            :loading="loading_directory_list"
+            type="text"
+          >
+            <v-chip x-small v-if="$store.state.user.settings.show_ids == true">
+              ID: {{ data.item.directory_id }}
+            </v-chip>
 
-              <v-icon left>
-                mdi-folder-network
-              </v-icon>
-
-              {{data.item.nickname}}
-
-               (<span>{{data.item.created_time | moment("ddd, MMM D h:mm:ss a")}} </span>)
-
-
-            </v-skeleton-loader>
-
-          </template>
-
-          <template v-slot:selection="data">
-            <v-chip x-small v-if="$store.state.user.current.is_super_admin == true">ID: {{ data.item.directory_id }}</v-chip>
-
-            <v-icon left
-                    color="primary">
+            <v-icon left>
               mdi-folder-network
             </v-icon>
 
-           <span> {{data.item.nickname}} </span>
+            {{data.item.nickname}}
 
-          </template>
+            (<span>{{data.item.created_time | moment("ddd, MMM D h:mm:ss a")}} </span>)
 
 
-        </v-select>
+            <tag_display
+              :object_id="data.item.directory_id"
+              :object_type="'dataset'"
+              :tag_display_refresh_trigger="tag_display_refresh_trigger"
+            >
+            </tag_display>
 
-      </div>
 
-      <button_with_menu
-        tooltip_message="Update Dataset"
-        icon="edit"
-        :small="true"
-        :large="undefined"
-        :button_text="undefined"
-        color="primary"
-        :close_by_button="true"
-        v-if="!view_only_mode && show_update == true"
-        offset="x"
-        :outlined="true"
-        background="white"
-        menu_direction="left"
-        :commit_menu_status="true">
-
-        <template slot="content">
-
-          <v_update_directory :project_string_id="project_string_id"
-                              :current_directory_prop="current_directory"
-          >
-          </v_update_directory>
+          </v-skeleton-loader>
 
         </template>
 
-      </button_with_menu>
+        <template v-slot:selection="data">
+          <v-chip x-small v-if="$store.state.user.settings.show_ids == true">
+            ID: {{ data.item.directory_id }}
+          </v-chip>
 
-    </v-layout>
+          <v-icon left
+                  color="primary">
+            mdi-folder-network
+          </v-icon>
+
+          <span> {{data.item.nickname}} </span>
+
+          <div v-if="multiple == false">
+            <tag_display
+              :object_id="data.item.directory_id"
+              :object_type="'dataset'"
+              :tag_display_refresh_trigger="tag_display_refresh_trigger"
+            >
+            </tag_display>
+          </div>
+
+        </template>
+
+
+      </v-select>
+
+    </div>
+
+    <button_with_menu
+      tooltip_message="Update Dataset"
+      icon="edit"
+      :small="true"
+      :large="undefined"
+      :button_text="undefined"
+      color="primary"
+      :close_by_button="true"
+      v-if="!view_only_mode && show_update == true"
+      offset="x"
+      :outlined="true"
+      background="white"
+      menu_direction="left"
+      :commit_menu_status="true">
+
+      <template slot="content">
+
+        <v_update_directory :project_string_id="project_string_id"
+                            :current_directory_prop="current_directory"
+        >
+        </v_update_directory>
+
+      </template>
+
+    </button_with_menu>
+
+    <button_with_menu
+      tooltip_message="Apply Tags to this Dataset"
+      icon="mdi-tag"
+      :small="true"
+      :large="undefined"
+      :button_text="undefined"
+      color="primary"
+      :close_by_button="true"
+      v-if="!view_only_mode && show_tag == true"
+      offset="x"
+      :outlined="true"
+      background="white"
+      menu_direction="left"
+      :commit_menu_status="true">
+
+      <template slot="content">
+
+        <tag_select
+          :project_string_id="project_string_id"
+          :dataset="current_directory"
+          :object_id="current_directory.directory_id"
+          :object_type="'dataset'"
+          :modify_upon_selection="true"
+          @tag_applied="tag_display_refresh_trigger=Date.now()"
+          @tag_prior_applied_removed="tag_display_refresh_trigger=Date.now()"
+        >
+        </tag_select>
+
+      </template>
+
+    </button_with_menu>
+
 
   </div>
 </template>
 
 <script lang="ts">
 
-  // TODO combine directory list elements into single component
-  // look at props for passing some of stuff...
-
-  // TODO pass loading or?
-
   import axios from '../../services/customInstance';
   import v_new_directory from './directory_new'
   import v_update_directory from './directory_update'
+  import tag_select from '@/components/tag/tag_select'
+  import tag_display from '@/components/tag/tag_display'
   import Vue from "vue";
 
   export default Vue.extend({
@@ -209,9 +255,15 @@
         default: true
       },
       'show_new': {
-        default: false
+        default: true
       },
       'show_update': {
+        default: true
+      },
+      'show_tag': {
+        default: true
+      },
+      'multiple': {
         default: false
       },
       'set_from_id': {
@@ -225,7 +277,9 @@
     },
     components: {
       v_new_directory,
-      v_update_directory
+      v_update_directory,
+      tag_select,
+      tag_display
     },
     data() {
       return {
@@ -238,11 +292,22 @@
         date: undefined,
         error_directory_list: {},
         internal_directory_list: undefined,
-        loading_directory_list: false
+        loading_directory_list: false,
+
+        tag_display_refresh_trigger: null
 
       }
     },
+
+    created() {
+
+      if (this.multiple == true) {
+        this.current_directory = []
+      }
+
+    },
     mounted() {
+
       if (this.set_from_id && this.$store.state.project.current.directory_list_filtered) {
         this.current_directory = this.directory_list_filtered.find(
           x => {return x.directory_id == this.set_from_id});
@@ -403,11 +468,13 @@
       },
 
       change_directory() {
-        if (this.$props.set_current_dir_on_change) {
-          this.$store.commit('set_current_directory', this.current_directory)
+
+        if (this.multiple == false){
+          if (this.$props.set_current_dir_on_change) {
+            this.$store.commit('set_current_directory', this.current_directory)
+          }
         }
-        // TODO change type?
-        // ie if just rename may handle differently...
+
         this.$emit('change_directory', this.current_directory)
 
       },

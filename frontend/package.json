@@ -47,7 +47,7 @@
     "mathjs": "^7.5.1",
     "mime": "^2.4.7",
     "mime-types": "^2.1.27",
-    "moment-timezone": "^0.5.33",
+    "moment-timezone": "^0.5.35",
     "mxgraph": "^4.2.2",
     "npm-check-updates": "^4.1.2",
     "object-sizeof": "^1.6.1",
@@ -81,7 +81,7 @@
     "vue-star-rating": "^1.7.0",
     "vue2-dropzone": "^3.6.0",
     "vuedraggable": "^2.24.3",
-    "vuetify": "2.4.7",
+    "vuetify": "2.6.9",
     "vuex": "^3.5.1",
     "vuex-persistedstate": "^2.7.1",
     "wavesurfer.js": "^6.0.4"

@@ -39,7 +39,12 @@ except:
 
 
 try:
+<<<<<<< HEAD
     from .VertexTrainDatasetAction import VertexTrainDatasetAction
     ACTION_RUNNERS_KIND_MAPPER[VertexTrainDatasetAction.kind] = VertexTrainDatasetAction
+=======
+    from .Webhook import WebhookAction
+    ACTION_RUNNERS_KIND_MAPPER[WebhookAction.kind] = WebhookAction
+>>>>>>> 90770c5bf837304d42158ab4d7c916c36b31ddab
 except:
     logger.error(traceback.format_exc())

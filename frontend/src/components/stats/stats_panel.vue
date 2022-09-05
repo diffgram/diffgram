@@ -1,11 +1,13 @@
 <template>
   <div>
+    <!--
     <v-btn data-cy="change_stats_visibility_button"
            @click="change_stats_visibility()"
            text>
-      {{ stats_visibility ? "Hide" : "Show job" }} statistics
+      {{ stats_visibility ? "Hide" : "Show" }} panel
     </v-btn>
-    <v-row v-if="stats_visibility">
+    -->
+    <v-layout v-if="stats_visibility">
       <v-col cols="12" sm="4">
         <v-card class="mx-auto info-style" outlined>
           <h3>Job progress:</h3>
@@ -62,7 +64,7 @@
           </div>
         </v-card>
       </v-col>
-    </v-row>
+    </v-layout>
   </div>
 </template>
 

@@ -87,6 +87,14 @@
           </v-text-field>
 
 
+          <v-checkbox
+            clearable
+            v-model="has_attached_instances_filter"
+            label="Has Attached Annotations"
+            @change="get_input_list"
+          >
+          </v-checkbox>
+
           <!-- Admin only
                as we are still reviewing this feature -->
 
@@ -554,7 +562,7 @@
 
               <td>
 
-                <div v-if="$store.state.user.current.is_super_admin == true">
+                <div v-if="$store.state.user.settings.show_ids == true">
 
                   ID: {{ props.item.id }}
 
@@ -667,6 +675,8 @@
           file_id_filter: null,
           batch_id_filter: null,
           task_id_filter: undefined,
+
+          has_attached_instances_filter: null,
 
           metadata_limit_options: [10, 25, 50, 100, 250, 500],
           metadata_limit: 10,
@@ -865,7 +875,8 @@
               date_to: this.date ? this.date.to : undefined,
               file_id: parseInt(this.file_id_filter),
               batch_id: parseInt(this.batch_id_filter),
-              task_id: task_id_to_use
+              task_id: task_id_to_use,
+              has_attached_instances: this.has_attached_instances_filter
             })
 
             if (response.data.success == true) {

@@ -7,7 +7,7 @@
       data-cy="label_schema_selector"
       :disabled="schema_list_loading || disabled"
       @change="on_change_schema"
-      prepend-icon="mdi-shape-plus"
+      :prepend-icon="icon ? 'mdi-shape-plus' : null"
       item-value="id"
       item-text="name"
       ref="schema_select"
@@ -40,6 +40,10 @@ export default {
     },
     label: {
       default: 'Select Schema'
+    },
+    icon: {
+      type: Boolean,
+      default: true
     }
   },
   async mounted() {

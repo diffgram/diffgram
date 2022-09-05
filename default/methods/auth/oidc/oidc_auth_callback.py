@@ -52,9 +52,6 @@ def api_oidc_callback():
         logger.info('OAuth2 Client Fetched')
         access_token_data = oidc_client.get_access_token_with_code_grant(code = code)
 
-        if 'id_token' in access_token_data:
-            access_token_data.pop('id_token')
-
         logger.info(f'OAuth2 access_token_data: {access_token_data}')
         if not access_token_data:
             log['error']['token'] = 'Failed to get access token. Please check authorization_code and client configuration.'
@@ -62,6 +59,7 @@ def api_oidc_callback():
             return jsonify(log), 400
         access_token = oidc_client.get_access_token_from_jwt(jwt_data = access_token_data)
         logger.info(f'OAuth2 access_token: {access_token}')
+        logger.info(f'Keys: {access_token_data.keys()}')
         user_data = oidc_client.get_user(access_token = access_token)
         logger.info(f'OAuth2 user data: {user_data}')
         if not user_data:

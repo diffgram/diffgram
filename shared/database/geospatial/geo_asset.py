@@ -60,13 +60,13 @@ class GeoAsset(Base):
 
         return point_cloud
 
-    def serialize(self, session, connection_id = None, bucket_name = None):
-
-        from shared.url_generation import blob_regenerate_url
-        blob_regenerate_url(blob_object = self,
-                            session = session,
-                            connection_id = connection_id,
-                            bucket_name = bucket_name)
+    def serialize(self, session, connection_id = None, bucket_name = None, regen_url = True):
+        if regen_url:
+            from shared.url_generation import blob_regenerate_url
+            blob_regenerate_url(blob_object = self,
+                                session = session,
+                                connection_id = connection_id,
+                                bucket_name = bucket_name)
         data = {
             'id': self.id,
             'original_filename': self.original_filename,

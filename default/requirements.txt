@@ -27,11 +27,12 @@ alembic==1.4.2
 sqlalchemy-utils==0.36.6
 azure-storage-blob==12.8.0
 lark
+lark-parser
 SQLAlchemy-serializer==1.4.1
 stripe==2.33.2
 newrelic
 markupsafe==2.0.1
 pika
 python-keycloak
-pyjwt
+pyjwt==1.7.1
 labelbox==3.23.3

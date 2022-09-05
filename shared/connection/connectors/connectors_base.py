@@ -1,6 +1,6 @@
 # OPENCORE - ADD
 from abc import ABC, abstractmethod
-
+from shared.regular import regular_log
 
 def with_connection(f):
     """
@@ -23,6 +23,7 @@ class Connector(ABC):
         self.auth_data = auth_data
         self.config_data = config_data
         self.connection_client = None
+        self.log = regular_log.default()
 
     @abstractmethod
     def connect(self):
