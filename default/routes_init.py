@@ -16,6 +16,7 @@ def do_routes_importing():
     from methods.action.action_manual import api_action_manual
     from methods.action.action_template_get import api_get_action_template
     from methods.action.action_stat import api_action_stat
+    from methods.action.action_run_list import api_action_list_web
 
     from methods.project.project_update import api_project_update
     from methods.source_control.file.file_update import api_file_update
@@ -178,3 +179,6 @@ def do_routes_importing():
     from methods.labels.label_schema_update import api_label_schema_update
 
     from methods.tag.tag import tag_view_by_project
+    from methods.source_control.file.file_get_signed_url import api_file_get_signed_url
+
+    from methods.project.regen_file_stats import api_project_regen_file_stats

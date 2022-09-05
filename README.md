@@ -8,16 +8,14 @@ _________________
 •
 [Diffgram.com](https://diffgram.com/)
 •
-[Join Slack Community](https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg)
+[Request Slack Invite](https://www.jotform.com/form/222377866413058)
 ![](./github_assets/slack.PNG)
 •
 [Enterprise](https://diffgram.com/main/enterprise)
-•
-[Twitter](https://twitter.com/diffgram)
 
 # Support & Community
 1. [Open an issue](https://github.com/diffgram/diffgram/issues) (Technical, bugs, etc)
-2. 😍 [Join us on slack!](https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg)
+2. 😍 [Join us on slack!](https://www.jotform.com/form/222377866413058)
 
 
 # Open Source Training Data Platform
@@ -327,7 +325,7 @@ Latest AI + More
 [Ecosystem](https://diffgram.readme.io/docs/ecosystem)
 
 # Contributing
-We welcome contributions! Please see our [contributing documentation](https://diffgram.readme.io/docs/contributing-guide).
+We welcome contributions! Please see our [contributing documentation](https://diffgram.readme.io/docs/contribute).
 
 # Architecture & Design Docs
 We plan to release more internal architecture docs over time. Please see the [general docs](https://diffgram.readme.io/docs) in the mean time.

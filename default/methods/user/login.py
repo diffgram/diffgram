@@ -178,6 +178,9 @@ def first_stage_login_success(log,
 
     if user.otp_enabled is None or user.otp_enabled is False:
         if settings.USE_OAUTH2:
+            if not jwt:
+                log['error']['login'] = 'OAUTH2 Login is enabled. Cannot use default login. Please use SSO or contact your admin.'
+                return jsonify(log=log), 400
             set_jwt_in_session(jwt)
         else:
             setSecureCookie(user)

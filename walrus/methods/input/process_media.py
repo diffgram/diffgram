@@ -1693,12 +1693,20 @@ class Process_Media():
         self.try_to_commit()
 
         if log_has_error(self.log):
-            return
+            self.input.status = 'failed'
+            logger.error(f"failed to process connection upload. Log: {self.log}")
+            logger.error(self.log)
+            self.input.update_log = self.log
 
         self.input.file = self.create_image_file_from_input()
 
         self.populate_new_models_and_runs()
 
+        if log_has_error(self.log):
+            self.input.status = 'failed'
+            logger.error(f"failed to generation URL. Log: {self.log}")
+            logger.error(self.log)
+            self.input.update_log = self.log
         # Handle status checks
         if self.input.media_type == 'image':
             if self.input.status != "failed":  # if we haven't already set a status
@@ -1742,19 +1750,28 @@ class Process_Media():
             Adds an image file into diffgram from self.input data.
         :return:
         """
-        self.new_image = self.create_image_object_from_input()
-        if self.project:
-            self.project_id = self.project.id
+        try:
+            self.new_image = self.create_image_object_from_input()
+            if self.project:
+                self.project_id = self.project.id
 
-        strategy = self.determine_image_upload_strategy()
-        if strategy == "connection_processing":
-            self.connection_image_processing()
-        else:
-            self.standard_image_processing()
+            strategy = self.determine_image_upload_strategy()
+            if strategy == "connection_processing":
+                self.connection_image_processing()
+            else:
+                self.standard_image_processing()
 
-        # Refresh Previews of project
-        self.project.set_cache_key_dirty('preview_file_list')
-        return True
+            # Refresh Previews of project
+            self.project.set_cache_key_dirty('preview_file_list')
+            return True
+        except Exception as e:
+            msg = traceback.format_exc()
+            logger.error(f'Error on process_one_image_file {msg}')
+            self.input.status = 'failed'
+            self.log['error']['process_one_image'] = str(e)
+            self.log['error']['trace'] = msg
+            self.input.update_log = self.log
+            return False
 
     def __get_allowed_model_ids(self):
         models = Model.list(session = self.session, project_id = self.project_id)

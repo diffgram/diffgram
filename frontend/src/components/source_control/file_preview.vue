@@ -1,12 +1,12 @@
 <template>
 
-  <v-card class="ma-2"
-          :elevation="0"
-          style="background: #f6f7f8"
-          :height="file_preview_height">
+  <div class="ma-1 pa-0">
 
-    <v-card-text class="pa-0 ma-0 drawable-wrapper" v-if="image_bg"
-                 @click="view_file_details(undefined)" >
+    <div 
+      class="pa-0 ma-0 drawable-wrapper"
+      :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
+      ref="file_card"
+    >
       <drawable_canvas
         v-if="image_bg"
         ref="drawable_canvas"
@@ -19,8 +19,7 @@
         :refresh="refresh"
         :canvas_wrapper_id="`canvas_wrapper__${file.id}__${file_preview_width}__${file_preview_height}`"
         :canvas_id="`canvas__${file.id}__${file_preview_width}__${file_preview_height}`"
-
-                       >
+      >
 
         <instance_list
           slot-scope="props"
@@ -33,13 +32,18 @@
           :draw_mode="false"
           :canvas_transform="props.canvas_transform"
           slot="instance_drawer"
-        >
-        </instance_list>
-
+        />
 
       </drawable_canvas>
-    </v-card-text>
-    <v-card-text class="pa-0 ma-0" v-if="file.video">
+
+      <v-skeleton-loader  
+        v-else 
+        type="image" 
+        :width="file_preview_width" 
+        :height="file_preview_height"
+      />
+    </div>
+    <div class="pa-0 ma-0" v-if="file.video" ref="file_card">
       <video_drawable_canvas
         :allow_zoom="false"
         :preview_mode="true"
@@ -61,8 +65,8 @@
         @update_instance_list="set_video_instance_list"
       >
       </video_drawable_canvas>
-    </v-card-text>
-  </v-card>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -93,6 +97,12 @@
       },
       'file_preview_width': {
         default: 440
+      },
+      'selectable': {
+        default: false
+      },
+      'selected': {
+        default: false
       },
       'file_preview_height': {
         default: 325
@@ -137,15 +147,29 @@
     created() {
       this.prepare_filtered_instance_list();
     },
+
     async mounted() {
       if (this.$props.file) {
-        await this.set_bg(this.$props.file);
+        this.set_bg(this.$props.file);
       }
+      if(this.$refs.file_card){
+        if(this.$props.selectable){
+          this.$refs.file_card.addEventListener('dblclick', this.view_file_details)
+          this.$refs.file_card.addEventListener('click', this.select_file)
+        }
+        else{
+          this.$refs.file_card.addEventListener('click', this.view_file_details)
+        }
+      }
+
     },
     watch: {
-      file: function (newFile, oldFile) {
-        this.set_bg(newFile);
-        this.prepare_filtered_instance_list();
+      file: {
+        deep: true,
+        handler: function(new_val, old_val){
+          this.set_bg(new_val);
+          this.prepare_filtered_instance_list();
+        }
       },
       base_model_run: function () {
 
@@ -159,6 +183,10 @@
       }
     },
     methods: {
+      select_file: function(){
+
+        this.$emit('file_selected', this.$props.file)
+      },
       set_video_instance_list: function(new_list){
         this.video_instance_list = new_list;
         this.prepare_filtered_instance_list();
@@ -245,6 +273,7 @@
           if (!newFile) {
             this.image_bg = undefined;
             this.refresh = new Date();
+            resolve();
           }
           else {
             if (newFile.image) {

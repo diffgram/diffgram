@@ -19,6 +19,7 @@ class ActionRun(Base):
     file_id = Column(BIGINT, ForeignKey('file.id'))
     file = relationship("File", foreign_keys = [file_id])
 
+    status = Column(String())
     action_id = Column(BIGINT, ForeignKey('action.id'))
     action = relationship("Action", foreign_keys = [action_id])
 
@@ -63,7 +64,7 @@ class ActionRun(Base):
 
     # Output of action, usually caches the output of latest ActionRun.
     output = Column(MutableDict.as_mutable(JSONB))
-    
+
     # Reuse image class setup for clarity
     overlay_rendered_image_id = Column(Integer, ForeignKey('image.id'))  # new feb 12 2019
     overlay_rendered_image = relationship("Image",
@@ -140,8 +141,12 @@ class ActionRun(Base):
             return query.limit(limit).all()
 
     @staticmethod
-    def list_by_action_id(session, action_id):
+    def list_by_action_id(session, action_id, limit = None, offset = None):
         query = session.query(ActionRun).filter(ActionRun.action_id == action_id)
+        if limit:
+            query = query.limit(limit)
+        if offset:
+            query = query.offset(offset)
         return query.all()
 
     def serialize_action_run(self):
@@ -150,32 +155,18 @@ class ActionRun(Base):
             'output': self.output
         }
 
-    def serialize(self,
-                  session = None):
+    def serialize(self, session = None):
 
-        # Question, do we want to include
-        # Other information about the action?
-        # ie serialize the "original" action too
-        # so perosn can see how it flowed through system?
-
-        # session if needed to regen urls
-        self.session = session
-
-        event = {
+        action_run_data = {
             'id': self.id,
             'kind': self.kind,
+            'output': self.output,
+            'workflow_id': self.workflow_id,
+            'action_id': self.action_id,
             'time_created': self.time_created
         }
 
-        # Get kind specific attributes
-        kind_specific = self.kind_specific_serialize_strategy.get(
-            self.kind)
-        if kind_specific is None:
-            return "class Action Event Serialize Error. Error, no kind"
-
-        event[self.kind] = kind_specific(self)
-
-        return event
+        return action_run_data
 
     def serialize_file(self):
         pass

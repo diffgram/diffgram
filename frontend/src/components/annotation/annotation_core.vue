@@ -67,6 +67,7 @@
             @next_issue_task="next_issue_task(task)"
             @refresh_all_instances="refresh_all_instances"
             @task_update_toggle_deferred="task_update('toggle_deferred')"
+            @task_update_toggle_incomplete="task_update('incomplete')"
             @complete_task="complete_task()"
             @clear__new_and_no_ids="clear__new_and_no_ids()"
             @new_tag_instance="insert_tag_type()"
@@ -522,9 +523,15 @@
                  class="d-flex flex-column justify-center align-center"
                  style="min-width: 750px; min-height: 750px; border: 1px solid #e0e0e0">
               <v-icon size="450">mdi-download-off</v-icon>
-              <div v-if="file && file.image">
-               <p>
-                 URL Attempted To be Used: {{file.image.url_signed ? file.image.url_signed : "null"}}
+              <div v-if="file && file.image" style="max-width: 500px">
+               <p class="primary--text font-weight-medium" >
+                 URL Attempted To be Used:
+                 <div>
+                  <a target="_blank"  v-if="file.image.url_signed" class="secondary--text font-weight-medium" :href="file.image.url_signed">
+                    {{file.image.url_signed ? file.image.url_signed : "null"}}
+                  </a>
+                  <p v-else>   {{file.image.url_signed ? file.image.url_signed : "null"}}</p>
+                  </div>
                </p>
               </div>
               <v_error_multiple :error="file_cant_be_accessed_error"> </v_error_multiple>
@@ -1111,8 +1118,14 @@ export default Vue.extend({
       handler(newVal, oldVal) {
         if (newVal != oldVal) {
           this.on_change_current_file();
+        } else{
+          if(newVal.image.url_signed != oldVal.image.url_signed){
+            this.current_file_updates(newVal);
+          }
         }
+
       },
+      deep: true
     },
     task: {
       handler(newVal, oldVal) {
@@ -2979,6 +2992,7 @@ export default Vue.extend({
           if(this.$refs.toolbar){
             this.$refs.toolbar.instance_type = this.instance_type;
           }
+          this.set_default_tool()
 
         }
       }
@@ -3460,6 +3474,7 @@ export default Vue.extend({
       for (const [key, value] of Object.entries(this.$store.state.user.settings)) {
         this.label_settings[key] = value
       }
+
     },
 
     update_window_size_from_listener() {
@@ -3591,7 +3606,16 @@ export default Vue.extend({
       this.start_autosave(); // created() gets called again when the task ID changes eg "go to next"
 
     },
-
+    set_default_tool: function(){
+      // Add Default Selected tool.
+      let last_selected_tool = this.$store.getters.get_last_selected_tool
+      if (!this.filtered_instance_type_list.map(elm => elm.name).includes(last_selected_tool)){
+        return
+      }
+      if(last_selected_tool){
+        this.$refs.toolbar.set_instance_type(last_selected_tool)
+      }
+    },
     fetch_model_run_list: async function () {
       if (!this.$props.model_run_id_list) {
         return;
@@ -3685,6 +3709,7 @@ export default Vue.extend({
       this.current_polygon_point_list = [];
       this.cuboid_face_hover = undefined;
       this.$store.commit("finish_draw");
+      this.$store.commit("set_last_selected_tool", this.instance_type);
       this.set_keypoints_instance_draw_mode();
     },
 
@@ -7868,6 +7893,13 @@ export default Vue.extend({
             this.snackbar_success_text = "Deferred for review. Moved to next.";
 
             this.trigger_task_change("next", this.$props.task, true);
+          }
+          if(mode === 'incomplete'){
+            this.task.status = 'in_progress'
+            this.$store.commit('display_snackbar', {
+              text: 'Task marked as incomplete.',
+              color: 'primary'
+            })
           }
         })
         .catch((error) => {

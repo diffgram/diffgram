@@ -27,7 +27,7 @@ newrelic
 markupsafe==2.0.1
 pika
 python-keycloak
-pyjwt
+pyjwt==1.7.1
 opencv-python==4.5.5.64
 torch==1.11.0
 torchvision==0.12.0

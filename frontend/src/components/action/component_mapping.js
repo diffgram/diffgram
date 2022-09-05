@@ -3,7 +3,11 @@ import img_properties_outliers_config from "./action_configurations/deepchecks/i
 import export_action_config from "./action_configurations/export/export_action_config";
 import AzureTextAnalyticsSentimentAction from "./action_configurations/azure/AzureTextAnalyticsSentimentAction";
 import hf_zero_shot from "./action_configurations/hugging_face/HuggingFaceZeroShot.vue"
+<<<<<<< HEAD
 import VertexTrainDatasetAction from "./action_configurations/VertexTrainDatasetAction/VertexTrainDatasetAction.vue"
+=======
+import Webhook from "./action_configurations/Webhook/Webhook.vue"
+>>>>>>> 90770c5bf837304d42158ab4d7c916c36b31ddab
 //IMPORTREPLACE
 
 export default {
@@ -12,6 +16,10 @@ export default {
     'TaskTemplateActionRunner': create_task_action_config,
     'DeepcheckImagePropertyOutliers': img_properties_outliers_config,
     'hf_zero_shot': hf_zero_shot,
+<<<<<<< HEAD
     'VertexTrainDatasetAction': VertexTrainDatasetAction,
+=======
+    'Webhook': Webhook,
+>>>>>>> 90770c5bf837304d42158ab4d7c916c36b31ddab
     //DECLAREREPLACE
   }
