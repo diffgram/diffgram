@@ -15,7 +15,7 @@ from shared.database.permissions.roles import RoleMemberObject, Role, ValidObjec
 
 # revision identifiers, used by Alembic.
 revision = 'c6094792feeb'
-down_revision = '73fd663f4914'
+down_revision = 'f098a0aa6959'
 branch_labels = None
 depends_on = None
 
