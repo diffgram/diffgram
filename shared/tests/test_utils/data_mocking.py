@@ -810,6 +810,7 @@ def create_project_with_context(context_data, session):
     user = register_user(
         {'username': f"project_owner_{project_string_id}",
          'email': f"test{project_string_id}@test.com",
+         'project_roles': ['admin'],
          'password': 'diffgram123'},
         session
     )

@@ -14,22 +14,22 @@ class BasePolicyEnforcer:
         self.project = project
         self.policy_engine = policy_engine
 
-    def __check_member_has_default_project_role(self, member: Member, object_type: str) -> PermissionResultObjectSet:
+    def __check_member_has_default_project_role(self, member: Member, object_type: Enum) -> PermissionResultObjectSet:
         perm_result: PermissionResult = self.policy_engine.member_has_any_project_role(member = member,
                                                                                        project_id = self.project.id,
                                                                                        roles = ['viewer', 'editor',
                                                                                                 'admin'])
         result = PermissionResultObjectSet(allowed_object_id_list = [],
-                                           object_type = object_type,
+                                           object_type = object_type.name,
                                            member_id = member.id,
                                            allow_all = perm_result.allowed)
         return result
 
-    def has_perm(self, member_id: int, object_type: str, object_id: int, perm: str) -> PermissionResult:
+    def has_perm(self, member_id: int, object_type: str, object_id: int, perm: Enum) -> PermissionResult:
         role_member_objects = self.session.query(RoleMemberObject).join(Role,
                                                                         Role.id == RoleMemberObject.role_id).filter(
             RoleMemberObject.object_type == object_type,
-            Role.permissions_list.any(perm),
+            Role.permissions_list.any(perm.value),
             RoleMemberObject.member_id == member_id,
             RoleMemberObject.object_id == object_id
         )

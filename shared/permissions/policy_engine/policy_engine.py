@@ -37,36 +37,37 @@ class PolicyEngine:
         self.session = session
         self.project = project
 
-    def get_policy_enforcer(self, object_type: str) -> 'BasePolicyEnforcer':
+    def get_policy_enforcer(self, object_type: Enum) -> 'BasePolicyEnforcer':
         from shared.permissions.policy_engine.base_policy_enforcer import BasePolicyEnforcer
         from shared.permissions.policy_engine.dataset_policy_enforcer import DatasetPolicyEnforcer
         POLICY_ENFORCERS_MAPPERS = {
-            'dataset': DatasetPolicyEnforcer
+            'WorkingDir': DatasetPolicyEnforcer
         }
-        enforcer_class = POLICY_ENFORCERS_MAPPERS.get(object_type)
+        enforcer_class = POLICY_ENFORCERS_MAPPERS.get(object_type.name)
         if enforcer_class is None:
             enforcer_class = BasePolicyEnforcer
         return enforcer_class
 
     def member_has_perm(self,
                         member: Member,
-                        object_type: str,
+                        object_type: Enum,
                         object_id: int,
                         perm: Enum) -> PermissionResult:
         if member.user and member.user.is_super_admin:
             result = PermissionResult(
                 allowed = True,
                 member_id = member.id,
-                object_type = object_type,
+                object_type = object_type.name,
                 object_id = object_id
             )
             return result
+        print('NO DEFAULTSSS', member.id)
         PolicyEnforcer = self.get_policy_enforcer(object_type = object_type)
-        enforcer = PolicyEnforcer(session = self.session, project = self.project)
+        enforcer = PolicyEnforcer(session = self.session, project = self.project, policy_engine = self)
         perm_result = enforcer.has_perm(member_id = member.id,
-                                        object_type = object_type,
+                                        object_type = object_type.name,
                                         object_id = object_id,
-                                        perm = perm.name)
+                                        perm = perm)
         return perm_result
 
     def member_has_any_project_role(self,
@@ -74,6 +75,7 @@ class PolicyEngine:
                                     roles: List[str],
                                     project_id: int) -> PermissionResult:
         from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
+        print('AAAA', roles, project_id, member.id)
         if not roles:
             return False
         role_member_objects = self.session.query(RoleMemberObject).join(Role,
@@ -83,6 +85,7 @@ class PolicyEngine:
             RoleMemberObject.object_id == project_id,
             RoleMemberObject.member_id == member.id
         )
+        print('role_member_objects', role_member_objects.all())
         allowed = role_member_objects.first() is not None
         if member.user and member.user.is_super_admin:
             allowed = True
@@ -96,7 +99,7 @@ class PolicyEngine:
 
     def get_allowed_object_id_list(self,
                                    member: Member,
-                                   object_type: 'ValidObjectTypes',
+                                   object_type: Enum,
                                    perm: Enum) -> PermissionResultObjectSet:
 
         PolicyEnforcer = self.get_policy_enforcer(object_type = object_type)

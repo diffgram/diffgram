@@ -22,6 +22,7 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
                     {'username': 'Test',
                      'email': 'test@test.com',
                      'password': 'diffgram123',
+                     'project_roles': ['admin'],
                      }
                 ]
             },
@@ -33,15 +34,70 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
         self.member = self.auth_api.member
         self.policy_engine = PolicyEngine(session = self.session, project = self.project)
 
+    def test_has_perm(self):
+        user = data_mocking.register_user({
+            'username': 'test_user',
+            'email': 'test@test.com',
+            'password': 'diffgram123',
+            'project_string_id': self.project.project_string_id,
+            'project_roles': ['admin'],
+            'member_id': self.member.id
+        }, self.session)
+        member2 = data_mocking.register_member(user, session = self.session)
+        ds1 = data_mocking.create_directory({
+            'project': self.project,
+            'user': self.project_data['users'][0],
+            'files': []
+        }, self.session)
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = DatasetPermissions.dataset_view,
+            object_id = ds1.id,
+            object_type = ValidObjectTypes.dataset
+        )
+        self.assertEqual(result_perm.allowed, False)
+        RoleMemberObject.new(
+            session = self.session,
+            object_id = ds1.id,
+            object_type = ValidObjectTypes.dataset,
+            default_role_name = DatasetDefaultRoles.dataset_viewer,
+            member_id = member2.id
+        )
+        self.session.commit()
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = DatasetPermissions.dataset_view,
+            object_id = ds1.id,
+            object_type = ValidObjectTypes.dataset
+        )
+        self.assertEqual(result_perm.allowed, True)
+
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = DatasetPermissions.dataset_edit,
+            object_id = ds1.id,
+            object_type = ValidObjectTypes.dataset
+        )
+        self.assertEqual(result_perm.allowed, False)
+
+        result_perm = self.policy_engine.member_has_perm(
+            member = self.member,
+            perm = DatasetPermissions.dataset_edit,
+            object_id = ds1.id,
+            object_type = ValidObjectTypes.dataset
+        )
+        self.assertEqual(result_perm.allowed, True)
+
     def test_get_allowed_object_id_list(self):
         user = data_mocking.register_user({
             'username': 'test_user',
             'email': 'test@test.com',
             'password': 'diffgram123',
             'project_string_id': self.project.project_string_id,
-            'project_roles': ['editor'],
+            'project_roles': ['admin'],
             'member_id': self.member.id
         }, self.session)
+
         member2 = data_mocking.register_member(user, session = self.session)
         ds1 = data_mocking.create_directory({
             'project': self.project,
@@ -79,6 +135,7 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
         )
         self.assertFalse(result.allow_all)
         self.assertEqual(result.allowed_object_id_list, [])
+
         # Assign role to 1 dataset
         RoleMemberObject.new(
             session = self.session,
@@ -95,3 +152,21 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
         self.assertFalse(result.allow_all)
         self.assertEqual(len(result.allowed_object_id_list), 1)
         self.assertEqual(result.allowed_object_id_list[0], ds1.id)
+
+        # Assign role to revoked access dataset
+        RoleMemberObject.new(
+            session = self.session,
+            object_id = restricted_ds.id,
+            object_type = ValidObjectTypes.dataset,
+            default_role_name = DatasetDefaultRoles.dataset_editor,
+            member_id = member2.id
+        )
+
+        result = self.policy_engine.get_allowed_object_id_list(
+            member = member2,
+            object_type = ValidObjectTypes.dataset,
+            perm = DatasetPermissions.dataset_edit,
+        )
+        self.assertFalse(result.allow_all)
+        self.assertEqual(len(result.allowed_object_id_list), 1)
+        self.assertEqual(result.allowed_object_id_list[0], restricted_ds.id)

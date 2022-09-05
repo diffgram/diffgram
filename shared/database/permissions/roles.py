@@ -9,6 +9,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from enum import Enum
 from sqlalchemy.orm.session import Session
 from typing import List
+from sqlalchemy import or_, and_
 logger = get_shared_logger()
 
 
@@ -46,10 +47,11 @@ class Role(Base, SerializerMixin):
     @staticmethod
     def list_from_user(session: Session, member_id: int, project_id: int) -> List['Roles']:
         roles = session.query(Role).distinct(Role.id).join(RoleMemberObject, Role.id == RoleMemberObject.role_id).filter(
-            RoleMemberObject.role_id == member_id,
+            RoleMemberObject.member_id == member_id,
             Role.project_id == project_id,
         ).all()
         return roles
+
 
     @staticmethod
     def new(session, project_id, name, permissions_list = None, add_to_session = True, flush_session = True):
