@@ -10,7 +10,8 @@ const default_user_settings = {
   last_selected_annotation_tool: 'box',
   studio_box_info: true,
   studio_left_nav_width: 350,
-  smooth_canvas: true
+  smooth_canvas: true,
+  show_ids: false
 }
 
 // TODO should we use a dic object here for some of user properties?

@@ -19,7 +19,6 @@ from shared.database.tag.tag import JobTag
 @routes.route('/api/v1/job/list',
               methods = ['POST'])
 def job_list_api():
-
     spec_list = [{"metadata": dict}]
 
     log, input, untrusted_input = regular_input.master(request = request,
@@ -28,10 +27,9 @@ def job_list_api():
         return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
- 
         Job_list, metadata = job_view_core(session = session,
                                            metadata_proposed = input['metadata'])
-     
+
         log['success'] = True
         return jsonify(Job_list = Job_list,
                        metadata = metadata,
@@ -105,7 +103,6 @@ def job_view_core(session,
         if builder_or_trainer_mode == "trainer" and job_type == "Exam":
             query = query.filter(Job.is_template == True)
 
-
     if meta["instance_type"]:
         if meta["instance_type"] != "All":
             query = query.filter(Job.instance_type == meta["instance_type"])
@@ -120,7 +117,7 @@ def job_view_core(session,
 
         # Status can be seperate from project...
         if meta["status"]:
-            if meta["status"] != "All":
+            if meta["status"] != "All" and (type(meta['status']) == list and 'All' not in meta['status']):
                 if not isinstance(meta["status"], list):
                     meta["status"] = [meta["status"]]
                 query = query.filter(Job.status.in_(meta["status"]))
@@ -131,11 +128,14 @@ def job_view_core(session,
     if builder_or_trainer_mode == "trainer":
         query = query.filter(Job.status.in_(("active", "complete")))
 
+    query = query.filter(Job.status != 'archived')
     query = add_name_search_filter(query, meta)
 
     query = query.order_by(Job.time_created.desc())
 
-    query = query.limit(meta["limit"])
+    if meta.get("limit") is not None:
+        query = query.limit(meta["limit"])
+
     query = query.offset(meta["start_index"])
 
     # Avoid multiple queries on serializer by fetching joined data
@@ -143,13 +143,14 @@ def job_view_core(session,
     query = query.options(joinedload(Job.label_schema))
 
     job_list = query.all()
-
     if output_mode == "serialize":
 
         for job in job_list:
 
             if meta["data_mode"] == "name_and_id_only":
                 serialized = job.serialize_minimal_info()
+            elif meta["data_mode"] == "with_tags":
+                serialized = job.serialize_with_tags(session = session)
             else:
                 serialized = job.serialize_for_list_view(session = session)
 
@@ -196,8 +197,6 @@ def default_metadata(meta_proposed):
 
     meta = {}
 
-    meta['limit'] = 50
-
     meta["start_index"] = 0
 
     meta["my_jobs_only"] = meta_proposed.get("my_jobs_only", None)
@@ -224,23 +223,7 @@ def default_metadata(meta_proposed):
     if meta["share_type"] not in ["market", "project", "org"]:
         meta["share_type"] = "project"
 
-    """
-    # WIP WIP WIP
-
-    #meta['name'] = meta_proposed.get("name", None)
-    meta_limit_proposed = meta_proposed.get('limit', None)
-        
-    if meta_limit_proposed:
-        if meta_limit_proposed <= server_side_limit:
-            meta["limit"] = meta_limit_proposed
-        else:
-            meta["limit"] = server_side_limit
-                    
-    request_next_page = meta_proposed.get('request_next_page', None)
-
-    if request_next_page is True and meta_proposed.get('previous', None):
-        meta['image']["start_index"] = int(meta_proposed['previous']['image'].get('end_index', 0))
-    """
+    meta["limit"] = meta_proposed.get('limit', 50)
 
     return meta
 

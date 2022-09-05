@@ -12,21 +12,10 @@ from shared.regular import regular_log
 from shared.database.user import UserbaseProject
 from shared.permissions.policy_engine.policy_engine import PolicyEngine, PermissionResultObjectSet
 from shared.database.source_control.dataset_perms import DatasetPermissions
+from shared.database.tag.tag import Tag
 
 class WorkingDir(Base):
     """
-    A working directory is a very important part of the system
-
-    It is distinct from a version, in that it's mutable.
-
-    Files may be changed etc.
-
-    To avoid confusion a user's working directory should be the single source of truth of what they
-    are wanting to commit
-
-
-    # TODO rename to "Directory"... as general concept...
-
 
     """
     __tablename__ = 'working_dir'
@@ -47,9 +36,6 @@ class WorkingDir(Base):
     access_type = Column(String(), default='project')
 
     count_changes = Column(Integer, default = 0)
-    # TODO
-    # Option to share a working directory?
-    # Feel like lose some of advantages though...
 
     user_id = Column(Integer, ForeignKey('userbase.id'))
     user = relationship("User")
@@ -63,16 +49,13 @@ class WorkingDir(Base):
 
     export_list = relationship("Export")
 
-    # The "map" trend  is actually a really good thing
-    # As it's building up a map that we can use
-    # ie for video to reduce db calls by large amount.
     label_file_colour_map = Column(MutableDict.as_mutable(JSONEncodedDict),
                                    default = {})
 
     jobs_to_sync = Column(MutableDict.as_mutable(JSONEncodedDict), default = {'job_ids': []})
 
     # External ID's for referencing on integrations like Labelbox, Supervisely, etc.
-    default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))  # TODO: add to production
+    default_external_map_id = Column(BIGINT, ForeignKey('external_map.id'))
     default_external_map = relationship("ExternalMap",
                                         uselist = False,
                                         foreign_keys = [default_external_map_id])
@@ -108,15 +91,6 @@ class WorkingDir(Base):
         if project_default_dir:
             working_dir.type = 'project_default'
 
-        # working_dir.branch_id = branch.id
-
-        # Since this is created at project creation
-        # There is no label list
-        # Labels are applied to a new version
-
-        # Could use this if you wanted to copy non committed files, otherwise it's a blank slate
-        # This is an issue if you go to edit something
-
         session.add(working_dir)
         session.flush()
 
@@ -127,8 +101,6 @@ class WorkingDir(Base):
 
             for file in file_list:
 
-                # Don't add older versions of files
-                # TODO use time stamp instead here?
                 if file.child_primary_id:
                     continue
 
@@ -267,21 +239,11 @@ class WorkingDir(Base):
 
     def serialize(self):
 
-        # TODO clarify why branch here
-        branch = None
-
-        # hide returning branch
-        # while not using it / only for beta features?
-        # this could break some of the source control side
-        # if self.branch:
-        #	branch = self.branch.serialize(),
-
         return {
             'id': self.id,
             'directory_id': self.id,  # hack to remove at some point
             'nickname': self.nickname,
             'jobs_to_sync': self.jobs_to_sync,
-            # 'branch' : branch,
             'has_changes': self.has_changes,
             'created_time': self.created_time.isoformat()
         }
@@ -289,7 +251,6 @@ class WorkingDir(Base):
     def serialize_with_labels(self):
         return {
             'id': self.id,
-            # 'branch' : self.branch.serialize(),
             'has_changes': self.has_changes,
             'label_list': self.build_label_list()
         }
@@ -303,12 +264,6 @@ class WorkingDir(Base):
             WorkingDirFileLink.working_dir_id == self.id,
             WorkingDirFileLink.type == file_type).count()
 
-    """
-    See File file_view_core for serialization methods
-    (Logic is centralized there)
-    We don't typically searilize a working dir directly since there
-    are so many variables to consider.
-    """
 
     def verify_directory_in_project(session, project, directory_id):
         """
@@ -394,18 +349,6 @@ class WorkingDir(Base):
                             project_id = None,
                             project_default = False
                             ):
-        """
-        Create a new directory
-
-        Trys to make as few assumptions as possible about directory use
-
-        This may seem a little overbearing but likely in future other things we will want
-        to add to blank directory and would prefer to include the stuff here
-        rather then directly calling Dir()???
-
-        """
-        start_time = time.time()
-
         working_dir = WorkingDir(
             nickname = nickname,
             project_id = project_id,
@@ -417,10 +360,37 @@ class WorkingDir(Base):
         session.add(working_dir)
         session.flush()
 
-        end_time = time.time()
-        # print("new working dir in", end_time - start_time)
-
         return working_dir
+
+
+    def add_tags(
+            self,
+            tag_list,
+            session,
+            project,
+            log):
+
+        if len(tag_list) > 100: 
+            log['error']['tag_list_length'] = f"Over limit, tags sent: {len(tag_list)}"
+            return log
+
+        for name in tag_list:
+
+            tag = Tag.get_or_new(
+                name = name,
+                project_id = project.id,
+                session = session)
+
+            if tag.id is None:
+                session.add(tag)
+
+            dataset_tag = tag.add_to_dataset(dataset_id=self.id, session=session)
+
+            session.add(dataset_tag)
+            log['success'] = True
+            #log['dataset_tag'] = dataset_tag.serialize()
+
+        return log
 
 
 class WorkingDirFileLink(Base):
@@ -432,8 +402,6 @@ class WorkingDirFileLink(Base):
 
     TODO should we have project in here too
     Now that we generally restrict directories to have a project?
-
-
     """
 
     working_dir_id = Column(Integer, ForeignKey('working_dir.id'), primary_key = True)
@@ -520,8 +488,6 @@ class WorkingDirFileLink(Base):
     # TODO too many options here, gotta maybe think about a way to
     # break this up.
 
-    # file list def list  files
-    # def file list
     @staticmethod
     def file_list(session,
                   working_dir_id = None,

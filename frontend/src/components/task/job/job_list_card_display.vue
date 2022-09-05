@@ -63,18 +63,27 @@
         </v-card-title>
 
         <v-card-subtitle>
+          <v-layout>
+            <div class="pt-1">
+              <v-chip small :color="status_color(job.status)">
+                {{job.status | capitalize }}
+              </v-chip>
+            </div>
 
-          <v-row class="" dense v-if="job.label_schema">
-            <v-col cols="12" >
-              <v-chip small
-                      @click="$router.push(`/project/${project_string_id}/labels?schema_id=${job.label_schema.id}`)"
-                      class="schema-chip"
-                      color="primary"
-                      outlined ><v-icon small>mdi-shape-plus</v-icon> {{job.label_schema.name | truncate(25)}}</v-chip>
-            </v-col>
-          </v-row>
-          <v-chip :color="status_color(job.status)" x-small>{{job.status | capitalize }}</v-chip>
-          <span>Created: {{job.time_created | moment("DD-MM-YYYY H:mm:ss a")}}</span>
+            <v-spacer></v-spacer>
+
+            <v-tooltip bottom color="info">
+              <template v-slot:activator="{ on }">
+                <v-chip v-on="on" color="white" small text-color="primary">
+                  {{job.time_created | moment("DD-MMM")}}
+                </v-chip>
+              </template>
+
+              Created: {{job.time_created | moment("H:mm:ss DD-MM-YYYY")}}
+            </v-tooltip>
+
+          </v-layout>
+
         </v-card-subtitle>
         <v-card-text class="">
           <v-container fluid class="d-flex flex-column pa-0">
@@ -117,6 +126,30 @@
               </v-col>
             </v-row>
 
+            <v-row v-if="job.label_schema">
+              <v-col>
+                <div class="pa-2">
+                  <v-chip small
+                          @click="$router.push(`/project/${project_string_id}/labels?schema_id=${job.label_schema.id}`)"
+                          class="schema-chip"
+                          color="primary"
+                          outlined >
+                  <v-icon left small>mdi-shape-plus</v-icon>
+                    {{job.label_schema.name | truncate(25)}}
+                  </v-chip>
+                </div>
+              </v-col>
+            </v-row>
+
+
+            <tag_display_and_select
+                :project_string_id="project_string_id"
+                :object_id="job.id"
+                :object_type="'job'"
+            >
+            </tag_display_and_select>
+
+
             <v-row class="mb-4" dense>
               <v-col cols="12" class="d-flex pa-0" v-if="job.member_list_ids.length > 0">
                 <v_user_icon v-if="member_id != 'all'"
@@ -131,7 +164,7 @@
             </v-row>
 
             <v-row class="pl-4 d-flex" style="height: 100%">
-              <!-- Copy and paste from job list but changed to job-->
+
               <v-col cols="12">
                 <div  style="max-width: 200px" class="d-flex flex-wrap"
                       v-if="job && job.attached_directories_dict && job.attached_directories_dict.attached_directories_list">
@@ -261,17 +294,20 @@
 
 </template>
 
-<script lang="ts">
+<script >
   import Vue from "vue";
   import axios from '../../../services/customInstance';
   import job_pipelines_dialog from '../job/job_pipelines_dialog';
   import label_select_only from '../../label/label_select_only.vue'
+  import tag_display_and_select from '@/components/tag/tag_display_and_select.vue'
+
 
   export default Vue.extend({
       name: 'job_list_card_display',
       components: {
         job_pipelines_dialog,
-        label_select_only
+        label_select_only,
+        tag_display_and_select
       },
       props: {
         'project_string_id': {
@@ -354,6 +390,8 @@
         }
       },
       methods: {
+
+
         resync_job: async function(job){
           try {
             this.loading_resync_job = true;

@@ -37,16 +37,15 @@ describe('Annotate Files Tests', () => {
         }
         cy.get('[data-cy="file_explorer_button"]').click({force: true});
         cy.get('[data-cy="tab__Dataset Explorer"]').click({force: true});
+        cy.get('[data-cy="advanced-query-settings"]').click({force: true});
         cy.wait(500)
         cy.get('[data-cy=query_input_field]').clear()
         cy.wait(500)
-        cy.get('[data-cy=query_input_field]').type('labels.apple > 1 {enter}')
+        cy.get('[data-cy=query_input_field]').clear().type('labels.apple > 1 {enter}')
         cy.wait(500)
         cy.get('[data-cy=query_input_field]').blur()
         cy.wait(1000);
         cy.get('[data-cy=query_input_field]').focus();
-        cy.wait(1000);
-        cy.get('[data-cy=execute_query_button]').click({force: true});
 
         cy.wait(2500);
         cy.get('.file-preview').its('length').should('be.gte', 1)

@@ -2,15 +2,16 @@
 
 
     <diffgram_select
+      :multiple="true"
       :item_list="icon_list"
       v-model="item_internal"
-      :label="label"    
+      :label="label"
       :disabled="disabled"
       @input="$emit('input', $event)"
       @change="$emit('change', $event)"
             >
   </diffgram_select>
-  
+
 
 </template>
 
@@ -19,7 +20,7 @@
 /*
  *  Context that we may want same icons and styling
  *  BUT difference labels and contexts for usage (ie scope vs share type vs ...)
- *  
+ *
  *  Jury is still out of if this is more or less brittle then
  *  having a global variable for icon_list
  *
@@ -30,7 +31,7 @@
  *  ie example usage:
  *
  *  1) Define in component
- 
+
 <job_status_select
     v-model="share_type"
     label="Share type"
@@ -40,7 +41,7 @@
 
     2) Set Default data ie
     share_type = "project"  // note lower case
- *  
+ *
  */
 
 import Vue from "vue";
@@ -53,7 +54,7 @@ export default Vue.extend( {
     // built in vue js
     'value': {
       default: null,
-      type: String
+      type: Array
     },
     'label': {
       default: null,
@@ -68,7 +69,7 @@ export default Vue.extend( {
     return {
       item_internal: null,
 
-      icon_list : [    
+      icon_list : [
         {
           'display_name': 'All',
           'name': 'All',
@@ -107,7 +108,7 @@ export default Vue.extend( {
     this.item_internal = this.value
   },
   watch: {
-    /* 
+    /*
      * If we just edit this directly
      * (ie at created), then it won't change nicely when
      * updated from server
