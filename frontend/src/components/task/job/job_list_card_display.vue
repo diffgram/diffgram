@@ -164,7 +164,7 @@
             </v-row>
 
             <v-row class="pl-4 d-flex" style="height: 100%">
-              
+
               <v-col cols="12">
                 <div  style="max-width: 200px" class="d-flex flex-wrap"
                       v-if="job && job.attached_directories_dict && job.attached_directories_dict.attached_directories_list">
@@ -294,7 +294,7 @@
 
 </template>
 
-<script lang="ts">
+<script >
   import Vue from "vue";
   import axios from '../../../services/customInstance';
   import job_pipelines_dialog from '../job/job_pipelines_dialog';
