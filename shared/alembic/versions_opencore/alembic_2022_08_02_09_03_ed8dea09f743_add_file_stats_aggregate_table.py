@@ -74,7 +74,7 @@ def upgrade():
     op.create_index('index__fa_attributes_date', 'file_stats',
                     ['attribute_template_id', 'attribute_template_group_id', 'attribute_value_selected_date'])
 
-    migrate_existing_file_stats()
+    # migrate_existing_file_stats()
 
 def downgrade():
     op.drop_index('index__fa_label_file_id', 'file_stats')

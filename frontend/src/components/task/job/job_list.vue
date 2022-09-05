@@ -361,20 +361,28 @@
 
             <td>
 
-              <label_select_only
-                v-if="props.item.label_dict &&
-                      props.item.label_dict.label_file_list_serialized"
-                :mode=" 'multiple' "
-                :label_prompt="null"
-                :view_only_mode="true"
-                :label_file_list_prop="props.item.label_dict.label_file_list_serialized"
-                :load_selected_id_list="props.item.label_dict.label_file_list"
-                :limit="3"
+<!--              <label_select_only-->
+<!--                v-if="props.item.label_dict &&-->
+<!--                      props.item.label_dict.label_file_list_serialized"-->
+<!--                :mode=" 'multiple' "-->
+<!--                :label_prompt="null"-->
+<!--                :view_only_mode="true"-->
+<!--                :label_file_list_prop="props.item.label_dict.label_file_list_serialized"-->
+<!--                :load_selected_id_list="props.item.label_dict.label_file_list"-->
+<!--                :limit="3"-->
+<!--              >-->
+<!--              </label_select_only>-->
+            <v-chip small>{{props.item.label_schema.name}}</v-chip>
+            </td>
+            <td>
+              <tag_display_and_select
+                :project_string_id="project_string_id"
+                :object_id="props.item.id"
+                :object_type="'job'"
               >
-              </label_select_only>
+              </tag_display_and_select>
 
             </td>
-
             <td>
               <!--
               <member_select
@@ -595,6 +603,7 @@ import job_type_select from '../../regular_concrete/job_type_select'
 import project_pipelines_dialog from '../../project/project_pipelines_dialog'
 import job_list_card_display from '../job/job_list_card_display'
 import label_select_only from '../../label/label_select_only.vue'
+import tag_display_and_select from '@/components/tag/tag_display_and_select.vue'
 
 import tag_select from '@/components/tag/tag_select.vue'
 
@@ -609,6 +618,7 @@ export default Vue.extend({
       job_type,
       job_type_select,
       project_pipelines_dialog,
+      tag_display_and_select,
       job_list_card_display,
       label_select_only,
       tag_select
@@ -658,7 +668,7 @@ export default Vue.extend({
         share_type: "project",
 
         status_list: ["All", "draft", "active", "complete", "cancelled"],
-        status: 'All',
+        status: ['All'],
 
         field_list: ['Self Driving', 'Medical', 'Construction', 'Other', 'All'],
         field: 'All',
@@ -711,7 +721,13 @@ export default Vue.extend({
             text: "Schema",
             align: 'left',
             sortable: false,
-            width: '500px'
+            width: '100px'
+          },
+          {
+            text: "Tags",
+            align: 'left',
+            sortable: false,
+            width: '400px'
           },
           {
             text: "Users",
