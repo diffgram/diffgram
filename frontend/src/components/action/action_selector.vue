@@ -23,7 +23,6 @@
 
 <script lang="ts">
 import Vue from "vue";
-import axios from '../../services/customInstance';
 import action_step_box from "./action_step_box.vue";
 import {Action} from "./Action";
 import {action_template_list} from './../../services/workflowServices';
@@ -92,6 +91,7 @@ export default Vue.extend({
       build_actions_list: function(action_template_list){
         this.actions_template_list = [];
         for(let template of action_template_list){
+          console.log(template.public_name)
           let action = new Action(
             template.public_name,
             template.icon,
@@ -108,6 +108,7 @@ export default Vue.extend({
       api_action_template_list: async function(){
 
         let [result, err] = await action_template_list(this.project_string_id)
+        console.log("HERE", [...result.action_template_list])
         if(err){
           this.error = this.$route_api_errors(err);
           return

@@ -5,6 +5,7 @@ from eventhandlers.action_runners.base.ActionCompleteCondition import ActionComp
 from shared.database.source_control.working_dir import WorkingDir, WorkingDirFileLink
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
+from shared.data_tools_core import Data_tools
 from google.cloud import aiplatform
 
 from shared.connection.connection_strategy import ConnectionStrategy
@@ -14,6 +15,8 @@ import tempfile
 import gc
 import shutil
 import time
+
+data_tools = Data_tools().data_tools
 
 # Sudo code
 #         - Get directory that was chosen for action
