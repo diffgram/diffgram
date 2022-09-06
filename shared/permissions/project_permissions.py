@@ -265,6 +265,7 @@ class Project_permissions():
             log = log,
             user_to_modify = user
         )
+
     @staticmethod
     def assign_project_roles(session: Session, role_name: str, project: Project, log: dict, user_to_modify: User):
         """
@@ -330,8 +331,25 @@ class Project_permissions():
                                                  user_to_modify = user)
         return True, log
 
-    def clear_all(user, sub_type):
+    @staticmethod
+    def remove_all_project_roles(session: Session, user: User, project: Project):
+
+        role_assignments = session.query(RoleMemberObject).filter(
+            RoleMemberObject.object_type == ValidObjectTypes.project.name,
+            RoleMemberObject.member_id == user.member_id,
+            RoleMemberObject.object_id == project.id
+        )
+        role_assignments.delete(synchronize_session = False)
+
+    @staticmethod
+    def clear_all(session: Session, user: User, sub_type: str):
         user.permissions_projects[sub_type] = {}
+        project = Project.get_by_string_id(session = session, project_string_id = sub_type)
+        Project_permissions.remove_all_project_roles(
+            session = session,
+            user = user,
+            project = project
+        )
 
 
 def check_roles(Roles, Permissions):
