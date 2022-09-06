@@ -173,16 +173,18 @@ def register_user(user_data: dict, session):
     }
     project = Project.get_by_string_id(session = session, project_string_id = user_data.get('project_string_id'))
     if project:
+        from shared.database.project_perms import ProjectDefaultRoles
         project.create_default_roles(session = session)
         for role_name in user_data.get('project_roles', ['admin']):
-            role = Role.get_by_name_and_project(session = session, project_id = project.id, name = role_name)
-            RoleMemberObject.new(
-                session = session,
-                member_id = new_user.member_id,
-                object_id = project.id,
-                object_type = ValidObjectTypes.project,
-                role_id = role.id
-            )
+            default_roles_list = [x.value for x in list(ProjectDefaultRoles)]
+            if role_name in default_roles_list:
+                RoleMemberObject.new(
+                    session = session,
+                    member_id = new_user.member_id,
+                    object_id = project.id,
+                    object_type = ValidObjectTypes.project,
+                    default_role_name = role_name
+                )
     session.add(new_user)
 
     if 'project_string_id' in user_data:
@@ -196,10 +198,13 @@ def register_user(user_data: dict, session):
                 project,
                 new_user
             )
-
-            permission_result, permission_error = Project_permissions.add(user_data['project_string_id'],
-                                                                          new_user,
-                                                                          user_data['project_string_id'])
+            from shared.regular import regular_log
+            permission_result, log = Project_permissions.add(
+                session = session,
+                permission = 'admin',
+                user = new_user,
+                sub_type = user_data['project_string_id'],
+                log = regular_log.default())
     return new_user
 
 

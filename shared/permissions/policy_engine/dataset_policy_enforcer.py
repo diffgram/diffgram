@@ -80,6 +80,15 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
         if perm_result_set.allow_all:
             return perm_result_set
 
+        perm_result: PermissionResult = self.policy_engine.member_has_any_project_role(member = member,
+                                                                                       project_id = self.project.id,
+                                                                                       roles = ['editor', 'viewer'])
+
+        perm_result_set = PermissionResultObjectSet(allowed_object_id_list = [],
+                                                    object_type = object_type.name,
+                                                    member_id = member.id,
+                                                    allow_all = perm_result.allowed)
+
         # If all objects are allowed, we further filter to only datasets that are not restricted
         non_restricted_ds = self.session.query(WorkingDir).filter(
             WorkingDir.project_id == self.project.id,

@@ -170,6 +170,7 @@ class WorkingDir(Base):
             object_type = ValidObjectTypes.dataset,
             perm = DatasetPermissions.dataset_view
         )
+        print('allow all', perm_result.allow_all, perm_result.allowed_object_id_list)
 
         if nickname:
             if nickname_match_type == "ilike":
@@ -207,12 +208,12 @@ class WorkingDir(Base):
             if limit is not None:
                 return query.limit(limit).count()
             else:
-                query.count()
+                return query.count()
         if return_kind == "objects":
             if limit is not None:
                 return query.limit(limit).all()
             else:
-                query.all()
+                return query.all()
 
     # TODO is this still right?
     # Deprecated maybe since label_file_list is gone

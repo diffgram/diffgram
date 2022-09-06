@@ -12,8 +12,11 @@ from shared.database.account.account import Account
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
 from shared.database.labels.label import Label
+from shared.regular import regular_log
 from shared.database.tag.tag import Tag
+from shared.shared_logger import get_shared_logger
 
+logger = get_shared_logger()
 PROJECT_DEFAULT_ROLES = ['admin', 'editor', 'viewer']
 
 
@@ -156,10 +159,16 @@ class Project(Base, Caching):
         user.current_project_string_id = project_string_id
         user.project_current = project
 
-        permission_add_result, permission_add_error_message = Project_permissions.add(
+        log = regular_log.default()
+        permission_result, log = Project_permissions.add(
+            session = session,
             permission = "admin",
             user = user,
-            sub_type = project_string_id)
+            sub_type = project_string_id,
+            log = log)
+        if regular_log.log_has_error(log):
+            logger.error(log)
+            return None
 
         session.add(user, project)
 

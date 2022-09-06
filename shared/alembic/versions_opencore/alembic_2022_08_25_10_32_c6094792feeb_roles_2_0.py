@@ -12,7 +12,7 @@ from sqlalchemy.orm.session import Session
 
 from shared.database.user import User
 from shared.database.permissions.roles import RoleMemberObject, Role, ValidObjectTypes
-
+from shared.database.project_perms import ProjectRolesPermissions
 # revision identifiers, used by Alembic.
 revision = 'c6094792feeb'
 down_revision = 'f098a0aa6959'
@@ -41,15 +41,14 @@ def migrate_roles_from_project(op):
         for project_string_id, roles_list in permissions_dict.items():
             project = Project.get_by_string_id(session = session, project_string_id = project_string_id)
             for role_name in roles_list:
-                role_obj = Role.get_by_name_and_project(session = session, name = role_name.lower(),
-                                                        project_id = project.id)
-                RoleMemberObject.new(
-                    session = session,
-                    role_id = role_obj.id,
-                    member_id = user.member_id,
-                    object_id = project.id,
-                    object_type = ValidObjectTypes.project
-                )
+                if role_name.lower() in ProjectRolesPermissions.keys():
+                    RoleMemberObject.new(
+                        session = session,
+                        default_role_name = role_name.lower(),
+                        member_id = user.member_id,
+                        object_id = project.id,
+                        object_type = ValidObjectTypes.project
+                    )
                 print(f'Added {role_name} to user {user.member_id} on project {project_string_id}')
 
 
@@ -86,7 +85,7 @@ def upgrade():
     op.create_index('index__working_dir_access_type_project', 'working_dir', ['project_id', 'access_type'])
     op.create_index('index__working_dir_access_type', 'working_dir', ['access_type'])
 
-    # migrate_roles_from_project(op)
+    migrate_roles_from_project(op)
 
 
 def downgrade():
