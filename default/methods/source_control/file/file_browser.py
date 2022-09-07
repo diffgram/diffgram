@@ -75,6 +75,8 @@ def view_file_by_id():  # Assumes permissions handled later with Project_permiss
             directory_id = project.directory_default_id  # fallback only
         )
 
+        dir_id_list = File.get_directories_ids(session = session, file_id = file.id)
+
         if file:
             if with_labels is True:
                 # For "existing" labels attached to instance

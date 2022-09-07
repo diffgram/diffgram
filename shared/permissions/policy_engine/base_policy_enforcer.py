@@ -3,7 +3,7 @@ from shared.database.permissions.roles import Role, RoleMemberObject
 from enum import Enum
 from sqlalchemy.orm.session import Session
 from shared.database.auth.member import Member
-
+from typing import List
 class BasePolicyEnforcer:
     session: Session
     project: 'Project'
@@ -25,6 +25,26 @@ class BasePolicyEnforcer:
                                            allow_all = perm_result.allowed)
         return result
 
+    def has_perm_for_at_least_one(self,
+                                  member_id: int,
+                                  object_type: str,
+                                  object_id_list: List[int],
+                                  perm: Enum) -> PermissionResult:
+        role_member_objects = self.session.query(RoleMemberObject).join(Role,
+                                                                        Role.id == RoleMemberObject.role_id).filter(
+            RoleMemberObject.object_type == object_type,
+            Role.permissions_list.any(perm.value),
+            RoleMemberObject.member_id == member_id,
+            RoleMemberObject.object_id.in_(object_id_list)
+        )
+        allowed = role_member_objects.first() is not None
+        result = PermissionResult(
+            allowed = allowed,
+            member_id = member_id,
+            object_type = object_type,
+            object_id_list = object_id_list
+        )
+        return result
     def has_perm(self, member_id: int, object_type: str, object_id: int, perm: Enum) -> PermissionResult:
 
         role_member_objects = self.session.query(RoleMemberObject).join(Role,

@@ -22,12 +22,14 @@ class PermissionResult:
     member_id: int
     object_type: str
     object_id: int
+    object_id_list: List[int]
 
-    def __init__(self, allowed: bool, member_id: int, object_type: str, object_id: int):
+    def __init__(self, allowed: bool, member_id: int, object_type: str, object_id: int = None, object_id_list: List[int] = None):
         self.allowed = allowed
         self.member_id = member_id
         self.object_id = object_id
         self.object_type = object_type
+        self.object_id_list = object_id_list
 
 
 class PolicyEngine:
@@ -40,8 +42,10 @@ class PolicyEngine:
     def get_policy_enforcer(self, object_type: Enum) -> 'BasePolicyEnforcer':
         from shared.permissions.policy_engine.base_policy_enforcer import BasePolicyEnforcer
         from shared.permissions.policy_engine.dataset_policy_enforcer import DatasetPolicyEnforcer
+        from shared.permissions.policy_engine.file_policy_enforcer import FilePolicyEnforcer
         POLICY_ENFORCERS_MAPPERS = {
-            'WorkingDir': DatasetPolicyEnforcer
+            'WorkingDir': DatasetPolicyEnforcer,
+            'File': FilePolicyEnforcer
         }
         enforcer_class = POLICY_ENFORCERS_MAPPERS.get(object_type.name)
         if enforcer_class is None:

@@ -2,7 +2,8 @@ from shared.permissions.policy_engine.policy_engine import PermissionResult, Per
 from shared.permissions.policy_engine.base_policy_enforcer import BasePolicyEnforcer
 from shared.permissions.policy_engine.policy_engine import PolicyEngine
 from shared.database.permissions.roles import Role, RoleMemberObject
-from shared.database.source_control.dataset_perms import DatasetDefaultRoles, DatasetRolesPermissions, DatasetPermissions
+from shared.database.source_control.dataset_perms import DatasetDefaultRoles, DatasetRolesPermissions, \
+    DatasetPermissions
 from shared.database.auth.member import Member
 from sqlalchemy.orm.session import Session
 from sqlalchemy import or_
@@ -17,6 +18,63 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
         self.session = session
         self.project = project
         self.policy_engine = policy_engine
+
+    def has_perm_for_at_least_one(self,
+                                  member_id: int,
+                                  object_type: str,
+                                  object_id_list: List[int],
+                                  perm: Enum) -> PermissionResult:
+        """
+            Returns an allowed result if the member has permissions over at least one of the provided object
+            list.
+        :param member_id:
+        :param object_type:
+        :param object_id_list:
+        :param perm:
+        :return:
+        """
+        default_roles = self.list_default_roles_obj_list(member_id = member_id, object_id_list = object_id_list)
+        for role in default_roles:
+            if DatasetRolesPermissions.get(role) is not None:
+                perms_list = DatasetRolesPermissions.get(role)
+                if perm.value in perms_list:
+                    result = PermissionResult(
+                        allowed = True,
+                        member_id = member_id,
+                        object_type = object_type,
+                        object_id_list = object_id_list
+                    )
+                    return result
+        # Check Project Permissions
+        member = Member.get_by_id(session = self.session, member_id = member_id)
+        allowed_project_roles = ['viewer', 'editor', 'admin']
+        if perm != DatasetPermissions.dataset_view:
+            allowed_project_roles = ['editor', 'admin']
+        perm_result: PermissionResult = self.policy_engine.member_has_any_project_role(member = member,
+                                                                                       project_id = self.project.id,
+                                                                                       roles = allowed_project_roles)
+        if perm_result.allowed:
+            return perm_result
+
+        # Custom Roles checking
+        perm_result = super().has_perm_for_at_least_one(member_id = member_id,
+                                                        object_id_list = object_id_list,
+                                                        object_type = object_type,
+                                                        perm = perm)
+        return perm_result
+
+    def list_default_roles_obj_list(self, member_id: int, object_id_list: List[int]) -> List[str]:
+        role_names = []
+        for elm in list(DatasetDefaultRoles):
+            role_names.append(elm.value)
+
+        role_member_objects = self.session.query(RoleMemberObject).filter(
+            RoleMemberObject.default_role_name.in_(role_names),
+            RoleMemberObject.member_id == member_id,
+            RoleMemberObject.object_id.in_(object_id_list)
+        )
+        result = [elm.default_role_name for elm in role_member_objects]
+        return result
 
     def list_default_roles(self, member_id: int, object_id: int) -> List[str]:
         role_names = []

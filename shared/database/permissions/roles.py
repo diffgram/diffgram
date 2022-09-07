@@ -17,8 +17,10 @@ logger = get_shared_logger()
 class ValidObjectTypes(Enum):
     from shared.database.project import Project
     from shared.database.source_control.working_dir import WorkingDir
+    from shared.database.source_control.file import File
     project = Project
     dataset = WorkingDir
+    file = File
 
 
 def get_valid_object_type(obj_type: str, log: dict) -> [object, dict]:
