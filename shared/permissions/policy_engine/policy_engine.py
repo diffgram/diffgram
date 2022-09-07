@@ -75,7 +75,7 @@ class PolicyEngine:
 
     def member_has_any_project_role(self,
                                     member: Member,
-                                    roles: List[str],
+                                    roles: list,
                                     project_id: int) -> PermissionResult:
         from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
         if not roles:

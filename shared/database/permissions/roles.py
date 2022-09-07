@@ -220,7 +220,7 @@ class RoleMemberObject(Base, SerializerMixin):
                 RoleMemberObject.member_id == member_id,
                 RoleMemberObject.object_id == object_id,
                 RoleMemberObject.object_type == object_type.name,
-                RoleMemberObject.default_role_name == default_role_name
+                RoleMemberObject.default_role_name == default_role_name.value
             ).first()
 
         if existing is not None:

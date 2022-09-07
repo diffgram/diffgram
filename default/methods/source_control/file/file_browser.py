@@ -14,7 +14,7 @@ from sqlalchemy import desc
 from shared.query_engine.query_creator import QueryCreator
 from shared.query_engine.sqlalchemy_query_exectutor import SqlAlchemyQueryExecutor
 import math
-
+from shared.database.source_control.file_perms import FilePermissions
 @routes.route('/api/v1/file/view',
               methods = ['POST'])
 def view_file_by_id():  # Assumes permissions handled later with Project_permissions
@@ -68,6 +68,18 @@ def view_file_by_id():  # Assumes permissions handled later with Project_permiss
             session = session,
             project_string_id = input['project_string_id'])
 
+        member = get_member(session)
+        policy_engine = PolicyEngine(session = session, project = project)
+        perm_result = policy_engine.member_has_perm(
+            object_id = input['file_id'],
+            object_type = ValidObjectTypes.file,
+            perm = FilePermissions.file_view,
+            member = member
+        )
+        if not perm_result.allowed:
+            log['error']['file_view'] = "Unauthorized. No file_view permission"
+            return jsonify(log = log), 401
+        
         file = File.get_by_id_and_project(
             session = session,
             project_id = project.id,

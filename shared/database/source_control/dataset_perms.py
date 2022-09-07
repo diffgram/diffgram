@@ -30,7 +30,9 @@ DatasetRolesPermissions = {
         DatasetPermissions.dataset_edit.value,
     ],
     'dataset_admin': [
-        DatasetPermissions.dataset_invite_user.value,
+        DatasetPermissions.dataset_view.value,
+        DatasetPermissions.dataset_edit.value,
+        DatasetPermissions.dataset_delete.value,
         DatasetPermissions.dataset_invite_user.value,
     ],
 }

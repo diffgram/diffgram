@@ -10,6 +10,7 @@ from sqlalchemy import or_
 
 from typing import List
 from enum import Enum
+from shared.database.project_perms import ProjectDefaultRoles
 
 
 class DatasetPolicyEnforcer(BasePolicyEnforcer):
@@ -47,9 +48,12 @@ class DatasetPolicyEnforcer(BasePolicyEnforcer):
                     return result
         # Check Project Permissions
         member = Member.get_by_id(session = self.session, member_id = member_id)
-        allowed_project_roles = ['viewer', 'editor', 'admin']
+        allowed_project_roles = [ProjectDefaultRoles.viewer.value,
+                                 ProjectDefaultRoles.editor.value,
+                                 ProjectDefaultRoles.admin.value]
         if perm != DatasetPermissions.dataset_view:
-            allowed_project_roles = ['editor', 'admin']
+            allowed_project_roles = [ProjectDefaultRoles.editor.value,
+                                     ProjectDefaultRoles.admin.value]
         perm_result: PermissionResult = self.policy_engine.member_has_any_project_role(member = member,
                                                                                        project_id = self.project.id,
                                                                                        roles = allowed_project_roles)

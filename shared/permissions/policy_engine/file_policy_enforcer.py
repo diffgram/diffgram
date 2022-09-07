@@ -3,9 +3,11 @@ from shared.permissions.policy_engine.base_policy_enforcer import BasePolicyEnfo
 from shared.permissions.policy_engine.policy_engine import PolicyEngine
 from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
 from shared.database.source_control.file_perms import FileDefaultRoles, FileRolesPermissions, FilePermissions
+from shared.database.source_control.dataset_perms import DatasetPermissions, DatasetDefaultRoles
 from shared.database.auth.member import Member
 from shared.database.source_control.file import File
 from shared.permissions.policy_engine.dataset_policy_enforcer import DatasetPolicyEnforcer
+from shared.database.project_perms import ProjectDefaultRoles
 from sqlalchemy.orm.session import Session
 from sqlalchemy import or_
 
@@ -37,11 +39,19 @@ class FilePolicyEnforcer(BasePolicyEnforcer):
         dataset_id_list = File.get_directories_ids(session = self.session, file_id = object_id)
         ds_policy_enforcer = DatasetPolicyEnforcer(session = self.session, project = self.project,
                                                    policy_engine = self.policy_engine)
+        ds_perm = DatasetPermissions.dataset_edit
+        if perm == FilePermissions.file_view:
+            ds_perm = DatasetPermissions.dataset_view
+        elif perm == FilePermissions.file_edit:
+            ds_perm = DatasetPermissions.dataset_edit
+        elif perm == FilePermissions.file_delete:
+            ds_perm = DatasetPermissions.dataset_delete
+
         perm_result: PermissionResult = ds_policy_enforcer.has_perm_for_at_least_one(
             member_id = member_id,
             object_type = ValidObjectTypes.dataset.name,
             object_id_list = dataset_id_list,
-            perm = perm,
+            perm = ds_perm,
         )
         return perm_result
 
@@ -62,9 +72,12 @@ class FilePolicyEnforcer(BasePolicyEnforcer):
 
         # Check Project Permissions
         member = Member.get_by_id(session = self.session, member_id = member_id)
-        allowed_project_roles = ['viewer', 'editor', 'admin']
+        allowed_project_roles = [ProjectDefaultRoles.viewer.value,
+                                 ProjectDefaultRoles.editor.value,
+                                 ProjectDefaultRoles.admin.value]
         if perm != FilePermissions.file_view:
-            allowed_project_roles = ['editor', 'admin']
+            allowed_project_roles = [ProjectDefaultRoles.editor.value,
+                                     ProjectDefaultRoles.admin.value]
         perm_result: PermissionResult = self.policy_engine.member_has_any_project_role(member = member,
                                                                                        project_id = self.project.id,
                                                                                        roles = allowed_project_roles)

@@ -172,7 +172,7 @@ def register_user(user_data: dict, session):
         user_data.get('project_string_id'): user_data.get('project_roles', ['admin'])
     }
     project = Project.get_by_string_id(session = session, project_string_id = user_data.get('project_string_id'))
-    if project:
+    if project and not user_data.get('no_roles'):
         from shared.database.project_perms import ProjectDefaultRoles
         project.create_default_roles(session = session)
         for role_name in user_data.get('project_roles', ['admin']):
@@ -199,12 +199,13 @@ def register_user(user_data: dict, session):
                 new_user
             )
             from shared.regular import regular_log
-            permission_result, log = Project_permissions.add(
-                session = session,
-                permission = 'admin',
-                user = new_user,
-                sub_type = user_data['project_string_id'],
-                log = regular_log.default())
+            if not user_data.get('no_roles'):
+                permission_result, log = Project_permissions.add(
+                    session = session,
+                    permission = 'admin',
+                    user = new_user,
+                    sub_type = user_data['project_string_id'],
+                    log = regular_log.default())
     session.commit()
     return new_user
 

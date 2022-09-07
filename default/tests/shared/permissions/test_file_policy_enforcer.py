@@ -3,7 +3,9 @@ from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
 from shared.permissions.policy_engine.policy_engine import PolicyEngine, PermissionResult, PermissionResultObjectSet
-from shared.database.source_control.dataset_perms import DatasetPermissions, DatasetDefaultRoles
+from shared.database.source_control.file_perms import FilePermissions, FileRolesPermissions, FileDefaultRoles
+from shared.database.source_control.dataset_perms import DatasetPermissions, DatasetDefaultRoles, DatasetRolesPermissions
+from shared.database.project_perms import ProjectDefaultRoles, ProjectPermissions
 from enum import Enum
 
 
@@ -40,134 +42,236 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
             'email': 'test@test.com',
             'password': 'diffgram123',
             'project_string_id': self.project.project_string_id,
-            'project_roles': ['admin'],
+            'no_roles': True,
             'member_id': self.member.id
         }, self.session)
         member2 = user.member
+        file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         ds1 = data_mocking.create_directory({
             'project': self.project,
             'user': self.project_data['users'][0],
-            'files': []
+            'files': [file]
         }, self.session)
         result_perm = self.policy_engine.member_has_perm(
             member = member2,
-            perm = DatasetPermissions.dataset_view,
-            object_id = ds1.id,
-            object_type = ValidObjectTypes.dataset
+            perm = FilePermissions.file_view,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
         )
         self.assertEqual(result_perm.allowed, False)
+
+        ## Assign Permissions
         RoleMemberObject.new(
             session = self.session,
-            object_id = ds1.id,
-            object_type = ValidObjectTypes.dataset,
-            default_role_name = DatasetDefaultRoles.dataset_viewer,
-            member_id = member2.id
+            object_type = ValidObjectTypes.file,
+            object_id = file.id,
+            member_id = member2.id,
+            default_role_name = FileDefaultRoles.file_viewer
         )
-        self.session.commit()
         result_perm = self.policy_engine.member_has_perm(
             member = member2,
-            perm = DatasetPermissions.dataset_view,
-            object_id = ds1.id,
-            object_type = ValidObjectTypes.dataset
+            perm = FilePermissions.file_view,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
         )
         self.assertEqual(result_perm.allowed, True)
-
         result_perm = self.policy_engine.member_has_perm(
             member = member2,
-            perm = DatasetPermissions.dataset_edit,
-            object_id = ds1.id,
-            object_type = ValidObjectTypes.dataset
+            perm = FilePermissions.file_edit,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
         )
         self.assertEqual(result_perm.allowed, False)
-
         result_perm = self.policy_engine.member_has_perm(
-            member = self.member,
-            perm = DatasetPermissions.dataset_edit,
-            object_id = ds1.id,
-            object_type = ValidObjectTypes.dataset
+            member = member2,
+            perm = FilePermissions.file_delete,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
+        )
+        self.assertEqual(result_perm.allowed, False)
+        # Now Assign Admin Permissions
+        RoleMemberObject.new(
+            session = self.session,
+            object_type = ValidObjectTypes.file,
+            object_id = file.id,
+            member_id = member2.id,
+            default_role_name = FileDefaultRoles.file_admin
+        )
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = FilePermissions.file_edit,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
+        )
+        self.assertEqual(result_perm.allowed, True)
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = FilePermissions.file_delete,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
         )
         self.assertEqual(result_perm.allowed, True)
 
-    def test_get_allowed_object_id_list(self):
+    def test_has_perm__project_perm(self):
         user = data_mocking.register_user({
             'username': 'test_user',
             'email': 'test@test.com',
             'password': 'diffgram123',
             'project_string_id': self.project.project_string_id,
-            'project_roles': ['admin'],
+            'no_roles': True,
             'member_id': self.member.id
         }, self.session)
-
         member2 = user.member
+        file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         ds1 = data_mocking.create_directory({
             'project': self.project,
             'user': self.project_data['users'][0],
-            'files': []
+            'files': [file]
         }, self.session)
-
-        ds2 = data_mocking.create_directory({
-            'project': self.project,
-            'user': self.project_data['users'][0],
-            'files': []
-        }, self.session)
-        restricted_ds = data_mocking.create_directory({
-            'project': self.project,
-            'access_type': 'restricted',
-            'user': self.project_data['users'][0],
-            'files': []
-        }, self.session)
-
-        class TestEnum(Enum):
-            unexisting_perm = 'some_perm'
-
-        result = self.policy_engine.get_allowed_object_id_list(
-            member = self.member,
-            object_type = ValidObjectTypes.dataset,
-            perm = DatasetPermissions.dataset_view,
-        )
-        self.assertTrue(result.allow_all)
-        self.assertEqual(result.allowed_object_id_list, [])
-
-        # Test User has no perms
-        result = self.policy_engine.get_allowed_object_id_list(
+        result_perm = self.policy_engine.member_has_perm(
             member = member2,
-            object_type = ValidObjectTypes.dataset,
-            perm = TestEnum.unexisting_perm,
+            perm = FilePermissions.file_view,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
         )
-        self.assertFalse(result.allow_all)
-        self.assertEqual(result.allowed_object_id_list, [])
+        self.assertEqual(result_perm.allowed, False)
 
-        # Assign role to 1 dataset
+        # Assign Permissions
         RoleMemberObject.new(
             session = self.session,
+            object_type = ValidObjectTypes.project,
+            object_id = self.project.id,
+            member_id = member2.id,
+            default_role_name = ProjectDefaultRoles.editor
+        )
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = FilePermissions.file_view,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
+        )
+        self.assertEqual(result_perm.allowed, True)
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = FilePermissions.file_edit,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
+        )
+        self.assertEqual(result_perm.allowed, True)
+        # Now test with project viewer role
+        user = data_mocking.register_user({
+            'username': 'test2_user',
+            'email': 'test2@test.com',
+            'password': 'diffgram123',
+            'project_string_id': self.project.project_string_id,
+            'no_roles': True,
+            'member_id': self.member.id
+        }, self.session)
+        member2 = user.member
+        RoleMemberObject.new(
+            session = self.session,
+            object_type = ValidObjectTypes.project,
+            object_id = self.project.id,
+            member_id = member2.id,
+            default_role_name = ProjectDefaultRoles.viewer
+        )
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = FilePermissions.file_edit,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
+        )
+        self.assertEqual(result_perm.allowed, False)
+
+    def test_has_perm__dataset_perm(self):
+        user = data_mocking.register_user({
+            'username': 'test_user',
+            'email': 'test@test.com',
+            'password': 'diffgram123',
+            'project_string_id': self.project.project_string_id,
+            'no_roles': True,
+            'member_id': self.member.id
+        }, self.session)
+        member2 = user.member
+        file = data_mocking.create_file({'project_id': self.project.id}, self.session)
+        ds1 = data_mocking.create_directory({
+            'project': self.project,
+            'user': self.project_data['users'][0],
+            'files': [file]
+        }, self.session)
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = FilePermissions.file_view,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
+        )
+        self.assertEqual(result_perm.allowed, False)
+
+        # Assign Permissions
+        RoleMemberObject.new(
+            session = self.session,
+            object_type = ValidObjectTypes.dataset,
             object_id = ds1.id,
-            object_type = ValidObjectTypes.dataset,
-            default_role_name = DatasetDefaultRoles.dataset_viewer,
-            member_id = member2.id
+            member_id = member2.id,
+            default_role_name = DatasetDefaultRoles.dataset_viewer
         )
-        result = self.policy_engine.get_allowed_object_id_list(
+        result_perm = self.policy_engine.member_has_perm(
             member = member2,
-            object_type = ValidObjectTypes.dataset,
-            perm = DatasetPermissions.dataset_view,
+            perm = FilePermissions.file_view,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
         )
-        self.assertFalse(result.allow_all)
-        self.assertEqual(len(result.allowed_object_id_list), 1)
-        self.assertEqual(result.allowed_object_id_list[0], ds1.id)
+        self.assertEqual(result_perm.allowed, True)
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = FilePermissions.file_edit,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
+        )
+        self.assertEqual(result_perm.allowed, False)
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = FilePermissions.file_delete,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
+        )
+        self.assertEqual(result_perm.allowed, False)
 
-        # Assign role to revoked access dataset
+        # Assign role dataset editor
         RoleMemberObject.new(
             session = self.session,
-            object_id = restricted_ds.id,
             object_type = ValidObjectTypes.dataset,
-            default_role_name = DatasetDefaultRoles.dataset_editor,
-            member_id = member2.id
+            object_id = ds1.id,
+            member_id = member2.id,
+            default_role_name = DatasetDefaultRoles.dataset_editor
         )
-
-        result = self.policy_engine.get_allowed_object_id_list(
+        result_perm = self.policy_engine.member_has_perm(
             member = member2,
-            object_type = ValidObjectTypes.dataset,
-            perm = DatasetPermissions.dataset_edit,
+            perm = FilePermissions.file_edit,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
         )
-        self.assertFalse(result.allow_all)
-        self.assertEqual(len(result.allowed_object_id_list), 1)
-        self.assertEqual(result.allowed_object_id_list[0], restricted_ds.id)
+        self.assertEqual(result_perm.allowed, True)
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = FilePermissions.file_delete,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
+        )
+        self.assertEqual(result_perm.allowed, False)
+
+        # Assign role dataset admin
+        RoleMemberObject.new(
+            session = self.session,
+            object_type = ValidObjectTypes.dataset,
+            object_id = ds1.id,
+            member_id = member2.id,
+            default_role_name = DatasetDefaultRoles.dataset_admin
+        )
+        result_perm = self.policy_engine.member_has_perm(
+            member = member2,
+            perm = FilePermissions.file_delete,
+            object_id = file.id,
+            object_type = ValidObjectTypes.file
+        )
+        self.assertEqual(result_perm.allowed, True)
