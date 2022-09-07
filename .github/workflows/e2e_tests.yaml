@@ -16,7 +16,7 @@ jobs:
         containers: [1,2,3,4,5,6,7]
     container:
       image: gcr.io/diffgram-open-core/cypress-e2e:latest
-      options: --user root
+      options: --user root --shm-size 2gb
       env:
         NODE_ENV: development
         DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
