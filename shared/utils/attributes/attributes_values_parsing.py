@@ -86,6 +86,8 @@ def get_attribute_value(session: Session, attr_id: int, attribute_value: any, pr
     elif attribute_group.kind == 'text':
         value = str(attribute_value)
     elif attribute_group.kind == 'select':
+        if type(attribute_value) != dict:
+            return None, None
         value = attribute_value.get('id')
         if value is not None:
             value = int(value)
