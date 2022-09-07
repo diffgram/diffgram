@@ -71,11 +71,11 @@ class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
             project_id = self.project.id,
             member = user.member,
         )
-
-        self.assertEqual(len(dirs), 3)
-        self.assertEqual(dirs[0].id, ds1.id)
-        self.assertEqual(dirs[1].id, ds2.id)
-        self.assertEqual(dirs[2].id, ds3.id)
+        dirs_id_list = [x.id for x in dirs]
+        self.assertEqual(len(dirs), 6)
+        self.assertTrue(ds1.id in dirs_id_list)
+        self.assertTrue(ds2.id in dirs_id_list)
+        self.assertTrue(ds3.id in dirs_id_list)
 
         RoleMemberObject.new(
             session = self.session,
@@ -89,9 +89,9 @@ class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
             project_id = self.project.id,
             member = user.member,
         )
-
-        self.assertEqual(len(dirs), 4)
-        self.assertEqual(dirs[0].id, ds1.id)
-        self.assertEqual(dirs[1].id, ds2.id)
-        self.assertEqual(dirs[2].id, ds3.id)
-        self.assertEqual(dirs[3].id, ds_restricted.id)
+        dirs_id_list = [x.id for x in dirs]
+        self.assertEqual(len(dirs), 7)
+        self.assertTrue(ds1.id in dirs_id_list)
+        self.assertTrue(ds2.id in dirs_id_list)
+        self.assertTrue(ds3.id in dirs_id_list)
+        self.assertTrue(ds_restricted.id in dirs_id_list)
