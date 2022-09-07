@@ -6,6 +6,7 @@ from shared.utils import job_dir_sync_utils
 from shared.database.task.job.user_to_job import User_To_Job
 from shared.utils.task.task_update_manager import Task_Update
 
+
 # See interior function for permissions
 @routes.route('/api/v1/job/cancel',
               methods = ['POST'])
@@ -112,7 +113,7 @@ def job_cancel_core(session,
     job = Job.get_by_id(session = session,
                         job_id = job_id)
 
-    if user is None or job is None:
+    if member is None or job is None:
         log['error']['user_job'] = "No user or job"
         return False, log
 
@@ -123,7 +124,6 @@ def job_cancel_core(session,
                                     job,
                                     mode)
 
-    member = get_member(session = session)
     if result is False:
         return result, log
 
@@ -167,7 +167,7 @@ def job_cancel_core(session,
         session.add(job)
         job.status = 'archived'
         job.hidden = True
-        job.member_updated = user.member
+        job.member_updated = member
 
         # Assume we want to remove sync dirs on archive, we might remove if that is not the case.
         job_dir_sync_manager = job_dir_sync_utils.JobDirectorySyncManager(job = job, session = session, log = log)
@@ -182,7 +182,6 @@ def job_cancel_core(session,
                 status = "archived"
             )
             task_update.main()
-
 
     if mode == "cancel":
         session.add(job)

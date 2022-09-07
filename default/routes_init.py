@@ -180,3 +180,5 @@ def do_routes_importing():
 
     from methods.tag.tag import tag_view_by_project
     from methods.source_control.file.file_get_signed_url import api_file_get_signed_url
+
+    from methods.project.regen_file_stats import api_project_regen_file_stats
