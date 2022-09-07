@@ -115,13 +115,14 @@ class FileStats(Base, Caching):
         return file_stat
 
     @staticmethod
-    def update_file_stats_data(session: Session, instance_list: list, file_id: int, project: Project):
+    def update_file_stats_data(session: Session, instance_list: list, file_id: int, project: Project, reset: bool = True):
         # First Delete existing
         if instance_list is None:
             return
-        session.query(FileStats).filter(
-            FileStats.file_id == file_id
-        ).delete()
+        if reset:
+            session.query(FileStats).filter(
+                FileStats.file_id == file_id
+            ).delete()
         members_list = []
         # Build label count entries based on instance list
         label_counts = {}
