@@ -114,7 +114,6 @@ class PolicyEngine:
                                    perm: Enum) -> PermissionResultObjectSet:
 
         PolicyEnforcer = self.get_policy_enforcer(object_type = object_type)
-        print('POLICY ENFORCE', PolicyEnforcer)
         enforcer = PolicyEnforcer(session = self.session, project = self.project, policy_engine = self)
         perm_set_result = enforcer.get_allowed_object_id_list(member = member,
                                                               object_type = object_type,

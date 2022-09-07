@@ -21,6 +21,7 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
                     {'username': 'Test',
                      'email': 'test@test.com',
                      'password': 'diffgram123',
+                     'no_roles': True
                      }
                 ]
             },
@@ -89,23 +90,26 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
             'email': 'test@test.com',
             'password': 'diffgram123',
             'project_string_id': 'myproject',
-            'member_id': self.member.id
+            'no_roles': True
         }, self.session)
         member2 = data_mocking.register_member(user, session = self.session)
         ds1 = data_mocking.create_directory({
             'project': self.project,
             'user': self.project_data['users'][0],
-            'files': []
+            'files': [],
+            'access_type': 'restricted'
         }, self.session)
         ds2 = data_mocking.create_directory({
             'project': self.project,
             'user': self.project_data['users'][0],
-            'files': []
+            'files': [],
+            'access_type': 'restricted'
         }, self.session)
         ds3 = data_mocking.create_directory({
             'project': self.project,
             'user': self.project_data['users'][0],
-            'files': []
+            'files': [],
+            'access_type': 'restricted'
         }, self.session)
         RoleMemberObject.new(
             session = self.session,
@@ -138,4 +142,6 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
             perm = TestEnum.unexisting_perm,
         )
         self.assertFalse(result.allow_all)
-        self.assertEqual(result.allowed_object_id_list, [])
+        self.assertTrue(ds1.id not in result.allowed_object_id_list)
+        self.assertTrue(ds2.id not in result.allowed_object_id_list)
+        self.assertTrue(ds3.id not in result.allowed_object_id_list)

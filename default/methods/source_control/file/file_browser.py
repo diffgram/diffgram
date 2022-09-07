@@ -79,7 +79,7 @@ def view_file_by_id():  # Assumes permissions handled later with Project_permiss
         if not perm_result.allowed:
             log['error']['file_view'] = "Unauthorized. No file_view permission"
             return jsonify(log = log), 401
-        
+
         file = File.get_by_id_and_project(
             session = session,
             project_id = project.id,
@@ -671,7 +671,10 @@ class File_Browser():
                 perm = DatasetPermissions.dataset_view
             )
             if not perm_result.allowed:
-                raise Unauthorized(f'Cannot view dataset ID: {self.directory.id}')
+                self.log['error']['unauthorized'] = f'Cannot view dataset ID: {self.directory.id}'
+                resp = jsonify(log=self.log)
+                resp.status = 401
+                raise Unauthorized(response = resp)
             query, count = WorkingDirFileLink.file_list(
                 session = self.session,
                 working_dir_id = self.directory.id,
