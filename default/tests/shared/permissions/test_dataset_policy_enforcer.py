@@ -43,7 +43,7 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
             'project_roles': ['admin'],
             'member_id': self.member.id
         }, self.session)
-        member2 = data_mocking.register_member(user, session = self.session)
+        member2 = user.member
         ds1 = data_mocking.create_directory({
             'project': self.project,
             'user': self.project_data['users'][0],
@@ -98,12 +98,13 @@ class TestPermissionsChecker(testing_setup.DiffgramBaseTestCase):
             'member_id': self.member.id
         }, self.session)
 
-        member2 = data_mocking.register_member(user, session = self.session)
+        member2 = user.member
         ds1 = data_mocking.create_directory({
             'project': self.project,
             'user': self.project_data['users'][0],
             'files': []
         }, self.session)
+
         ds2 = data_mocking.create_directory({
             'project': self.project,
             'user': self.project_data['users'][0],

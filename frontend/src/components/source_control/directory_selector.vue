@@ -354,14 +354,14 @@ export default Vue.extend({
           const directory_list = result.data.directory_list;
 
           // Temp hack until we go back to just straight .id everywhere
-          for (let i=0; i < directory_selector.length; i++){
-            directory_selector[i].directory_id = directory_selector[i].id
+          for (let i=0; i < directory_list.length; i++){
+            directory_list[i].directory_id = directory_list[i].id
           }
           //console.log(directory_list)
 
-          this.internal_directory_list = directory_selector
+          this.internal_directory_list = directory_list
 
-          this.patch_update_potential_new_directory(directory_selector)
+          this.patch_update_potential_new_directory(directory_list)
 
         }
 

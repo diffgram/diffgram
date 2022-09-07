@@ -14,6 +14,9 @@ from shared.permissions.policy_engine.policy_engine import PolicyEngine, Permiss
 from shared.database.source_control.dataset_perms import DatasetPermissions
 from shared.database.tag.tag import Tag
 
+VALID_ACCESS_TYPES = ['project', 'restricted']
+
+
 class WorkingDir(Base):
     """
 
@@ -33,7 +36,7 @@ class WorkingDir(Base):
     nickname = Column(String())
 
     # possible values: ['project', 'restricted']
-    access_type = Column(String(), default='project')
+    access_type = Column(String(), default = 'project')
 
     count_changes = Column(Integer, default = 0)
 
@@ -265,7 +268,6 @@ class WorkingDir(Base):
             WorkingDirFileLink.working_dir_id == self.id,
             WorkingDirFileLink.type == file_type).count()
 
-
     def verify_directory_in_project(session, project, directory_id):
         """
         Assumes that access to project == access to directory
@@ -347,12 +349,14 @@ class WorkingDir(Base):
                             latest_version = None,
                             prior_working_dir_id = None,
                             nickname = None,
+                            access_type = None,
                             project_id = None,
                             project_default = False
                             ):
         working_dir = WorkingDir(
             nickname = nickname,
             project_id = project_id,
+            access_type = access_type,
             type = 'standard'
         )
         if project_default:
@@ -363,15 +367,14 @@ class WorkingDir(Base):
 
         return working_dir
 
-
     def add_tags(
-            self,
-            tag_list,
-            session,
-            project,
-            log):
+        self,
+        tag_list,
+        session,
+        project,
+        log):
 
-        if len(tag_list) > 100: 
+        if len(tag_list) > 100:
             log['error']['tag_list_length'] = f"Over limit, tags sent: {len(tag_list)}"
             return log
 
@@ -385,11 +388,11 @@ class WorkingDir(Base):
             if tag.id is None:
                 session.add(tag)
 
-            dataset_tag = tag.add_to_dataset(dataset_id=self.id, session=session)
+            dataset_tag = tag.add_to_dataset(dataset_id = self.id, session = session)
 
             session.add(dataset_tag)
             log['success'] = True
-            #log['dataset_tag'] = dataset_tag.serialize()
+            # log['dataset_tag'] = dataset_tag.serialize()
 
         return log
 
@@ -853,5 +856,3 @@ class WorkingDirFileLink(Base):
                                       existing_file_link.file_id)
 
         return True, log
-
-

@@ -17,7 +17,7 @@ from shared.permissions.policy_engine.policy_engine import PolicyEngine
 from shared.regular.regular_member import get_member
 from shared.shared_logger import get_shared_logger
 from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
-from shared.database.project_perms import ProjectDefaultRoles
+from shared.database.project_perms import ProjectDefaultRoles, ProjectPermissions
 from sqlalchemy.orm.session import Session
 
 logger = get_shared_logger()
@@ -104,14 +104,6 @@ class Project_permissions():
             if Project_permissions.check_if_project_is_public(project, Roles):
                 return True
 
-            if with_permission is not None:
-                member = get_member(session = session)
-                if member is None:
-                    raise Forbidden(f" No member. Please login")
-                granted = PolicyEngine.member_has_perm(member = member, perm = with_permission)
-                if not granted:
-                    raise Unauthorized(f"Member has no permissions '{with_permission}' on {project_string_id}")
-
             if request.authorization is not None:
 
                 basic_auth_denied_message = f"{default_denied_message} [Basic Auth Based] "
@@ -127,7 +119,7 @@ class Project_permissions():
                                                     project_string_id = project_string_id,
                                                     Roles = Roles)
                 if result is not True:
-                    raise Forbidden(f"{basic_auth_denied_message}Failed API Permissions")
+                    raise Forbidden(f"{basic_auth_denied_message}Failed API Permissions. Allowed roles are only: {Roles}")
 
                 # Project APIs, maybe should role this into API_Permissions
                 check_all_apis(
@@ -267,7 +259,7 @@ class Project_permissions():
         )
 
     @staticmethod
-    def assign_project_roles(session: Session, role_name: str, project: Project, log: dict, user_to_modify: User):
+    def assign_project_roles(session: Session, role_name: str, project: Project, log: dict, member_id: int):
         """
             Permission 2.0 role assignment. Assigns the given role to the user on the given project.
             This will eventually substitute the user.permissions_projects.
@@ -286,7 +278,7 @@ class Project_permissions():
                 default_role_name = ProjectDefaultRoles[role_name],
                 object_id = project.id,
                 object_type = ValidObjectTypes.project,
-                member_id = user_to_modify.member_id
+                member_id = member_id
             )
         else:
             role = Role.get_by_name_and_project(session = session,
@@ -300,7 +292,7 @@ class Project_permissions():
                 role_id = role.id,
                 object_id = project.id,
                 object_type = ValidObjectTypes.project,
-                member_id = user_to_modify.member_id
+                member_id = member_id
             )
 
     @staticmethod
@@ -328,7 +320,7 @@ class Project_permissions():
                                                  role_name = permission.lower(),
                                                  project = project,
                                                  log = log,
-                                                 user_to_modify = user)
+                                                 member_id = user.member_id)
         return True, log
 
     @staticmethod

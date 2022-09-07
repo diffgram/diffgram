@@ -37,18 +37,18 @@ class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
     def test_list(self):
         user = data_mocking.register_user({
             'username': 'test_user',
-            'email': 'test@test.com',
+            'email': 'testdirlist@test.com',
             'password': 'diffgram123',
             'project_string_id': self.project.project_string_id,
             'project_roles': ['editor'],
-            'member_id': self.member.id
         }, self.session)
-        member2 = data_mocking.register_member(user, session = self.session)
+
         ds1 = data_mocking.create_directory({
             'project': self.project,
             'user': self.project_data['users'][0],
             'files': []
         }, self.session)
+        print('ds1', ds1.project_id, ds1.access_type, ds1.archived)
         ds2 = data_mocking.create_directory({
             'project': self.project,
             'user': self.project_data['users'][0],
@@ -69,10 +69,29 @@ class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
         dirs = WorkingDir.list(
             session = self.session,
             project_id = self.project.id,
-            member = member2,
+            member = user.member,
         )
 
         self.assertEqual(len(dirs), 3)
         self.assertEqual(dirs[0].id, ds1.id)
         self.assertEqual(dirs[1].id, ds2.id)
         self.assertEqual(dirs[2].id, ds3.id)
+
+        RoleMemberObject.new(
+            session = self.session,
+            object_type = ValidObjectTypes.dataset,
+            default_role_name = DatasetDefaultRoles.dataset_viewer,
+            member_id = user.member.id,
+            object_id = ds_restricted.id
+        )
+        dirs = WorkingDir.list(
+            session = self.session,
+            project_id = self.project.id,
+            member = user.member,
+        )
+
+        self.assertEqual(len(dirs), 4)
+        self.assertEqual(dirs[0].id, ds1.id)
+        self.assertEqual(dirs[1].id, ds2.id)
+        self.assertEqual(dirs[2].id, ds3.id)
+        self.assertEqual(dirs[3].id, ds_restricted.id)

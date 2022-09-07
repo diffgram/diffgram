@@ -10,6 +10,7 @@ from enum import Enum
 from sqlalchemy.orm.session import Session
 from typing import List
 from sqlalchemy import or_, and_
+
 logger = get_shared_logger()
 
 
@@ -21,7 +22,8 @@ class ValidObjectTypes(Enum):
 
 
 def get_valid_object_type(obj_type: str, log: dict) -> [object, dict]:
-    valid_obj_types = [x.value for x in list(ValidObjectTypes)]
+    valid_obj_types = [x.name for x in list(ValidObjectTypes)]
+    print('asdasd', valid_obj_types)
     if obj_type not in valid_obj_types:
         msg = f'Invalid object type {obj_type}'
         log['error']['permission'] = msg
@@ -46,12 +48,12 @@ class Role(Base, SerializerMixin):
 
     @staticmethod
     def list_from_user(session: Session, member_id: int, project_id: int) -> List['Roles']:
-        roles = session.query(Role).distinct(Role.id).join(RoleMemberObject, Role.id == RoleMemberObject.role_id).filter(
+        roles = session.query(Role).distinct(Role.id).join(RoleMemberObject,
+                                                           Role.id == RoleMemberObject.role_id).filter(
             RoleMemberObject.member_id == member_id,
             Role.project_id == project_id,
         ).all()
         return roles
-
 
     @staticmethod
     def new(session, project_id, name, permissions_list = None, add_to_session = True, flush_session = True):
@@ -157,7 +159,7 @@ class RoleMemberObject(Base, SerializerMixin):
     object_type = Column(String())
 
     # In case of an assignment to a default role
-    default_role_name = Column(String(), nullable=True)
+    default_role_name = Column(String(), nullable = True)
 
     role_id = Column(Integer, ForeignKey('role.id'))
     role = relationship("Role", foreign_keys = role_id)
@@ -170,6 +172,29 @@ class RoleMemberObject(Base, SerializerMixin):
         return True, log
 
     @staticmethod
+    def get(session,
+            member_id: int,
+            object_id: int,
+            object_type: Enum,
+            role_id: int = None,
+            default_role_name: Enum = None) -> 'RoleMemberObject':
+        if role_id:
+            existing = session.query(RoleMemberObject).filter(
+                RoleMemberObject.member_id == member_id,
+                RoleMemberObject.object_id == object_id,
+                RoleMemberObject.object_type == object_type.name,
+                RoleMemberObject.role_id == role_id
+            ).first()
+        elif default_role_name:
+            existing = session.query(RoleMemberObject).filter(
+                RoleMemberObject.member_id == member_id,
+                RoleMemberObject.object_id == object_id,
+                RoleMemberObject.object_type == object_type.name,
+                RoleMemberObject.default_role_name == default_role_name
+            ).first()
+        return existing
+
+    @staticmethod
     def new(session,
             member_id: int,
             object_id: int,
@@ -180,6 +205,24 @@ class RoleMemberObject(Base, SerializerMixin):
             flush_session = True):
         if role_id is None and default_role_name is None:
             raise Exception('Role.new() need either a default_role_name or a role_id')
+        existing = None
+        if role_id:
+            existing = session.query(RoleMemberObject).filter(
+                RoleMemberObject.member_id == member_id,
+                RoleMemberObject.object_id == object_id,
+                RoleMemberObject.object_type == object_type.name,
+                RoleMemberObject.role_id == role_id
+            ).first()
+        elif default_role_name:
+            existing = session.query(RoleMemberObject).filter(
+                RoleMemberObject.member_id == member_id,
+                RoleMemberObject.object_id == object_id,
+                RoleMemberObject.object_type == object_type.name,
+                RoleMemberObject.default_role_name == default_role_name
+            ).first()
+
+        if existing is not None:
+            return existing
         role = RoleMemberObject(
             member_id = member_id,
             object_id = object_id,
@@ -187,7 +230,7 @@ class RoleMemberObject(Base, SerializerMixin):
             role_id = role_id,
         )
         if default_role_name:
-            role.default_role_name = default_role_name.name
+            role.default_role_name = default_role_name.value
         if add_to_session:
             session.add(role)
         if flush_session:

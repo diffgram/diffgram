@@ -20,14 +20,14 @@ class ProjectDefaultRoles(Enum):
 
 
 ProjectRolesPermissions = {
-    'project_viewer': [
+    'viewer': [
         ProjectPermissions.project_view.value,
     ],
-    'project_editor': [
+    'editor': [
         ProjectPermissions.project_view.value,
         ProjectPermissions.project_edit.value,
     ],
-    'project_admin': [
+    'admin': [
         ProjectPermissions.project_view.value,
         ProjectPermissions.project_edit.value,
         ProjectPermissions.project_delete.value,

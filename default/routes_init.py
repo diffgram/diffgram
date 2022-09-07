@@ -185,6 +185,7 @@ def do_routes_importing():
     from methods.roles.role_remove_permission import role_remove_permission_web
     from methods.roles.role_add_permission import role_add_permission_web
     from methods.roles.role_add_user_object import new_role_member_object_web
+    from methods.roles.role_remove_user_object import delete_role_member_object_web
     from methods.roles.role_list import list_roles_web
     from methods.roles.role_delete import role_delete_web
     from methods.project.regen_file_stats import api_project_regen_file_stats

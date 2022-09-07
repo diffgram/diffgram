@@ -6,9 +6,9 @@ from shared.database.permissions.roles import RoleMemberObject, Role
 from shared.database.auth.member import Member
 
 
-@routes.route('/api/v1/project/<string:project_string_id>/role-member-object', methods = ['PATCH'])
+@routes.route('/api/v1/project/<string:project_string_id>/role-member-object/remove', methods = ['PATCH'])
 @Project_permissions.user_has_project(Roles = ["admin"], apis_user_list = ["api_enabled_builder"])
-def new_role_member_object_web(project_string_id):
+def delete_role_member_object_web(project_string_id):
     """
         Adds a permission to the given role
     :param project_string_id:
@@ -25,12 +25,12 @@ def new_role_member_object_web(project_string_id):
         {"role_id": {
             'kind': int
         }},
-        {"member_id": {
-            'kind': int
-        }},
         {"default_role_name": {
             'kind': str
         }},
+        {"member_id": {
+            'kind': int
+        }}
     ]
 
     log, input, untrusted_input = regular_input.master(
@@ -44,7 +44,7 @@ def new_role_member_object_web(project_string_id):
 
         project = Project.get_by_string_id(session, project_string_id)
         member = get_member(session = session)
-        assignment_data, log = new_role_member_object_core(
+        assignment_data, log = delete_role_member_object_core(
             session = session,
             log = log,
             project = project,
@@ -59,7 +59,7 @@ def new_role_member_object_web(project_string_id):
         return jsonify(assignment_data), 200
 
 
-def new_role_member_object_core(session,
+def delete_role_member_object_core(session,
                                 member_id: int,
                                 project: Project,
                                 role_id: int,
@@ -93,13 +93,16 @@ def new_role_member_object_core(session,
     if regular_log.log_has_error(log):
         return None, log
     from shared.database.permissions.roles import ValidObjectTypes
-    role_member_object = RoleMemberObject.new(
+    role_member_object = RoleMemberObject.get(
         session = session,
         object_id = object_id,
         object_type = ValidObjectTypes[object_type],
         role_id = role_id,
         member_id = member_id
     )
-
+    if role_member_object is None:
+        log['error']['role_member_object'] = 'role_member_object does not exist.'
+        return None, log
+    session.delete(role_member_object)
     data = role_member_object.serialize()
     return data, log

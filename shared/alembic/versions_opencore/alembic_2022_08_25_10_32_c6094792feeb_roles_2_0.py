@@ -11,8 +11,9 @@ from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm.session import Session
 
 from shared.database.user import User
+from shared.database.auth.api import Auth_api
 from shared.database.permissions.roles import RoleMemberObject, Role, ValidObjectTypes
-from shared.database.project_perms import ProjectRolesPermissions
+from shared.database.project_perms import ProjectRolesPermissions, ProjectDefaultRoles
 # revision identifiers, used by Alembic.
 revision = 'c6094792feeb'
 down_revision = 'f098a0aa6959'
@@ -44,14 +45,26 @@ def migrate_roles_from_project(op):
                 if role_name.lower() in ProjectRolesPermissions.keys():
                     RoleMemberObject.new(
                         session = session,
-                        default_role_name = role_name.lower(),
+                        default_role_name = ProjectDefaultRoles[role_name.lower()],
                         member_id = user.member_id,
                         object_id = project.id,
                         object_type = ValidObjectTypes.project
                     )
                 print(f'Added {role_name} to user {user.member_id} on project {project_string_id}')
-
-
+    # Now migrate API Accesses
+    api_members = session.query(Auth_api).all()
+    for api in api_members:
+        role_name = api.permission_level
+        project = Project.get_by_string_id(session = session, project_string_id = api.project_string_id)
+        if role_name.lower() in ProjectRolesPermissions.keys():
+            RoleMemberObject.new(
+                session = session,
+                default_role_name = ProjectDefaultRoles[role_name.lower()],
+                member_id = api.member_id,
+                object_id = project.id,
+                object_type = ValidObjectTypes.project
+            )
+        print(f'Added {role_name} to API Access {api.member_id} on project {api.project_string_id}')
 def upgrade():
     op.create_table('role',
                     sa.Column('id', sa.Integer(), nullable = False),
@@ -81,7 +94,7 @@ def upgrade():
     op.create_index('index__role_user_object_default_role_name_object_id', 'role_member_object',
                     ['default_role_name', 'object_id'])
 
-    op.add_column('working_dir', sa.Column('access_type', sa.String(), default = 'project'))
+    op.add_column('working_dir', sa.Column('access_type', sa.String(), default = 'project', nullable=False, server_default='project'))
     op.create_index('index__working_dir_access_type_project', 'working_dir', ['project_id', 'access_type'])
     op.create_index('index__working_dir_access_type', 'working_dir', ['access_type'])
 

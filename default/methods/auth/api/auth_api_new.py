@@ -90,7 +90,15 @@ def create(session,
 
     project = Project.get(session, project_string_id)
     auth.project_id = project.id
+    Project_permissions.assign_project_roles(
+        session = session,
+        role_name = permission_level.lower(),
+        project = project,
+        log = regular_log.default(),
+        member_id = member.id
 
+    )
+    logger.info(f'Assigned role {permission_level} to project {project.project_string_id} and member {member.id}')
     # Careful we are placing this in the member not the auth
     # for now...
 

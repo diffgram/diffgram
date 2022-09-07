@@ -167,7 +167,7 @@ def register_user(user_data: dict, session):
         permissions_general = {'general': ['normal_user']}
 
     )
-
+    member = register_member(new_user, session = session)
     new_user.permissions_projects = {
         user_data.get('project_string_id'): user_data.get('project_roles', ['admin'])
     }
@@ -180,10 +180,10 @@ def register_user(user_data: dict, session):
             if role_name in default_roles_list:
                 RoleMemberObject.new(
                     session = session,
-                    member_id = new_user.member_id,
+                    member_id = member.id,
                     object_id = project.id,
                     object_type = ValidObjectTypes.project,
-                    default_role_name = role_name
+                    default_role_name = ProjectDefaultRoles[role_name]
                 )
     session.add(new_user)
 
@@ -205,6 +205,7 @@ def register_user(user_data: dict, session):
                 user = new_user,
                 sub_type = user_data['project_string_id'],
                 log = regular_log.default())
+    session.commit()
     return new_user
 
 
@@ -298,6 +299,7 @@ def create_directory(dir_data, session):
     working_dir = WorkingDir()
     working_dir.user_id = dir_data['user'].id
     working_dir.access_type = dir_data.get('access_type', 'project')
+    working_dir.archived = dir_data.get('archived', False)
     working_dir.project_id = dir_data['project'].id
     if dir_data.get('jobs_to_sync'):
         working_dir.jobs_to_sync = dir_data.get('jobs_to_sync')
@@ -308,6 +310,7 @@ def create_directory(dir_data, session):
         for file in file_list:
             WorkingDirFileLink.add(session, working_dir.id, file)
     regular_methods.commit_with_rollback(session)
+    session.commit()
     return working_dir
 
 

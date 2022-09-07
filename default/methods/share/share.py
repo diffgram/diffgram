@@ -261,8 +261,6 @@ class Share_Project():
                 role_name = input['permission_type'],
                 note = input['note'])
 
-            # Permissions 2.0
-            self.assign_project_roles(input = input)
             if regular_log.log_has_error(self.log):
                 return
 

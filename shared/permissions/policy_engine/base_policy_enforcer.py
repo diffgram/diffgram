@@ -26,6 +26,7 @@ class BasePolicyEnforcer:
         return result
 
     def has_perm(self, member_id: int, object_type: str, object_id: int, perm: Enum) -> PermissionResult:
+
         role_member_objects = self.session.query(RoleMemberObject).join(Role,
                                                                         Role.id == RoleMemberObject.role_id).filter(
             RoleMemberObject.object_type == object_type,

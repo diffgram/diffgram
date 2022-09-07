@@ -2,7 +2,10 @@ try:
     from methods.regular.regular_api import *
 except:
     from default.methods.regular.regular_api import *
-
+from shared.permissions.policy_engine.policy_engine import PolicyEngine
+from shared.database.permissions.roles import ValidObjectTypes
+from shared.database.source_control.dataset_perms import DatasetPermissions
+from werkzeug.exceptions import Unauthorized
 from shared.database.user import UserbaseProject
 from shared.database.task.job.job import Job
 from shared.database.source_control.file_diff import file_difference_and_serialize_for_web
@@ -114,8 +117,6 @@ def view_file_diff(project_string_id, file_id):
             return out, 200, {'ContentType': 'application/json'}
 
 
-## Allow post for now here
-#   See annotation_core get_instances() it defaults to a post
 # instance_list
 @routes.route('/api/v1/task/<int:task_id>/annotation/list',
               methods = ['GET', 'POST'])
@@ -648,7 +649,15 @@ class File_Browser():
                 return False
             file_count += count
         else:
-
+            policy_engine = PolicyEngine(session = self.session, project = self.project)
+            perm_result = policy_engine.member_has_perm(
+                member = self.member,
+                object_id = self.directory.id,
+                object_type = ValidObjectTypes.dataset,
+                perm = DatasetPermissions.dataset_view
+            )
+            if not perm_result.allowed:
+                raise Unauthorized(f'Cannot view dataset ID: {self.directory.id}')
             query, count = WorkingDirFileLink.file_list(
                 session = self.session,
                 working_dir_id = self.directory.id,
@@ -718,10 +727,3 @@ class File_Browser():
         if limit_counter == 0:
             self.metadata['no_results_match_search'] = True
         return output_file_list
-
-
-"""
-1. Default to start at index 0
-2. If a request_next_page is true
-2.1 index = previous search -> leave_off_index
-"""

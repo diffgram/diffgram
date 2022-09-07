@@ -61,7 +61,6 @@ class PolicyEngine:
                 object_id = object_id
             )
             return result
-        print('NO DEFAULTSSS', member.id)
         PolicyEnforcer = self.get_policy_enforcer(object_type = object_type)
         enforcer = PolicyEnforcer(session = self.session, project = self.project, policy_engine = self)
         perm_result = enforcer.has_perm(member_id = member.id,
@@ -88,6 +87,7 @@ class PolicyEngine:
         allowed = role_member_objects.first() is not None
         if member.user and member.user.is_super_admin:
             allowed = True
+
         default_role_member_objects = self.session.query(RoleMemberObject).filter(
             RoleMemberObject.object_type == ValidObjectTypes.project.name,
             RoleMemberObject.default_role_name.in_(roles),
