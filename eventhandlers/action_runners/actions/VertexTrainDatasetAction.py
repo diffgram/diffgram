@@ -151,10 +151,7 @@ class VertexTrainDatasetAction(ActionRunner):
         if not success:
             return
         
-        print(google_vertex_connector)
         credentials = google_vertex_connector.get_credentials()
-        print(credentials)
-
         self.init_ai_platform(credentials)
 
         file_list = self.get_file_list(session)

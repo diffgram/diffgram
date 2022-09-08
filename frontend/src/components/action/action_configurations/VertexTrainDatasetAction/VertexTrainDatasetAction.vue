@@ -12,7 +12,23 @@
       :action="action">
 
       <template v-slot:wizard_action_config>
-        <h3>Select Vertex AI dataset</h3>
+        <v-text-field
+          v-model="title"
+          hint="Bucket name without gs prefix"
+          label="GCP bucket name"
+        />
+        <v-text-field
+          v-model="title"
+          label="Bucket location"
+        />
+        <v-text-field
+          v-model="title"
+          label="Experiment"
+        />
+        <v-text-field
+          v-model="title"
+          label="Experiment description"
+        />
       </template>
 
       <template v-slot:ongoing_usage>
