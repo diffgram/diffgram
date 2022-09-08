@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         # run copies of the current job in parallel
-        containers: [1,2,3,4,5,6]
+        containers: [1,2,3,4,5,6, 7]
     container:
       image: gcr.io/diffgram-open-core/cypress-e2e:latest
       options: --user root --shm-size 4gb
