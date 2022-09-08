@@ -143,11 +143,12 @@ class VertexTrainDatasetAction(ActionRunner):
 
         connection_strategy = ConnectionStrategy(
             connection_class = GoogleCloudStorageConnector,
-            connector_id = connector_id,
+            connection_id = connection_id,
             session = self.session)
 
         google_vertex_connector = connection_strategy.get_connector()
         credentials = google_vertex_connector.get_credentials()
+        print(credentials)
 
         self.init_ai_platform(credentials)
 

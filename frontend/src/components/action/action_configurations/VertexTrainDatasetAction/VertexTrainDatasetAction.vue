@@ -51,7 +51,7 @@ export default {
   async mounted() {
     this.steps_config = new ActionStepsConfig()
     this.steps_config.hide_step('pre_conditions')
-    await axios.put(`/api/v1/project/${this.project_string_id}/workflow/91/actions/209/manual_trigger`)
+    await axios.put(`/api/v1/project/${this.project_string_id}/workflow/90/actions/212/manual_trigger`)
     console.log("HERE", this.action)
     this.$emit('action_updated', this.action)
   }
