@@ -72,7 +72,9 @@ def get_attribute_value(session: Session, attr_id: int, attribute_value: any, pr
     elif attribute_group.kind == 'radio':
         if type(attribute_value) != dict:
             return None, None
-        value = int(attribute_value['id'])
+        value = int(attribute_value.get('id'))
+        if value is None:
+            return None, None
     elif attribute_group.kind == 'multiple_select':
         value = []
         if not isinstance(attribute_value, list):
