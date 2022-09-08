@@ -18,7 +18,9 @@
     "snapshots": "mocha --require mocha-snapshots --update",
     "start": "npm run dev",
     "startfortesting": "webpack-dev-server --host 0.0.0.0 --inline --progress --config build/webpack.test.conf.js",
-    "test": "mochapack --webpack-config ./build/webpack.dev.conf.js --require test/setup.js --require mocha-snapshots src/**/*.spec.js"
+    "test": "mochapack --webpack-config ./build/webpack.dev.conf.js --require test/setup.js --require mocha-snapshots src/**/*.spec.js",
+    "storybook": "start-storybook -p 6006",
+    "build-storybook": "build-storybook"
   },
   "dependencies": {
     "@4tw/cypress-drag-drop": "^2.1.0",
@@ -92,6 +94,14 @@
     "@babel/plugin-transform-runtime": "^7.12.1",
     "@babel/preset-env": "^7.12.1",
     "@mdi/font": "^5.8.55",
+    "@storybook/addon-actions": "^6.5.10",
+    "@storybook/addon-essentials": "^6.5.10",
+    "@storybook/addon-interactions": "^6.5.10",
+    "@storybook/addon-links": "^6.5.10",
+    "@storybook/builder-webpack4": "^6.5.10",
+    "@storybook/manager-webpack4": "^6.5.10",
+    "@storybook/testing-library": "^0.0.13",
+    "@storybook/vue": "^6.5.10",
     "@types/highlight.js": "9.12.4",
     "@types/jest": "^27.4.1",
     "@types/mocha": "^9.1.0",
