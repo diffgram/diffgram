@@ -13,6 +13,10 @@
 
       <template v-slot:wizard_action_config>
         <v-text-field
+          v-model="action.config_data.gcp_project_id"
+          label="Project name"
+        />
+        <v-text-field
           v-model="action.config_data.staging_bucket_name_without_gs_prefix"
           hint="Bucket name without gs prefix"
           label="GCP bucket name"

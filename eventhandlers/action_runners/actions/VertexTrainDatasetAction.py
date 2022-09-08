@@ -120,7 +120,7 @@ class VertexTrainDatasetAction(ActionRunner):
     def init_ai_platform(self, credentials):
         aiplatform.init(
             credentials = credentials,
-            project = self.action.config_data.get('gcp_project_name'),
+            project = self.action.config_data.get('gcp_project_id'),
             location = self.action.config_data.get('location'),
             staging_bucket = 'gs://' + self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
             experiment = self.action.config_data.get('experiment'),
