@@ -26,7 +26,7 @@ class ConnectionStrategy:
                  session = None,
                  connection_class = None,
                  connection = None,
-                 connector_id = None,
+                 connection_id = None,
                  integration_name = None):
 
         self.connection = connection
@@ -34,8 +34,8 @@ class ConnectionStrategy:
         self.integration_name = integration_name
         self.connection_class = connection_class
 
-        if connector_id:
-            self.set_connection(connector_id = connector_id, check_perms = False)
+        if connection_id:
+            self.set_connection(connection_id = connection_id, check_perms = False)
 
     def __post_init__(self):
         if not self.connection_class:
@@ -57,7 +57,7 @@ class ConnectionStrategy:
 
     def get_client(self):
         if not self.connection:
-            raise Exception("connection object or connector_id must be supplied at init")
+            raise Exception("connection object or connection_id must be supplied at init")
 
         connector, success = self.get_connector()
 
@@ -65,15 +65,15 @@ class ConnectionStrategy:
 
         return connector.get_client()
 
-    def set_connection(self, connector_id = None, check_perms = None):
-        if not connector_id: return
+    def set_connection(self, connection_id = None, check_perms = None):
+        if not connection_id: return
 
         self.connection_operations = Connection_Operations(
             session = self.session,
             member = None,
-            connection_id = connector_id
+            connection_id = connection_id
         )
-        self.connection = self.connection_operations.get_existing_connection(connector_id)
+        self.connection = self.connection_operations.get_existing_connection(connection_id)
         if check_perms:
             self.connection_operations.validate_existing_connection_id_permissions()
 
@@ -111,7 +111,7 @@ class ConnectionStrategy:
 
         return auth_data
 
-    def get_connector(self, connector_id = None, input = None, check_perms = True):
+    def get_connector(self, connection_id = None, input = None, check_perms = True):
         """
             input is a Diffgram input dict, overrides preset values
             Process
@@ -124,7 +124,7 @@ class ConnectionStrategy:
             expected to do anything.
         """
 
-        self.set_connection(connector_id, check_perms)
+        self.set_connection(connection_id, check_perms)
 
         if len(self.connection_operations.log["error"].keys()) >= 1:
             return self.connection_operations.log, False
@@ -138,11 +138,11 @@ class ConnectionStrategy:
         return connector_instance, True
 
     @staticmethod
-    def add_event_data_to_input(input, session, connector_id):
+    def add_event_data_to_input(input, session, connection_id):
         user = User.get_current_user(session)
         input['opts']['event_data'] = {
             'request_user': user.id,
             'date_time': datetime.datetime.now().strftime('%m/%d/%Y, %H:%M:%S'),
-            'connection_id': connector_id
+            'connection_id': connection_id
         }
         return input
