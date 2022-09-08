@@ -2,7 +2,7 @@
 import requests
 from shared.settings import settings
 import smtplib
-
+from email.utils import formataddr
 from email.mime.text import MIMEText
 
 
@@ -16,21 +16,22 @@ class Communicate_Via_Email():
         self.smtp_port = settings.SMTP_PORT
         self.smtp_username = settings.SMTP_USERNAME
         self.smtp_pass = settings.SMTP_PASSWORD
+        self.from_email = settings.SMTP_FROM_EMAIL
 
     def send(self, email: str, subject: str, message: str, email_list: list = []):
         recipients = email_list
         if len(email_list) == 0:
             recipients = [email]
-        s = smtplib.SMTP(self.smtp_host, self.smtp_port)
+        print('aa', self.smtp_port, self.smtp_host)
+        s = smtplib.SMTP_SSL(self.smtp_host, self.smtp_port)
         s.ehlo()
-        s.starttls()
-        for from_email in recipients:
+        for to_email in recipients:
             msg = MIMEText(message)
             msg['Subject'] = subject
-            msg['From'] = f"Diffgram <web@{self.domain_name}>"
-            msg['To'] = from_email
+            msg['From'] = formataddr(('Diffgram', f"{self.from_email}"))
+            msg['To'] = to_email
 
-            s.login('postmaster@mail.diffgram.com', self.smtp_pass)
+            s.login(self.smtp_username, self.smtp_pass)
             s.sendmail(msg['From'], msg['To'], msg.as_string())
         s.quit()
 

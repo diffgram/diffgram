@@ -96,6 +96,7 @@ EMAIL_DOMAIN_NAME = os.getenv('EMAIL_DOMAIN_NAME')
 SMTP_HOST = os.getenv('SMTP_HOST')
 SMTP_PORT = int(os.getenv('SMTP_PORT'))
 SMTP_USERNAME = os.getenv('SMTP_USERNAME')
+SMTP_FROM_EMAIL = os.getenv('SMTP_FROM_EMAIL')
 SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
 
 
