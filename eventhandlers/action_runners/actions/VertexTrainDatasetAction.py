@@ -143,10 +143,15 @@ class VertexTrainDatasetAction(ActionRunner):
 
         connection_strategy = ConnectionStrategy(
             connection_class = GoogleCloudStorageConnector,
-            connection_id = connection_id,
+            connection_id = 2,
             session = self.session)
 
-        google_vertex_connector = connection_strategy.get_connector()
+        [google_vertex_connector, success] = connection_strategy.get_connector()
+
+        if not success:
+            return
+        
+        print(google_vertex_connector)
         credentials = google_vertex_connector.get_credentials()
         print(credentials)
 
