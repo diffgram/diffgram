@@ -13,20 +13,20 @@
 
       <template v-slot:wizard_action_config>
         <v-text-field
-          v-model="title"
+          v-model="action.config_data.staging_bucket_name_without_gs_prefix"
           hint="Bucket name without gs prefix"
           label="GCP bucket name"
         />
         <v-text-field
-          v-model="title"
+          v-model="action.config_data.location"
           label="Bucket location"
         />
         <v-text-field
-          v-model="title"
+          v-model="action.config_data.experiment"
           label="Experiment"
         />
         <v-text-field
-          v-model="title"
+          v-model="action.config_data.experiment_description"
           label="Experiment description"
         />
       </template>
