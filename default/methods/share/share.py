@@ -281,7 +281,7 @@ class Share_Project():
 
             self.invite_user(
                 signup_link = signup_link,
-                permission_type = input['permission_type'],
+                role_name = input['permission_type'],
                 note = input['note'],
                 email = input['email'])
 
@@ -373,7 +373,7 @@ class Share_Project():
 
     def email_existing_user(
         self,
-        permission_type,
+        role_name,
         note
     ):
 
@@ -382,21 +382,21 @@ class Share_Project():
 
         subject = f"Added to project {self.project_string_id}"
 
-        message = f" You have been added to: {self.project_string_id}"
-        message += f" as a {str(permission_type)}"
+        message = f"You have been added to: {self.project_string_id}"
+        message += f" as a: {str(role_name)} \n"
 
-        message += ". Access the project here. " + settings.URL_BASE + \
-                   "project/" + self.project_string_id
+        message += f"Access the project here: {settings.URL_BASE}project/{self.project_string_id } \n"
 
-        message += f" Added by {str(self.user_who_made_request.email)}"
-        message += f" With personal note of:{str(note)}"
+
+        message += f"Added by {str(self.user_who_made_request.email)} \n"
+        message += f"With personal note of: \n{str(note)}"
 
         communicate_via_email.send(self.user_to_modify.email, subject, message)
 
     def invite_user(
         self,
         signup_link,
-        permission_type,
+        role_name,
         note,
         email):
         """
@@ -412,13 +412,12 @@ class Share_Project():
 
         subject = f"Added to project {self.project_string_id}"
 
-        message = f" You have been added to: {self.project_string_id}"
-        message += f" as an: {str(permission_type)}"
+        message = f"You have been added to: {self.project_string_id} as an: {str(role_name)} \n"
 
-        message += f" Create an account to get started here: {signup_link}"
+        message += f"Create an account to get started here: {signup_link} \n"
 
-        message += f" Added by {str(self.user_who_made_request.email)}"
-        message += f" {str(note)}"
+        message += f"Added by {str(self.user_who_made_request.email)} \n"
+        message += f"With the following personal note:\n {str(note)}"
 
         # Careful, can't use self.user_to_modify here since user doesn't exist yet....
         communicate_via_email.send(email, subject, message)
