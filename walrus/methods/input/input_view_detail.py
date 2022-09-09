@@ -5,7 +5,7 @@ from shared.database.input import Input
 @routes.route('/api/walrus/v1/project/<string:project_string_id>' +
               '/input/view/<int:input_id>',
               methods = ['POST'])
-@Project_permissions.user_has_project(["admin", "Editor", "Viewer"])
+@Project_permissions.user_has_project(["admin", "Editor", "Viewer"], with_permission="project_list_inputs")
 def input_view_detail_api(project_string_id, input_id):
     """
 

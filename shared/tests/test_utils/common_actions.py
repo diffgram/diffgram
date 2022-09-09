@@ -5,7 +5,7 @@ import random
 import string
 from shared.database import hashing_functions
 from shared.regular import regular_methods
-
+from shared.permissions.project_permissions import Project_permissions
 def create_random_string(length):
     return ''.join(random.choice(string.ascii_lowercase + \
                                  string.digits) for x in range(length))
@@ -22,6 +22,7 @@ def create_project_auth(project, session, role = "Editor"):
 
     member = Member()
     session.add(member)
+    session.flush()
     member.kind = "api"
 
 
@@ -32,6 +33,7 @@ def create_project_auth(project, session, role = "Editor"):
 
     auth.permission_level = role
     auth.project_string_id = project.project_string_id
+
     auth.is_live = True
 
     if auth.is_live == True:
@@ -44,5 +46,13 @@ def create_project_auth(project, session, role = "Editor"):
 
     auth.project_id = project.id
 
+    regular_methods.commit_with_rollback(session)
+    Project_permissions.assign_project_roles(
+        session = session,
+        project = project,
+        member_id = auth.member_id,
+        role_name = role.lower(),
+        log = {}
+    )
     regular_methods.commit_with_rollback(session)
     return auth

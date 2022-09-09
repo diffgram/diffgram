@@ -9,6 +9,9 @@ from shared.database.auth.member import Member
 from shared.database.deletion import Deletion
 from shared.feature_flags.feature_checker import FeatureChecker
 from shared.regular.regular_log import log_has_error
+from shared.database.project_perms import ProjectDefaultRoles, ProjectRolesPermissions
+from shared.database.permissions.roles import RoleMemberObject, ValidObjectTypes, Role
+
 
 @routes.route('/api/project/<string:project_string_id>/share',
               methods = ['POST'])
@@ -140,7 +143,7 @@ class Share_Project():
         self.notify = notify
 
     def main(self):
-
+        print('AAAA', self.mode)
         if self.mode == "NEW":
             self.new()
 
@@ -234,28 +237,32 @@ class Share_Project():
         # exists
 
         self.user_to_modify = User.get_by_email(self.session, input['email'])
-        
+
         if self.user_to_modify == self.user_who_made_request:
             self.log['error']['user_who_made_request'] = "You are already on the project."
             return
         # Assumes if user exists to add permissions directly
         if self.user_to_modify:
 
-            permission_result, permission_error = Project_permissions.add(
-                input['permission_type'],
-                self.user_to_modify,
-                self.project_string_id)
+            permission_result, self.log = Project_permissions.add(
+                session = self.session,
+                permission = input['permission_type'],
+                user = self.user_to_modify,
+                sub_type = self.project_string_id,
+                log = self.log)
 
             if self.project not in self.user_to_modify.projects:
                 self.user_to_modify.projects.append(self.project)
 
-            if permission_result is False:
-                self.log['error']['permission_error'] = permission_error
+            if permission_result is False or regular_log.log_has_error(self.log):
                 return
 
             self.email_existing_user(
-                permission_type = input['permission_type'],
+                role_name = input['permission_type'],
                 note = input['note'])
+
+            if regular_log.log_has_error(self.log):
+                return
 
             UserbaseProject.set_working_dir(session = self.session,
                                             user_id = self.user_to_modify.id,
@@ -364,16 +371,18 @@ class Share_Project():
 
         # TODO error handling here...
         Project_permissions.remove(
+            session = self.session,
             permission = user_current_permission,
             user = self.user_to_modify,
-            sub_type = self.project_string_id)
+            sub_type = self.project_string_id,
+            log = self.log)
 
         self.session.add(self.user_to_modify)
         self.user_to_modify.projects.remove(self.project)
 
     def email_existing_user(
         self,
-        permission_type,
+        role_name,
         note
     ):
 
@@ -382,14 +391,14 @@ class Share_Project():
 
         subject = f"Added to project {self.project_string_id}"
 
-        message = f" You have been added to: {self.project_string_id}"
-        message += f" as a {str(permission_type)}"
+        message = f"You have been added to: {self.project_string_id}"
+        message += f" as a: {str(role_name)} \n"
 
-        message += ". Access the project here. " + settings.URL_BASE + \
-                   "project/" + self.project_string_id
+        message += f"Access the project here: {settings.URL_BASE}project/{self.project_string_id } \n"
 
-        message += f" Added by {str(self.user_who_made_request.email)}"
-        message += f" With personal note of:{str(note)}"
+
+        message += f"Added by {str(self.user_who_made_request.email)} \n"
+        message += f"With personal note of: \n{str(note)}"
 
         communicate_via_email.send(self.user_to_modify.email, subject, message)
 
@@ -412,13 +421,12 @@ class Share_Project():
 
         subject = f"Added to project {self.project_string_id}"
 
-        message = f" You have been added to: {self.project_string_id}"
-        message += f" as an: {str(permission_type)}"
+        message = f"You have been added to: {self.project_string_id} as an: {str(permission_type)} \n"
 
-        message += f" Create an account to get started here: {signup_link}"
+        message += f"Create an account to get started here: {signup_link} \n"
 
-        message += f" Added by {str(self.user_who_made_request.email)}"
-        message += f" {str(note)}"
+        message += f"Added by {str(self.user_who_made_request.email)} \n"
+        message += f"With the following personal note:\n {str(note)}"
 
         # Careful, can't use self.user_to_modify here since user doesn't exist yet....
         communicate_via_email.send(email, subject, message)

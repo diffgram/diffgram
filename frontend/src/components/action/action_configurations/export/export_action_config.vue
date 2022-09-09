@@ -34,7 +34,7 @@
 </template>
 
 <script>
-import directory_list from '../../../source_control/directory_list'
+import directory_selector from '../../../source_control/directory_selector'
 import Export_config_details from "@/components/action/action_configurations/export/export_config_details";
 import trigger_config from "@/components/action/actions_config_base/trigger_config";
 import pre_conditions_config from "@/components/action/actions_config_base/pre_conditions_config";
@@ -52,7 +52,7 @@ export default {
     pre_conditions_config,
     action_config_base,
     complete_conditions_config,
-    directory_list: directory_list
+    directory_list: directory_selector
   },
   data: function(){
     return{

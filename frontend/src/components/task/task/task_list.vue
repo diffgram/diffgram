@@ -110,7 +110,7 @@
                   @change="page_number = 0"
                 ></v-select>
 
-                <v_directory_list
+                <directory_selector
                   class="ml-4 mr-8"
                   :project_string_id="project_string_id"
                   :show_new="false"
@@ -121,7 +121,7 @@
                   :set_current_dir_on_change="false"
                   :initial_dir_from_state="false"
                   @change_directory="on_change_dir, (page_number = 0)"
-                ></v_directory_list>
+                ></directory_selector>
 
                 <v-btn
                   @click="refresh_task_list"

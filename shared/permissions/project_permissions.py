@@ -13,6 +13,14 @@ from shared.helpers import sessionMaker
 from flask import request
 from shared.permissions.api_permissions import API_Permissions
 from shared.permissions.user_permissions import User_Permissions
+from shared.permissions.policy_engine.policy_engine import PolicyEngine
+from shared.regular.regular_member import get_member
+from shared.shared_logger import get_shared_logger
+from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
+from shared.database.project_perms import ProjectDefaultRoles, ProjectPermissions
+from sqlalchemy.orm.session import Session
+
+logger = get_shared_logger()
 
 default_denied_message = "(Project Scope) No access."
 
@@ -22,7 +30,8 @@ class Project_permissions():
     @staticmethod
     def user_has_project(Roles: list,
                          apis_project_list = [],
-                         apis_user_list = ["security_email_verified"]):
+                         apis_user_list = ["security_email_verified"],
+                         with_permission: str = None):
         """
         Defaults to forbidden if no match found
 
@@ -54,7 +63,8 @@ class Project_permissions():
                     project_string_id = project_string_id,
                     Roles = Roles,
                     apis_project_list = apis_project_list,
-                    apis_user_list = apis_user_list
+                    apis_user_list = apis_user_list,
+                    with_permission = with_permission
                 )
 
                 # If we get here in execution it's allowed
@@ -79,7 +89,8 @@ class Project_permissions():
         project_string_id: str,
         Roles: list,
         apis_project_list: list = [],
-        apis_user_list: list = []
+        apis_user_list: list = [],
+        with_permission: str = None
     ):
 
         with sessionMaker.session_scope() as session:
@@ -108,7 +119,7 @@ class Project_permissions():
                                                     project_string_id = project_string_id,
                                                     Roles = Roles)
                 if result is not True:
-                    raise Forbidden(f"{basic_auth_denied_message}Failed API Permissions")
+                    raise Forbidden(f"{basic_auth_denied_message}Failed API Permissions. Allowed roles are only: {Roles}")
 
                 # Project APIs, maybe should role this into API_Permissions
                 check_all_apis(
@@ -170,6 +181,8 @@ class Project_permissions():
 
         if 'allow_anonymous' in Roles:
             return True
+        if 'custom_roles' in Roles:
+            return True
 
         if project is None:
             project = Project.get(session, project_string_id)
@@ -220,12 +233,70 @@ class Project_permissions():
         # About returning False (must have returned True eariler)
         raise Forbidden(user_denied_message)
 
-    def remove(permission, user, sub_type):
+    @staticmethod
+    def remove_project_roles(session: Session, role_name: str, project: Project, log: dict, user_to_modify: User):
+        role_member_objects = session.query(RoleMemberObject).filter(
+            RoleMemberObject.default_role_name == role_name,
+            RoleMemberObject.object_type == ValidObjectTypes.project.name,
+            RoleMemberObject.object_id == project.id,
+            RoleMemberObject.member_id == user_to_modify.member_id
+        )
+        role_member_objects.delete(synchronize_session = False)
+
+    @staticmethod
+    def remove(session: Session, permission: str, user: User, sub_type: str, log: dict):
         current_permissions = user.permissions_projects[sub_type]
         current_permissions.remove(permission)
         user.permissions_projects[sub_type] = current_permissions
 
-    def add(permission, user, sub_type):
+        project = Project.get_by_string_id(session = session, project_string_id = sub_type)
+        Project_permissions.remove_project_roles(
+            session = session,
+            role_name = permission,
+            project = project,
+            log = log,
+            user_to_modify = user
+        )
+
+    @staticmethod
+    def assign_project_roles(session: Session, role_name: str, project: Project, log: dict, member_id: int):
+        """
+            Permission 2.0 role assignment. Assigns the given role to the user on the given project.
+            This will eventually substitute the user.permissions_projects.
+        :param session:
+        :param role_name:
+        :param project:
+        :param log:
+        :param user_to_modify:
+        :return:
+        """
+        logger.info(f'Assigning project role: {role_name}')
+        default_role_names = [x.value for x in ProjectDefaultRoles]
+        if role_name in default_role_names:
+            RoleMemberObject.new(
+                session = session,
+                default_role_name = ProjectDefaultRoles[role_name],
+                object_id = project.id,
+                object_type = ValidObjectTypes.project,
+                member_id = member_id
+            )
+        else:
+            role = Role.get_by_name_and_project(session = session,
+                                                project_id = project.id,
+                                                name = role_name)
+            if not role:
+                log['error']['invalid_role'] = f"The role {role_name} does not exists"
+                return
+            RoleMemberObject.new(
+                session = session,
+                role_id = role.id,
+                object_id = project.id,
+                object_type = ValidObjectTypes.project,
+                member_id = member_id
+            )
+
+    @staticmethod
+    def add(session, permission, user, sub_type, log) -> [bool, dict]:
         """
         permission, string
         user, user object
@@ -239,13 +310,38 @@ class Project_permissions():
         if current_permissions is None:
             current_permissions = []
         if permission in current_permissions:
-            return False, "Already has permission"
+            log['error'][permission] = "Already has permission"
+            return False, log
         current_permissions.append(permission)
         user.permissions_projects[sub_type] = current_permissions
-        return True, None
+        # Permissions API 2.0
+        project = Project.get_by_string_id(session = session, project_string_id = sub_type)
+        Project_permissions.assign_project_roles(session = session,
+                                                 role_name = permission.lower(),
+                                                 project = project,
+                                                 log = log,
+                                                 member_id = user.member_id)
+        return True, log
 
-    def clear_all(user, sub_type):
+    @staticmethod
+    def remove_all_project_roles(session: Session, user: User, project: Project):
+
+        role_assignments = session.query(RoleMemberObject).filter(
+            RoleMemberObject.object_type == ValidObjectTypes.project.name,
+            RoleMemberObject.member_id == user.member_id,
+            RoleMemberObject.object_id == project.id
+        )
+        role_assignments.delete(synchronize_session = False)
+
+    @staticmethod
+    def clear_all(session: Session, user: User, sub_type: str):
         user.permissions_projects[sub_type] = {}
+        project = Project.get_by_string_id(session = session, project_string_id = sub_type)
+        Project_permissions.remove_all_project_roles(
+            session = session,
+            user = user,
+            project = project
+        )
 
 
 def check_roles(Roles, Permissions):

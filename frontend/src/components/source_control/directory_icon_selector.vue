@@ -44,7 +44,7 @@
       <div class="pb-4 d-flex flex-column flex-wrap"
            data-cy="directories-container">
 
-        <v_directory_list class="pt-2"
+        <directory_selector class="pt-2"
                           :project_string_id="project_string_id"
                           :directory_blacklist="selected_dir_list"
                           :show_new="true"
@@ -54,7 +54,7 @@
                           :change_on_mount="false"
                           :show_update="true"
                           @change_directory="add_to_selected_dir_list">
-        </v_directory_list>
+        </directory_selector>
 
 
         <v-tooltip top v-for="directory in selected_dir_list">
