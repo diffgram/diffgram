@@ -63,6 +63,7 @@ def get_attribute_value(session: Session, attr_id: int, attribute_value: any, pr
         # For date attributes we return a date time.
         if attribute_value is None:
             return None, None
+        print('DATE', attribute_value)
         value = datetime.datetime.strptime(attribute_value, "%Y-%m-%d")
     elif attribute_group.kind == 'time':
         # For time attributes we return a time object.
