@@ -4,6 +4,7 @@ from ActionConsumer import ActionsConsumer
 from shared.settings import settings
 from shared.shared_logger import get_shared_logger
 from pika.channel import Channel
+import ssl
 
 logger = get_shared_logger()
 
@@ -107,9 +108,16 @@ class ConsumerCreator:
             self.connection.ioloop.call_later(5, self.connection.ioloop.stop)
 
     def create_consumers(self):
+        ssl_options = None
+        if settings.RABBITMQ_USE_SSL:
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            ssl_context.set_ciphers('ECDHE+AESGCM:!ECDSA')
+            ssl_options = pika.SSLOptions(context=ssl_context)
         self.connection = pika.SelectConnection(
             pika.ConnectionParameters(host = settings.RABBITMQ_HOST,
                                       port = settings.RABBITMQ_PORT,
+                                      ssl_options = ssl_options,
+                                      heartbeat = 10,
                                       credentials = pika.PlainCredentials(settings.RABBITMQ_DEFAULT_USER,
                                                                           settings.RABBITMQ_DEFAULT_PASS)),
             on_open_callback = self.on_connection_open,
