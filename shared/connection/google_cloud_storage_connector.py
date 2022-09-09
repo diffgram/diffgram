@@ -395,6 +395,7 @@ class GoogleCloudStorageConnector(Connector):
                                                     spec_list=spec_list,
                                                     log=log,
                                                     string_len_not_zero=False)
+        print("HERE2", log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
 
