@@ -73,6 +73,9 @@
             </v-checkbox>
           </td>
 
+          <td>
+            {{props.item.member_id}}
+          </td>
           <td v-if="props.item.member_kind == 'human'">
             <v_user_icon :user="props.item">
             </v_user_icon>
@@ -160,6 +163,12 @@ import Vue from "vue"; export default Vue.extend( {
         align: 'left',
         sortable: true,
         value: null
+      },
+      {
+        text: "ID",
+        align: 'left',
+        sortable: true,
+        value: 'member_id'
       },
       {
         text: "Picture",

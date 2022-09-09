@@ -143,14 +143,14 @@
             <div class="d-flex justify-space-around">
               <v-container fluid class="d-flex align-center justify-center">
 
-                <v_directory_list :set_from_id="initial_dataset ? initial_dataset.directory_id : undefined"
+                <directory_selector :set_from_id="initial_dataset ? initial_dataset.directory_id : undefined"
                                   :show_text_buttons="false"
                                   :project_string_id="project_string_id"
                                   @change_directory="on_change_directory"
                                   :show_new="true"
                                   :show_update="true"
                 >
-                </v_directory_list>
+                </directory_selector>
 
               </v-container>
 

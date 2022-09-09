@@ -5,7 +5,7 @@
     <div v-if="show_detail == false">
       <v_error_multiple :error="default_error">
       </v_error_multiple>
-   
+
       <v_error_multiple :error="walrus_error">
       </v_error_multiple>
     </div>
@@ -127,9 +127,11 @@ import Vue from "vue"; export default Vue.extend( {
     async check_generic(api) {
       let result = await api()
       let success = undefined
-      let error = this.$route_api_errors(result)
+      let error = undefined
       if (result.status == 200) {
         success = true
+      } else{
+        error = this.$route_api_errors(result)
       }
       return [success, error]
     },
@@ -139,6 +141,7 @@ import Vue from "vue"; export default Vue.extend( {
       this.default_success = undefined
       this.default_error = undefined
       let result = await this.check_generic(get_default_status)
+      console.log('AAAA', result)
       this.default_success = result[0]
       this.default_error =  result[1]
       this.default_loading = false

@@ -1,4 +1,5 @@
 from shared.database.common import *
+from enum import Enum
 from shared.database.source_control.file import File
 from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.discussion.discussion import Discussion
@@ -9,7 +10,11 @@ from sqlalchemy import or_
 from sqlalchemy import and_
 from shared.regular import regular_log
 from shared.database.user import UserbaseProject
+from shared.permissions.policy_engine.policy_engine import PolicyEngine, PermissionResultObjectSet
+from shared.database.source_control.dataset_perms import DatasetPermissions
 from shared.database.tag.tag import Tag
+
+VALID_ACCESS_TYPES = ['project', 'restricted']
 
 
 class WorkingDir(Base):
@@ -17,6 +22,7 @@ class WorkingDir(Base):
 
     """
     __tablename__ = 'working_dir'
+
     id = Column(Integer, primary_key = True)
     created_time = Column(DateTime, default = datetime.datetime.utcnow)
 
@@ -28,6 +34,9 @@ class WorkingDir(Base):
     type = Column(String())  # ["project_default", "standard"]
 
     nickname = Column(String())
+
+    # possible values: ['project', 'restricted']
+    access_type = Column(String(), default = 'project')
 
     count_changes = Column(Integer, default = 0)
 
@@ -53,6 +62,13 @@ class WorkingDir(Base):
     default_external_map = relationship("ExternalMap",
                                         uselist = False,
                                         foreign_keys = [default_external_map_id])
+
+    @staticmethod
+    def get_permissions_list() -> list:
+        result = []
+        for elm in list(DatasetPermissions):
+            result.append(elm.value)
+        return result
 
     @staticmethod
     def new_user_working_dir(
@@ -112,8 +128,9 @@ class WorkingDir(Base):
     def list(
         session,
         project_id,
+        member,
         exclude_archived = True,
-        limit = 100,
+        limit = None,
         return_kind = "objects",
         date_to = None,  # datetime
         date_from = None,  # datetime
@@ -126,11 +143,37 @@ class WorkingDir(Base):
 
     ):
         """
-
+            Lists directories/datasets in a project
+        :param session:
+        :param project_id:
+        :param exclude_archived:
+        :param limit:
+        :param return_kind:
+        :param date_to:
+        :param date_from:
+        :param date_to_string:
+        :param date_from_string:
+        :param nickname:
+        :param nickname_match_type:
+        :param order_by_class_and_attribute:
+        :param order_by_direction:
+        :return:
         """
-
+        from shared.database.project import Project
+        project = Project.get_by_id(session = session, id = project_id)
         query = session.query(WorkingDir).filter(
             WorkingDir.project_id == project_id)
+
+        from shared.database.permissions.roles import ValidObjectTypes
+
+        # Permissions: get datasets that user can see
+        policy_engine = PolicyEngine(session = session, project = project)
+        perm_result = policy_engine.get_allowed_object_id_list(
+            member = member,
+            object_type = ValidObjectTypes.dataset,
+            perm = DatasetPermissions.dataset_view
+        )
+        print('allow all', perm_result.allow_all, perm_result.allowed_object_id_list)
 
         if nickname:
             if nickname_match_type == "ilike":
@@ -155,6 +198,10 @@ class WorkingDir(Base):
                 created_time_string = 'created_time'
             )
 
+        if not perm_result.allow_all:
+            query = query.filter(
+                WorkingDir.id.in_(perm_result.allowed_object_id_list)
+            )
         # Must call order by before limit / offset?
         if order_by_class_and_attribute:
             query = query.order_by(
@@ -164,12 +211,12 @@ class WorkingDir(Base):
             if limit is not None:
                 return query.limit(limit).count()
             else:
-                query.count()
+                return query.count()
         if return_kind == "objects":
             if limit is not None:
                 return query.limit(limit).all()
             else:
-                query.all()
+                return query.all()
 
     # TODO is this still right?
     # Deprecated maybe since label_file_list is gone
@@ -220,7 +267,6 @@ class WorkingDir(Base):
         return session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == self.id,
             WorkingDirFileLink.type == file_type).count()
-
 
     def verify_directory_in_project(session, project, directory_id):
         """
@@ -303,12 +349,14 @@ class WorkingDir(Base):
                             latest_version = None,
                             prior_working_dir_id = None,
                             nickname = None,
+                            access_type = None,
                             project_id = None,
                             project_default = False
                             ):
         working_dir = WorkingDir(
             nickname = nickname,
             project_id = project_id,
+            access_type = access_type,
             type = 'standard'
         )
         if project_default:
@@ -319,15 +367,14 @@ class WorkingDir(Base):
 
         return working_dir
 
-
     def add_tags(
-            self,
-            tag_list,
-            session,
-            project,
-            log):
+        self,
+        tag_list,
+        session,
+        project,
+        log):
 
-        if len(tag_list) > 100: 
+        if len(tag_list) > 100:
             log['error']['tag_list_length'] = f"Over limit, tags sent: {len(tag_list)}"
             return log
 
@@ -341,11 +388,11 @@ class WorkingDir(Base):
             if tag.id is None:
                 session.add(tag)
 
-            dataset_tag = tag.add_to_dataset(dataset_id=self.id, session=session)
+            dataset_tag = tag.add_to_dataset(dataset_id = self.id, session = session)
 
             session.add(dataset_tag)
             log['success'] = True
-            #log['dataset_tag'] = dataset_tag.serialize()
+            # log['dataset_tag'] = dataset_tag.serialize()
 
         return log
 
