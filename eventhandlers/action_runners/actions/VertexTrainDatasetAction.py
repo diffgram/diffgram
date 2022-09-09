@@ -6,6 +6,8 @@ from shared.database.source_control.working_dir import WorkingDir, WorkingDirFil
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
 from shared.data_tools_core import Data_tools
+from shared.shared_logger import get_shared_logger
+
 from google.cloud import aiplatform
 
 from shared.connection.connection_strategy import ConnectionStrategy
@@ -15,6 +17,9 @@ import tempfile
 import gc
 import shutil
 import time
+import os
+
+logger = get_shared_logger()
 
 data_tools = Data_tools().data_tools
 
@@ -127,24 +132,33 @@ class VertexTrainDatasetAction(ActionRunner):
             experiment_description = self.action.config_data.get('experiment_description')
         )
 
-    # WIP: This function was added by Anthony, need to see what is iti for
-    # def write_diffgram_blob_to_gcp():
-    #     blob_bytes = data_tools.get_bytes(blob_path)
-    #     # TODO how we want to avoid extra writes here...
-    #     # e.g. avoid going to numpy and stick with bytes...
-    #     # may need to add more functions on cloud tools
-    #     	data_tools.upload_from_string(
-	# 		temp_local_path = image_out_filename,
-	# 		blob_path = instance.preview_image_blob_dir,
-	# 		content_type = 'image/jpg'
-	# 	)
+    def write_diffgram_blob_to_gcp(self, blob_path):
+        blob_bytes = data_tools.download_bytes(blob_path)
+
+        try:
+            os.makedirs("temp")
+        except OSError:
+            pass
+
+        with open("temp/my_file1.jpg", "wb") as binary_file:
+            binary_file.write(blob_bytes)
+        return
+        # TODO how we want to avoid extra writes here...
+        # e.g. avoid going to numpy and stick with bytes...
+        # may need to add more functions on cloud tools
+        data_tools.upload_from_string(
+			temp_local_path = image_out_filename,
+			blob_path = instance.preview_image_blob_dir,
+			content_type = 'image/jpg'
+		)
 
     def execute_action(self, session):
 
         connection_strategy = ConnectionStrategy(
             connection_class = GoogleCloudStorageConnector,
             connection_id = 2,
-            session = self.session)
+            session = self.session
+        )
 
         [google_vertex_connector, success] = connection_strategy.get_connector()
 
@@ -154,6 +168,16 @@ class VertexTrainDatasetAction(ActionRunner):
         credentials = google_vertex_connector.get_credentials()
         self.init_ai_platform(credentials)
 
+        blob_path = 'projects/images/11/669'
+
+        self.write_diffgram_blob_to_gcp(blob_path)
+
+        #This should be at very end of the function
+        self.clean_up_temp_dir('temp')
+
+        return
+
+        # WIP: temporary commented out till working on uploading files
         file_list = self.get_file_list(session)
         export_data = self.build_vertex_format_jsonl_file(file_list, session)
         self.write_vertex_format_jsonl_file(export_data)
@@ -182,9 +206,8 @@ class VertexTrainDatasetAction(ActionRunner):
         print(working_dataset)
         pass
 
-    def clean_up_temp_dir(path):
+    def clean_up_temp_dir(self, path):
         gc.collect()
-        time.sleep(240)
         try:
             shutil.rmtree(path)  # delete directory
             logger.info("Cleaned successfully")
