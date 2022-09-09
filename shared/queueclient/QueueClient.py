@@ -36,6 +36,7 @@ class QueueClient:
             pika.ConnectionParameters(host = settings.RABBITMQ_HOST,
                                       port = settings.RABBITMQ_PORT,
                                       ssl_options =ssl_options,
+                                      heartbeat = 10,
                                       credentials = pika.PlainCredentials(settings.RABBITMQ_DEFAULT_USER,
                                                                           settings.RABBITMQ_DEFAULT_PASS))
         )
