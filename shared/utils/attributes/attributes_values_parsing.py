@@ -52,6 +52,9 @@ def get_attribute_value(session: Session, attr_id: int, attribute_value: any, pr
         # For tree attributes we will return a list with the ID of all the selected attribute templates.
         selected_dict = attribute_value
         value = []
+        if type(selected_dict) != dict:
+            return None, None
+
         for key, val in selected_dict.items():
             if selected_dict[key].get('selected'):
                 value.append(key)
