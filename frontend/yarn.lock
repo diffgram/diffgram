@@ -2723,7 +2723,7 @@
   resolved "https://registry.yarnpkg.com/@mapbox/unitbezier/-/unitbezier-0.0.0.tgz#15651bd553a67b8581fb398810c98ad86a34524e"
   integrity sha1-FWUb1VOme4WB+zmIEMmK2Go0Uk4=
 
-"@mdi/font@^5.8.55":
+"@mdi/font@^5.8.55", "@mdi/font@^5.9.55":
   version "5.9.55"
   resolved "https://registry.yarnpkg.com/@mdi/font/-/font-5.9.55.tgz#41acd50b88073ded7095fc3029d8712b6e12f38e"
   integrity sha512-jswRF6q3eq8NWpWiqct6q+6Fg/I7nUhrxYJfiEM8JJpap0wVJLQdbKtyS65GdlK7S7Ytnx3TTi/bmw+tBhkGmg==
@@ -2938,6 +2938,14 @@
   integrity sha512-MZPUxrmFubI36XS1DI3qmI0YdN1gks62JtFZvxR67ljjSNCeK6U08Zx4msEWOXuofgqUt6zPHSi1H9fbjR/NRA==
   dependencies:
     "@sinonjs/commons" "^1.7.0"
+
+"@socheatsok78/storybook-addon-vuetify@^0.1.9":
+  version "0.1.9"
+  resolved "https://registry.yarnpkg.com/@socheatsok78/storybook-addon-vuetify/-/storybook-addon-vuetify-0.1.9.tgz#ecc78d2d6262295e19138a09416480d4458f6e81"
+  integrity sha512-l8AwqZVFs0xNOfkTXve46QshjLWwceZhjDT8UF9fVrlQ2dWRc/ZkNpjerUV6w+uiORLr2pBs7q7P3vWF9lNZ4A==
+  dependencies:
+    "@mdi/font" "^5.9.55"
+    vuetify "^2.4.9"
 
 "@soda/friendly-errors-webpack-plugin@^1.7.1":
   version "1.8.1"
@@ -22618,7 +22626,7 @@ vuedraggable@^2.24.3:
   dependencies:
     sortablejs "1.10.2"
 
-vuetify@2.6.9:
+vuetify@2.6.9, vuetify@^2.4.9:
   version "2.6.9"
   resolved "https://registry.yarnpkg.com/vuetify/-/vuetify-2.6.9.tgz#abd3884bee9947c4a5b1dd560ad832bc4d8fccbf"
   integrity sha512-f4jy/DWCwyrkgbbArg0ugSX70aHfv7oO3zz2nuXqoD3W0X8AgunrakzKkt0H+BnuZgesoit9NzLoJNj1GY5DWw==
