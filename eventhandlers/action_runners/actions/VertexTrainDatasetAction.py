@@ -132,15 +132,15 @@ class VertexTrainDatasetAction(ActionRunner):
             experiment_description = self.action.config_data.get('experiment_description')
         )
 
-    def write_diffgram_blob_to_gcp(self, blob_path):
+    def write_diffgram_blob_to_gcp(self, temp_folder_name, blob_path, file_extention = 'jpg'):
         blob_bytes = data_tools.download_bytes(blob_path)
 
         try:
-            os.makedirs("temp")
+            os.makedirs(temp_folder_name)
         except OSError:
             pass
 
-        with open("temp/my_file1.jpg", "wb") as binary_file:
+        with open(f"{temp_folder_name}/{time.time()}.{file_extention}", "wb") as binary_file:
             binary_file.write(blob_bytes)
         return
         # TODO how we want to avoid extra writes here...
@@ -153,6 +153,7 @@ class VertexTrainDatasetAction(ActionRunner):
 		)
 
     def execute_action(self, session):
+        temp_folder_name = f"temp_{self.action_run.id}"
 
         connection_strategy = ConnectionStrategy(
             connection_class = GoogleCloudStorageConnector,
@@ -170,10 +171,10 @@ class VertexTrainDatasetAction(ActionRunner):
 
         blob_path = 'projects/images/11/669'
 
-        self.write_diffgram_blob_to_gcp(blob_path)
+        self.write_diffgram_blob_to_gcp(temp_folder_name, blob_path)
 
         #This should be at very end of the function
-        self.clean_up_temp_dir('temp')
+        self.clean_up_temp_dir(temp_folder_name)
 
         return
 
