@@ -106,7 +106,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __list_gcs_directories(self, opts):
+    def __list_gcs_directories(self, opts: dict):
         prefix = opts['path']
         bucket_name = opts['bucket_name']
         # from https://github.com/GoogleCloudPlatform/google-cloud-python/issues/920
@@ -123,7 +123,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __list_gcs_files(self, opts):
+    def __list_gcs_files(self, opts: dict):
         prefix = opts['path']
         bucket_name = opts['bucket_name']
         # from https://github.com/GoogleCloudPlatform/google-cloud-python/issues/920fp
@@ -142,7 +142,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __get_folder_contents(self, opts):
+    def __get_folder_contents(self, opts: dict):
         just_folders = opts.get('just_folders', False)
         files = []
         if not just_folders:
@@ -153,13 +153,13 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __list_buckets(self, opts):
+    def __list_buckets(self, opts: dict):
         buckets = self.connection_client.list_buckets()
         return {'result': [b.name for b in buckets]}
 
     @with_connection
     @with_google_exception_handler
-    def __fetch_object(self, opts):
+    def __fetch_object(self, opts: dict):
         bucket = self.connection_client.get_bucket(opts['bucket_name'])
         blob = bucket.blob(opts['path'])
         blob_expiry = int(time.time() + (60 * 60 * 24 * 30))
@@ -214,7 +214,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __get_string_data(self, opts):
+    def __get_string_data(self, opts: dict):
         # get bucket with name
         bucket = self.connection_client.get_bucket(opts['bucket_name'])
         blob = bucket.blob(opts['path'])
@@ -224,13 +224,13 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __list_objects(self, opts):
+    def __list_objects(self, opts: dict):
         blobs = self.connection_client.list_blobs(opts['bucket_name'], prefix=opts['path'])
         return {'result': [x.name for x in blobs]}
 
     @with_connection
     @with_google_exception_handler
-    def __count_objects(self, opts):
+    def __count_objects(self, opts: dict):
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
         log, input = regular_input.input_check_many(untrusted_input=opts,
@@ -248,7 +248,7 @@ class GoogleCloudStorageConnector(Connector):
         return {'result': count}
 
     @with_connection
-    def __fetch_folder(self, opts):
+    def __fetch_folder(self, opts: dict):
         result = []
 
         if self.config_data.get('project_string_id') is None:
@@ -327,7 +327,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __start_fetch_folder(self, opts):
+    def __start_fetch_folder(self, opts: dict):
         spec_list = [{'project_string_id': dict}]
         log = regular_log.default()
         log, input = regular_input.input_check_many(untrusted_input=self.config_data,
@@ -343,9 +343,9 @@ class GoogleCloudStorageConnector(Connector):
         return {'result': True}
 
     @with_connection
-    def fetch_data(self, opts):
+    def fetch_data(self, opts: dict):
         """
-            This function routes any action_type to the correct S3 connector actions.
+            This function routes any action_type to the correct GCP connector actions.
         :return: Object
         """
         if 'action_type' not in opts:
@@ -371,7 +371,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __send_export(self, opts):
+    def __send_export(self, opts: dict):
         spec_list = [{'project_string_id': dict}]
         log = regular_log.default()
         log, input = regular_input.input_check_many(untrusted_input=self.config_data,
@@ -454,9 +454,9 @@ class GoogleCloudStorageConnector(Connector):
             return {'result': True}
 
     @with_connection
-    def put_data(self, opts):
+    def put_data(self, opts: dict):
         """
-            This function routes any action_type to the correct S3 connector actions.
+            This function routes any action_type to the correct GCP connector actions.
         :return: Object
         """
         action_type = opts.pop('action_type')
