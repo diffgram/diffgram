@@ -132,25 +132,29 @@ class VertexTrainDatasetAction(ActionRunner):
             experiment_description = self.action.config_data.get('experiment_description')
         )
 
-    def write_diffgram_blob_to_gcp(self, temp_folder_name, blob_path, file_extention = 'jpg'):
+    def write_diffgram_blob_to_gcp(self, connector, temp_folder_name, blob_path, file_extention = 'jpg'):
         blob_bytes = data_tools.download_bytes(blob_path)
+        filepath = f"{temp_folder_name}"
+        filename = f"{time.time()}.{file_extention}"
 
         try:
             os.makedirs(temp_folder_name)
         except OSError:
             pass
 
-        with open(f"{temp_folder_name}/{time.time()}.{file_extention}", "wb") as binary_file:
+        with open(f"{filepath}/{filename}", "wb") as binary_file:
             binary_file.write(blob_bytes)
-        return
         # TODO how we want to avoid extra writes here...
         # e.g. avoid going to numpy and stick with bytes...
         # may need to add more functions on cloud tools
-        data_tools.upload_from_string(
-			temp_local_path = image_out_filename,
-			blob_path = instance.preview_image_blob_dir,
-			content_type = 'image/jpg'
-		)
+        options = {
+            "action_type": 'send_export',
+            "event_data": {},
+            "bucket_name": "vertex-ai-first-bucket"
+        }
+
+        connector.connect()
+        connector.put_data(options)
 
     def execute_action(self, session):
         temp_folder_name = f"temp_{self.action_run.id}"
@@ -171,7 +175,7 @@ class VertexTrainDatasetAction(ActionRunner):
 
         blob_path = 'projects/images/11/669'
 
-        self.write_diffgram_blob_to_gcp(temp_folder_name, blob_path)
+        self.write_diffgram_blob_to_gcp(google_vertex_connector, temp_folder_name, blob_path)
 
         #This should be at very end of the function
         self.clean_up_temp_dir(temp_folder_name)
