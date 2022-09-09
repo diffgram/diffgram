@@ -27,6 +27,7 @@ class Member(Base):
     # TODO future
     # May be some more permissions we can move into here / share
 
+    @staticmethod
     def get_by_id(session,
                   member_id):
         return session.query(Member).filter(

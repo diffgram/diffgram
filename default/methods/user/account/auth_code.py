@@ -205,7 +205,13 @@ def process_project_auth_code(
                                         project_id = project.id, 
                                         working_dir_id = project.directory_default_id)
         """
+        log = regular_log.default()
+        permission_result, log = Project_permissions.add(
+            session = session,
+            permission = auth_code.permission_level,
+            user = new_user,
+            sub_type = auth_code.project_string_id,
+            log = log)
 
-        permission_result, permission_error = Project_permissions.add(auth_code.permission_level,
-                                                                      new_user,
-                                                                      auth_code.project_string_id)
+        if regular_log.log_has_error(log):
+            logger.error(f'Error with auth code: {log}')

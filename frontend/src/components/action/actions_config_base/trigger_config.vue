@@ -8,7 +8,7 @@
       v-model="action.trigger_data.event_name"
     />
 
-    <v_directory_list
+    <directory_selector
       v-if="action && action.trigger_data.event_name === 'input_file_uploaded'"
       :initial_dir_from_state="action.config_data.directory_id"
       :set_current_dir_on_change="false"

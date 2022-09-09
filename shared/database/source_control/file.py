@@ -11,9 +11,7 @@ from shared.database.source_control import working_dir as working_dir_database_m
 from shared.database.annotation.instance import Instance
 from shared.database.labels.label import Label
 from shared.database.text_file import TextFile
-from shared.database.video.sequence import Sequence
-from shared.helpers.sessionMaker import AfterCommitAction
-from shared.database.labels.label_schema import LabelSchema
+from shared.database.source_control.file_perms import FilePermissions
 import time
 from shared.regular import regular_log
 from sqlalchemy.orm import joinedload
@@ -23,6 +21,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import UniqueConstraint
 from shared.database.geospatial.geo_asset import GeoAsset
 from shared.helpers.performance import timeit
+from typing import List
 
 logger = get_shared_logger()
 
@@ -1075,6 +1074,16 @@ class File(Base, Caching):
         return file
 
     @staticmethod
+    def get_directories_ids(session, file_id: int) -> List[int]:
+        from shared.database.source_control.working_dir import WorkingDirFileLink
+        working_dir_sub_query = session.query(WorkingDirFileLink).filter(
+            WorkingDirFileLink.file_id == file_id).all()
+        res = []
+        for elm in working_dir_sub_query:
+            res.append(elm.working_dir_id)
+        return res
+
+    @staticmethod
     def get_by_name_and_directory(session, directory_id, file_name):
         from shared.database.source_control.working_dir import WorkingDirFileLink
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
@@ -1228,6 +1237,13 @@ class File(Base, Caching):
             file.ann_is_complete = not file.ann_is_complete
 
         return file
+
+    @staticmethod
+    def get_permissions_list() -> list:
+        result = []
+        for elm in list(FilePermissions):
+            result.append(elm.value)
+        return result
 
 
 def build_annotation_hash_list(annotation_list):

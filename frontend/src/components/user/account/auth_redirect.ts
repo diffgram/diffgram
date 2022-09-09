@@ -22,8 +22,8 @@ export const auth_redirect = (auth: AuthData, project_string_id: string, router:
     }
     if (auth.type == "add_to_project") {
       //this.$router.push('/studio/annotate/' + response.data.project_string_id);
-      if (this.project_string_id) {
-        router.push(`/user/builder/signup?project_string_id=${this.project_string_id}&role=${auth.user_permission_level}`);
+      if (project_string_id) {
+        router.push(`/user/builder/signup?project_string_id=${project_string_id}&role=${auth.user_permission_level}`);
       } else {
         router.push(`/user/builder/signup?role=${auth.user_permission_level}`);
       }
