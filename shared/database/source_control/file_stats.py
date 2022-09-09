@@ -156,6 +156,8 @@ class FileStats(Base, Caching):
                 if not key.isnumeric():
                     continue
                 value, attr_type = get_attribute_value(session, int(key), val, project)
+                if value is None:
+                    continue
                 if attr_type in ['select', 'radio']:
                     FileStats.new(
                         session = session,
