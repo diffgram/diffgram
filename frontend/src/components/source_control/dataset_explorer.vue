@@ -25,6 +25,20 @@
           :project_string_id="project_string_id"
           @change="change_schema"
         />
+        <directory_selector
+          :project_string_id="project_string_id"
+          @change_directory="dataset_change_event($event)"
+          ref="ground_truth_dir_list"
+          :change_on_mount="false"
+          :show_new="false"
+          :initial_dir_from_state="false"
+          :update_from_state="false"
+          :set_current_dir_on_change="false"
+          :view_only_mode="false"
+          :show_update="false"
+          :show_tag="false"
+          :multiple="true"
+        />
 
         <label_select_only
           :project_string_id="project_string_id"
@@ -42,20 +56,6 @@
           @attribute_change="attribute_change_event"
         />
 
-        <v_directory_list
-          :project_string_id="project_string_id"
-          @change_directory="dataset_change_event($event)"
-          ref="ground_truth_dir_list"
-          :change_on_mount="false"
-          :show_new="false"
-          :initial_dir_from_state="false"
-          :update_from_state="false"
-          :set_current_dir_on_change="false"
-          :view_only_mode="false"
-          :show_update="false"
-          :show_tag="false"
-          :multiple="true"
-        />
 
         <tag_select
           v-model="tag_selected_list"
