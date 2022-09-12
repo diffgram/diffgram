@@ -13,10 +13,10 @@ jobs:
     strategy:
       matrix:
         # run copies of the current job in parallel
-        containers: [1,2,3,4,5,6,7]
+        containers: [1,2,3,4,5,6, 7]
     container:
       image: gcr.io/diffgram-open-core/cypress-e2e:latest
-      options: --user root
+      options: --user root --shm-size 4gb
       env:
         NODE_ENV: development
         DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
@@ -42,6 +42,7 @@ jobs:
         RABBITMQ_PORT: 5672
         RABBITMQ_DEFAULT_USER: diffgram
         RABBITMQ_DEFAULT_PASS: diffgram
+        DEBUG: cypress:* cypress run
     services:
       # Label used to access the service container
       postgres:

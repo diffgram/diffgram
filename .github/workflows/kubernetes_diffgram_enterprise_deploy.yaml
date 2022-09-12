@@ -135,6 +135,7 @@ jobs:
       SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID: ${{secrets.SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID}}
       RABBITMQ_DEFAULT_USER: ${{secrets.RABBITMQ_DEFAULT_USER}}
       RABBITMQ_DEFAULT_PASS: ${{secrets.RABBITMQ_DEFAULT_PASS}}
+      RABBITMQ_USE_SSL: ${{secrets.RABBITMQ_USE_SSL}}
       ERLANG_COOKIE: ${{secrets.ERLANG_COOKIE}}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
     steps:
@@ -207,6 +208,7 @@ jobs:
           diffgramSettings.DIFFGRAM_MINIO_DISABLED_SSL_VERIFY: ${{secrets.DIFFGRAM_MINIO_DISABLED_SSL_VERIFY}}
           diffgramSettings.SIGNED_URL_CACHE_MINIMUM_DAYS_VALID: ${{secrets.SIGNED_URL_CACHE_MINIMUM_DAYS_VALID}}
           diffgramSettings.SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID: ${{secrets.SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID}}
+          diffgramSettings.RABBITMQ_USE_SSL: ${{secrets.RABBITMQ_USE_SSL}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           rabbitmq.auth.username: ${{secrets.RABBITMQ_DEFAULT_USER}}
           rabbitmq.auth.password: ${{secrets.RABBITMQ_DEFAULT_PASS}}
@@ -293,6 +295,7 @@ jobs:
       ALLOW_STRIPE_BILLING: ${{ secrets.ALLOW_STRIPE_BILLING }}
       RABBITMQ_DEFAULT_USER: ${{ secrets.RABBITMQ_DEFAULT_USER }}
       RABBITMQ_DEFAULT_PASS: ${{ secrets.RABBITMQ_DEFAULT_PASS }}
+      RABBITMQ_USE_SSL: ${{ secrets.RABBITMQ_USE_SSL }}
     steps:
       - uses: xt0rted/pull-request-comment-branch@v1
         if: "github.event.issue.pull_request"
@@ -446,6 +449,7 @@ jobs:
           diffgramSettings.EMAIL_VALIDATION: ${{secrets.EMAIL_VALIDATION}}
           diffgramSettings.IS_OPEN_SOURCE: ${{secrets.IS_OPEN_SOURCE}}
           diffgramSettings.ALLOW_STRIPE_BILLING: ${{secrets.ALLOW_STRIPE_BILLING}}
+          diffgramSettings.RABBITMQ_USE_SSL: ${{secrets.RABBITMQ_USE_SSL}}
           imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           rabbitmq.auth.username: ${{secrets.RABBITMQ_DEFAULT_USER}}
           rabbitmq.auth.password: ${{secrets.RABBITMQ_DEFAULT_PASS}}

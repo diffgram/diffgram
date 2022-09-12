@@ -1,4 +1,4 @@
-# OPENCORE - ADD
+from enum import Enum
 from shared.database.common import *
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.user import UserbaseProject
@@ -12,7 +12,12 @@ from shared.database.account.account import Account
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
 from shared.database.labels.label import Label
+from shared.regular import regular_log
 from shared.database.tag.tag import Tag
+from shared.shared_logger import get_shared_logger
+
+logger = get_shared_logger()
+PROJECT_DEFAULT_ROLES = ['admin', 'editor', 'viewer']
 
 
 class Project(Base, Caching):
@@ -70,12 +75,6 @@ class Project(Base, Caching):
 
     api_billing_enabled = Column(Boolean)
 
-    # File list?
-
-    # May still be useful if we want to see all labels over time?
-    # But recall labels are assigned via Version now
-    # label_list = relationship("Label", back_populates="project")
-
     tag_list = association_proxy('project_tag_junction', 'tag')
 
     annotations_feedback_loop_trigger_check = Column(Boolean())
@@ -84,10 +83,6 @@ class Project(Base, Caching):
     # Does every project have a seperate settings table?
     settings = relationship("Project_settings", uselist = False, back_populates = "project")
 
-    # For now just putting it here
-    # Until process / research on optimal way to represent 1:1 relation
-
-    # Frames per second
     settings_input_video_fps = Column(Integer, default = 30)  # ie 10,  0 == all
 
     readme = Column(String())
@@ -132,6 +127,13 @@ class Project(Base, Caching):
                         foreign_keys = [plan_id])
 
     @staticmethod
+    def get_permissions_list() -> list:
+        result = []
+        for elm in list(ProjectValidPermissions):
+            result.append(elm.value)
+        return result
+
+    @staticmethod
     def new(session,
             name: str,
             project_string_id: str,
@@ -157,10 +159,16 @@ class Project(Base, Caching):
         user.current_project_string_id = project_string_id
         user.project_current = project
 
-        permission_add_result, permission_add_error_message = Project_permissions.add(
+        log = regular_log.default()
+        permission_result, log = Project_permissions.add(
+            session = session,
             permission = "admin",
             user = user,
-            sub_type = project_string_id)
+            sub_type = project_string_id,
+            log = log)
+        if regular_log.log_has_error(log):
+            logger.error(log)
+            return None
 
         session.add(user, project)
 
@@ -240,6 +248,12 @@ class Project(Base, Caching):
             name == name
         ).first()
         return project
+
+    def has_member(self, member_id) -> bool:
+        for user in self.users:
+            if user.member_id == member_id:
+                return True
+        return False
 
     @staticmethod
     def list(
@@ -353,6 +367,17 @@ class Project(Base, Caching):
             preview_file_list.append(file.serialize_with_type(self.session))
 
         return preview_file_list
+
+    def create_default_roles(self, session):
+        from shared.database.permissions.roles import Role
+        for role in PROJECT_DEFAULT_ROLES:
+            # We create empty permissions because permissions will be managed in code for default roles.
+            role = Role.new(
+                session = session,
+                permissions_list = [],
+                name = role,
+                project_id = self.id
+            )
 
     def regenerate_member_list(self):
 
@@ -517,7 +542,7 @@ class Project(Base, Caching):
         return attribute_groups_serialized_list
 
     def get_default_schema(self, session):
-        return LabelSchema.get_default(session=session, project_id=self.id)
+        return LabelSchema.get_default(session = session, project_id = self.id)
 
     def get_label_list(self, session, directory, schema_id = None):
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
@@ -735,7 +760,6 @@ class ProjectTag(Base):
         self.tag = tag
 
 
-
 class ProjectStar(Base):
     """
 
@@ -752,3 +776,14 @@ class ProjectStar(Base):
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project", back_populates = "star_list",
                            foreign_keys = project_id)
+
+
+class ProjectValidPermissions(Enum):
+    project_create_billing_account = 'project_create_billing_account'
+    project_list_inputs = 'project_list_inputs'
+    project_job_list = 'project_job_list'
+    project_delete = 'project_delete'
+    project_edit = 'project_edit'
+    project_invite_members = 'project_invite_members'
+    project_list_datasets = 'project_list_datasets'
+    project_view_all_datasets = 'project_view_all_datasets'

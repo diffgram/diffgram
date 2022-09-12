@@ -5,7 +5,7 @@
         <v-radio-group v-model="output_dir_action" :mandatory="true" @change="on_option_change">
           <v-radio label="Move the files to a Dataset" value="move"></v-radio>
 
-          <v_directory_list :project_string_id="project_string_id"
+          <directory_selector :project_string_id="project_string_id"
                             @change_directory="on_change_move_dir"
                             ref="dir_list_move"
                             :show_new="true"
@@ -16,11 +16,11 @@
                             :show_update="true"
                             :set_from_id="move_id"
           >
-          </v_directory_list>
+          </directory_selector>
 
           <v-radio label="Copy the files to a Dataset" value="copy"></v-radio>
 
-          <v_directory_list :project_string_id="project_string_id"
+          <directory_selector :project_string_id="project_string_id"
                             :set_from_id="copy_id"
                             @change_directory="on_change_copy_dir"
                             ref="dir_list_copy"
@@ -30,7 +30,7 @@
                             :set_current_dir_on_change="false"
                             :view_only_mode="output_dir_action !== 'copy'"
                             :show_update="true">
-          </v_directory_list>
+          </directory_selector>
 
           <v-radio label="Do nothing." :value="'nothing'"></v-radio>
         </v-radio-group>

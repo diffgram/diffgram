@@ -3,7 +3,7 @@ from pika.exchange_type import ExchangeType
 import json
 from enum import Enum
 from shared.settings import settings
-
+import ssl
 
 class QueueNames(Enum):
     action_triggers = 'actions.triggers'
@@ -26,9 +26,17 @@ class QueueClient:
     def __init__(self):
         if settings.DIFFGRAM_SYSTEM_MODE == 'testing':
             return
+        ssl_options = None
+        if settings.RABBITMQ_USE_SSL:
+            ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+            ssl_context.set_ciphers('ECDHE+AESGCM:!ECDSA')
+            ssl_options = pika.SSLOptions(context=ssl_context)
+
         self.connection = pika.BlockingConnection(
             pika.ConnectionParameters(host = settings.RABBITMQ_HOST,
                                       port = settings.RABBITMQ_PORT,
+                                      ssl_options =ssl_options,
+                                      heartbeat = 10,
                                       credentials = pika.PlainCredentials(settings.RABBITMQ_DEFAULT_USER,
                                                                           settings.RABBITMQ_DEFAULT_PASS))
         )

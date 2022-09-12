@@ -184,6 +184,7 @@ RABBITMQ_DEFAULT_PASS = os.getenv('RABBITMQ_DEFAULT_PASS')
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST')      # without port
 USE_RABBIT_MQ = env_adapter.bool(os.getenv('USE_RABBIT_MQ', True))
 RABBITMQ_PORT = int(os.getenv('RABBITMQ_PORT', 5672))
+RABBITMQ_USE_SSL = env_adapter.bool(os.getenv('RABBITMQ_USE_SSL', False))
 
 
 SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_MINIMUM_DAYS_VALID', 30 * 12))     # this should always be lower then new offset
