@@ -68,7 +68,7 @@
         <v-switch
           class="pr-4"
           v-model="show_ground_truth"
-          :label="`Show Ground Truth`"
+          :label="`Show Ground Truth`"testing_e2e
         ></v-switch>
 
         <v-switch
@@ -269,6 +269,7 @@ import { attribute_group_list } from "../../services/attributesService";
         compare_models: false,
         base_model_run: undefined,
         compare_to_model_run_list: undefined,
+        cancel_request: null,
         label_schema: null,
         metadata: {
           'directory_id': undefined,
@@ -284,7 +285,6 @@ import { attribute_group_list } from "../../services/attributesService";
         labels_selected: [],
         attributes_selected: [],
         tag_selected_list: [],
-        attribute_list: [],
         attribute_list: [],
       }
     },
@@ -517,8 +517,13 @@ import { attribute_group_list } from "../../services/attributesService";
         }
         try{
           this.none_found = undefined
+          if (this.cancel_request){
+            this.cancel_request.cancel()
+          }
+          this.cancel_request = axios.CancelToken.source();
           const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
             '/user/' + this.$store.state.user.current.username + '/file/list', {
+
             'metadata': {
               ...this.metadata,
               query: this.query,
@@ -526,7 +531,7 @@ import { attribute_group_list } from "../../services/attributesService";
             },
             'project_string_id': this.$props.project_string_id
 
-          })
+          }, {  cancelToken: this.cancel_request.token,})
           if (response.data['file_list'] == false) {
             this.none_found = true
             this.file_list = this.metadata.page === 1 ? [] : this.file_list
@@ -549,8 +554,9 @@ import { attribute_group_list } from "../../services/attributesService";
           this.metadata_previous = response.data.metadata;
         }
         catch (error) {
-          console.error(error);
-          this.query_error = this.$route_api_errors(error)
+          if (error.toString() !== 'Cancel'){
+            this.query_error = this.$route_api_errors(error)
+          }
         }
         finally {
           if(reload_all){

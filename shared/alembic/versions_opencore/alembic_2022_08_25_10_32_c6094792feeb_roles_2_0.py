@@ -39,6 +39,8 @@ def migrate_roles_from_project(op):
     all_users = session.query(User).all()
     for user in all_users:
         permissions_dict = user.permissions_projects
+        if permissions_dict is None:
+            continue
         for project_string_id, roles_list in permissions_dict.items():
             project = Project.get_by_string_id(session = session, project_string_id = project_string_id)
             for role_name in roles_list:
@@ -55,7 +57,11 @@ def migrate_roles_from_project(op):
     api_members = session.query(Auth_api).all()
     for api in api_members:
         role_name = api.permission_level
+        if role_name is None:
+            continue
         project = Project.get_by_string_id(session = session, project_string_id = api.project_string_id)
+        if project is None:
+            continue
         if role_name.lower() in ProjectRolesPermissions.keys():
             RoleMemberObject.new(
                 session = session,
@@ -64,7 +70,7 @@ def migrate_roles_from_project(op):
                 object_id = project.id,
                 object_type = ValidObjectTypes.project
             )
-        print(f'Added {role_name} to API Access {api.member_id} on project {api.project_string_id}')
+            print(f'Added {role_name.lower()} to API Access {api.member_id} on project {api.project_string_id}')
 def upgrade():
     op.create_table('role',
                     sa.Column('id', sa.Integer(), nullable = False),
