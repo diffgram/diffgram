@@ -5,7 +5,7 @@ export default {
   component: tooltip_button
 };
 
-export const TooltipButton = () => ({
+export const TooltipButton = (args) => ({
   components: { 
     tooltip_button 
   },
