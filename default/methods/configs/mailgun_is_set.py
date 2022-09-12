@@ -1,4 +1,4 @@
-import settings.settings
+from shared.settings import settings
 
 try:
     from methods.regular.regular_api import *
