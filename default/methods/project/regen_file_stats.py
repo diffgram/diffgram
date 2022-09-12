@@ -44,11 +44,14 @@ def regen_project_file_stats(project_id: int):
             file_id = file_elm[0]
 
             file = File.get_by_id(session, file_id = file_id)
+            instance_list = file.cache_dict.get('instance_list', []) if file.cache_dict else []
             logger.info(f'Creating Stats for file ID: {file_id}')
+            logger.info(f'Instance Lis: {instance_list}')
+
             if file.project:
                 FileStats.update_file_stats_data(
                     session = session,
-                    instance_list = file.cache_dict.get('instance_list', []) if file.cache_dict else [],
+                    instance_list = instance_list,
                     file_id = file_id,
                     project = file.project
                 )
