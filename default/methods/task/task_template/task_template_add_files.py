@@ -38,7 +38,7 @@ def task_template_add_files_api(task_template_id):
 
 
 def task_template_add_files_core(session, task_template_id, file_id_list = None, query = None, log = regular_log.default()):
-    task_template = Job.get_by_id(session, job_id)
+    task_template = Job.get_by_id(session, task_template_id)
     if task_template is None:
         log['error']['task_template'] = "Task Template does not exists."
         return False, log
