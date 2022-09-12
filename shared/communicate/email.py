@@ -6,6 +6,12 @@ from email.utils import formataddr
 from email.mime.text import MIMEText
 
 
+def mail_var_is_set(setting_value):
+    if setting_value is None or setting_value == 'none' or not setting_value:
+        return False
+    return True
+
+
 class Communicate_Via_Email():
 
     def __init__(self):
@@ -19,6 +25,11 @@ class Communicate_Via_Email():
         self.from_email = settings.SMTP_FROM_EMAIL
 
     def send(self, email: str, subject: str, message: str, email_list: list = []):
+        is_set_smtp_mailer = mail_var_is_set(settings.EMAIL_VALIDATION) and mail_var_is_set(settings.SMTP_HOST) \
+                             and mail_var_is_set(settings.SMTP_PORT) and mail_var_is_set(settings.SMTP_USERNAME) and \
+                             mail_var_is_set(settings.SMTP_PASSWORD)
+        if not is_set_smtp_mailer:
+            return
         recipients = email_list
         if len(email_list) == 0:
             recipients = [email]
