@@ -49,7 +49,7 @@ def regen_project_file_stats(project_id: int):
                 FileStats.update_file_stats_data(
                     session = session,
                     instance_list = file.cache_dict.get('instance_list', []) if file.cache_dict else [],
-                    file_id = file.id,
+                    file_id = file_id,
                     project = file.project
                 )
                 session.commit()
