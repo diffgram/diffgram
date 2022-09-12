@@ -465,6 +465,8 @@ class GoogleCloudStorageConnector(Connector):
             raise Exception('Provide event_data key.')
         if action_type == 'send_export':
             return self.__send_export(opts)
+        if action_type == 'upload_file':
+            return "uplaoded file"
         raise NotImplementedError
 
     @with_connection

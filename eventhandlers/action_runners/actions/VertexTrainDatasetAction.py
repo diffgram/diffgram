@@ -6,6 +6,7 @@ from shared.database.source_control.working_dir import WorkingDir, WorkingDirFil
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
 from shared.data_tools_core import Data_tools
+from shared.data_tools_core_gcp import DataToolsGCP
 from shared.shared_logger import get_shared_logger
 
 from google.cloud import aiplatform
@@ -148,13 +149,14 @@ class VertexTrainDatasetAction(ActionRunner):
         # e.g. avoid going to numpy and stick with bytes...
         # may need to add more functions on cloud tools
         options = {
-            "action_type": 'send_export',
+            "action_type": 'upload_file',
             "event_data": {},
             "bucket_name": "vertex-ai-first-bucket"
         }
 
         connector.connect()
-        connector.put_data(options)
+        result = connector.put_data(options)
+        print(result)
 
     def execute_action(self, session):
         temp_folder_name = f"temp_{self.action_run.id}"
@@ -172,6 +174,15 @@ class VertexTrainDatasetAction(ActionRunner):
         
         credentials = google_vertex_connector.get_credentials()
         self.init_ai_platform(credentials)
+
+        bucket_config = {
+            "GOOGLE_PROJECT_NAME": self.action.config_data.get('gcp_project_id'),
+            "CLOUD_STORAGE_BUCKET": self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
+            "ML__CLOUD_STORAGE_BUCKET": self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
+            "credentials": credentials
+        }
+
+        gcp_data_tools = DataToolsGCP(bucket_config)
 
         blob_path = 'projects/images/11/669'
 
