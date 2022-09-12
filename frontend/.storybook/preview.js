@@ -1,7 +1,12 @@
 import { withVuetify } from '@socheatsok78/storybook-addon-vuetify/dist/decorators'
+import store from '../src/store'
 
 export const decorators = [
-  withVuetify
+  withVuetify,
+  () => ({ 
+    template: "<story />",
+    store 
+  })
 ]
 
 export const parameters = {

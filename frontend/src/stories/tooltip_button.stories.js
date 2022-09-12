@@ -1,5 +1,4 @@
 import tooltip_button from '../components/regular/tooltip_button.vue';
-import store from '../store'
 
 export default {
   title: 'Regular/tooltip_button',
@@ -15,8 +14,7 @@ export default {
 const Template = (args, { argTypes }) => ({
   props: Object.keys(argTypes),
   components: { tooltip_button },
-  template: '<tooltip_button v-bind="$props" />',
-  store: store
+  template: '<tooltip_button v-bind="$props" />'
 });
 
 export const Primary = Template.bind({});
