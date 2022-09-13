@@ -542,6 +542,7 @@ class File(Base, Caching):
         else:
             return session.query(File).filter(File.id == file_id).first()
 
+    @staticmethod
     def get_by_id_list(session, file_id_list):
         return session.query(File).filter(File.id.in_(file_id_list)).all()
 

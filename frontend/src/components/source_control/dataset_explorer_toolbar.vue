@@ -1,0 +1,103 @@
+<template>
+  <div class="ds-explorer-toolbar-container d-flex align-center justify-end pr-8">
+    <div v-if="selected_files.length > 0">
+      <v-chip small color="success">
+        <span v-if="!loading">Selected: <strong>{{selected_files.length}}</strong></span>
+        <span v-else> <v-progress-circular  size="12" indeterminate></v-progress-circular></span>
+      </v-chip>
+    </div>
+
+    <div class="mr-2">
+      <button_with_menu
+        icon="mdi-plus-network"
+        :icon_style="true"
+        :disabled="selected_files.length === 0"
+        tooltip_message="Create tasks from selection"
+        color="success"
+        :close_by_button="true"
+        menu_direction="top"
+        action_icon="mdi-upload-network-outline"
+        action_message="Create tasks"
+        action_color="success"
+        @action_clicked="add_tasks_to_task_template"
+      >
+
+        <template slot="content">
+          <v-card elevation=0>
+            <v-card-title>Select Task template</v-card-title>
+            <v-card-text class="text--primary">
+              <job_select label="Select Task Template"></job_select>
+            </v-card-text>
+          </v-card>
+        </template>
+
+      </button_with_menu>
+    </div>
+    <div class="mr-4">
+      <v-checkbox
+        v-model="select_all"
+        @change="select_all_files"
+        :label="`Select All`"
+      ></v-checkbox>
+    </div>
+
+
+    <div>
+      <v-chip small color="secondary">
+        <span v-if="!loading">Total: <strong>{{file_count}}</strong></span>
+        <span v-else> <v-progress-circular  size="12" indeterminate></v-progress-circular></span>
+      </v-chip>
+    </div>
+
+  </div>
+</template>
+
+<script>
+  import Vue from "vue";
+  import job_select from '@/components/task/job/job_select.vue'
+
+  export default Vue.extend({
+    name: "dataset_explorer_toolbar",
+    components:{
+      job_select
+    },
+    props: [
+      'project_string_id',
+      'selected_files',
+      'file_count',
+      'loading',
+    ],
+    async mounted() {
+
+    },
+    data: function () {
+      return {
+        select_all: false
+      }
+    },
+    watch:{
+
+    },
+    computed:{
+
+    },
+    methods: {
+      add_tasks_to_task_template: function(){
+
+      },
+      select_all_files: function(){
+
+      }
+    }
+
+  })
+</script>
+
+<style>
+  .ds-explorer-toolbar-container{
+    width: 100%;
+    border: solid 1px #e0e0e0;
+    height: 35px !important;
+
+  }
+</style>
