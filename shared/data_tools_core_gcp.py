@@ -161,8 +161,6 @@ class DataToolsGCP:
         content_type: str = None,
         timeout: int = None
     ):
-        print(self.provider)
-
         """
             Uploads the file in the given path to the Cloud Provider's storage service.
         :param temp_local_path: path of the local file to upload
