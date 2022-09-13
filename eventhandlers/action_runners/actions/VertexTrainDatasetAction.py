@@ -146,10 +146,10 @@ class VertexTrainDatasetAction(ActionRunner):
         return gcp_data_tools
 
 
-    def write_diffgram_blob_to_gcp(self, credentials, temp_folder_name, blob_path, gcp_data_tools, file_extention = 'jpg'):
-        blob_bytes = data_tools.download_bytes(blob_path)
-        filepath = f"{temp_folder_name}"
-        filename = f"{time.time()}.{file_extention}"
+    def write_diffgram_blob_to_gcp(self, gcp_data_tools, temp_folder_name, file):
+        blob_bytes = data_tools.download_bytes(file.image.url_signed_blob_path)
+        filepath = temp_folder_name
+        filename = file.image.original_filename
 
         try:
             os.makedirs(temp_folder_name)
@@ -162,8 +162,10 @@ class VertexTrainDatasetAction(ActionRunner):
         # e.g. avoid going to numpy and stick with bytes...
         # may need to add more functions on cloud tools
 
-        gcp_data_tools.upload_to_cloud_storage(f"{filepath}/{filename}", filename, "image/jpeg")
+        gcp_data_tools.upload_to_cloud_storage(f"{filepath}/{filename}", f"{self.action.config_data.get('directory_id')}/{filename}", "image")
         self.clean_up_temp_file(f"{filepath}/{filename}")
+
+        return f"{self.action.config_data.get('directory_id')}/{filename}"
 
     def execute_action(self, session):
         temp_folder_name = f"temp_{self.action_run.id}"
@@ -185,11 +187,22 @@ class VertexTrainDatasetAction(ActionRunner):
         gcp_data_tools = self.init_gcp_data_tools(credentials)
 
         file_list = self.get_file_list(session)
+
+        dataset_file_list = []
         for file in file_list:
             if file.image is not None:
-                self.write_diffgram_blob_to_gcp(credentials, temp_folder_name, file.image.url_signed_blob_path, gcp_data_tools)
+                file_link = self.write_diffgram_blob_to_gcp(gcp_data_tools, temp_folder_name, file)
+                dataset_file_list.append(f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{file_link}")
                 
         self.clean_up_temp_dir(temp_folder_name)
+
+        working_dataset = aiplatform.ImageDataset.create(
+            display_name=f"{self.action.config_data.get('directory_id')}",
+            gcs_source=dataset_file_list,
+            import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
+            # data_item_labels=image_annotation #this is throwing error and I'm not sure why
+            #     # the type sepcified is dict: https://github.com/googleapis/python-aiplatform/blob/main/google/cloud/aiplatform/datasets/image_dataset.py#L42
+        )
 
         # #This should be at very end of the function
 
