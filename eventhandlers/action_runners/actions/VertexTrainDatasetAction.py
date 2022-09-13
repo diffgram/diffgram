@@ -133,7 +133,20 @@ class VertexTrainDatasetAction(ActionRunner):
             experiment_description = self.action.config_data.get('experiment_description')
         )
 
-    def write_diffgram_blob_to_gcp(self, credentials, temp_folder_name, blob_path, file_extention = 'jpg'):
+    def init_gcp_data_tools(self, credentials):
+        bucket_config = {
+            "GOOGLE_PROJECT_NAME": self.action.config_data.get('gcp_project_id'),
+            "CLOUD_STORAGE_BUCKET": self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
+            "ML__CLOUD_STORAGE_BUCKET": self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
+            "credentials": credentials
+        }
+
+        gcp_data_tools = DataToolsGCP(bucket_config)
+
+        return gcp_data_tools
+
+
+    def write_diffgram_blob_to_gcp(self, credentials, temp_folder_name, blob_path, gcp_data_tools, file_extention = 'jpg'):
         blob_bytes = data_tools.download_bytes(blob_path)
         filepath = f"{temp_folder_name}"
         filename = f"{time.time()}.{file_extention}"
@@ -149,16 +162,8 @@ class VertexTrainDatasetAction(ActionRunner):
         # e.g. avoid going to numpy and stick with bytes...
         # may need to add more functions on cloud tools
 
-        bucket_config = {
-            "GOOGLE_PROJECT_NAME": self.action.config_data.get('gcp_project_id'),
-            "CLOUD_STORAGE_BUCKET": self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
-            "ML__CLOUD_STORAGE_BUCKET": self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
-            "credentials": credentials
-        }
-
-        gcp_data_tools = DataToolsGCP(bucket_config)
-
         gcp_data_tools.upload_to_cloud_storage(f"{filepath}/{filename}", filename, "image/jpeg")
+        self.clean_up_temp_file(f"{filepath}/{filename}")
 
     def execute_action(self, session):
         temp_folder_name = f"temp_{self.action_run.id}"
@@ -175,14 +180,18 @@ class VertexTrainDatasetAction(ActionRunner):
             return
         
         credentials = google_vertex_connector.get_credentials()
+        
         self.init_ai_platform(credentials)
+        gcp_data_tools = self.init_gcp_data_tools(credentials)
 
-        blob_path = 'projects/images/11/669'
-
-        self.write_diffgram_blob_to_gcp(credentials, temp_folder_name, blob_path)
-
-        #This should be at very end of the function
+        file_list = self.get_file_list(session)
+        for file in file_list:
+            if file.image is not None:
+                self.write_diffgram_blob_to_gcp(credentials, temp_folder_name, file.image.url_signed_blob_path, gcp_data_tools)
+                
         self.clean_up_temp_dir(temp_folder_name)
+
+        # #This should be at very end of the function
 
         return
 
@@ -214,6 +223,15 @@ class VertexTrainDatasetAction(ActionRunner):
 
         print(working_dataset)
         pass
+
+    def clean_up_temp_file(self, filename):
+        gc.collect()
+        try:
+            os.remove(filename)
+            logger.info("File removed succesfully successfully")
+        except OSError as exc:
+            logger.error(f"shutil error {str(exc)}")
+            pass
 
     def clean_up_temp_dir(self, path):
         gc.collect()
