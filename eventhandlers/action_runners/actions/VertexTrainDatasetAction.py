@@ -59,8 +59,8 @@ class VertexTrainDatasetAction(ActionRunner):
     def get_file_list(self, session):
 
         directory_id = self.action.config_data.get('directory_id')
-        directory = WorkingDir.get_by_id(session = session, directory_id=directory_id)
-        file_list = WorkingDirFileLink.file_list(session=session, working_dir_id=directory.id, limit=None)
+        self.directory = WorkingDir.get_by_id(session = session, directory_id=directory_id)
+        file_list = WorkingDirFileLink.file_list(session=session, working_dir_id=self.directory.id, limit=None)
 
         return file_list
 
@@ -162,10 +162,10 @@ class VertexTrainDatasetAction(ActionRunner):
         # e.g. avoid going to numpy and stick with bytes...
         # may need to add more functions on cloud tools
 
-        gcp_data_tools.upload_to_cloud_storage(f"{filepath}/{filename}", f"{self.action.config_data.get('directory_id')}/{filename}", "image")
+        gcp_data_tools.upload_to_cloud_storage(f"{filepath}/{filename}", f"{self.directory.nickname}/{filename}", "image")
         self.clean_up_temp_file(f"{filepath}/{filename}")
 
-        return f"{self.action.config_data.get('directory_id')}/{filename}"
+        return f"{self.directory.nickname}/{filename}"
 
     def execute_action(self, session):
         temp_folder_name = f"temp_{self.action_run.id}"
@@ -197,11 +197,9 @@ class VertexTrainDatasetAction(ActionRunner):
         self.clean_up_temp_dir(temp_folder_name)
 
         working_dataset = aiplatform.ImageDataset.create(
-            display_name=f"{self.action.config_data.get('directory_id')}",
+            display_name=f"{self.directory.nickname}",
             gcs_source=dataset_file_list,
             import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
-            # data_item_labels=image_annotation #this is throwing error and I'm not sure why
-            #     # the type sepcified is dict: https://github.com/googleapis/python-aiplatform/blob/main/google/cloud/aiplatform/datasets/image_dataset.py#L42
         )
 
         # #This should be at very end of the function
