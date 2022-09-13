@@ -1381,7 +1381,6 @@ import Vue from "vue";
       else{
         file[new_file_data.type] = new_file_data[new_file_data.type]
       }
-      console.log('NEW URL DATA', file)
 
     },
     fetch_file_list_signed_urls: async function(file_list){
