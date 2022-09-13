@@ -501,7 +501,8 @@ class File(Base, Caching):
 
     def serialize_with_annotations(
         self,
-        session = None):
+        session = None,
+        regen_url = True):
 
         """
         Better way to do file splitting?
@@ -513,7 +514,7 @@ class File(Base, Caching):
             Instance.soft_delete == False
         ).all()
 
-        file = self.serialize_with_type(session)
+        file = self.serialize_with_type(session, regen_url = regen_url)
         file['instance_list'] = [instance.serialize_with_label() for instance in instance_list]
 
         return file

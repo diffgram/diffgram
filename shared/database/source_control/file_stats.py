@@ -119,6 +119,8 @@ class FileStats(Base, Caching):
         # First Delete existing
         if instance_list is None:
             return
+        if not instance_list:
+            return
         if reset:
             session.query(FileStats).filter(
                 FileStats.file_id == file_id

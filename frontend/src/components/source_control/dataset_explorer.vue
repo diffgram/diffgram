@@ -277,6 +277,7 @@ import { attribute_group_list } from "../../services/attributesService";
           'media_type': this.filter_media_type_setting,
           'page': 1,
           'query_menu_open' : false,
+          'regen_url' : false,
           'file_view_mode': 'explorer',
           'previous': undefined,
           'search_term': this.search_term
@@ -499,6 +500,9 @@ import { attribute_group_list } from "../../services/attributesService";
       },
       load_more_files: async function(){
         this.metadata.page += 1;
+        if(this.loading){
+          return
+        }
         await this.fetch_file_list(false)
       },
       update_compare_to_model_runs: function(value){
@@ -506,6 +510,28 @@ import { attribute_group_list } from "../../services/attributesService";
       },
       update_base_model_run: function(value){
         this.base_model_run = value
+      },
+      fetch_single_file_signed_url: async function(file, project_string_id){
+        if(!file){
+          return
+        }
+        let [url_data, err] = await get_file_signed_url(project_string_id, file.id);
+        if (err){
+          this.error = this.$route_api_errors(err)
+        }
+        let new_file_data = url_data.file
+        if(new_file_data.type === 'sensor_fusion'){
+          file.point_cloud = new_file_data.point_cloud
+        }
+        else{
+          file[new_file_data.type] = new_file_data[new_file_data.type]
+        }
+
+      },
+      fetch_file_thumbnails: function(file_list){
+        for (let file of file_list){
+          this.fetch_single_file_signed_url(file, this.$props.project_string_id)
+        }
       },
       fetch_file_list: async function(reload_all = true){
         if(reload_all){
@@ -535,6 +561,7 @@ import { attribute_group_list } from "../../services/attributesService";
           if (response.data['file_list'] == false) {
             this.none_found = true
             this.file_list = this.metadata.page === 1 ? [] : this.file_list
+            this.fetch_file_thumbnails(this.file_list)
           }
           else {
             if(reload_all){
