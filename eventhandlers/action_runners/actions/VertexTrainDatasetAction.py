@@ -196,11 +196,24 @@ class VertexTrainDatasetAction(ActionRunner):
                 
         self.clean_up_temp_dir(temp_folder_name)
 
-        working_dataset = aiplatform.ImageDataset.create(
-            display_name=f"{self.directory.nickname}",
-            gcs_source=dataset_file_list,
-            import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
-        )
+        datasets_list = aiplatform.datasets.ImageDataset.list()
+        existing_datasets = []
+
+        for dataset in datasets_list:
+            existing_datasets.append(dataset.__dict__['_gca_resource'].__dict__['_pb'].display_name)
+
+        working_dataset = None
+        if self.directory.nickname not in existing_datasets:
+            working_dataset = aiplatform.ImageDataset.create(
+                display_name=f"{self.directory.nickname}",
+                gcs_source=dataset_file_list,
+                import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
+            )
+        else:
+            dataset_index = existing_datasets.index(self.directory.nickname)
+            working_dataset = datasets_list[dataset_index]
+
+        print("Working dataset", working_dataset)
 
         # #This should be at very end of the function
 
