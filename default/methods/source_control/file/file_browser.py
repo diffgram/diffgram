@@ -716,7 +716,7 @@ class File_Browser():
         if mode == "serialize":
             for index_file, file in enumerate(working_dir_file_list):
                 if self.metadata['file_view_mode'] == 'explorer':
-                    file_serialized = file.serialize_with_annotations(self.session)
+                    file_serialized = file.serialize_with_annotations(self.session, regen_url = self.metadata["regen_url"])
 
                 elif self.metadata['file_view_mode'] == 'ids_only':
                     file_serialized = file.id

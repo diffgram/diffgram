@@ -194,17 +194,18 @@
 </template>
 
 <script>
-import Vue from "vue";
-import axios from "../../services/customInstance";
-import directory_icon_selector from '../source_control/directory_icon_selector'
-import model_run_selector from "../model_runs/model_run_selector";
-import query_suggestion_menu from "./query_suggestion_menu";
-import dataset_explorer_toolbar from "./dataset_explorer_toolbar";
-import label_select_only from '@/components/label/label_select_only.vue'
-import tag_select from '@/components/tag/tag_select.vue'
-import label_schema_selector from "../label/label_schema_selector.vue"
-import attribute_select from "../attribute/attribute_select.vue"
-import {attribute_group_list} from "../../services/attributesService";
+  import Vue from "vue";
+  import axios from "../../services/customInstance";
+  import dataset_explorer_toolbar from "./dataset_explorer_toolbar";
+  import directory_icon_selector from '../source_control/directory_icon_selector'
+  import model_run_selector from "../model_runs/model_run_selector";
+  import query_suggestion_menu from "./query_suggestion_menu";
+  import label_select_only from '@/components/label/label_select_only.vue'
+  import tag_select from '@/components/tag/tag_select.vue'
+  import label_schema_selector from "../label/label_schema_selector.vue"
+  import attribute_select from "../attribute/attribute_select.vue"
+import { attribute_group_list } from "../../services/attributesService";
+import { get_file_signed_url } from "../../services/fileServices";
 
 export default Vue.extend({
   name: "dataset_explorer",
@@ -339,11 +340,8 @@ export default Vue.extend({
         // ctrlKey cmd key
         this.ctrl_key = false;
       }
-      if (event.ctrlKey === true || event.metaKey === true) {
-        // ctrlKey cmd key
-        this.ctrl_key = true;
-      }
     },
+
     get_schema_attributes: async function () {
       const [data, error] = await attribute_group_list(this.project_string_id, undefined, this.label_schema.id, 'from_project')
 
@@ -521,7 +519,7 @@ export default Vue.extend({
     },
     on_select_all: function(){
       this.select_all_active = !this.select_all_active
-      if(this.select_all_active){
+      if(this.select_all_active) {
         this.selected_files = []
         for (let file_elm of this.file_list) {
           file_elm.selected = true;
@@ -562,61 +560,90 @@ export default Vue.extend({
     update_base_model_run: function (value) {
       this.base_model_run = value
     },
+    reset_file_thumbnails: function(file_list){
+      for (let file of file_list){
+        file.image.url_signed = null
+      }
+    },
+    fetch_single_file_signed_url: async function(file, project_string_id){
+      if(!file){
+        return
+      }
+      let [url_data, err] = await get_file_signed_url(project_string_id, file.id);
+      if (err){
+        this.error = this.$route_api_errors(err)
+      }
+      let new_file_data = url_data.file
+      if(new_file_data.type === 'sensor_fusion'){
+        file.point_cloud = new_file_data.point_cloud
+      }
+      else{
+        file[new_file_data.type] = new_file_data[new_file_data.type]
+      }
+    },
+    fetch_file_thumbnails: function(file_list){
+      for (let file of file_list){
+        this.fetch_single_file_signed_url(file, this.$props.project_string_id)
+      }
+    },
     fetch_file_list: async function (reload_all = true) {
-      if (reload_all) {
+      if(reload_all){
         this.metadata.page = 1;
         this.loading = true
-      } else {
+      }
+      else{
         this.infinite_scroll_loading = true;
       }
-      try {
-        this.reset_file_selected()
+      try{
         this.none_found = undefined
-        if (this.cancel_request) {
+        if (this.cancel_request){
           this.cancel_request.cancel()
         }
+        this.metadata.regen_url = false
         this.cancel_request = axios.CancelToken.source();
         const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
           '/user/' + this.$store.state.user.current.username + '/file/list', {
-
           'metadata': {
             ...this.metadata,
             query: this.query,
             previous: this.metadata_previous
           },
           'project_string_id': this.$props.project_string_id
-
-        }, {cancelToken: this.cancel_request.token,})
+        }, {  cancelToken: this.cancel_request.token,})
         if (response.data['file_list'] == false) {
           this.none_found = true
           this.file_list = this.metadata.page === 1 ? [] : this.file_list
-        } else {
-          if (reload_all) {
+        }
+        else {
+          this.reset_file_thumbnails(response.data.file_list)
+          this.fetch_file_thumbnails(response.data.file_list)
+          if(reload_all){
             this.file_list = response.data.file_list;
-          } else {
-
-            for (const file in response.data.file_list) {
-              if (!this.file_list.find(f => f.id === file.id)) {
+          }
+          else{
+            for(const file in response.data.file_list){
+              if(!this.file_list.find(f => f.id === file.id)){
                 this.file_list.push(file);
               }
             }
             this.file_list = this.file_list.concat(response.data.file_list);
           }
-          this.file_count = response.data.metadata.file_count
-
         }
         this.metadata_previous = response.data.metadata;
-      } catch (error) {
-        if (error.toString() !== 'Cancel') {
+        this.file_count = response.data.metadata.file_count;
+      }
+      catch (error) {
+        if (error.toString() !== 'Cancel'){
           this.query_error = this.$route_api_errors(error)
         }
-      } finally {
-        if (reload_all) {
+      }
+      finally {
+        if(reload_all){
           this.loading = false;
-        } else {
+        }
+        else{
           this.infinite_scroll_loading = false;
         }
-
       }
     },
     fetch_model_run_list: async function () {
@@ -638,9 +665,6 @@ export default Vue.extend({
     },
     reset_file_selected: function(){
       for (let file_elm of this.file_list) {
-        if (file.id === file_elm.id) {
-          continue
-        }
         file_elm.selected = false;
       }
     },

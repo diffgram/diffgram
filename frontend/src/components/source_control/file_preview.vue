@@ -150,7 +150,7 @@
 
     async mounted() {
       if (this.$props.file) {
-        this.set_bg(this.$props.file);
+        await this.set_bg(this.$props.file);
       }
       if(this.$refs.file_card){
         if(this.$props.selectable){
@@ -276,7 +276,7 @@
             resolve();
           }
           else {
-            if (newFile.image) {
+            if (newFile.image && newFile.image.url_signed) {
               const image = new Image();
               image.onload = () => {
                 this.image_bg = image;

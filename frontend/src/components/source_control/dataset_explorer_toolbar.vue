@@ -65,7 +65,6 @@ export default Vue.extend({
   props: [
     'project_string_id',
     'selected_files',
-    'select_all',
     'file_count',
     'loading',
     'query',
