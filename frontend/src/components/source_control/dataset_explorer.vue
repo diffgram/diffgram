@@ -194,6 +194,7 @@
   import label_schema_selector from "../label/label_schema_selector.vue"
   import attribute_select from "../attribute/attribute_select.vue"
 import { attribute_group_list } from "../../services/attributesService";
+import { get_file_signed_url } from "../../services/fileServices";
 
   export default Vue.extend({
     name: "dataset_explorer",
@@ -528,6 +529,11 @@ import { attribute_group_list } from "../../services/attributesService";
         }
 
       },
+      reset_file_thumbnails: function(file_list){
+        for (let file of file_list){
+          file.image.url_signed = null
+        }
+      },
       fetch_file_thumbnails: function(file_list){
         for (let file of file_list){
           this.fetch_single_file_signed_url(file, this.$props.project_string_id)
@@ -561,9 +567,11 @@ import { attribute_group_list } from "../../services/attributesService";
           if (response.data['file_list'] == false) {
             this.none_found = true
             this.file_list = this.metadata.page === 1 ? [] : this.file_list
-            this.fetch_file_thumbnails(this.file_list)
+
           }
           else {
+            this.reset_file_thumbnails(response.data.file_list)
+            this.fetch_file_thumbnails(response.data.file_list)
             if(reload_all){
               this.file_list = response.data.file_list;
             }
@@ -577,7 +585,9 @@ import { attribute_group_list } from "../../services/attributesService";
               this.file_list = this.file_list.concat(response.data.file_list);
             }
 
+
           }
+
           this.metadata_previous = response.data.metadata;
         }
         catch (error) {
