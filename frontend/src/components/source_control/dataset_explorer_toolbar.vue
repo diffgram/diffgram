@@ -26,7 +26,7 @@
           <v-card elevation=0>
             <v-card-title>Select Task template</v-card-title>
             <v-card-text class="text--primary">
-              <job_select label="Select Task Template"></job_select>
+              <job_select v-model="selected_job" label="Select Task Template"></job_select>
             </v-card-text>
           </v-card>
         </template>
@@ -74,14 +74,22 @@ export default Vue.extend({
   },
   data: function () {
     return {
-      select_all: false
+      select_all: false,
+      selected_job: null
     }
   },
   watch: {},
   computed: {},
   methods: {
-    add_tasks_to_task_template: async function (task_template_id) {
-
+    add_tasks_to_task_template: async function () {
+      if(!this.selected_job){
+        this.$store.commit('display_snackbar', {
+          text: `Please select a job before submitting`,
+          color: 'error'
+        })
+        return
+      }
+      let task_template_id = this.selected_job.id
       if (this.select_all) {
         let file_id_list = this.selected_files.map(elm => elm.id)
         var [data, err] = await add_files_to_task_template(task_template_id, file_id_list, undefined)

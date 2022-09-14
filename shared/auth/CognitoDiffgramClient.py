@@ -41,7 +41,6 @@ class CognitoDiffgramClient(OAuth2ClientBase):
             #     'Authorization': self.auth_header
             # }
             # print('authhhh0,0', headers)
-            print('asdasdas', payload)
             response = requests.post(url = url, data = payload)
         else:
             response = requests.post(url = url, data = payload)

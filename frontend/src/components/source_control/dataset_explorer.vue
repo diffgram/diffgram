@@ -615,6 +615,7 @@ export default Vue.extend({
           this.file_list = this.metadata.page === 1 ? [] : this.file_list
         }
         else {
+          this.reset_file_selected()
           this.reset_file_thumbnails(response.data.file_list)
           this.fetch_file_thumbnails(response.data.file_list)
           if(reload_all){
@@ -630,7 +631,10 @@ export default Vue.extend({
           }
         }
         this.metadata_previous = response.data.metadata;
-        this.file_count = response.data.metadata.file_count;
+        if(response.data.metadata.file_count){
+          this.file_count = response.data.metadata.file_count;
+        }
+
       }
       catch (error) {
         if (error.toString() !== 'Cancel'){
