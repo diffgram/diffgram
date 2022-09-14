@@ -552,6 +552,7 @@ import { get_file_signed_url } from "../../services/fileServices";
           if (this.cancel_request){
             this.cancel_request.cancel()
           }
+          this.metadata.regen_url = false
           this.cancel_request = axios.CancelToken.source();
           const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
             '/user/' + this.$store.state.user.current.username + '/file/list', {
