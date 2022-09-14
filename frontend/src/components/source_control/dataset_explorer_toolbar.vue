@@ -2,8 +2,8 @@
   <div class="ds-explorer-toolbar-container d-flex align-center justify-end pr-8">
     <div v-if="selected_files.length > 0">
       <v-chip small color="success">
-        <span v-if="!loading">Selected: <strong>{{selected_files.length}}</strong></span>
-        <span v-else> <v-progress-circular  size="12" indeterminate></v-progress-circular></span>
+        <span v-if="!loading">Selected: <strong>{{ selected_files.length }}</strong></span>
+        <span v-else> <v-progress-circular size="12" indeterminate></v-progress-circular></span>
       </v-chip>
     </div>
 
@@ -44,8 +44,8 @@
 
     <div>
       <v-chip small color="secondary">
-        <span v-if="!loading">Total: <strong>{{file_count}}</strong></span>
-        <span v-else> <v-progress-circular  size="12" indeterminate></v-progress-circular></span>
+        <span v-if="!loading">Total: <strong>{{ file_count }}</strong></span>
+        <span v-else> <v-progress-circular size="12" indeterminate></v-progress-circular></span>
       </v-chip>
     </div>
 
@@ -53,51 +53,69 @@
 </template>
 
 <script>
-  import Vue from "vue";
-  import job_select from '@/components/task/job/job_select.vue'
+import Vue from "vue";
+import job_select from '@/components/task/job/job_select.vue'
+import {add_files_to_task_template} from '@/services/taskTemplateService'
 
-  export default Vue.extend({
-    name: "dataset_explorer_toolbar",
-    components:{
-      job_select
-    },
-    props: [
-      'project_string_id',
-      'selected_files',
-      'file_count',
-      'loading',
-    ],
-    async mounted() {
+export default Vue.extend({
+  name: "dataset_explorer_toolbar",
+  components: {
+    job_select
+  },
+  props: [
+    'project_string_id',
+    'selected_files',
+    'select_all',
+    'file_count',
+    'loading',
+    'query',
+  ],
+  async mounted() {
 
-    },
-    data: function () {
-      return {
-        select_all: false
-      }
-    },
-    watch:{
-
-    },
-    computed:{
-
-    },
-    methods: {
-      add_tasks_to_task_template: function(){
-
-      },
-      select_all_files: function(){
-
-      }
+  },
+  data: function () {
+    return {
+      select_all: false
     }
+  },
+  watch: {},
+  computed: {},
+  methods: {
+    add_tasks_to_task_template: async function (task_template_id) {
 
-  })
+      if (this.select_all) {
+        let file_id_list = this.selected_files.map(elm => elm.id)
+        var [data, err] = await add_files_to_task_template(task_template_id, file_id_list, undefined)
+      } else {
+        var [data, err] = await add_files_to_task_template(task_template_id, undefined, this.$props.query)
+      }
+      if (err != null){
+        this.$store.commit('display_snackbar', {
+          text: `Error adding files to dataset ${err}`,
+          color: 'error'
+        })
+        return
+      }
+      if(data){
+        this.$store.commit('display_snackbar', {
+          text: `Tasks are being created...`,
+          color: 'success'
+        })
+      }
+    },
+    select_all_files: function () {
+      this.$emit('select_all')
+    }
+  }
+
+})
 </script>
 
 <style>
-  .ds-explorer-toolbar-container{
-    width: 100%;
-    border: solid 1px #e0e0e0;
-    height: 35px !important;
+.ds-explorer-toolbar-container {
+  width: 100%;
+  border: solid 1px #e0e0e0;
+  height: 35px !important;
 
-  }
+}
 </style>

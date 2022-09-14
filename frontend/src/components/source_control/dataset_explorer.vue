@@ -5,6 +5,8 @@
       :file_count="file_count"
       :selected_files="selected_files"
       :project_string_id="project_string_id"
+      :query="query"
+      @select_all="on_select_all"
     >
 
     </dataset_explorer_toolbar>
@@ -270,6 +272,7 @@ export default Vue.extend({
       },
       show_advanced_query_settings: false,
       loading: false,
+      select_all_active: false,
       query: undefined,
       query_error: undefined,
       current_dir_id: null,
@@ -516,7 +519,23 @@ export default Vue.extend({
       this.refresh_query()
 
     },
+    on_select_all: function(){
+      this.select_all_active = !this.select_all_active
+      if(this.select_all_active){
+        this.selected_files = []
+        for (let file_elm of this.file_list) {
+          file_elm.selected = true;
+          this.selected_files.push(file_elm)
+        }
+      }
+      else{
+        this.selected_files = []
+        for (let file_elm of this.file_list) {
+          file_elm.selected = false;
+        }
+      }
 
+    },
     on_focus_query: function () {
       this.$store.commit('set_user_is_typing_or_menu_open', true);
       this.query_menu_open = true

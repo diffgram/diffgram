@@ -2,7 +2,7 @@
 
   <div class="ma-1 pa-0">
 
-    <div 
+    <div
       class="pa-0 ma-0 drawable-wrapper"
       :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
       ref="file_card"
@@ -36,10 +36,10 @@
 
       </drawable_canvas>
 
-      <v-skeleton-loader  
-        v-else 
-        type="image" 
-        :width="file_preview_width" 
+      <v-skeleton-loader
+        v-else
+        type="image"
+        :width="file_preview_width"
         :height="file_preview_height"
       />
     </div>
@@ -166,8 +166,8 @@
     watch: {
       file: {
         deep: true,
-        handler: function(new_val, old_val){
-          this.set_bg(new_val);
+        handler: async function(new_val, old_val){
+          await this.set_bg(new_val);
           this.prepare_filtered_instance_list();
         }
       },
