@@ -19,6 +19,7 @@ import gc
 import shutil
 import time
 import os
+import json
 
 logger = get_shared_logger()
 
@@ -103,24 +104,22 @@ class VertexTrainDatasetAction(ActionRunner):
         return export_data
 
 
-    def write_vertex_format_jsonl_file(self, export_data):
-
-        temp_dir = tempfile.mkdtemp()
-        temp_local_path = temp_dir + F'/google_format_{time.time()}.jsonl'
-
-        with open(temp_local_path, 'w') as outfile:
+    def write_vertex_format_jsonl_file(self, gcp_data_tools, temp_folder_name, export_data):
+        filename = f"{time.time()}.jsonl"
+        
+        with open(f"{temp_folder_name}/{filename}", 'w') as outfile:
             for entry in export_data:
-                json.dump(entry, outfile)
+                payload = {
+                    "imageGcsUri": f"{entry['filename']}",
+                    "boundingBoxAnnotations": [{"displayName": "Tomato", "xMin": "0.3", "yMin": "0.3", "xMax": "0.7", "yMax": "0.6"}]
+                }
+                json.dump(payload, outfile)
                 outfile.write('\n')
 
-        blob_path = "TBD"
+        gcp_data_tools.upload_to_cloud_storage(f"{temp_folder_name}/{filename}", f"{self.directory.nickname}/{filename}")
+        self.clean_up_temp_file(f"{temp_folder_name}/{filename}")
 
-        data_tools.upload_to_cloud_storage(
-            temp_local_path = temp_local_path,
-            blob_path = blob_path,
-            content_type = 'application/json')
-
-        VertexTrainDatasetAction.clean_up_temp_dir(path = temp_dir)
+        return f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{self.directory.nickname}/{filename}"
 
 
     def init_ai_platform(self, credentials):
@@ -148,7 +147,6 @@ class VertexTrainDatasetAction(ActionRunner):
 
     def write_diffgram_blob_to_gcp(self, gcp_data_tools, temp_folder_name, file):
         blob_bytes = data_tools.download_bytes(file.image.url_signed_blob_path)
-        filepath = temp_folder_name
         filename = file.image.original_filename
 
         try:
@@ -156,14 +154,11 @@ class VertexTrainDatasetAction(ActionRunner):
         except OSError:
             pass
 
-        with open(f"{filepath}/{filename}", "wb") as binary_file:
+        with open(f"{temp_folder_name}/{filename}", "wb") as binary_file:
             binary_file.write(blob_bytes)
-        # TODO how we want to avoid extra writes here...
-        # e.g. avoid going to numpy and stick with bytes...
-        # may need to add more functions on cloud tools
 
-        gcp_data_tools.upload_to_cloud_storage(f"{filepath}/{filename}", f"{self.directory.nickname}/{filename}", "image")
-        self.clean_up_temp_file(f"{filepath}/{filename}")
+        gcp_data_tools.upload_to_cloud_storage(f"{temp_folder_name}/{filename}", f"{self.directory.nickname}/{filename}", "image")
+        self.clean_up_temp_file(f"{temp_folder_name}/{filename}")
 
         return f"{self.directory.nickname}/{filename}"
 
@@ -192,8 +187,11 @@ class VertexTrainDatasetAction(ActionRunner):
         for file in file_list:
             if file.image is not None:
                 file_link = self.write_diffgram_blob_to_gcp(gcp_data_tools, temp_folder_name, file)
-                dataset_file_list.append(f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{file_link}")
-                
+                dataset_file_list.append({
+                    "filename": f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{file_link}"
+                })
+        vertexai_import_file = self.write_vertex_format_jsonl_file(gcp_data_tools, temp_folder_name, dataset_file_list)
+
         self.clean_up_temp_dir(temp_folder_name)
 
         datasets_list = aiplatform.datasets.ImageDataset.list()
@@ -206,14 +204,12 @@ class VertexTrainDatasetAction(ActionRunner):
         if self.directory.nickname not in existing_datasets:
             working_dataset = aiplatform.ImageDataset.create(
                 display_name=f"{self.directory.nickname}",
-                gcs_source=dataset_file_list,
+                gcs_source=vertexai_import_file,
                 import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
             )
         else:
             dataset_index = existing_datasets.index(self.directory.nickname)
             working_dataset = datasets_list[dataset_index]
-
-        print("Working dataset", working_dataset)
 
         # #This should be at very end of the function
 
