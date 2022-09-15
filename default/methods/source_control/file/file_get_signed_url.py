@@ -103,5 +103,5 @@ def get_file_signed_url_core(session: Session,
                                                                               connection_id = file.connection_id,
                                                                               bucket_name = file.bucket_name,
                                                                               regen_url = True)
-
+    
     return file_data, log
