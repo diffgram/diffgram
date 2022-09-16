@@ -66,52 +66,44 @@ class VertexTrainDatasetAction(ActionRunner):
         return file_list
 
 
-    def build_vertex_format_instance(self, instance, session):
+    def build_vertex_format_instance(self, instance, session, file):
         label = File.get_by_id(session=session, 
                                file_id=instance.label_file_id)
-        vertex_format_instance = {
-            "displayName": label.label.name,
-            "xMin": instance.x_min,
-            "xMax": instance.x_max,
-            "yMin": instance.y_min,
-            "yMax": instance.y_max
-        }
-        return vertex_format_instance
+
+        image_height = file.image.height
+        image_width = file.image.width
+        if label is not None:
+            vertex_format_instance = {
+                "displayName": label.label.name,
+                "xMin": instance.x_min/image_width,
+                "xMax": instance.x_max/image_width,
+                "yMin": instance.y_min/image_height,
+                "yMax": instance.y_max/image_height
+            }
+            return vertex_format_instance
 
 
 
-    def build_vertex_format_jsonl_file(self, file_list, session):
+    def build_vertex_format_jsonl_file(self, file, session):
+        vertex_format_instance_list = []
+        instance_list = Instance.list(session=session, file_id=file['diffgram_file'].id)
 
-        export_data = []
-
-        for file in file_list:
-            vertex_format_instance_list = []
-            instance_list = Instance.list(session=session, file_id=file.id)
-
-            for instance in instance_list:
-                vertex_format_instance = self.build_vertex_format_instance(instance, session)
+        for instance in instance_list:
+            vertex_format_instance = self.build_vertex_format_instance(instance, session, file['diffgram_file'])
+            if vertex_format_instance is not None:
                 vertex_format_instance_list.append(vertex_format_instance)
 
-            single_file = {
-                "imageGcsUri": "gs://" + self.action.config_data.get('image_folder_path_with_bucket_without_gs_prefix') 
-                        +  "/" + file.original_filename,
-                "boundingBoxAnnotations": vertex_format_instance_list
-            }
-
-            print(single_file)
-
-        export_data.append(single_file)
-        return export_data
+        return vertex_format_instance_list
 
 
-    def write_vertex_format_jsonl_file(self, gcp_data_tools, temp_folder_name, export_data):
+    def write_vertex_format_jsonl_file(self, gcp_data_tools, temp_folder_name, file_list):
         filename = f"{time.time()}.jsonl"
         
         with open(f"{temp_folder_name}/{filename}", 'w') as outfile:
-            for entry in export_data:
+            for entry in file_list:
                 payload = {
                     "imageGcsUri": f"{entry['filename']}",
-                    "boundingBoxAnnotations": [{"displayName": "Tomato", "xMin": "0.3", "yMin": "0.3", "xMax": "0.7", "yMax": "0.6"}]
+                    "boundingBoxAnnotations": self.build_vertex_format_jsonl_file(entry, self.session)
                 }
                 json.dump(payload, outfile)
                 outfile.write('\n')
@@ -188,7 +180,8 @@ class VertexTrainDatasetAction(ActionRunner):
             if file.image is not None:
                 file_link = self.write_diffgram_blob_to_gcp(gcp_data_tools, temp_folder_name, file)
                 dataset_file_list.append({
-                    "filename": f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{file_link}"
+                    "filename": f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{file_link}",
+                    "diffgram_file": file
                 })
         vertexai_import_file = self.write_vertex_format_jsonl_file(gcp_data_tools, temp_folder_name, dataset_file_list)
 
