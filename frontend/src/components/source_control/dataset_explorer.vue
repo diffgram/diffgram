@@ -25,6 +25,20 @@
           :project_string_id="project_string_id"
           @change="change_schema"
         />
+        <directory_selector
+          :project_string_id="project_string_id"
+          @change_directory="dataset_change_event($event)"
+          ref="ground_truth_dir_list"
+          :change_on_mount="false"
+          :show_new="false"
+          :initial_dir_from_state="false"
+          :update_from_state="false"
+          :set_current_dir_on_change="false"
+          :view_only_mode="false"
+          :show_update="false"
+          :show_tag="false"
+          :multiple="true"
+        />
 
         <label_select_only
           :project_string_id="project_string_id"
@@ -42,20 +56,6 @@
           @attribute_change="attribute_change_event"
         />
 
-        <v_directory_list
-          :project_string_id="project_string_id"
-          @change_directory="dataset_change_event($event)"
-          ref="ground_truth_dir_list"
-          :change_on_mount="false"
-          :show_new="false"
-          :initial_dir_from_state="false"
-          :update_from_state="false"
-          :set_current_dir_on_change="false"
-          :view_only_mode="false"
-          :show_update="false"
-          :show_tag="false"
-          :multiple="true"
-        />
 
         <tag_select
           v-model="tag_selected_list"
@@ -68,7 +68,7 @@
         <v-switch
           class="pr-4"
           v-model="show_ground_truth"
-          :label="`Show Ground Truth`"
+          :label="`Show Ground Truth`"testing_e2e
         ></v-switch>
 
         <v-switch
@@ -194,6 +194,7 @@
   import label_schema_selector from "../label/label_schema_selector.vue"
   import attribute_select from "../attribute/attribute_select.vue"
 import { attribute_group_list } from "../../services/attributesService";
+import { get_file_signed_url } from "../../services/fileServices";
 
   export default Vue.extend({
     name: "dataset_explorer",
@@ -269,6 +270,7 @@ import { attribute_group_list } from "../../services/attributesService";
         compare_models: false,
         base_model_run: undefined,
         compare_to_model_run_list: undefined,
+        cancel_request: null,
         label_schema: null,
         metadata: {
           'directory_id': undefined,
@@ -276,6 +278,7 @@ import { attribute_group_list } from "../../services/attributesService";
           'media_type': this.filter_media_type_setting,
           'page': 1,
           'query_menu_open' : false,
+          'regen_url' : false,
           'file_view_mode': 'explorer',
           'previous': undefined,
           'search_term': this.search_term
@@ -284,7 +287,6 @@ import { attribute_group_list } from "../../services/attributesService";
         labels_selected: [],
         attributes_selected: [],
         tag_selected_list: [],
-        attribute_list: [],
         attribute_list: [],
       }
     },
@@ -499,6 +501,9 @@ import { attribute_group_list } from "../../services/attributesService";
       },
       load_more_files: async function(){
         this.metadata.page += 1;
+        if(this.loading){
+          return
+        }
         await this.fetch_file_list(false)
       },
       update_compare_to_model_runs: function(value){
@@ -506,6 +511,33 @@ import { attribute_group_list } from "../../services/attributesService";
       },
       update_base_model_run: function(value){
         this.base_model_run = value
+      },
+      fetch_single_file_signed_url: async function(file, project_string_id){
+        if(!file){
+          return
+        }
+        let [url_data, err] = await get_file_signed_url(project_string_id, file.id);
+        if (err){
+          this.error = this.$route_api_errors(err)
+        }
+        let new_file_data = url_data.file
+        if(new_file_data.type === 'sensor_fusion'){
+          file.point_cloud = new_file_data.point_cloud
+        }
+        else{
+          file[new_file_data.type] = new_file_data[new_file_data.type]
+        }
+
+      },
+      reset_file_thumbnails: function(file_list){
+        for (let file of file_list){
+          file.image.url_signed = null
+        }
+      },
+      fetch_file_thumbnails: function(file_list){
+        for (let file of file_list){
+          this.fetch_single_file_signed_url(file, this.$props.project_string_id)
+        }
       },
       fetch_file_list: async function(reload_all = true){
         if(reload_all){
@@ -517,8 +549,14 @@ import { attribute_group_list } from "../../services/attributesService";
         }
         try{
           this.none_found = undefined
+          if (this.cancel_request){
+            this.cancel_request.cancel()
+          }
+          this.metadata.regen_url = false
+          this.cancel_request = axios.CancelToken.source();
           const response = await axios.post('/api/project/' + String(this.$props.project_string_id) +
             '/user/' + this.$store.state.user.current.username + '/file/list', {
+
             'metadata': {
               ...this.metadata,
               query: this.query,
@@ -526,12 +564,15 @@ import { attribute_group_list } from "../../services/attributesService";
             },
             'project_string_id': this.$props.project_string_id
 
-          })
+          }, {  cancelToken: this.cancel_request.token,})
           if (response.data['file_list'] == false) {
             this.none_found = true
             this.file_list = this.metadata.page === 1 ? [] : this.file_list
+
           }
           else {
+            this.reset_file_thumbnails(response.data.file_list)
+            this.fetch_file_thumbnails(response.data.file_list)
             if(reload_all){
               this.file_list = response.data.file_list;
             }
@@ -545,12 +586,15 @@ import { attribute_group_list } from "../../services/attributesService";
               this.file_list = this.file_list.concat(response.data.file_list);
             }
 
+
           }
+
           this.metadata_previous = response.data.metadata;
         }
         catch (error) {
-          console.error(error);
-          this.query_error = this.$route_api_errors(error)
+          if (error.toString() !== 'Cancel'){
+            this.query_error = this.$route_api_errors(error)
+          }
         }
         finally {
           if(reload_all){

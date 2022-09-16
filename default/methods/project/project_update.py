@@ -82,6 +82,7 @@ def project_update_core(session,
             deletion.cache['permissions'][user.id] = user.permissions_projects[project.project_string_id]
 
             Project_permissions.clear_all(
+                session = session,
                 user = user,
                 sub_type = project.project_string_id)
 

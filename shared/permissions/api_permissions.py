@@ -1,8 +1,9 @@
 # OPENCORE - ADD
 from shared.database.auth.api import Auth_api
-
+from shared.shared_logger import get_shared_logger
 from flask import request
 
+logger = get_shared_logger()
 
 class API_Permissions():
 
@@ -29,6 +30,7 @@ class API_Permissions():
 
         return auth_result
 
+    @staticmethod
     def auth_api_permissions(session,
                              client_id,
                              client_secret,
@@ -42,19 +44,24 @@ class API_Permissions():
 
         # Gets actual auth object
         auth = Auth_api.get(session, client_id)
+        logger.info(f'Checking Permissions: {auth}')
         if auth is None:
+            logger.warning(f'Auth API was not found for client ID: {client_id}')
             return False
-
+        logger.info(f'Checking Permissions: {auth.project_string_id} - {auth.is_valid} - {auth.permission_level} ')
         if auth.is_valid != True:
+            logger.warning(f'Auth API is invalid ')
             return False
 
         if auth.client_secret != client_secret:
+            logger.warning(f'Auth API client secret does not match ')
             return False
 
         if auth.project_string_id != project_string_id:
+            logger.warning(f'Auth Project string ID does not match ')
             return False
 
         if auth.permission_level in Roles:
             return True
-
+        logger.warning(f'Invalid Roles. Auth role is {auth.permission_level} but allowed roles are {Roles}')
         return False

@@ -2,7 +2,10 @@ try:
     from methods.regular.regular_api import *
 except:
     from default.methods.regular.regular_api import *
-
+from shared.permissions.policy_engine.policy_engine import PolicyEngine
+from shared.database.permissions.roles import ValidObjectTypes
+from shared.database.source_control.dataset_perms import DatasetPermissions
+from werkzeug.exceptions import Unauthorized
 from shared.database.user import UserbaseProject
 from shared.database.task.job.job import Job
 from shared.database.source_control.file_diff import file_difference_and_serialize_for_web
@@ -11,7 +14,7 @@ from sqlalchemy import desc
 from shared.query_engine.query_creator import QueryCreator
 from shared.query_engine.sqlalchemy_query_exectutor import SqlAlchemyQueryExecutor
 import math
-
+from shared.database.source_control.file_perms import FilePermissions
 @routes.route('/api/v1/file/view',
               methods = ['POST'])
 def view_file_by_id():  # Assumes permissions handled later with Project_permissions
@@ -65,12 +68,26 @@ def view_file_by_id():  # Assumes permissions handled later with Project_permiss
             session = session,
             project_string_id = input['project_string_id'])
 
+        member = get_member(session)
+        policy_engine = PolicyEngine(session = session, project = project)
+        perm_result = policy_engine.member_has_perm(
+            object_id = input['file_id'],
+            object_type = ValidObjectTypes.file,
+            perm = FilePermissions.file_view,
+            member = member
+        )
+        if not perm_result.allowed:
+            log['error']['file_view'] = "Unauthorized. No file_view permission"
+            return jsonify(log = log), 401
+
         file = File.get_by_id_and_project(
             session = session,
             project_id = project.id,
             file_id = input['file_id'],
             directory_id = project.directory_default_id  # fallback only
         )
+
+        dir_id_list = File.get_directories_ids(session = session, file_id = file.id)
 
         if file:
             if with_labels is True:
@@ -114,8 +131,6 @@ def view_file_diff(project_string_id, file_id):
             return out, 200, {'ContentType': 'application/json'}
 
 
-## Allow post for now here
-#   See annotation_core get_instances() it defaults to a post
 # instance_list
 @routes.route('/api/v1/task/<int:task_id>/annotation/list',
               methods = ['GET', 'POST'])
@@ -648,7 +663,18 @@ class File_Browser():
                 return False
             file_count += count
         else:
-
+            policy_engine = PolicyEngine(session = self.session, project = self.project)
+            perm_result = policy_engine.member_has_perm(
+                member = self.member,
+                object_id = self.directory.id,
+                object_type = ValidObjectTypes.dataset,
+                perm = DatasetPermissions.dataset_view
+            )
+            if not perm_result.allowed:
+                self.log['error']['unauthorized'] = f'Cannot view dataset ID: {self.directory.id}'
+                resp = jsonify(log=self.log)
+                resp.status = 401
+                raise Unauthorized(response = resp)
             query, count = WorkingDirFileLink.file_list(
                 session = self.session,
                 working_dir_id = self.directory.id,
@@ -690,7 +716,7 @@ class File_Browser():
         if mode == "serialize":
             for index_file, file in enumerate(working_dir_file_list):
                 if self.metadata['file_view_mode'] == 'explorer':
-                    file_serialized = file.serialize_with_annotations(self.session)
+                    file_serialized = file.serialize_with_annotations(self.session, regen_url = self.metadata["regen_url"])
 
                 elif self.metadata['file_view_mode'] == 'ids_only':
                     file_serialized = file.id
@@ -718,10 +744,3 @@ class File_Browser():
         if limit_counter == 0:
             self.metadata['no_results_match_search'] = True
         return output_file_list
-
-
-"""
-1. Default to start at index 0
-2. If a request_next_page is true
-2.1 index = previous search -> leave_off_index
-"""

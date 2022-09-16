@@ -62,16 +62,16 @@
                 >
             <v-toolbar-items>
 
-              <v_directory_list
-                  class="pt-4"
+              <directory_selector
+                  class="mt-4"
                   :project_string_id="project_string_id"
-                  :show_new="false"
+                  :show_new="true"
                   :show_update="false"
                   :change_on_mount="false"
                   :set_from_id="current_dataset.directory_id"
                   v-if="file_dirs_view_mode === 0"
                   @change_directory="change_directory($event)">
-              </v_directory_list>
+              </directory_selector>
 
 
               <v-divider
@@ -1381,7 +1381,6 @@ import Vue from "vue";
       else{
         file[new_file_data.type] = new_file_data[new_file_data.type]
       }
-      console.log('NEW URL DATA', file)
 
     },
     fetch_file_list_signed_urls: async function(file_list){
