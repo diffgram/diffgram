@@ -81,7 +81,9 @@ export default {
   },
   methods: {
     train_dataset: async function() {
-      await axios.put(`/api/v1/project/${this.project_string_id}/workflow/90/actions/212/manual_trigger`)
+      await axios.put(
+        `/api/v1/project/${this.project_string_id}/workflow/${this.workflow.id}/actions/${this.action.id}/manual_trigger`
+      )
     }
   }
 }
