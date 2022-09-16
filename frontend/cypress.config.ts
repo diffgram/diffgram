@@ -5,7 +5,6 @@ export default defineConfig({
   viewportWidth: 1200,
   viewportHeight: 900,
   pageLoadTimeout: 180000,
-  modifyObstructiveCode: false,
   retries: {
     runMode: 5,
     openMode: 0,

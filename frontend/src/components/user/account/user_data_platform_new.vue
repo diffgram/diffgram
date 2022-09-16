@@ -213,7 +213,7 @@
             'password': this.password,
             'password_check': this.password_check
           });
-
+          console.log('')
           this.$store.commit('log_in');
           this.$store.commit('set_user_name', this.email)
 
@@ -235,7 +235,13 @@
         }
         catch(e){
           console.error(e)
-          this.error = this.$route_api_errors(e)
+          if (typeof  this.$route_api_errors(e) === 'object'){
+            this.error = this.$route_api_errors(e)
+          }
+          else {
+            this.error = {'error': this.$route_api_errors(e)}
+          }
+
           this.loading = false
 
         }

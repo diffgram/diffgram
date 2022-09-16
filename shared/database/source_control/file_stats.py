@@ -119,6 +119,8 @@ class FileStats(Base, Caching):
         # First Delete existing
         if instance_list is None:
             return
+        if not instance_list:
+            return
         if reset:
             session.query(FileStats).filter(
                 FileStats.file_id == file_id
@@ -156,6 +158,8 @@ class FileStats(Base, Caching):
                 if not key.isnumeric():
                     continue
                 value, attr_type = get_attribute_value(session, int(key), val, project)
+                if value is None:
+                    continue
                 if attr_type in ['select', 'radio']:
                     FileStats.new(
                         session = session,

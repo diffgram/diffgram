@@ -39,17 +39,22 @@ def api_project_regen_file_stats(project_string_id):
 
 def regen_project_file_stats(project_id: int):
     with sessionMaker.session_scope_threaded() as session:
-        files = session.query(File.id).filter(File.project_id == project_id).all()
+        files = session.query(File.id).filter(File.project_id == project_id, File.state != 'removed').all()
+        logger.info(f'Total Files in Project:  {len(files)}')
         for file_elm in files:
+
             file_id = file_elm[0]
 
             file = File.get_by_id(session, file_id = file_id)
+            file_serialized = file.serialize_with_annotations(session = session)
+            instance_list = file_serialized.get('instance_list')
             logger.info(f'Creating Stats for file ID: {file_id}')
+
             if file.project:
                 FileStats.update_file_stats_data(
                     session = session,
-                    instance_list = file.cache_dict.get('instance_list', []) if file.cache_dict else [],
-                    file_id = file.id,
+                    instance_list = instance_list,
+                    file_id = file_id,
                     project = file.project
                 )
                 session.commit()

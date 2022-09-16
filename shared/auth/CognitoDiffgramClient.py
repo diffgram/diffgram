@@ -35,13 +35,13 @@ class CognitoDiffgramClient(OAuth2ClientBase):
             'code': code,
             'redirect_uri': settings.OAUTH2_DEFAULT_REDIRECT_URL
         }
+        logger.info(f'Cognito oauth2/token payload: {payload}')
         if self.client_secret:
             payload['client_secret'] = self.client_secret
             # headers = {
             #     'Authorization': self.auth_header
             # }
             # print('authhhh0,0', headers)
-            print('asdasdas', payload)
             response = requests.post(url = url, data = payload)
         else:
             response = requests.post(url = url, data = payload)
