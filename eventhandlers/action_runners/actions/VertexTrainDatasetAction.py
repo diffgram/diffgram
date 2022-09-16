@@ -167,7 +167,7 @@ class VertexTrainDatasetAction(ActionRunner):
 
         connection_strategy = ConnectionStrategy(
             connection_class = GoogleCloudStorageConnector,
-            connection_id = 2,
+            connection_id = self.action.config_data.get('connection_id'),
             session = self.session
         )
 
