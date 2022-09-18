@@ -49,8 +49,8 @@ class VertexTrainDatasetAction(ActionRunner):
                                      event_list = ['some_diffgram_event'])
 
     # How to declare the actions as completed?
-    completion_condition_data = ActionCompleteCondition(default_event = 'some_diffgram_event',
-                                                        event_list = ['some_diffgram_event'])
+    completion_condition_data = ActionCompleteCondition(default_event = 'action_completed',
+                                                        event_list = ['action_completed'])
 
     def execute_pre_conditions(self, session) -> bool:
         # Return true if no pre-conditions are needed.
@@ -223,7 +223,9 @@ class VertexTrainDatasetAction(ActionRunner):
 
         # #This should be at very end of the function
 
-        return
+        return {
+            "success": True
+        }
 
         # WIP: temporary commented out till working on uploading files
         file_list = self.get_file_list(session)
