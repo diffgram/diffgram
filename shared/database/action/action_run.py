@@ -101,7 +101,8 @@ class ActionRun(Base):
             file_id = file_id,
             project_id = project_id,
             org = org,
-            kind = kind
+            kind = kind,
+            status = "initialized"
         )
 
         session.add(action_run)
@@ -148,6 +149,19 @@ class ActionRun(Base):
         if offset:
             query = query.offset(offset)
         return query.all()
+
+    @staticmethod
+    def set_action_run_status(session, action_run_id, status):
+        action_run = session.query(ActionRun).filter(ActionRun.id == action_run_id).first()
+        action_run.status = status
+        session.flush()
+        session.commit()
+
+    @staticmethod
+    def get_latest_action_status(session, action_id):
+        action_run = session.query(ActionRun).filter(ActionRun.action_id == action_id, ActionRun.status != 'initialized').order_by(ActionRun.id.desc())
+        
+        return action_run.first().status
 
     def serialize_action_run(self):
         return {
