@@ -72,7 +72,7 @@ class VertexTrainDatasetAction(ActionRunner):
 
         image_height = file.image.height
         image_width = file.image.width
-        if label is not None:
+        if label is not None and self.label_count(label.label.name) > 10:
             vertex_format_instance = {
                 "displayName": label.label.name,
                 "xMin": instance.x_min/image_width,
@@ -154,6 +154,21 @@ class VertexTrainDatasetAction(ActionRunner):
 
         return f"{self.directory.nickname}/{filename}"
 
+    def count_dataset_labels(self, session, file_list):
+        label_count = {}
+
+        for file in file_list:
+            instance_list = Instance.list(session=session, file_id=file['diffgram_file'].id)
+            for instance in instance_list:
+                label = File.get_by_id(session=session, file_id=instance.label_file_id)
+                if label_count.get(label.label.name) == None:
+                    label_count[label.label.name] = 1
+                else:
+                    label_count[label.label.name] += 1
+        
+        self.label_count = label_count
+        return label_count
+
     def execute_action(self, session):
         temp_folder_name = f"temp_{self.action_run.id}"
 
@@ -183,6 +198,8 @@ class VertexTrainDatasetAction(ActionRunner):
                     "filename": f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{file_link}",
                     "diffgram_file": file
                 })
+
+        self.count_dataset_labels(session, dataset_file_list)
         vertexai_import_file = self.write_vertex_format_jsonl_file(gcp_data_tools, temp_folder_name, dataset_file_list)
 
         self.clean_up_temp_dir(temp_folder_name)
