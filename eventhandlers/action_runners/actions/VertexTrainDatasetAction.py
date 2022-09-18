@@ -54,7 +54,6 @@ class VertexTrainDatasetAction(ActionRunner):
 
     def execute_pre_conditions(self, session) -> bool:
         status = ActionRun.get_latest_action_status(self.session, self.action.id)
-        print(status)
         if status == 'running':
             return False
         return True
@@ -196,7 +195,7 @@ class VertexTrainDatasetAction(ActionRunner):
         file_list = self.get_file_list(session)
 
         dataset_file_list = []
-        for file in file_list[:10]:
+        for file in file_list:
             if file.image is not None:
                 file_link = self.write_diffgram_blob_to_gcp(gcp_data_tools, temp_folder_name, file)
                 dataset_file_list.append({
