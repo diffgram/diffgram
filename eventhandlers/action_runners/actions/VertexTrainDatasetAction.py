@@ -5,6 +5,7 @@ from eventhandlers.action_runners.base.ActionCompleteCondition import ActionComp
 from shared.database.source_control.working_dir import WorkingDir, WorkingDirFileLink
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
+from shared.database.action.action_run import ActionRun
 from shared.data_tools_core import Data_tools
 from shared.data_tools_core_gcp import DataToolsGCP
 from shared.shared_logger import get_shared_logger
@@ -14,7 +15,6 @@ from google.cloud import aiplatform
 from shared.connection.connection_strategy import ConnectionStrategy
 from shared.connection.google_cloud_storage_connector import GoogleCloudStorageConnector
 
-import tempfile
 import gc
 import shutil
 import time
@@ -53,7 +53,10 @@ class VertexTrainDatasetAction(ActionRunner):
                                                         event_list = ['action_completed'])
 
     def execute_pre_conditions(self, session) -> bool:
-        # Return true if no pre-conditions are needed.
+        status = ActionRun.get_latest_action_status(self.session, self.action.id)
+        print(status)
+        if status == 'running':
+            return False
         return True
 
 
@@ -72,7 +75,7 @@ class VertexTrainDatasetAction(ActionRunner):
 
         image_height = file.image.height
         image_width = file.image.width
-        if label is not None and self.label_count(label.label.name) > 10:
+        if label is not None and self.label_count.get(label.label.name) > 10:
             vertex_format_instance = {
                 "displayName": label.label.name,
                 "xMin": instance.x_min/image_width,
@@ -161,15 +164,17 @@ class VertexTrainDatasetAction(ActionRunner):
             instance_list = Instance.list(session=session, file_id=file['diffgram_file'].id)
             for instance in instance_list:
                 label = File.get_by_id(session=session, file_id=instance.label_file_id)
-                if label_count.get(label.label.name) == None:
-                    label_count[label.label.name] = 1
-                else:
-                    label_count[label.label.name] += 1
+                if label is not None:
+                    if label_count.get(label.label.name) == None:
+                        label_count[label.label.name] = 1
+                    else:
+                        label_count[label.label.name] += 1
         
         self.label_count = label_count
         return label_count
 
     def execute_action(self, session):
+        ActionRun.set_action_run_status(self.session, self.action_run.id, "running")
         temp_folder_name = f"temp_{self.action_run.id}"
 
         connection_strategy = ConnectionStrategy(
@@ -191,7 +196,7 @@ class VertexTrainDatasetAction(ActionRunner):
         file_list = self.get_file_list(session)
 
         dataset_file_list = []
-        for file in file_list:
+        for file in file_list[:10]:
             if file.image is not None:
                 file_link = self.write_diffgram_blob_to_gcp(gcp_data_tools, temp_folder_name, file)
                 dataset_file_list.append({
@@ -222,6 +227,7 @@ class VertexTrainDatasetAction(ActionRunner):
             working_dataset = datasets_list[dataset_index]
 
         # #This should be at very end of the function
+        ActionRun.set_action_run_status(self.session, self.action_run.id, "finished")
 
         return {
             "success": True
