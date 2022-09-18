@@ -158,9 +158,19 @@ class ActionRun(Base):
         session.commit()
 
     @staticmethod
+    def shout_down_running_actions(session):
+        action_runs = session.query(ActionRun).filter(ActionRun.status == "running")
+        for action_run in action_runs:
+            action_run.status = 'canceled'
+
+        session.flush()
+        session.commit()
+
+
+    @staticmethod
     def get_latest_action_status(session, action_id):
         action_run = session.query(ActionRun).filter(ActionRun.action_id == action_id, ActionRun.status != 'initialized').order_by(ActionRun.id.desc())
-        
+
         return action_run.first().status
 
     def serialize_action_run(self):
