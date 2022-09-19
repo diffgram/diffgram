@@ -165,7 +165,7 @@ class ActionRunner:
             project_id = self.action.project_id,
         )
 
-        ActionRun.set_action_run_status(self.action_run.id, "failed")
+        ActionRun.set_action_run_status(session, self.action_run.id, "failed")
 
     def declare_action_complete(self, session: Session, output) -> None:
         has_output = isinstance(output, dict)
