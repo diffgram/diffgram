@@ -13,6 +13,10 @@
 
       <template v-slot:wizard_action_config>
         <v-text-field
+          v-model="action.config_data.model_name"
+          label="Model name"
+        />
+        <v-text-field
           v-model="action.config_data.gcp_project_id"
           label="Project name"
         />
