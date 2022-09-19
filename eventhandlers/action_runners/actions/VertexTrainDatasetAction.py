@@ -11,6 +11,7 @@ from shared.data_tools_core_gcp import DataToolsGCP
 from shared.shared_logger import get_shared_logger
 
 from google.cloud import aiplatform
+from google.cloud.aiplatform.gapic.schema import trainingjob
 
 from shared.connection.connection_strategy import ConnectionStrategy
 from shared.connection.google_cloud_storage_connector import GoogleCloudStorageConnector
@@ -224,9 +225,42 @@ class VertexTrainDatasetAction(ActionRunner):
                 gcs_source=vertexai_import_file,
                 import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
             )
+
+            created_dataset_name = working_dataset.__dict__['_gca_resource'].__dict__['_pb'].name
+            id_separator_index = created_dataset_name.rindex('/')
+            created_dataset_id = created_dataset_name[id_separator_index + 1:]
         else:
             dataset_index = existing_datasets.index(self.directory.nickname)
             working_dataset = datasets_list[dataset_index]
+
+        client_options = {"api_endpoint": "us-central1-aiplatform.googleapis.com"}
+        client = aiplatform.gapic.PipelineServiceClient(client_options=client_options, credentials=credentials)
+
+        training_task_inputs = trainingjob.definition.AutoMlImageObjectDetectionInputs(
+            model_type="CLOUD_HIGH_ACCURACY_1",
+            budget_milli_node_hours=20000,
+            disable_early_stopping=False,
+        ).to_value()
+
+        training_pipeline = {
+            "display_name": self.directory.nickname,
+            "training_task_definition": "gs://google-cloud-aiplatform/schema/trainingjob/definition/automl_image_object_detection_1.0.0.yaml",
+            "training_task_inputs": training_task_inputs,
+            "input_data_config": {
+                "dataset_id": created_dataset_id
+            },
+            "model_to_upload": {
+                "display_name": self.directory.nickname
+            },
+        }
+
+        parent = f"projects/{working_dataset.__dict__['project']}/locations/{working_dataset.__dict__['location']}"
+
+        response = client.create_training_pipeline(
+            parent=parent, 
+            training_pipeline=training_pipeline
+        )
+        print("response:", response)
 
         # #This should be at very end of the function
         ActionRun.set_action_run_status(self.session, self.action_run.id, "finished")
