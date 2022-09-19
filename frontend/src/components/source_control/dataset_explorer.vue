@@ -216,6 +216,7 @@ export default Vue.extend({
     query_suggestion_menu,
     label_select_only,
     tag_select,
+    dataset,
     label_schema_selector,
     attribute_select
   },
