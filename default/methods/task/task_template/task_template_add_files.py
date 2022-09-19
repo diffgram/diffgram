@@ -62,15 +62,13 @@ def task_template_add_files_core(session: Session,
     if task_template is None:
         log['error']['task_template'] = "Task Template does not exists."
         return False, log
-    if not file_id_list and not query:
+    if not file_id_list and query is None:
         log['error']['file_id_list'] = "Provide file_id_list or query for adding files."
         return False, log
     id_list = []
-    print('file_id_list', file_id_list)
-    print('query', query)
     if file_id_list:
         id_list = file_id_list
-    elif query:
+    elif query is not None:
         query_creator = QueryCreator(session = session,
                                      project = task_template.project,
                                      member = member,

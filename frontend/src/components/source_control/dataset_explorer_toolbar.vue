@@ -91,7 +91,11 @@ export default Vue.extend({
       }
       let task_template_id = this.selected_job.id
       if (this.select_all) {
-        var [data, err] = await add_files_to_task_template(task_template_id, undefined, this.$props.query)
+        let query = ''
+        if (this.$props.query){
+          query = this.$props.query
+        }
+        var [data, err] = await add_files_to_task_template(task_template_id, undefined, query)
       } else {
         let file_id_list = this.selected_files.map(elm => elm.id)
         var [data, err] = await add_files_to_task_template(task_template_id, file_id_list, undefined)
