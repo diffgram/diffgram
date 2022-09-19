@@ -105,7 +105,10 @@ class VertexTrainDatasetAction(ActionRunner):
             for entry in file_list:
                 payload = {
                     "imageGcsUri": f"{entry['filename']}",
-                    "boundingBoxAnnotations": self.build_vertex_format_jsonl_file(entry, self.session)
+                    "boundingBoxAnnotations": self.build_vertex_format_jsonl_file(entry, self.session),
+                    "dataItemResourceLabels": {
+                        "aiplatform.googleapis.com/ml_use": "training"
+                    }
                 }
                 json.dump(payload, outfile)
                 outfile.write('\n')
