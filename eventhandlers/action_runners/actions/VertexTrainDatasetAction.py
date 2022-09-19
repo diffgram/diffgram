@@ -94,9 +94,9 @@ class VertexTrainDatasetAction(ActionRunner):
             existing_datasets.append(dataset.__dict__['_gca_resource'].__dict__['_pb'].display_name)
 
         working_dataset = None
-        if self.directory.nickname not in existing_datasets:
+        if self.action.config_data.get('model_name') not in existing_datasets:
             working_dataset = aiplatform.ImageDataset.create(
-                display_name=f"{self.directory.nickname}",
+                display_name=f"{self.action.config_data.get('model_name')}",
                 gcs_source=vertexai_import_file,
                 import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
             )
@@ -105,7 +105,7 @@ class VertexTrainDatasetAction(ActionRunner):
             id_separator_index = created_dataset_name.rindex('/')
             created_dataset_id = created_dataset_name[id_separator_index + 1:]
         else:
-            dataset_index = existing_datasets.index(self.directory.nickname)
+            dataset_index = existing_datasets.index(self.action.config_data.get('model_name'))
             working_dataset = datasets_list[dataset_index]
 
         response = self.train_automl_model(credentials, working_dataset)
@@ -168,10 +168,10 @@ class VertexTrainDatasetAction(ActionRunner):
                 json.dump(payload, outfile)
                 outfile.write('\n')
 
-        gcp_data_tools.upload_to_cloud_storage(f"{temp_folder_name}/{filename}", f"{self.directory.nickname}/{filename}")
+        gcp_data_tools.upload_to_cloud_storage(f"{temp_folder_name}/{filename}", f"{self.action.config_data.get('model_name')}/{filename}")
         self.clean_up_temp_file(f"{temp_folder_name}/{filename}")
 
-        return f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{self.directory.nickname}/{filename}"
+        return f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{self.action.config_data.get('model_name')}/{filename}"
 
     def init_ai_platform(self, credentials):
         aiplatform.init(
@@ -207,10 +207,10 @@ class VertexTrainDatasetAction(ActionRunner):
         with open(f"{temp_folder_name}/{filename}", "wb") as binary_file:
             binary_file.write(blob_bytes)
 
-        gcp_data_tools.upload_to_cloud_storage(f"{temp_folder_name}/{filename}", f"{self.directory.nickname}/{filename}", "image")
+        gcp_data_tools.upload_to_cloud_storage(f"{temp_folder_name}/{filename}", f"{self.action.config_data.get('model_name')}/{filename}", "image")
         self.clean_up_temp_file(f"{temp_folder_name}/{filename}")
 
-        return f"{self.directory.nickname}/{filename}"
+        return f"{self.action.config_data.get('model_name')}/{filename}"
 
     def count_dataset_labels(self, session, file_list):
         label_count = {}
@@ -243,14 +243,14 @@ class VertexTrainDatasetAction(ActionRunner):
         ).to_value()
 
         training_pipeline = {
-            "display_name": self.directory.nickname,
+            "display_name": self.action.config_data.get('model_name'),
             "training_task_definition": "gs://google-cloud-aiplatform/schema/trainingjob/definition/automl_image_object_detection_1.0.0.yaml",
             "training_task_inputs": training_task_inputs,
             "input_data_config": {
                 "dataset_id": created_dataset_id
             },
             "model_to_upload": {
-                "display_name": self.directory.nickname
+                "display_name": self.action.config_data.get('model_name')
             },
         }
 
