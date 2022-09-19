@@ -23,6 +23,7 @@
           @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
           @change="change_directory(), $store.commit('set_user_is_typing_or_menu_open', false)"
           :menu-props="{ auto: true }"
+          :multiple="multiple"
         >
 
           <!-- For :menu-props="{ auto: true }" see
@@ -212,6 +213,9 @@ export default Vue.extend({
     'view_only_mode': {
       default: false
     },
+    'multiple': {
+      default: false
+    },
     'show_text_buttons':{
       default: false
     },
@@ -253,6 +257,7 @@ export default Vue.extend({
     }
   },
   mounted() {
+    this.current_directory = this.multiple ? [] : {}
     if (this.set_from_id && this.$store.state.project.current.directory_list_filtered) {
       this.current_directory = this.directory_list_filtered.find(
         x => {return x.directory_id == this.set_from_id});
