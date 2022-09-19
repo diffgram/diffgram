@@ -288,7 +288,7 @@ class Share_Project():
 
             self.invite_user(
                 signup_link = signup_link,
-                permission_type = input['permission_type'],
+                role_name = input['permission_type'],
                 note = input['note'],
                 email = input['email'])
 
@@ -405,7 +405,7 @@ class Share_Project():
     def invite_user(
         self,
         signup_link,
-        permission_type,
+        role_name,
         note,
         email):
         """
@@ -421,7 +421,7 @@ class Share_Project():
 
         subject = f"Added to project {self.project_string_id}"
 
-        message = f"You have been added to: {self.project_string_id} as an: {str(permission_type)} \n"
+        message = f"You have been added to: {self.project_string_id} as an: {str(role_name)} \n"
 
         message += f"Create an account to get started here: {signup_link} \n"
 
