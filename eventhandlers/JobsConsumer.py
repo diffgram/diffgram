@@ -66,7 +66,7 @@ class JobsConsumer:
             execution.
         :return:
         """
-
+        logger.debug(f'New Job Message:  {msg}')
         msg_data = json.loads(msg)
         log = regular_log.default()
         if msg_data.get('task_template_id') is None:
@@ -86,7 +86,7 @@ class JobsConsumer:
         logger.debug(f'Creating tasks for Job: {msg}')
 
         with session_scope_threaded() as session:
-            task_template = Job.get(session = session, job_id = task_template_id)
+            task_template = Job.get_by_id(session = session, job_id = task_template_id)
             files = File.get_by_id_list(session = session, file_id_list = file_id_list)
             member = Member.get_by_id(session = session, member_id = member_id)
             job_sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
@@ -125,3 +125,6 @@ class JobsConsumer:
 
                 if regular_log.log_has_error(log):
                     return None, log
+
+            task_template.update_file_count_statistic(session)
+            logger.info(f'{len(files)} Tasks created successfully.')

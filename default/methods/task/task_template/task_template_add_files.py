@@ -8,6 +8,7 @@ from shared.database.auth.member import Member
 from shared.query_engine.query_creator import QueryCreator
 from shared.query_engine.sqlalchemy_query_exectutor import SqlAlchemyQueryExecutor
 
+
 @routes.route('/api/v1/job/<int:task_template_id>/add-files', methods = ['POST'])
 @Job_permissions.by_job_id(
     project_role_list = ["admin", "Editor"],
@@ -33,8 +34,8 @@ def task_template_add_files_api(task_template_id):
     ]
     log, input, untrusted_input = regular_input.master(
         request = request,
-        spec_list = spec_list)
-
+        spec_list = spec_list,
+        string_len_not_zero = False)
     if regular_log.log_has_error(log):
         return jsonify(log = log), 400
 
@@ -65,6 +66,8 @@ def task_template_add_files_core(session: Session,
         log['error']['file_id_list'] = "Provide file_id_list or query for adding files."
         return False, log
     id_list = []
+    print('file_id_list', file_id_list)
+    print('query', query)
     if file_id_list:
         id_list = file_id_list
     elif query:
@@ -96,3 +99,4 @@ def task_template_add_files_core(session: Session,
     queueclient.send_message(message = msg_data,
                              routing_key = RoutingKeys.job_add_task.value,
                              exchange = Exchanges.jobs.value)
+    return file_id_list, log

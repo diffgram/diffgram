@@ -91,10 +91,10 @@ export default Vue.extend({
       }
       let task_template_id = this.selected_job.id
       if (this.select_all) {
+        var [data, err] = await add_files_to_task_template(task_template_id, undefined, this.$props.query)
+      } else {
         let file_id_list = this.selected_files.map(elm => elm.id)
         var [data, err] = await add_files_to_task_template(task_template_id, file_id_list, undefined)
-      } else {
-        var [data, err] = await add_files_to_task_template(task_template_id, undefined, this.$props.query)
       }
       if (err != null){
         this.$store.commit('display_snackbar', {

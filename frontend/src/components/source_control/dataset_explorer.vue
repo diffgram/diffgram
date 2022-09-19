@@ -260,7 +260,7 @@ export default Vue.extend({
       }
     });
     window.addEventListener("keydown", this.key_down);
-    window.addEventListener("keydown", this.key_up);
+    window.addEventListener("keyup", this.key_up);
   },
   data: function () {
     return {
@@ -329,9 +329,11 @@ export default Vue.extend({
   },
   methods: {
     key_down: function (event) {
+      console.log('key down')
       this.set_control_key(event)
     },
-    key_up: function () {
+    key_up: function (event) {
+      console.log('key uppp')
       this.set_control_key(event)
     },
     set_control_key: function (event) {
@@ -339,6 +341,9 @@ export default Vue.extend({
       if (event.ctrlKey === false || event.metaKey === false) {
         // ctrlKey cmd key
         this.ctrl_key = false;
+      }
+      if(event.ctrlKey){
+        this.ctrl_key = true;
       }
     },
 
@@ -671,6 +676,7 @@ export default Vue.extend({
       for (let file_elm of this.file_list) {
         file_elm.selected = false;
       }
+      this.selected_files = []
     },
     on_file_selected: function (file) {
       if(this.ctrl_key){
@@ -680,15 +686,15 @@ export default Vue.extend({
         } else if(!file.selected){
           this.selected_files = this.selected_files.filter(elm => elm.id !== file.id)
         }
-
-        return
+      }
+      else{
+        this.reset_file_selected()
+        file.selected = !file.selected;
+        if(!this.selected_files.includes(file)){
+          this.selected_files.push(file)
+        }
       }
 
-      this.reset_file_selected()
-      file.selected = !file.selected;
-      if(!this.selected_files.includes(file)){
-        this.selected_files.push(file)
-      }
       this.$forceUpdate()
     },
     view_detail: function (file, model_runs, color_list) {
