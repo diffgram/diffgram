@@ -12,7 +12,7 @@ from shared.database.source_control.dataset_perms import DatasetDefaultRoles
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("2000 per day")
+@limiter.limit("200000 per day")
 def new_directory_api(project_string_id):
     """
 
