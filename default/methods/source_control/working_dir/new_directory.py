@@ -30,8 +30,6 @@ def new_directory_api(project_string_id):
         ### MAIN
         nickname = input["nickname"]
         access_type = input.get('access_type', 'project')
-        print('ACCES TYPE', access_type)
-        print('ACCES input', input)
         project = Project.get(session = session,
                               project_string_id = project_string_id)
 
