@@ -12,35 +12,45 @@
       :action="action">
 
       <template v-slot:wizard_action_config>
-        <v-text-field
-          v-model="action.config_data.model_name"
-          label="Model name"
-        />
-        <v-text-field
-          v-model="action.config_data.gcp_project_id"
-          label="Project name"
-        />
-        <v-text-field
-          v-model="action.config_data.connection_id"
-          label="Connection ID"
-        />
-        <v-text-field
-          v-model="action.config_data.staging_bucket_name_without_gs_prefix"
-          hint="Bucket name without gs prefix"
-          label="GCP bucket name"
-        />
-        <v-text-field
-          v-model="action.config_data.location"
-          label="Bucket location"
-        />
-        <v-text-field
-          v-model="action.config_data.experiment"
-          label="Experiment"
-        />
-        <v-text-field
-          v-model="action.config_data.experiment_description"
-          label="Experiment description"
-        />
+          <v-text-field
+            v-model="action.config_data.model_name"
+            label="Model name"
+          />
+          <v-text-field
+            v-model="action.config_data.gcp_project_id"
+            label="Project name"
+          />
+          <v-text-field
+            v-model="action.config_data.connection_id"
+            label="Connection ID"
+          />
+          <v-text-field
+            v-model="action.config_data.staging_bucket_name_without_gs_prefix"
+            hint="Bucket name without gs prefix"
+            label="GCP bucket name"
+          />
+          <v-text-field
+            v-model="action.config_data.location"
+            label="Bucket location"
+          />
+          <v-text-field
+            v-model="action.config_data.experiment"
+            label="Experiment"
+          />
+          <v-text-field
+            v-model="action.config_data.experiment_description"
+            label="Experiment description"
+          />
+          <v-checkbox
+            v-model="advanced"
+            label="Advanced configuration"
+          />
+          <v-text-field
+            v-model="action.config_data.training_node_hours"
+            v-if="advanced"
+            label="Training node hours"
+            type="number"
+          />
       </template>
 
       <template v-slot:ongoing_usage>
@@ -75,6 +85,7 @@ export default {
   },
   data (){
     return {
+      advanced: false,
       steps_config: null,
     }
   },

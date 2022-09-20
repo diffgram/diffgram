@@ -74,7 +74,7 @@ class VertexTrainDatasetAction(ActionRunner):
         file_list = self.get_file_list(session)
 
         dataset_file_list = []
-        for file in file_list[:50]:
+        for file in file_list:
             if file.image is not None:
                 file_link = self.write_diffgram_blob_to_gcp(gcp_data_tools, temp_folder_name, file)
                 dataset_file_list.append({
@@ -106,7 +106,7 @@ class VertexTrainDatasetAction(ActionRunner):
             import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
         )
 
-        response = self.train_automl_model(credentials, working_dataset)
+        self.train_automl_model(credentials, working_dataset)
         
         ActionRun.set_action_run_status(self.session, self.action_run.id, "finished")
 
@@ -234,9 +234,14 @@ class VertexTrainDatasetAction(ActionRunner):
         client_options = {"api_endpoint": "us-central1-aiplatform.googleapis.com"}
         client = aiplatform.gapic.PipelineServiceClient(client_options=client_options, credentials=credentials)
 
+        budget_milli_node_hours=20000
+
+        if self.action.config_data.get('training_node_hours') is not None:
+            budget_milli_node_hours = self.action.config_data.get('training_node_hours') * 1000
+
         training_task_inputs = trainingjob.definition.AutoMlImageObjectDetectionInputs(
             model_type="CLOUD_HIGH_ACCURACY_1",
-            budget_milli_node_hours=20000,
+            budget_milli_node_hours=budget_milli_node_hours,
             disable_early_stopping=False,
         ).to_value()
 
