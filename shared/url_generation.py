@@ -19,7 +19,7 @@ import tempfile
 
 logger = get_shared_logger()
 
-ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS = ['amazon_aws']
+ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS = ['amazon_aws', 'microsoft_azure']
 
 
 def get_blob_file_extension(blob_path: str) -> str:
@@ -110,7 +110,7 @@ def upload_thumbnail_for_connection_image(session: Session,
     file_name = get_blob_file_name(blob_path = blob_object.url_signed_blob_path)
     blob_path_dirs = get_blob_file_path_without_name(blob_path = blob_object.url_signed_blob_path)
     blob_path_thumb = f'{blob_path_dirs}thumb/{file_name}'
-
+    print('new_offset_in_seconds', new_offset_in_seconds)
     params = {
         'bucket_name': bucket_name,
         'path': blob_path_thumb,
@@ -187,6 +187,7 @@ def get_custom_url_supported_connector(session: Session, log: dict, connection_i
     if connection.integration_name not in ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS:
         msg = f'Unsupported connection provider for URL regeneration {connection.id}:{connection.integration_name}'
         log['error']['unsupported'] = msg
+        log['error']['supported_providers'] = ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS
         logger.error(msg)
         return None, log
 
