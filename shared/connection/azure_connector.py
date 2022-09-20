@@ -245,7 +245,7 @@ class AzureConnector(Connector):
         return keys
 
     def __custom_image_upload_url(self, opts: dict) -> dict or None:
-        spec_list = [{'bucket_name': str, 'path': str}]
+        spec_list = [{'bucket_name': str, 'path': str, 'expiration_offset': int}]
         log = regular_log.default()
         log, input = regular_input.input_check_many(untrusted_input = opts,
                                                     spec_list = spec_list,
@@ -254,44 +254,32 @@ class AzureConnector(Connector):
             return {'log': log}
         bucket_name = opts.get('bucket_name')
         blob_name = opts.get('path')
-        access_token_param = opts.get('access_token')
-        from shared.helpers.permissions import get_session_string
-        if access_token_param is None:
-            access_token = get_session_string()
-        else:
-            access_token = access_token_param
-        content_type = mimetypes.guess_type(blob_name)
+        expiration_offset = opts.get('expiration_offset')
+        filename = blob_name.split("/")[-1]
+        shared_access_signature = BlobSharedAccessSignature(
+            account_name = self.connection_client.account_name,
+            account_key = self.connection_client.credential.account_key
+        )
+        if expiration_offset is None:
+            expiration_offset = 40368000
 
-        if content_type is None:
-            content_type = "image/png"
-        elif len(content_type) > 1:
-            content_type = content_type[0]
-        headers = {
-            'Authorization': f'{access_token}',
-            'Content-Type': content_type
-        }
-        blob_name_encoded = urllib.parse.quote(blob_name, safe = '')
-        url_path = f'{self.url_signer_service}/{bucket_name}'
-        try:
-            params = {'key': blob_name, "method": "put"}
-            result = requests.get(url = url_path, headers = headers, params = params)
-            if result.status_code == 200:
-                data = result.json()
-                logger.info(f'Signer Upload URL JSON {data}')
-                return {'result': data}
-            elif result.status_code == 409:
-                log['error']['blob_exists'] = 'Thumbnail blob already exists'
-                logger.error(f'Error Thumbnail blob already exists: [{result.status_code}] {result.text}')
-                return {'log': log}
-            else:
-                logger.error(f'Error generating signed url with: [{result.status_code}] {url_path}')
-                logger.error(f'Error payload: {result.text}')
-                return None
-        except Exception as e:
-            err = traceback.format_exc()
-            logger.error(f'Error generating signed url with: {url_path}')
-            logger.error(f'Error payload: {err}')
-            return None
+        added_seconds = datetime.timedelta(0, expiration_offset)
+        expiry_time = datetime.datetime.utcnow() + added_seconds
+        sas = shared_access_signature.generate_blob(
+            container_name = bucket_name,
+            blob_name = blob_name,
+            start = datetime.datetime.utcnow(),
+            expiry = expiry_time,
+            permission = BlobSasPermissions(read = True, write = True, create = True),
+            content_disposition = f"attachment; filename={filename}",
+        )
+        sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
+            self.connection_client.account_name,
+            bucket_name,
+            blob_name,
+            sas
+        )
+        return {'result': {'url': sas_url, 'headers': {"x-ms-blob-type": "BlockBlob"}}}
 
     @with_connection
     def __get_pre_signed_url(self, opts):
@@ -324,7 +312,7 @@ class AzureConnector(Connector):
             blob_name = blob_name,
             start = datetime.datetime.utcnow(),
             expiry = expiry_time,
-            permission = BlobSasPermissions(read = True),
+            permission = BlobSasPermissions(read = True, write = True, create = True),
             content_disposition = f"attachment; filename={filename}",
         )
         sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
