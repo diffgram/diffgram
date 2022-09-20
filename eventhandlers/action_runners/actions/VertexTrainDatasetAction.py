@@ -74,7 +74,7 @@ class VertexTrainDatasetAction(ActionRunner):
         file_list = self.get_file_list(session)
 
         dataset_file_list = []
-        for file in file_list:
+        for file in file_list[:50]:
             if file.image is not None:
                 file_link = self.write_diffgram_blob_to_gcp(gcp_data_tools, temp_folder_name, file)
                 dataset_file_list.append({
@@ -94,19 +94,17 @@ class VertexTrainDatasetAction(ActionRunner):
             existing_datasets.append(dataset.__dict__['_gca_resource'].__dict__['_pb'].display_name)
 
         working_dataset = None
-        if self.action.config_data.get('model_name') not in existing_datasets:
-            working_dataset = aiplatform.ImageDataset.create(
-                display_name=f"{self.action.config_data.get('model_name')}",
-                gcs_source=vertexai_import_file,
-                import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
-            )
-
-            created_dataset_name = working_dataset.__dict__['_gca_resource'].__dict__['_pb'].name
-            id_separator_index = created_dataset_name.rindex('/')
-            created_dataset_id = created_dataset_name[id_separator_index + 1:]
-        else:
+        if self.action.config_data.get('model_name') in existing_datasets:
             dataset_index = existing_datasets.index(self.action.config_data.get('model_name'))
             working_dataset = datasets_list[dataset_index]
+
+            working_dataset.delete()
+
+        working_dataset = aiplatform.ImageDataset.create(
+            display_name=f"{self.action.config_data.get('model_name')}",
+            gcs_source=vertexai_import_file,
+            import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
+        )
 
         response = self.train_automl_model(credentials, working_dataset)
         
