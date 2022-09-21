@@ -143,7 +143,7 @@ class ActionRun(Base):
 
     @staticmethod
     def list_by_action_id(session, action_id, limit = None, offset = None):
-        query = session.query(ActionRun).filter(ActionRun.action_id == action_id)
+        query = session.query(ActionRun).order_by(ActionRun.id.desc()).filter(ActionRun.action_id == action_id, ActionRun.status != "initialized")
         if limit:
             query = query.limit(limit)
         if offset:
