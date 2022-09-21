@@ -1,6 +1,7 @@
 import pika
 from EventsConsumer import EventsConsumer
 from ActionConsumer import ActionsConsumer
+from JobsConsumer import JobsConsumer
 from shared.settings import settings
 from shared.shared_logger import get_shared_logger
 from pika.channel import Channel
@@ -9,11 +10,11 @@ import ssl
 logger = get_shared_logger()
 
 
-
 class ConsumerCreator:
     connection: pika.SelectConnection
     channel: Channel or None
     events_consumer: EventsConsumer
+    jobs_consumer: JobsConsumer
     actions_consumer: ActionsConsumer
     stopping: bool
 
@@ -51,6 +52,7 @@ class ConsumerCreator:
     def setup_consumers(self):
         self.events_consumer = EventsConsumer(channel = self.channel, connection = self.connection)
         self.actions_consumer = ActionsConsumer(channel = self.channel, connection = self.connection)
+        self.jobs_consumer = JobsConsumer(channel = self.channel, connection = self.connection)
 
     def open_channel(self):
 
@@ -112,7 +114,7 @@ class ConsumerCreator:
         if settings.RABBITMQ_USE_SSL:
             ssl_context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
             ssl_context.set_ciphers('ECDHE+AESGCM:!ECDSA')
-            ssl_options = pika.SSLOptions(context=ssl_context)
+            ssl_options = pika.SSLOptions(context = ssl_context)
         self.connection = pika.SelectConnection(
             pika.ConnectionParameters(host = settings.RABBITMQ_HOST,
                                       port = settings.RABBITMQ_PORT,

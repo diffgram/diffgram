@@ -514,7 +514,6 @@ class File_Browser():
         """
         log = regular_log.default()
         query_string = self.metadata.get('query')
-
         query_creator = QueryCreator(session = self.session, project = self.project, member = self.member, directory = self.directory)
         diffgram_query_obj = query_creator.create_query(query_string = query_string)
 

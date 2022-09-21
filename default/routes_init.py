@@ -189,3 +189,4 @@ def do_routes_importing():
     from methods.roles.role_list import list_roles_web
     from methods.roles.role_delete import role_delete_web
     from methods.project.regen_file_stats import api_project_regen_file_stats
+    from methods.task.task_template.task_template_add_files import task_template_add_files_api

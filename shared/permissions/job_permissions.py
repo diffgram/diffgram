@@ -20,6 +20,7 @@ from shared.permissions.user_permissions import User_Permissions
 
 
 class Job_permissions():
+    @staticmethod
     def by_job_id(project_role_list = ["Editor", "admin"],
                   apis_project_list = [],
                   apis_user_list = [],
