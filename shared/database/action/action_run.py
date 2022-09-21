@@ -184,6 +184,7 @@ class ActionRun(Base):
         action_run_data = {
             'id': self.id,
             'kind': self.kind,
+            'status': self.status,
             'output': self.output,
             'workflow_id': self.workflow_id,
             'action_id': self.action_id,
