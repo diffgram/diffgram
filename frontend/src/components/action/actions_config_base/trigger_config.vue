@@ -9,7 +9,7 @@
     />
 
     <directory_selector
-      v-if="action && action.trigger_data.event_name === 'input_file_uploaded'"
+      v-if="action && select_dataset"
       :initial_dir_from_state="action.config_data.directory_id"
       :set_current_dir_on_change="false"
       :project_string_id="project_string_id"
