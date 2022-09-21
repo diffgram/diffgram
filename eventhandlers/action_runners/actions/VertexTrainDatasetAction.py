@@ -106,7 +106,9 @@ class VertexTrainDatasetAction(ActionRunner):
             import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
         )
 
-        self.train_automl_model(credentials, working_dataset)
+        response = self.train_automl_model(credentials, working_dataset)
+
+        print(response)
         
         ActionRun.set_action_run_status(self.session, self.action_run.id, "finished")
 

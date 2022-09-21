@@ -54,9 +54,31 @@
       </template>
 
       <template v-slot:ongoing_usage>
-        <v-btn @click="train_dataset" color="success">
-          Train
-        </v-btn>
+        <h1>VertexAI model trainings: </h1>
+        <v-simple-table>
+          <template v-slot:default>
+            <thead>
+            <tr>
+              <th class="text-left">
+                Name
+              </th>
+              <th class="text-left">
+                Model status
+              </th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr
+              v-for="item in action_run_list"
+              :key="item.id"
+            >
+              <td>Bandmac Demo</td>
+              <td>Training</td>
+            </tr>
+            </tbody>
+          </template>
+        </v-simple-table>
+
       </template>
 
     </action_config_base>
@@ -67,6 +89,7 @@
 import action_config_base from "@/components/action/actions_config_base/action_config_base";
 import action_config_mixin from "../action_config_mixin";
 import ActionStepsConfig from '../ActionStepsConfig';
+import { get_action_run_list } from '../../../../services/actionService';
 import axios from 'axios'
 
 export default {
@@ -87,12 +110,17 @@ export default {
     return {
       advanced: false,
       steps_config: null,
+      action_run_list: []
     }
   },
-  mounted() {
+  async mounted() {
     this.steps_config = new ActionStepsConfig()
     this.steps_config.hide_step('pre_conditions')
     this.$emit('action_updated', this.action)
+
+    let [data, err] = await get_action_run_list(this.project_string_id, this.action.id)
+
+    this.action_run_list = data
   },
   methods: {
     train_dataset: async function() {
