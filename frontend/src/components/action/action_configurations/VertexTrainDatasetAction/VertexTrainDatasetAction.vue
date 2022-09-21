@@ -54,16 +54,17 @@
       </template>
 
       <template v-slot:ongoing_usage>
+        <v-btn @click="train_dataset">Train</v-btn>
         <h1>VertexAI model trainings: </h1>
         <v-simple-table>
           <template v-slot:default>
             <thead>
             <tr>
               <th class="text-left">
-                Name
+                Status
               </th>
               <th class="text-left">
-                Model status
+                Model Name
               </th>
             </tr>
             </thead>
@@ -72,8 +73,8 @@
               v-for="item in action_run_list"
               :key="item.id"
             >
-              <td>Bandmac Demo</td>
-              <td>Training</td>
+              <td style="text-transform: capitalize">{{ item.status }}</td>
+              <td v-if="item.output && item.output.model_name">{{ item.output.model_name }}</td>
             </tr>
             </tbody>
           </template>
@@ -119,6 +120,8 @@ export default {
     this.$emit('action_updated', this.action)
 
     let [data, err] = await get_action_run_list(this.project_string_id, this.action.id)
+
+    console.log(data)
 
     this.action_run_list = data
   },

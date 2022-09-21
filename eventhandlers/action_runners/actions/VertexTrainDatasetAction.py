@@ -108,12 +108,16 @@ class VertexTrainDatasetAction(ActionRunner):
 
         response = self.train_automl_model(credentials, working_dataset)
 
-        print(response)
+        model_name = response.__dict__['_pb'].name
+        id_separator_index = model_name.rindex('/')
+        model_id = model_name[id_separator_index + 1:]
         
         ActionRun.set_action_run_status(self.session, self.action_run.id, "finished")
 
         return {
-            "success": True
+            "success": True,
+            "model_name": self.action.config_data.get('model_name'),
+            "model_id": model_id
         }
 
 
