@@ -54,7 +54,7 @@
       </template>
 
       <template v-slot:ongoing_usage>
-        <v-btn @click="train_dataset">Train</v-btn>
+        <v-btn @click="train_dataset" color="success">Train</v-btn>
         <h1>VertexAI model trainings: </h1>
         <v-simple-table>
           <template v-slot:default>
@@ -90,8 +90,7 @@
 import action_config_base from "@/components/action/actions_config_base/action_config_base";
 import action_config_mixin from "../action_config_mixin";
 import ActionStepsConfig from '../ActionStepsConfig';
-import { get_action_run_list } from '../../../../services/actionService';
-import axios from 'axios'
+import { get_action_run_list, trigger_action } from '../../../../services/actionService';
 
 export default {
   name: "VertexTrainDatasetAction",
@@ -121,15 +120,11 @@ export default {
 
     let [data, err] = await get_action_run_list(this.project_string_id, this.action.id)
 
-    console.log(data)
-
     this.action_run_list = data
   },
   methods: {
     train_dataset: async function() {
-      await axios.put(
-        `/api/v1/project/${this.project_string_id}/workflow/${this.workflow.id}/actions/${this.action.id}/manual_trigger`
-      )
+      await trigger_action(this.project_string_id, this.workflow.id, this.action.id)
     }
   }
 }
