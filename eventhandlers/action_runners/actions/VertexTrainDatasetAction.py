@@ -64,12 +64,13 @@ class VertexTrainDatasetAction(ActionRunner):
         [google_vertex_connector, success] = connection_strategy.get_connector()
 
         if not success:
+            ActionRun.set_action_run_status(self.session, self.action_run.id, "failed")
             return
         
         credentials = google_vertex_connector.get_credentials()
         
-        self.init_ai_platform(credentials)
-        gcp_data_tools = self.init_gcp_data_tools(credentials)
+        self.init_ai_platform(google_vertex_connector)
+        gcp_data_tools = self.init_gcp_data_tools(google_vertex_connector)
 
         file_list = self.get_file_list(session)
 
@@ -176,22 +177,22 @@ class VertexTrainDatasetAction(ActionRunner):
 
         return f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{self.action.config_data.get('model_name')}/{filename}"
 
-    def init_ai_platform(self, credentials):
+    def init_ai_platform(self, google_vertex_connector):
         aiplatform.init(
-            credentials = credentials,
-            project = self.action.config_data.get('gcp_project_id'),
-            location = self.action.config_data.get('location'),
+            credentials = google_vertex_connector.get_credentials(),
+            project = google_vertex_connector.auth_data['project_id'],
+            location = "us-central1",
             staging_bucket = 'gs://' + self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
             experiment = self.action.config_data.get('experiment'),
             experiment_description = self.action.config_data.get('experiment_description')
         )
 
-    def init_gcp_data_tools(self, credentials):
+    def init_gcp_data_tools(self, google_vertex_connector):
         bucket_config = {
             "GOOGLE_PROJECT_NAME": self.action.config_data.get('gcp_project_id'),
             "CLOUD_STORAGE_BUCKET": self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
             "ML__CLOUD_STORAGE_BUCKET": self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
-            "credentials": credentials
+            "credentials": google_vertex_connector.get_credentials()
         }
 
         gcp_data_tools = DataToolsGCP(bucket_config)
