@@ -46,3 +46,8 @@ try:
     ACTION_RUNNERS_KIND_MAPPER[WebhookAction.kind] = WebhookAction
 except:
     logger.error(traceback.format_exc())
+try:
+    from .VertexPredictAction import VertexPredictAction
+    ACTION_RUNNERS_KIND_MAPPER[VertexPredictAction.kind] = VertexPredictAction
+except:
+    logger.error(traceback.format_exc())
