@@ -122,9 +122,7 @@ class VertexTrainDatasetAction(ActionRunner):
 
 
     def get_file_list(self, session):
-
-        directory_id = self.event_data.get('directory_id')
-        print(directory_id)
+        directory_id = self.action.config_data.get('directory_id')
         self.directory = WorkingDir.get_by_id(session = session, directory_id=directory_id)
         file_list = WorkingDirFileLink.file_list(session=session, working_dir_id=self.directory.id, limit=None)
 
