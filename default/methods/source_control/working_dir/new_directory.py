@@ -12,7 +12,7 @@ from shared.database.source_control.dataset_perms import DatasetDefaultRoles
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("2000 per day")
+@limiter.limit("200000 per day")
 def new_directory_api(project_string_id):
     """
 
@@ -30,8 +30,6 @@ def new_directory_api(project_string_id):
         ### MAIN
         nickname = input["nickname"]
         access_type = input.get('access_type', 'project')
-        print('ACCES TYPE', access_type)
-        print('ACCES input', input)
         project = Project.get(session = session,
                               project_string_id = project_string_id)
 
@@ -44,7 +42,7 @@ def new_directory_api(project_string_id):
         if access_type not in VALID_ACCESS_TYPES:
             log['error']['access_type'] = f'Invalid access type. Must be one of {VALID_ACCESS_TYPES}'
             return jsonify(log = log), 400
-        if count_existing >= 2000:
+        if count_existing >= 200000:
             log['error']["limit"] = "Limit of directories. " + \
                                     "Please archive a directory or upgrade plan or contact us."
             return jsonify(log = log), 400

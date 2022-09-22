@@ -93,6 +93,11 @@ DEFAULT_ENGINEERING_EMAIL = os.environ.get('DEFAULT_ENGINEERING_EMAIL', "")
 EMAIL_VALIDATION = env_adapter.bool(os.environ.get('EMAIL_VALIDATION', False))
 MAILGUN_KEY = os.getenv('MAILGUN_KEY')
 EMAIL_DOMAIN_NAME = os.getenv('EMAIL_DOMAIN_NAME')
+SMTP_HOST = os.getenv('SMTP_HOST')
+SMTP_PORT = int(os.getenv('SMTP_PORT', 465))
+SMTP_USERNAME = os.getenv('SMTP_USERNAME')
+SMTP_FROM_EMAIL = os.getenv('SMTP_FROM_EMAIL')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
 
 
 # Walrus Settings
