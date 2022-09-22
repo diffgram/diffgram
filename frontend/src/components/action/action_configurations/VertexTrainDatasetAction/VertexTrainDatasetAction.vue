@@ -9,7 +9,8 @@
       :steps_config="steps_config.generate()"
       :actions_list="actions_list"
       :select_dataset="true"
-      :action="action">
+      :action="action"
+    >
 
       <template v-slot:wizard_action_config>
           <v-text-field
