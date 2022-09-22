@@ -287,8 +287,29 @@ class S3Connector(Connector):
             logger.error(f'Error payload: {err}')
             return None
 
+    def __image_upload_url(self, bucket_name: str, blob_name: str, expiration_offset: int, log: dict) -> dict:
+        """
+            Generates presigned PUT for uploading data using boto3
+        :param bucket_name:
+        :param blob_name:
+        :param log:
+        :return:
+        """
+        filename = blob_name.split("/")[-1]
+        signed_url_data = self.connection_client.generate_presigned_post(Bucket=bucket_name,
+                                                                    Key=blob_name,
+                                                                    ExpiresIn=expiration_offset)
+        return {'result': signed_url_data}
+
     def __custom_image_upload_url(self, opts: dict) -> dict or None:
-        spec_list = [{'bucket_name': str, 'path': str}]
+        """
+            Generates a Put signed url for uploading data using custom signer.
+            If no self.url_signer_service it defaults to the boto3 signer using
+            the connection credentials.
+        :param opts:
+        :return:
+        """
+        spec_list = [{'bucket_name': str, 'path': str, 'expiration_offset': int}]
         log = regular_log.default()
         log, input = regular_input.input_check_many(untrusted_input = opts,
                                                     spec_list = spec_list,
@@ -296,45 +317,54 @@ class S3Connector(Connector):
         if regular_log.log_has_error(log):
             return {'log': log}
         bucket_name = opts.get('bucket_name')
+        expiration_offset = opts.get('expiration_offset')
         blob_name = opts.get('path')
-        access_token_param = opts.get('access_token')
-        from shared.helpers.permissions import get_session_string
-        if access_token_param is None:
-            access_token = get_session_string()
-        else:
-            access_token = access_token_param
-        content_type = mimetypes.guess_type(blob_name)
-
-        if content_type is None:
-            content_type = "image/png"
-        elif len(content_type) > 1:
-            content_type = content_type[0]
-        headers = {
-            'Authorization': f'{access_token}',
-            'Content-Type': content_type
-        }
-        blob_name_encoded = urllib.parse.quote(blob_name, safe = '')
-        url_path = f'{self.url_signer_service}/{bucket_name}'
-        try:
-            params = {'key': blob_name, "method": "put"}
-            result = requests.get(url = url_path, headers = headers, params = params)
-            if result.status_code == 200:
-                data = result.json()
-                logger.info(f'Signer Upload URL JSON {data}')
-                return {'result': data}
-            elif result.status_code == 409:
-                log['error']['blob_exists'] = 'Thumbnail blob already exists'
-                logger.error(f'Error Thumbnail blob already exists: [{result.status_code}] {result.text}')
-                return {'log': log}
+        if self.url_signer_service is None:
+            return self.__image_upload_url(
+                bucket_name = bucket_name,
+                log = log,
+                expiration_offset = expiration_offset,
+                blob_name = blob_name
+            )
+        if self.url_signer_service:
+            access_token_param = opts.get('access_token')
+            from shared.helpers.permissions import get_session_string
+            if access_token_param is None:
+                access_token = get_session_string()
             else:
-                logger.error(f'Error generating signed url with: [{result.status_code}] {url_path}')
-                logger.error(f'Error payload: {result.text}')
+                access_token = access_token_param
+            content_type = mimetypes.guess_type(blob_name)
+
+            if content_type is None:
+                content_type = "image/png"
+            elif len(content_type) > 1:
+                content_type = content_type[0]
+            headers = {
+                'Authorization': f'{access_token}',
+                'Content-Type': content_type
+            }
+            blob_name_encoded = urllib.parse.quote(blob_name, safe = '')
+            url_path = f'{self.url_signer_service}/{bucket_name}'
+            try:
+                params = {'key': blob_name, "method": "put"}
+                result = requests.get(url = url_path, headers = headers, params = params)
+                if result.status_code == 200:
+                    data = result.json()
+                    logger.info(f'Signer Upload URL JSON {data}')
+                    return {'result': data}
+                elif result.status_code == 409:
+                    log['error']['blob_exists'] = 'Thumbnail blob already exists'
+                    logger.error(f'Error Thumbnail blob already exists: [{result.status_code}] {result.text}')
+                    return {'log': log}
+                else:
+                    logger.error(f'Error generating signed url with: [{result.status_code}] {url_path}')
+                    logger.error(f'Error payload: {result.text}')
+                    return None
+            except Exception as e:
+                err = traceback.format_exc()
+                logger.error(f'Error generating signed url with: {url_path}')
+                logger.error(f'Error payload: {err}')
                 return None
-        except Exception as e:
-            err = traceback.format_exc()
-            logger.error(f'Error generating signed url with: {url_path}')
-            logger.error(f'Error payload: {err}')
-            return None
 
     @with_connection
     def __get_pre_signed_url(self, opts):
