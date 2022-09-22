@@ -1381,7 +1381,6 @@ import Vue from "vue";
       else{
         file[new_file_data.type] = new_file_data[new_file_data.type]
       }
-
     },
     fetch_file_list_signed_urls: async function(file_list){
       for (let file of file_list){
