@@ -18,22 +18,14 @@
             label="Model name"
           />
           <v-text-field
-            v-model="action.config_data.gcp_project_id"
-            label="Project name"
-          />
-          <v-text-field
             v-model="action.config_data.connection_id"
             label="Connection ID"
           />
-          <v-text-field
+          <!-- <v-text-field
             v-model="action.config_data.staging_bucket_name_without_gs_prefix"
             hint="Bucket name without gs prefix"
             label="GCP bucket name"
-          />
-          <v-text-field
-            v-model="action.config_data.location"
-            label="Bucket location"
-          />
+          /> -->
           <v-text-field
             v-model="action.config_data.experiment"
             label="Experiment"
