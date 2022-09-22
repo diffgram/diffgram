@@ -19,7 +19,7 @@ import tempfile
 
 logger = get_shared_logger()
 
-ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS = ['amazon_aws']
+ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS = ['amazon_aws', 'microsoft_azure']
 
 
 def get_blob_file_extension(blob_path: str) -> str:
@@ -110,7 +110,8 @@ def upload_thumbnail_for_connection_image(session: Session,
     file_name = get_blob_file_name(blob_path = blob_object.url_signed_blob_path)
     blob_path_dirs = get_blob_file_path_without_name(blob_path = blob_object.url_signed_blob_path)
     blob_path_thumb = f'{blob_path_dirs}thumb/{file_name}'
-
+    connection = Connection.get_by_id(session = session, id = connection_id)
+    print('new_offset_in_seconds', new_offset_in_seconds)
     params = {
         'bucket_name': bucket_name,
         'path': blob_path_thumb,
@@ -139,6 +140,7 @@ def upload_thumbnail_for_connection_image(session: Session,
         return blob_object, log
     url = put_data.get('url')
     fields = put_data.get('fields')
+    headers = put_data.get('headers')
     if not url:
         return blob_object, log
     # Download Asset and re upload to url
@@ -155,9 +157,13 @@ def upload_thumbnail_for_connection_image(session: Session,
     img_data = response.content
     with open(temp_dir_path_and_filename, 'wb') as file_handler:
         file_handler.write(img_data)
-        # Now upload file to blob storage
+
+    # Now upload file to blob storage
     with open(temp_dir_path_and_filename, 'rb') as file_handler:
-        upload_resp = requests.post(url, data = fields, files = {'file': file_handler})
+        if connection.integration_name == 'amazon_aws':
+            upload_resp = requests.post(url, data = fields, files = {'file': file_handler})
+        elif connection.integration_name == 'microsoft_azure':
+            upload_resp = requests.put(url, data = file_handler, headers=headers)
         if not upload_resp.ok:
             msg = f'Failed to upload thumb. Error posting [{upload_resp.status_code}] {upload_resp.text}'
             logger.error(msg)
@@ -187,6 +193,7 @@ def get_custom_url_supported_connector(session: Session, log: dict, connection_i
     if connection.integration_name not in ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS:
         msg = f'Unsupported connection provider for URL regeneration {connection.id}:{connection.integration_name}'
         log['error']['unsupported'] = msg
+        log['error']['supported_providers'] = ALLOWED_CONNECTION_SIGNED_URL_PROVIDERS
         logger.error(msg)
         return None, log
 
@@ -247,6 +254,7 @@ def generate_thumbnails_for_image(
         session.add(blob_object)
         return blob_object, log
     blob_object.url_signed_thumb = thumb_signed_url
+    print('thumb_signed_url', thumb_signed_url)
     return blob_object, log
 
 

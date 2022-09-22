@@ -3,6 +3,7 @@ from shared.utils.task.task_new import create_review_sub_task
 from shared.database.task.task_event import TaskEvent
 from shared.regular import regular_methods, regular_log
 from dataclasses import dataclass
+from shared.database.source_control.working_dir import WorkingDirFileLink
 
 @dataclass
 class Task_Update():
@@ -62,12 +63,29 @@ class Task_Update():
                 for user in assignees:
                     TaskEvent.generate_task_request_change_event(self.session, task, self.member, task_assignee = user)
 
+    def update_files_count(self):
+        result, log = WorkingDirFileLink.file_link_update(
+            session = self.session,
+            add_or_remove = 'remove',
+            directory = self.task.job.directory,
+            job = self.task.job,
+            incoming_directory = self.task.job.directory,
+            file_id = self.task.file_id,
+            log = self.log
+        )
+        if regular_log.log_has_error(log):
+            self.log['error']['file_link_update'] = "error file_link_update"
+            return
+        self.task.job.update_file_count_statistic(session = self.session)
+
     def change_status(self):
         if self.task.status != 'archived' and self.status == 'archived':
             self.task.job.stat_count_tasks -= 1
             self.session.add(self.task.job)
 
         self.task.status = self.status
+        if self.status == 'archived':
+            self.update_files_count()
         self.session.add(self.task)
 
     def defer(self):

@@ -2,7 +2,7 @@ import axios from './customInstance'
 
 export const get_task_template_details = async (task_template_id) => {
 
-  try{
+  try {
     const response = await axios.post(`/api/v1/job/${task_template_id}/builder/info`, {
       mode_data: 'job_detail',
     })
@@ -10,15 +10,14 @@ export const get_task_template_details = async (task_template_id) => {
       let exam = response.data.job;
       return exam
     }
-  }
-  catch (e){
+  } catch (e) {
     console.error(e);
   }
 }
 
 export const update_task_template = async (project_string_id, task_template_id, task_template) => {
 
-  try{
+  try {
     const response = await axios.post(
       `/api/v1/project/${project_string_id}/job/update`,
       {
@@ -26,11 +25,10 @@ export const update_task_template = async (project_string_id, task_template_id, 
         job_id: task_template_id,
       }
     );
-    if(response.status === 200){
+    if (response.status === 200) {
       return [response.data, null]
     }
-  }
-  catch (e){
+  } catch (e) {
     return [null, e]
   }
 }
@@ -38,7 +36,7 @@ export const update_task_template = async (project_string_id, task_template_id, 
 
 export const get_task_template_credentials = async (metadata) => {
 
-  try{
+  try {
     const response = await axios.post(`/api/v1/credential/list`, {
       metadata: metadata
     })
@@ -46,41 +44,54 @@ export const get_task_template_credentials = async (metadata) => {
       let credential_list = response.data.credential_list;
       return credential_list
     }
-  }
-  catch (e){
+  } catch (e) {
     console.error(e);
   }
 }
 
 
 export const archive_task_template = async (job_id, job_list, mode) => {
-  try{
+  try {
     let response = await axios.post("/api/v1/job/cancel", {
-        job_id: job_id,
-        job_list: job_list,
-        mode: mode,
-      })
+      job_id: job_id,
+      job_list: job_list,
+      mode: mode,
+    })
     if (response.data.log.success == true) {
       return [true, null]
     }
 
     return [false, null]
-  }
-  catch (e){
-    return[null, e]
+  } catch (e) {
+    return [null, e]
   }
 }
 
 export const get_task_template_members = async (job_id) => {
-  try{
+  try {
     let response = await axios.get(`/api/v1/job/${job_id}/members-list`, {})
     if (response.status === 200) {
       return [response.data, null]
     }
 
     return [false, null]
+  } catch (e) {
+    return [null, e]
   }
-  catch (e){
-    return[null, e]
+}
+
+export const add_files_to_task_template = async (task_template_id, file_id_list, query) => {
+  try {
+    let response = await axios.post(`/api/v1/job/${task_template_id}/add-files`, {
+      file_id_list: file_id_list,
+      query: query
+    })
+    if (response.status === 200) {
+      return [response.data, null]
+    }
+
+    return [false, null]
+  } catch (e) {
+    return [null, e]
   }
 }
