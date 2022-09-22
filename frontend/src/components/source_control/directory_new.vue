@@ -91,7 +91,8 @@ import Vue from "vue"; export default Vue.extend( {
         '/api/v1/project/' + this.project_string_id
       + '/directory/new',
         {
-          nickname: this.nickname
+          nickname: this.nickname,
+          access_type: 'project'
 
         }).then(response => {
 

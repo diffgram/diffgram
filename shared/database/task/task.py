@@ -583,6 +583,7 @@ class Task(Base):
         query = session.query(Task).filter(
             Task.job_id == job.id,
             Task.file_id == file.id,
+            Task.status != 'archived',
         )
         if return_type == 'first':
             return query.first()

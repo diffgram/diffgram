@@ -2192,7 +2192,7 @@ export default Vue.extend({
     }
     this.mounted();
   },
-
+  // TODO 311 Methods!! refactor in multiple files and classes.
   methods: {
     on_change_label_schema: function(schema){
       this.$emit('change_label_schema', schema)
@@ -2287,11 +2287,9 @@ export default Vue.extend({
       this.update_canvas();
     },
     on_set_ui_schema: function(ui_schema){
-      console.log('on_set', ui_schema)
       this.initialize_ui_schema_data();
     },
     edit_ui_schema: function (event) {
-      console.log('EDIT', event)
       this.$store.commit("set_ui_schema_editing_state", true);
       this.show_ui_schema_context_menu = true;
 
