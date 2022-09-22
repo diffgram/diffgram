@@ -18,6 +18,7 @@ from methods.input.upload import Upload
 from shared.database.connection.connection import Connection
 from sqlalchemy.orm.session import Session
 from shared.helpers.permissions import get_session_string
+from shared.url_generation import get_custom_url_supported_connector
 
 @routes.route('/api/walrus/v1/project/<string:project_string_id>/input/packet',
               methods = ['POST'])
@@ -291,11 +292,17 @@ def enqueue_packet(project_string_id,
     return diffgram_input
 
 
+
+
+
 def validate_input_from_blob_path(project: Project, input: dict, session: Session, log: dict):
     if input.get('connection_id') is None:
         log['error'] = {}
         log['error']['connection_id'] = 'Provide a connection ID'
     connection = Connection.get_by_id(session, id = input.get('connection_id'))
+    connector, log = get_custom_url_supported_connector(session = session, log = log, connection_id = connection.id)
+    if regular_log.log_has_error(log):
+        return log
     if connection is None:
         log['error'] = {}
         log['error']['connection_id'] = 'Connection ID does not exist'
@@ -314,7 +321,8 @@ def validate_input_from_blob_path(project: Project, input: dict, session: Sessio
 
     if input.get('media') is not None and input['media'].get('type') is None:
         log['error'] = {}
-        log['error']['media.type'] = 'Provide media type needs to be ["image", "video", "text", "audio", "csv", "sensor_fusion", "geo_tiff"]'
+        log['error'][
+            'media.type'] = 'Provide media type needs to be ["image", "video", "text", "audio", "csv", "sensor_fusion", "geo_tiff"]'
     if input.get('raw_data_blob_path') is None:
         log['error'] = {}
         log['error']['raw_data_blob_path'] = 'Provide raw_data_blob_path for blob'
