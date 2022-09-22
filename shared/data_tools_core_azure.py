@@ -171,7 +171,7 @@ class DataToolsAzure:
         else:
             raise Exception('Invalid bucket_type, must be either web or ml.')
         my_content_settings = ContentSettings(content_type = content_type)
-        blob_client.upload_blob(string_data, content_settings = my_content_settings)
+        blob_client.upload_blob(string_data, content_settings = my_content_settings, overwrite = True)
 
     def download_bytes(self, blob_path: str):
         """
