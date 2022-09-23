@@ -425,15 +425,11 @@ class Process_Media():
         if self.input.allow_csv:
             self.allow_csv = self.input.allow_csv
 
-        # Advantage of doing this here is then it's set
-        # For all ways a flow can come in...
-        # Not clear if this is best place to set this.
+        self.input.status = "processing"
 
         if self.input.mode == "flow":
             # Get directory from flow
             self.input.directory = self.input.action_flow.directory
-
-        self.input.status = "processing"
 
         self.try_to_commit()
 
