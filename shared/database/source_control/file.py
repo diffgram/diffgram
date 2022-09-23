@@ -84,7 +84,7 @@ class File(Base, Caching):
 
     committed = Column(Boolean)
 
-    # image, frame, video, label
+    # image, frame, video, label, compound
     type = Column(String())
 
     # hash_data = [image_id, [instance-list], [n list]]
@@ -103,6 +103,11 @@ class File(Base, Caching):
     boxes_count = Column(Integer, default = 0)
     boxes_machine_made_count = Column(Integer, default = 0)
     polygon_count = Column(Integer, default = 0)
+
+    # Used for compound files mainly. To determine custom layouts for labeling UI
+    ui_schema_id = Column(Integer, ForeignKey('ui_schema.id'))
+    ui_schema = relationship("UI_Schema")
+
     ##########
 
     image_id = Column(Integer, ForeignKey('image.id'))
