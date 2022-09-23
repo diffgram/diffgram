@@ -23,7 +23,7 @@ def api_file_compound_new(project_string_id):
 
     log, input, untrusted_input = regular_input.master(request = request,
                                                        spec_list = spec_list)
-    if regular_log.log_has_error(log)
+    if regular_log.log_has_error(log):
         return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
@@ -72,4 +72,4 @@ def file_compound_new_core(session: Session,
         project_id = project.id,
 
     )
-    return file_data, log
+    return None, log
