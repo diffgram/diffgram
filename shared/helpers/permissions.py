@@ -45,7 +45,7 @@ def set_jwt_in_session(token_data: dict):
     login_session.clear()
     login_session['refresh_token'] = str_refresh_comp
     login_session['access_token'] = str_access_comp
-    login_session['id_token'] = str_id_comp
+    # login_session['id_token'] = str_id_comp
 
 
 def get_decoded_refresh_token_from_session() -> str or None:
@@ -188,7 +188,7 @@ def setSecureCookie(user_db):
 def get_session_string():
     if settings.USE_OAUTH2:
         # New Approach (ID TOKEN)
-        token = get_decoded_id_token_from_session()
+        token = get_decoded_access_token_from_session()
         # oauth2 = OAuth2Provider()
         # oauth2_client = oauth2.get_client()
 
