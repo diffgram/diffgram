@@ -246,7 +246,7 @@ class VertexTrainDatasetAction(ActionRunner):
             budget_milli_node_hours = self.action.config_data.get('training_node_hours') * 1000
 
         training_task_inputs = trainingjob.definition.AutoMlImageObjectDetectionInputs(
-            model_type="CLOUD_HIGH_ACCURACY_1",
+            model_type="MOBILE_TF_VERSATILE_1",
             budget_milli_node_hours=budget_milli_node_hours,
             disable_early_stopping=False,
         ).to_value()

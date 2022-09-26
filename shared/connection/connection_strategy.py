@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 
 from shared.connection.connection_operations import Connection_Operations
 
-from shared.connection.google_cloud_storage_connector import GoogleCloudStorageConnector
+from shared.connection.google_cloud_storage_connector import GoogleCloudStorageConnector, VertexAIConnector
 from shared.connection.azure_connector import AzureConnector
 from shared.connection.s3_connector import S3Connector
 from shared.connection.minio_connector import MinioConnector
@@ -15,7 +15,8 @@ CONNECTIONS_MAPPING = {
     'microsoft_azure': AzureConnector,
     'amazon_aws': S3Connector,
     'minio': MinioConnector,
-    'labelbox': LabelboxConnector
+    'labelbox': LabelboxConnector,
+    'vertex_ai': VertexAIConnector
 }
 
 
