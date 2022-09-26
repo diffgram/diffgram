@@ -35,7 +35,10 @@ def set_jwt_in_session(token_data: dict):
     str_id_comp = gzip.compress(id_token.encode())
     str_refresh_comp = gzip.compress(refresh_token.encode())
     str_access_comp = gzip.compress(access_token.encode())
-
+    logger.info(f'Access Token: {access_token}')
+    logger.info(f'Id Token: {id_token}')
+    logger.info(f'Refresh Token: {refresh_token}')
+    
     logger.info(f'ID Token Original size: {sys.getsizeof(id_token)} - Compressed Size: {sys.getsizeof(str_id_comp)}')
     logger.info(
         f'Access_token Token Original size: {sys.getsizeof(access_token)} - Compressed Size: {sys.getsizeof(str_access_comp)}')
