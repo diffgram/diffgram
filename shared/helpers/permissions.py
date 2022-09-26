@@ -44,8 +44,8 @@ def set_jwt_in_session(token_data: dict):
 
     login_session.clear()
     login_session['refresh_token'] = str_refresh_comp
-    login_session['access_token'] = str_access_comp
-    # login_session['id_token'] = str_id_comp
+    # login_session['access_token'] = str_access_comp
+    login_session['id_token'] = str_id_comp
 
 
 def get_decoded_refresh_token_from_session() -> str or None:
@@ -114,11 +114,11 @@ def try_refreshing_tokens() -> str or None:
         new_access_token = oidc_client.get_access_token_from_jwt(jwt_data = new_token)
         if new_refresh_token is not None:
             login_session['refresh_token'] = new_refresh_token
-        # if new_id_token is not None:
-        #     login_session['id_token'] = new_id_token
-        if new_access_token is not None:
-            login_session['access_token'] = new_access_token
-        return new_access_token
+        if new_id_token is not None:
+            login_session['id_token'] = new_id_token
+        # if new_access_token is not None:
+        #     login_session['access_token'] = new_access_token
+        return new_id_token
     except:
         msg = traceback.format_exc()
         logger.warning(f'Refresh token failed {msg}')
@@ -128,9 +128,9 @@ def try_refreshing_tokens() -> str or None:
 def LoggedIn():
     if settings.USE_OAUTH2:
         try:
-            # id_token = get_decoded_id_token_from_session()
-            access_token = get_decoded_access_token_from_session()
-            if not access_token:
+            id_token = get_decoded_id_token_from_session()
+            # access_token = get_decoded_access_token_from_session()
+            if not id_token:
                 return False
             return True
         except Exception as e:
@@ -152,10 +152,11 @@ def get_user_from_oauth2(session):
     from shared.database.user import User
     oauth2 = OAuth2Provider()
     oauth2_client = oauth2.get_client()
-    access_token = get_decoded_access_token_from_session()
-    if access_token is None:
+    # access_token = get_decoded_access_token_from_session()
+    id_token = get_decoded_id_token_from_session()
+    if id_token is None:
         return None
-    decoded_token = oauth2_client.get_decoded_jwt_token(id_token = access_token)
+    decoded_token = oauth2_client.get_decoded_jwt_token(id_token = id_token)
     if not decoded_token:
         return None
     diffgram_user = User.get_user_by_oauth2_id(session = session,
@@ -188,7 +189,8 @@ def setSecureCookie(user_db):
 def get_session_string():
     if settings.USE_OAUTH2:
         # New Approach (ID TOKEN)
-        token = get_decoded_access_token_from_session()
+        # token = get_decoded_access_token_from_session()
+        token = get_decoded_id_token_from_session()
         # oauth2 = OAuth2Provider()
         # oauth2_client = oauth2.get_client()
 
