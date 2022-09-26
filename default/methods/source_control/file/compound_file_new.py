@@ -8,7 +8,7 @@ from shared.database.input import Input
 from sqlalchemy.orm.session import Session
 
 
-@routes.route('/api/project/<string:project_string_id>/file/new-compound', methods = ['POST'])
+@routes.route('/api/v1/project/<string:project_string_id>/file/new-compound', methods = ['POST'])
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor", "Viewer"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
@@ -70,6 +70,19 @@ def file_compound_new_core(session: Session,
     input_obj = Input.new(
         directory_id = directory_id,
         project_id = project.id,
+        type = 'from_compound'
 
     )
-    return None, log
+
+    file = File.new(
+        session = session,
+        working_dir_id = directory_id,
+        file_type = "compound",
+        original_filename = name,
+        project_id = project.id,  # TODO test if project_id is working as expected here
+        input_id = input_obj.id
+    )
+    input_obj.file_id = file.id
+    input_obj.status = 'success'
+    session.add(input_obj)
+    return file.serialize_base_file(), log
