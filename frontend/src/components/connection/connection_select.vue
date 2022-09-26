@@ -453,14 +453,7 @@
 
           this.connection_list_loading = true
 
-          axios.post('/api/v1/connection/list', {
-
-            permission_scope: this.permission_scope,
-            project_string_id: this.project_string_id,
-            org_id: null
-
-
-          }).then(response => {
+          axios.get(`/api/project/${this.project_string_id}/connections`).then(response => {
 
             this.$store.commit('set_connection_list', response.data.connection_list)
             this.connection_list_loading = false
