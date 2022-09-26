@@ -10,6 +10,7 @@ from shared.regular.regular_api import *
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from google.cloud import storage
 from google.oauth2 import service_account
+from google.cloud import aiplatform
 from shared.helpers import sessionMaker
 from shared.ingest import packet
 from pathlib import Path
@@ -522,3 +523,14 @@ class GoogleCloudStorageConnector(Connector):
 
 
         return result_buckets
+
+class VertexAIConnector(GoogleCloudStorageConnector):
+    def init_ai_platform(self, instance_details):
+        aiplatform.init(
+            credentials = self.get_credentials(),
+            project = self.auth_data['project_id'],
+            location = instance_details.get('location'),
+            staging_bucket = 'gs://' + instance_details.get('staging_bucket_name'),
+            experiment = instance_details.get('experiment'),
+            experiment_description = instance_details.get('experiment_description')
+        )
