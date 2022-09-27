@@ -42,3 +42,4 @@ azure-ai-textanalytics
 python-keycloak
 pyjwt==1.7.1
 imageio-ffmpeg==0.2.0
+google-cloud-aiplatform
