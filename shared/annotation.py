@@ -832,8 +832,8 @@ class Annotation_Update():
             self.instance.label_file_id = None  # Ensure is None for Security
             return True
 
-        self.log['error']['valid_label_file'] = "Permission issue with " + \
-                                                str(self.instance.label_file_id) + " label_file_id."
+        self.log['error']['valid_label_file'] = "Label File ID" + \
+                                                str(self.instance.label_file_id) + f"does not belong to project {self.project.project_string_id}. Ensure you are using the correct label_file_id (and not the label ID). They are different!"
         return False
 
     def init_video_input(self):
