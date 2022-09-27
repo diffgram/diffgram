@@ -57,7 +57,7 @@ class VertexTrainDatasetAction(ActionRunner):
 
         connection_strategy = ConnectionStrategy(
             connection_class = GoogleCloudStorageConnector,
-            connection_id = self.action.config_data.get('connection_id'),
+            connection_id = self.action.config_data.get('connection_id')['id'],
             session = self.session
         )
 
@@ -233,6 +233,16 @@ class VertexTrainDatasetAction(ActionRunner):
         return label_count
 
     def train_automl_model(self, credentials, dataset):
+        model_type = "MOBILE_TF_VERSATILE_1"
+
+        if (self.action.config_data.get('autoML_model')):
+            model_type = self.action.config_data.get('autoML_model')['value']
+
+        budget_milli_node_hours=20000
+
+        if self.action.config_data.get('training_node_hours') is not None:
+            budget_milli_node_hours = int(self.action.config_data.get('training_node_hours')) * 1000
+
         created_dataset_name = dataset.__dict__['_gca_resource'].__dict__['_pb'].name
         id_separator_index = created_dataset_name.rindex('/')
         created_dataset_id = created_dataset_name[id_separator_index + 1:]
@@ -240,13 +250,8 @@ class VertexTrainDatasetAction(ActionRunner):
         client_options = {"api_endpoint": "us-central1-aiplatform.googleapis.com"}
         client = aiplatform.gapic.PipelineServiceClient(client_options=client_options, credentials=credentials)
 
-        budget_milli_node_hours=20000
-
-        if self.action.config_data.get('training_node_hours') is not None:
-            budget_milli_node_hours = self.action.config_data.get('training_node_hours') * 1000
-
         training_task_inputs = trainingjob.definition.AutoMlImageObjectDetectionInputs(
-            model_type="MOBILE_TF_VERSATILE_1",
+            model_type=model_type,
             budget_milli_node_hours=budget_milli_node_hours,
             disable_early_stopping=False,
         ).to_value()
