@@ -24,7 +24,9 @@
           <connection_select v-model="action.config_data.connection_id" />
           <v-text-field
             v-model="action.config_data.experiment"
+            :rules="experiment_naming_rules"
             label="Experiment"
+            validate-on-blur
           />
           <v-text-field
             v-model="action.config_data.experiment_description"
@@ -110,6 +112,7 @@ export default {
       advanced: false,
       steps_config: null,
       action_run_list: [],
+      experiment_naming_rules: [v => v.match(/^[a-z0-9][a-z0-9-]{0,127}$/) || 'Experiment name should match [a-z0-9][a-z0-9-]{0,127}'],
       autoML_models: [
         {
           value: 'CLOUD_LOW_LATENCY_1',
