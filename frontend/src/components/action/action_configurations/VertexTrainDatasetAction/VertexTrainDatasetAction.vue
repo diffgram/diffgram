@@ -63,6 +63,9 @@
               <th class="text-left">
                 Model Name
               </th>
+              <th class="text-left">
+                Log
+              </th>
             </tr>
             </thead>
             <tbody>
@@ -72,6 +75,7 @@
             >
               <td style="text-transform: capitalize">{{ item.status }}</td>
               <td v-if="item.output && item.output.model_name">{{ item.output.model_name }}</td>
+              <td v-if="item.output && item.output.error">{{ item.output.error }}</td>
             </tr>
             </tbody>
           </template>
@@ -107,12 +111,18 @@ export default {
       required: true
     },
   },
+  computed: {
+    experiment_naming_rules: function() {
+      return [
+        v => !!v && /^[a-z0-9][a-z0-9-]{0,127}$/.test(v) || 'Experiment name should match [a-z0-9][a-z0-9-]{0,127}'
+      ]
+    }
+  },
   data (){
     return {
       advanced: false,
       steps_config: null,
       action_run_list: [],
-      experiment_naming_rules: [v => v.match(/^[a-z0-9][a-z0-9-]{0,127}$/) || 'Experiment name should match [a-z0-9][a-z0-9-]{0,127}'],
       autoML_models: [
         {
           value: 'CLOUD_LOW_LATENCY_1',
