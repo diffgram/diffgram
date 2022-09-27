@@ -17,6 +17,10 @@
             v-model="action.config_data.model_name"
             label="Model name"
           />
+          <v-text-field
+            v-model="action.config_data.staging_bucket_name_without_gs_prefix"
+            label="Bucket name"
+          />
           <connection_select v-model="action.config_data.connection_id" />
           <v-text-field
             v-model="action.config_data.experiment"
