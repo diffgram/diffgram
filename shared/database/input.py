@@ -241,9 +241,9 @@ class Input(Base):
         # if a video_split is provided then we use it.
         if parent_input_id is None and video_split_duration is None:
             video_split_duration = 30
-
+        if project and not project_id:
+            project_id = project.id
         input = Input(
-            project = project,
             project_id = project_id,
             file_id = file_id,
             mode = mode,
@@ -336,6 +336,8 @@ class Input(Base):
             'raw_data_blob_path': self.raw_data_blob_path,
             'source': self.type,
             'mode': self.mode,
+            'archived': self.archived,
+            'parent_file_id': self.parent_file_id,
             'file_id': self.file_id,
             'batch_id': self.batch_id,
             'task_id': self.task_id,  # Include task_id

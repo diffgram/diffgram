@@ -958,9 +958,9 @@ class Process_Media():
             # concurrently and that may lead to a bad end result of the counter.
 
             # Commit any update job/task data.
-            self.try_to_commit()
-            job.refresh_stat_count_tasks(self.session)
 
+            job.refresh_stat_count_tasks(self.session)
+        self.try_to_commit()
     def may_attach_to_job(self):
 
         if not self.input or not self.input.file:
