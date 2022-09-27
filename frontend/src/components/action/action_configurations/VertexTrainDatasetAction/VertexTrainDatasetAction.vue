@@ -24,7 +24,9 @@
           <connection_select v-model="action.config_data.connection_id" />
           <v-text-field
             v-model="action.config_data.experiment"
+            :rules="experiment_naming_rules"
             label="Experiment"
+            validate-on-blur
           />
           <v-text-field
             v-model="action.config_data.experiment_description"
@@ -61,6 +63,9 @@
               <th class="text-left">
                 Model Name
               </th>
+              <th class="text-left">
+                Log
+              </th>
             </tr>
             </thead>
             <tbody>
@@ -70,6 +75,7 @@
             >
               <td style="text-transform: capitalize">{{ item.status }}</td>
               <td v-if="item.output && item.output.model_name">{{ item.output.model_name }}</td>
+              <td v-if="item.output && item.output.error">{{ item.output.error }}</td>
             </tr>
             </tbody>
           </template>
@@ -104,6 +110,13 @@ export default {
     project_string_id: {
       required: true
     },
+  },
+  computed: {
+    experiment_naming_rules: function() {
+      return [
+        v => !!v && /^[a-z0-9][a-z0-9-]{0,127}$/.test(v) || 'Experiment name should match [a-z0-9][a-z0-9-]{0,127}'
+      ]
+    }
   },
   data (){
     return {

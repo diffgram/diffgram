@@ -65,13 +65,25 @@ class VertexTrainDatasetAction(ActionRunner):
 
         if not success:
             ActionRun.set_action_run_status(self.session, self.action_run.id, "failed")
-            return
+            return {
+                "success": False,
+                "error": "Not able to connect to Vertex AI"
+            }
+
+        experiment = "experiment"
+        experiment_description = "Experiment run from Diffgram"
+
+        if self.action.config_data.get('experiment'):
+            experiment = self.action.config_data.get('experiment')
+
+        if self.action.config_data.get('experiment_description'):
+            experiment_description = self.action.config_data.get('experiment_description')
         
         vertex_ai_instance_details = {
             "location": "us-central1",
             "staging_bucket_name": self.bucket_name,
-            "experiment": self.action.config_data.get('experiment'),
-            "experiment_description": self.action.config_data.get('experiment_description')
+            "experiment": experiment,
+            "experiment_description": experiment_description
         }
         
         vertex_ai_connector.init_ai_platform(vertex_ai_instance_details)
@@ -79,6 +91,14 @@ class VertexTrainDatasetAction(ActionRunner):
         file_list = self.get_file_list(session)
 
         dataset_file_list = self.migrate_files_to_gcp(file_list, gcp_data_tools, temp_folder_name)
+
+        if len(dataset_file_list) == 0:
+            ActionRun.set_action_run_status(self.session, self.action_run.id, "failed")
+            return {
+                "success": False,
+                "error": "No file in the dataset"
+            }
+
         self.count_dataset_labels(session, dataset_file_list)
         vertexai_import_file = self.write_vertex_format_jsonl_file(gcp_data_tools, temp_folder_name, dataset_file_list)
         
@@ -105,7 +125,6 @@ class VertexTrainDatasetAction(ActionRunner):
             "model_id": model_id
         }
 
-
     def get_file_list(self, session) -> list:
         directory_id = self.action.config_data.get('directory_id')
         self.directory = WorkingDir.get_by_id(session = session, directory_id=directory_id)
@@ -124,8 +143,6 @@ class VertexTrainDatasetAction(ActionRunner):
                 })
 
         return dataset_file_list
-
-
 
     def build_vertex_format_instance(self, instance, session, file) -> dict:
         label = File.get_by_id(session=session, 
@@ -206,7 +223,7 @@ class VertexTrainDatasetAction(ActionRunner):
 
         return upload_path
 
-    def count_dataset_labels(self, session, file_list) -> int:
+    def count_dataset_labels(self, session, file_list) -> dict:
         label_count = {}
 
         for file in file_list:
