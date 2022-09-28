@@ -111,7 +111,6 @@ def upload_thumbnail_for_connection_image(session: Session,
     blob_path_dirs = get_blob_file_path_without_name(blob_path = blob_object.url_signed_blob_path)
     blob_path_thumb = f'{blob_path_dirs}thumb/{file_name}'
     connection = Connection.get_by_id(session = session, id = connection_id)
-    print('new_offset_in_seconds', new_offset_in_seconds)
     params = {
         'bucket_name': bucket_name,
         'path': blob_path_thumb,
@@ -161,7 +160,7 @@ def upload_thumbnail_for_connection_image(session: Session,
     # Now upload file to blob storage
     with open(temp_dir_path_and_filename, 'rb') as file_handler:
         if connection.integration_name == 'amazon_aws':
-            upload_resp = requests.post(url, data = fields, files = {'file': file_handler})
+            upload_resp = requests.put(url, files = {'media': file_handler})
         elif connection.integration_name == 'microsoft_azure':
             upload_resp = requests.put(url, data = file_handler, headers=headers)
         if not upload_resp.ok:
@@ -254,7 +253,6 @@ def generate_thumbnails_for_image(
         session.add(blob_object)
         return blob_object, log
     blob_object.url_signed_thumb = thumb_signed_url
-    print('thumb_signed_url', thumb_signed_url)
     return blob_object, log
 
 
