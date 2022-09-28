@@ -160,7 +160,7 @@ def upload_thumbnail_for_connection_image(session: Session,
     # Now upload file to blob storage
     with open(temp_dir_path_and_filename, 'rb') as file_handler:
         if connection.integration_name == 'amazon_aws':
-            upload_resp = requests.put(url, files = file_handler.read(), timeout = 30)
+            upload_resp = requests.put(url, files = file_handler)
         elif connection.integration_name == 'microsoft_azure':
             upload_resp = requests.put(url, data = file_handler, headers=headers)
         if not upload_resp.ok:
