@@ -18,7 +18,6 @@ from shared.database.batch.batch import InputBatch
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
     apis_user_list=['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("300 per day")
 def api_file_update(project_string_id):
     """
     For limits for this, this route may be used for single files (not just lists)
@@ -88,7 +87,6 @@ def api_file_update(project_string_id):
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
     apis_user_list=['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("1000 per day")
 def api_file_transfer(project_string_id):
     """
     This is a seperate route becuase we want to use spec_list

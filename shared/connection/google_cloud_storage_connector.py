@@ -10,6 +10,8 @@ from shared.regular.regular_api import *
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from google.cloud import storage
 from google.oauth2 import service_account
+from google.cloud import aiplatform
+from google.cloud.aiplatform.gapic.schema import trainingjob
 from shared.helpers import sessionMaker
 from shared.ingest import packet
 from pathlib import Path
@@ -522,3 +524,88 @@ class GoogleCloudStorageConnector(Connector):
 
 
         return result_buckets
+
+class VertexAIConnector(GoogleCloudStorageConnector):
+    dataset = None
+    
+    def init_ai_platform(self, instance_details: dict) -> None:
+        aiplatform.init(
+            credentials = self.get_credentials(),
+            project = self.auth_data['project_id'],
+            location = instance_details.get('location'),
+            staging_bucket = 'gs://' + instance_details.get('staging_bucket_name'),
+            experiment = instance_details.get('experiment'),
+            experiment_description = instance_details.get('experiment_description')
+        )
+
+    def create_vertex_ai_dataset(self, dataset_name: str, vertexai_import_file: str) -> None:
+        datasets_list = aiplatform.datasets.ImageDataset.list()
+        existing_datasets = []
+
+        for dataset in datasets_list:
+            display_name = dataset.__dict__['_gca_resource'].__dict__['_pb'].display_name
+            existing_datasets.append(display_name)
+
+        if dataset_name in existing_datasets:
+            dataset_index = existing_datasets.index(dataset_name)
+            dataset_to_delete = datasets_list[dataset_index]
+
+            dataset_to_delete.delete()
+
+        self.dataset = aiplatform.ImageDataset.create(
+            display_name=f"{dataset_name}",
+            gcs_source=vertexai_import_file,
+            import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
+        )
+
+    def train_automl_model(self, model_name, model_type = "MOBILE_TF_VERSATILE_1", node_hours = 20000) -> str:
+        credentials = self.get_credentials()
+
+        if not self.dataset:
+            return
+
+        created_dataset_name = self.dataset.__dict__['_gca_resource'].__dict__['_pb'].name
+        id_separator_index = created_dataset_name.rindex('/')
+        created_dataset_id = created_dataset_name[id_separator_index + 1:]
+
+        client_options = {
+            "api_endpoint": "us-central1-aiplatform.googleapis.com"
+        }
+
+        client = aiplatform.gapic.PipelineServiceClient(client_options=client_options, credentials=credentials)
+
+        training_task_inputs = trainingjob.definition.AutoMlImageObjectDetectionInputs(
+            model_type=model_type,
+            budget_milli_node_hours=node_hours,
+            disable_early_stopping=False,
+        ).to_value()
+
+        training_pipeline = {
+            "display_name": model_name,
+            "training_task_definition": "gs://google-cloud-aiplatform/schema/trainingjob/definition/automl_image_object_detection_1.0.0.yaml",
+            "training_task_inputs": training_task_inputs,
+            "input_data_config": {
+                "dataset_id": created_dataset_id
+            },
+            "model_to_upload": {
+                "display_name": model_name
+            },
+        }
+
+        location = self.dataset.__dict__['location']
+        project = self.dataset.__dict__['project']
+
+        parent = f"projects/{project}/locations/{location}"
+
+        response = client.create_training_pipeline(
+            parent=parent, 
+            training_pipeline=training_pipeline
+        )
+
+        model_name = response.__dict__['_pb'].name
+        id_separator_index = model_name.rindex('/')
+        model_id = model_name[id_separator_index + 1:]
+
+        return model_id
+
+    

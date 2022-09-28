@@ -11,6 +11,10 @@ import uuid
 import datetime
 from imageio import imread
 
+from shared.shared_logger import get_shared_logger
+
+logger = get_shared_logger()
+
 
 class DataToolsAzure:
     """
@@ -171,7 +175,7 @@ class DataToolsAzure:
         else:
             raise Exception('Invalid bucket_type, must be either web or ml.')
         my_content_settings = ContentSettings(content_type = content_type)
-        blob_client.upload_blob(string_data, content_settings = my_content_settings)
+        blob_client.upload_blob(string_data, content_settings = my_content_settings, overwrite = True)
 
     def download_bytes(self, blob_path: str):
         """
@@ -204,6 +208,7 @@ class DataToolsAzure:
         return image_np
 
     def build_secure_url(self, blob_name: str, expiration_offset: int = None, bucket: str = "web"):
+        from shared.connection.azure_connector import AzureConnector
         """
             Builds a presigned URL to access the given blob path.
         :param blob_name: The path to the blob for the presigned URL
@@ -211,38 +216,33 @@ class DataToolsAzure:
         :param bucket: string for the bucket type (either 'web' or 'ml') defaults to 'web'
         :return: the string for the presigned url
         """
-        container = None
         if bucket == 'web':
             container = self.azure_container_name
         elif bucket == 'ml':
             container = self.azure_container_name_ml
         else:
             raise Exception('Invalid bucket type provided. Must be either "web" or "ml"')
-        shared_access_signature = BlobSharedAccessSignature(
-            account_name = self.azure_service_client.account_name,
-            account_key = self.azure_service_client.credential.account_key
-        )
-        if expiration_offset is None:
-            expiration_offset = 40368000
 
-        added_seconds = datetime.timedelta(0, expiration_offset)
-        expiry_time = datetime.datetime.utcnow() + added_seconds
-        filename = blob_name.split("/")[-1]
-        sas = shared_access_signature.generate_blob(
-            container_name = container,
-            blob_name = blob_name,
-            start = datetime.datetime.utcnow(),
-            expiry = expiry_time,
-            permission = BlobSasPermissions(read = True),
-            content_disposition = f"attachment; filename={filename}",
-        )
-        sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
-            self.azure_service_client.account_name,
-            container,
-            blob_name,
-            sas
-        )
-        return sas_url
+        azure_connection = AzureConnector(auth_data = {
+            'client_secret': settings.DIFFGRAM_AZURE_CONNECTION_STRING
+        }, config_data = {})
+        azure_connection.connect()
+        params = {
+            'bucket_name': container,
+            'path': blob_name,
+            'expiration_offset': expiration_offset,
+            'action_type': 'get_pre_signed_url',
+            'event_data': {
+
+            }
+        }
+        response = azure_connection.fetch_data(params)
+        if response is None or response.get('result') is None:
+            msg = f'Error from Datatools Azure: {params}. Response: {response}'
+            logger.error(msg)
+            return None
+        url = response.get('result')
+        return url
 
     def get_string_from_blob(self, blob_name: str):
         """

@@ -91,7 +91,6 @@ export default Vue.extend({
       build_actions_list: function(action_template_list){
         this.actions_template_list = [];
         for(let template of action_template_list){
-          console.log(template.public_name)
           let action = new Action(
             template.public_name,
             template.icon,

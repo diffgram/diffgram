@@ -18,25 +18,15 @@
             label="Model name"
           />
           <v-text-field
-            v-model="action.config_data.gcp_project_id"
-            label="Project name"
-          />
-          <v-text-field
-            v-model="action.config_data.connection_id"
-            label="Connection ID"
-          />
-          <v-text-field
             v-model="action.config_data.staging_bucket_name_without_gs_prefix"
-            hint="Bucket name without gs prefix"
-            label="GCP bucket name"
+            label="Bucket name"
           />
-          <v-text-field
-            v-model="action.config_data.location"
-            label="Bucket location"
-          />
+          <connection_select v-model="action.config_data.connection_id" />
           <v-text-field
             v-model="action.config_data.experiment"
+            :rules="experiment_naming_rules"
             label="Experiment"
+            validate-on-blur
           />
           <v-text-field
             v-model="action.config_data.experiment_description"
@@ -51,6 +41,12 @@
             v-if="advanced"
             label="Training node hours"
             type="number"
+          />
+          <diffgram_select
+            v-model="action.config_data.autoML_model"
+            v-if="advanced"
+            :item_list="autoML_models"
+            :return_object="true"
           />
       </template>
 
@@ -67,6 +63,9 @@
               <th class="text-left">
                 Model Name
               </th>
+              <th class="text-left">
+                Log
+              </th>
             </tr>
             </thead>
             <tbody>
@@ -76,6 +75,9 @@
             >
               <td style="text-transform: capitalize">{{ item.status }}</td>
               <td v-if="item.output && item.output.model_name">{{ item.output.model_name }}</td>
+              <td v-if="item.output && item.output.error">
+                {{ item.output.error }}
+              </td>
             </tr>
             </tbody>
           </template>
@@ -92,13 +94,16 @@ import action_config_base from "@/components/action/actions_config_base/action_c
 import action_config_mixin from "../action_config_mixin";
 import ActionStepsConfig from '../ActionStepsConfig';
 import { get_action_run_list, trigger_action } from '../../../../services/actionService';
-import axios from 'axios'
+import connection_select from '../../../connection/connection_select.vue';
+import diffgram_select from '../../../regular/diffgram_select.vue';
 
 export default {
   name: "VertexTrainDatasetAction",
   mixins: [action_config_mixin],
   components: {
     action_config_base,
+    connection_select,
+    diffgram_select,
   },
   props: {
     action:{
@@ -108,11 +113,40 @@ export default {
       required: true
     },
   },
+  computed: {
+    experiment_naming_rules: function() {
+      return [
+        v => !!v && /^[a-z0-9][a-z0-9-]{0,127}$/.test(v) || 'Experiment name should match [a-z0-9][a-z0-9-]{0,127}'
+      ]
+    }
+  },
   data (){
     return {
       advanced: false,
       steps_config: null,
-      action_run_list: []
+      action_run_list: [],
+      autoML_models: [
+        {
+          value: 'CLOUD_LOW_LATENCY_1',
+          name: 'Low latency (AutoML)'
+        },
+        {
+          value: 'CLOUD_HIGH_ACCURACY_1',
+          name: 'Higher prediction quality (AutoML)'
+        },
+        {
+          value: 'MOBILE_TF_VERSATILE_1',
+          name: 'General purpose usage (AutoML Edge)'
+        },
+        {
+          value: 'MOBILE_TF_LOW_LATENCY_1',
+          name: 'Low Latency (AutoML Edge)'
+        },
+        {
+          value: 'MOBILE_TF_HIGH_ACCURACY_1',
+          name: 'Higher prediction quality (AutoML Edge)'
+        },
+      ]
     }
   },
   async mounted() {

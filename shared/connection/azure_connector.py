@@ -1,17 +1,17 @@
 # OPENCORE - ADD
 import threading
 import io
-import datetime
 import mimetypes
 import requests
 import traceback
-
-from shared.regular.regular_api import *
+import datetime
+from shared.regular import regular_input
 from azure.storage.blob import BlobBlock, BlobServiceClient, ContentSettings, StorageStreamDownloader
 from azure.storage.blob._models import BlobSasPermissions
 from azure.storage.blob._shared_access_signature import BlobSharedAccessSignature
 from shared.helpers import sessionMaker
 from shared.database.project import Project
+from shared.database.event.event import Event
 from shared.database.auth.member import Member
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from shared.ingest import packet
@@ -196,13 +196,12 @@ class AzureConnector(Connector):
         :return:
         """
         path = opts['path']
-        blob_client = self.connection_client.get_blob_client(container =  opts['bucket_name'], blob = path)
+        blob_client = self.connection_client.get_blob_client(container = opts['bucket_name'], blob = path)
         download_stream = blob_client.download_blob()
 
         bytes_data = download_stream.content_as_bytes()
         str_data = bytes_data.decode()
         return {'data': str_data}
-
 
     @with_connection
     @with_azure_exception_handler
@@ -244,6 +243,85 @@ class AzureConnector(Connector):
                 continue
             keys.append(blob.name)
         return keys
+
+    def __custom_image_upload_url(self, opts: dict) -> dict or None:
+        spec_list = [{'bucket_name': str, 'path': str, 'expiration_offset': int}]
+        log = regular_log.default()
+        log, input = regular_input.input_check_many(untrusted_input = opts,
+                                                    spec_list = spec_list,
+                                                    log = log)
+        if regular_log.log_has_error(log):
+            return {'log': log}
+        bucket_name = opts.get('bucket_name')
+        blob_name = opts.get('path')
+        expiration_offset = opts.get('expiration_offset')
+        filename = blob_name.split("/")[-1]
+        shared_access_signature = BlobSharedAccessSignature(
+            account_name = self.connection_client.account_name,
+            account_key = self.connection_client.credential.account_key
+        )
+        if expiration_offset is None:
+            expiration_offset = 40368000
+
+        added_seconds = datetime.timedelta(0, expiration_offset)
+        expiry_time = datetime.datetime.utcnow() + added_seconds
+        sas = shared_access_signature.generate_blob(
+            container_name = bucket_name,
+            blob_name = blob_name,
+            start = datetime.datetime.utcnow(),
+            expiry = expiry_time,
+            permission = BlobSasPermissions(read = True, write = True, create = True),
+            content_disposition = f"attachment; filename={filename}",
+        )
+        sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
+            self.connection_client.account_name,
+            bucket_name,
+            blob_name,
+            sas
+        )
+        return {'result': {'url': sas_url, 'headers': {"x-ms-blob-type": "BlockBlob"}}}
+
+    @with_connection
+    def __get_pre_signed_url(self, opts):
+        spec_list = [{'bucket_name': str, 'path': str, 'expiration_offset': int}]
+        log = regular_log.default()
+        log, input = regular_input.input_check_many(untrusted_input = opts,
+                                                    spec_list = spec_list,
+                                                    log = log)
+        if regular_log.log_has_error(log):
+            return {'log': log}
+        blob_name = opts['path']
+        expiration_offset = opts['expiration_offset']
+        if blob_name is None:
+            log['error']['blob_path'] = 'blob path cannot be None'
+            return {'log': log}
+        filename = blob_name.split("/")[-1]
+        bucket_name = opts['bucket_name']
+        shared_access_signature = BlobSharedAccessSignature(
+            account_name = self.connection_client.account_name,
+            account_key = self.connection_client.credential.account_key
+        )
+        if expiration_offset is None:
+            expiration_offset = 40368000
+
+        added_seconds = datetime.timedelta(0, expiration_offset)
+        expiry_time = datetime.datetime.utcnow() + added_seconds
+        filename = blob_name.split("/")[-1]
+        sas = shared_access_signature.generate_blob(
+            container_name = bucket_name,
+            blob_name = blob_name,
+            start = datetime.datetime.utcnow(),
+            expiry = expiry_time,
+            permission = BlobSasPermissions(read = True, write = True, create = True),
+            content_disposition = f"attachment; filename={filename}",
+        )
+        sas_url = 'https://{}.blob.core.windows.net/{}/{}?{}'.format(
+            self.connection_client.account_name,
+            bucket_name,
+            blob_name,
+            sas
+        )
+        return {'result': sas_url}
 
     @with_connection
     @with_azure_exception_handler
@@ -390,9 +468,11 @@ class AzureConnector(Connector):
         try:
             blob_client = self.connection_client.get_blob_client(container = bucket_name, blob = test_file_path)
             my_content_settings = ContentSettings(content_type = 'text/plain')
-            blob_client.upload_blob('This is a diffgram test file', content_settings = my_content_settings, overwrite=True)
+            blob_client.upload_blob('This is a diffgram test file', content_settings = my_content_settings,
+                                    overwrite = True)
         except Exception as e:
-            log['error']['azure_write_perms'] = 'Error Connecting to Azure: Please check you have write permissions on the Azure container.'
+            log['error'][
+                'azure_write_perms'] = 'Error Connecting to Azure: Please check you have write permissions on the Azure container.'
             log['error']['details'] = traceback.format_exc()
             return False, log
         try:
@@ -423,11 +503,11 @@ class AzureConnector(Connector):
                 raise Exception(
                     f"Error when accessing presigned URL: Status({resp.status_code}). Error: {resp.text}")
         except:
-            log['error']['azure_write_perms'] = 'Error Connecting to Azure: Please check you have read permissions on the Azure container.'
+            log['error'][
+                'azure_write_perms'] = 'Error Connecting to Azure: Please check you have read permissions on the Azure container.'
             log['error']['details'] = traceback.format_exc()
             return False, log
         return True, log
-
 
     def test_connection(self):
         auth_result = self.connect()
@@ -476,7 +556,10 @@ class AzureConnector(Connector):
             return self.__get_string_data(opts)
         if action_type == 'get_folder_contents':
             return self.__get_folder_contents(opts)
-
+        if action_type == 'get_pre_signed_url':
+            return self.__get_pre_signed_url(opts)
+        if action_type == 'custom_image_upload_url':
+            return self.__custom_image_upload_url(opts)
     @with_connection
     def put_data(self, opts):
         if 'action_type' not in opts:

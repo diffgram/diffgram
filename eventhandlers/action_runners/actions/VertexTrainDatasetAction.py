@@ -10,11 +10,8 @@ from shared.data_tools_core import Data_tools
 from shared.data_tools_core_gcp import DataToolsGCP
 from shared.shared_logger import get_shared_logger
 
-from google.cloud import aiplatform
-from google.cloud.aiplatform.gapic.schema import trainingjob
-
 from shared.connection.connection_strategy import ConnectionStrategy
-from shared.connection.google_cloud_storage_connector import GoogleCloudStorageConnector
+from shared.connection.google_cloud_storage_connector import VertexAIConnector
 
 import gc
 import shutil
@@ -55,81 +52,99 @@ class VertexTrainDatasetAction(ActionRunner):
         ActionRun.set_action_run_status(self.session, self.action_run.id, "running")
         temp_folder_name = f"temp_{self.action_run.id}"
 
+        self.bucket_name = self.action.config_data.get('staging_bucket_name_without_gs_prefix')
+        self.model_name = self.action.config_data.get('model_name')
+
         connection_strategy = ConnectionStrategy(
-            connection_class = GoogleCloudStorageConnector,
-            connection_id = self.action.config_data.get('connection_id'),
+            connection_class = VertexAIConnector,
+            connection_id = self.action.config_data.get('connection_id')['id'],
             session = self.session
         )
 
-        [google_vertex_connector, success] = connection_strategy.get_connector()
+        [vertex_ai_connector, success] = connection_strategy.get_connector()
 
         if not success:
-            return
-        
-        credentials = google_vertex_connector.get_credentials()
-        
-        self.init_ai_platform(credentials)
-        gcp_data_tools = self.init_gcp_data_tools(credentials)
+            ActionRun.set_action_run_status(self.session, self.action_run.id, "failed")
+            return {
+                "success": False,
+                "error": "Not able to connect to Vertex AI"
+            }
 
+        experiment = "experiment"
+        experiment_description = "Experiment run from Diffgram"
+
+        if self.action.config_data.get('experiment'):
+            experiment = self.action.config_data.get('experiment')
+
+        if self.action.config_data.get('experiment_description'):
+            experiment_description = self.action.config_data.get('experiment_description')
+        
+        vertex_ai_instance_details = {
+            "location": "us-central1",
+            "staging_bucket_name": self.bucket_name,
+            "experiment": experiment,
+            "experiment_description": experiment_description
+        }
+        
+        vertex_ai_connector.init_ai_platform(vertex_ai_instance_details)
+        gcp_data_tools = self.init_gcp_data_tools(vertex_ai_connector)
         file_list = self.get_file_list(session)
 
-        dataset_file_list = []
-        for file in file_list:
-            if file.image is not None:
-                file_link = self.write_diffgram_blob_to_gcp(gcp_data_tools, temp_folder_name, file)
-                dataset_file_list.append({
-                    "filename": f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{file_link}",
-                    "diffgram_file": file
-                })
+        dataset_file_list = self.migrate_files_to_gcp(file_list, gcp_data_tools, temp_folder_name)
+
+        if len(dataset_file_list) == 0:
+            ActionRun.set_action_run_status(self.session, self.action_run.id, "failed")
+            return {
+                "success": False,
+                "error": "No file in the dataset"
+            }
 
         self.count_dataset_labels(session, dataset_file_list)
         vertexai_import_file = self.write_vertex_format_jsonl_file(gcp_data_tools, temp_folder_name, dataset_file_list)
-
+        
         self.clean_up_temp_dir(temp_folder_name)
+        
+        vertex_ai_connector.create_vertex_ai_dataset(self.model_name, vertexai_import_file)
 
-        datasets_list = aiplatform.datasets.ImageDataset.list()
-        existing_datasets = []
+        model_type = "MOBILE_TF_VERSATILE_1"
+        if (self.action.config_data.get('autoML_model')):
+            model_type = self.action.config_data.get('autoML_model')['value']
 
-        for dataset in datasets_list:
-            existing_datasets.append(dataset.__dict__['_gca_resource'].__dict__['_pb'].display_name)
+        budget_milli_node_hours=20000
 
-        working_dataset = None
-        if self.action.config_data.get('model_name') in existing_datasets:
-            dataset_index = existing_datasets.index(self.action.config_data.get('model_name'))
-            working_dataset = datasets_list[dataset_index]
+        if self.action.config_data.get('training_node_hours') is not None:
+            budget_milli_node_hours = int(self.action.config_data.get('training_node_hours')) * 1000
 
-            working_dataset.delete()
-
-        working_dataset = aiplatform.ImageDataset.create(
-            display_name=f"{self.action.config_data.get('model_name')}",
-            gcs_source=vertexai_import_file,
-            import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
-        )
-
-        response = self.train_automl_model(credentials, working_dataset)
-
-        model_name = response.__dict__['_pb'].name
-        id_separator_index = model_name.rindex('/')
-        model_id = model_name[id_separator_index + 1:]
+        model_id = vertex_ai_connector.train_automl_model(self.model_name, model_type, budget_milli_node_hours)
         
         ActionRun.set_action_run_status(self.session, self.action_run.id, "finished")
 
         return {
             "success": True,
-            "model_name": self.action.config_data.get('model_name'),
+            "model_name": self.model_name,
             "model_id": model_id
         }
 
-
-    def get_file_list(self, session):
+    def get_file_list(self, session) -> list:
         directory_id = self.action.config_data.get('directory_id')
         self.directory = WorkingDir.get_by_id(session = session, directory_id=directory_id)
         file_list = WorkingDirFileLink.file_list(session=session, working_dir_id=self.directory.id, limit=None)
 
         return file_list
 
+    def migrate_files_to_gcp(self, file_list, gcp_data_tools, temp_folder_name) -> list:
+        dataset_file_list = []
+        for file in file_list:
+            if file.image is not None:
+                file_link = self.write_diffgram_blob_to_gcp(gcp_data_tools, temp_folder_name, file)
+                dataset_file_list.append({
+                    "filename": f"gs://{self.bucket_name}/{file_link}",
+                    "diffgram_file": file
+                })
 
-    def build_vertex_format_instance(self, instance, session, file):
+        return dataset_file_list
+
+    def build_vertex_format_instance(self, instance, session, file) -> dict:
         label = File.get_by_id(session=session, 
                                file_id=instance.label_file_id)
 
@@ -145,7 +160,7 @@ class VertexTrainDatasetAction(ActionRunner):
             }
             return vertex_format_instance
 
-    def build_vertexai_instance_file_instance_array(self, file, session):
+    def build_vertexai_instance_file_instance_array(self, file, session) -> list:
         vertex_format_instance_list = []
         instance_list = Instance.list(session=session, file_id=file['diffgram_file'].id)
 
@@ -156,7 +171,7 @@ class VertexTrainDatasetAction(ActionRunner):
 
         return vertex_format_instance_list
 
-    def write_vertex_format_jsonl_file(self, gcp_data_tools, temp_folder_name, file_list):
+    def write_vertex_format_jsonl_file(self, gcp_data_tools, temp_folder_name, file_list) -> str:
         filename = f"{time.time()}.jsonl"
         
         with open(f"{temp_folder_name}/{filename}", 'w') as outfile:
@@ -171,51 +186,44 @@ class VertexTrainDatasetAction(ActionRunner):
                 json.dump(payload, outfile)
                 outfile.write('\n')
 
-        gcp_data_tools.upload_to_cloud_storage(f"{temp_folder_name}/{filename}", f"{self.action.config_data.get('model_name')}/{filename}")
+        gcp_data_tools.upload_to_cloud_storage(f"{temp_folder_name}/{filename}", f"{self.model_name}/{filename}")
         self.clean_up_temp_file(f"{temp_folder_name}/{filename}")
 
-        return f"gs://{self.action.config_data.get('staging_bucket_name_without_gs_prefix')}/{self.action.config_data.get('model_name')}/{filename}"
+        return f"gs://{self.bucket_name}/{self.model_name}/{filename}"
 
-    def init_ai_platform(self, credentials):
-        aiplatform.init(
-            credentials = credentials,
-            project = self.action.config_data.get('gcp_project_id'),
-            location = self.action.config_data.get('location'),
-            staging_bucket = 'gs://' + self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
-            experiment = self.action.config_data.get('experiment'),
-            experiment_description = self.action.config_data.get('experiment_description')
-        )
-
-    def init_gcp_data_tools(self, credentials):
+    def init_gcp_data_tools(self, google_vertex_connector) -> dict:
         bucket_config = {
             "GOOGLE_PROJECT_NAME": self.action.config_data.get('gcp_project_id'),
-            "CLOUD_STORAGE_BUCKET": self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
-            "ML__CLOUD_STORAGE_BUCKET": self.action.config_data.get('staging_bucket_name_without_gs_prefix'),
-            "credentials": credentials
+            "CLOUD_STORAGE_BUCKET": self.bucket_name,
+            "ML__CLOUD_STORAGE_BUCKET": self.bucket_name,
+            "credentials": google_vertex_connector.get_credentials()
         }
 
         gcp_data_tools = DataToolsGCP(bucket_config)
 
         return gcp_data_tools
 
-    def write_diffgram_blob_to_gcp(self, gcp_data_tools, temp_folder_name, file):
+    def write_diffgram_blob_to_gcp(self, gcp_data_tools, temp_folder_name, file) -> str:
         blob_bytes = data_tools.download_bytes(file.image.url_signed_blob_path)
         filename = file.image.original_filename
+
+        local_path = f"{temp_folder_name}/{filename}"
+        upload_path = f"{self.model_name}/{filename}"
 
         try:
             os.makedirs(temp_folder_name)
         except OSError:
             pass
 
-        with open(f"{temp_folder_name}/{filename}", "wb") as binary_file:
+        with open(local_path, "wb") as binary_file:
             binary_file.write(blob_bytes)
 
-        gcp_data_tools.upload_to_cloud_storage(f"{temp_folder_name}/{filename}", f"{self.action.config_data.get('model_name')}/{filename}", "image")
-        self.clean_up_temp_file(f"{temp_folder_name}/{filename}")
+        gcp_data_tools.upload_to_cloud_storage(local_path, upload_path, "image")
+        self.clean_up_temp_file(local_path)
 
-        return f"{self.action.config_data.get('model_name')}/{filename}"
+        return upload_path
 
-    def count_dataset_labels(self, session, file_list):
+    def count_dataset_labels(self, session, file_list) -> dict:
         label_count = {}
 
         for file in file_list:
@@ -230,46 +238,6 @@ class VertexTrainDatasetAction(ActionRunner):
         
         self.label_count = label_count
         return label_count
-
-    def train_automl_model(self, credentials, dataset):
-        created_dataset_name = dataset.__dict__['_gca_resource'].__dict__['_pb'].name
-        id_separator_index = created_dataset_name.rindex('/')
-        created_dataset_id = created_dataset_name[id_separator_index + 1:]
-
-        client_options = {"api_endpoint": "us-central1-aiplatform.googleapis.com"}
-        client = aiplatform.gapic.PipelineServiceClient(client_options=client_options, credentials=credentials)
-
-        budget_milli_node_hours=20000
-
-        if self.action.config_data.get('training_node_hours') is not None:
-            budget_milli_node_hours = self.action.config_data.get('training_node_hours') * 1000
-
-        training_task_inputs = trainingjob.definition.AutoMlImageObjectDetectionInputs(
-            model_type="CLOUD_HIGH_ACCURACY_1",
-            budget_milli_node_hours=budget_milli_node_hours,
-            disable_early_stopping=False,
-        ).to_value()
-
-        training_pipeline = {
-            "display_name": self.action.config_data.get('model_name'),
-            "training_task_definition": "gs://google-cloud-aiplatform/schema/trainingjob/definition/automl_image_object_detection_1.0.0.yaml",
-            "training_task_inputs": training_task_inputs,
-            "input_data_config": {
-                "dataset_id": created_dataset_id
-            },
-            "model_to_upload": {
-                "display_name": self.action.config_data.get('model_name')
-            },
-        }
-
-        parent = f"projects/{dataset.__dict__['project']}/locations/{dataset.__dict__['location']}"
-
-        response = client.create_training_pipeline(
-            parent=parent, 
-            training_pipeline=training_pipeline
-        )
-
-        return response
 
     def clean_up_temp_file(self, filename):
         gc.collect()
