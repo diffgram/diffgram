@@ -132,7 +132,7 @@ def upload_thumbnail_for_connection_image(session: Session,
     if regular_log.log_has_error(log):
         if 'blob_exists' in log['error']:
             log = regular_log.default()
-            blob_object.url_signed_blob_path = blob_path_thumb
+            blob_object.url_signed_thumb_blob_path = blob_path_thumb
             session.add(blob_object)
         return blob_object, log
     if put_data is None:
