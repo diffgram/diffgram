@@ -21,11 +21,11 @@ data_tools = Data_tools().data_tools
 
 
 @routes.route('/api/walrus/project/<string:project_string_id>/upload/large',
-              methods=['POST'])
+              methods = ['POST'])
 @Project_permissions.user_has_project(
-    Roles=['admin', "Editor"],
-    apis_user_list=['api_enabled_builder',
-                    'security_email_verified'])
+    Roles = ['admin', "Editor"],
+    apis_user_list = ['api_enabled_builder',
+                      'security_email_verified'])
 @limiter.limit("4 per second")
 def api_project_upload_large(project_string_id):
     """
@@ -38,29 +38,29 @@ def api_project_upload_large(project_string_id):
         project = Project.get(session, project_string_id)
         member = get_member(session)
         upload = Upload(
-            session=session,
-            project=project,
-            request=request,
+            session = session,
+            project = project,
+            request = request,
             member = member)
 
         upload.route_from_unique_id()
         if len(upload.log["error"].keys()) >= 1:
-            return jsonify(log=upload.log), 400
+            return jsonify(log = upload.log), 400
 
         upload.process_chunk(
-            request=upload.request,
-            input=upload.input)
+            request = upload.request,
+            input = upload.input)
 
         if len(upload.log["error"].keys()) >= 1:
-            return jsonify(log=upload.log), 400
+            return jsonify(log = upload.log), 400
 
         more_chunks_expected: bool = int(upload.dzchunkindex) + 1 != int(upload.dztotalchunkcount)
 
         if more_chunks_expected is False and upload.input is not None:
             regular_methods.commit_with_rollback(session)
-            upload.start_media_processing(input=upload.input)
+            upload.start_media_processing(input = upload.input)
 
-        return jsonify(success=True), 200
+        return jsonify(success = True), 200
 
 
 class Upload():
@@ -94,7 +94,7 @@ class Upload():
         return result
 
     def extract_metadata_from_batch(self, input, input_batch_id, file_name):
-        input_batch = InputBatch.get_by_id(self.session, id=input_batch_id)
+        input_batch = InputBatch.get_by_id(self.session, id = input_batch_id)
         pre_labels = input_batch.pre_labeled_data
         if pre_labels is None:
             return input
@@ -119,7 +119,7 @@ class Upload():
     def extract_instance_list_from_batch(self, input, input_batch_id, file_name):
         if input_batch_id is None:
             return
-        input_batch = InputBatch.get_by_id(self.session, id=input_batch_id)
+        input_batch = InputBatch.get_by_id(self.session, id = input_batch_id)
         if not input_batch:
             return
         pre_labels = input_batch.pre_labeled_data
@@ -170,15 +170,15 @@ class Upload():
             self.log['error']['binary_file'] = "No file provided"
             return
 
-        self.load_drop_zone_info(request=self.request)
+        self.load_drop_zone_info(request = self.request)
 
         self.is_first_chunk: bool = self.dzchunkindex == 0
 
         if self.is_first_chunk is True:
             self.create_input(
-                project=self.project,
-                request=self.request,
-                filename=self.binary_file.filename,
+                project = self.project,
+                request = self.request,
+                filename = self.binary_file.filename,
                 member_created = self.member)
         else:
             print('dzuuid dzuuid', self.dzuuid)
@@ -223,25 +223,25 @@ class Upload():
         """
 
         item = PrioritizedItem(
-            priority=100,
-            media_type=input.media_type,  # For routing to right queue
-            input_id=input.id)
+            priority = 100,
+            media_type = input.media_type,  # For routing to right queue
+            input_id = input.id)
 
         add_item_to_queue(item)
 
-        user = User.get(session=self.session)
+        user = User.get(session = self.session)
         kind = 'input_from_upload_UI'
         if user is None:
             kind = 'input_from_api_call'
 
         Event.new(
-            session=self.session,
-            kind=kind,
-            member_id=user.member_id if user else None,
-            success=True,
-            project_id=self.project.id,
-            description=f"{str(input.media_type)} {str(self.project.project_string_id)}",
-            input_id=input.id
+            session = self.session,
+            kind = kind,
+            member_id = user.member_id if user else None,
+            success = True,
+            project_id = self.project.id,
+            description = f"{str(input.media_type)} {str(self.project.project_string_id)}",
+            input_id = input.id
         )
 
     def process_chunk(self, request, input):
@@ -259,15 +259,15 @@ class Upload():
         logger.info(f"upload_large_api: input ID {input.id}")
         try:
             response = data_tools.transmit_chunk_of_resumable_upload(
-                stream=stream,
-                blob_path=input.raw_data_blob_path,
-                prior_created_url=input.resumable_url,
-                content_type=None,
-                content_start=self.dzchunkbyteoffset,
-                content_size=content_size,
-                total_size=self.dztotalfilesize,
-                total_parts_count=self.dztotalchunkcount,
-                chunk_index=self.dzchunkindex,
+                stream = stream,
+                blob_path = input.raw_data_blob_path,
+                prior_created_url = input.resumable_url,
+                content_type = None,
+                content_start = self.dzchunkbyteoffset,
+                content_size = content_size,
+                total_size = self.dztotalfilesize,
+                total_parts_count = self.dztotalchunkcount,
+                chunk_index = self.dzchunkindex,
                 input = self.input,
             )
             logger.info(f"Upload Response: {response}")
@@ -281,7 +281,7 @@ class Upload():
             logger.error(f"Upload failed: {traceback.format_exc()}")
             input.status = "failed"
             input.status_text = "Please try again, or try using API/SDK. (Raw upload error)"
-            raise Exception #TODO REMOVE
+            raise Exception  # TODO REMOVE
 
     @staticmethod
     def upload_limits(input,
@@ -303,32 +303,34 @@ class Upload():
         return input
 
     def create_input(
-            self,
-            project,
-            request,
-            filename,
-            member_created: 'Member' = None
+        self,
+        project,
+        request,
+        filename,
+        member_created: 'Member' = None
     ):
 
         self.input = Input.new(
-            project=project,
-            media_type=None,
-            job_id=request.form.get('job_id'),
-            type=request.form.get('source', 'from_resumable'),
-            directory_id=request.form.get('directory_id'),  # Not trusted
-            video_split_duration=request.form.get('video_split_duration'),
-            batch_id=request.form.get('input_batch_id'),
+            project = project,
+            media_type = None,
+            job_id = request.form.get('job_id'),
+            type = request.form.get('source', 'from_resumable'),
+            directory_id = request.form.get('directory_id'),  # Not trusted
+            video_split_duration = request.form.get('video_split_duration'),
+            batch_id = request.form.get('input_batch_id'),
             member_created_id = member_created.id if member_created else None
         )
         if request.form.get('input_batch_id') is not None:
-            self.extract_instance_list_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'), file_name = filename)
-            self.extract_metadata_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'), file_name = filename)
+            self.extract_instance_list_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'),
+                                                  file_name = filename)
+            self.extract_metadata_from_batch(self.input, input_batch_id = request.form.get('input_batch_id'),
+                                             file_name = filename)
 
         self.session.add(self.input)
 
         self.input = Upload.upload_limits(
-            input=self.input,
-            file_size=self.dztotalfilesize)
+            input = self.input,
+            file_size = self.dztotalfilesize)
 
         self.input.original_filename = secure_filename(
             filename)  # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
@@ -349,7 +351,8 @@ class Upload():
 
         self.input.mode = request.headers.get('mode')
 
-        self.input.media_type = Process_Media.determine_media_type(extension=self.input.extension, input_type = self.input.type)
+        self.input.media_type = Process_Media.determine_media_type(extension = self.input.extension,
+                                                                   input_type = self.input.type)
 
         if not self.input.media_type:
             self.input.status = "failed"
@@ -363,57 +366,58 @@ class Upload():
                                         str(self.input.project.id) + "/raw/" + str(self.input.id)
 
         data_tools.create_resumable_upload_session(
-            blob_path=self.input.raw_data_blob_path,
-            content_type=None,
+            blob_path = self.input.raw_data_blob_path,
+            content_type = None,
             input = self.input
         )
 
 
-
 @routes.route('/api/walrus/v1/project/<string:project_string_id>/input/from_local',
-              methods=['POST'])
+              methods = ['POST'])
 @Project_permissions.user_has_project(
-    Roles=['admin', "Editor"],
-    apis_user_list=['api_enabled_builder',
-                    'security_email_verified'])
+    Roles = ['admin', "Editor"],
+    apis_user_list = ['api_enabled_builder',
+                      'security_email_verified'])
 def api_project_input_from_local(project_string_id):
-
     try:
         json_parsed = json.loads(request.form.get('json'))
     except:
         temp_log = regular_log.default_api_log()
         temp_log["error"]["input"] = "Expecting a key 'json' in form request."
-        return jsonify(log=temp_log), 400
+        return jsonify(log = temp_log), 400
 
     spec_list = [{"directory_id": {
-                     'default': None,
-                     'kind': int,
-                     'required': False
-                    }
-                 },
-                {"instance_list": {
-                     'default': None,
-                     'kind': list,
-                     'allow_empty': True,
-                     'required': False
-                    }
-                 },
-                 {"frame_packet_map": {     # WIP
-                     'default': None,
-                     'kind': dict,
-                     'required': False
-                    }
-                 }
-                 ]
+        'default': None,
+        'kind': int,
+        'required': False
+    }},
+        {"parent_file_id": {
+            'default': None,
+            'kind': int,
+            'required': False
+        }},
+        {"instance_list": {
+            'default': None,
+            'kind': list,
+            'allow_empty': True,
+            'required': False
+        }
+        },
+        {"frame_packet_map": {  # WIP
+            'default': None,
+            'kind': dict,
+            'required': False
+        }
+        }
+    ]
 
     log, input, untrusted_input = regular_input.master(
-        request=request,
-        spec_list=spec_list,
-        untrusted_input=json_parsed)
+        request = request,
+        spec_list = spec_list,
+        untrusted_input = json_parsed)
 
     if len(log["error"].keys()) >= 1:
-        return jsonify(log=log), 400
-
+        return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
 
@@ -426,33 +430,33 @@ def api_project_input_from_local(project_string_id):
         )
         if directory is False:
             log['error'] = f"Bad directory_id: {input.get('directory_id')}"
-            return jsonify(log=log), 400
+            return jsonify(log = log), 400
 
         file = request.files.get('file')
         if not file:
             log['error'] = "No files"
-            return jsonify(log=log), 400
+            return jsonify(log = log), 400
 
         result, log, input = input_from_local(
-            session=session,
-            log=log,
-            project_string_id=project_string_id,
-            file=file,
+            session = session,
+            log = log,
+            project_string_id = project_string_id,
+            file = file,
             directory_id = directory.id,
+            parent_file_id = input.get('parent_file_id'),
             http_input = input)
 
         if result is not True:
             return jsonify(
-                log=log,
-                input=input.serialize()), 400
+                log = log,
+                input = input.serialize()), 400
 
         if result is True:
             log['success'] = True
             return jsonify(
-                log=log,
-                input=input.serialize(),
-                file=input.file.serialize()), 200
-
+                log = log,
+                input = input.serialize(),
+                file = input.file.serialize()), 200
 
 
 def input_from_local(session,
@@ -460,8 +464,8 @@ def input_from_local(session,
                      project_string_id,
                      http_input,
                      file,
-                     directory_id):
-
+                     directory_id,
+                     parent_file_id=None):
     immediate_mode = True
 
     input = Input()
@@ -480,6 +484,7 @@ def input_from_local(session,
 
     input.extension = os.path.splitext(original_filename)[1].lower()
     input.original_filename = os.path.split(original_filename)[1]
+    input.parent_file_id = parent_file_id
 
     input.temp_dir = tempfile.mkdtemp()
     input.temp_dir_path_and_filename = input.temp_dir + \
@@ -518,8 +523,8 @@ def input_from_local(session,
         # the input back to thing on front end
 
         process_media = Process_Media(
-            session=session,
-            input=input)
+            session = session,
+            input = input)
 
         result = process_media.main_entry()
 
@@ -535,9 +540,9 @@ def input_from_local(session,
     priority = 100
 
     item = PrioritizedItem(
-        priority=priority,
-        input_id=input.id,
-        media_type=input.media_type
+        priority = priority,
+        input_id = input.id,
+        media_type = input.media_type
     )
 
     add_item_to_queue(item)
