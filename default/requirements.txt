@@ -13,6 +13,7 @@ proglog==0.1.9
 google-cloud-storage==1.35.1
 google-api-python-client==1.12.3
 google-cloud-logging==1.15.1
+google-cloud-aiplatform
 flask_limiter==1.4
 Flask-SSLify==0.1.5
 requests==2.25.1
