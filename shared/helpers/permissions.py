@@ -45,6 +45,7 @@ def set_jwt_in_session(token_data: dict):
     login_session.clear()
     login_session['refresh_token'] = str_refresh_comp
     login_session['access_token'] = str_access_comp
+    # login_session['id_token'] = str_id_comp
 
 
 def get_decoded_refresh_token_from_session() -> str or None:
