@@ -75,7 +75,9 @@
             >
               <td style="text-transform: capitalize">{{ item.status }}</td>
               <td v-if="item.output && item.output.model_name">{{ item.output.model_name }}</td>
-              <td v-if="item.output && item.output.error">{{ item.output.error }}</td>
+              <td v-if="item.output && item.output.error">
+                {{ item.output.error }}
+              </td>
             </tr>
             </tbody>
           </template>
