@@ -2,7 +2,7 @@
 from shared.regular import regular_log
 import datetime
 import dateutil.parser
-from shared.permissions.task_permissions import Permission_Task
+
 import hmac
 
 
@@ -209,6 +209,7 @@ def validate_security_token(security_token, variable):
 
 
 def validate_permission(permission, variable):
+    from shared.permissions.task_permissions import Permission_Task
     if permission == 'task':
         Permission_Task.by_task_id_core(variable)
 
