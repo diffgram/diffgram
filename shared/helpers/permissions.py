@@ -74,10 +74,17 @@ def get_decoded_id_token_from_session() -> str or None:
     oidc = OAuth2Provider()
     oidc_client = oidc.get_client()
     id_token = login_session.get('id_token')
-    if type(id_token) == str:
-        return id_token
     if id_token is None:
         return None
+
+    if type(id_token) == str:
+        token_string = id_token
+        expired = oidc_client.id_token_has_expired(id_token = token_string)
+        if expired:
+            token_string = try_refreshing_tokens()
+        return token_string
+
+    # Case of compressed token (type is bytes)
     token_string = gzip.decompress(id_token).decode()
     expired = oidc_client.id_token_has_expired(id_token = token_string)
     if expired:
@@ -116,9 +123,11 @@ def try_refreshing_tokens() -> str or None:
         new_id_token = oidc_client.get_id_token_from_jwt(jwt_data = new_token)
         new_access_token = oidc_client.get_access_token_from_jwt(jwt_data = new_token)
         if new_refresh_token is not None:
-            login_session['refresh_token'] = new_refresh_token
+            refresh_comp = gzip.compress(new_refresh_token.encode())
+            login_session['refresh_token'] = refresh_comp
         if new_id_token is not None:
-            login_session['id_token'] = new_id_token
+            id_comp = gzip.compress(new_id_token.encode())
+            login_session['id_token'] = id_comp
         # if new_access_token is not None:
         #     login_session['access_token'] = new_access_token
         return new_id_token
@@ -191,14 +200,7 @@ def setSecureCookie(user_db):
 
 def get_session_string():
     if settings.USE_OAUTH2:
-        # New Approach (ID TOKEN)
-        # token = get_decoded_access_token_from_session()
         token = get_decoded_id_token_from_session()
-        # oauth2 = OAuth2Provider()
-        # oauth2_client = oauth2.get_client()
-
-        # access_token_data = oauth2_client.refresh_token(token = token)
-        # access_token = oauth2_client.get_access_token_from_jwt(jwt_data = access_token_data)
         return token
     else:
         return login_session.get('user_id')
