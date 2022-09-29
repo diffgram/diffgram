@@ -45,6 +45,7 @@
           <diffgram_select
             v-model="action.config_data.autoML_model"
             v-if="advanced"
+            label="Select model type"
             :item_list="autoML_models"
             :return_object="true"
           />
