@@ -152,6 +152,7 @@
                       v-model="selected"
                       show-select
                       data-cy="input-table"
+                      :click:row="open_compound_dialog"
         >
           <!-- maybe look at
             :show-select="$store.state.user.current.is_super_admin"-->
@@ -159,12 +160,13 @@
 
           <!-- appears to have to be item for vuetify syntax-->
           <template slot="item" slot-scope="props">
-            <tr @click="open_compound_dialog" :class="`${props.item.media_type === 'compound' ? 'compound-input': ''}`">
+            <tr @click="open_compound_dialog(props.item)" :class="`${props.item.media_type === 'compound' ? 'compound-input': ''}`">
               <td>
                 <v-checkbox
 
                   v-model="props.isSelected"
-                  @change="props.select($event)"
+                  @change="on_row_select($event, props)"
+                  @click="$event.stopPropagation()"
                   primary>
                 </v-checkbox>
               </td>
@@ -410,6 +412,7 @@
               <td>
 
                 <a
+                  @click="$event.stopPropagation()"
                   class="file-link"
                   :href="`/studio/annotate/${project_string_id}/?file=${props.item.file_id}` ">
                   {{ props.item.file_id }}
@@ -616,7 +619,14 @@
                           ref="payload_dialog">
 
     </input_payload_dialog>
+    <input_compound_dialog
+      @close="selected_compound_input = null"
+      :project_string_id="project_string_id"
+      :selected_input="selected_compound_input"
+      ref="input_compound_dialog"
+    >
 
+    </input_compound_dialog>
     <free_tier_limit_dialog
       :message="message_free_tier_limit"
       :details="details_free_tier_limit"
@@ -633,8 +643,9 @@ import axios from '../../services/customInstance';
 import input_payload_dialog from './input_payload_dialog'
 import input_compound_dialog from './input_compound_dialog.vue'
 import free_tier_limit_dialog from '../free_tier_limits/free_tier_limit_dialog'
-import {fetch_input_list} from '../../services/inputService'
+import {fetch_input_list, InputListRequestData} from '../../services/inputService'
 import Vue from "vue";
+
 
 export default Vue.extend({
     name: 'input_view',
@@ -678,23 +689,18 @@ export default Vue.extend({
     },
 
     data() {
-
       return {
-
         file_id_filter: null,
         batch_id_filter: null,
         task_id_filter: undefined,
-
         has_attached_instances_filter: null,
-
         metadata_limit_options: [10, 25, 50, 100, 250, 500],
         metadata_limit: 10,
-
         date: undefined,
         message_free_tier_limit: '',
         details_free_tier_limit: '',
         selected_input: {},
-
+        selected_compound_input: null,
         status_filters_list: [
           {
             'name': 'All',
@@ -715,30 +721,20 @@ export default Vue.extend({
             'icon': ''
           }
         ],
-
         status_filter: "All",
-
         error_video: false,
         show_deferred: true,
-
         selected: [],
-
         show_archived: false,
-
         error: {},
-
         input_list: [],
-
         current_input: {},
-
         options: {
           //sortBy: ['created_time'],
           //sortDesc: [true],
           itemsPerPage: -1
         },
-
         loading: false,
-
         headers: [
           {
             text: "Date",
@@ -803,7 +799,6 @@ export default Vue.extend({
           }
         ]
       }
-
     },
     computed: {},
     watch: {
@@ -844,8 +839,15 @@ export default Vue.extend({
     },
 
     methods: {
-      open_compound_dialog: function(){
-
+      on_row_select: function(event, props){
+        props.select(event)
+      },
+      open_compound_dialog: function(input){
+        if(input.media_type != 'compound'){
+          return
+        }
+        this.selected_compound_input = input
+        this.$refs.input_compound_dialog.open()
       },
       open_free_tier_limit_dialog: function (message, details) {
         this.message_free_tier_limit = message
@@ -876,10 +878,9 @@ export default Vue.extend({
         if (this.task_id_filter) {
           task_id_to_use = parseInt(this.task_id_filter)
         }
-        let filters_data = {
+        let filters_data  = {
           limit: this.metadata_limit,
           show_archived: this.show_archived,
-          show_deferred: this.show_deferred,
           status_filter: this.status_filter,
           date_from: this.date ? this.date.from : undefined,
           date_to: this.date ? this.date.to : undefined,
@@ -890,36 +891,26 @@ export default Vue.extend({
           task_id: task_id_to_use,
           has_attached_instances: this.has_attached_instances_filter
         }
-        let [input_list, err] = await fetch_input_list(this.project_string_id, filters_data)
-        try {
-          const response = await axios.post('/api/walrus/v1/project/' + this.project_string_id
-            + '/input/view/list', )
+        let [input_list, err] = await fetch_input_list(this.project_string_id, filters_data as InputListRequestData)
+        if(err){
+          this.error = this.$route_api_errors(err)
+          console.error(err)
+        }
+        this.input_list = input_list
+        if (this.input_list[0]) {
 
-          if (response.data.success == true) {
+          if (this.input_list[0].status == "failed") {
 
-            this.input_list = response.data.input_list
+            if (this.input_list[0].media_type == "video") {
 
-            if (this.input_list[0]) {
-
-              if (this.input_list[0].status == "failed") {
-
-                if (this.input_list[0].media_type == "video") {
-
-                  this.error_video = "Uh oh! It looks like one of your videos had an error." +
-                    " Hover over / click status icons to see messages."
+              this.error_video = "Uh oh! It looks like one of your videos had an error." +
+                " Hover over / click status icons to see messages."
 
 
-                }
-              }
             }
           }
-        } catch (error) {
-          this.error = this.$route_api_errors(error)
-          console.error(error)
-        } finally {
-          this.loading = false
         }
-
+        this.loading = false
       },
 
 
@@ -993,7 +984,7 @@ export default Vue.extend({
 
 <style>
 .compound-input :hover{
-  background: rgba(30, 136, 229, 0.2) !important;
+
   cursor: pointer;
 }
 </style>

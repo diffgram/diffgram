@@ -485,6 +485,7 @@ def input_from_local(session,
     input.extension = os.path.splitext(original_filename)[1].lower()
     input.original_filename = os.path.split(original_filename)[1]
     input.parent_file_id = parent_file_id
+    print('parent_file_id', parent_file_id)
 
     input.temp_dir = tempfile.mkdtemp()
     input.temp_dir_path_and_filename = input.temp_dir + \

@@ -1,12 +1,13 @@
 <template>
 
-  <v-dialog v-model="is_open" id="input_payload" :click:outside="close">
-    <v-card elevation="1">
-      <v-card-title>Compound File:</v-card-title>
+  <v-dialog v-model="is_open" id="input_payload" :click:outside="close" width="1000px">
+    <v-card elevation="1" v-if="selected_input">
+      <v-card-title>Compound File: <span class="ml-2 secondary--text">{{selected_input.original_filename}}</span></v-card-title>
+      <v-card-subtitle>Child Files List:</v-card-subtitle>
       <v-card-text>
           <input_view
             v-if="selected_input"
-            :media_type="'compound'"
+            :show_filters="false"
             :project_string_id="project_string_id"
             :compound_file_id="selected_input.file_id">
 
@@ -18,15 +19,12 @@
 </template>
 
 <script lang="ts">
-
-import axios from '../../services/customInstance';
-import input_view from './input_view.vue'
 import Vue from "vue";
 export default Vue.extend({
 
-    name: 'input_payload_dialog',
+    name: 'input_compound_dialog',
     components: {
-      input_view: input_view,
+      input_view: () => import('./input_view.vue'),
     },
     props: ['project_string_id', 'selected_input'],
 
@@ -53,6 +51,7 @@ export default Vue.extend({
       close() {
         this.input = undefined;
         this.is_open = false;
+        this.$emit('close')
       },
       open() {
         this.is_open = true;

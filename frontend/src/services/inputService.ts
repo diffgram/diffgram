@@ -1,7 +1,7 @@
 
 import axios from './customInstance';
 
-type FiltersData = {
+export type InputListRequestData = {
   limit: number,
   show_archived: boolean,
   show_deferred: boolean,
@@ -17,7 +17,7 @@ type FiltersData = {
 
 
 }
-export const fetch_input_list = async (project_string_id: string, filter_data: FiltersData) => {
+export const fetch_input_list = async (project_string_id: string, filter_data: InputListRequestData) => {
   try {
     const { data } = await axios.post(`/api/walrus/v1/project/${project_string_id}/input/view/list`, filter_data)
     return [data.input_list, null]

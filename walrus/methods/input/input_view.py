@@ -75,6 +75,18 @@ def input_list_web(project_string_id):
             'required': False
             }
         },
+        {"parent_file_id": {
+            'kind': int,
+            'default': None,
+            'required': False
+        }
+        },
+        {"media_type": {
+            'kind': str,
+            'default': None,
+            'required': False
+        }
+        },
         {"has_attached_instances": {
             'kind': bool,
             'default': None,
@@ -104,6 +116,8 @@ def input_list_web(project_string_id):
             file_id = input['file_id'],
             batch_id = input['batch_id'],
             task_id = input['task_id'],
+            parent_file_id = input['parent_file_id'],
+            media_type = input['media_type'],
             has_attached_instances = input['has_attached_instances']
         )
 
@@ -131,6 +145,8 @@ def build_input_list(
     file_id: int = None,
     batch_id: int = None,
     task_id: int = None,
+    parent_file_id: int = None,
+    media_type: str = None,
     has_attached_instances: bool = None):
     """
     TODO put as part of Input class
@@ -165,7 +181,11 @@ def build_input_list(
         elif status_filter == "processing":
             query = query.filter(Input.status.notin_(
                 ['success', 'failed']))
-
+    print('asdasdasd', parent_file_id, media_type)
+    if parent_file_id:
+        query = query.filter(Input.parent_file_id == parent_file_id)
+    if media_type:
+        query = query.filter(Input.media_type == media_type)
     # TODO make date generic mix in with option to change attribute used
     if date_from_string:
         date_from_datetime = datetime.datetime.strptime(date_from_string, "%Y-%m-%d")
