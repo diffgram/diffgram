@@ -130,7 +130,7 @@
                  v-if="error_video"
                  dismissible
         >
-          {{error_video}}
+          {{ error_video }}
 
           <v-btn color="blue darken-1"
                  dark
@@ -159,7 +159,7 @@
 
           <!-- appears to have to be item for vuetify syntax-->
           <template slot="item" slot-scope="props">
-            <tr>
+            <tr @click="open_compound_dialog" :class="`${props.item.media_type === 'compound' ? 'compound-input': ''}`">
               <td>
                 <v-checkbox
 
@@ -199,10 +199,10 @@
 
 
                       <span v-if="props.item.status_text">
-                      {{props.item.status_text}}
+                      {{ props.item.status_text }}
                       </span>
                       <span v-if="props.item.status">
-                      {{props.item.status}}
+                      {{ props.item.status }}
                       </span>
 
                       <!-- careful 'status' vs 'status_text', status_text may be null
@@ -230,7 +230,7 @@
                       <v-layout column>
                         <h4>Description: </h4>
                         <p class="text--error">
-                          {{ props.item.description}}
+                          {{ props.item.description }}
                         </p>
                         <h4>Log: </h4>
 
@@ -325,14 +325,14 @@
 
                         <span v-if="props.item.status_text">
                           <v-alert type="error">
-                            {{props.item.status_text}}
+                            {{ props.item.status_text }}
                           </v-alert>
                         </span>
 
                           <div v-if="props.item.description">
                             <h4>Description: </h4>
                             <p>
-                              {{ props.item.description}}
+                              {{ props.item.description }}
                             </p>
                           </div>
 
@@ -389,13 +389,13 @@
                     >
                     </v-progress-linear>
                   </template>
-                  {{Math.round(props.item.percent_complete)}} %
+                  {{ Math.round(props.item.percent_complete) }} %
                 </v-tooltip>
               </td>
 
               <td style="overflow:auto;">
                 <span>
-                    {{ props.item.original_filename}}
+                    {{ props.item.original_filename }}
                 </span>
 
               </td>
@@ -403,7 +403,7 @@
 
                 <a
                   @click="filter_by_batch(props.item.batch_id)">
-                  {{ props.item.batch_id}}
+                  {{ props.item.batch_id }}
                 </a>
 
               </td>
@@ -412,14 +412,14 @@
                 <a
                   class="file-link"
                   :href="`/studio/annotate/${project_string_id}/?file=${props.item.file_id}` ">
-                  {{ props.item.file_id}}
+                  {{ props.item.file_id }}
                 </a>
                 <div v-if='props.item.newly_copied_file_id'>
                   Copied to ->
                 </div>
                 <a v-if='props.item.newly_copied_file_id'
                    :href="`/studio/annotate/${project_string_id}/?file=${props.item.newly_copied_file_id}` ">
-                  {{ props.item.newly_copied_file_id}}
+                  {{ props.item.newly_copied_file_id }}
                 </a>
 
 
@@ -429,7 +429,7 @@
                 <a
                   v-if="props.item.task_id"
                   :href="`/task/${props.item.task_id}/?view_only=true`">
-                  {{ props.item.task_id}}
+                  {{ props.item.task_id }}
                 </a>
                 <p v-else>N/A</p>
 
@@ -485,7 +485,7 @@
 
 
                     Split Duration:
-                    {{props.item.video_split_duration}}
+                    {{ props.item.video_split_duration }}
                     seconds.
                   </div>
 
@@ -534,7 +534,7 @@
                   </tooltip_icon>
 
                   <v-chip v-else small color="primary">
-                    <strong> {{props.item.source}}</strong>
+                    <strong> {{ props.item.source }}</strong>
                   </v-chip>
 
                   <tooltip_icon
@@ -572,12 +572,12 @@
 
                   <div v-if="props.item.retry_log">
 
-                    {{props.item.time_last_attempted}}
-                    {{props.item.retry_count}}
+                    {{ props.item.time_last_attempted }}
+                    {{ props.item.retry_count }}
 
                     <div v-for="key in Object.keys(props.item.retry_log)">
 
-                      <h4> {{key}} <span><strong>{{props.item.retry_log[key]['info']}}</strong></span></h4>
+                      <h4> {{ key }} <span><strong>{{ props.item.retry_log[key]['info'] }}</strong></span></h4>
 
                     </div>
                   </div>
@@ -629,349 +629,371 @@
 
 <script lang="ts">
 
-  import axios from '../../services/customInstance';
-  import input_payload_dialog from './input_payload_dialog'
-  import free_tier_limit_dialog from '../free_tier_limits/free_tier_limit_dialog'
-  import Vue from "vue";
+import axios from '../../services/customInstance';
+import input_payload_dialog from './input_payload_dialog'
+import input_compound_dialog from './input_compound_dialog.vue'
+import free_tier_limit_dialog from '../free_tier_limits/free_tier_limit_dialog'
+import {fetch_input_list} from '../../services/inputService'
+import Vue from "vue";
 
-  export default Vue.extend({
-      name: 'input_view',
-      components: {
-        input_payload_dialog,
-        free_tier_limit_dialog,
+export default Vue.extend({
+    name: 'input_view',
+    components: {
+      input_payload_dialog,
+      input_compound_dialog,
+      free_tier_limit_dialog,
+    },
+    props: {
+      'project_string_id': {
+        default: null
       },
-      props: {
-        'project_string_id': {
-          default: null
-        },
-        'input_menu': {
-          default: null,
-          required: false
-        },
-        'request_refresh': {
-          default: null
-        },
-        'show_status_filter': {
-          default: true,
-        },
-        'task_id': {
-          default: null
-        },
-        'show_filters': {
-          default: true
-        },
-        'initial_status_filter': {
-          default: undefined
-        },
-        'title': {
-          default: 'Processing Status & History'
-        }
+      'input_menu': {
+        default: null,
+        required: false
       },
+      'request_refresh': {
+        default: null
+      },
+      'show_status_filter': {
+        default: true,
+      },
+      'compound_file_id': {
+        default: null,
+      },
+      'media_type': {
+        default: null,
+      },
+      'task_id': {
+        default: null
+      },
+      'show_filters': {
+        default: true
+      },
+      'initial_status_filter': {
+        default: undefined
+      },
+      'title': {
+        default: 'Processing Status & History'
+      }
+    },
 
-      data() {
+    data() {
 
-        return {
+      return {
 
-          file_id_filter: null,
-          batch_id_filter: null,
-          task_id_filter: undefined,
+        file_id_filter: null,
+        batch_id_filter: null,
+        task_id_filter: undefined,
 
-          has_attached_instances_filter: null,
+        has_attached_instances_filter: null,
 
-          metadata_limit_options: [10, 25, 50, 100, 250, 500],
-          metadata_limit: 10,
+        metadata_limit_options: [10, 25, 50, 100, 250, 500],
+        metadata_limit: 10,
 
-          date: undefined,
-          message_free_tier_limit: '',
-          details_free_tier_limit: '',
-          selected_input: {},
+        date: undefined,
+        message_free_tier_limit: '',
+        details_free_tier_limit: '',
+        selected_input: {},
 
-          status_filters_list: [
-            {
-              'name': 'All',
-              'icon': ''
-            },
-            {
-              'name': 'Success',
-              'icon': 'check',
-              'color': 'green'
-            },
-            {
-              'name': 'Failed',
-              'icon': 'error',
-              'color': 'red'
-            },
-            {
-              'name': 'Processing',
-              'icon': ''
-            }
-          ],
-
-          status_filter: "All",
-
-          error_video: false,
-          show_deferred: true,
-
-          selected: [],
-
-          show_archived: false,
-
-          error: {},
-
-          input_list: [],
-
-          current_input: {},
-
-          options: {
-            //sortBy: ['created_time'],
-            //sortDesc: [true],
-            itemsPerPage: -1
+        status_filters_list: [
+          {
+            'name': 'All',
+            'icon': ''
           },
-
-          loading: false,
-
-          headers: [
-            {
-              text: "Date",
-              align: 'left',
-              sortable: true,
-              value: 'created_time'
-            },
-            {
-              text: "Status",
-              align: 'left',
-              sortable: true,
-              value: 'status'
-            },
-            {
-              text: "Progress",
-              align: 'left',
-              sortable: true,
-              value: 'percent_complete',
-              width: "100px",
-              fixed: true
-            },
-            {
-              text: "Filename",
-              align: 'left',
-              sortable: true,
-              value: 'original_filename',
-              width: "200px",
-              fixed: true
-            },
-            {
-              text: "Batch ID",
-              align: 'left',
-              sortable: true,
-              value: 'batch_id'
-            },
-            {
-              text: "File ID",
-              align: 'left',
-              sortable: true,
-              value: 'file_id'
-            },
-            {
-              text: "Task ID",
-              align: 'left',
-              sortable: true,
-              value: 'file_id'
-            },
-            {
-              text: "Dataset (Destination)",
-              align: 'left',
-              sortable: false
-            },
-            {
-              text: "Type",
-              align: 'left',
-              sortable: false,
-            },
-            {
-              text: "Source",
-              align: 'left',
-              sortable: false,
-            }
-          ]
-        }
-
-      },
-      computed: {},
-      watch: {
-        input_menu(state) {
-          if (state == true) {
-            this.get_input_list()
+          {
+            'name': 'Success',
+            'icon': 'check',
+            'color': 'green'
+          },
+          {
+            'name': 'Failed',
+            'icon': 'error',
+            'color': 'red'
+          },
+          {
+            'name': 'Processing',
+            'icon': ''
           }
+        ],
+
+        status_filter: "All",
+
+        error_video: false,
+        show_deferred: true,
+
+        selected: [],
+
+        show_archived: false,
+
+        error: {},
+
+        input_list: [],
+
+        current_input: {},
+
+        options: {
+          //sortBy: ['created_time'],
+          //sortDesc: [true],
+          itemsPerPage: -1
         },
-        request_refresh(state) {
+
+        loading: false,
+
+        headers: [
+          {
+            text: "Date",
+            align: 'left',
+            sortable: true,
+            value: 'created_time'
+          },
+          {
+            text: "Status",
+            align: 'left',
+            sortable: true,
+            value: 'status'
+          },
+          {
+            text: "Progress",
+            align: 'left',
+            sortable: true,
+            value: 'percent_complete',
+            width: "100px",
+            fixed: true
+          },
+          {
+            text: "Filename",
+            align: 'left',
+            sortable: true,
+            value: 'original_filename',
+            width: "200px",
+            fixed: true
+          },
+          {
+            text: "Batch ID",
+            align: 'left',
+            sortable: true,
+            value: 'batch_id'
+          },
+          {
+            text: "File ID",
+            align: 'left',
+            sortable: true,
+            value: 'file_id'
+          },
+          {
+            text: "Task ID",
+            align: 'left',
+            sortable: true,
+            value: 'file_id'
+          },
+          {
+            text: "Dataset (Destination)",
+            align: 'left',
+            sortable: false
+          },
+          {
+            text: "Type",
+            align: 'left',
+            sortable: false,
+          },
+          {
+            text: "Source",
+            align: 'left',
+            sortable: false,
+          }
+        ]
+      }
+
+    },
+    computed: {},
+    watch: {
+      input_menu(state) {
+        if (state == true) {
           this.get_input_list()
-        },
-        task_id: function (old, new_val) {
-          this.get_input_list();
         }
       },
-      mounted() {
-
-        // triggered by  this.$store.commit('request_input_list_refresh')
-
-        var self = this
-
-        this.input_list_refresh_watcher = this.$store.watch((state) => {
-            return this.$store.state.input.list_refresh
-          },
-          (new_val, old_val) => {
-            self.get_input_list()
-          },
-        )
-        if (this.$props.initial_status_filter) {
-          this.status_filter = this.$props.initial_status_filter;
-        }
+      request_refresh(state) {
         this.get_input_list()
+      },
+      task_id: function (old, new_val) {
+        this.get_input_list();
+      }
+    },
+    mounted() {
+
+      // triggered by  this.$store.commit('request_input_list_refresh')
+
+      var self = this
+
+      this.input_list_refresh_watcher = this.$store.watch((state) => {
+          return this.$store.state.input.list_refresh
+        },
+        (new_val, old_val) => {
+          self.get_input_list()
+        },
+      )
+      if (this.$props.initial_status_filter) {
+        this.status_filter = this.$props.initial_status_filter;
+      }
+      this.get_input_list()
+
+    },
+
+    beforeDestroy() {
+      this.input_list_refresh_watcher() // destroy watcher
+    },
+
+    methods: {
+      open_compound_dialog: function(){
 
       },
+      open_free_tier_limit_dialog: function (message, details) {
+        this.message_free_tier_limit = message
+        this.details_free_tier_limit = details
+        this.$refs.free_tier_limit_dialog.open()
+      },
+      open_input_payload_dialog: function (input) {
+        this.selected_input = input;
+        this.$refs.payload_dialog.open();
 
-      beforeDestroy() {
-        this.input_list_refresh_watcher() // destroy watcher
+      },
+      filter_by_batch: function (batch_id) {
+        this.batch_id_filter = batch_id;
+        this.get_input_list()
       },
 
-      methods: {
-        open_free_tier_limit_dialog: function(message, details){
-          this.message_free_tier_limit = message
-          this.details_free_tier_limit = details
-          this.$refs.free_tier_limit_dialog.open()
-        },
-        open_input_payload_dialog: function (input) {
-          this.selected_input = input;
-          this.$refs.payload_dialog.open();
+      async get_input_list() {
 
-        },
-        filter_by_batch: function (batch_id) {
-          this.batch_id_filter = batch_id;
-          this.get_input_list()
-        },
-
-        async get_input_list() {
-
-          if (this.project_string_id == null) {
-            return false
-          }
-
-          this.error = {}
-          this.error_video = null
-          this.loading = true
-
-          let task_id_to_use = this.$props.task_id
-          if (this.task_id_filter) {
-            task_id_to_use = parseInt(this.task_id_filter)
-          }
-          try {
-            const response = await axios.post('/api/walrus/v1/project/' + this.project_string_id
-              + '/input/view/list', {
-              limit: this.metadata_limit,
-              show_archived: this.show_archived,
-              show_deferred: this.show_deferred,
-              status_filter: this.status_filter,
-              date_from: this.date ? this.date.from : undefined,
-              date_to: this.date ? this.date.to : undefined,
-              file_id: parseInt(this.file_id_filter),
-              batch_id: parseInt(this.batch_id_filter),
-              task_id: task_id_to_use,
-              has_attached_instances: this.has_attached_instances_filter
-            })
-
-            if (response.data.success == true) {
-
-              this.input_list = response.data.input_list
-
-              if (this.input_list[0]) {
-
-                if (this.input_list[0].status == "failed") {
-
-                  if (this.input_list[0].media_type == "video") {
-
-                    this.error_video = "Uh oh! It looks like one of your videos had an error." +
-                      " Hover over / click status icons to see messages."
-
-
-                  }
-                }
-              }
-            }
-          } catch (error) {
-            this.error = this.$route_api_errors(error)
-            console.error(error)
-          } finally {
-            this.loading = false
-          }
-
-        },
-
-
-        input_status_single() {
-
-          // TODO review this,
-          // was a hold over from export stuff a bit...
-
-          // Would be godo to be able to update singles ones though.
-
-          this.loading = true
-          axios.get('/api/project/' + String(this.project_string_id)
-            + '/input/' + this.current_input.id
-            + '/status')
-            .then(response => {
-              if (response.data.success = true) {
-
-                if (response.data.input.status == "complete") {
-
-                  this.loading = false
-                  this.generate_annotations_success = true
-                  for (let i in this.input_list) {
-                    if (this.input_list[i].id == response.data.input.id) {
-                      this.input_list.splice(i, 1, response.data.input)
-                    }
-                  }
-
-                  clearInterval(this.generate_annotations_status_interval)
-                }
-
-              }
-            }).catch(e => {
-            console.error(e)
-          })
-        },
-
-        update_import(id, mode) {
-
-          var id_list = []
-
-          if (id) {
-            // import_ is assumed to be an id... this is kinda messsy
-            id_list = [parseInt(id)]
-          } else {
-            for (var input of this.selected) {
-              id_list.push(input.id)
-            }
-          }
-
-          this.loading = true
-          axios.post('/api/walrus/v1/project/' + String(this.project_string_id)
-            + '/input/update', {
-            id_list: id_list,
-            mode: mode
-          })
-            .then(response => {
-
-              this.loading = false
-              // refresh
-              this.get_input_list()
-
-
-            }).catch(e => {
-            console.error(e)
-            this.loading = false
-          })
+        if (this.project_string_id == null) {
+          return false
         }
+
+        this.error = {}
+        this.error_video = null
+        this.loading = true
+
+        let task_id_to_use = this.$props.task_id
+        if (this.task_id_filter) {
+          task_id_to_use = parseInt(this.task_id_filter)
+        }
+        let filters_data = {
+          limit: this.metadata_limit,
+          show_archived: this.show_archived,
+          show_deferred: this.show_deferred,
+          status_filter: this.status_filter,
+          date_from: this.date ? this.date.from : undefined,
+          date_to: this.date ? this.date.to : undefined,
+          file_id: parseInt(this.file_id_filter),
+          parent_file_id: this.compound_file_id,
+          batch_id: parseInt(this.batch_id_filter),
+          media_type: this.media_type,
+          task_id: task_id_to_use,
+          has_attached_instances: this.has_attached_instances_filter
+        }
+        let [input_list, err] = await fetch_input_list(this.project_string_id, filters_data)
+        try {
+          const response = await axios.post('/api/walrus/v1/project/' + this.project_string_id
+            + '/input/view/list', )
+
+          if (response.data.success == true) {
+
+            this.input_list = response.data.input_list
+
+            if (this.input_list[0]) {
+
+              if (this.input_list[0].status == "failed") {
+
+                if (this.input_list[0].media_type == "video") {
+
+                  this.error_video = "Uh oh! It looks like one of your videos had an error." +
+                    " Hover over / click status icons to see messages."
+
+
+                }
+              }
+            }
+          }
+        } catch (error) {
+          this.error = this.$route_api_errors(error)
+          console.error(error)
+        } finally {
+          this.loading = false
+        }
+
+      },
+
+
+      input_status_single() {
+
+        // TODO review this,
+        // was a hold over from export stuff a bit...
+
+        // Would be godo to be able to update singles ones though.
+
+        this.loading = true
+        axios.get('/api/project/' + String(this.project_string_id)
+          + '/input/' + this.current_input.id
+          + '/status')
+          .then(response => {
+            if (response.data.success = true) {
+
+              if (response.data.input.status == "complete") {
+
+                this.loading = false
+                this.generate_annotations_success = true
+                for (let i in this.input_list) {
+                  if (this.input_list[i].id == response.data.input.id) {
+                    this.input_list.splice(i, 1, response.data.input)
+                  }
+                }
+
+                clearInterval(this.generate_annotations_status_interval)
+              }
+
+            }
+          }).catch(e => {
+          console.error(e)
+        })
+      },
+
+      update_import(id, mode) {
+
+        var id_list = []
+
+        if (id) {
+          // import_ is assumed to be an id... this is kinda messsy
+          id_list = [parseInt(id)]
+        } else {
+          for (var input of this.selected) {
+            id_list.push(input.id)
+          }
+        }
+
+        this.loading = true
+        axios.post('/api/walrus/v1/project/' + String(this.project_string_id)
+          + '/input/update', {
+          id_list: id_list,
+          mode: mode
+        })
+          .then(response => {
+
+            this.loading = false
+            // refresh
+            this.get_input_list()
+
+
+          }).catch(e => {
+          console.error(e)
+          this.loading = false
+        })
       }
     }
-  ) </script>
+  }
+) </script>
 
+<style>
+.compound-input :hover{
+  background: rgba(30, 136, 229, 0.2) !important;
+  cursor: pointer;
+}
+</style>
