@@ -28,6 +28,9 @@ def start_magic_login_api():
         if user_email_proposed is None or len(user_email_proposed) == 0:
             log['error']['email'] = "No email provided"
             return jsonify(log = log), 400
+        if settings.USE_OAUTH2:
+            log['error']['OAUTH2'] = 'OAUTH2 Login is enabled. Cannot use magic link login. Please use SSO or contact your admin.'
+            return jsonify(log=log), 400
 
         user_email_proposed = user_email_proposed.lower()
         user = session.query(User).filter_by(email = user_email_proposed).first()
