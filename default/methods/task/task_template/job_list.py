@@ -133,16 +133,19 @@ def job_view_core(session,
 
     query = query.order_by(Job.time_created.desc())
 
+    limit = 50
     if meta.get("limit") is not None:
-        query = query.limit(meta["limit"])
+        # query = query.limit(meta["limit"])
+        limit = meta["limit"]
 
-    query = query.offset(meta["start_index"])
+    query = query.offset(0)
 
     # Avoid multiple queries on serializer by fetching joined data
     query = query.options(joinedload(Job.completion_directory))
     query = query.options(joinedload(Job.label_schema))
 
-    job_list = query.all()
+    all_job_list = query.all()
+    job_list = all_job_list[meta["start_index"]:(meta["start_index"] + limit)]
     if output_mode == "serialize":
 
         for job in job_list:
@@ -162,6 +165,8 @@ def job_view_core(session,
 
     if limit_counter == 0:
         meta['no_results_match_meta'] = True
+
+    meta['full_size'] = len(all_job_list)
 
     return output_file_list, meta
 
@@ -197,7 +202,7 @@ def default_metadata(meta_proposed):
 
     meta = {}
 
-    meta["start_index"] = 0
+    meta["start_index"] = meta_proposed.get("start_index", 0)
 
     meta["my_jobs_only"] = meta_proposed.get("my_jobs_only", None)
     meta["search"] = meta_proposed.get("search", None)
