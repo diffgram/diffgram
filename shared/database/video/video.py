@@ -256,7 +256,6 @@ class Video(Base):
         # since why we are supplying a frame number otherwise here?
 
         else:
-            print("used migration")
             # note just project, not self.
             if self.preview_image and project:
                 path = settings.PROJECT_IMAGES_BASE_DIR + \

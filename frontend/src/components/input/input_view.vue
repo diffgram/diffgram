@@ -881,6 +881,7 @@ export default Vue.extend({
         let filters_data  = {
           limit: this.metadata_limit,
           show_archived: this.show_archived,
+          show_deferred: this.show_deferred,
           status_filter: this.status_filter,
           date_from: this.date ? this.date.from : undefined,
           date_to: this.date ? this.date.to : undefined,

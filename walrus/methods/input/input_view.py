@@ -162,7 +162,7 @@ def build_input_list(
     # an input image for a video file
     query = session.query(Input).options(defer('frame_packet_map')).filter(
         Input.project_id == project.id,
-        Input.parent_file_id == None)
+        Input.parent_file_id == parent_file_id)
     if show_deferred is False:
         # By default we show processing deferred
         # Example reason to set it to False
@@ -181,9 +181,7 @@ def build_input_list(
         elif status_filter == "processing":
             query = query.filter(Input.status.notin_(
                 ['success', 'failed']))
-    print('asdasdasd', parent_file_id, media_type)
-    if parent_file_id:
-        query = query.filter(Input.parent_file_id == parent_file_id)
+
     if media_type:
         query = query.filter(Input.media_type == media_type)
     # TODO make date generic mix in with option to change attribute used

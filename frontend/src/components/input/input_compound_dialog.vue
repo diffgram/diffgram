@@ -1,13 +1,14 @@
 <template>
 
-  <v-dialog v-model="is_open" id="input_payload" :click:outside="close" width="1000px">
+  <v-dialog v-model="is_open" id="input_payload" :click:outside="close" width="1200px">
     <v-card elevation="1" v-if="selected_input">
       <v-card-title>Compound File: <span class="ml-2 secondary--text">{{selected_input.original_filename}}</span></v-card-title>
-      <v-card-subtitle>Child Files List:</v-card-subtitle>
       <v-card-text>
           <input_view
             v-if="selected_input"
+            title="Associated Files"
             :show_filters="false"
+            :show_status_filter="false"
             :project_string_id="project_string_id"
             :compound_file_id="selected_input.file_id">
 

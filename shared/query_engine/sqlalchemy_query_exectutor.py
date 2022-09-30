@@ -86,7 +86,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             expressions = []
             if not self.or_expression:
                 self.or_expression = OrExpression(expression_list = [])
-            print('OR EXPRESSION', local_tree)
             for child in local_tree.children:
                 if hasattr(child, 'and_expression'):
                     expressions.append(child.and_expression)
@@ -110,7 +109,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         if len(args) == 1:
 
             local_tree = args[0]
-            print('andddd EXPRESSION', local_tree)
             if not self.and_expression:
                 self.and_expression = AndExpression(expression_list = [])
             expression_list = []
