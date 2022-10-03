@@ -1,31 +1,34 @@
 # OPENCORE - ADD
 from shared.database.source_control.file import File
-from shared.database.source_control.working_dir import WorkingDirFileLink
+from shared.database.source_control.working_dir import WorkingDirFileLink, WorkingDir
 from shared.utils.sync_events_manager import SyncEventManager
 from shared.utils import job_dir_sync_utils
 from shared.shared_logger import get_shared_logger
 from shared.database.sync_events.sync_action_queue import SyncActionsQueue
+from shared.database.auth.member import Member
+from sqlalchemy.orm.session import Session
 
 logger = get_shared_logger()
 
 
-def perform_sync_events_after_file_transfer(session,
-                                            source_directory,
-                                            destination_directory,
-                                            log,
-                                            log_sync_events,
-                                            transfer_action,
-                                            file,
-                                            member,
-                                            new_file,
-                                            defer_sync,
-                                            sync_event_manager = None):
+def perform_sync_events_after_file_transfer(session: Session,
+                                            source_directory: WorkingDir,
+                                            destination_directory: WorkingDir,
+                                            log: dict,
+                                            log_sync_events: bool,
+                                            transfer_action: str,
+                                            file: File,
+                                            member: Member,
+                                            new_file: File,
+                                            defer_sync: bool,
+                                            sync_event_manager: SyncEventManager = None):
     """
-    This function is executed after a move/copy of a file. It logs the sync event and calls all the
-    task templates that are observing the destination directory of the copy/move for creating tasks.
+        This function is executed after a move/copy of a file. It logs the sync event and calls all the
+        task templates that are observing the destination directory of the copy/move for creating tasks.
     :param session:
     :param source_directory:
     :param destination_directory:
+    :param log:
     :param log_sync_events:
     :param transfer_action:
     :param file:
@@ -82,21 +85,40 @@ def perform_sync_events_after_file_transfer(session,
             SyncActionsQueue.enqueue(session, sync_event_manager.sync_event)
 
 
+def transfer_child_files(session,
+                         source_directory: Warning,
+                         destination_directory: Warning,
+                         transfer_action: str,
+                         compound_file: File,
+                         log: dict,
+                         member: Member = None,
+                         copy_instances: bool = False,
+                         sync_event_manager = None,
+                         log_sync_events = True,
+                         defer_sync = False,
+                         defer_copy = True,
+                         batch_id = None,
+                         update_project_for_copy = False):
+    if compound_file.type != 'compound':
+        return
+    compound_file.get_child_files()
+
+
 def file_transfer_core(
-        session,
-        source_directory,
-        destination_directory,
-        transfer_action: str,
-        file,
-        log: dict,
-        member=None,
-        copy_instances: bool = False,
-        sync_event_manager=None,
-        log_sync_events=True,
-        defer_sync=False,
-        defer_copy=True,
-        batch_id=None,
-        update_project_for_copy=False,
+    session,
+    source_directory,
+    destination_directory,
+    transfer_action: str,
+    file,
+    log: dict,
+    member = None,
+    copy_instances: bool = False,
+    sync_event_manager = None,
+    log_sync_events = True,
+    defer_sync = False,
+    defer_copy = True,
+    batch_id = None,
+    update_project_for_copy = False,
 ):
     """
 
@@ -108,17 +130,17 @@ def file_transfer_core(
 
     if transfer_action == "copy":
         new_file = File.copy_file_from_existing(
-            session=session,
-            working_dir=destination_directory,
-            orginal_directory_id=source_directory.id if source_directory else None,
-            existing_file=file,
-            copy_instance_list=copy_instances,
+            session = session,
+            working_dir = destination_directory,
+            orginal_directory_id = source_directory.id if source_directory else None,
+            existing_file = file,
+            copy_instance_list = copy_instances,
             log = log,
-            add_link=True,
-            remove_link=False,
-            flush_session=True,
-            defer_copy=defer_copy,
-            batch_id=batch_id
+            add_link = True,
+            remove_link = False,
+            flush_session = True,
+            defer_copy = defer_copy,
+            batch_id = batch_id
         )
         if defer_copy:
             return log
@@ -148,9 +170,9 @@ def file_transfer_core(
     if transfer_action == "move":
         # Get existing link
         link = WorkingDirFileLink.file_link(
-            session=session,
-            working_dir_id=source_directory.id,
-            file_id=file.id)
+            session = session,
+            working_dir_id = source_directory.id,
+            file_id = file.id)
         if link is None:
             log["error"]['file_link'] = 'File link of file: {} and workingdir: {}. Does not exists'.format(
                 source_directory.id,
@@ -162,9 +184,9 @@ def file_transfer_core(
         # Is it safe to just "update" it this way?
         # SHould this be a built in method of WorkingDirFileLink
         new_link = WorkingDirFileLink.file_link(
-            session=session,
-            working_dir_id=destination_directory.id,
-            file_id=file.id)
+            session = session,
+            working_dir_id = destination_directory.id,
+            file_id = file.id)
         if new_link is not None:
             log["error"]['file_link'] = 'File link of file: {} and Destination workingdir: {}. Already Exists'.format(
                 source_directory.id,
@@ -175,7 +197,7 @@ def file_transfer_core(
         session.add(link)
 
         perform_sync_events_after_file_transfer(
-            session =session,
+            session = session,
             source_directory = source_directory,
             destination_directory = destination_directory,
             log = log,
@@ -192,9 +214,9 @@ def file_transfer_core(
     if transfer_action == "mirror":
 
         existing_link = WorkingDirFileLink.file_link(
-            session=session,
-            working_dir_id=destination_directory.id,
-            file_id=file.id
+            session = session,
+            working_dir_id = destination_directory.id,
+            file_id = file.id
         )
 
         if existing_link is not None:
@@ -203,9 +225,9 @@ def file_transfer_core(
             return log
 
         link = WorkingDirFileLink.add(
-            session=session,
-            working_dir_id=destination_directory.id,
-            file=file)
+            session = session,
+            working_dir_id = destination_directory.id,
+            file = file)
         log["info"][str(file.id)] = True
-
+        transfer_child_files()
         return log
