@@ -19,7 +19,7 @@ def api_action_list_web(project_string_id: str, action_id: int):
     """
     args = request.args
     page = 0
-    page_size = 25
+    page_size = 10
     if args.get('page') is not None:
         page = args.get('page')
     if args.get('page_size') is not None:

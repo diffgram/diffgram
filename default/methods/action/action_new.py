@@ -145,6 +145,10 @@ def action_creation_core(session: Session,
     if action_template is None:
         log['error']['action_template'] = f'Action template id {template_id} not found'
         return False, log
+
+    if trigger_data.get('event_name') == None:
+        trigger_data['event_name'] = trigger_data['default_event_name']
+
     action = Action.new(
         session = session,
         project = project,
