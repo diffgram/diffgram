@@ -146,11 +146,20 @@ class ActionRunner:
             logger.error(msg)
             self.log['error']['trace'] = msg
             self.declare_action_failed(session)
+            if self.action_run.output:
+                self.action_run.output['traceback'] = msg
+            else:
+                self.action_run.output = {
+                    "success": False,
+                    "error": "Action didn't run successfully",
+                    "traceback": msg
+                }
+
+            self.session.add(self.action_run)
             return
         if output:
             if isinstance(output, dict):
                 self.action_run.output = output
-
             self.declare_action_complete(session, output)
         else:
             self.declare_action_failed(session)
@@ -164,6 +173,8 @@ class ActionRunner:
             error_log = self.log,
             project_id = self.action.project_id,
         )
+
+        ActionRun.set_action_run_status(session, self.action_run.id, "failed")
 
     def declare_action_complete(self, session: Session, output) -> None:
         has_output = isinstance(output, dict)
