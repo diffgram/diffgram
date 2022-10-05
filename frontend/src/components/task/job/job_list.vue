@@ -688,7 +688,10 @@ export default Vue.extend({
         instance_type: 'All',
 
         metadata_limit_options: [10, 25, 50, 100, 250, 500, 1000],
-        metadata_limit: 50,
+        metadata_limit: 8,
+        page: 1,
+        itemsPerPage: 5,
+        numberOfPages: 1,
         error_sample_data: {},
 
         tag_loading: false,
@@ -884,6 +887,7 @@ export default Vue.extend({
         let project_string_id = this.project_string;
 
         return {
+          'start_index': this.Job_list?.length ?? 0,
           'my_jobs_only': this.my_jobs_only,
           'limit': this.metadata_limit,
           'request_next_page': this.request_next_page_flag,
@@ -977,7 +981,7 @@ export default Vue.extend({
         this.dialog_confirm_sample_data = true;
       },
       async mount() {
-        await this.job_list_api()
+        await this.job_list_api();
       },
 
       item_changed() {
@@ -1032,8 +1036,9 @@ export default Vue.extend({
 
           if (response.data['Job_list'] != null) {
 
-            this.Job_list = response.data['Job_list']
-            this.metadata_previous = response.data['metadata']
+            this.Job_list = [...this.Job_list, ...response.data['Job_list']];
+            this.metadata_previous = response.data['metadata'];
+            this.Job_list_server_length = response.data['metadata']['full_size'];
           }
 
           this.loading = false
