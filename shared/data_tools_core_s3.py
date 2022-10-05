@@ -141,9 +141,13 @@ class DataToolsS3:
                     'parts': [{"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}]
                 }
             else:
-                parts_obj.upload_aws_parts_list['parts'].append(
+                new_list = parts_obj.upload_aws_parts_list['parts'].copy()
+                new_list.append(
                     {"PartNumber": int(chunk_index) + 1, "ETag": part["ETag"]}
                 )
+                parts_obj.upload_aws_parts_list = {
+                    'parts':  new_list
+                }
 
         if int(chunk_index) == int(total_parts_count) - 1:
             result = self.s3_client.complete_multipart_upload(

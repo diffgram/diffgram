@@ -132,7 +132,7 @@ def upload_thumbnail_for_connection_image(session: Session,
     if regular_log.log_has_error(log):
         if 'blob_exists' in log['error']:
             log = regular_log.default()
-            blob_object.url_signed_blob_path = blob_path_thumb
+            blob_object.url_signed_thumb_blob_path = blob_path_thumb
             session.add(blob_object)
         return blob_object, log
     if put_data is None:
@@ -160,7 +160,7 @@ def upload_thumbnail_for_connection_image(session: Session,
     # Now upload file to blob storage
     with open(temp_dir_path_and_filename, 'rb') as file_handler:
         if connection.integration_name == 'amazon_aws':
-            upload_resp = requests.put(url, files = {'media': file_handler})
+            upload_resp = requests.put(url, data = file_handler.read(), timeout = 30)
         elif connection.integration_name == 'microsoft_azure':
             upload_resp = requests.put(url, data = file_handler, headers=headers)
         if not upload_resp.ok:
