@@ -31,7 +31,8 @@ jobs:
     name: Publish Images
     secrets:
       GOOGLE_PROJECT_NAME: ${{ secrets.GOOGLE_PROJECT_NAME }}
-      GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
 
   pr_commented:
@@ -117,7 +118,6 @@ jobs:
       GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
       GOOGLE_APPLICATION_CREDENTIALS: ~/gcloud-service-key.json
       DOCKER_IMAGE_PROJECT_NAME: ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
-      GCR_CREDENTIALS_ENTERPRISE: ${{ secrets.GCR_CREDENTIALS_ENTERPRISE }}
       DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
       DIFFGRAM_VERSION_TAG: ${{ github.event.inputs.release }}
       DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
@@ -219,7 +219,6 @@ jobs:
           diffgramSettings.SMTP_FROM_EMAIL: ${{secrets.SMTP_FROM_EMAIL}}
           diffgramSecrets.SMTP_PASSWORD: ${{secrets.SMTP_PASSWORD}}
           diffgramSettings.RABBITMQ_USE_SSL: ${{secrets.RABBITMQ_USE_SSL}}
-          imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           rabbitmq.auth.username: ${{secrets.RABBITMQ_DEFAULT_USER}}
           rabbitmq.auth.password: ${{secrets.RABBITMQ_DEFAULT_PASS}}
           rabbitmq.auth.erlangCookie: ${{secrets.ERLANG_COOKIE}}
@@ -295,7 +294,6 @@ jobs:
       GOOGLE_SERVICE_ACCOUNT_ENCODED: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }}
       GOOGLE_APPLICATION_CREDENTIALS: ~/gcloud-service-key.json
       DOCKER_IMAGE_PROJECT_NAME: ${{ secrets.DOCKER_IMAGE_PROJECT_NAME }}
-      GCR_CREDENTIALS_ENTERPRISE: ${{ secrets.GCR_CREDENTIALS_ENTERPRISE }}
       DATABASE_CONNECTION_POOL_SIZE: ${{ secrets.DATABASE_CONNECTION_POOL_SIZE }}
       NEW_RELIC_LICENSE_KEY: ${{ secrets.NEW_RELIC_LICENSE_KEY }}
       EMAIL_DOMAIN_NAME: ${{ secrets.EMAIL_DOMAIN_NAME }}
@@ -470,7 +468,6 @@ jobs:
           diffgramSettings.SMTP_USERNAME: ${{secrets.SMTP_USERNAME}}
           diffgramSettings.SMTP_FROM_EMAIL: ${{secrets.SMTP_FROM_EMAIL}}
           diffgramSecrets.SMTP_PASSWORD: ${{secrets.SMTP_PASSWORD}}
-          imagePullCredentials.gcrCredentials: ${{secrets.GCR_CREDENTIALS_ENTERPRISE}}
           rabbitmq.auth.username: ${{secrets.RABBITMQ_DEFAULT_USER}}
           rabbitmq.auth.password: ${{secrets.RABBITMQ_DEFAULT_PASS}}
           eventHandlersService.requests.memory: "6G"

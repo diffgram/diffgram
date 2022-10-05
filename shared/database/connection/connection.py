@@ -7,6 +7,9 @@ INTEGRATION_VENDORS_SUPPORTED_FEATURES = {
         'files_import': True,
         'files_export': True,
     },
+    'vertex_ai': {
+        'train': True
+    },
     'amazon_aws': {
         'files_import': True,
         'files_export': True

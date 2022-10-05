@@ -287,6 +287,11 @@ const integration_spec_list_template = [
     'color': 'green'
   },
   {
+    'display_name': 'Vertex AI',
+    'name': 'vertex_ai',
+    'image-icon': 'https://www.svgrepo.com/show/375510/vertexai.svg',
+  },
+  {
     'display_name': 'Amazon AWS',
     'name': 'amazon_aws',
     'icon': 'mdi-aws',

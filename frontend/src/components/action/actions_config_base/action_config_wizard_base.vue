@@ -18,6 +18,7 @@
             :actions_list=actions_list
             :action_template="action_template"
             :action="action" 
+            :select_dataset="select_dataset"
           />
         </slot>
         <slot :name="keyStep" v-if="keyStep === 'pre_conditions'">
@@ -102,7 +103,8 @@ export default Vue.extend({
       'project_string_id', 
       'actions_list', 
       'steps_config', 
-      'action_template'
+      'action_template',
+      'select_dataset'
     ],
     data() {
       return {

@@ -13,7 +13,7 @@ data_tools = Data_tools().data_tools
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ["api_enabled_builder"])
-@limiter.limit("10 per minute, 50 per day")
+@limiter.limit("1000 per minute")
 def web_export_to_file(project_string_id):
     """
     Generates annotations

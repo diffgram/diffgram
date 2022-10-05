@@ -954,7 +954,7 @@ export default Vue.extend({
       } else {
         url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
       }
-      if (!this.instance_in_progress) {
+      // if (!this.instance_in_progress) {
         const res = await postInstanceList(url, this.new_instance_list.get_for_save())
         const {added_instances} = res
         added_instances.map(add_instance => {
@@ -976,7 +976,7 @@ export default Vue.extend({
               else instance.to_instance_id = add_instance.id
             })
         })
-      }
+      // }
       this.save_loading = false
     },
     undo: function () {
