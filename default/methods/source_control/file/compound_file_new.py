@@ -70,7 +70,10 @@ def file_compound_new_core(session: Session,
     input_obj = Input.new(
         directory_id = directory_id,
         project_id = project.id,
-        type = 'from_compound'
+        project = project,
+        type = 'from_compound',
+        media_type = 'compound'
+
 
     )
 
@@ -83,6 +86,11 @@ def file_compound_new_core(session: Session,
         input_id = input_obj.id
     )
     input_obj.file_id = file.id
+    input_obj.original_filename = name
     input_obj.status = 'success'
+    input_obj.percent_complete = 100
     session.add(input_obj)
-    return file.serialize_base_file(), log
+    session.flush()
+    file_data = file.serialize_base_file()
+    file_data['input'] = input_obj.serialize()
+    return file_data, log

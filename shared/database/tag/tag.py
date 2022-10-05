@@ -180,7 +180,6 @@ class Tag(Base):
             session
         )
         if junction_tag:
-            print(junction_tag)
             session.delete(junction_tag)
             log['info']['tag'] = "success"
             log['success'] = True

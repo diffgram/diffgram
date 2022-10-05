@@ -47,7 +47,6 @@ def task_template_label_attach(session,
 
         else:
             # Temporary fall back for migration
-            print("label file list did not exist, using fall back")
             file_list = WorkingDirFileLink.file_list(
                 session=session,
                 working_dir_id=project_directory.id,
@@ -153,8 +152,6 @@ def task_template_launch_limits(session,
     # TODO may be some cases that this is overbearing / needs to be handled better
     # ie could call directory_not_equal_to_status with return type
     # of "objects" or something...
-
-    print(result)
 
     if result > 0:
         log['error']['file_status'] = f"Files processing. Try again in 30-60 minutes."

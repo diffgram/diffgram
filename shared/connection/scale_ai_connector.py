@@ -439,7 +439,6 @@ class ScaleAISyncManager:
                     'scale_ai_type': result
                 }
                 return False, self.log
-            print('RESLYT', result)
             self.map_scale_ai_task(task, result['result'], type='polygon')
             self.set_task_in_progress(task)
             return result['result'], self.log

@@ -1069,7 +1069,6 @@ class File(Base, Caching):
 
         # Migration
         if not file and directory_id:
-            print("used file migration")
             return File.get_by_id_and_directory_untrusted(
                 session = session,
                 directory_id = directory_id,

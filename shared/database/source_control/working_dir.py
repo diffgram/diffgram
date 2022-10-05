@@ -173,7 +173,6 @@ class WorkingDir(Base):
             object_type = ValidObjectTypes.dataset,
             perm = DatasetPermissions.dataset_view
         )
-        print('allow all', perm_result.allow_all, perm_result.allowed_object_id_list)
 
         if nickname:
             if nickname_match_type == "ilike":

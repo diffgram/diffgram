@@ -134,6 +134,7 @@ def input_packet(project_string_id):
             return jsonify(log = log), 400
         log = regular_log.default()
         connection_id_access_token = get_session_string()
+        print('NEW !!!!!', input.get('parent_file_id'))
         diffgram_input = enqueue_packet(project_string_id = project_string_id,
                                         session = session,
                                         media_url = media_url,
