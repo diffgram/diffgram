@@ -474,7 +474,6 @@ class WorkingDirFileLink(Base):
 
         query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == working_dir_id)
-
         if type is None:
             return query.subquery('file_link_sub_query')
 
@@ -561,7 +560,6 @@ class WorkingDirFileLink(Base):
 
         if exclude_removed is True:
             query = query.filter(File.state != "removed")
-
         # if an image with a video id, exclude it)
         # Would prefer a better way to handle this
         # BUT at least this is all in one query...

@@ -86,38 +86,58 @@ def perform_sync_events_after_file_transfer(session: Session,
 
 
 def transfer_child_files(session,
-                         source_directory: Warning,
-                         destination_directory: Warning,
+                         source_directory: WorkingDir,
+                         destination_directory: WorkingDir,
                          transfer_action: str,
                          compound_file: File,
                          log: dict,
                          member: Member = None,
                          copy_instances: bool = False,
-                         sync_event_manager = None,
-                         log_sync_events = True,
-                         defer_sync = False,
-                         defer_copy = True,
-                         batch_id = None,
-                         update_project_for_copy = False):
+                         sync_event_manager: SyncEventManager = None,
+                         log_sync_events: bool = True,
+                         defer_sync: bool = False,
+                         defer_copy: bool = True,
+                         batch_id: int = None,
+                         new_parent_id: int = None,
+                         update_project_for_copy: bool = False):
     if compound_file.type != 'compound':
         return
-    compound_file.get_child_files()
+    child_files = compound_file.get_child_files(session = session)
+    for child in child_files:
+        file_transfer_core(
+            session = session,
+            source_directory = source_directory,
+            destination_directory = destination_directory,
+            transfer_action = transfer_action,
+            log = log,
+            member = member,
+            file = child,
+            copy_instances = copy_instances,
+            sync_event_manager = sync_event_manager,
+            log_sync_events = log_sync_events,
+            defer_sync = defer_sync,
+            defer_copy = defer_copy,
+            batch_id = batch_id,
+            update_project_for_copy = update_project_for_copy,
+            new_parent_id = new_parent_id
+        )
 
 
 def file_transfer_core(
-    session,
-    source_directory,
-    destination_directory,
+    session: Session,
+    source_directory: WorkingDir,
+    destination_directory: WorkingDir,
     transfer_action: str,
-    file,
+    file: File,
     log: dict,
-    member = None,
+    member: Member = None,
     copy_instances: bool = False,
-    sync_event_manager = None,
-    log_sync_events = True,
-    defer_sync = False,
-    defer_copy = True,
-    batch_id = None,
+    sync_event_manager: SyncEventManager = None,
+    log_sync_events: bool = True,
+    defer_sync: bool = False,
+    defer_copy: bool = True,
+    batch_id: int = None,
+    new_parent_id: int = None,
     update_project_for_copy = False,
 ):
     """
@@ -127,7 +147,7 @@ def file_transfer_core(
     copy_instances, bool
 
     """
-
+    new_file = None
     if transfer_action == "copy":
         new_file = File.copy_file_from_existing(
             session = session,
@@ -140,11 +160,12 @@ def file_transfer_core(
             remove_link = False,
             flush_session = True,
             defer_copy = defer_copy,
-            batch_id = batch_id
+            batch_id = batch_id,
+            new_parent_id = new_parent_id
         )
+        session.flush()
         if defer_copy:
             return log
-
         perform_sync_events_after_file_transfer(session = session,
                                                 source_directory = source_directory,
                                                 destination_directory = destination_directory,
@@ -165,7 +186,6 @@ def file_transfer_core(
                 log['info']['new_file'].append(new_file.serialize_with_type(session))
         if not log['info'].get('message'):
             log['info']['message'] = 'File Copy Success.'
-        return log
 
     if transfer_action == "move":
         # Get existing link
@@ -178,7 +198,6 @@ def file_transfer_core(
                 source_directory.id,
                 file.id
             )
-            return log
 
         # TODO consider how this effects committed
         # Is it safe to just "update" it this way?
@@ -209,7 +228,6 @@ def file_transfer_core(
             defer_sync = defer_sync,
             sync_event_manager = sync_event_manager
         )
-        return log
 
     if transfer_action == "mirror":
 
@@ -229,5 +247,24 @@ def file_transfer_core(
             working_dir_id = destination_directory.id,
             file = file)
         log["info"][str(file.id)] = True
-        transfer_child_files()
-        return log
+
+    # If file is compound, transfer all child files too.
+    if file.type == 'compound':
+        transfer_child_files(
+            session = session,
+            source_directory = source_directory,
+            destination_directory = destination_directory,
+            transfer_action = transfer_action,
+            compound_file = file,
+            log = log,
+            member = member,
+            copy_instances = copy_instances,
+            sync_event_manager = sync_event_manager,
+            log_sync_events = log_sync_events,
+            defer_sync = defer_sync,
+            defer_copy = defer_copy,
+            batch_id = batch_id,
+            update_project_for_copy = update_project_for_copy,
+            new_parent_id = new_file.id if new_file is not None else None)
+
+    return log
