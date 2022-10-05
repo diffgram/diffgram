@@ -270,266 +270,290 @@
         :job_list="Job_list">
       </job_list_card_display>
 
-      <v-data-table :headers="headers_view"
-                    v-if="view_mode === 'table'"
-                    :loading="loading"
-                    :items="Job_list"
-                    item-key="id"
-                    v-model="selected"
-                    show-select
-                    ref="job_list_table">
-
-        <!-- appears to have to be item for vuetify syntax-->
-        <template slot="item"
-                  slot-scope="props">
-
-          <tr>
-
-            <td>
-              <v-checkbox v-model="props.isSelected"
-                          @change="props.select($event)"
-                          primary>
-              </v-checkbox>
-            </td>
-
-            <td>
-              <v-btn color="primary"
-                     text
-                     @click="job_detail(props.item)">
-                <div v-if="props.item.name">
-                  {{ props.item.name.slice(0, 40) }}
-                  <div v-if="props.item.name.length >= 40">
-                    ...
+      <div class="flex-column" v-if="view_mode === 'table'">
+        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+          <v-select
+            :items="[2, 5, 10, 15, 100]"
+            label="Rows per page"
+            return-object
+            v-model="itemsPerPage"
+            style="max-width: 150px;"
+          />
+          <v-pagination
+            v-model="page"
+            :length="numberOfPages"
+            @input="change_selected_page"
+            total-visible="5"
+            color="green"
+            circle
+          ></v-pagination>
+        </div>
+        <v-data-table :headers="headers_view"
+          v-if="view_mode === 'table'"
+          :page.sync="page"
+          :loading="loading"
+          :items="Job_list"
+          :items-per-page="itemsPerPage"
+          item-key="id"
+          v-model="selected"
+          show-select
+          ref="job_list_table"
+          hide-default-footer
+          @page-count="numberOfPages = $event" >
+        
+  
+          <!-- appears to have to be item for vuetify syntax-->
+          <template slot="item"
+                    slot-scope="props">
+  
+            <tr>
+  
+              <td>
+                <v-checkbox v-model="props.isSelected"
+                            @change="props.select($event)"
+                            primary>
+                </v-checkbox>
+              </td>
+  
+              <td>
+                <v-btn color="primary"
+                       text
+                       @click="job_detail(props.item)">
+                  <div v-if="props.item.name">
+                    {{ props.item.name.slice(0, 40) }}
+                    <div v-if="props.item.name.length >= 40">
+                      ...
+                    </div>
+                  </div>
+                </v-btn>
+              </td>
+  
+              <td>
+                <!-- start Status -->
+  
+                <v-layout>
+  
+                  <tooltip_icon
+                    tooltip_message="Active"
+                    v-if="props.item.status == 'active'"
+                    icon="mdi-inbox"
+                    color="green">
+                  </tooltip_icon>
+  
+                  <tooltip_icon
+                    tooltip_message="Cancelled"
+                    v-if="props.item.status == 'cancelled'"
+                    icon="mdi-cancel"
+                    color="red">
+                  </tooltip_icon>
+  
+                  <tooltip_icon
+                    tooltip_message="Draft"
+                    v-if="props.item.status == 'draft'"
+                    icon="mdi-file"
+                    color="orange">
+                  </tooltip_icon>
+  
+                  <tooltip_icon
+                    tooltip_message="Complete"
+                    v-if="props.item.status == 'complete'"
+                    icon="mdi-check"
+                    color="gray">
+                  </tooltip_icon>
+  
+                  <tooltip_icon
+                    tooltip_message="Failed"
+                    v-if="props.item.status == 'failed'"
+                    icon="mdi-alert-circle"
+                    color="error">
+                  </tooltip_icon>
+  
+                  <tooltip_icon
+                    :tooltip_message="'Requested Launch: ' +
+                                props.item.launch_datetime | moment('ddd, MMM Do H:mm a')"
+                    v-if="props.item.waiting_to_be_launched"
+                    icon="mdi-rocket"
+                    color="blue">
+                  </tooltip_icon>
+  
+  
+                </v-layout>
+  
+                <!-- end Status -->
+              </td>
+  
+              <td>
+  
+  <!--              <label_select_only-->
+  <!--                v-if="props.item.label_dict &&-->
+  <!--                      props.item.label_dict.label_file_list_serialized"-->
+  <!--                :mode=" 'multiple' "-->
+  <!--                :label_prompt="null"-->
+  <!--                :view_only_mode="true"-->
+  <!--                :label_file_list_prop="props.item.label_dict.label_file_list_serialized"-->
+  <!--                :load_selected_id_list="props.item.label_dict.label_file_list"-->
+  <!--                :limit="3"-->
+  <!--              >-->
+  <!--              </label_select_only>-->
+              <v-chip small>{{props.item.label_schema.name}}</v-chip>
+              </td>
+              <td>
+                <tag_display_and_select
+                  :project_string_id="project_string_id"
+                  :object_id="props.item.id"
+                  :object_type="'job'"
+                >
+                </tag_display_and_select>
+  
+              </td>
+              <td>
+                <!--
+                <member_select
+                    v-if="props.item.member_list_ids"
+                    v-model="props.item.member_list_ids"
+                    :member_list="$store.state.project.current.member_list"
+                    :multiple="true"
+                    :view_only="true"
+                               >
+                </member_select>
+               -->
+  
+                <member_inline_view
+                  :member_list_ids="props.item.member_list_ids">
+                </member_inline_view>
+  
+              </td>
+  
+  
+              <td>
+                <!-- start TYPE -->
+                <job_type :type="props.item.type">
+                </job_type>
+  
+              </td> <!-- end TYPE -->
+  
+              <td>
+                <div style="max-width: 200px" class="d-flex flex-wrap"
+                     v-if="props && props.item && props.item.attached_directories_dict && props.item.attached_directories_dict.attached_directories_list">
+                  <div class="dir d-flex align-center  justify-center ml-1"
+                       v-for="dir in props.item.attached_directories_dict.attached_directories_list">
+                    <v-icon color="primary">mdi-folder</v-icon>
+                    <p class="ma-0">{{ dir.nickname }}</p>
+                  </div>
+  
+                </div>
+              </td>
+              <td>
+                <div style="max-width: 200px" class="d-flex flex-wrap"
+                     v-if="props && props.item && props.item.completion_directory">
+                  <div class="dir d-flex align-center  justify-center" v-if="props.item.completion_directory.nickname">
+                    <v-icon color="primary">mdi-folder</v-icon>
+                    <p class="ma-0">{{ props.item.completion_directory.nickname }}</p>
                   </div>
                 </div>
-              </v-btn>
-            </td>
-
-            <td>
-              <!-- start Status -->
-
-              <v-layout>
-
+              </td>
+  
+              <td>
+                <icon_from_regular_list
+                  v-if="props.item.interface_connection"
+                  :item_list="$store.state.connection.integration_spec_list"
+                  :value="props.item.interface_connection.integration_name"
+                >
+                </icon_from_regular_list>
+                <!-- Default case,. hard code value to diffgram
+                     because we currently aren't store Diffgram as a "connection"
+                  -->
+                <icon_from_regular_list
+                  v-if="!props.item.interface_connection"
+                  :item_list="$store.state.connection.integration_spec_list"
+                  value="diffgram"
+                >
+                </icon_from_regular_list>
+              </td>
+  
+              <td>
+  
+                <!-- Would be nice for this to be it's own component
+                  but not clear what this would be shared with
+                  ie maybe should be part of annotation...
+  
+                  Either way need a new series here...
+                  and current instance detail thing I think just does
+                  icon without tooltip...
+                  -->
+  
                 <tooltip_icon
-                  tooltip_message="Active"
-                  v-if="props.item.status == 'active'"
-                  icon="mdi-inbox"
-                  color="green">
+                  tooltip_message="Box"
+                  v-if="props.item.instance_type =='box'"
+                  icon="mdi-checkbox-blank"
+                  color="green lighten-1">
                 </tooltip_icon>
-
+  
+  
                 <tooltip_icon
-                  tooltip_message="Cancelled"
-                  v-if="props.item.status == 'cancelled'"
-                  icon="mdi-cancel"
-                  color="red">
+                  tooltip_message="Polygon"
+                  v-if="props.item.instance_type =='polygon'"
+                  icon="mdi-vector-polygon"
+                  color="green lighten-1">
                 </tooltip_icon>
-
+  
                 <tooltip_icon
-                  tooltip_message="Draft"
-                  v-if="props.item.status == 'draft'"
-                  icon="mdi-file"
-                  color="orange">
+                  tooltip_message="Tag"
+                  v-if="props.item.instance_type =='tag'"
+                  icon="mdi-tag"
+                  color="green lighten-1">
                 </tooltip_icon>
-
-                <tooltip_icon
-                  tooltip_message="Complete"
-                  v-if="props.item.status == 'complete'"
-                  icon="mdi-check"
-                  color="gray">
-                </tooltip_icon>
-
-                <tooltip_icon
-                  tooltip_message="Failed"
-                  v-if="props.item.status == 'failed'"
-                  icon="mdi-alert-circle"
-                  color="error">
-                </tooltip_icon>
-
-                <tooltip_icon
-                  :tooltip_message="'Requested Launch: ' +
-                              props.item.launch_datetime | moment('ddd, MMM Do H:mm a')"
-                  v-if="props.item.waiting_to_be_launched"
-                  icon="mdi-rocket"
-                  color="blue">
-                </tooltip_icon>
-
-
-              </v-layout>
-
-              <!-- end Status -->
-            </td>
-
-            <td>
-
-<!--              <label_select_only-->
-<!--                v-if="props.item.label_dict &&-->
-<!--                      props.item.label_dict.label_file_list_serialized"-->
-<!--                :mode=" 'multiple' "-->
-<!--                :label_prompt="null"-->
-<!--                :view_only_mode="true"-->
-<!--                :label_file_list_prop="props.item.label_dict.label_file_list_serialized"-->
-<!--                :load_selected_id_list="props.item.label_dict.label_file_list"-->
-<!--                :limit="3"-->
-<!--              >-->
-<!--              </label_select_only>-->
-            <v-chip small>{{props.item.label_schema.name}}</v-chip>
-            </td>
-            <td>
-              <tag_display_and_select
-                :project_string_id="project_string_id"
-                :object_id="props.item.id"
-                :object_type="'job'"
-              >
-              </tag_display_and_select>
-
-            </td>
-            <td>
-              <!--
-              <member_select
-                  v-if="props.item.member_list_ids"
-                  v-model="props.item.member_list_ids"
-                  :member_list="$store.state.project.current.member_list"
-                  :multiple="true"
-                  :view_only="true"
-                             >
-              </member_select>
-             -->
-
-              <member_inline_view
-                :member_list_ids="props.item.member_list_ids">
-              </member_inline_view>
-
-            </td>
-
-
-            <td>
-              <!-- start TYPE -->
-              <job_type :type="props.item.type">
-              </job_type>
-
-            </td> <!-- end TYPE -->
-
-            <td>
-              <div style="max-width: 200px" class="d-flex flex-wrap"
-                   v-if="props && props.item && props.item.attached_directories_dict && props.item.attached_directories_dict.attached_directories_list">
-                <div class="dir d-flex align-center  justify-center ml-1"
-                     v-for="dir in props.item.attached_directories_dict.attached_directories_list">
-                  <v-icon color="primary">mdi-folder</v-icon>
-                  <p class="ma-0">{{ dir.nickname }}</p>
-                </div>
-
-              </div>
-            </td>
-            <td>
-              <div style="max-width: 200px" class="d-flex flex-wrap"
-                   v-if="props && props.item && props.item.completion_directory">
-                <div class="dir d-flex align-center  justify-center" v-if="props.item.completion_directory.nickname">
-                  <v-icon color="primary">mdi-folder</v-icon>
-                  <p class="ma-0">{{ props.item.completion_directory.nickname }}</p>
-                </div>
-              </div>
-            </td>
-
-            <td>
-              <icon_from_regular_list
-                v-if="props.item.interface_connection"
-                :item_list="$store.state.connection.integration_spec_list"
-                :value="props.item.interface_connection.integration_name"
-              >
-              </icon_from_regular_list>
-              <!-- Default case,. hard code value to diffgram
-                   because we currently aren't store Diffgram as a "connection"
-                -->
-              <icon_from_regular_list
-                v-if="!props.item.interface_connection"
-                :item_list="$store.state.connection.integration_spec_list"
-                value="diffgram"
-              >
-              </icon_from_regular_list>
-            </td>
-
-            <td>
-
-              <!-- Would be nice for this to be it's own component
-                but not clear what this would be shared with
-                ie maybe should be part of annotation...
-
-                Either way need a new series here...
-                and current instance detail thing I think just does
-                icon without tooltip...
-                -->
-
-              <tooltip_icon
-                tooltip_message="Box"
-                v-if="props.item.instance_type =='box'"
-                icon="mdi-checkbox-blank"
-                color="green lighten-1">
-              </tooltip_icon>
-
-
-              <tooltip_icon
-                tooltip_message="Polygon"
-                v-if="props.item.instance_type =='polygon'"
-                icon="mdi-vector-polygon"
-                color="green lighten-1">
-              </tooltip_icon>
-
-              <tooltip_icon
-                tooltip_message="Tag"
-                v-if="props.item.instance_type =='tag'"
-                icon="mdi-tag"
-                color="green lighten-1">
-              </tooltip_icon>
-
-            </td>
-
-            <td>
-
-              {{ props.item.time_updated | moment("ddd, MMM Do H:mm a") }}
-
-            </td>
-
-            <td>
-              {{ props.item.stat_count_complete }}
-            </td>
-
-            <td>
-              {{ props.item.stat_count_available }}
-            </td>
-
-            <td>
-              {{ props.item.file_count_statistic }}
-            </td>
-
-            <td>
-              <v-layout row>
-
-                <v-btn color="primary"
-                       @click="job_detail(props.item)">
-                  View
-                </v-btn>
-
-                <!--
-                 Strange issues with how it re renders error message when the list updates
-                -->
-                <!--
-            <v_job_cancel :job="props.item"
-                          @cancel_job_success="job_list_api()">
-            </v_job_cancel>
-            -->
-              </v-layout>
-            </td>
-
-          </tr>
-        </template>
-        <div v-if="!loading">
-          <v-alert slot="no-data" color="error" icon="warning">
-            No results found.
-          </v-alert>
-        </div>
-
-
-      </v-data-table>
+  
+              </td>
+  
+              <td>
+  
+                {{ props.item.time_updated | moment("ddd, MMM Do H:mm a") }}
+  
+              </td>
+  
+              <td>
+                {{ props.item.stat_count_complete }}
+              </td>
+  
+              <td>
+                {{ props.item.stat_count_available }}
+              </td>
+  
+              <td>
+                {{ props.item.file_count_statistic }}
+              </td>
+  
+              <td>
+                <v-layout row>
+  
+                  <v-btn color="primary"
+                         @click="job_detail(props.item)">
+                    View
+                  </v-btn>
+  
+                  <!--
+                   Strange issues with how it re renders error message when the list updates
+                  -->
+                  <!--
+              <v_job_cancel :job="props.item"
+                            @cancel_job_success="job_list_api()">
+              </v_job_cancel>
+              -->
+                </v-layout>
+              </td>
+  
+            </tr>
+          </template>
+          <div v-if="!loading">
+            <v-alert slot="no-data" color="error" icon="warning">
+              No results found.
+            </v-alert>
+          </div>
+  
+  
+        </v-data-table>
+      </div>
     </v-layout>
 
 
@@ -999,7 +1023,6 @@ export default Vue.extend({
       async mount() {
         await this.job_list_api();
       },
-
       item_changed() {
         this.request_next_page_available = false
       },
