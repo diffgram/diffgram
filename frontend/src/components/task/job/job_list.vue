@@ -652,6 +652,7 @@ export default Vue.extend({
         },
 
         Job_list: [],
+        Job_list_server_length: 0,
 
         org_list: ["None"],
         org: "None",    // Continue theme / notes on back end this must be string
@@ -889,7 +890,7 @@ export default Vue.extend({
         return {
           'start_index': this.Job_list?.length ?? 0,
           'my_jobs_only': this.my_jobs_only,
-          'limit': this.metadata_limit,
+          'limit': Math.max(this.metadata_limit, this.itemsPerPage + 1),
           'request_next_page': this.request_next_page_flag,
           'previous': this.metadata_previous,
           'builder_or_trainer': this.$store.state.builder_or_trainer,
