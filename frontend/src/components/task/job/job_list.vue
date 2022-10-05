@@ -1079,6 +1079,14 @@ export default Vue.extend({
           this.$router.push("/job/" + job.id)
         }
       },
+      change_items_per_page(number) {
+        this.itemsPerPage = Number(number);
+      },
+      change_selected_page(pageNumber) {
+        if(pageNumber == this.numberOfPages && this.Job_list_server_length > this.Job_list.length) {
+          this.job_list_api();
+        }
+      },
 
       remove_function: function (file) {
 
