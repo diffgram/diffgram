@@ -912,6 +912,10 @@ export default Vue.extend({
 
     created() {
       this.tag_list_api()
+      window.addEventListener('scroll', this.handleScroll);
+    },
+    destroyed () {
+      window.removeEventListener('scroll', this.handleScroll);
     },
 
     async mounted() {
@@ -943,6 +947,17 @@ export default Vue.extend({
 
     },
     methods: {
+      handleScroll (event) {
+        var limit = (document.documentElement.scrollHeight - document.documentElement.clientHeight);
+        if(window.scrollY >= limit && view_mode === 'cards'){
+          if(!this.loading && 
+            this.Job_list.length < this.Job_list_server_length) 
+          {
+            this.job_list_api();
+          }
+        }
+        
+      },
       set_view_mode: function (new_mode) {
         this.view_mode = new_mode;
       },
