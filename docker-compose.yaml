@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   dispatcher:
-    image: gcr.io/diffgram-open-core/local_dispatcher:latest
+    image: diffgram/local_dispatcher:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8085:8085"
     expose: [8085]
@@ -12,14 +12,14 @@ services:
     environment:
       SAME_HOST: ${SAME_HOST}
   frontend:
-    image: gcr.io/diffgram-open-core/frontend:${DIFFGRAM_VERSION_TAG}
+    image: diffgram/frontend:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8081:80"
     expose: [80]
     depends_on:
     - default
   eventhandlers:
-    image: gcr.io/diffgram-open-core/eventhandlers:${DIFFGRAM_VERSION_TAG}
+    image: diffgram/eventhandlers:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8086:8086"
     expose: [8086]
@@ -39,7 +39,7 @@ services:
       DIFFGRAM_SERVICE_NAME: eventhandlers
     entrypoint: ["python3", "-u", "/app/main.py"]
   walrus:
-    image: gcr.io/diffgram-open-core/walrus:${DIFFGRAM_VERSION_TAG}
+    image: diffgram/walrus:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8082:8082"
     expose: [8082]
@@ -60,9 +60,9 @@ services:
     entrypoint: ["python3", "-u", "/app/main.py"]
 
   default:
-    image: gcr.io/diffgram-open-core/default:${DIFFGRAM_VERSION_TAG}
+    image: diffgram/default:${DIFFGRAM_VERSION_TAG}
     healthcheck:
-      test: curl --fail http://default:8080 || exit 1
+      test: curl --fail http://default:8080/api/status || exit 1
       interval: 30s
       timeout: 30s
       retries: 5
@@ -79,6 +79,8 @@ services:
         condition: service_completed_successfully
     volumes:
     - ${GCP_SERVICE_ACCOUNT_FILE_PATH}:/gcp/gcp-service-account.json
+    - ./default:/app
+    - ./shared:/app/shared
     env_file:
       - .env
     environment:
@@ -86,7 +88,7 @@ services:
       DIFFGRAM_SERVICE_NAME: default
     command: ["python3", "-u", "/app/main.py"]
   db_migration:
-    image: gcr.io/diffgram-open-core/default:${DIFFGRAM_VERSION_TAG}
+    image: diffgram/default:${DIFFGRAM_VERSION_TAG}
     env_file:
       - .env
     environment:

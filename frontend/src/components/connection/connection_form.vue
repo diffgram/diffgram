@@ -378,7 +378,13 @@
               private_secret: true,
               account_email: true,
               project_id_external: true,
-
+            },
+            'vertex_ai': {
+              name: true,
+              private_id: true,
+              private_secret: true,
+              account_email: true,
+              project_id_external: true
             },
             'microsoft_azure': {
               name: true,

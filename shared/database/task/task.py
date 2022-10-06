@@ -290,6 +290,10 @@ class Task(Base):
             if last_task.status in status_allow_list:
                 return last_task
 
+    @staticmethod
+    def spicedb_type():
+        return "diffgram/task"
+
     def get_all_users_in_task(self, session):
         """
             Returns the list of both assignees and reviewers
@@ -579,6 +583,7 @@ class Task(Base):
         query = session.query(Task).filter(
             Task.job_id == job.id,
             Task.file_id == file.id,
+            Task.status != 'archived',
         )
         if return_type == 'first':
             return query.first()

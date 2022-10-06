@@ -8,7 +8,9 @@
       @open_action_selector="$emit('open_action_selector')"
       :steps_config="steps_config.generate()"
       :actions_list="actions_list"
-      :action="action">
+      :select_dataset="true"
+      :action="action"
+    >
 
       <template v-slot:wizard_action_config >
         <task_template_config_details

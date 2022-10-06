@@ -9,7 +9,7 @@
           <v-col cols="1" class="d-flex align-center">  <v-btn color="primary" @click="refresh_list" icon><v-icon>mdi-sync</v-icon></v-btn></v-col>
           <v-col cols="2" class="d-flex">
             <v-icon color="primary" class="mr-4">mdi-filter</v-icon>
-            <v_directory_list class="pt-2"
+            <directory_selector class="pt-2"
                               :project_string_id="project_string_id"
                               :show_new="false"
                               label="Source"
@@ -20,10 +20,10 @@
                               :show_update="false"
                               :clearable="true"
                               @change_directory="change_source_dataset">
-            </v_directory_list>
+            </directory_selector>
           </v-col>
           <v-col cols="2">
-            <v_directory_list class="pt-2"
+            <directory_selector class="pt-2"
                               :project_string_id="project_string_id"
                               :show_new="false"
                               label="Destinations"
@@ -34,7 +34,7 @@
                               :show_update="false"
                               :clearable="true"
                               @change_directory="change_destination_dataset">
-            </v_directory_list>
+            </directory_selector>
           </v-col>
           <v-col cols="2" class="pt-5">
             <diffgram_select

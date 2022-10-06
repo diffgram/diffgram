@@ -8,8 +8,8 @@
       v-model="action.trigger_data.event_name"
     />
 
-    <v_directory_list
-      v-if="action && action.trigger_data.event_name === 'input_file_uploaded'"
+    <directory_selector
+      v-if="action && select_dataset"
       :initial_dir_from_state="action.config_data.directory_id"
       :set_current_dir_on_change="false"
       :project_string_id="project_string_id"
@@ -50,6 +50,10 @@ export default Vue.extend({
       },
       actions_list: {
         required: true
+      },
+      select_dataset: {
+        type: Boolean,
+        default: false
       },
       triggers_list_prop: {}
     },

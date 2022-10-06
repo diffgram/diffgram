@@ -7,7 +7,9 @@
       :steps_config="steps_config"
       :action_template="action_template"
       @open_action_selector="$emit('open_action_selector')"
-      :project_string_id="project_string_id">
+      :project_string_id="project_string_id"
+      :select_dataset="select_dataset"
+      >
       <template v-slot:triggers>
         <slot name="wizard_triggers"></slot>
       </template>
@@ -93,6 +95,10 @@ export default {
     steps_config: {
       type: Object,
       required: true
+    },
+    select_dataset: {
+      type: Boolean,
+      default: false
     }
   },
   mounted() {

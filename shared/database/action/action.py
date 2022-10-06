@@ -4,8 +4,6 @@ from shared.database.action.action_template import Action_Template
 from sqlalchemy.dialects.postgresql import JSONB
 from enum import Enum
 from sqlalchemy_serializer import SerializerMixin
-
-
 class ActionTriggerEventTypes(Enum):
     task_completed = 'task_completed'
     task_created = 'task_created'
@@ -18,6 +16,7 @@ class ActionTriggerEventTypes(Enum):
     input_file_uploaded = 'input_file_uploaded'
     input_instance_uploaded = 'input_instance_uploaded'
     action_completed = 'action_completed'
+    manual_trigger = 'manual_trigger'
     file_copy = 'file_copy'
     file_move = 'file_move'
     file_mirror = 'file_mirror'

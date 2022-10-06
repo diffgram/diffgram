@@ -65,39 +65,3 @@ def view_working_dir_web(project_string_id, username):
             out = jsonify(success = True,
                           working_dir = working_dir.serialize())
         return out, 200, {'ContentType': 'application/json'}
-
-
-@routes.route('/api/v1/project/<string:project_string_id>' +
-              '/directory/list',
-              methods = ['GET'])
-@Project_permissions.user_has_project(
-    ["admin", "Editor", "Viewer", "allow_if_project_is_public"])
-def view_working_dir_web_list(project_string_id):
-    """
-    Could be an easier way to handle this, ie if we just got default directory
-
-    """
-
-    # TODO review this,
-    # now that we have project.directory_list  (not tested yet)
-    # (But now that we are storing these directories as part of the project).
-
-    with sessionMaker.session_scope() as session:
-
-        if project_string_id is None:
-            return "no project string id", 400
-
-        project = Project.get(session, project_string_id)
-
-        directory_list = session.query(WorkingDir).filter(
-            WorkingDir.project_id == project.id).all()
-
-        out_directory_list = []
-        for dir in directory_list:
-            out_directory_list.append(dir.serialize())
-
-        out = jsonify(
-            success = True,
-            default_directory = project.directory_default.serialize(),
-            directory_list = out_directory_list)
-        return out, 200
