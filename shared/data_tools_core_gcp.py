@@ -24,15 +24,20 @@ class DataToolsGCP:
 
     """
 
-    def __init__(self):
+    def __init__(self, provider = None):
         try:
-            self.gcs = storage.Client(settings.GOOGLE_PROJECT_NAME)
-            self.gcs = get_gcs_service_account(self.gcs)
+            if provider == None:
+                self.gcs = storage.Client(settings.GOOGLE_PROJECT_NAME)
+                self.gcs = get_gcs_service_account(self.gcs)
 
-            # Careful this is the main bucket for web which is different from ML bucket
-            self.bucket = self.gcs.get_bucket(settings.CLOUD_STORAGE_BUCKET)
+                # Careful this is the main bucket for web which is different from ML bucket
+                self.bucket = self.gcs.get_bucket(settings.CLOUD_STORAGE_BUCKET)
+                self.ML_bucket = self.gcs.get_bucket(settings.ML__CLOUD_STORAGE_BUCKET)
+            else: 
+                self.gcs = storage.Client(provider['GOOGLE_PROJECT_NAME'], credentials=provider['credentials'])
 
-            self.ML_bucket = self.gcs.get_bucket(settings.ML__CLOUD_STORAGE_BUCKET)
+                self.bucket = self.gcs.get_bucket(provider['CLOUD_STORAGE_BUCKET'])
+                self.ML_bucket = self.gcs.get_bucket(provider['ML__CLOUD_STORAGE_BUCKET'])
         except Exception as exception:
             logger.error('Error intializing GCP Client')
             traceback.print_exc()
@@ -156,7 +161,6 @@ class DataToolsGCP:
         content_type: str = None,
         timeout: int = None
     ):
-
         """
             Uploads the file in the given path to the Cloud Provider's storage service.
         :param temp_local_path: path of the local file to upload
@@ -190,6 +194,11 @@ class DataToolsGCP:
             image_np.fill(255)
 
         return image_np
+
+
+    def get_bytes(self, blob_path: str):
+        blob = self.bucket.blob(blob_path)
+        return blob.download_as_string()
 
     def upload_from_string(self,
                            blob_path: str,

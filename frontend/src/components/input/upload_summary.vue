@@ -370,6 +370,7 @@
             }
           }
           const result = {};
+          console.log('AAAA', file_list)
           for (const file of file_list) {
             const uuid = uuidv4();
             let file_instances = [];
@@ -547,7 +548,7 @@
              labels_payload = this.prepare_pre_labeled_data_payload(
               this.$props.pre_labeled_data,
               this.$props.diffgram_schema_mapping,
-              this.file_list_for_summary()
+              await this.file_list_for_summary()
             )
           }
 

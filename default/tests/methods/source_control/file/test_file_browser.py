@@ -25,6 +25,7 @@ class TeseIssueNew(testing_setup.DiffgramBaseTestCase):
                     {'username': 'Test',
                      'email': 'test@test.com',
                      'password': 'diffgram123',
+                     'project_roles': ['editor'],
                      }
                 ]
             },
@@ -33,7 +34,10 @@ class TeseIssueNew(testing_setup.DiffgramBaseTestCase):
         self.project = project_data['project']
         self.project_data = project_data
         self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
+
         self.member = self.auth_api.member
+        print('AUTH API MEMBER', self.member.id)
+
 
     def test_view_file_list_web_route(self):
         # Create mock tasks
@@ -54,7 +58,6 @@ class TeseIssueNew(testing_setup.DiffgramBaseTestCase):
             'user': self.project_data['users'][0],
             'files': [file, file2, file3]
         }, self.session)
-
         request_data = {
             'metadata': {
                 'directory_id': directory.id,
@@ -105,10 +108,11 @@ class TeseIssueNew(testing_setup.DiffgramBaseTestCase):
 
         )
 
-        data = response.json
-        ids = [x['id'] for x in data['file_list']]
         # Testing Date filter case.
         self.assertEqual(response.status_code, 200)
+
+        data = response.json
+        ids = [x['id'] for x in data['file_list']]
         self.assertEqual(len(ids), 2)
         self.assertTrue(file.id in ids)
         self.assertTrue(file2.id in ids)

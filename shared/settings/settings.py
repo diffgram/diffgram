@@ -93,6 +93,11 @@ DEFAULT_ENGINEERING_EMAIL = os.environ.get('DEFAULT_ENGINEERING_EMAIL', "")
 EMAIL_VALIDATION = env_adapter.bool(os.environ.get('EMAIL_VALIDATION', False))
 MAILGUN_KEY = os.getenv('MAILGUN_KEY')
 EMAIL_DOMAIN_NAME = os.getenv('EMAIL_DOMAIN_NAME')
+SMTP_HOST = os.getenv('SMTP_HOST')
+SMTP_PORT = int(os.getenv('SMTP_PORT', 465))
+SMTP_USERNAME = os.getenv('SMTP_USERNAME')
+SMTP_FROM_EMAIL = os.getenv('SMTP_FROM_EMAIL')
+SMTP_PASSWORD = os.getenv('SMTP_PASSWORD')
 
 
 # Walrus Settings
@@ -179,10 +184,11 @@ RABBITMQ_DEFAULT_PASS = os.getenv('RABBITMQ_DEFAULT_PASS')
 RABBITMQ_HOST = os.getenv('RABBITMQ_HOST')      # without port
 USE_RABBIT_MQ = env_adapter.bool(os.getenv('USE_RABBIT_MQ', True))
 RABBITMQ_PORT = int(os.getenv('RABBITMQ_PORT', 5672))
+RABBITMQ_USE_SSL = env_adapter.bool(os.getenv('RABBITMQ_USE_SSL', False))
 
 
-SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_MINIMUM_DAYS_VALID', 30 * 12))     # this should always be lower then new offset
-SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID', 30 * 14))
+SIGNED_URL_CACHE_MINIMUM_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_MINIMUM_DAYS_VALID', 5))     # this should always be lower then new offset
+SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID = int(os.getenv('SIGNED_URL_CACHE_NEW_OFFSET_DAYS_VALID', 6))
 
 # OIDC Settings
 USE_OAUTH2 = env_adapter.bool(os.getenv('USE_OAUTH2', False))

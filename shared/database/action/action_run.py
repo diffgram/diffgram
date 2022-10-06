@@ -101,7 +101,8 @@ class ActionRun(Base):
             file_id = file_id,
             project_id = project_id,
             org = org,
-            kind = kind
+            kind = kind,
+            status = "initialized"
         )
 
         session.add(action_run)
@@ -142,12 +143,35 @@ class ActionRun(Base):
 
     @staticmethod
     def list_by_action_id(session, action_id, limit = None, offset = None):
-        query = session.query(ActionRun).filter(ActionRun.action_id == action_id)
+        query = session.query(ActionRun).order_by(ActionRun.id.desc()).filter(ActionRun.action_id == action_id, ActionRun.status != "initialized")
         if limit:
             query = query.limit(limit)
         if offset:
             query = query.offset(offset)
         return query.all()
+
+    @staticmethod
+    def set_action_run_status(session, action_run_id, status):
+        action_run = session.query(ActionRun).filter(ActionRun.id == action_run_id).first()
+        action_run.status = status
+        session.flush()
+        session.commit()
+
+    @staticmethod
+    def shout_down_running_actions(session):
+        action_runs = session.query(ActionRun).filter(ActionRun.status == "running")
+        for action_run in action_runs:
+            action_run.status = 'canceled'
+
+        session.flush()
+        session.commit()
+
+
+    @staticmethod
+    def get_latest_action_status(session, action_id):
+        action_run = session.query(ActionRun).filter(ActionRun.action_id == action_id, ActionRun.status != 'initialized').order_by(ActionRun.id.desc())
+
+        return action_run.first()
 
     def serialize_action_run(self):
         return {
@@ -160,6 +184,7 @@ class ActionRun(Base):
         action_run_data = {
             'id': self.id,
             'kind': self.kind,
+            'status': self.status,
             'output': self.output,
             'workflow_id': self.workflow_id,
             'action_id': self.action_id,

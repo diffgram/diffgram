@@ -52,15 +52,24 @@ def get_attribute_value(session: Session, attr_id: int, attribute_value: any, pr
         # For tree attributes we will return a list with the ID of all the selected attribute templates.
         selected_dict = attribute_value
         value = []
+        if type(selected_dict) != dict:
+            return None, None
+
         for key, val in selected_dict.items():
             if selected_dict[key].get('selected'):
                 value.append(key)
 
     elif attribute_group.kind == 'date':
         # For date attributes we return a date time.
+        if attribute_value is None:
+            return None, None
+        if type(attribute_value) != str:
+            return None, None
         value = datetime.datetime.strptime(attribute_value, "%Y-%m-%d")
     elif attribute_group.kind == 'time':
         # For time attributes we return a time object.
+        if attribute_value is None:
+            return None, None
         value = time.strptime(attribute_value, "%H:%M")
         value = datetime.datetime.fromtimestamp(mktime(value))
     elif attribute_group.kind == 'slider':
@@ -68,7 +77,10 @@ def get_attribute_value(session: Session, attr_id: int, attribute_value: any, pr
     elif attribute_group.kind == 'radio':
         if type(attribute_value) != dict:
             return None, None
-        value = int(attribute_value['id'])
+        if attribute_value.get('id') is None:
+            return None, None
+        value = int(attribute_value.get('id'))
+
     elif attribute_group.kind == 'multiple_select':
         value = []
         if not isinstance(attribute_value, list):
@@ -82,6 +94,8 @@ def get_attribute_value(session: Session, attr_id: int, attribute_value: any, pr
     elif attribute_group.kind == 'text':
         value = str(attribute_value)
     elif attribute_group.kind == 'select':
+        if type(attribute_value) != dict:
+            return None, None
         value = attribute_value.get('id')
         if value is not None:
             value = int(value)

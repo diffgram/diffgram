@@ -116,11 +116,11 @@
                    in top right corner?
                    Some menus expecatation is can just click away... -->
 
-              <v-divider></v-divider>
-
-              <v-card-actions>
+              <v-card-actions class="d-flex justify-end">
                 <v-btn :data-cy="`${datacyclose}`"
-                       @click="menu_open = false"
+                       :color="action_color"
+                       outlined
+                       @click="action_clicked"
                        text>
                   <v-icon left> {{ action_icon }}</v-icon>
                   {{ action_message }}
@@ -323,6 +323,10 @@
         'action_icon': {
           default: 'close',
           type: String
+        },
+        'action_color': {
+          default: 'primary',
+          type: String
         }
       },
 
@@ -401,6 +405,10 @@
         },
       },
       methods: {
+        action_clicked: function(){
+          this.menu_open = false;
+          this.$emit('action_clicked')
+        },
         close_menu: function () {
           this.menu_open = false;
         },

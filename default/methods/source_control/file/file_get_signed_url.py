@@ -11,7 +11,6 @@ from sqlalchemy.orm.session import Session
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor", "Viewer", "allow_if_project_is_public"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("300 per day")
 def api_file_get_signed_url(project_string_id, file_id):
     """
            List all the comments of the given discussion_id
@@ -103,5 +102,5 @@ def get_file_signed_url_core(session: Session,
                                                                               connection_id = file.connection_id,
                                                                               bucket_name = file.bucket_name,
                                                                               regen_url = True)
-
+    
     return file_data, log

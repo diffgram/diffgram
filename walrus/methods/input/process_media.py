@@ -1967,6 +1967,7 @@ class Process_Media():
             settings.PROJECT_TEXT_FILES_BASE_DIR,
             str(self.project_id),
             str(self.new_text_file.id))
+        logger.debug(f'Blob path Tokens: {self.new_text_file.tokens_url_signed_blob_path}')
         data_tools.upload_from_string(self.new_text_file.tokens_url_signed_blob_path,
                                       json_string_data,
                                       content_type = 'application/json')

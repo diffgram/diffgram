@@ -35,7 +35,7 @@
     "bezier-js": "^2.6.1",
     "chart.js": "^2.9.4",
     "codemirror": "^5.60.0",
-    "cypress": "10.3.0",
+    "cypress": "10.8.0",
     "cypress-real-events": "^1.7.0",
     "debounce": "^1.2.0",
     "filesize": "^6.3.0",
@@ -83,7 +83,7 @@
     "vue-star-rating": "^1.7.0",
     "vue2-dropzone": "^3.6.0",
     "vuedraggable": "^2.24.3",
-    "vuetify": "2.6.9",
+    "vuetify": "2.6.10",
     "vuex": "^3.5.1",
     "vuex-persistedstate": "^2.7.1",
     "wavesurfer.js": "^6.0.4"
