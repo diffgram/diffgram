@@ -1,5 +1,6 @@
 import {v4 as uuidv4 } from 'uuid'
-export class UI_Schema {
+import { SchemaUIExport } from '../../helpers/interfaces/genaral/SchemaUI'
+export class UI_Schema implements SchemaUIExport {
   public client_creation_ref_id: string
   public client_created_time: string
   public name: string
@@ -16,8 +17,8 @@ export class UI_Schema {
     this.is_public = false
   }
 
-  public export(): object {
-    const ui_schema_object = {
+  public export(): SchemaUIExport {
+    const ui_schema_object: SchemaUIExport = {
       client_creation_ref_id: this.client_creation_ref_id,
       client_created_time: this.client_created_time,
       name: this.name,
