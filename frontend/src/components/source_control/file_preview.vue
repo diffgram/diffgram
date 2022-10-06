@@ -3,12 +3,13 @@
   <div class="ma-1 pa-0">
 
     <div
+      v-if="file.type === 'image'"
       class="pa-0 ma-0 drawable-wrapper"
       :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
       ref="file_card"
     >
       <drawable_canvas
-        v-if="image_bg"
+        v-if="file.type === 'image'"
         ref="drawable_canvas"
         :allow_zoom="false"
         :image_bg="image_bg"
@@ -43,7 +44,30 @@
         :height="file_preview_height"
       />
     </div>
-    <div class="pa-0 ma-0" v-if="file.video" ref="file_card">
+    <div class="pa-0 ma-0" v-if="file.type === 'video'" ref="file_card">
+      <video_drawable_canvas
+        :allow_zoom="false"
+        :preview_mode="true"
+        :project_string_id="project_string_id"
+        :filtered_instance_by_model_runs="filtered_instance_list"
+        :video="file.video"
+        :file="file"
+        :canvas_height="file_preview_height"
+        :canvas_width="file_preview_width"
+        :editable="false"
+        :auto_scale_bg="true"
+        :label_settings="label_settings"
+        :refresh="refresh"
+        :show_video_nav_bar="show_video_nav_bar"
+        :canvas_wrapper_id="`canvas_wrapper__${file.id}__${file_preview_width}__${file_preview_height}`"
+        :canvas_id="`canvas__${file.id}__${file_preview_width}__${file_preview_height}`"
+        @on_click_details="view_file_details"
+        ref="video_drawable_canvas"
+        @update_instance_list="set_video_instance_list"
+      >
+      </video_drawable_canvas>
+    </div>
+    <div class="pa-0 ma-0" v-if="file.type === 'compound'" ref="file_card">
       <video_drawable_canvas
         :allow_zoom="false"
         :preview_mode="true"
