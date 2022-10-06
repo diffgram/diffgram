@@ -293,6 +293,7 @@
   import {UI_Schema} from './ui_schema'
   import ui_schema_selector from './ui_schema_selector'
   import ui_schema_menu_content from './ui_schema_menu_content'
+  import { create_new_schema_ui } from "../../services/schemaUIService"
 
   export default Vue.extend({
     name: 'UISchemaContextMenu',
@@ -581,22 +582,14 @@
         this.error = {}
 
         try{
-          const result = await axios.post(
-            `/api/v1/project/${this.project_string_id}/ui_schema/new`,
-            ui_schema.serialize()
-          )
-          if(result.status === 200){
-
-            this.change(result.data.ui_schema)
-            this.edit_name = true // assume a user wants to edit name of new script
-            this.newly_created_schema = result.data.ui_schema
-          }
-
+          const result = await create_new_schema_ui(this.project_string_id, ui_schema.export())
+          this.change(result.data.ui_schema)
+          this.edit_name = true // assume a user wants to edit name of new script
+          this.newly_created_schema = result.data.ui_schema
         }
         catch (error) {
           this.error = this.$route_api_errors(error)
           console.error(error)
-
         }
         finally {
           this.loading = false;
