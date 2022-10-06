@@ -321,6 +321,8 @@ class File(Base, Caching):
             'time_last_updated': time_last_updated,
             'ann_is_complete': self.ann_is_complete,
             'original_filename': self.original_filename,
+            'bucket_name': self.bucket_name,
+            'connection_id': self.connection_id,
             'video_id': self.video_id,
             'video_parent_file_id': self.video_parent_file_id,
             'count_instances_changed': self.count_instances_changed
