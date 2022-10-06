@@ -1,39 +1,13 @@
 <template>
-
-  <div @mouseover="mouseover"
-       @mouseleave="mouseleave"
-       v-if="visible"
-       >
-
-    <slot>
-
-    </slot>
-
+  <div 
+    v-if="visible"
+    @mouseover="mouseover"
+  >
+    <slot />
   </div>
 </template>
 
 <script lang="ts">
-
-/*
- 
- *
- *  EXAMPLE USAGE:
- *
-
-<ui_schema
-    name="my_name">
-
-   <template>
-      <v-layout>
-
-
-      </v-layout>
-    </template>
-
-</ui_schema>
-
- */
-
 import Vue from "vue";
 
 export default Vue.extend( {
@@ -41,39 +15,32 @@ export default Vue.extend( {
   props: {
     'name': {
         type: String,
-        default: undefined
+        required: true
      }
   },
   data() {
     return {
-      visible: true
+      visible: true as Boolean
     }
   },
   created(){
     this.refresh_state_from_ui_schema()
   },
-  mounted(){
-    this.show_ui_schema_refresh = this.$store.watch((state) => {
-        return this.$store.state.ui_schema.refresh
-      },
-      (new_val, old_val) => {
-        this.refresh_state_from_ui_schema()
-      },
-    )
-  },
   beforeDestroy() {
     this.show_ui_schema_refresh()
   },
   methods: {
-    refresh_state_from_ui_schema(){
-      if (this.$props.name == undefined) { return true } 
+    show_ui_schema_refresh(): void {
+      this.show_ui_schema_refresh = this.$store.watch(
+        () => this.$store.state.ui_schema.refresh,
+        this.refresh_state_from_ui_schema()
+      )
+    },
+    refresh_state_from_ui_schema(): void {
       this.visible = this.$store.getters.get_ui_schema(this.$props.name, 'visible')
     },
-    mouseover(event) {
+    mouseover(event: Event): void {
       this.$store.commit('set_ui_schema_event', [this.name, event])
-    },
-    mouseleave(event) {
-      //this.$store.commit('clear_ui_schema_event')
     }
   }
 }
