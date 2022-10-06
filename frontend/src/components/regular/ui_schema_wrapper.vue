@@ -31,6 +31,7 @@ export default Vue.extend( {
   },
   methods: {
     show_ui_schema_refresh(): void {
+      console.log("STORE", this.$store)
       this.show_ui_schema_refresh = this.$store.watch(
         () => this.$store.state.ui_schema.refresh,
         this.refresh_state_from_ui_schema()
