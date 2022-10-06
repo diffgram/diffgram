@@ -406,7 +406,7 @@ class File(Base, Caching):
                                                         connection_id = self.connection_id,
                                                         bucket_name = self.bucket_name,
                                                         regen_url = regen_url)
-                file['video']['bucket_name'] = self.bucket_name
+                file['text']['bucket_name'] = self.bucket_name
 
         elif self.type == "geospatial":
             file['geospatial'] = {
@@ -422,7 +422,7 @@ class File(Base, Caching):
                                                           connection_id = self.connection_id,
                                                           bucket_name = self.bucket_name,
                                                           regen_url = regen_url)
-
+                file['audio']['bucket_name'] = self.bucket_name
         elif self.type == "sensor_fusion":
             point_cloud_file = self.get_child_point_cloud_file(session = session)
             if point_cloud_file and point_cloud_file.point_cloud:
