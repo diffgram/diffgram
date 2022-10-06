@@ -29,6 +29,8 @@ def job_info_builder_api(job_id):
     log, input, untrusted_input = regular_input.master(request = request,
                                                        spec_list = spec_list)
 
+    print("INPUT", input)
+
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
