@@ -391,6 +391,7 @@ class File(Base, Caching):
                                                                         bucket_name = self.bucket_name,
                                                                         reference_file = self,
                                                                         regen_url = regen_url)
+                file['image']['bucket_name'] = self.bucket_name
 
         elif self.type == "video":
             if self.video:
@@ -398,13 +399,14 @@ class File(Base, Caching):
                                                                project = self.project,
                                                                connection_id = self.connection_id,
                                                                bucket_name = self.bucket_name)
-
+                file['video']['bucket_name'] = self.bucket_name
         elif self.type == "text":
             if self.text_file:
                 file['text'] = self.text_file.serialize(session = session,
                                                         connection_id = self.connection_id,
                                                         bucket_name = self.bucket_name,
                                                         regen_url = regen_url)
+                file['video']['bucket_name'] = self.bucket_name
 
         elif self.type == "geospatial":
             file['geospatial'] = {
@@ -413,7 +415,7 @@ class File(Base, Caching):
                                                            bucket_name = self.bucket_name,
                                                            regen_url = regen_url)
             }
-
+            file['geospatial']['bucket_name'] = self.bucket_name
         if self.type == "audio":
             if self.audio_file:
                 file['audio'] = self.audio_file.serialize(session = session,
@@ -428,7 +430,7 @@ class File(Base, Caching):
                                                                              connection_id = self.connection_id,
                                                                              bucket_name = self.bucket_name,
                                                                              regen_url = regen_url)
-
+                file['point_cloud']['bucket_name'] = self.bucket_name
         elif self.type == "label":
             if session:
                 label = Label.get_by_id(session, self.label_id)
