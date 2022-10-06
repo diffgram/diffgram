@@ -583,7 +583,7 @@
         try{
           const result = await axios.post(
             `/api/v1/project/${this.project_string_id}/ui_schema/new`,
-            ui_schema.serialize()
+            ui_schema.export()
           )
           if(result.status === 200){
 
