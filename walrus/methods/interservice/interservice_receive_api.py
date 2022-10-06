@@ -96,11 +96,11 @@ def interservice_receive_api():
             for i in range(0, num_flows):
                 action_flow_thread = ActionFlowTriggerQueueProcess(run_once = True)
 
-        if input_from_request['message'] == 'video_copy':
+        if input_from_request['message'] == 'file_copy':
             enqueue_packet(project_string_id = input_from_request.get('project_string_id'),
                            session = session,
                            media_url = None,
-                           media_type = 'video',
+                           media_type = input_from_request['extra_params'].get('type'),
                            directory_id = input_from_request['extra_params'].get('destination_working_dir_id'),
                            source_directory_id = input_from_request['extra_params'].get('source_working_dir_id'),
                            remove_link = input_from_request['extra_params'].get('remove_link'),
@@ -111,24 +111,6 @@ def interservice_receive_api():
                            file_id = input_from_request['id'],
                            instance_list = [],
                            video_parent_length = input_from_request['extra_params'].get('frame_count'),
-                           task_id = None,
-                           mode = 'copy_file',
-                           commit_input = True)
-        if input_from_request['message'] == 'image_copy':
-            enqueue_packet(project_string_id = input_from_request.get('project_string_id'),
-                           session = session,
-                           media_url = None,
-                           media_type = 'image',
-                           directory_id = input_from_request['extra_params'].get('destination_working_dir_id'),
-                           source_directory_id = input_from_request['extra_params'].get('source_working_dir_id'),
-                           remove_link = input_from_request['extra_params'].get('remove_link'),
-                           add_link = input_from_request['extra_params'].get('add_link'),
-                           copy_instance_list = input_from_request['extra_params'].get('copy_instance_list'),
-                           job_id = None,
-                           batch_id = input_from_request['extra_params'].get('batch_id'),
-                           file_id = input_from_request['id'],
-                           instance_list = [],
-                           video_parent_length = None,
                            task_id = None,
                            mode = 'copy_file',
                            commit_input = True)
