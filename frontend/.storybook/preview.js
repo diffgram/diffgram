@@ -1,15 +1,6 @@
-import { withVuetify } from '@socheatsok78/storybook-addon-vuetify/dist/decorators'
-import store from '../src/store'
+import { withVuetify } from "@socheatsok78/storybook-addon-vuetify/dist/decorators";
 
-const withStore = () => ({ 
-  template: "<story />",
-  store 
-})
-
-export const decorators = [
-  withVuetify,
-  withStore
-]
+export const decorators = [withVuetify];
 
 export const parameters = {
   actions: { argTypesRegex: "^on[A-Z].*" },
@@ -19,4 +10,4 @@ export const parameters = {
       date: /Date$/,
     },
   },
-}
+};
