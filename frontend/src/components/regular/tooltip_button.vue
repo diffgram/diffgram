@@ -1,49 +1,46 @@
 <template>
-
   <div>
-    <v-tooltip :top="top_actual" :bottom="bottom_actual">
-
+    <v-tooltip 
+      :top="top_actual" 
+      :bottom="bottom_actual"
+    >
       <template v-slot:activator="{ on }">
-
-      <a :href="href"
-         :target="target"
-         style="text-decoration: none;">
-
-        <v-btn  v-on="on"
-                :width="width"
-                :height="height"
-                :loading="loading"
-                :disabled="disabled"
-                :x-small="xSmall"
-                :x-large="xLarge"
-                data-cy="data_cy"
-                :left="left"
-                :icon="icon_style"
-                :text="text_style"
-                :data-cy="datacy"
-                @click="$emit('click', $event)"
-                :large="large"
-                :small="small"
-                :color=button_color
-               >
-
-          <v-icon :large="large"
-                  :class="active ? 'active' : ''"
-                  :size="iconSize"
-                  :color=color
-                  :left="left"
-                  >{{icon}}</v-icon>
-
-          {{ button_message }}
-
-        </v-btn>
-      </a>
-
+        <a 
+          :href="href"
+          :target="target"
+          class="wrapper-link"
+        >
+          <v-btn  
+            v-on="on"
+            :width="width"
+            :height="height"
+            :loading="loading"
+            :disabled="disabled"
+            :x-small="xSmall"
+            :x-large="xLarge"
+            :left="left"
+            :icon="icon_style"
+            :text="text_style"
+            :data-cy="datacy"
+            :large="large"
+            :small="small"
+            :color=button_color
+            @click="$emit('click', $event)"
+          >
+            <v-icon 
+              :large="large"
+              :class="active ? 'active' : ''"
+              :size="iconSize"
+              :color=color
+              :left="left"
+            >
+              {{ icon }}
+            </v-icon>
+            {{ button_message }}
+          </v-btn>
+        </a>
       </template>
-
       {{ tooltip_message }}
-
-
     </v-tooltip>
   </div>
 </template>
@@ -105,79 +102,87 @@ export default Vue.extend( {
   name: 'tool_tip_button',
   props: {
     'loading': {
+      type: Boolean,
       default: false
      },
     'xSmall':{
+      type: Boolean,
       default: false
     },
     'xLarge':{
+      type: Boolean,
       default: false
     },
     'small':{
+      type: Boolean,
       default: false
     },
     'iconSize':{
+      type: Number || String,
       default: undefined
     },
     'disabled': {
+      type: Boolean,
       default: false
-     },
+    },
     'href': {
+      type: String,
       default: null
     },
     'color': {    // icon color
+      type: String,
       default: null
     },
     'left':{
-      default: false,
-      type: Boolean
+      type: Boolean,
+      default: false
     },
     'button_color': {
+      type: String,
       default: null
     },
     'icon': {
-      default: 'mdi-lifebuoy',
-      type: String
+      type: String,
+      default: 'mdi-lifebuoy'
     },
     'tooltip_message': {
-      default: null,
-      type: String
+      type: String,
+      default: null
     },
     'icon_style': {
+      type: Boolean,
       default: false
      },
-    'data_cy': {
-      default: false
-    },
     'text_style': {
+      type: Boolean,
       default: false
     },
     'active': {
+      type: Boolean,
       default: false
     },
-
-    // TODO maybe change this to like "direction" or something so
-    // can support bottom, right, left etc...
-    // ie it gets that as string and transfers prop to menu?...
     'bottom': {
+      type: Boolean,
       default: false
     },
     'large': {
+      type: Boolean,
       default: false
     },
     'button_message': {
-      default: null,
-      type: String
+      type: String,
+      default: null
     },
     'width':{
+      type: String || Number,
       default: undefined,
-      type: String,
     },
     'height':{
-      default: undefined,
-      type: String,
+      type: String || Number,
+      default: undefined
     },
     'datacy':{
+      type: String,
       default: 'tooltip-button'
      },
     'target': {
@@ -185,30 +190,12 @@ export default Vue.extend( {
         default: '_self'
      },
   },
-  data() {
-    return {
-      // because we can't override props
-      // and rather have the interface be the "cleaner / shorter" thing
-      top_actual: true,
-      bottom_actual: false,
-    }
-  },
-  created(){
-    // defaults tp top, so setting bottom to true adds this?
-    // not quite right but should work
-    if (this.bottom == true) {
-      this.bottom_actual = true
-      this.top_actual = false
-    }
-  },
-  methods: {
-    preventdefault(event) {
-      // we don't assume this will go anywhere unless opened in new tab
-      // in which case the event will follow the default. In the future
-      // could offer an "open in new tab" specific new
-
-      if (this.target != '_self'){ return } // eg '_blank' we want default opening in new tab
-      event.preventDefault();
+  computed: {
+    bottom_actual(): boolean {
+      return this.bottom
+    },
+    top_actual(): boolean {
+      return !this.bottom
     }
   }
 }
@@ -221,5 +208,9 @@ export default Vue.extend( {
   border: 2px solid #2296f3;
   padding: 0.8rem;
   border-radius: 5px;
+}
+
+.wrapper-link {
+  text-decoration: none;
 }
 </style>
