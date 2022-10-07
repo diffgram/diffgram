@@ -690,8 +690,8 @@ class Process_Media():
 
         return new_file
 
-    def __copy_image(self):
-        logger.debug(f"Copying Image {self.input.file_id}")
+    def __copy_file(self):
+        logger.debug(f"Copying file type: {self.input.media_type} {self.input.file_id}")
 
         self.input.newly_copied_file = File.copy_file_from_existing(
             session = self.session,
@@ -706,7 +706,25 @@ class Process_Media():
             flush_session = True
         )
 
+        if self.input.file.type == 'compound':
+            child_files = self.input.file.get_child_files(session = self.session)
+            for child in child_files:
+                self.input.newly_copied_file = File.copy_file_from_existing(
+                    session = self.session,
+                    working_dir = None,
+                    working_dir_id = self.input.directory_id,
+                    existing_file = child,
+                    copy_instance_list = self.input.copy_instance_list,
+                    add_link = self.input.add_link,
+                    remove_link = self.input.remove_link,
+                    sequence_map = None,
+                    previous_video_parent_id = None,
+                    flush_session = True,
+                    new_parent_id = self.input.newly_copied_file.id
+                )
+
         self.declare_success(self.input)
+
         # Perform sync operations
         source_dir = WorkingDir.get_by_id(self.session, self.input.source_directory_id)
         dest_dir = WorkingDir.get_by_id(self.session, self.input.directory_id)
@@ -734,9 +752,8 @@ class Process_Media():
             return
         elif self.input.media_type == 'frame':
             self.__copy_frame()
-        elif self.input.media_type == 'image':
-            self.__copy_image()
-
+        else:
+            self.__copy_file()
     def __update_existing_file(self,
                                file,
                                init_existing_instances = False):

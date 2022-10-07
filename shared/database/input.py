@@ -244,7 +244,6 @@ class Input(Base):
         if project and not project_id:
             project_id = project.id
         input = Input(
-            project = project,
             project_id = project_id,
             file_id = file_id,
             mode = mode,
