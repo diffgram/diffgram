@@ -328,6 +328,8 @@ class File(Base, Caching):
             'time_last_updated': time_last_updated,
             'ann_is_complete': self.ann_is_complete,
             'original_filename': self.original_filename,
+            'bucket_name': self.bucket_name,
+            'connection_id': self.connection_id,
             'video_id': self.video_id,
             'video_parent_file_id': self.video_parent_file_id,
             'count_instances_changed': self.count_instances_changed
@@ -396,6 +398,7 @@ class File(Base, Caching):
                                                                         bucket_name = self.bucket_name,
                                                                         reference_file = self,
                                                                         regen_url = regen_url)
+                file['image']['bucket_name'] = self.bucket_name
 
         elif self.type == "video":
             if self.video:
@@ -403,13 +406,14 @@ class File(Base, Caching):
                                                                project = self.project,
                                                                connection_id = self.connection_id,
                                                                bucket_name = self.bucket_name)
-
+                file['video']['bucket_name'] = self.bucket_name
         elif self.type == "text":
             if self.text_file:
                 file['text'] = self.text_file.serialize(session = session,
                                                         connection_id = self.connection_id,
                                                         bucket_name = self.bucket_name,
                                                         regen_url = regen_url)
+                file['text']['bucket_name'] = self.bucket_name
 
         elif self.type == "geospatial":
             file['geospatial'] = {
@@ -418,14 +422,14 @@ class File(Base, Caching):
                                                            bucket_name = self.bucket_name,
                                                            regen_url = regen_url)
             }
-
+            file['geospatial']['bucket_name'] = self.bucket_name
         if self.type == "audio":
             if self.audio_file:
                 file['audio'] = self.audio_file.serialize(session = session,
                                                           connection_id = self.connection_id,
                                                           bucket_name = self.bucket_name,
                                                           regen_url = regen_url)
-
+                file['audio']['bucket_name'] = self.bucket_name
         elif self.type == "sensor_fusion":
             point_cloud_file = self.get_child_point_cloud_file(session = session)
             if point_cloud_file and point_cloud_file.point_cloud:
@@ -433,7 +437,7 @@ class File(Base, Caching):
                                                                              connection_id = self.connection_id,
                                                                              bucket_name = self.bucket_name,
                                                                              regen_url = regen_url)
-
+                file['point_cloud']['bucket_name'] = self.bucket_name
         elif self.type == "label":
             if session:
                 label = Label.get_by_id(session, self.label_id)
