@@ -3,6 +3,7 @@
     <v-tooltip 
       :top="top_actual" 
       :bottom="bottom_actual"
+      :disabled="!tooltip_message"
     >
       <template v-slot:activator="{ on }">
         <a 
