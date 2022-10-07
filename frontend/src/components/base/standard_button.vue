@@ -92,9 +92,13 @@ export default Vue.extend( {
       type: String,
       default: null
     },
+    /**
+     * For Material Design Icons pre-fix with `mdi`
+     * https://materialdesignicons.com/
+     */
     'icon': {
       type: String,
-      default: 'mdi-lifebuoy'
+      default: 'mdi-lifebuoy',
     },
     'tooltip_message': {
       type: String,
