@@ -13,7 +13,7 @@
                   {{workflow.name }}
                 </span>
           </h4>
-          <tooltip_button
+          <standard_button
             v-if="!edit_name"
             tooltip_message="Change Name"
             @click="edit_name = true"
@@ -23,7 +23,7 @@
             color="primary"
             datacy="edit_schema_name_button"
           >
-          </tooltip_button>
+          </standard_button>
 
           <v-text-field
             class="edit-workflow-name"
@@ -41,7 +41,7 @@
           </v-text-field>
 
           <div>
-            <tooltip_button
+            <standard_button
               v-if="edit_name == true"
               @click="update_workflow_name"
               color="primary"
@@ -53,10 +53,10 @@
               :loading="loading"
               :disabled="loading || !has_changes"
             >
-            </tooltip_button>
+            </standard_button>
           </div>
 
-          <tooltip_button
+          <standard_button
             v-if="edit_name == true"
             tooltip_message="Cancel Name Edit"
             datacy="cancel_edit_name"
@@ -67,7 +67,7 @@
             class="flex-grow-1"
             :disabled="loading"
           >
-          </tooltip_button>
+          </standard_button>
           <div class="d-flex align-center justify-start ml-auto">
             <v-tooltip top primary class="">
               <template v-slot:activator="{ on, attrs }">

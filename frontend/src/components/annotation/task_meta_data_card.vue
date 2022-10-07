@@ -16,7 +16,7 @@
 
 
             <!-- We still need to define what happens in terms of the pipeline when uncompleting tasks. -->
-            <!--                <tooltip_button-->
+            <!--                <standard_button-->
             <!--                  tooltip_message="Mark as not completed"-->
             <!--                  v-if="task.status === 'complete'"-->
             <!--                  @click="change_file('previous', 'none')"-->
@@ -27,7 +27,7 @@
             <!--                  :icon_style="true"-->
             <!--                  :bottom="true"-->
             <!--                >-->
-            <!--                </tooltip_button>-->
+            <!--                </standard_button>-->
           </div>
 
           <p >

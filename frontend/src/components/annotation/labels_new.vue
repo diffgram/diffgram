@@ -25,7 +25,7 @@
 
     <v-card-actions class="pa-2">
 
-      <tooltip_button
+      <standard_button
           button_message="Create"
           button_color="primary"
           datacy="create_label_button"
@@ -37,18 +37,18 @@
           :bottom="true"
           :left="true"
           xLarge>
-      </tooltip_button>
+      </standard_button>
 
       <v-spacer> </v-spacer>
 
-      <tooltip_button
+      <standard_button
         tooltip_message="Info"
         href="https://diffgram.readme.io/docs/create-your-first-label"
         target="_blank"
         icon="info"
         :icon_style="true"
         color="secondary">
-    </tooltip_button>
+    </standard_button>
 
     </v-card-actions>
 

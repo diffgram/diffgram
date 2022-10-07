@@ -6,7 +6,7 @@
     -->
 
     <!-- Complete File -->
-    <tooltip_button
+    <standard_button
       :tooltip_message="complete_message"
       v-if="
         !task_id &&
@@ -21,10 +21,10 @@
       :icon_style="true"
       :bottom="true"
     >
-    </tooltip_button>
+    </standard_button>
 
     <!-- Complete Task -->
-    <tooltip_button
+    <standard_button
       :tooltip_message="task_attributes.message"
       v-if="task && task.id && task.status !== 'complete'"
       datacy="submit-to-review"
@@ -36,7 +36,7 @@
       :icon_style="true"
       :bottom="true"
     >
-    </tooltip_button>
+    </standard_button>
 
     <regular_chip
       v-if="task && task.status === 'complete'"
@@ -74,7 +74,7 @@
       </template>
     </regular_chip>
 
-    <tooltip_button
+    <standard_button
       tooltip_message="Mark File As Not Complete"
       @click="is_complete_toggle_file()"
       v-if="!task && current_file.ann_is_complete == true && !view_only_mode"
@@ -85,7 +85,7 @@
       color="warning"
       :bottom="true"
     >
-    </tooltip_button>
+    </standard_button>
     <review_dialog :dialog="review_dialog" @complete="on_submit_review" @close_dialog="close_dialog" />
   </div>
 </template>

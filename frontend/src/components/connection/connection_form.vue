@@ -33,7 +33,7 @@
             <!-- TBD , maybe save and test -->
 
 
-            <tooltip_button tooltip_message="Save"
+            <standard_button tooltip_message="Save"
                             @click="save_connection"
                             icon="save"
                             :text_style="true"
@@ -41,9 +41,9 @@
                             :large="buttons_size_large"
                             :disabled="!has_changes"
                             color="primary">
-            </tooltip_button>
+            </standard_button>
 
-            <tooltip_button tooltip_message="Test"
+            <standard_button tooltip_message="Test"
                             class="ma-0"
                             @click="test_connection(connection_id)"
                             icon="mdi-test-tube"
@@ -52,9 +52,9 @@
                             :left="true"
                             :large="buttons_size_large"
                             color="primary">
-            </tooltip_button>
+            </standard_button>
 
-            <tooltip_button
+            <standard_button
               tooltip_message="Back to List"
               @click="$router.push('/connection/list')"
               icon="list"
@@ -62,7 +62,7 @@
               :icon_style="true"
               :large="true"
               color="primary">
-            </tooltip_button>
+            </standard_button>
 
             <div class="pa-2">
               <div v-if="has_changes">

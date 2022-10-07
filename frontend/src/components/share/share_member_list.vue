@@ -16,7 +16,7 @@
     <!-- Only show in project mode till support for removeing from org. -->
 
     <v-layout>
-      <tooltip_button
+      <standard_button
         tooltip_message="Remove User"
         @click="api_member_update('REMOVE')"
         icon="mdi-shield-remove"
@@ -25,9 +25,9 @@
         :loading="api_member_update_loading"
         :disabled="api_member_update_loading || selected.length == 0"
       >
-      </tooltip_button>
+      </standard_button>
 
-      <tooltip_button
+      <standard_button
         tooltip_message="Help"
         href="https://diffgram.readme.io/docs/project"
         target="_blank"
@@ -35,7 +35,7 @@
         :icon_style="true"
         color="primary"
       >
-      </tooltip_button>
+      </standard_button>
 
     </v-layout>
 
