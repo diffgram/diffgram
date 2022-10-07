@@ -17,14 +17,14 @@
         {{source}}
       </v-list-item-title>
 
-      <tooltip_button
+      <standard_button
         tooltip_message="Remove"
         @click="$emit('remove', i)"
         icon="delete"
         :icon_style="true"
         color="primary"
                     >
-      </tooltip_button>
+      </standard_button>
 
     </v-list-item>
 
@@ -40,7 +40,7 @@
             >
         </v-text-field>
 
-        <tooltip_button
+        <standard_button
           tooltip_message="Add"
           @click="$emit('add', newly_desired_source), newly_desired_source = null"
           icon="add"
@@ -49,7 +49,7 @@
           color="primary"
           :large="true"
                       >
-        </tooltip_button>
+        </standard_button>
       </v-layout>
 
     </v-card-text>

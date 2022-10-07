@@ -77,14 +77,14 @@
             Login
           </v-btn>
 
-          <tooltip_button
+          <standard_button
               tooltip_message="Join Slack Community"
               href="https://form.jotform.com/222377866413058"
               target="_blank"
               icon="mdi-slack"
               :icon_style="true"
               color="primary">
-          </tooltip_button>
+          </standard_button>
         </v-card-actions>
     </v-container>
 

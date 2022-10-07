@@ -16,7 +16,7 @@
         :style="`border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px; max-width: 400px; height: calc(100vh - 48px);`"
       >
         <div class="mb-2" style="margin-right: auto; text-align: right; border-bottom: 1px solid #e0e0e0">
-          <tooltip_button
+          <standard_button
             tooltip_message="Refresh"
             datacy="refresh_explorer"
             @click="fetch_file_list"
@@ -24,7 +24,7 @@
             :icon_style="true"
             color="primary"
           >
-          </tooltip_button>
+          </standard_button>
         </div>
         <div class="pl-4" style="width: 385px;">
           <v_error_multiple :error="query_error"></v_error_multiple>

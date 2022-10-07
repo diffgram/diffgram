@@ -29,7 +29,7 @@
           <!-- Hide on overlay since already created -->
 
 
-          <tooltip_button
+          <standard_button
             v-if="mode == 'NEW'"
             datacy="create_attribute_option"
             @click="api_attribute_update_or_new('NEW')"
@@ -42,7 +42,7 @@
             :bottom="true"
             :left="true"
             xLarge>
-          </tooltip_button>
+          </standard_button>
 
            <v-btn v-if="mode == 'UPDATE' "
 

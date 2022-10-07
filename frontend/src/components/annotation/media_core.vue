@@ -101,7 +101,7 @@
                 and show conditions are inverted as opposed to disable-->
               <!-- Only show next/previous page if it exists, saves real estate vs disabling-->
               <div>
-                <tooltip_button
+                <standard_button
                   v-show="!loading &&
                       metadata_previous.start_index != 0"
                   tooltip_message="Previous Page"
@@ -111,9 +111,9 @@
                   icon="mdi-chevron-left-box"
                   color="primary"
                 >
-                </tooltip_button>
+                </standard_button>
 
-                <tooltip_button
+                <standard_button
                   v-show="!loading &&
                       (metadata_previous.end_index != metadata_previous.file_count
                       || metadata_previous.next_page != undefined)"
@@ -124,7 +124,7 @@
                   icon="mdi-chevron-right-box"
                   color="primary"
                 >
-                </tooltip_button>
+                </standard_button>
               </div>
 
 
@@ -144,7 +144,7 @@
 
               </v-text-field>
 
-              <tooltip_button
+              <standard_button
                 tooltip_message="Refresh Media"
                 @click="request_media"
                 :loading="loading"
@@ -153,7 +153,7 @@
                 icon="mdi-refresh"
                 color="primary"
               >
-              </tooltip_button>
+              </standard_button>
 
             <!-- Filters -->
             <button_with_menu
@@ -315,7 +315,7 @@
               <div v-if="$store.state.user.current.api
                && $store.state.user.current.api.api_actions">
 
-                <tooltip_button
+                <standard_button
                   @click="inference_selected()"
                   icon="mdi-rocket"
                   tooltip_message="Inference"
@@ -327,7 +327,7 @@
                   :icon_style="true"
                   :bottom="true"
                 >
-                </tooltip_button>
+                </standard_button>
 
                 <v_error_multiple :error="error_inference">
                 </v_error_multiple>
@@ -402,13 +402,13 @@
                           :disabled="loading">
                 </v-select>
 
-                <tooltip_button
+                <standard_button
                   tooltip_message="Reset"
                   @click="headers_selected = headers_selected_backup"
                   v-if="headers_selected != headers_selected_backup"
                   icon="autorenew"
                   color="primary">
-                </tooltip_button>
+                </standard_button>
 
               </template>
 
@@ -565,7 +565,7 @@
                      For alignment consider how it looks with media,
                      and case of no media. ie with no media looks nicer to center perhaps.
                 -->
-                <tooltip_button
+                <standard_button
                   tooltip_message="Add Media"
                   @click="$router.push('/studio/upload/' +
                               $store.state.project.current.project_string_id)"
@@ -573,7 +573,7 @@
                   :large="true"
                   :icon_style="true"
                   color="primary">
-                </tooltip_button>
+                </standard_button>
               </v-row>
 
               <v-card xs4

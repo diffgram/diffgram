@@ -322,7 +322,7 @@
 
                         <v-flex class="flex-row">
 
-                          <tooltip_button
+                          <standard_button
                             tooltip_message="Download"
                             data-cy="download_export"
                             @click="post_export_link(props.item)"
@@ -330,8 +330,8 @@
                             :text_style="true"
                             :disabled="props.item.status != 'complete'"
                             color="primary">
-                          </tooltip_button>
-                          <tooltip_button
+                          </standard_button>
+                          <standard_button
                             tooltip_message="Export To 3rd Party Integration"
                             @click="open_connection_export_dialog(props.item)"
                             icon="mdi-database-export"
@@ -339,7 +339,7 @@
                             data-cy="export-third-party"
                             :disabled="props.item.status != 'complete'"
                             color="primary">
-                          </tooltip_button>
+                          </standard_button>
 
                         </v-flex>
 

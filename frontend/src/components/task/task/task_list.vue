@@ -163,7 +163,7 @@
                 </v-chip>
               </div>
 
-              <tooltip_button
+              <standard_button
                 v-show="page_number != 0"
                 datacy="task_list_previous_page"
                 tooltip_message="Previous Page"
@@ -173,9 +173,9 @@
                 icon="mdi-chevron-left-box"
                 color="primary"
               >
-              </tooltip_button>
+              </standard_button>
 
-              <tooltip_button
+              <standard_button
                 v-show="
                   page_end_index <
                     $store.state.job.current.file_count_statistic &&
@@ -192,7 +192,7 @@
                 icon="mdi-chevron-right-box"
                 color="primary"
               >
-              </tooltip_button>
+              </standard_button>
             </v-row>
 
             <button_with_menu
@@ -215,7 +215,7 @@
                 >
                 </v-select>
 
-                <tooltip_button
+                <standard_button
                   tooltip_message="Reset"
                   @click="column_list = column_list_backup"
                   v-if="column_list != column_list_backup"
@@ -223,7 +223,7 @@
                   :icon_style="true"
                   color="primary"
                 >
-                </tooltip_button>
+                </standard_button>
               </template>
             </button_with_menu>
 
@@ -371,7 +371,7 @@
 
           <template slot="AssignedUser" slot-scope="props">
             <div class="display-assigned-users">
-              <tooltip_button
+              <standard_button
                 tooltip_message="Manage assignees"
                 class="hidden-sm-and-down"
                 color="primary"
@@ -382,7 +382,7 @@
                 :icon_style="true"
                 :bottom="true"
               >
-              </tooltip_button>
+              </standard_button>
               <v_user_icon
                 style="z-index: 1"
                 v-if="props.item.task_assignees && props.item.task_assignees.length > 0"
@@ -401,7 +401,7 @@
 
           <template v-if="allow_reviews" slot="AssignedReviewer" slot-scope="props">
             <div class="display-assigned-users">
-              <tooltip_button
+              <standard_button
                 tooltip_message="Manage reviewers"
                 class="hidden-sm-and-down"
                 color="primary"
@@ -411,7 +411,7 @@
                 :icon_style="true"
                 :bottom="true"
               >
-              </tooltip_button>
+              </standard_button>
               <v_user_icon
                 style="z-index: 1"
                 v-if="props.item.task_reviewers.length > 0" :user_id="props.item.task_reviewers[0].user_id"
@@ -442,7 +442,7 @@
           </template>
 
           <template slot="Action" slot-scope="props">
-            <tooltip_button
+            <standard_button
               tooltip_message="Go to Task"
               @click.stop.prevent="route_task(props.item.id)"
               v-if="!integration_name"
@@ -452,7 +452,7 @@
               :large="true"
               color="primary"
             >
-            </tooltip_button>
+            </standard_button>
 
             <v-container
               v-if="!props.item.loading && props.item.status === 'available'"

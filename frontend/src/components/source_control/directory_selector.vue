@@ -62,13 +62,13 @@
 
                   </button_with_menu>
                 </div>
-                <tooltip_button
+                <standard_button
                   tooltip_message="Refresh"
                   @click="refresh_directory_list"
                   icon="refresh"
                   :icon_style="true"
                   color="primary">
-                </tooltip_button>
+                </standard_button>
                 <div class="mr-4">
                   <v-chip color="secondary" small> Total: {{directory_list_filtered.length}}</v-chip>
                 </div>

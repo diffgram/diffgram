@@ -52,6 +52,10 @@ import action_node_box from './components/action/action_node_box'
 
 import task_list from './components/task/task/task_list'
 
+// BASE COMPONENTS
+import standard_button from "./components/base/standard_button.vue"
+Vue.component('standard_button', standard_button)
+
 /*
  * ABSTRACT regular methods
  *
@@ -69,9 +73,6 @@ import info_multiple from './components/regular/info_multiple'
 Vue.component('v_info_multiple', info_multiple)
 
 import error_multiple from './components/regular/error_multiple'
-
-import tooltip_button from './components/regular/tooltip_button'
-Vue.component('tooltip_button', tooltip_button)
 
 import ui_schema from './components/regular/ui_schema_wrapper'
 Vue.component('ui_schema', ui_schema)

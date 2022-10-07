@@ -45,25 +45,25 @@
 
               <div v-if="data.item.is_visible == true
                     || data.item.is_visible == null">
-                <tooltip_button
+                <standard_button
                   @click="toggle_label_visible(data.item)"
                   color="grey lighten-1"
                   :icon_style="true"
                   icon="remove_red_eye"
                   tooltip_message="Hide"
                   :bottom="true">
-                </tooltip_button>
+                </standard_button>
               </div>
 
               <div v-if="data.item.is_visible == false">
-                <tooltip_button
+                <standard_button
                   @click="toggle_label_visible(data.item)"
                   color="grey"
                   :icon_style="true"
                   icon="mdi-eye-off"
                   tooltip_message="Show"
                   :bottom="true">
-                </tooltip_button>
+                </standard_button>
               </div>
 
             </v-layout>
