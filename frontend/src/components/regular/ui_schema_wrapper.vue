@@ -15,7 +15,7 @@ export default Vue.extend( {
   props: {
     'name': {
         type: String,
-        required: true
+        default: undefined
      }
   },
   data() {
@@ -26,23 +26,27 @@ export default Vue.extend( {
   created(){
     this.refresh_state_from_ui_schema()
   },
+  mounted(){
+    this.show_ui_schema_refresh = this.$store.watch(
+      () => this.$store.state.ui_schema.refresh,
+      () => {
+        this.refresh_state_from_ui_schema()
+      },
+    )
+  },
   beforeDestroy() {
     this.show_ui_schema_refresh()
   },
   methods: {
-    show_ui_schema_refresh(): void {
-      this.show_ui_schema_refresh = this.$store.watch(
-        () => this.$store.state.ui_schema.refresh,
-        this.refresh_state_from_ui_schema()
-      )
-    },
-    refresh_state_from_ui_schema(): void {
+    refresh_state_from_ui_schema(){
+      if (this.$props.name == undefined) return true 
       this.visible = this.$store.getters.get_ui_schema(this.$props.name, 'visible')
     },
-    mouseover(event: Event): void {
+    mouseover(event: Event) {
       this.$store.commit('set_ui_schema_event', [this.name, event])
     }
   }
 }
 
-) </script>
+) 
+</script>
