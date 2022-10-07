@@ -1,7 +1,3 @@
-<div>
-  <line-chart></line-chart>
-</div>
-
 <script lang="ts">
 
   import VueCharts from 'vue-chartjs'
