@@ -118,7 +118,7 @@ export default Vue.extend( {
       default: false
     },
     'iconSize':{
-      type: Number || String,
+      type: [Number, String],
       default: undefined
     },
     'disabled': {
@@ -174,11 +174,11 @@ export default Vue.extend( {
       default: null
     },
     'width':{
-      type: String || Number,
+      type: [String, Number],
       default: undefined,
     },
     'height':{
-      type: String || Number,
+      type: [String, Number],
       default: undefined
     },
     'datacy':{
