@@ -31,3 +31,15 @@ export const get_file_signed_url = async (project_string_id, file_id) => {
     return [null, e]
   }
 }
+
+export const get_child_files = async (project_string_id, parent_file_id) => {
+  let url = `/api/project/${project_string_id}/file/${parent_file_id}/child-files`
+  try {
+    const response = await axios.get(url)
+
+    return [response.data, null]
+  } catch(e) {
+    console.error(e)
+    return [null, e]
+  }
+}

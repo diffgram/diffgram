@@ -100,7 +100,8 @@
     },
 
     async mounted() {
-
+      await this.fetch_child_files()
+      this.start_compound_file_thumb_rotation()
 
     },
     watch: {
@@ -123,6 +124,9 @@
       }
     },
     methods: {
+      start_compound_file_thumb_rotation: function(){
+
+      },
       set_bg: async function (newFile) {
         return new Promise((resolve, reject) => {
           if (!newFile) {
