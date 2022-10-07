@@ -7,11 +7,6 @@ import Vue from 'vue'
 import App from './App.vue'
 
 
-// import StarRating from 'vue-star-rating'
-// Vue.component('vue-star-rating', StarRating)
-
-// import Spinner from 'vue-simple-spinner'
-
 import vue2Dropzone from 'vue2-dropzone'
 import './css/vue_dropzone.css'
 
