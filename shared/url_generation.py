@@ -11,7 +11,7 @@ from shared.database.text_file import TextFile
 from shared.regular import regular_log
 from shared.shared_logger import get_shared_logger
 from shared.database.connection.connection import Connection
-from shared.connection.connection_strategy import ConnectionStrategy
+from shared.connection.connection_strategy import ConnectionStrategy, CONNECTIONS_MAPPING
 from shared.connection.s3_connector import S3Connector
 from shared.regular.regular_member import get_member
 from shared.database.auth.member import Member
@@ -197,10 +197,10 @@ def get_custom_url_supported_connector(session: Session, log: dict, connection_i
         return None, log
 
     connection_strategy = ConnectionStrategy(
-        connector_id = connection_id,
+        connection_id = connection_id,
         session = session)
 
-    client, success = connection_strategy.get_connector(connector_id = connection_id)
+    client, success = connection_strategy.get_connector(connection_id = connection_id)
     if not success:
         msg = f'Failed to get connector for connection {connection_id}'
         log['error']['connector'] = msg

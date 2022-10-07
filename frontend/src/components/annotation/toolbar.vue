@@ -32,30 +32,30 @@
             </ahref_seo_optimal>
           </ui_schema>
 
-          <tooltip_button
-            ui_schema_name="home"
-            color="primary"
-            datacy="toolbar_home_button"
-            :icon_style="true"
-            icon="mdi-home"
-            tooltip_message="Home"
-            @click="$router.push('/me')"
-            :bottom="true"
-          >
-          </tooltip_button>
+          <ui_schema name="home">
+            <tooltip_button
+              color="primary"
+              datacy="toolbar_home_button"
+              :icon_style="true"
+              icon="mdi-home"
+              tooltip_message="Home"
+              @click="$router.push('/me')"
+              :bottom="true"
+            />
+          </ui_schema>
 
-          <tooltip_button
-            ui_schema_name="task_list"
-            color="primary"
-            :icon_style="true"
-            icon="mdi-playlist-play"
-            datacy="go-to-task-list"
-            tooltip_message="Task List"
-            :disabled="this.task && this.task.job_id === -1"
-            @click="go_to_job"
-            :bottom="true"
-          >
-          </tooltip_button>
+          <ui_schema name="task_list">
+            <tooltip_button
+              color="primary"
+              :icon_style="true"
+              icon="mdi-playlist-play"
+              datacy="go-to-task-list"
+              tooltip_message="Task List"
+              :disabled="this.task && this.task.job_id === -1"
+              @click="go_to_job"
+              :bottom="true"
+            />
+          </ui_schema>
 
           <v-divider vertical></v-divider>
         </v-layout>
@@ -64,39 +64,41 @@
       <!-- Undo Redo -->
 
       <div class="d-flex align-center" v-if="show_undo_redo == true && command_manager">
-        <tooltip_button
-          :disabled="
-            save_loading ||
-            view_only_mode ||
-            command_manager.command_history.length == 0 ||
-            command_manager.command_index == undefined
-          "
-          color="primary"
-          :icon_style="true"
-          icon="mdi-undo"
-          tooltip_message="Undo (ctrl+z)"
-          @click="$emit('undo')"
-          :bottom="true"
-          ui_schema_name="undo"
-        >
-        </tooltip_button>
+        <ui_schema name="undo">
+          <tooltip_button
+            :disabled="
+              save_loading ||
+              view_only_mode ||
+              command_manager.command_history.length == 0 ||
+              command_manager.command_index == undefined
+            "
+            color="primary"
+            :icon_style="true"
+            icon="mdi-undo"
+            tooltip_message="Undo (ctrl+z)"
+            @click="$emit('undo')"
+            :bottom="true"
+          >
+          </tooltip_button>
+        </ui_schema>
 
-        <tooltip_button
-          :disabled="
-            save_loading ||
-            view_only_mode ||
-            command_manager.command_history.length == 0 ||
-            command_manager.command_index == command_manager.command_history.length - 1
-          "
-          color="primary"
-          :icon_style="true"
-          icon="mdi-redo"
-          tooltip_message="Redo (ctrl+y)"
-          @click="$emit('redo')"
-          :bottom="true"
-          ui_schema_name="redo"
-        >
-        </tooltip_button>
+        <ui_schema name="redo">
+          <tooltip_button
+            :disabled="
+              save_loading ||
+              view_only_mode ||
+              command_manager.command_history.length == 0 ||
+              command_manager.command_index == command_manager.command_history.length - 1
+            "
+            color="primary"
+            :icon_style="true"
+            icon="mdi-redo"
+            tooltip_message="Redo (ctrl+y)"
+            @click="$emit('redo')"
+            :bottom="true"
+          >
+          </tooltip_button>
+        </ui_schema>
       </div>
 
       <v-divider v-if="task && task.status !== 'complete'" vertical></v-divider>
@@ -120,43 +122,45 @@
       >
       </v_is_complete>
       <div>
-        <tooltip_button
-          v-if="task && task.id && (task.status == 'complete')"
-          ui_schema_name="incomplete_btn"
-          @click="$emit('task_update_toggle_incomplete')"
-          :loading="save_loading"
-          :disabled="
-            save_loading ||
-            view_only_mode ||
-            (file == undefined && task == undefined)
-          "
-          color="primary"
-          :icon_style="true"
-          icon="mdi-cancel"
-          tooltip_message="Mark as incompleted"
-          :bottom="true"
-        >
-        </tooltip_button>
+        <ui_schema name="incomplete_btn">
+          <tooltip_button
+            v-if="task && task.id && (task.status == 'complete')"
+            @click="$emit('task_update_toggle_incomplete')"
+            :loading="save_loading"
+            :disabled="
+              save_loading ||
+              view_only_mode ||
+              (file == undefined && task == undefined)
+            "
+            color="primary"
+            :icon_style="true"
+            icon="mdi-cancel"
+            tooltip_message="Mark as incompleted"
+            :bottom="true"
+          >
+          </tooltip_button>
+        </ui_schema>
       </div>
       <!-- Defer, In Task Context Only -->
       <div>
-        <tooltip_button
-          v-if="task && task.id && ( task.status == 'available' || task.status == 'in_progress')"
-          ui_schema_name="defer"
-          @click="$emit('task_update_toggle_deferred')"
-          :loading="save_loading"
-          :disabled="
-            save_loading ||
-            view_only_mode ||
-            (file == undefined && task == undefined)
-          "
-          color="primary"
-          :icon_style="true"
-          icon="mdi-debug-step-over"
-          tooltip_message="Defer"
-          :bottom="true"
-        >
-        </tooltip_button>
+        <ui_schema name="defer">
+          <tooltip_button
+            v-if="task && task.id && ( task.status == 'available' || task.status == 'in_progress')"
+            @click="$emit('task_update_toggle_deferred')"
+            :loading="save_loading"
+            :disabled="
+              save_loading ||
+              view_only_mode ||
+              (file == undefined && task == undefined)
+            "
+            color="primary"
+            :icon_style="true"
+            icon="mdi-debug-step-over"
+            tooltip_message="Defer"
+            :bottom="true"
+          >
+          </tooltip_button>
+        </ui_schema>
       </div>
       <div>
         <task_status
@@ -294,24 +298,25 @@
       <v-divider vertical v-if="!view_only_mode"></v-divider>
 
       <div>
-        <tooltip_button
-          ui_schema_name="save"
-          @click="$emit('save')"
-          datacy="save_button"
-          :loading="save_loading"
-          :disabled="
-            !has_changed ||
-            save_loading ||
-            view_only_mode ||
-            (file == undefined && task == undefined)
-          "
-          color="primary"
-          icon="save"
-          tooltip_message="Save Image / Frame"
-          :icon_style="true"
-          :bottom="true"
-        >
-        </tooltip_button>
+        <ui_schema name="save">
+          <tooltip_button
+            @click="$emit('save')"
+            datacy="save_button"
+            :loading="save_loading"
+            :disabled="
+              !has_changed ||
+              save_loading ||
+              view_only_mode ||
+              (file == undefined && task == undefined)
+            "
+            color="primary"
+            icon="save"
+            tooltip_message="Save Image / Frame"
+            :icon_style="true"
+            :bottom="true"
+          >
+          </tooltip_button>
+        </ui_schema>
       </div>
       <div class="has-changed">
         <div style="width: 70px">
@@ -389,21 +394,22 @@
       <v-divider vertical></v-divider>
 
       <div>
-        <tooltip_button
-          tooltip_message="Previous Task"
-          v-if="task"
-          ui_schema_name="previous_task"
-          datacy="previous_task"
-          @click="$emit('change_task', 'previous')"
-          :disabled="
-            loading || annotations_loading || full_file_loading || !task
-          "
-          color="primary"
-          icon="mdi-chevron-left-circle"
-          :icon_style="true"
-          :bottom="true"
-        >
-        </tooltip_button>
+        <ui_schema name="previous_task">
+          <tooltip_button
+            tooltip_message="Previous Task"
+            v-if="task"
+            datacy="previous_task"
+            @click="$emit('change_task', 'previous')"
+            :disabled="
+              loading || annotations_loading || full_file_loading || !task
+            "
+            color="primary"
+            icon="mdi-chevron-left-circle"
+            :icon_style="true"
+            :bottom="true"
+          >
+          </tooltip_button>
+        </ui_schema>
 
         <!-- This is a WIP example of injecting a tombstone button to help positionally
         make it easier for user.-->
@@ -421,21 +427,22 @@
       </tooltip_button>
       --></div>
       <div>
-        <tooltip_button
-          tooltip_message="Next Task"
-          v-if="task"
-          ui_schema_name="next_task"
-          datacy="next_task"
-          @click="$emit('change_task', 'next')"
-          :disabled="
-            loading || annotations_loading || full_file_loading || !task
-          "
-          color="primary"
-          icon="mdi-chevron-right-circle"
-          :icon_style="true"
-          :bottom="true"
-        >
-        </tooltip_button>
+        <ui_schema name="next_task">
+          <tooltip_button
+            tooltip_message="Next Task"
+            v-if="task"
+            datacy="next_task"
+            @click="$emit('change_task', 'next')"
+            :disabled="
+              loading || annotations_loading || full_file_loading || !task
+            "
+            color="primary"
+            icon="mdi-chevron-right-circle"
+            :icon_style="true"
+            :bottom="true"
+          >
+          </tooltip_button>
+        </ui_schema>
       </div>
 
       <v-divider vertical></v-divider>
@@ -521,19 +528,19 @@
                     />
                   </template>
                 </button_with_menu>
-                <tooltip_button
-                  v-else
-                  data-cy="pause-annotation-show"
-                  tooltip_message="Pause"
-                  ui_schema_name="stop_shideshow"
-                  @click="
-                    $emit('annotation_show', !task && file && file.id ? 'file' : 'task')
-                  "
-                  color="primary"
-                  icon="pause"
-                  :icon_style="true"
-                  :bottom="true"
-                />
+                <ui_schema v-else name="stop_shideshow">
+                  <tooltip_button
+                    data-cy="pause-annotation-show"
+                    tooltip_message="Pause"
+                    @click="
+                      $emit('annotation_show', !task && file && file.id ? 'file' : 'task')
+                    "
+                    color="primary"
+                    icon="pause"
+                    :icon_style="true"
+                    :bottom="true"
+                  />
+                </ui_schema>
               </div>
             <tooltip_button
                 tooltip_message="Refresh Instances"
