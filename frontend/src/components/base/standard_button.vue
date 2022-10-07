@@ -98,7 +98,7 @@ export default Vue.extend( {
      */
     'icon': {
       type: String,
-      default: 'mdi-lifebuoy',
+      default: 'mdi-lifebuoy'
     },
     'tooltip_message': {
       type: String,
