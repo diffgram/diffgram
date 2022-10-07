@@ -1,14 +1,14 @@
-import tooltip_button from '../components/regular/tooltip_button.vue';
+import tooltip_button from "../components/regular/tooltip_button.vue";
 
 export default {
-  title: 'Regular/TooltipButton',
-  component: tooltip_button
+  title: "Regular/TooltipButton",
+  component: tooltip_button,
 };
 
-export const TooltipButton = (args) => ({
-  components: { 
-    tooltip_button 
+export const TooltipButton = (args, { argTypes }) => ({
+  components: {
+    tooltip_button,
   },
-  template: '<tooltip_button v-bind="$props" />'
+  props: Object.keys(argTypes),
+  template: '<tooltip_button v-bind="$props" />',
 });
-
