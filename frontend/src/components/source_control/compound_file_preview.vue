@@ -34,14 +34,12 @@
 
   import instance_list from "../vue_canvas/instance_list";
   import drawable_canvas from "../vue_canvas/drawable_canvas";
-  import video_drawable_canvas from "../vue_canvas/video_drawable_canvas";
-  import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
+  import {get_child_files} from "../../services/fileServices";
 
   export default Vue.extend({
     name: "compound_file_preview",
     components: {
-      video_drawable_canvas,
       drawable_canvas,
       instance_list
     },
@@ -91,7 +89,7 @@
           spatial_line_size: 2,
           show_text: false,
           show_label_text: false,
-          show_attribute_text: false,
+          file_index: 0,
         }
       }
     },
@@ -124,7 +122,30 @@
       }
     },
     methods: {
+      fetch_child_files: async function(){
+        let [child_files, err] = await get_child_files(this.project_string_id, this.file.id)
+        if (err){
+          console.error(err)
+          return
+        }
+        this.child_files = child_files
+      },
       start_compound_file_thumb_rotation: function(){
+        if(!this.child_files){
+          return
+        }
+        this.file_index = 0;
+
+        setInterval(async function () {
+
+          let file = this.child_files[this.file_index]
+          await this.set_bg(file)
+          this.file_index += 1
+          if(this.file_index > this.child_files.length - 1){
+            this.file_index = 0
+          }
+
+        }, 1000);
 
       },
       set_bg: async function (newFile) {
@@ -136,14 +157,21 @@
           }
           else {
             if (newFile.image && newFile.image.url_signed) {
-              const image = new Image();
-              image.onload = () => {
-                this.image_bg = image;
-                this.refresh = new Date();
-                image.onload = () => resolve(image)
+              if(!newFile.html_image){
+                const image = new Image();
+                image.onload = () => {
+                  this.image_bg = image;
+                  this.refresh = new Date();
+                  image.onload = () => resolve(image)
+                }
+                image.src = this.$props.file.image.url_signed;
+                image.onerror = reject
               }
-              image.src = this.$props.file.image.url_signed;
-              image.onerror = reject
+              else{
+                this.image_bg = newFile.html_image;
+                this.refresh = new Date();
+              }
+
             }
             else{
               resolve();

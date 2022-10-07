@@ -1,5 +1,5 @@
 import axios from './customInstance'
-
+import {File} from '../types/files'
 export const get_file_list = async (project_string_id, user_name, metadata) => {
   let url = `/api/project/${project_string_id}/user/${user_name}/file/list`
   try {
@@ -32,12 +32,12 @@ export const get_file_signed_url = async (project_string_id, file_id) => {
   }
 }
 
-export const get_child_files = async (project_string_id, parent_file_id) => {
+export const get_child_files = async (project_string_id: string, parent_file_id: number): Promise<File[]> => {
   let url = `/api/project/${project_string_id}/file/${parent_file_id}/child-files`
   try {
     const response = await axios.get(url)
 
-    return [response.data, null]
+    return [response.data.child_files, null]
   } catch(e) {
     console.error(e)
     return [null, e]
