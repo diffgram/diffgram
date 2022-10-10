@@ -1,4 +1,4 @@
-import standard_button from "../components/base/standard_button.vue";
+import standard_button from "../../components/base/standard_button.vue";
 
 export default {
   title: "Base/standard_button",
