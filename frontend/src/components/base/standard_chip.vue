@@ -30,7 +30,7 @@
 import Vue from "vue";
 
 export default Vue.extend({
-  name: "regular_chip",
+  name: "standard_chip",
   props: {
     message: {
       type: String,

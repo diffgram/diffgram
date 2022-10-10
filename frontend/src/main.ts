@@ -93,9 +93,6 @@ Vue.component('diffgram_select', diffgram_select)
 import regular_table from './components/regular/regular_table'
 Vue.component('regular_table', regular_table)
 
-import regular_chip from './components/regular/regular_chip'
-Vue.component('regular_chip', regular_chip)
-
 import bread_crumbs from './components/regular/bread_crumbs'
 Vue.component('bread_crumbs', bread_crumbs)
 

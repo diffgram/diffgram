@@ -1,7 +1,7 @@
 import standard_button from "../components/base/standard_button.vue";
 
 export default {
-  title: "Base/StandardButton",
+  title: "Base/standard_button",
   component: standard_button,
 };
 

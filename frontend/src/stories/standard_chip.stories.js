@@ -1,11 +1,11 @@
 import standard_chip from "../components/base/standard_chip.vue";
 
 export default {
-  title: "Base/StandardChip",
+  title: "Base/standard_chip",
   component: standard_chip,
 };
 
-export const StandardChip = (args, { argTypes }) => ({
+export const Default = (args, { argTypes }) => ({
   components: {
     standard_chip,
   },
@@ -13,6 +13,6 @@ export const StandardChip = (args, { argTypes }) => ({
   template: '<standard_chip v-bind="$props" />',
 });
 
-StandardChip.args = {
+Default.args = {
     message: "Diffgram standard chip"
 }

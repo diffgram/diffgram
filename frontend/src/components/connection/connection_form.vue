@@ -19,7 +19,7 @@
             -->
             <div v-if="connection_id !== 'new'" class="pa-0 d-flex justify-center align-center">
               <h2 class="mr-2">ID</h2>
-              <regular_chip
+              <standard_chip
                 :message=connection.id
                 tooltip_message="ID"
                 v-if="connection_id !== 'new'"
@@ -27,7 +27,7 @@
                 tooltip_direction="bottom"
                 :small="true"
               >
-              </regular_chip>
+              </standard_chip>
             </div>
 
             <!-- TBD , maybe save and test -->
