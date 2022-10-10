@@ -1,18 +1,18 @@
 <template>
   <div>
-    <v-tooltip 
-      :top="top_actual" 
+    <v-tooltip
+      :top="top_actual"
       :bottom="bottom_actual"
       :disabled="!tooltip_message"
     >
       <template v-slot:activator="{ on }">
-        <a 
+        <a
           :href="href"
           :target="target"
           @click="preventdefault($event)"
           class="wrapper-link"
         >
-          <v-btn  
+          <v-btn
             v-on="on"
             :width="width"
             :height="height"
@@ -26,14 +26,14 @@
             :data-cy="datacy"
             :large="large"
             :small="small"
-            :color=button_color
+            :color="button_color"
             @click="$emit('click', $event)"
           >
-            <v-icon 
+            <v-icon
               :large="large"
               :class="active ? 'active' : ''"
               :size="iconSize"
-              :color=color
+              :color="color"
               :left="left"
             >
               {{ icon }}
@@ -50,123 +50,124 @@
 <script lang="ts">
 import Vue from "vue";
 
-export default Vue.extend( {
-  name: 'standard_button',
+export default Vue.extend({
+  name: "standard_button",
   props: {
-    'loading': {
+    loading: {
       type: Boolean,
-      default: false
-     },
-    'xSmall':{
-      type: Boolean,
-      default: false
+      default: false,
     },
-    'xLarge':{
+    xSmall: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    'small':{
+    xLarge: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    'iconSize':{
+    small: {
+      type: Boolean,
+      default: false,
+    },
+    iconSize: {
       type: [Number, String],
-      default: undefined
+      default: undefined,
     },
-    'disabled': {
+    disabled: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    'href': {
+    href: {
       type: String,
-      default: null
+      default: null,
     },
-    'color': {
+    color: {
       type: String,
-      default: null
+      default: null,
     },
-    'left':{
+    left: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    'button_color': {
+    button_color: {
       type: String,
-      default: null
+      default: null,
     },
     /**
      * For Material Design Icons pre-fix with `mdi`
      * https://materialdesignicons.com/
      */
-    'icon': {
+    icon: {
       type: String,
-      default: 'mdi-lifebuoy'
+      default: "mdi-lifebuoy",
     },
-    'tooltip_message': {
+    tooltip_message: {
       type: String,
-      default: null
+      default: null,
     },
-    'icon_style': {
+    icon_style: {
       type: Boolean,
-      default: false
-     },
-    'text_style': {
-      type: Boolean,
-      default: false
+      default: false,
     },
-    'active': {
+    text_style: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    'bottom': {
+    active: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    'large': {
+    bottom: {
       type: Boolean,
-      default: false
+      default: false,
     },
-    'button_message': {
+    large: {
+      type: Boolean,
+      default: false,
+    },
+    button_message: {
       type: String,
-      default: null
+      default: null,
     },
-    'width':{
+    width: {
       type: [String, Number],
       default: undefined,
     },
-    'height':{
+    height: {
       type: [String, Number],
-      default: undefined
+      default: undefined,
     },
-    'datacy':{
+    /**
+     * Used as a selector in e2e tests
+     */
+    datacy: {
       type: String,
-      default: 'standard-button'
-     },
-    'target': {
-        type: String,
-        default: '_self'
-     },
+      default: "standard-button",
+    },
+    target: {
+      type: String,
+      default: "_self",
+    },
   },
   computed: {
     bottom_actual(): boolean {
-      return this.bottom
+      return this.bottom;
     },
     top_actual(): boolean {
-      return !this.bottom
-    }
+      return !this.bottom;
+    },
   },
   methods: {
     preventdefault(event: Event) {
-      if (this.target !== '_self') return
+      if (this.target !== "_self") return;
       event.preventDefault();
     },
-  }
-}
-
-) 
+  },
+});
 </script>
 
 <style scoped>
-.active{
+.active {
   border: 2px solid #2296f3;
   padding: 0.8rem;
   border-radius: 5px;
