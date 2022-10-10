@@ -33,7 +33,7 @@ export const get_file_signed_url = async (project_string_id, file_id) => {
 }
 
 export const get_child_files = async (project_string_id: string, parent_file_id: number): Promise<File[]> => {
-  let url = `/api/project/${project_string_id}/file/${parent_file_id}/child-files`
+  let url = `/api/v1/project/${project_string_id}/file/${parent_file_id}/child-files`
   try {
     const response = await axios.get(url)
 

@@ -1521,6 +1521,7 @@ class Process_Media():
                 working_dir_id = self.working_dir_id,
                 file_type = "audio",
                 audio_file_id = self.new_audio_file.id,
+                parent_id = self.input.parent_file_id,
                 original_filename = self.input.original_filename,
                 project_id = self.project_id,
                 input_id = self.input.id,
@@ -1578,6 +1579,7 @@ class Process_Media():
                 session = self.session,
                 working_dir_id = self.working_dir_id,
                 file_type = "text",
+                parent_id = self.input.parent_file_id,
                 text_file_id = self.new_text_file.id,
                 original_filename = self.input.original_filename,
                 project_id = self.project_id,
@@ -1688,6 +1690,7 @@ class Process_Media():
             working_dir_id = self.working_dir_id,
             file_type = "image",
             image_id = self.new_image.id,
+            parent_id = self.input.parent_file_id,
             original_filename = self.input.original_filename,
             project_id = self.project_id,  # TODO test if project_id is working as expected here
             input_id = self.input.id,

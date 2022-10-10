@@ -183,6 +183,7 @@ class Video(Base):
         width: int,
         height: int,
         directory_id: int,
+        parent_file_id: int = None,
         parent_input_id: int = None,  # WIP
         parent_video_split_duration: int = None,
         file_metadata: dict = None,
@@ -231,6 +232,7 @@ class Video(Base):
             working_dir_id = directory_id,
             file_type = "video",
             video_id = video.id,
+            parent_id = parent_file_id,
             original_filename = filename,
             file_metadata = file_metadata
         )

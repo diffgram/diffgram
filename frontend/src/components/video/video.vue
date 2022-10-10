@@ -3,6 +3,7 @@
     <v-card v-if="video_mode == true && show_video_nav_bar == true"
             :max-height="player_height"
             elevation="1"
+
             :width="player_width ? player_width: undefined">
       <v-container fluid >
 

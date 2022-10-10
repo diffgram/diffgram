@@ -28,6 +28,8 @@ export class Instance {
   public angle: number = 0;
   public attribute_groups: any = null;
   public rear_face: number = null;
+  public override_color: string = null;
+  public model_run_id: number = null;
   public width: number = null;
   public height: number = null;
   public label_file: { id: number, label: any, colour: {hex: string} } = null;
