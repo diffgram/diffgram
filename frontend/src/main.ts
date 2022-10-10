@@ -51,6 +51,9 @@ import task_list from './components/task/task/task_list'
 import standard_button from "./components/base/standard_button.vue"
 Vue.component('standard_button', standard_button)
 
+import standard_chip from "./components/base/standard_chip.vue"
+Vue.component('standard_chip', standard_chip)
+
 /*
  * ABSTRACT regular methods
  *
