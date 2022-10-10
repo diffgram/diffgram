@@ -13,18 +13,6 @@ export const Default = (args, { argTypes }) => ({
   template: '<standard_button v-bind="$props" />',
 });
 
-export const ChangeIcon = (args, { argTypes }) => ({
-  components: {
-    standard_button,
-  },
-  props: Object.keys(argTypes),
-  template: '<standard_button v-bind="$props" />',
-  title: 'MyComponent',
-});
-ChangeIcon.args = {
-  icon: "mdi-content-copy"
-};
-
 export const Primary = (args, { argTypes }) => ({
   components: {
     standard_button,
@@ -63,4 +51,17 @@ Text.args = {
   text_style: true,
   button_message: "Text style button",
   icon: "",
+};
+
+export const Icon = (args, { argTypes }) => ({
+  components: {
+    standard_button,
+  },
+  props: Object.keys(argTypes),
+  template: '<standard_button v-bind="$props" />',
+  title: "MyComponent",
+});
+Icon.args = {
+  icon: "mdi-content-copy",
+  icon_style: true,
 };
