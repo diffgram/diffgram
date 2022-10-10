@@ -249,7 +249,7 @@
                           -->
 
                         <div class="pl-2">
-                          <regular_chip
+                          <standard_chip
                             v-if="props.item.directory && props.item.source == 'directory'"
                             :message=props.item.directory.nickname
                             tooltip_message="Name"
@@ -257,9 +257,9 @@
                             tooltip_direction="bottom"
                             :small="true"
                           >
-                          </regular_chip>
+                          </standard_chip>
 
-                          <regular_chip
+                          <standard_chip
                             v-if="props.item.job && props.item.source == 'job'"
                             :message=props.item.job.name
                             tooltip_message="Go to Job"
@@ -269,9 +269,9 @@
                             :is_clickable="true"
                             @click="$router.push('/job/' + props.item.job.id)"
                           >
-                          </regular_chip>
+                          </standard_chip>
 
-                          <regular_chip
+                          <standard_chip
                             v-if="props.item.task && props.item.source == 'task'"
                             :message=props.item.task.id
                             tooltip_message="Go to Task"
@@ -281,7 +281,7 @@
                             :is_clickable="true"
                             @click="$router.push('/task/' + props.item.task.id)">
 
-                          </regular_chip>
+                          </standard_chip>
                         </div>
 
                       </v-layout>

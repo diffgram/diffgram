@@ -14,14 +14,14 @@
           height="50px"
         >
           <v-toolbar-items>
-            <regular_chip
+            <standard_chip
               :message=report_template.id
               tooltip_message="ID"
               color="grey"
               tooltip_direction="bottom"
               :small="true"
             >
-            </regular_chip>
+            </standard_chip>
             <v-text-field
               class="ma-0"
               style="font-size: 18pt"
@@ -104,12 +104,12 @@
             </div>
 
             <div class="pa-2 pl-4 pr-4">
-              <regular_chip
+              <standard_chip
                 :message=count
                 tooltip_message="Sum"
                 color="primary"
                 tooltip_direction="bottom">
-              </regular_chip>
+              </standard_chip>
 
             </div>
 

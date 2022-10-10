@@ -190,7 +190,7 @@
           >
           </standard_button>
 
-          <regular_chip
+          <standard_chip
               v-if="userscript_literal.external_src_list"
               @click="userscript_sources_selector_dialog_is_open = true"
               :message="userscript_literal.external_src_list.length"
@@ -198,7 +198,7 @@
               color="primary"
               tooltip_direction="bottom"
               :small="true">
-          </regular_chip>
+          </standard_chip>
         </div>
 
         <v-layout v-if="userscript_class"

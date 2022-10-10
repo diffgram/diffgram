@@ -38,7 +38,7 @@
     >
     </standard_button>
 
-    <regular_chip
+    <standard_chip
       v-if="task && task.status === 'complete'"
       class="pt-2 d-flex align-center"
       message="Complete"
@@ -49,7 +49,7 @@
       <template slot="chip">
         <v-icon dark left> mdi-check-circle </v-icon>
       </template>
-    </regular_chip>
+    </standard_chip>
     <!-- Just disable, don't show loading while saving,
         it's too distracting to show loading,
         and could confuse user (ie they think they clicked different button)
@@ -61,7 +61,7 @@
 
     <!-- Already complete -->
 
-    <regular_chip
+    <standard_chip
       v-if="!task && current_file.ann_is_complete == true"
       class="pt-2"
       message="Complete"
@@ -72,7 +72,7 @@
       <template slot="chip">
         <v-icon dark left> mdi-check-circle </v-icon>
       </template>
-    </regular_chip>
+    </standard_chip>
 
     <standard_button
       tooltip_message="Mark File As Not Complete"

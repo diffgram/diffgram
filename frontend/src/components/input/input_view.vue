@@ -437,7 +437,7 @@
 
               <td>
                 <!-- In update mode, Dataset doesn't really make sense to list -->
-                <regular_chip
+                <standard_chip
                   v-if="props.item.directory &&
                                  props.item.mode !='update' "
                   :message=props.item.directory.nickname
@@ -448,7 +448,7 @@
                   @click="$router.push('/studio/annotate/'
                       + project_string_id + '?dataset=' + props.item.directory.id)"
                 >
-                </regular_chip>
+                </standard_chip>
 
                 <div v-if="props.item.mode == 'update'">
                   N/A
