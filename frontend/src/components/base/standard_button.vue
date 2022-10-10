@@ -9,6 +9,7 @@
         <a 
           :href="href"
           :target="target"
+          @click="preventdefault($event)"
           class="wrapper-link"
         >
           <v-btn  
@@ -152,6 +153,12 @@ export default Vue.extend( {
     top_actual(): boolean {
       return !this.bottom
     }
+  },
+  methods: {
+    preventdefault(event: Event) {
+      if (this.target !== '_self') return
+      event.preventDefault();
+    },
   }
 }
 
