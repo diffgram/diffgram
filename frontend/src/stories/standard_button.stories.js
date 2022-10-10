@@ -26,6 +26,19 @@ Primary.args = {
   icon: "",
 };
 
+export const Success = (args, { argTypes }) => ({
+  components: {
+    standard_button,
+  },
+  props: Object.keys(argTypes),
+  template: '<standard_button v-bind="$props" />',
+});
+Success.args = {
+  button_message: "Success",
+  button_color: "success",
+  icon: "",
+};
+
 export const PrimaryWithTooltip = (args, { argTypes }) => ({
   components: {
     standard_button,
