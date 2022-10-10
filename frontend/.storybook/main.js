@@ -1,13 +1,11 @@
 module.exports = {
-  "stories": [
-    "../src/**/*.stories.mdx",
-    "../src/**/*.stories.@(js|jsx|ts|tsx)"
-  ],
-  "addons": [
+  stories: ["../src/**/*.stories.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
+  addons: [
     "@storybook/addon-links",
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
-    "@socheatsok78/storybook-addon-vuetify"
+    "@socheatsok78/storybook-addon-vuetify",
+    "@storybook/theming",
   ],
-  "framework": "@storybook/vue"
-}
+  framework: "@storybook/vue",
+};
