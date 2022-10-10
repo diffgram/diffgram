@@ -240,8 +240,8 @@ import './css/mxgraph.css'
 
 // https://vuetifyjs.com/en/features/theme/#customizing
 
-const vuetify_options = {
-  icons : {
+export const vuetify_options = {
+  icons: {
     iconfont: 'mdi'
   },
   theme: {
@@ -262,7 +262,7 @@ Vue.use(vue_scroll_to)
 import VueMoment from 'vue-moment'
 import moment from 'moment-timezone'
 Vue.use(VueMoment, {
-    moment,
+  moment,
 })
 
 Vue.component('v_task_list', task_list)
@@ -342,7 +342,7 @@ import { get_sequence_color } from './components/regular/regular_annotation'
 Vue.prototype.$get_sequence_color = get_sequence_color
 
 
-import {addQueriesToLocation} from './components/regular/regular'
+import { addQueriesToLocation } from './components/regular/regular'
 Vue.prototype.$addQueriesToLocation = addQueriesToLocation
 
 

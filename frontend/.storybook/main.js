@@ -4,8 +4,7 @@ module.exports = {
     "@storybook/addon-links",
     "@storybook/addon-essentials",
     "@storybook/addon-interactions",
-    "@socheatsok78/storybook-addon-vuetify",
     "@storybook/theming",
   ],
-  framework: "@storybook/vue",
+  framework: "@storybook/vue"
 };
