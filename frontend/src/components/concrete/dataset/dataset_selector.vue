@@ -25,7 +25,7 @@
                 <div>
                   <button_with_menu
                     v-if="!view_only_mode && show_new === true"
-                    icon="add"
+                    icon="mdi-plus"
                     offset="x"
                     menu_direction="left"
                     background="primary"
@@ -35,7 +35,6 @@
                     :small="true"
                     :large="undefined"
                     :color="show_text_buttons ? 'white' : 'primary'"
-                    :commit_menu_status="true"
                     :text_style="undefined"
                   >
                     <template slot="content">
@@ -140,7 +139,7 @@
 
       <button_with_menu
         v-if="!view_only_mode && show_update == true"
-        icon="edit"
+        icon="mdi-pencil-outline"
         tooltip_message="Update Dataset"
         color="primary"
         offset="x"
@@ -151,7 +150,6 @@
         :button_text="undefined"
         :close_by_button="true"
         :outlined="true"
-        :commit_menu_status="true"
       >
         <template slot="content">
           <dataset_update 
@@ -169,6 +167,8 @@ import Vue from "vue";
 import dataset_new from "./dataset_new.vue"
 import dataset_update from "./dataset_update.vue"
 import { refresh_dataset_list } from "../../../services/datasetServices";
+import date_picker from "../../regular/date_picker.vue"
+import button_with_menu from "../../regular/button_with_menu.vue"
 
 export default Vue.extend({
   name: 'dataset_selector',
@@ -232,11 +232,17 @@ export default Vue.extend({
     is_super_admin: {
       type: Boolean,
       default: false
+    },
+    dataset_list: {
+      type: Array,
+      default: () => []
     }
   },
   components: {
     dataset_new,
-    dataset_update
+    dataset_update,
+    date_picker,
+    button_with_menu
   },
   data() {
     return {
@@ -252,6 +258,10 @@ export default Vue.extend({
   },
   mounted() {
     this.current_directory = this.multiple ? [] : {}
+
+    if (this.dataset_list) {
+      this.internal_dataset_list = this.dataset_list
+    }
 
     if (this.set_from_id) {
       this.current_directory = this.dataset_list_filtered.find((dataset:any) => dataset.directory_id === this.set_from_id)
