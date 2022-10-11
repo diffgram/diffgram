@@ -102,16 +102,14 @@ class TestFileTransferCore(testing_setup.DiffgramBaseTestCase):
 
         self.assertEqual(len(result['error'].keys()), 0)
         self.session.commit()
-        file_list_source = WorkingDirFileLink.file_list(
-            session = self.session,
-            working_dir_id = source_directory.id
-        )
+        file_list_source = self.session.query(WorkingDirFileLink).filter(
+            WorkingDirFileLink.working_dir_id == source_directory.id
+        ).all()
 
-        file_list_dest = WorkingDirFileLink.file_list(
-            session = self.session,
-            working_dir_id = destination_directory.id
-        )
-        file_id_des = [f.id for f in file_list_dest]
+        file_list_dest = self.session.query(WorkingDirFileLink).filter(
+            WorkingDirFileLink.working_dir_id == destination_directory.id
+        ).all()
+        file_id_des = [f.file_id for f in file_list_dest]
 
         self.assertEqual(len(file_list_source), 0)
         self.assertEqual(len(file_id_des), 3)
@@ -149,15 +147,14 @@ class TestFileTransferCore(testing_setup.DiffgramBaseTestCase):
 
         self.assertEqual(len(result['error'].keys()), 0)
         self.session.commit()
-        file_list_source = WorkingDirFileLink.file_list(
-            session = self.session,
-            working_dir_id = source_directory.id
-        )
-        file_list_source_ids = [f.id for f in file_list_source]
-        file_list_dest = WorkingDirFileLink.file_list(
-            session = self.session,
-            working_dir_id = destination_directory.id
-        )
+        file_list_source = self.session.query(WorkingDirFileLink).filter(
+            WorkingDirFileLink.working_dir_id == source_directory.id
+        ).all()
+        file_list_source_ids = [f.file_id for f in file_list_source]
+        file_list_dest = self.session.query(WorkingDirFileLink).filter(
+            WorkingDirFileLink.working_dir_id == destination_directory.id
+        ).all()
+        file_id_des = [f.file_id for f in file_list_dest]
 
 
         self.assertEqual(len(file_list_source), 3)
