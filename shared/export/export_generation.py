@@ -344,7 +344,7 @@ def build_compound_file_packet(file: File, session: Session, file_comparison_mod
         'file': file.serialize_base_file()
     }
     for child_file in child_files:
-        result[child_file.id] = build_packet(file = file,
+        result[child_file.id] = build_packet(file = child_file,
                                              session = session,
                                              file_comparison_mode = file_comparison_mode)
     return result
