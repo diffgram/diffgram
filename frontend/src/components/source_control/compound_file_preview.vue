@@ -5,20 +5,13 @@
     @mouseleave="() => {hovered = false}"
   >
 
-    <v-expand-transition v-if="show_compound_details_on_hover">
-      <v-card
-        :style="`position: absolute; z-index: 9999; width:${file_preview_width}px; height: 70px`"
-        v-show="hovered"
-        height="100"
-        width="100"
-        class="mx-auto fade-box"
-      >
-        <v-card-subtitle class="white--text">
-          <p class="mb-0"><strong>Name:</strong> {{file.original_filename}}</p>
-          <p class="mt-0"><strong>Attached Assets:</strong> {{child_files.length}}</p>
-        </v-card-subtitle>
-      </v-card>
-    </v-expand-transition>
+    <file_preview_details_card
+      v-if="show_preview_details"
+      :file="file"
+      :child_files="child_files"
+      :file_preview_height="file_preview_height"
+      :file_preview_width="file_preview_width"
+    ></file_preview_details_card>
     <drawable_canvas
 
       v-if="child_files.length > 0 && image_bg"
@@ -61,18 +54,20 @@
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   import {get_child_files} from "@/services/fileServices";
   import {filter_global_instance_list} from "@/components/source_control/dataset_explorer_instance_filtering";
+  import file_preview_details_card from "./file_preview_details_card";
 
   export default Vue.extend({
     name: "compound_file_preview",
     components: {
       drawable_canvas,
+      file_preview_details_card,
       instance_list
     },
     props: {
       'project_string_id': {
         default: undefined
       },
-      'show_compound_details_on_hover':{
+      'show_preview_details':{
         default: true
       },
       'file': {
