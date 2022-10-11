@@ -16,6 +16,9 @@ const action_mixin = {
     },
     display_mode: {
       default: "wizard"
+    },
+    workflow: {
+      default: null
     }
   },
   data: () => ({

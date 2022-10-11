@@ -6,9 +6,10 @@
                :project_string_id="project_string_id"
                :actions_list="actions_list"
                :display_mode="display_mode"
+               :workflow="workflow"
+               :action="action"
                @action_updated="on_action_updated"
                @open_action_selector="$emit('open_action_selector')"
-               :action="action"
     ></component>
   </div>
 </template>
@@ -24,7 +25,7 @@ export default Vue.extend({
     components: {
       action_step_box
     },
-    props: ['action', 'project_string_id', 'actions_list', 'display_mode'],
+    props: ['action', 'project_string_id', 'actions_list', 'display_mode', 'workflow'],
 
     mounted() {
       console.log('MONTEEEEED', this.selected_action_config)

@@ -129,14 +129,16 @@
 
           </v-progress-linear>
 
-          <action_config_factory v-if="!add_action_loading"
-                                 :actions_list="workflow.actions_list"
-                                 :project_string_id="project_string_id"
-                                 @action_updated="on_action_updated"
-                                 @open_action_selector="show_add_action_panel"
-                                 :action="selected_action"
-                                 :display_mode="display_mode">
-          </action_config_factory>
+          <action_config_factory 
+            v-if="!add_action_loading"
+            :actions_list="workflow.actions_list"
+            :project_string_id="project_string_id"
+            :action="selected_action"
+            :display_mode="display_mode"
+            :workflow="workflow"
+            @action_updated="on_action_updated"
+            @open_action_selector="show_add_action_panel"
+          />
         </v-card>
         <v-card v-if="show_add_action" class="ml-2 pa-4 steps-container" width="80%" elevation="0">
           <v-card-title>

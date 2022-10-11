@@ -10,6 +10,8 @@ from shared.regular.regular_api import *
 from shared.connection.connectors.connectors_base import Connector, with_connection
 from google.cloud import storage
 from google.oauth2 import service_account
+from google.cloud import aiplatform
+from google.cloud.aiplatform.gapic.schema import trainingjob
 from shared.helpers import sessionMaker
 from shared.ingest import packet
 from pathlib import Path
@@ -68,6 +70,23 @@ class GoogleCloudStorageConnector(Connector):
             'project_id': project_id
         }
 
+
+    def get_auth_data_from_parent_connector(self):
+        auth = self.generate_auth_data(
+            email=self.auth_data['client_email'],
+            client_id=self.auth_data['client_id'],
+            client_secret=self.auth_data['client_secret'],
+            project_id=self.auth_data['project_id'])
+        return auth
+
+
+    @with_google_exception_handler
+    def get_credentials(self):
+        auth = self.get_auth_data_from_parent_connector()
+        credentials = service_account.Credentials.from_service_account_info(auth)
+        return credentials
+
+
     @with_google_exception_handler
     def connect(self):
         log = regular_log.default()
@@ -89,7 +108,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __list_gcs_directories(self, opts):
+    def __list_gcs_directories(self, opts: dict):
         prefix = opts['path']
         bucket_name = opts['bucket_name']
         # from https://github.com/GoogleCloudPlatform/google-cloud-python/issues/920
@@ -106,7 +125,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __list_gcs_files(self, opts):
+    def __list_gcs_files(self, opts: dict):
         prefix = opts['path']
         bucket_name = opts['bucket_name']
         # from https://github.com/GoogleCloudPlatform/google-cloud-python/issues/920fp
@@ -125,7 +144,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __get_folder_contents(self, opts):
+    def __get_folder_contents(self, opts: dict):
         just_folders = opts.get('just_folders', False)
         files = []
         if not just_folders:
@@ -136,13 +155,13 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __list_buckets(self, opts):
+    def __list_buckets(self, opts: dict):
         buckets = self.connection_client.list_buckets()
         return {'result': [b.name for b in buckets]}
 
     @with_connection
     @with_google_exception_handler
-    def __fetch_object(self, opts):
+    def __fetch_object(self, opts: dict):
         bucket = self.connection_client.get_bucket(opts['bucket_name'])
         blob = bucket.blob(opts['path'])
         blob_expiry = int(time.time() + (60 * 60 * 24 * 30))
@@ -197,7 +216,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __get_string_data(self, opts):
+    def __get_string_data(self, opts: dict):
         # get bucket with name
         bucket = self.connection_client.get_bucket(opts['bucket_name'])
         blob = bucket.blob(opts['path'])
@@ -207,13 +226,13 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __list_objects(self, opts):
+    def __list_objects(self, opts: dict):
         blobs = self.connection_client.list_blobs(opts['bucket_name'], prefix=opts['path'])
         return {'result': [x.name for x in blobs]}
 
     @with_connection
     @with_google_exception_handler
-    def __count_objects(self, opts):
+    def __count_objects(self, opts: dict):
         spec_list = [{'bucket_name': str, 'path': str}]
         log = regular_log.default()
         log, input = regular_input.input_check_many(untrusted_input=opts,
@@ -231,7 +250,7 @@ class GoogleCloudStorageConnector(Connector):
         return {'result': count}
 
     @with_connection
-    def __fetch_folder(self, opts):
+    def __fetch_folder(self, opts: dict):
         result = []
 
         if self.config_data.get('project_string_id') is None:
@@ -310,7 +329,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __start_fetch_folder(self, opts):
+    def __start_fetch_folder(self, opts: dict):
         spec_list = [{'project_string_id': dict}]
         log = regular_log.default()
         log, input = regular_input.input_check_many(untrusted_input=self.config_data,
@@ -326,9 +345,9 @@ class GoogleCloudStorageConnector(Connector):
         return {'result': True}
 
     @with_connection
-    def fetch_data(self, opts):
+    def fetch_data(self, opts: dict):
         """
-            This function routes any action_type to the correct S3 connector actions.
+            This function routes any action_type to the correct GCP connector actions.
         :return: Object
         """
         if 'action_type' not in opts:
@@ -354,7 +373,7 @@ class GoogleCloudStorageConnector(Connector):
 
     @with_connection
     @with_google_exception_handler
-    def __send_export(self, opts):
+    def __send_export(self, opts: dict):
         spec_list = [{'project_string_id': dict}]
         log = regular_log.default()
         log, input = regular_input.input_check_many(untrusted_input=self.config_data,
@@ -378,6 +397,7 @@ class GoogleCloudStorageConnector(Connector):
                                                     spec_list=spec_list,
                                                     log=log,
                                                     string_len_not_zero=False)
+        print("HERE2", log)
         if len(log["error"].keys()) >= 1:
             return {'log': log}
 
@@ -437,9 +457,9 @@ class GoogleCloudStorageConnector(Connector):
             return {'result': True}
 
     @with_connection
-    def put_data(self, opts):
+    def put_data(self, opts: dict):
         """
-            This function routes any action_type to the correct S3 connector actions.
+            This function routes any action_type to the correct GCP connector actions.
         :return: Object
         """
         action_type = opts.pop('action_type')
@@ -447,6 +467,8 @@ class GoogleCloudStorageConnector(Connector):
             raise Exception('Provide event_data key.')
         if action_type == 'send_export':
             return self.__send_export(opts)
+        if action_type == 'upload_file':
+            return "uplaoded file"
         raise NotImplementedError
 
     @with_connection
@@ -502,3 +524,88 @@ class GoogleCloudStorageConnector(Connector):
 
 
         return result_buckets
+
+class VertexAIConnector(GoogleCloudStorageConnector):
+    dataset = None
+    
+    def init_ai_platform(self, instance_details: dict) -> None:
+        aiplatform.init(
+            credentials = self.get_credentials(),
+            project = self.auth_data['project_id'],
+            location = instance_details.get('location'),
+            staging_bucket = 'gs://' + instance_details.get('staging_bucket_name'),
+            experiment = instance_details.get('experiment'),
+            experiment_description = instance_details.get('experiment_description')
+        )
+
+    def create_vertex_ai_dataset(self, dataset_name: str, vertexai_import_file: str) -> None:
+        datasets_list = aiplatform.datasets.ImageDataset.list()
+        existing_datasets = []
+
+        for dataset in datasets_list:
+            display_name = dataset.__dict__['_gca_resource'].__dict__['_pb'].display_name
+            existing_datasets.append(display_name)
+
+        if dataset_name in existing_datasets:
+            dataset_index = existing_datasets.index(dataset_name)
+            dataset_to_delete = datasets_list[dataset_index]
+
+            dataset_to_delete.delete()
+
+        self.dataset = aiplatform.ImageDataset.create(
+            display_name=f"{dataset_name}",
+            gcs_source=vertexai_import_file,
+            import_schema_uri=aiplatform.schema.dataset.ioformat.image.bounding_box,
+        )
+
+    def train_automl_model(self, model_name, model_type = "MOBILE_TF_VERSATILE_1", node_hours = 20000) -> str:
+        credentials = self.get_credentials()
+
+        if not self.dataset:
+            return
+
+        created_dataset_name = self.dataset.__dict__['_gca_resource'].__dict__['_pb'].name
+        id_separator_index = created_dataset_name.rindex('/')
+        created_dataset_id = created_dataset_name[id_separator_index + 1:]
+
+        client_options = {
+            "api_endpoint": "us-central1-aiplatform.googleapis.com"
+        }
+
+        client = aiplatform.gapic.PipelineServiceClient(client_options=client_options, credentials=credentials)
+
+        training_task_inputs = trainingjob.definition.AutoMlImageObjectDetectionInputs(
+            model_type=model_type,
+            budget_milli_node_hours=node_hours,
+            disable_early_stopping=False,
+        ).to_value()
+
+        training_pipeline = {
+            "display_name": model_name,
+            "training_task_definition": "gs://google-cloud-aiplatform/schema/trainingjob/definition/automl_image_object_detection_1.0.0.yaml",
+            "training_task_inputs": training_task_inputs,
+            "input_data_config": {
+                "dataset_id": created_dataset_id
+            },
+            "model_to_upload": {
+                "display_name": model_name
+            },
+        }
+
+        location = self.dataset.__dict__['location']
+        project = self.dataset.__dict__['project']
+
+        parent = f"projects/{project}/locations/{location}"
+
+        response = client.create_training_pipeline(
+            parent=parent, 
+            training_pipeline=training_pipeline
+        )
+
+        model_name = response.__dict__['_pb'].name
+        id_separator_index = model_name.rindex('/')
+        model_id = model_name[id_separator_index + 1:]
+
+        return model_id
+
+    
