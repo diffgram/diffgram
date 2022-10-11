@@ -333,7 +333,10 @@ def build_packet(file,
     if file.type == "sensor_fusion":
         return build_sensor_fusion_packet(file, session, file_comparison_mode)
 
+    if file.type == "compound":
+        return build_compound_file_packet(file, session, file_comparison_mode)
 
+def build_compound_file_packet(file, session, file_comparison_mode):
 def build_geopacket(file, session, file_comparison_mode = "latest"):
     geo_assets = file.get_geo_assets(session = session)
     assets_serialized = []
