@@ -758,7 +758,7 @@ class Job(Base, Caching):
             schema_data = schema.serialize()
         ui_schema_data = None
         if self.ui_schema_id:
-            ui_schema = UI_Schema.get_by_id(session = session, id = self.label_schema_id)
+            ui_schema = UI_Schema.get_by_id(session = session, id = self.ui_schema_id)
             ui_schema_data = ui_schema.serialize()
         return {
             'id': self.id,

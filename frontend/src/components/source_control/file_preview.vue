@@ -3,12 +3,13 @@
   <div class="ma-1 pa-0">
 
     <div
+      v-if="file.type === 'image'"
       class="pa-0 ma-0 drawable-wrapper"
       :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
       ref="file_card"
     >
       <drawable_canvas
-        v-if="image_bg"
+        v-if="file.type === 'image'"
         ref="drawable_canvas"
         :allow_zoom="false"
         :image_bg="image_bg"
@@ -35,7 +36,6 @@
         />
 
       </drawable_canvas>
-
       <v-skeleton-loader
         v-else
         type="image"
@@ -43,7 +43,10 @@
         :height="file_preview_height"
       />
     </div>
-    <div class="pa-0 ma-0" v-if="file.video" ref="file_card">
+    <div
+      class="pa-0 ma-0 drawable-wrapper"
+      :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
+       v-if="file.type === 'video'" ref="file_card">
       <video_drawable_canvas
         :allow_zoom="false"
         :preview_mode="true"
@@ -55,6 +58,7 @@
         :canvas_width="file_preview_width"
         :editable="false"
         :auto_scale_bg="true"
+        :video_player_height="80"
         :label_settings="label_settings"
         :refresh="refresh"
         :show_video_nav_bar="show_video_nav_bar"
@@ -65,6 +69,22 @@
         @update_instance_list="set_video_instance_list"
       >
       </video_drawable_canvas>
+    </div>
+    <div v-if="file.type === 'compound'"
+         class="pa-0 ma-0 drawable-wrapper"
+         :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
+         ref="file_card">
+        <compound_file_preview
+          :project_string_id="project_string_id"
+          :file="file"
+          :base_model_run="base_model_run"
+          :compare_to_model_run_list="compare_to_instance_list_set"
+          :enable_go_to_file_on_click="enable_go_to_file_on_click"
+          :file_preview_height="file_preview_height"
+          :file_preview_width="file_preview_width"
+          :show_ground_truth="show_ground_truth"
+          :show_video_nav_bar="show_video_nav_bar"
+        />
     </div>
   </div>
 </template>
@@ -77,10 +97,13 @@
   import video_drawable_canvas from "../vue_canvas/video_drawable_canvas";
   import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
+  import Compound_file_preview from "@/components/source_control/compound_file_preview";
+  import {filter_from_model_id, filter_from_model_runs, filter_global_instance_list} from "./dataset_explorer_instance_filtering";
 
   export default Vue.extend({
     name: "file_preview",
     components: {
+      Compound_file_preview,
       video_drawable_canvas,
       drawable_canvas,
       instance_list
@@ -221,51 +244,13 @@
       },
       prepare_filtered_instance_list: function () {
         this.filtered_instance_list = []
-        if (this.$props.base_model_run) {
-          this.filtered_instance_list = this.global_instance_list.filter(inst => {
-            return inst.model_run_id === this.$props.base_model_run.id;
-          })
-          this.filtered_instance_list = this.filtered_instance_list.map(inst => {
-            inst = this.initialize_instance(inst)
-            inst.override_color =this.$props.base_model_run.color
-            return inst
-          })
-        }
-
-
-        if (this.$props.compare_to_model_run_list) {
-          let added_ids = this.filtered_instance_list.map(inst => inst.id);
-          for (const model_run of this.$props.compare_to_model_run_list) {
-
-            let filtered_instances = this.global_instance_list.filter(inst => {
-              return inst.model_run_id === model_run.id;
-            })
-            filtered_instances = filtered_instances.map(inst => {
-              inst = this.initialize_instance(inst)
-              inst.override_color = model_run.color
-              return inst
-            })
-            for(const instance of filtered_instances){
-              if(!added_ids.includes(instance.id)){
-                let initialized_instance = this.initialize_instance(instance);
-                this.filtered_instance_list.push(initialized_instance);
-                added_ids.push(initialized_instance.id)
-              }
-            }
-          }
-
-        }
-
-
-        if(this.$props.show_ground_truth){
-          if(this.global_instance_list) {
-            const ground_truth_instances = this.global_instance_list.filter(inst => !inst.model_run_id);
-            for(const inst of ground_truth_instances){
-              let initialized_instance = this.initialize_instance(inst);
-              this.filtered_instance_list.push(initialized_instance)
-            }
-          }
-        }
+        this.filtered_instance_list = filter_global_instance_list(
+          this.filtered_instance_list,
+          this.global_instance_list,
+          this.$props.base_model_run,
+          this.$props.compare_to_model_run_list,
+          this.$props.show_ground_truth
+        )
       },
 
       set_bg: async function (newFile) {
@@ -316,7 +301,7 @@
             file: this.$props.file.id,
             model_runs:  model_runs.length > 0 ? encodeURIComponent(model_run_ids): undefined,
             color_list:  color_list.length > 0 ? encodeURIComponent(color_list): undefined,
-            frame: current_frame
+            frame: this.$props.file.type === 'video' ? 0 : undefined
 
           }
         }).catch(()=>{});

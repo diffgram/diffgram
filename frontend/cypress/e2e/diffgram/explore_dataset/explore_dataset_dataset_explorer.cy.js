@@ -19,7 +19,7 @@ describe('Annotate Files Tests', () => {
 
     context('It Can write a query and filter files', () => {
       it('Correctly opens the context menu on a Bounding Box', () => {
-        cy.wait(2000)
+        cy.wait(4000)
         cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
         cy.wait(1000)
         cy.select_label('apple')

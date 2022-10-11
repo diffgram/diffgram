@@ -8,6 +8,10 @@ on:
         required: true
       GOOGLE_PROJECT_NAME:
         required: true
+      DOCKERHUB_USERNAME:
+        required: true
+      DOCKERHUB_TOKEN:
+        required: true
 jobs:
   Publish-Default-Docker-Image:
     runs-on: ubuntu-latest

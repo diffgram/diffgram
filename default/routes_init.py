@@ -20,6 +20,7 @@ def do_routes_importing():
 
     from methods.project.project_update import api_project_update
     from methods.source_control.file.file_update import api_file_update
+    from methods.source_control.file.file_get_child_files import api_file_get_child_files
 
     from methods.project.project_list import project_list_api
 
