@@ -53,17 +53,16 @@ from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
 from methods.text_data.text_tokenizer import TextTokenizer
 from shared.utils.instance.transform_instance_utils import rotate_instance_dict_90_degrees
+from shared.ingest.allowed_ingest_extensions import images_allowed_file_names, \
+    sensor_fusion_allowed_extensions, \
+    geo_tiff_allowed_extensions, \
+    videos_allowed_file_names, \
+    text_allowed_file_names, \
+    audio_allowed_file_names, \
+    csv_allowed_file_names, \
+    existing_instances_allowed_file_names
 
 data_tools = Data_tools().data_tools
-
-images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
-sensor_fusion_allowed_extensions = [".json"]
-geo_tiff_allowed_extensions = [".tiff", ".tif"]
-videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
-text_allowed_file_names = [".txt"]
-audio_allowed_file_names = [".mp3", ".wav", ".flac"]
-csv_allowed_file_names = [".csv"]
-existing_instances_allowed_file_names = [".json"]
 
 STOP_PROCESSING_DATA = False
 

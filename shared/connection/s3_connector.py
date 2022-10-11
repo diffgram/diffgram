@@ -22,19 +22,7 @@ from shared.regular import regular_log
 
 from shared.data_tools_core_s3 import DataToolsS3
 from botocore.config import Config
-
-images_allowed_file_names = [".jpg", ".jpeg", ".png"]
-videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
-allowed_content_types_images = [
-    'image/jpeg',
-    'image/png',
-]
-allowed_content_types_videos = [
-    'video/mp4',
-    'video/quicktime',
-    'video/x-msvideo',
-    'video/x-m4v',
-]
+from shared.ingest.allowed_ingest_extensions import images_allowed_file_names, videos_allowed_file_names
 
 
 def with_s3_exception_handler(f):
