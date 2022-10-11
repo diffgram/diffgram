@@ -1,4 +1,4 @@
-import axios from "@/services/customInstance";
+import axios from "./customInstance";
 
 export const get_dataset_list = async (project_string_id) => {
   try {
@@ -50,6 +50,16 @@ export const update_dataset = async (project_string_id, current_directory, mode)
     }
 
     return [result, null]
+  } catch(e) {
+    return [null, e]
+  }
+}
+
+export const refresh_dataset_list = async (project_string_id, payload) => {
+  try {
+    const { data } = await axios.post(`/api/v1/project/${project_string_id}/directory/list`, payload)
+
+    return [data, null]
   } catch(e) {
     return [null, e]
   }

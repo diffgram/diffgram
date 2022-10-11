@@ -90,7 +90,7 @@ export default Vue.extend( {
             this.show_success = true
             this.$emit('directory_updated', success.updated_director, this.mode)
         } else {
-            this.$route_api_errors(error)
+            // this.$route_api_errors(error)
         }
         this.loading = false
     }

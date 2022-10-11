@@ -72,6 +72,7 @@ export default Vue.extend( {
   },
   methods: {
     new_directory: async function (): Promise<void> {
+      return
       this.loading = true
       this.error = {}
       this.show_success = false
