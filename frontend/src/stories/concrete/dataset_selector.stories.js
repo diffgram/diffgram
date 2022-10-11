@@ -1,18 +1,14 @@
-import standard_chip from "../../components/base/standard_chip.vue";
+import dataset_selector from "../../components/concrete/dataset/dataset_selector.vue";
 
 export default {
-  title: "Attached/dataset_selector",
-  component: standard_chip,
+  title: "Concrete/dataset_selector",
+  component: dataset_selector,
 };
 
 export const Default = (args, { argTypes }) => ({
   components: {
-    standard_chip,
+    dataset_selector,
   },
   props: Object.keys(argTypes),
-  template: '<standard_chip v-bind="$props" />',
+  template: '<dataset_selector v-bind="$props" />',
 });
-
-Default.args = {
-    message: "Diffgram standard chip"
-}
