@@ -40,6 +40,12 @@
 
     methods: {
       draw_image_bg: function (ctx) {
+        if(!ctx.canvas){
+          return
+        }
+        if(!this.image){
+          return
+        }
         let local_brightness = this.canvas_filters['brightness']
 
 
