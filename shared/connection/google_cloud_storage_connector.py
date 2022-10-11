@@ -22,20 +22,7 @@ from shared.database.export import Export
 from shared.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.database.project import Project
 from shared.database.event.event import Event
-
-
-images_allowed_file_names = [".jpg", ".jpeg", ".png"]
-videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
-allowed_content_types_images = [
-    'image/jpeg',
-    'image/png',
-]
-allowed_content_types_videos = [
-    'video/mp4',
-    'video/quicktime',
-    'video/x-msvideo',
-    'video/x-m4v',
-]
+from shared.ingest.allowed_ingest_extensions import images_allowed_file_names, videos_allowed_file_names
 
 
 def with_google_exception_handler(f):
@@ -271,6 +258,7 @@ class GoogleCloudStorageConnector(Connector):
                     blob_expiry = int(time.time() + (60 * 60 * 24 * 30))
                     signed_url = blob.generate_signed_url(expiration=blob_expiry)
                     extension = Path(blob.path).suffix
+                    extension = extension.lower()
                     media_type = None
                     if extension in images_allowed_file_names:
                         media_type = 'image'
