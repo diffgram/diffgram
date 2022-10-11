@@ -28,8 +28,8 @@
       <file_preview
         v-if="file.type === 'image' || file.type === 'video'"
         :class="`d-flex file-preview ${file.type}-preview`"
-        file_preview_width="500"
-        file_preview_height="500"
+        :file_preview_width="500"
+        :file_preview_height="500"
         :key="file.id + 'expanded'"
         :project_string_id="project_string_id"
         :file="file"
