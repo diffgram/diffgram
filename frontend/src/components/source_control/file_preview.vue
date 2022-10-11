@@ -77,6 +77,7 @@
         <compound_file_preview
           :project_string_id="project_string_id"
           :file="file"
+          :show_compound_details_on_hover="show_details_on_hover"
           :base_model_run="base_model_run"
           :compare_to_model_run_list="compare_to_instance_list_set"
           :enable_go_to_file_on_click="enable_go_to_file_on_click"
@@ -120,6 +121,9 @@
       },
       'file_preview_width': {
         default: 440
+      },
+      'show_details_on_hover':{
+        default: true
       },
       'selectable': {
         default: false
