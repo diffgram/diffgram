@@ -661,10 +661,18 @@
                                  :class="{['d-flex ma-0 flex-column justify-center align-center pa-0']: true,
                                  ['unsselected-box']: !selected.includes(item),
                                  ['selected-box']: selected.includes(item)}">
-                      <v-icon size="28" class="ma-2 pa-0">
-                        mdi-hexagon-multiple
-                      </v-icon>
-                      <p class="title-file">{{item.original_filename}}</p>
+                      <compound_file_preview
+                        :project_string_id="project_string_id"
+                        :file="item"
+                        :file_preview_width="100"
+                        :file_preview_height="100"
+                        :show_compound_details_on_hover="false"
+
+                      ></compound_file_preview>
+<!--                      <v-icon size="28" class="ma-2 pa-0">-->
+<!--                        mdi-hexagon-multiple-->
+<!--                      </v-icon>-->
+<!--                      <p class="title-file">{{item.original_filename}}</p>-->
                     </v-container>
 
                   </div>
@@ -886,16 +894,20 @@
 import axios from '../../services/customInstance';
 import v_file_transfer from '../source_control/file_transfer'
 import directory_icon_selector from '../source_control/directory_icon_selector'
+import compound_file_preview from '../source_control/compound_file_preview'
 import {get_file_list, get_file_signed_url} from '../../services/fileServices'
 import dir_attach from '../task/file/dir_attach'
 import pLimit from "p-limit";
 
 import Vue from "vue";
+import Compound_file_preview from "../source_control/compound_file_preview.vue";
 
  export default Vue.extend( {
   name: 'media_core',
   components: {
+    Compound_file_preview,
     v_file_transfer,
+    compound_file_preview,
     directory_icon_selector,
     dir_attach,
    },

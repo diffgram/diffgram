@@ -5,7 +5,7 @@
     @mouseleave="() => {hovered = false}"
   >
 
-    <v-expand-transition>
+    <v-expand-transition v-if="show_compound_details_on_hover">
       <v-card
         :style="`position: absolute; z-index: 9999; width:${file_preview_width}px; height: 70px`"
         v-show="hovered"
@@ -71,6 +71,9 @@
     props: {
       'project_string_id': {
         default: undefined
+      },
+      'show_compound_details_on_hover':{
+        default: true
       },
       'file': {
         default: undefined
