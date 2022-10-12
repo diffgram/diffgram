@@ -51,6 +51,7 @@
 <script lang="ts">
 import Vue from "vue"; 
 import sillyname from 'sillyname';
+import v_error_multiple from "../../regular/error_multiple.vue"
 import { create_new_dataset } from "../../../services/datasetServices";
 
 export default Vue.extend( {
@@ -60,6 +61,9 @@ export default Vue.extend( {
       type: String,
       required: true
     }
+  },
+  components: {
+    v_error_multiple
   },
   data() {
     return {
