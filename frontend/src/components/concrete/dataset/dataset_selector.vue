@@ -295,7 +295,9 @@ export default Vue.extend({
       }
 
       return list.sort((first_dataset, second_dataset) => {
-        const result = new Date(second_dataset.created_time) - new Date(first_dataset.created_time)
+        const first_date: any = new Date(first_dataset['created_time'])
+        const second_date: any = new Date(second_dataset['created_time'])
+        const result = second_date - first_date
         return result;
       });
     }
