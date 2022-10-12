@@ -4,7 +4,7 @@ const project_string_id = 'storybook-mock'
 
 let dataset_list = [
   { 
-    directory_id: '1', 
+    directory_id: 1, 
     nickname: 'Default', 
     created_time:"2022-10-10T19:12:44.257372" 
   }
@@ -117,6 +117,48 @@ export const Default = (args, { argTypes }) => ({
 });
 Default.args = {
   project_string_id,
+  set_from_id: 1,
+  dataset_list: dataset_list,
+};
+
+export const ViewOnly = (args, { argTypes }) => ({
+  components: {
+    dataset_selector,
+  },
+  props: Object.keys(argTypes),
+  template: '<dataset_selector v-bind="$props" />',
+});
+ViewOnly.args = {
+  project_string_id,
+  set_from_id: 1,
+  view_only_mode: true,
+  dataset_list: dataset_list,
+};
+
+export const WithUpdate = (args, { argTypes }) => ({
+  components: {
+    dataset_selector,
+  },
+  props: Object.keys(argTypes),
+  template: '<dataset_selector v-bind="$props" />',
+});
+WithUpdate.args = {
+  project_string_id,
+  set_from_id: 1,
+  show_update: true,
+  dataset_list: dataset_list,
+};
+
+export const WithAddNew = (args, { argTypes }) => ({
+  components: {
+    dataset_selector,
+  },
+  props: Object.keys(argTypes),
+  template: '<dataset_selector v-bind="$props" />',
+});
+WithAddNew.args = {
+  project_string_id,
+  set_from_id: 1,
   show_new: true,
   dataset_list: dataset_list,
 };
