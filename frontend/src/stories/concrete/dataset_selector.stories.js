@@ -1,12 +1,14 @@
 import dataset_selector from "../../components/concrete/dataset/dataset_selector.vue";
 
+const project_string_id = 'storybook-mock'
+
 export default {
   title: "Concrete/dataset_selector",
   component: dataset_selector,
   parameters: {
     mockData: [
       {
-        url: '/api/v1/project/project_string_id/directory/new',
+        url: `/api/v1/project/${project_string_id}/directory/new`,
         method: 'POST',
         status: 200,
         response: (request) => {
@@ -33,7 +35,7 @@ export const Default = (args, { argTypes }) => ({
   template: '<dataset_selector v-bind="$props" />',
 });
 Default.args = {
-  project_string_id: 'project_string_id',
+  project_string_id,
   show_new: true,
   dataset_list: [
     { directory_id: '1', nickname: 'Dataset 1', created_time:"2022-10-10T19:12:44.257372" },
