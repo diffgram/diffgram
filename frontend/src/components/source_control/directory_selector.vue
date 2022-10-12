@@ -53,7 +53,10 @@
 
                     <template slot="content">
 
-                      <dataset_new_and_commit @directory_created="on_directory_created" />
+                      <v_new_directory
+                        @directory_created="on_directory_created"
+                        :project_string_id="project_string_id">
+                      </v_new_directory>
 
                     </template>
 
@@ -159,9 +162,11 @@
         :commit_menu_status="true">
 
         <template slot="content">
-          <dataset_update_and_commit 
-            :current_directory_prop="current_directory"
-          />
+
+          <v_update_directory :project_string_id="project_string_id"
+                              :current_directory_prop="current_directory"
+          >
+          </v_update_directory>
 
         </template>
 
@@ -180,8 +185,8 @@
 // TODO pass loading or?
 
 import axios from '../../services/customInstance';
-import dataset_new_and_commit from "../attached/dataset/dataset_new_and_commit"
-import dataset_update_and_commit from "../attached/dataset/dataset_update_and_commit"
+import v_new_directory from './directory_new'
+import v_update_directory from './directory_update'
 import Vue from "vue";
 
 export default Vue.extend({
@@ -233,8 +238,8 @@ export default Vue.extend({
     }
   },
   components: {
-    dataset_new_and_commit,
-    dataset_update_and_commit
+    v_new_directory,
+    v_update_directory
   },
   data() {
     return {
