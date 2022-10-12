@@ -110,7 +110,7 @@
 
                 {{ data.item.nickname }}
 
-                (<span>{{data.item.created_time | moment("ddd, MMM D h:mm:ss a")}} </span>)
+                (<span>{{format_time_string(data.item.created_time)}}</span>)
               </div>
             </v-skeleton-loader>
           </template>
@@ -164,11 +164,12 @@
 
 <script lang="ts">
 import Vue from "vue";
+import moment from "moment"
 import dataset_new from "./dataset_new.vue"
 import dataset_update from "./dataset_update.vue"
-import { refresh_dataset_list } from "../../../services/datasetServices";
 import date_picker from "../../regular/date_picker.vue"
 import button_with_menu from "../../regular/button_with_menu.vue"
+import { refresh_dataset_list } from "../../../services/datasetServices";
 
 export default Vue.extend({
   name: 'dataset_selector',
@@ -289,7 +290,10 @@ export default Vue.extend({
         list = workign_list
       }
 
-      return list
+      return list.sort((first_dataset, second_dataset) => {
+        const result = new Date(second_dataset.created_time) - new Date(first_dataset.created_time)
+        return result;
+      });
     }
   },
   watch: {
@@ -299,12 +303,17 @@ export default Vue.extend({
     }
   },
   methods: {
+    format_time_string(date: string): string {
+      const date_bject = new Date(date)
+      return moment(date_bject).format("ddd, MMM D h:mm a")
+    },
     store_date_and_refresh(event: Event): void {
       this.date = event
       this.refresh_dataset_list()
     },
     on_dataset_created: function(directory: object): void {
       this.current_directory = directory;
+      this.internal_dataset_list.push(directory)
       this.change_dataset();
     },
     get_dataset_object_from_directory_list_using_id(id: number) {
@@ -336,6 +345,9 @@ export default Vue.extend({
     change_dataset(): void {
       this.$emit('change_dataset', this.current_directory)
     },
+    add_new_dataset(new_dataset: object): void {
+      this.internal_dataset_list.push(new_dataset)
+    }
   },
 })
 </script>
