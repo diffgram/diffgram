@@ -2,7 +2,7 @@ import dataset_selector from "../../components/concrete/dataset/dataset_selector
 
 const project_string_id = 'storybook-mock'
 
-const dataset_list = [
+let dataset_list = [
   { 
     directory_id: '1', 
     nickname: 'Default', 
@@ -33,6 +33,33 @@ export default {
                 success: true,
               },
               new_directory: new_dataset
+          }
+        }
+      },
+      {
+        url: `/api/v1/project/${project_string_id}/directory/update`,
+        method: 'POST',
+        status: 200,
+        response: (request) => {
+          const request_body = JSON.parse(request.body)
+
+          const updated_datasets = [...dataset_list].map(dataset => {
+            if (dataset.directory_id === request_body.directory_id) {
+              dataset.nickname = request_body.nickname
+            }
+
+            return dataset
+          })
+
+          dataset_list = updated_datasets
+
+          return {
+              log: {
+                success: true,
+              },
+              project: {
+                directory_list: updated_datasets
+              }
           }
         }
       },

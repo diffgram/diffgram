@@ -38,7 +38,8 @@ export const update_dataset = async (project_string_id, current_directory, mode)
     const payload = {
       nickname: current_directory.nickname,
       directory_id: current_directory.directory_id,
-      mode: mode
+      mode: mode,
+      access_type: 'project'
     }
 
     const { data } = await axios.post(`/api/v1/project/${project_string_id}/directory/update`, payload)
