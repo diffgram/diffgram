@@ -1,0 +1,46 @@
+
+---
+summary: List Exports
+description: Lists all the available exports on the given project.
+tags:
+  - Exports
+parameters:
+  - name: project_string_id
+    in: path
+    type: string
+    required: true
+definitions:
+  Export:
+    type: object
+    properties:
+      id:
+        type: number
+      kind:
+        type: string
+      masks:
+        type: boolean
+      source:
+        type: string
+      status:
+        type: string
+      status_text:
+        type: string
+      file_comparison_mode:
+        type: string
+      percent_complete:
+        type: string
+      created_time:
+        type: string
+      file_list_length:
+        type: number
+      ann_is_complete:
+        type: boolean
+  ExportList:
+    type: array
+    items:
+      $ref: '#/definitions/Export'
+responses:
+  200:
+    description: The exports list
+    schema:
+      $ref: '#/definitions/ExportList'
