@@ -332,6 +332,7 @@
 
           <template slot="Preview" slot-scope="props">
             <file_preview_with_hover_expansion
+              :show_preview_details="false"
               :file="props.item.file"
               :project_string_id="project_string_id"
               tooltip_direction="right"

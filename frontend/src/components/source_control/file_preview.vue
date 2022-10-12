@@ -5,9 +5,15 @@
     <div
       v-if="file.type === 'image'"
       class="pa-0 ma-0 drawable-wrapper"
-      :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
+      :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`, position: 'relative'}"
       ref="file_card"
     >
+      <file_preview_details_card
+        v-if="show_preview_details"
+        :file="file"
+        :file_preview_height="file_preview_height"
+        :file_preview_width="file_preview_width"
+      ></file_preview_details_card>
       <drawable_canvas
         v-if="file.type === 'image'"
         ref="drawable_canvas"
@@ -45,8 +51,14 @@
     </div>
     <div
       class="pa-0 ma-0 drawable-wrapper"
-      :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
+      :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`, position: 'relative'}"
        v-if="file.type === 'video'" ref="file_card">
+      <file_preview_details_card
+        v-if="show_preview_details"
+        :file="file"
+        :file_preview_height="file_preview_height"
+        :file_preview_width="file_preview_width"
+      ></file_preview_details_card>
       <video_drawable_canvas
         :allow_zoom="false"
         :preview_mode="true"
@@ -75,6 +87,7 @@
          :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
          ref="file_card">
         <compound_file_preview
+          :show_preview_details="show_preview_details"
           :project_string_id="project_string_id"
           :file="file"
           :base_model_run="base_model_run"
@@ -98,12 +111,14 @@
   import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   import Compound_file_preview from "@/components/source_control/compound_file_preview";
+  import file_preview_details_card from "@/components/source_control/file_preview_details_card";
   import {filter_from_model_id, filter_from_model_runs, filter_global_instance_list} from "./dataset_explorer_instance_filtering";
 
   export default Vue.extend({
     name: "file_preview",
     components: {
       Compound_file_preview,
+      file_preview_details_card,
       video_drawable_canvas,
       drawable_canvas,
       instance_list
@@ -120,6 +135,9 @@
       },
       'file_preview_width': {
         default: 440
+      },
+      'show_preview_details':{
+        default: true
       },
       'selectable': {
         default: false

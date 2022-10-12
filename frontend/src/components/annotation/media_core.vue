@@ -666,7 +666,7 @@
                         :file="item"
                         :file_preview_width="100"
                         :file_preview_height="100"
-                        :show_compound_details_on_hover="false"
+                        :show_preview_details="false"
 
                       ></compound_file_preview>
 <!--                      <v-icon size="28" class="ma-2 pa-0">-->

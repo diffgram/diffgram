@@ -7,10 +7,12 @@
 
       <div v-on="on">
         <file_preview
-          v-if="file.type === 'image' || file.type === 'video'"
+          v-if="file.type === 'image' || file.type === 'video' || file.type === 'compound'"
           :class="`d-flex file-preview ${file.type}-preview`"
           :file_preview_width="file_preview_width"
           :file_preview_height="file_preview_height"
+          :show_preview_details="show_preview_details"
+          :show_details_on_hover="false"
           :key="file.id"
           :project_string_id="project_string_id"
           :file="file"
@@ -26,10 +28,10 @@
     </template>
 
       <file_preview
-        v-if="file.type === 'image' || file.type === 'video'"
+        v-if="file.type === 'image' || file.type === 'video' || file.type === 'compound'"
         :class="`d-flex file-preview ${file.type}-preview`"
-        file_preview_width="500"
-        file_preview_height="500"
+        :file_preview_width="500"
+        :file_preview_height="500"
         :key="file.id + 'expanded'"
         :project_string_id="project_string_id"
         :file="file"
@@ -62,6 +64,9 @@ export default Vue.extend( {
     },
     'file': {
       default: null
+    },
+    'show_preview_details': {
+      default: false
     },
     'project_string_id': {
       default: {}
