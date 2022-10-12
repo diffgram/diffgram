@@ -46,7 +46,7 @@
                   </button_with_menu>
                 </div>
                 <standard_button
-                  icon="refresh"
+                  icon="mdi-refresh"
                   color="primary"
                   tooltip_message="Refresh"
                   :icon_style="true"
@@ -165,6 +165,8 @@
 <script lang="ts">
 import Vue from "vue";
 import moment from "moment"
+import v_error_multiple from "../../regular/error_multiple.vue"
+import standard_button from "../../base/standard_button.vue"
 import dataset_new from "./dataset_new.vue"
 import dataset_update from "./dataset_update.vue"
 import date_picker from "../../regular/date_picker.vue"
@@ -243,7 +245,9 @@ export default Vue.extend({
     dataset_new,
     dataset_update,
     date_picker,
-    button_with_menu
+    button_with_menu,
+    v_error_multiple,
+    standard_button
   },
   data() {
     return {
