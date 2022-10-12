@@ -72,7 +72,6 @@ export default Vue.extend( {
   },
   methods: {
     new_directory: async function (): Promise<void> {
-      return
       this.loading = true
       this.error = {}
       this.show_success = false
@@ -81,7 +80,7 @@ export default Vue.extend( {
 
       if (!error) {
         this.show_success = true
-        this.$emit('directory_created', success.new_directory)
+        this.$emit('dataset_created', success.new_directory)
       } else {
         this.error = error.response.data.log.error
       }

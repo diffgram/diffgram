@@ -40,7 +40,7 @@
                     <template slot="content">
                       <dataset_new 
                         :project_string_id="project_string_id"
-                        @directory_created="on_directory_created" 
+                        @dataset_created="on_dataset_created" 
                       />
                     </template>
                   </button_with_menu>
@@ -95,7 +95,7 @@
               :loading="loading_dataset_list"
             >
               <div class="d-flex">
-                <div  style="width: 75px">
+                <div style="width: 75px">
                   <v-chip 
                     v-if="is_super_admin"
                     x-small 
@@ -303,8 +303,7 @@ export default Vue.extend({
       this.date = event
       this.refresh_dataset_list()
     },
-    on_directory_created: function(directory: object): void {
-      this.patch_dataset(directory)
+    on_dataset_created: function(directory: object): void {
       this.current_directory = directory;
       this.change_dataset();
     },
@@ -329,20 +328,13 @@ export default Vue.extend({
         this.internal_dataset_list = dataset_list
         this.$emit('on_refresh_dataset_list', dataset_list)
       } else {
-        // this.error_dataset_list = this.$route_api_errors(error)
+        this.error_dataset_list = this.$route_api_errors(error)
       }
 
       this.loading_dataset_list = false;
     },
     change_dataset(): void {
       this.$emit('change_dataset', this.current_directory)
-    },
-    patch_dataset(new_dataset: any): void {
-      const dataset_in_existing = this.internal_dataset_list.find((dataset: any) => dataset.id === new_dataset.id);
-
-      if (!dataset_in_existing) {
-        this.internal_dataset_list.splice(0, 0, new_dataset)
-      }
     },
   },
 })
