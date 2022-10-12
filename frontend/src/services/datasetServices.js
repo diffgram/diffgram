@@ -56,9 +56,7 @@ export const update_dataset = async (project_string_id, current_directory, mode)
 
 export const refresh_dataset_list = async (project_string_id, payload) => {
   try {
-    console.log("here")
     const { data } = await axios.post(`/api/v1/project/${project_string_id}/directory/list`, payload)
-    console.log(data)
 
     return [data, null]
   } catch(e) {

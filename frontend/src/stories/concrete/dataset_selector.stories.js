@@ -5,7 +5,7 @@ const project_string_id = 'storybook-mock'
 const dataset_list = [
   { 
     directory_id: '1', 
-    nickname: 'Dataset 1', 
+    nickname: 'Default', 
     created_time:"2022-10-10T19:12:44.257372" 
   }
 ]
