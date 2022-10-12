@@ -181,6 +181,7 @@
     "selenium-server": "^3.141.59",
     "semver": "^7.3.2",
     "shelljs": "^0.8.5",
+    "storybook-addon-mock": "^3.2.0",
     "strip-loader": "^0.1.2",
     "ts-jest": "^26.0.7",
     "ts-loader": "^6.2.2",
