@@ -306,6 +306,10 @@ export default Vue.extend({
     set_from_id(id: number): void {
       this.current_directory = this.get_dataset_object_from_directory_list_using_id(id)
       this.$emit('on_set_current_directory', this.current_directory)
+    },
+    multiple(state: boolean): void {
+      if (state) this.current_directory = []
+      else this.current_directory = {}
     }
   },
   methods: {

@@ -7,6 +7,11 @@ let dataset_list = [
     directory_id: 1, 
     nickname: 'Default', 
     created_time:"2022-10-10T19:12:44.257372" 
+  },
+  { 
+    directory_id: 2, 
+    nickname: 'My second dataset', 
+    created_time:"2022-10-10T19:12:44.257372" 
   }
 ]
 
@@ -160,5 +165,18 @@ WithAddNew.args = {
   project_string_id,
   set_from_id: 1,
   show_new: true,
+  dataset_list: dataset_list,
+};
+
+export const SelectMultiple = (args, { argTypes }) => ({
+  components: {
+    dataset_selector,
+  },
+  props: Object.keys(argTypes),
+  template: '<dataset_selector v-bind="$props" />',
+});
+SelectMultiple.args = {
+  project_string_id,
+  multiple: true,
   dataset_list: dataset_list,
 };
