@@ -8,6 +8,7 @@
         </v-card-title>
 
         <v-text-field 
+            v-if="current_directory"
             v-model="current_directory.nickname"
             label="Name"
         />
@@ -46,6 +47,7 @@
 
 <script lang="ts">
 import Vue from "vue";
+import v_error_multiple from "../../regular/error_multiple.vue"
 import { update_dataset } from '../../../services/datasetServices';
 
 export default Vue.extend( {
@@ -60,6 +62,9 @@ export default Vue.extend( {
         required: true
     }
   },
+  components: {
+    v_error_multiple
+  },
   data() {
     return {
         mode: "RENAME" as string,
@@ -70,7 +75,7 @@ export default Vue.extend( {
     }
   },
   watch: {
-    current_directory_prop() {
+    current_directory_prop: function() {
         this.current_directory = this.current_directory_prop
     }
   },
