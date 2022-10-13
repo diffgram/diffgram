@@ -7,6 +7,11 @@ import Vue from 'vue'
 import App from './App.vue'
 
 
+// import StarRating from 'vue-star-rating'
+// Vue.component('vue-star-rating', StarRating)
+
+// import Spinner from 'vue-simple-spinner'
+
 import vue2Dropzone from 'vue2-dropzone'
 import './css/vue_dropzone.css'
 
@@ -47,13 +52,6 @@ import action_node_box from './components/action/action_node_box'
 
 import task_list from './components/task/task/task_list'
 
-// BASE COMPONENTS
-import standard_button from "./components/base/standard_button.vue"
-Vue.component('standard_button', standard_button)
-
-import standard_chip from "./components/base/standard_chip.vue"
-Vue.component('standard_chip', standard_chip)
-
 /*
  * ABSTRACT regular methods
  *
@@ -71,6 +69,9 @@ import info_multiple from './components/regular/info_multiple'
 Vue.component('v_info_multiple', info_multiple)
 
 import error_multiple from './components/regular/error_multiple'
+
+import tooltip_button from './components/regular/tooltip_button'
+Vue.component('tooltip_button', tooltip_button)
 
 import ui_schema from './components/regular/ui_schema_wrapper'
 Vue.component('ui_schema', ui_schema)
@@ -92,6 +93,9 @@ Vue.component('diffgram_select', diffgram_select)
 
 import regular_table from './components/regular/regular_table'
 Vue.component('regular_table', regular_table)
+
+import regular_chip from './components/regular/regular_chip'
+Vue.component('regular_chip', regular_chip)
 
 import bread_crumbs from './components/regular/bread_crumbs'
 Vue.component('bread_crumbs', bread_crumbs)
@@ -240,8 +244,8 @@ import './css/mxgraph.css'
 
 // https://vuetifyjs.com/en/features/theme/#customizing
 
-export const vuetify_options = {
-  icons: {
+const vuetify_options = {
+  icons : {
     iconfont: 'mdi'
   },
   theme: {
@@ -262,7 +266,7 @@ Vue.use(vue_scroll_to)
 import VueMoment from 'vue-moment'
 import moment from 'moment-timezone'
 Vue.use(VueMoment, {
-  moment,
+    moment,
 })
 
 Vue.component('v_task_list', task_list)
@@ -342,7 +346,7 @@ import { get_sequence_color } from './components/regular/regular_annotation'
 Vue.prototype.$get_sequence_color = get_sequence_color
 
 
-import { addQueriesToLocation } from './components/regular/regular'
+import {addQueriesToLocation} from './components/regular/regular'
 Vue.prototype.$addQueriesToLocation = addQueriesToLocation
 
 

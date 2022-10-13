@@ -3,7 +3,7 @@
 
   <v-container class="d-flex align-center justify-start">
 
-    <standard_button
+    <tooltip_button
       datacy="new_attribute_button"
       button_color="primary"
       tooltip_message="Create Attribute"
@@ -14,7 +14,7 @@
       :loading="loading"
       :disabled="loading"
       color="primary">
-    </standard_button>
+    </tooltip_button>
 
   </v-container>
 

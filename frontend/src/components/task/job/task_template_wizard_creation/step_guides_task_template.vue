@@ -4,14 +4,14 @@
       <h1 data-cy="task-template-guide-step-title" class="font-weight-medium text--primary mr-4">
         Guides Setup:
       </h1>
-      <standard_button
+      <tooltip_button
         tooltip_message="Create Guides"
         @click="open_guides"
         button_color="primary"
         icon="mdi-plus"
         button_message="Create Guides"
         color="white">
-      </standard_button>
+      </tooltip_button>
     </div>
 
     <v_error_multiple :error="error"></v_error_multiple>

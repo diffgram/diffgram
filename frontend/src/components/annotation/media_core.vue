@@ -62,14 +62,17 @@
                 >
             <v-toolbar-items>
 
-              <global_dataset_selector
-                  v-if="file_dirs_view_mode === 0"
+              <directory_selector
                   class="mt-4"
+                  :project_string_id="project_string_id"
                   :show_new="true"
+                  :show_update="false"
                   :change_on_mount="false"
                   :set_from_id="current_dataset.directory_id"
-                  @change_directory="change_directory($event)"
-              />
+                  v-if="file_dirs_view_mode === 0"
+                  @change_directory="change_directory($event)">
+              </directory_selector>
+
 
               <v-divider
                 vertical
@@ -98,7 +101,7 @@
                 and show conditions are inverted as opposed to disable-->
               <!-- Only show next/previous page if it exists, saves real estate vs disabling-->
               <div>
-                <standard_button
+                <tooltip_button
                   v-show="!loading &&
                       metadata_previous.start_index != 0"
                   tooltip_message="Previous Page"
@@ -108,9 +111,9 @@
                   icon="mdi-chevron-left-box"
                   color="primary"
                 >
-                </standard_button>
+                </tooltip_button>
 
-                <standard_button
+                <tooltip_button
                   v-show="!loading &&
                       (metadata_previous.end_index != metadata_previous.file_count
                       || metadata_previous.next_page != undefined)"
@@ -121,7 +124,7 @@
                   icon="mdi-chevron-right-box"
                   color="primary"
                 >
-                </standard_button>
+                </tooltip_button>
               </div>
 
 
@@ -141,7 +144,7 @@
 
               </v-text-field>
 
-              <standard_button
+              <tooltip_button
                 tooltip_message="Refresh Media"
                 @click="request_media"
                 :loading="loading"
@@ -150,7 +153,7 @@
                 icon="mdi-refresh"
                 color="primary"
               >
-              </standard_button>
+              </tooltip_button>
 
             <!-- Filters -->
             <button_with_menu
@@ -312,7 +315,7 @@
               <div v-if="$store.state.user.current.api
                && $store.state.user.current.api.api_actions">
 
-                <standard_button
+                <tooltip_button
                   @click="inference_selected()"
                   icon="mdi-rocket"
                   tooltip_message="Inference"
@@ -324,7 +327,7 @@
                   :icon_style="true"
                   :bottom="true"
                 >
-                </standard_button>
+                </tooltip_button>
 
                 <v_error_multiple :error="error_inference">
                 </v_error_multiple>
@@ -399,13 +402,13 @@
                           :disabled="loading">
                 </v-select>
 
-                <standard_button
+                <tooltip_button
                   tooltip_message="Reset"
                   @click="headers_selected = headers_selected_backup"
                   v-if="headers_selected != headers_selected_backup"
                   icon="autorenew"
                   color="primary">
-                </standard_button>
+                </tooltip_button>
 
               </template>
 
@@ -562,7 +565,7 @@
                      For alignment consider how it looks with media,
                      and case of no media. ie with no media looks nicer to center perhaps.
                 -->
-                <standard_button
+                <tooltip_button
                   tooltip_message="Add Media"
                   @click="$router.push('/studio/upload/' +
                               $store.state.project.current.project_string_id)"
@@ -570,7 +573,7 @@
                   :large="true"
                   :icon_style="true"
                   color="primary">
-                </standard_button>
+                </tooltip_button>
               </v-row>
 
               <v-card xs4
@@ -874,7 +877,6 @@ import v_file_transfer from '../source_control/file_transfer'
 import directory_icon_selector from '../source_control/directory_icon_selector'
 import {get_file_list, get_file_signed_url} from '../../services/fileServices'
 import dir_attach from '../task/file/dir_attach'
-import global_dataset_selector from "../attached/global_dataset_selector.vue"
 import pLimit from "p-limit";
 
 import Vue from "vue";
@@ -885,7 +887,6 @@ import Vue from "vue";
     v_file_transfer,
     directory_icon_selector,
     dir_attach,
-    global_dataset_selector
    },
     props: {
       'project_string_id': {
@@ -1533,6 +1534,7 @@ import Vue from "vue";
     },
 
     async change_directory(event) {
+
       this.current_dataset = event
 
       this.$addQueriesToLocation({'dataset' : event.directory_id})

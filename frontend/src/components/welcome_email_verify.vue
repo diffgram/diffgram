@@ -21,7 +21,7 @@
                   </p>
                 </div>
 
-                <standard_button
+                <tooltip_button
                   v-if="is_automatically_checking == false"
                   tooltip_message="Refresh"
                   @click="attempts = 0, is_user_verified_interval()"
@@ -31,7 +31,7 @@
                   :icon_style="true"
                   :bottom="true"
                 >
-                </standard_button>
+                </tooltip_button>
 
                 <div style="min-height: 30px"> </div>
 

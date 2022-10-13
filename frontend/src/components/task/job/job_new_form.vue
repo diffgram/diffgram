@@ -13,14 +13,14 @@
         <v-container fluid class="d-flex align-top">
 
           <div class="pr-4">
-            <standard_button
+            <tooltip_button
                 tooltip_message="Quick Edit Project Level Schema"
                 @click="open_labels_dialog"
                 icon="mdi-format-paint"
                 :icon_style="true"
                 :large="true"
                 color="primary">
-            </standard_button>
+            </tooltip_button>
           </div>
 
           <label_select_only

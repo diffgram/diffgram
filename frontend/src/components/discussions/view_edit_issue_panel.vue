@@ -7,14 +7,14 @@
       <v-card-title v-if="!loading_get_issue && current_issue" class="headline">
        <v-container fluid class="pa-0 d-flex align-center">
 
-        <standard_button
+        <tooltip_button
             tooltip_message="Back To Discussions"
             @click="close_view_edit_panel"
             icon="mdi-arrow-left"
             :icon_style="true"
             :bottom="true"
             color="primary">
-        </standard_button>
+        </tooltip_button>
 
          <span style="font-size: 18px" class="pl-2 font-weight-bold">
               {{current_issue.title}}
@@ -61,7 +61,7 @@
          <v-row class="d-flex flex-column justify-start pa-0">
           <v-col cols="12" class="pa-0 pt-2 pb-2">
 
-            <standard_button
+            <tooltip_button
                 tooltip_message="Edit Instance Attachments"
                 v-if="allow_edit_attached_instances && !attached_instance_edition"
                 @click="start_attach_instance_edition"
@@ -69,9 +69,9 @@
                 :icon_style="true"
                 :bottom="true"
                 color="primary">
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button
+            <tooltip_button
                 tooltip_message="Save Attachments"
                 v-if="allow_edit_attached_instances && attached_instance_edition"
                 @click="save_attachments"
@@ -80,7 +80,7 @@
                 :icon_style="true"
                 :bottom="true"
                 color="success">
-            </standard_button>
+            </tooltip_button>
 
             <p class="ma-0" v-if="attached_instances.length > 0"><strong>Attached Instances</strong></p>
 

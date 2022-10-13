@@ -3,13 +3,13 @@
 
     <!-- WIP to call `action_manual_trigger` service
          Also probably not right spot for it maybe should be inside wizard etc-->
-    <standard_button
+    <tooltip_button
         tooltip_message="Manual Trigger"
         @click="move_frame"
         icon="help"
         :text_style="true"
         color="primary">
-    </standard_button>
+    </tooltip_button>
 
     <action_config_wizard_base
       v-if="display_mode === 'wizard' && steps_manager"

@@ -103,7 +103,7 @@ import Vue from "vue"; export default Vue.extend( {
       + '/directory/update',
         {
           nickname: this.current_directory.nickname,
-          access_type: 'project',
+
           directory_id: this.current_directory.directory_id,
           mode: this.mode
 

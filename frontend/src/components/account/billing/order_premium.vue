@@ -256,11 +256,11 @@
 
           <v-spacer></v-spacer>
 
-          <standard_button @click="roi_reset"
+          <tooltip_button @click="roi_reset"
                           icon="autorenew"
                           :icon_style="true"
                           tooltip_message="Reset">
-          </standard_button>
+          </tooltip_button>
 
         </v-card-title>
 

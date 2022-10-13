@@ -143,12 +143,14 @@
             <div class="d-flex justify-space-around">
               <v-container fluid class="d-flex align-center justify-center">
 
-                <dataset_selector 
-                  :set_from_id="initial_dataset ? initial_dataset.directory_id : undefined"
-                  :show_new="true"
-                  :show_update="true"
-                  @change_directory="on_change_directory"
-                />
+                <directory_selector :set_from_id="initial_dataset ? initial_dataset.directory_id : undefined"
+                                  :show_text_buttons="false"
+                                  :project_string_id="project_string_id"
+                                  @change_directory="on_change_directory"
+                                  :show_new="true"
+                                  :show_update="true"
+                >
+                </directory_selector>
 
               </v-container>
 
@@ -294,7 +296,6 @@
   import axios from '../../services/customInstance';
   import Vue from "vue";
   import status from '../status'
-  import dataset_selector from "../attached/global_dataset_selector.vue"
 
   function get_initial_state() {
     const initial_state = {
@@ -418,8 +419,7 @@
         diffgram_export_validator,
         new_or_update_upload_screen,
         upload_progress,
-        status,
-        dataset_selector
+        status
       },
       props: {
         'project_string_id': {

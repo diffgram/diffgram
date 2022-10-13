@@ -10,14 +10,14 @@
         <v-row>
           <v-col cols="1" class="d-flex align-center">
 
-          <standard_button
+          <tooltip_button
               @click="refresh_list"
               :loading="loading"
               tooltip_message="Refresh"
               icon="mdi-sync"
               :icon_style="true"
               color="primary">
-          </standard_button>
+          </tooltip_button>
 
           </v-col>
 

@@ -25,14 +25,14 @@
             </div>
           </ahref_seo_optimal>
 
-          <standard_button
+          <tooltip_button
             color="primary"
             :icon_style="true"
             icon="mdi-home"
             tooltip_message="Home"
             @click="$router.push('/job/' + task.job_id)"
             :bottom="true">
-          </standard_button>
+          </tooltip_button>
 
 
         </v-layout>
@@ -84,7 +84,7 @@
 
       </div>
 
-      <standard_button
+      <tooltip_button
         v-if="instance_type == 'tag'"
         @click="$emit('new_tag_instance')"
         color="primary"
@@ -92,7 +92,7 @@
         icon="mdi-tag-plus-outline"
         tooltip_message="Manual New Tag (Automatic on Label Change)"
         :bottom="true">
-      </standard_button>
+      </tooltip_button>
 
       <v-divider
         vertical
@@ -118,7 +118,7 @@
 
 
       <div>
-        <standard_button
+        <tooltip_button
           @click="$emit('save')"
           datacy="save_button"
           :loading="save_loading"
@@ -128,7 +128,7 @@
           tooltip_message="Save Image / Frame"
           :icon_style="true"
           :bottom="true">
-        </standard_button>
+        </tooltip_button>
 
       </div>
       <div class="has-changed">
@@ -145,7 +145,7 @@
 
 
       <div>
-        <standard_button
+        <tooltip_button
           data-cy="previous_file_button"
           tooltip_message="Previous File"
           v-if="!task && file && file.id"
@@ -156,13 +156,13 @@
           :icon_style="true"
           :bottom="true"
         >
-        </standard_button>
+        </tooltip_button>
         <!-- TODO Move some of disabled logic into functions don't like having
               so much of it here as it gets more complext -->
 
       </div>
       <div>
-        <standard_button
+        <tooltip_button
           data-cy="next_file_button"
           tooltip_message="Next File"
           v-if="!task && file && file.id"
@@ -173,10 +173,10 @@
           :icon_style="true"
           :bottom="true"
         >
-        </standard_button>
+        </tooltip_button>
       </div>
       <div>
-        <standard_button
+        <tooltip_button
           tooltip_message="Previous Task"
           v-if="task"
           @click="$emit('change_task', 'previous')"
@@ -186,10 +186,10 @@
           :icon_style="true"
           :bottom="true"
         >
-        </standard_button>
+        </tooltip_button>
       </div>
       <div>
-        <standard_button
+        <tooltip_button
           tooltip_message="Next Task"
           v-if="task"
           @click="$emit('change_task', 'next')"
@@ -199,7 +199,7 @@
           :icon_style="true"
           :bottom="true"
         >
-        </standard_button>
+        </tooltip_button>
 
       </div>
 
@@ -240,7 +240,7 @@
       </ui_schema>
 
 
-      <standard_button
+      <tooltip_button
         data-cy="refresh_instances"
         tooltip_message="Refresh Instances"
         v-if="$store.state.user.current.is_super_admin == true"
@@ -251,7 +251,7 @@
         :icon_style="true"
         :bottom="true"
       >
-      </standard_button>
+      </tooltip_button>
 
       <button_with_menu
         datacy="display_hotkeys_button"
@@ -424,7 +424,7 @@
 
 
             <!-- Clear unsaved -->
-            <standard_button
+            <tooltip_button
               @click="$emit('clear__new_and_no_ids')"
               tooltip_message="Clear Unsaved"
               icon="mdi-close-circle-multiple"
@@ -432,7 +432,7 @@
               color="primary"
               tooltip_direction="bottom"
               :small="true">
-            </standard_button>
+            </tooltip_button>
 
             <!-- Settings -->
             <button_with_menu
@@ -517,7 +517,7 @@
                             v-model="label_settings_local.spatial_line_size">
                   </v-slider>
 
-                  <standard_button
+                  <tooltip_button
                     tooltip_message="Restore All User Settings & Prompts"
                     @click="$store.commit('restore_default_user_settings')"
                     color="primary"
@@ -525,7 +525,7 @@
                     :icon_style="true"
                     :bottom="true"
                   >
-                  </standard_button>
+                  </tooltip_button>
 
                 </v-layout>
               </template>
@@ -541,7 +541,7 @@
           </v-card-title>
 
           <v-layout v-if="task && task.id">
-            <standard_button
+            <tooltip_button
               tooltip_message="Jump to Next Task With Issues."
               @click="$emit('next_issue_task')"
               :disabled="loading || annotations_loading"
@@ -550,7 +550,7 @@
               :icon_style="true"
               :bottom="true"
             >
-            </standard_button>
+            </tooltip_button>
           </v-layout>
         </template>
       </button_with_menu>

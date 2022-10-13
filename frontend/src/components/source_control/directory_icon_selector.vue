@@ -44,17 +44,18 @@
       <div class="pb-4 d-flex flex-column flex-wrap"
            data-cy="directories-container">
 
-        <global_dataset_selector 
-          class="pt-2"
-          :directory_blacklist="selected_dir_list"
-          :show_new="true"
-          :show_update="true"
-          :set_current_dir_on_change="false"
-          :initial_dir_from_state="false"
-          :change_on_mount="false"
-          :update_from_state="false"
-          @change_directory="add_to_selected_dir_list"
-        />
+        <directory_selector class="pt-2"
+                          :project_string_id="project_string_id"
+                          :directory_blacklist="selected_dir_list"
+                          :show_new="true"
+                          :initial_dir_from_state="false"
+                          :update_from_state="false"
+                          :set_current_dir_on_change="false"
+                          :change_on_mount="false"
+                          :show_update="true"
+                          @change_directory="add_to_selected_dir_list">
+        </directory_selector>
+
 
         <v-tooltip top v-for="directory in selected_dir_list">
           <template v-slot:activator="{ on, attrs }">
@@ -103,7 +104,6 @@
   import v_new_directory from './directory_new'
   import v_update_directory from './directory_update'
   import Vue from "vue";
-  import global_dataset_selector from "../attached/global_dataset_selector.vue"
 
   export default Vue.extend({
     name: 'directory_icon_selector',
@@ -131,8 +131,7 @@
     },
     components: {
       v_new_directory,
-      v_update_directory,
-      global_dataset_selector
+      v_update_directory
     },
     data() {
       return {

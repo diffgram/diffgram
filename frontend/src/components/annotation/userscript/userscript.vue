@@ -27,7 +27,7 @@
              v-if="show_other_controls">
           <v-layout>
 
-            <standard_button
+            <tooltip_button
                 tooltip_message="Edit Name"
                 datacy="userscript_edit_name"
                 @click="edit_name = !edit_name"
@@ -36,9 +36,9 @@
                 color="primary"
                 :disabled="!userscript_exists"
                             >
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button
+            <tooltip_button
                 tooltip_message="New"
                 datacy="userscript_new"
                 @click="new_userscript_with_servercall()"
@@ -46,9 +46,9 @@
                 :icon_style="true"
                 color="primary"
                             >
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button
+            <tooltip_button
                 tooltip_message="Copy to New"
                 datacy="userscript_copy"
                 @click="copy_userscript_with_servercall(userscript_literal)"
@@ -57,9 +57,9 @@
                 color="primary"
                 :disabled="!userscript_exists"
                             >
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button
+            <tooltip_button
                 v-if="$store.state.user.current.is_super_admin == true"
                 tooltip_message="Toggle is Public Example"
                 @click="toggle_is_public()"
@@ -67,7 +67,7 @@
                 :icon_style="true"
                 color="primary"
                             >
-            </standard_button>
+            </tooltip_button>
 
             <div  v-if="$store.state.user.current.is_super_admin == true">
                 <div v-if="userscript_literal.is_public">
@@ -84,7 +84,7 @@
 
       <v-layout class="pb-4">
 
-        <standard_button
+        <tooltip_button
             tooltip_message="Run (Q)"
             datacy="userscript_run"
             @click="run_users_script()"
@@ -93,9 +93,9 @@
             color="primary"
             :disabled="!play_ready"
                         >
-        </standard_button>
+        </tooltip_button>
 
-        <standard_button
+        <tooltip_button
             tooltip_message="Watch"
             @click="parse_watcher()"
             icon="mdi-clock"
@@ -103,9 +103,9 @@
             color="primary"
             :disabled="!userscript_exists"
                         >
-        </standard_button>
+        </tooltip_button>
 
-        <standard_button
+        <tooltip_button
             v-if="show_save"
             datacy="userscript_save"
             tooltip_message="Save UserScript"
@@ -118,7 +118,7 @@
             :icon_style="true"
             color="primary"
                         >
-        </standard_button>
+        </tooltip_button>
 
 
         <!--
@@ -130,7 +130,7 @@
           -->
         <!--
             <div v-if="show_other_controls">
-              <standard_button
+              <tooltip_button
                   v-if="userscript_literal.is_visible"
                   tooltip_message="Is Visible. Select to Hide From Annotators"
                   @click="toggle_is_visible()"
@@ -139,9 +139,9 @@
                   color="primary"
                   :disabled="!userscript_exists"
                               >
-              </standard_button>
+              </tooltip_button>
 
-              <standard_button
+              <tooltip_button
                   v-if="!userscript_literal.is_visible"
                   tooltip_message="Is Hidden. Select to Publish to Annotators"
                   @click="toggle_is_visible()"
@@ -150,12 +150,12 @@
                   color="primary"
                   :disabled="!userscript_exists"
                               >
-              </standard_button>
+              </tooltip_button>
             </div>
         -->
 
         <div v-if="show_other_controls">
-          <standard_button
+          <tooltip_button
               v-if="!userscript_literal.archived"
               tooltip_message="Archive"
               @click="toggle_is_archive()"
@@ -165,21 +165,21 @@
               :disabled="!userscript_exists
                        || public_script_not_super_admin"
                           >
-          </standard_button>
+          </tooltip_button>
 
 
-          <standard_button
+          <tooltip_button
               v-if="userscript_literal.archived"
               tooltip_message="Restore"
               @click="toggle_is_archive()"
               icon="mdi-delete-restore"
               :icon_style="true"
               color="primary"                          >
-          </standard_button>
+          </tooltip_button>
         </div>
 
         <div v-if="show_external_scripts">
-          <standard_button
+          <tooltip_button
             tooltip_message="Add External Scripts"
             @click="userscript_sources_selector_dialog_is_open = true"
             icon="mdi-npm"
@@ -188,9 +188,9 @@
             color="primary"
             :disabled="!userscript_exists"
           >
-          </standard_button>
+          </tooltip_button>
 
-          <standard_chip
+          <regular_chip
               v-if="userscript_literal.external_src_list"
               @click="userscript_sources_selector_dialog_is_open = true"
               :message="userscript_literal.external_src_list.length"
@@ -198,7 +198,7 @@
               color="primary"
               tooltip_direction="bottom"
               :small="true">
-          </standard_chip>
+          </regular_chip>
         </div>
 
         <v-layout v-if="userscript_class"

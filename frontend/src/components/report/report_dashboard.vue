@@ -33,14 +33,14 @@
                     <!-- TODO different handling if it's a default
                       report. -->
 
-                    <standard_button
+                    <tooltip_button
                         tooltip_message="Edit Report"
                         @click="$router.push('/report/' + item.id)"
                         icon="edit"
                         :text_style="true"
                         :disabled="!$store.state.user.current.is_super_admin"
                         color="primary">
-                    </standard_button>
+                    </tooltip_button>
 
                    </v-card-title>
 

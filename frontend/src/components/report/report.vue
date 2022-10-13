@@ -14,14 +14,14 @@
           height="50px"
         >
           <v-toolbar-items>
-            <standard_chip
+            <regular_chip
               :message=report_template.id
               tooltip_message="ID"
               color="grey"
               tooltip_direction="bottom"
               :small="true"
             >
-            </standard_chip>
+            </regular_chip>
             <v-text-field
               class="ma-0"
               style="font-size: 18pt"
@@ -34,23 +34,23 @@
             </v-text-field>
 
 
-            <standard_button tooltip_message="Save & Refresh Report"
+            <tooltip_button tooltip_message="Save & Refresh Report"
                             @click="save_and_run_report"
                             icon="mdi-refresh"
                             :disabled="loading"
                             :text_style="true"
                             :large="true"
                             color="primary">
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button tooltip_message="More Filters & Configs"
+            <tooltip_button tooltip_message="More Filters & Configs"
                             @click="open_extra_filters_dialog"
                             icon="mdi-filter"
                             :disabled="!['instance'].includes(report_template.item_of_interest)"
                             :text_style="true"
                             :large="true"
                             color="primary">
-            </standard_button>
+            </tooltip_button>
             <v-dialog v-model="show_filters_dialog"
                       width="800">
               <v-card>
@@ -65,25 +65,25 @@
               </v-card>
             </v-dialog>
 
-            <standard_button tooltip_message="Save"
+            <tooltip_button tooltip_message="Save"
                             @click="save_report"
                             icon="save"
                             :text_style="true"
                             :large="true"
                             :disabled="!has_changes"
                             color="primary">
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button
+            <tooltip_button
               tooltip_message="Back to Report List"
               @click="$router.push('/reports/list')"
               icon="list"
               :icon_style="true"
               :large="true"
               color="primary">
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button
+            <tooltip_button
               tooltip_message="Download as CSV"
               @click="download_csv"
               icon="mdi-download"
@@ -92,7 +92,7 @@
               :text_style="true"
               :large="true"
             >
-            </standard_button>
+            </tooltip_button>
 
             <div class="pa-2">
               <div v-if="has_changes">
@@ -104,12 +104,12 @@
             </div>
 
             <div class="pa-2 pl-4 pr-4">
-              <standard_chip
+              <regular_chip
                 :message=count
                 tooltip_message="Sum"
                 color="primary"
                 tooltip_direction="bottom">
-              </standard_chip>
+              </regular_chip>
 
             </div>
 
@@ -461,6 +461,7 @@
 
 import axios from '../../services/customInstance';
 import label_select_only from '../label/label_select_only.vue'
+import tooltip_button from '../regular/tooltip_button.vue'
 import {CSVReportFormatter} from './CSVReportFormatter';
 import Vue from "vue";
 
@@ -468,6 +469,7 @@ export default Vue.extend({
     name: 'report',
     components: {
       label_select_only,
+      tooltip_button,
     },
     props: {
       // Optional, for existing report

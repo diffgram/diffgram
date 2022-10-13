@@ -1,6 +1,6 @@
 <template>
   <v-layout class="d-flex align-center justify-start template-creation-toolbar">
-    <standard_button
+    <tooltip_button
       tooltip_message="Zoom Out"
       @click="this.zoom_out"
       color="primary"
@@ -8,8 +8,8 @@
       :icon_style="true"
       :bottom="true"
     >
-    </standard_button>
-    <standard_button
+    </tooltip_button>
+    <tooltip_button
       tooltip_message="Zoom In"
       @click="this.zoom_in"
       color="primary"
@@ -17,9 +17,9 @@
       :icon_style="true"
       :bottom="true"
     >
-    </standard_button>
+    </tooltip_button>
     <input type="file" ref="file" style="display: none" @change="setBackground">
-    <standard_button
+    <tooltip_button
       tooltip_message="Upload Background Image"
       @click="$refs.file.click()"
       color="primary"
@@ -27,7 +27,7 @@
       :icon_style="true"
       :bottom="true"
     >
-    </standard_button>
+    </tooltip_button>
 
     <button_with_menu
       tooltip_message="Select Color"
@@ -44,7 +44,7 @@
         </div>
       </template>
     </button_with_menu>
-    <standard_button
+    <tooltip_button
       datacy="activate-coloring-button"
       tooltip_message="Coloring Tool"
       @click="$emit('coloring_tool_clicked')"
@@ -54,7 +54,7 @@
       :icon_style="true"
       :bottom="true"
     >
-    </standard_button>
+    </tooltip_button>
 
     <v-switch data-cy="edit_toggle_instance_template_create"
               v-model="draw_mode"

@@ -137,7 +137,7 @@
             </div>
 
 
-            <standard_button
+            <tooltip_button
               tooltip_message="View Pending File Operations"
               class="hidden-sm-and-down"
               @click="open_pending_files_dialog"
@@ -150,7 +150,7 @@
               :icon_style="true"
               :bottom="true"
             >
-            </standard_button>
+            </tooltip_button>
 
 
             <pending_files_dialog
@@ -210,7 +210,7 @@
 
             <!-- Don't show for trainers, but do show even if not logged in.-->
             <!-- Docs -->
-            <standard_button
+            <tooltip_button
               class="hidden-sm-and-down"
               href="https://diffgram.readme.io/docs"
               target="_blank"
@@ -221,7 +221,7 @@
               :bottom="true"
               v-if="$store.state.builder_or_trainer.mode != 'trainer'"
             >
-            </standard_button>
+            </tooltip_button>
 
 
 

@@ -46,7 +46,7 @@
                 <v-icon>help</v-icon>
               </v-btn>
 
-              <standard_button
+              <tooltip_button
                 v-if="show_create_samples"
                 tooltip_message="Create Sample Labels"
                 @click="open_sample_labels_dialog"
@@ -54,7 +54,7 @@
                 :icon_style="true"
                 :bottom="true"
                 color="primary">
-              </standard_button>
+              </tooltip_button>
 
             </v-card-title>
 
@@ -145,7 +145,7 @@
                 >
 
                   <div v-if="table_row_hover_index == props.index">
-                    <standard_button
+                    <tooltip_button
 
                       :disabled="loading"
                       @click="next_instance(props.item.id)"
@@ -156,7 +156,7 @@
                       :large="false"
                       :bottom="true"
                     >
-                    </standard_button>
+                    </tooltip_button>
                   </div>
 
                 </template>
@@ -210,7 +210,7 @@
 
                   <v-layout>
 
-                    <standard_button
+                    <tooltip_button
                         v-if="props.item && props.item.label"
                         tooltip_message="Explore Annotations with this Label"
                         :href="generate_explore_url(props.item.label.name)"
@@ -219,7 +219,7 @@
                         :icon_style="true"
                         :bottom="true"
                         color="primary">
-                    </standard_button>
+                    </tooltip_button>
 
                     <button_with_menu
                       tooltip_message="Edit"

@@ -6,7 +6,7 @@
     -->
 
     <!-- Complete File -->
-    <standard_button
+    <tooltip_button
       :tooltip_message="complete_message"
       v-if="
         !task_id &&
@@ -21,10 +21,10 @@
       :icon_style="true"
       :bottom="true"
     >
-    </standard_button>
+    </tooltip_button>
 
     <!-- Complete Task -->
-    <standard_button
+    <tooltip_button
       :tooltip_message="task_attributes.message"
       v-if="task && task.id && task.status !== 'complete'"
       datacy="submit-to-review"
@@ -36,9 +36,9 @@
       :icon_style="true"
       :bottom="true"
     >
-    </standard_button>
+    </tooltip_button>
 
-    <standard_chip
+    <regular_chip
       v-if="task && task.status === 'complete'"
       class="pt-2 d-flex align-center"
       message="Complete"
@@ -49,7 +49,7 @@
       <template slot="chip">
         <v-icon dark left> mdi-check-circle </v-icon>
       </template>
-    </standard_chip>
+    </regular_chip>
     <!-- Just disable, don't show loading while saving,
         it's too distracting to show loading,
         and could confuse user (ie they think they clicked different button)
@@ -61,7 +61,7 @@
 
     <!-- Already complete -->
 
-    <standard_chip
+    <regular_chip
       v-if="!task && current_file.ann_is_complete == true"
       class="pt-2"
       message="Complete"
@@ -72,9 +72,9 @@
       <template slot="chip">
         <v-icon dark left> mdi-check-circle </v-icon>
       </template>
-    </standard_chip>
+    </regular_chip>
 
-    <standard_button
+    <tooltip_button
       tooltip_message="Mark File As Not Complete"
       @click="is_complete_toggle_file()"
       v-if="!task && current_file.ann_is_complete == true && !view_only_mode"
@@ -85,7 +85,7 @@
       color="warning"
       :bottom="true"
     >
-    </standard_button>
+    </tooltip_button>
     <review_dialog :dialog="review_dialog" @complete="on_submit_review" @close_dialog="close_dialog" />
   </div>
 </template>

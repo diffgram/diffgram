@@ -4,7 +4,7 @@
       <h1 data-cy="step-labels-title" class="font-weight-medium text--primary mr-4">
         What Label Schema Do you Want to Use?
       </h1>
-      <standard_button
+      <tooltip_button
         data-cy="manage-labels-button"
         tooltip_message="Quick Edit Project Level Schema"
         @click="open_labels_dialog"
@@ -12,7 +12,7 @@
         icon="mdi-format-paint"
         button_message="Manage Schema"
         color="white">
-      </standard_button>
+      </tooltip_button>
     </div>
 
     <v_error_multiple :error="error"></v_error_multiple>

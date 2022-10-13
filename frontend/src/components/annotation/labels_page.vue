@@ -22,7 +22,7 @@
                 {{current_schema.name | truncate(45)}}
               </span>
             </h1>
-            <standard_button
+            <tooltip_button
               v-if="!edit_name"
               tooltip_message="Change Name"
               @click="edit_name = true"
@@ -33,7 +33,7 @@
               color="primary"
               datacy="edit_schema_name_button"
             >
-            </standard_button>
+            </tooltip_button>
 
             <v-text-field
               data-cy="schema_name_text_field"
@@ -50,7 +50,7 @@
             </v-text-field>
 
             <div>
-              <standard_button
+              <tooltip_button
                 v-if="edit_name == true"
                 @click="update_schema_name"
                 color="primary"
@@ -62,10 +62,10 @@
                 :loading="loading"
                 :disabled="loading || !has_changes"
               >
-              </standard_button>
+              </tooltip_button>
             </div>
 
-            <standard_button
+            <tooltip_button
               v-if="edit_name == true"
               tooltip_message="Cancel Name Edit"
               datacy="cancel_edit_name"
@@ -75,7 +75,7 @@
               color="primary"
               :disabled="loading"
             >
-            </standard_button>
+            </tooltip_button>
 
 
 

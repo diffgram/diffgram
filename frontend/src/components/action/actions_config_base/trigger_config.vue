@@ -8,11 +8,13 @@
       v-model="action.trigger_data.event_name"
     />
 
-    <global_dataset_selector
+    <directory_selector
       v-if="action && select_dataset"
+      :initial_dir_from_state="action.config_data.directory_id"
+      :set_current_dir_on_change="false"
+      :project_string_id="project_string_id"
       :show_new="true"
       :show_update="true"
-      :set_current_dir_on_change="false"
       :set_from_id="action.config_data.directory_id"
       @change_directory="on_update_directory"
     />
@@ -31,7 +33,6 @@
 <script lang="ts">
 import Vue from "vue";
 import {Action} from "../Action";
-import global_dataset_selector from "../../attached/global_dataset_selector.vue"
 
 export default Vue.extend({
     name: 'trigger_config',
@@ -55,9 +56,6 @@ export default Vue.extend({
         default: false
       },
       triggers_list_prop: {}
-    },
-    components: {
-      global_dataset_selector
     },
     mounted() {
       this.set_trigger_list(this.action_template)

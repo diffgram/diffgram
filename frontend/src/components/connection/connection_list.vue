@@ -18,7 +18,7 @@
 
         <h2 class="pa-1 pr-4"> Connections </h2>
 
-        <standard_button
+        <tooltip_button
             tooltip_message="New Connection"
             @click="$router.push('/connection/new')"
             icon="add"
@@ -28,9 +28,9 @@
             :bottom="true"
 
                           >
-        </standard_button>
+        </tooltip_button>
 
-         <standard_button
+         <tooltip_button
             tooltip_message="Refresh"
             @click="connection_list_api"
             :loading="loading"
@@ -40,7 +40,7 @@
             :large="true"
             :bottom="true"
                         >
-        </standard_button>
+        </tooltip_button>
 
 
         <!-- Filters
@@ -154,14 +154,14 @@
 
     <template slot="actions" slot-scope="props">
 
-        <standard_button
+        <tooltip_button
           @click="$router.push('/connection/' + props.item.id)"
           tooltip_message="Edit"
           icon="edit"
           :icon_style="true"
 
           color="primary">
-        </standard_button>
+        </tooltip_button>
 
     </template>
 

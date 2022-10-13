@@ -19,7 +19,7 @@
             -->
             <div v-if="connection_id !== 'new'" class="pa-0 d-flex justify-center align-center">
               <h2 class="mr-2">ID</h2>
-              <standard_chip
+              <regular_chip
                 :message=connection.id
                 tooltip_message="ID"
                 v-if="connection_id !== 'new'"
@@ -27,13 +27,13 @@
                 tooltip_direction="bottom"
                 :small="true"
               >
-              </standard_chip>
+              </regular_chip>
             </div>
 
             <!-- TBD , maybe save and test -->
 
 
-            <standard_button tooltip_message="Save"
+            <tooltip_button tooltip_message="Save"
                             @click="save_connection"
                             icon="save"
                             :text_style="true"
@@ -41,9 +41,9 @@
                             :large="buttons_size_large"
                             :disabled="!has_changes"
                             color="primary">
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button tooltip_message="Test"
+            <tooltip_button tooltip_message="Test"
                             class="ma-0"
                             @click="test_connection(connection_id)"
                             icon="mdi-test-tube"
@@ -52,9 +52,9 @@
                             :left="true"
                             :large="buttons_size_large"
                             color="primary">
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button
+            <tooltip_button
               tooltip_message="Back to List"
               @click="$router.push('/connection/list')"
               icon="list"
@@ -62,7 +62,7 @@
               :icon_style="true"
               :large="true"
               color="primary">
-            </standard_button>
+            </tooltip_button>
 
             <div class="pa-2">
               <div v-if="has_changes">

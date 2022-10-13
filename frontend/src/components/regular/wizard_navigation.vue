@@ -7,7 +7,7 @@
 
       </slot>
 
-      <standard_button
+      <tooltip_button
         v-if="back_visible"
         datacy="wizard_navigation_back"
         tooltip_message="Back"
@@ -19,7 +19,7 @@
         :text_style="true"
         :left="true"
         color="secondary">
-      </standard_button>
+      </tooltip_button>
 
       <v-spacer></v-spacer>
 
@@ -42,7 +42,7 @@
 
         </slot>
 
-        <standard_button
+        <tooltip_button
           v-if="skip_visible"
           tooltip_message="Skip, I will do this later"
           datacy="wizard_navigation_skip"
@@ -54,7 +54,7 @@
           :text_style="true"
           :left="true"
           color="secondary">
-        </standard_button>
+        </tooltip_button>
 
         <slot name="skip">
 

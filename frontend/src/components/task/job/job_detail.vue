@@ -19,7 +19,7 @@
             @dblclick="edit_name = true"
           >
             {{ job_name }}
-            <standard_button
+            <tooltip_button
               v-if="edit_name == false"
               tooltip_message="Edit Name"
               tooltip_direction="bottom"
@@ -28,7 +28,7 @@
               :icon_style="true"
               color="primary"
             >
-            </standard_button>
+            </tooltip_button>
           </div>
 
           <v-text-field
@@ -58,7 +58,7 @@
             </button_with_confirm>
           </div>
 
-          <standard_button
+          <tooltip_button
             v-if="edit_name == true"
             tooltip_message="Cancel Name Edit"
             datacy="cancel_edit_name"
@@ -68,7 +68,7 @@
             color="primary"
             :disabled="loading"
           >
-          </standard_button>
+          </tooltip_button>
               
         </v-layout>
       </h1>

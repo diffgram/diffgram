@@ -25,7 +25,7 @@
             </ahref_seo_optimal>
           </ui_schema>
 
-          <standard_button
+          <tooltip_button
             ui_schema_name="home"
             color="primary"
             datacy="toolbar_home_button"
@@ -35,9 +35,9 @@
             @click="$router.push('/me')"
             :bottom="true"
           >
-          </standard_button>
+          </tooltip_button>
 
-          <standard_button
+          <tooltip_button
             ui_schema_name="task_list"
             color="primary"
             :icon_style="true"
@@ -47,11 +47,11 @@
             @click="$router.push('/job/' + task.job_id)"
             :bottom="true"
           >
-          </standard_button>
+          </tooltip_button>
 
           <v-divider vertical></v-divider>
 
-          <standard_button
+          <tooltip_button
             color="primary"
             icon="mdi-undo"
             tooltip_message="Undo (ctrl+z)"
@@ -63,7 +63,7 @@
             @click="$emit('undo')"
           />
 
-          <standard_button
+          <tooltip_button
             color="primary"
             icon="mdi-redo"
             datacy="redo"
@@ -96,7 +96,7 @@
           </v_is_complete>
 
           <div>
-            <standard_button
+            <tooltip_button
               v-if="task && task.id && task.status == 'available'"
               ui_schema_name="defer"
               @click="$emit('task_update_toggle_deferred')"
@@ -116,7 +116,7 @@
           <v-divider vertical></v-divider>
 
           <div>
-            <standard_button
+            <tooltip_button
               ui_schema_name="save"
               @click="$emit('save')"
               datacy="save_button"
@@ -131,7 +131,7 @@
               :icon_style="true"
               :bottom="true"
             >
-            </standard_button>
+            </tooltip_button>
           </div>
           <div class="has-changed">
             <div style="width: 100px">
@@ -157,7 +157,7 @@
           <v-divider vertical></v-divider>
 
           <div>
-            <standard_button
+            <tooltip_button
               tooltip_message="Previous File"
               @click="$emit('change_task', 'previous')"
               color="primary"
@@ -166,12 +166,12 @@
               :bottom="true"
               :disabled="loading || save_loading"
             >
-            </standard_button>
+            </tooltip_button>
             <!-- TODO Move some of disabled logic into functions don't like having
                 so much of it here as it gets more complext -->
           </div>
           <div>
-            <standard_button
+            <tooltip_button
               tooltip_message="Next File"
               @click="$emit('change_task', 'next')"
               color="primary"
@@ -180,7 +180,7 @@
               :bottom="true"
               :disabled="loading || save_loading"
             >
-            </standard_button>
+            </tooltip_button>
           </div>
 
           <v-divider vertical></v-divider>
@@ -206,7 +206,7 @@
           <v-divider vertical></v-divider>
 
           <div v-if="search_mode">
-            <standard_button
+            <tooltip_button
               color="primary"
               icon="mdi-search-web"
               :icon_style="true"
@@ -216,7 +216,7 @@
           </div>
 
           <div v-if="bulk_mode">
-            <standard_button
+            <tooltip_button
               color="primary"
               icon="mdi-bullseye"
               :icon_style="true"
@@ -230,7 +230,7 @@
 
     <v-toolbar-items v-else>
       <div style="width: 10px"/>
-      <standard_button
+      <tooltip_button
         color="primary"
         icon="mdi-undo"
         tooltip_message="Undo (ctrl+z)"
@@ -242,7 +242,7 @@
         @click="$emit('undo')"
       />
 
-      <standard_button
+      <tooltip_button
         color="primary"
         icon="mdi-redo"
         tooltip_message="Redo (ctrl+y)"
@@ -269,7 +269,7 @@
       <v-divider vertical></v-divider>
 
       <div>
-        <standard_button
+        <tooltip_button
           ui_schema_name="save"
           @click="$emit('save')"
           datacy="save_button"
@@ -284,7 +284,7 @@
           :icon_style="true"
           :bottom="true"
         >
-        </standard_button>
+        </tooltip_button>
       </div>
       <div class="has-changed">
         <div style="width: 100px">
@@ -299,7 +299,7 @@
       <v-divider vertical></v-divider>
 
       <div>
-        <standard_button
+        <tooltip_button
           tooltip_message="Previous File"
           @click="$emit('change_file', 'previous')"
           color="primary"
@@ -308,12 +308,12 @@
           :bottom="true"
           :disabled="loading || save_loading"
         >
-        </standard_button>
+        </tooltip_button>
         <!-- TODO Move some of disabled logic into functions don't like having
             so much of it here as it gets more complext -->
       </div>
       <div>
-        <standard_button
+        <tooltip_button
           tooltip_message="Next File"
           @click="$emit('change_file', 'next')"
           color="primary"
@@ -322,7 +322,7 @@
           :bottom="true"
           :disabled="loading || save_loading"
         >
-        </standard_button>
+        </tooltip_button>
       </div>
 
       <v-divider vertical></v-divider>
@@ -341,7 +341,7 @@
       <v-divider vertical></v-divider>
 
       <div v-if="search_mode">
-        <standard_button
+        <tooltip_button
           color="primary"
           icon="mdi-search-web"
           :icon_style="true"
@@ -351,7 +351,7 @@
       </div>
 
       <div v-if="bulk_mode">
-        <standard_button
+        <tooltip_button
           color="primary"
           icon="mdi-bullseye"
           :icon_style="true"

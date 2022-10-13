@@ -134,23 +134,23 @@
                   Create User
                 </v-btn>
 
-                <standard_button
+                <tooltip_button
                     tooltip_message="Join Slack Community"
                     href="https://form.jotform.com/222377866413058"
                     target="_blank"
                     icon="mdi-slack"
                     :icon_style="true"
                     color="primary">
-                </standard_button>
+                </tooltip_button>
 
-                <standard_button
+                <tooltip_button
                     tooltip_message="Help"
                     href="https://diffgram.readme.io/docs/login-magic-login-and-password-setting"
                     target="_blank"
                     icon="mdi-lifebuoy"
                     :icon_style="true"
                     color="primary">
-                </standard_button>
+                </tooltip_button>
               </v-layout>
           </v-container>
         </div>

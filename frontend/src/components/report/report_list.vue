@@ -16,7 +16,7 @@
 
          <h2 class="pa-1 pr-4"> Reporting </h2>
 
-        <standard_button
+        <tooltip_button
             tooltip_message="New Report"
             @click="$router.push('/report/new')"
             icon="add"
@@ -25,9 +25,9 @@
             color="primary"
             :bottom="true"
                           >
-        </standard_button>
+        </tooltip_button>
 
-         <standard_button
+         <tooltip_button
             tooltip_message="Refresh"
             @click="report_template_list_api"
             :loading="loading"
@@ -37,10 +37,10 @@
             :large="true"
             :bottom="true"
                         >
-        </standard_button>
+        </tooltip_button>
 
 
-        <standard_button
+        <tooltip_button
             @click="api_file_update('REMOVE')"
             icon="delete"
             tooltip_message="Remove Selected Files"
@@ -51,7 +51,7 @@
             :icon_style="true"
             :bottom="true"
                         >
-        </standard_button>
+        </tooltip_button>
 
 
         <!-- Filters
@@ -184,7 +184,7 @@
 
     <template slot="actions" slot-scope="props">
 
-        <standard_button
+        <tooltip_button
           @click="$router.push('/report/' + props.item.id)"
           tooltip_message="Edit"
           icon="edit"
@@ -192,7 +192,7 @@
           :disabled="!$store.state.user.current.is_super_admin
                     && props.item.diffgram_wide_default"
           color="primary">
-        </standard_button>
+        </tooltip_button>
 
     </template>
 

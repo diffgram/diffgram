@@ -32,7 +32,7 @@
 
             <!-- menu left ?-->
 
-            <standard_button
+            <tooltip_button
               tooltip_message="Edit"
               icon="edit"
               :close_by_button="true"
@@ -41,7 +41,7 @@
               color="primary"
               :icon_style="true"
             >
-            </standard_button>
+            </tooltip_button>
 
 
             <button_with_menu

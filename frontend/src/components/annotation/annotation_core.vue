@@ -378,7 +378,7 @@
 
             <v-expansion-panel-content>
 
-              <standard_button
+              <tooltip_button
                   v-if="show_modify_an_issue != true"
                   tooltip_message="New Issue"
                   datacy="new_issue_in_side_panel"
@@ -387,7 +387,7 @@
                   :icon_style="true"
                   color="primary"
                               >
-              </standard_button>
+              </tooltip_button>
 
              <create_issue_panel
               :project_string_id="

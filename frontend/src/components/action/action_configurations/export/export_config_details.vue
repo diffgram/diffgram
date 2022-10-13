@@ -11,11 +11,15 @@
       </diffgram_select>
 
 
-      <global_dataset_selector
+      <directory_selector
         v-model="action.config_data.directory_id"
         v-if="action.config_data.source === 'directory' "
-        @change_directory="on_change_directory"
-      />
+        :project_string_id="project_string_id"
+        :show_new="false"
+        :show_update="false"
+        @change_directory="on_change_directory">
+      </directory_selector>
+
 
       <div class="pl-2 pr-2">
         <job_select
@@ -56,8 +60,6 @@
 <script>
 import directory_selector from '../../../source_control/directory_selector'
 import action_config_wizard_base from '../../actions_config_base/action_config_wizard_base'
-import global_dataset_selector from "../../../attached/global_dataset_selector.vue"
-
 export default {
   name: "export_config_details",
   props:{
@@ -70,9 +72,6 @@ export default {
     project_string_id:{
       required: true
     }
-  },
-  components: {
-    global_dataset_selector
   },
   methods: {
     on_task_template_changed: function(tt){

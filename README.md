@@ -26,18 +26,6 @@ You can use Diffgram to create and maintain ML programs.
 * [Included Media Types](https://diffgram.readme.io/docs/annotation)
 * [ML Program Integrations](https://diffgram.readme.io/docs/automation-and-prelabels)
 
-### Media Types
-* [Image](https://diffgram.readme.io/docs/image-annotation)
-* [Video](https://diffgram.readme.io/docs/video-introduction)
-* [3D](https://diffgram.readme.io/docs/3d-annotation-overview)
-* [Text](https://diffgram.readme.io/docs/text-annotation)
-* [Audio](https://diffgram.readme.io/docs/audio-annotation)
-* [GeoSpatial](https://diffgram.readme.io/docs/geospatial-annotation)
-* [Document (Roadmap)](https://diffgram.readme.io/docs/annotation#document)
-* [HTML (Roadmap)](https://diffgram.readme.io/docs/annotation#html)
-* [DICOM (Roadmap)](https://diffgram.readme.io/docs/annotation#dicom)
-* [Custom/Other](https://diffgram.readme.io/docs/annotation#custom)
-
 ## Getting Started
 Watch the [Video Explainer](https://www.youtube.com/watch?v=dws6J3bDbcU), 
 read the commercial open source [license](https://github.com/diffgram/diffgram/blob/master/LICENSE.md),

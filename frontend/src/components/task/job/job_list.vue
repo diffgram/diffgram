@@ -38,7 +38,7 @@
 
           <v-toolbar-items class="pt-2">
 
-            <standard_button
+            <tooltip_button
               datacy='new_tasks'
               tooltip_message="New Task Template"
               icon="add"
@@ -50,9 +50,9 @@
               :large="true"
               :href="'/project/' + project_string + '/job/new'"
               @click="$router.push('/project/' + project_string + '/job/new')">
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button
+            <tooltip_button
               datacy='new_exams'
               tooltip_message="New Exam"
               icon="mdi-shield-plus"
@@ -64,9 +64,9 @@
               :icon_style="true"
               :href="'/project/' + project_string + '/job/new'"
               @click="$router.push('/project/' + project_string + '/exam/new')">
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button
+            <tooltip_button
               tooltip_message="Project Job Pipelines"
               icon="mdi-file-tree-outline"
               :text_style="false"
@@ -77,8 +77,8 @@
               color="primary"
               @click="open_pipelines_dialog"
             >
-            </standard_button>
-            <standard_button
+            </tooltip_button>
+            <tooltip_button
               tooltip_message="Job Launches Log"
               icon="list"
               :text_style="false"
@@ -89,14 +89,14 @@
               color="primary"
               @click="$router.push('/job/launches')"
             >
-            </standard_button>
+            </tooltip_button>
 
             <v_job_cancel :job_list="selected"
                           @cancel_job_success="job_list_api"
             >
             </v_job_cancel>
 
-            <standard_button
+            <tooltip_button
               tooltip_message="Generate Samples"
               @click="open_confirm_dialog_sample_data"
               icon="mdi-apps-box"
@@ -104,9 +104,9 @@
               :loading="loading_create_sample_data"
               color="primary"
               :icon_style="true">
-            </standard_button>
+            </tooltip_button>
 
-            <standard_button
+            <tooltip_button
               tooltip_message="Refresh"
               icon="refresh"
               :text_style="false"
@@ -117,7 +117,7 @@
               color="primary"
               @click="job_list_api"
             >
-            </standard_button>
+            </tooltip_button>
 
           </v-toolbar-items>
 
@@ -237,7 +237,7 @@
     <v-layout class="d-flex flex-column">
       <div class="d-flex align-center mt-1">
         <div style="border: 1px solid #e1e4e8" class="d-flex">
-          <standard_button
+          <tooltip_button
             style="border-right: 1px solid #e1e4e8"
             tooltip_message="Cards View"
             @click="set_view_mode('cards')"
@@ -247,9 +247,9 @@
             :color="view_mode === 'cards' ? 'secondary' : undefined"
             :bottom="true"
           >
-          </standard_button>
+          </tooltip_button>
 
-          <standard_button
+          <tooltip_button
             tooltip_message="Table View"
             @click="set_view_mode('table')"
             icon="mdi-table"
@@ -258,7 +258,7 @@
             :color="view_mode === 'table' ? 'secondary' : undefined"
             :bottom="true"
           >
-          </standard_button>
+          </tooltip_button>
         </div>
 
 

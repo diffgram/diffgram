@@ -63,7 +63,7 @@
             the relevant thing here is the number
             not the id -->
 
-      <standard_button
+      <tooltip_button
           tooltip_message="New Sequence (F)"
           @click="force_new_sequence"
           :disabled="current_sequence.number == highest_sequence_number + 1
@@ -72,7 +72,7 @@
           :text_style="true"
           :large="true"
           color="primary">
-      </standard_button>
+      </tooltip_button>
 
       <!-- Change sequence number
 
@@ -107,14 +107,14 @@
       <v-spacer></v-spacer>
 
 
-      <standard_button
+      <tooltip_button
           tooltip_message="Sequence & Video Help"
           href="https://diffgram.readme.io/docs/video-introduction"
           icon="mdi-lifebuoy"
           :text_style="true"
           target="_blank"
                       >
-      </standard_button>
+      </tooltip_button>
 
 
       <!--
