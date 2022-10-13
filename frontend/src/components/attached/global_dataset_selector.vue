@@ -2,7 +2,7 @@
     <dataset_selector
         :project_string_id="$store.state.project.project_string_id"
         :dataset_list="$store.state.project.current.directory_list"
-        :set_from_id="set_from_id"
+        :set_from_id="id_setter"
         :clearable="clearable"
         :directory_blacklist="directory_blacklist"
         :view_only_mode="view_only_mode"
@@ -11,6 +11,8 @@
         :show_update="show_update"
         :label="label"
         :change_on_mount="change_on_mount"
+        :show_text_buttons="show_text_buttons"
+        :is_super_admin="is_super_admin"
         @change_dataset="on_change_dataset"
         @on_set_current_directory="on_set_current_directory"
         @on_refresh_dataset_list="on_refresh_dataset_list"
@@ -22,51 +24,57 @@
 <script lang="ts">
 import Vue from "vue";
 import dataset_selector from "../concrete/dataset/dataset_selector.vue"
-import axios from '../../services/customInstance';
 
 export default Vue.extend({
   name: 'global_dataset_selector',
   props: {
-    'clearable': {
-      default: null
+    clearable: {
+        type: Boolean,
+        default: null
     },
-    'directory_blacklist': {
-      default: undefined
+    directory_blacklist: {
+        type: Array,
+        default: undefined
     },
-    'initial_dir_from_state': {
-      default: true
+    initial_dir_from_state: {
+        type: Boolean,
+        default: true
     },
-    'set_current_dir_on_change': {
-      default: true,
+    set_current_dir_on_change: {
+        type: Boolean,
+        default: true,
     },
-    'change_on_mount': {
-      default: true,
+    change_on_mount: {
+        type: Boolean,
+        default: true
     },
-    'view_only_mode': {
-      default: false
+    view_only_mode: {
+        type: Boolean,
+        default: false
     },
-    'multiple': {
-      default: false
+    multiple: {
+        type: Array,
+        default: []
     },
-    'show_text_buttons':{
-      default: false
+    show_text_buttons:{
+        type: Boolean,
+        default: false
     },
-    'update_from_state': {
-      default: true
+    show_new: {
+        type: Boolean,
+        default: false
     },
-    'show_new': {
-      default: false
+    show_update: {
+        type: Boolean,
+        default: false
     },
-    'show_update': {
-      default: false
+    set_from_id: {
+        type: Number,
+        default: null
     },
-    'set_from_id': {
-      default: null,
-      type: Number
-    },
-    'label': {
-      default: "Dataset",
-      type: String
+    label: {
+        type: String,
+        default: "Dataset",
     }
   },
   components: {
@@ -74,32 +82,33 @@ export default Vue.extend({
   },
   data() {
     return {
-      new_directory_menu: false,
-      update_directory_menu: false,
-      current_directory: {},
-
-      nickname: null,
-
-      date: undefined,
-      error_directory_list: {},
-      internal_directory_list: undefined,
-      loading_directory_list: false
-
+      current_directory: {} as object,
+      internal_directory_list: undefined as Array<any>,
     }
   },
   mounted() {
     this.create_patch_watcher()
     this.create_current_dir_watcher()
-
+  },
+  computed: {
+    id_setter: function(): number {
+        if (this.set_from_id) return this.set_from_id
+        else if (this.initial_dir_from_state) return this.$store.state.project.current_directory.directory_id
+        else return null
+    },
+    is_super_admin: function(): boolean {
+        return this.$store.state.user.current.is_super_admin
+    }
   },
   methods: {
-    // REFACTORES
     on_change_dataset: function(dataset: object): void {
         this.on_set_current_directory(dataset)
         this.$emit('change_directory', dataset)
     },
     on_set_current_directory: function(dataset: object): void {
-        this.$store.commit('set_current_directory', dataset)
+        if (this.set_current_dir_on_change) {
+            this.$store.commit('set_current_directory', dataset)
+        }
     },
     on_refresh_dataset_list: function(dataset_list: Array<any>): void {
         if (dataset_list === this.$store.state.project.current.directory_list) return
@@ -113,10 +122,10 @@ export default Vue.extend({
             }
         }
     },
-    on_focus: function() {
+    on_focus: function(): void {
         this.$store.commit('set_user_is_typing_or_menu_open', true)
     },
-    on_blur: function() {
+    on_blur: function(): void {
         this.$store.commit('set_user_is_typing_or_menu_open', false)
     },
     create_patch_watcher(): void {
@@ -137,7 +146,7 @@ export default Vue.extend({
         this.internal_directory_list.splice(0, 0, new_directory)
       }
     },
-    create_current_dir_watcher() {
+    create_current_dir_watcher(): void {
       /* Why:
        *    When it changes after mount ie in case of {first login + first load} to studio
        *    feels nicer to watch it, rather then just set a timeout and hope it makes it

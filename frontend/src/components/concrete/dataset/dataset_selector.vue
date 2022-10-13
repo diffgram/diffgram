@@ -212,10 +212,6 @@ export default Vue.extend({
       type: Boolean,
       default: false
     },
-    update_from_state: {
-      type: Boolean,
-      default: true
-    },
     show_new: {
       type: Boolean,
       default: false

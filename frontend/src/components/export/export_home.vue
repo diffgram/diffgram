@@ -22,10 +22,9 @@
 
 
             <global_dataset_selector
-              v-if="source == 'directory' "
-              :project_string_id="project_string_id"
-              :show_new="false"
-              :show_update="false"
+              v-if="source === 'directory'"
+              :set_current_dir_on_change="false"
+              :initial_dir_from_state="true"
             />
 
             <div class="pl-2 pr-2">

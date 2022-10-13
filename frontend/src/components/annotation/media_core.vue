@@ -63,11 +63,9 @@
             <v-toolbar-items>
 
               <global_dataset_selector
-                  class="mt-4"
                   v-if="file_dirs_view_mode === 0"
-                  :project_string_id="project_string_id"
+                  class="mt-4"
                   :show_new="true"
-                  :show_update="false"
                   :change_on_mount="false"
                   :set_from_id="current_dataset.directory_id"
                   @change_directory="change_directory($event)"
