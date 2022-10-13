@@ -673,6 +673,7 @@ import task_input_list_dialog from "../../input/task_input_list_dialog.vue";
 import add_assignee from "../../dialogs/add_assignee.vue"
 import { assignUserToTask, batchAssignUserToTask, batchRemoveUserFromTask } from "../../../services/tasksServices"
 import { get_task_template_members } from "../../../services/taskTemplateService"
+import global_dataset_selector from "../../attached/global_dataset_selector.vue"
 
 import pLimit from "p-limit";
 
@@ -684,7 +685,8 @@ export default Vue.extend({
     task_status_icons,
     task_status_select,
     task_input_list_dialog,
-    add_assignee
+    add_assignee,
+    global_dataset_selector
   },
   props: {
     project_string_id: {
