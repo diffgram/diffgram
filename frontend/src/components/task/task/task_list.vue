@@ -110,18 +110,15 @@
                   @change="page_number = 0"
                 ></v-select>
 
-                <directory_selector
+                <global_dataset_selector
                   class="ml-4 mr-8"
-                  :project_string_id="project_string_id"
-                  :show_new="false"
-                  :clearable="true"
                   label="Incoming Dataset"
-                  :show_update="false"
+                  :clearable="true"
                   :update_from_state="false"
                   :set_current_dir_on_change="false"
                   :initial_dir_from_state="false"
                   @change_directory="on_change_dir, (page_number = 0)"
-                ></directory_selector>
+                />
 
                 <v-btn
                   @click="refresh_task_list"
