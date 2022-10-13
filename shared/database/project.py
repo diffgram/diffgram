@@ -399,7 +399,7 @@ class Project(Base, Caching):
     def regenerate_directory_list_cache(self):
         return self.regenerate_cache_by_key(
             'directory_list',
-            self.serialize_directory_list)
+            self.gen_initial_dir_list)
 
     def refresh_label_dict(self, session):
 
@@ -626,13 +626,15 @@ class Project(Base, Caching):
             'project_string_id': self.project_string_id
         }
 
-    def serialize_directory_list(self):
+    def gen_initial_dir_list(self):
 
         if not self.directory_list:
             return None
-
+        # Limiting to a max of 100 dirs. This code should be eventually removed from the project.
+        # The correct way should be calling the dir/list endpoint and use pagination.
+        limit = 100
         directory_list = []
-        for directory in self.directory_list:
+        for directory in self.directory_list[0:limit]:
 
             # TODO better to do in SQL
             if directory.archived is True:

@@ -50,8 +50,7 @@ def update_directory_api(project_string_id):
 
         log['success'] = True
         return jsonify(
-            log=log,
-            project=project.serialize()), 200
+            log=log), 200
 
 
 def update_directory_core(
