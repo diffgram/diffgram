@@ -748,13 +748,13 @@ class Task(Base):
 
         return task
 
-    def serialize_for_list_view_builder(self, session = None):
+    def serialize_for_list_view_builder(self, session = None, regen_url = True):
 
         file = None
         task_assignees = []
         task_reviewers = []
         if session:
-            file = self.file.serialize_with_type(session = session)
+            file = self.file.serialize_with_type(session = session, regen_url = regen_url)
 
             task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
 

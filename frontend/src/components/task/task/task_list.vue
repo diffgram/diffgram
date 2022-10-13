@@ -1208,7 +1208,7 @@ export default Vue.extend({
     },
 
     update_tasks_with_file_annotations: async function (task_list) {
-      const limit = pLimit(7); // Max concurrent request.
+      const limit = pLimit(10); // Max concurrent request.
       try {
         const promises = task_list.map((task) => {
           return limit(() => this.get_file_with_annotations(task));
