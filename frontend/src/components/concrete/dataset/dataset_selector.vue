@@ -188,14 +188,6 @@ export default Vue.extend({
       type: Array,
       default: undefined
     },
-    initial_dir_from_state: {
-      type: Boolean,
-      default: true
-    },
-    set_current_dir_on_change: {
-      type: Boolean,
-      default: true,
-    },
     change_on_mount: {
       type: Boolean,
       default: true,
@@ -208,7 +200,7 @@ export default Vue.extend({
       type: Boolean,
       default: false
     },
-    show_text_buttons:{
+    show_text_buttons: {
       type: Boolean,
       default: false
     },
