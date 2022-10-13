@@ -31,14 +31,14 @@
           </button_with_menu>
         </v-card-title>
 
-        <global_dataset_selector
+        <directory_icon_selector
           data-cy="directory-selector"
           layout_type="small"
           :job="job"
           :project_string_id="project_string_id"
           :attached_directories_list="attached_dirs"
           @directories-updated="on_directories_updated"
-        ></global_dataset_selector>
+        ></directory_icon_selector>
       </v-col>
     </v-row>
 
@@ -64,7 +64,7 @@
 
   import label_select_only from '../../label/label_select_only.vue'
   import upload_wizard_sheet from '../../input/upload_wizard_sheet'
-  import global_dataset_selector from '../../attached/global_dataset_selector.vue'
+  import directory_icon_selector from '../../source_control/directory_icon_selector.vue'
   import job_output_dir_selector from './job_output_dir_selector.vue'
   import Vue from "vue";
 
@@ -77,7 +77,7 @@
       },
       components: {
         label_select_only: label_select_only,
-        global_dataset_selector,
+        directory_icon_selector: directory_icon_selector,
         job_output_dir_selector: job_output_dir_selector,
         upload_wizard_sheet: upload_wizard_sheet
       },
