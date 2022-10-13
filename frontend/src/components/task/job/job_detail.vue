@@ -69,10 +69,10 @@
             :disabled="loading"
           >
           </tooltip_button>
-              
+
         </v-layout>
       </h1>
- 
+
       <tag_display_and_select
           :project_string_id="project_string_id"
           :object_id="parseInt(job_id)"
@@ -114,6 +114,8 @@
           </v_job_detail_trainer>
         </v-tab-item>
 
+
+
         <v-tab-item>
           <task_template_discussions
             :project_string_id="$store.state.project.current.project_string_id"
@@ -154,6 +156,15 @@
               :job_id="job_id">
 
             </task_template_ui_schema_editor>
+          </v-container>
+        </v-tab-item>
+        <v-tab-item>
+          <v-container fluid>
+            <task_template_member_editor
+              :project_string_id="project_string_id"
+              :job_id="job_id"
+            ></task_template_member_editor>
+
           </v-container>
         </v-tab-item>
         <v-tab-item>
@@ -225,12 +236,14 @@ import No_credentials_dialog from "./no_credentials_dialog.vue";
 import task_template_ui_schema_editor from "./task_template_ui_schema_editor.vue";
 import Label_schema_selector from "../../label/label_schema_selector.vue";
 import tag_display_and_select from '@/components/tag/tag_display_and_select.vue'
+import Task_template_member_editor from "./task_template_member_editor.vue";
 
 
 export default Vue.extend({
   name: "job_detail",
   props: ["job_id"],
   components: {
+    Task_template_member_editor,
     Label_schema_selector,
     No_credentials_dialog,
     job_edit_schema,
@@ -258,6 +271,7 @@ export default Vue.extend({
         {text: "Schema", icon: "mdi-format-paint"},
         {text: "Pipeline", icon: "mdi-folder-network"},
         {text: "UI Schema", icon: "mdi-puzzle-edit"},
+        {text: "Members", icon: "mdi-account-multiple"},
         {text: "Credentials & Settings", icon: "mdi-cog"},
       ],
       update_label_file_list: null,
