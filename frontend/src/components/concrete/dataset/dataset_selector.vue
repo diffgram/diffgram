@@ -329,7 +329,7 @@ export default Vue.extend({
     on_dataset_updated: function(directory_list: Array<object>): void {
       this.internal_dataset_list = directory_list
     },
-    get_dataset_object_from_directory_list_using_id(id: number) {
+    get_dataset_object_from_directory_list_using_id(id: number): void {
       if (!this.dataset_list_filtered) return null
       return this.dataset_list_filtered.find((dataset: any) => dataset.directory_id === id)
     },
