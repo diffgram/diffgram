@@ -27,13 +27,13 @@
     <v-layout>
       <div class="pt-4 pr-4">
 
-        <tooltip_button
+        <standard_button
             tooltip_message="Refresh"
             @click="refresh"
             icon="refresh"
             :icon_style="true"
             color="primary">
-        </tooltip_button>
+        </standard_button>
 
           {{ui_schema_list_computed.length}}
 

@@ -47,7 +47,7 @@
           button_with_menu  component
           -->
 
-        <tooltip_button
+        <standard_button
             tooltip_message="Archive"
             @click="api_attribute_archive('ARCHIVE')"
             icon="archive"
@@ -56,7 +56,7 @@
             :icon_style="true"
             :bottom="true"
             color="red">
-        </tooltip_button>
+        </standard_button>
 
 
         </v-layout>

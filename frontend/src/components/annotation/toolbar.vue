@@ -33,7 +33,7 @@
           </ui_schema>
 
           <ui_schema name="home">
-            <tooltip_button
+            <standard_button
               color="primary"
               datacy="toolbar_home_button"
               :icon_style="true"
@@ -45,7 +45,7 @@
           </ui_schema>
 
           <ui_schema name="task_list">
-            <tooltip_button
+            <standard_button
               color="primary"
               :icon_style="true"
               icon="mdi-playlist-play"
@@ -65,7 +65,7 @@
 
       <div class="d-flex align-center" v-if="show_undo_redo == true && command_manager">
         <ui_schema name="undo">
-          <tooltip_button
+          <standard_button
             :disabled="
               save_loading ||
               view_only_mode ||
@@ -79,11 +79,11 @@
             @click="$emit('undo')"
             :bottom="true"
           >
-          </tooltip_button>
+          </standard_button>
         </ui_schema>
 
         <ui_schema name="redo">
-          <tooltip_button
+          <standard_button
             :disabled="
               save_loading ||
               view_only_mode ||
@@ -97,7 +97,7 @@
             @click="$emit('redo')"
             :bottom="true"
           >
-          </tooltip_button>
+          </standard_button>
         </ui_schema>
       </div>
 
@@ -123,7 +123,7 @@
       </v_is_complete>
       <div>
         <ui_schema name="incomplete_btn">
-          <tooltip_button
+          <standard_button
             v-if="task && task.id && (task.status == 'complete')"
             @click="$emit('task_update_toggle_incomplete')"
             :loading="save_loading"
@@ -138,13 +138,13 @@
             tooltip_message="Mark as incompleted"
             :bottom="true"
           >
-          </tooltip_button>
+          </standard_button>
         </ui_schema>
       </div>
       <!-- Defer, In Task Context Only -->
       <div>
         <ui_schema name="defer">
-          <tooltip_button
+          <standard_button
             v-if="task && task.id && ( task.status == 'available' || task.status == 'in_progress')"
             @click="$emit('task_update_toggle_deferred')"
             :loading="save_loading"
@@ -159,7 +159,7 @@
             tooltip_message="Defer"
             :bottom="true"
           >
-          </tooltip_button>
+          </standard_button>
         </ui_schema>
       </div>
       <div>
@@ -251,7 +251,7 @@
         </guided_1_click_mode_selector>
       </div>
 
-      <tooltip_button
+      <standard_button
         v-if="instance_type == 'tag'"
         @click="$emit('new_tag_instance')"
         color="primary"
@@ -260,12 +260,12 @@
         tooltip_message="Manual New Tag (Automatic on Label Change)"
         :bottom="true"
       >
-      </tooltip_button>
+      </standard_button>
 
     <!-- Known bug when edited directly in studio context -->
     <!--
     <ui_schema name="edit_instance_template">
-      <tooltip_button
+      <standard_button
         tooltip_message="Edit Instance Template"
         v-if="instance_template_selected && is_keypoint_template"
         @click="$emit('open_instance_template_dialog')"
@@ -274,7 +274,7 @@
         :icon_style="true"
         :bottom="true"
       >
-      </tooltip_button>
+      </standard_button>
     </ui_schema>
     -->
 
@@ -299,7 +299,7 @@
 
       <div>
         <ui_schema name="save">
-          <tooltip_button
+          <standard_button
             @click="$emit('save')"
             datacy="save_button"
             :loading="save_loading"
@@ -315,7 +315,7 @@
             :icon_style="true"
             :bottom="true"
           >
-          </tooltip_button>
+          </standard_button>
         </ui_schema>
       </div>
       <div class="has-changed">
@@ -350,7 +350,7 @@
     -->
 
       <div>
-        <tooltip_button
+        <standard_button
           tooltip_message="Previous File"
           v-if="!task && file && file.id"
           @click="$emit('change_file', 'previous')"
@@ -362,12 +362,12 @@
           :icon_style="true"
           :bottom="true"
         >
-        </tooltip_button>
+        </standard_button>
         <!-- TODO Move some of disabled logic into functions don't like having
             so much of it here as it gets more complext -->
       </div>
       <div>
-        <tooltip_button
+        <standard_button
           tooltip_message="Next File"
           v-if="!task && file && file.id"
           @click="$emit('change_file', 'next')"
@@ -379,7 +379,7 @@
           :icon_style="true"
           :bottom="true"
         >
-        </tooltip_button>
+        </standard_button>
       </div>
 
 
@@ -395,7 +395,7 @@
 
       <div>
         <ui_schema name="previous_task">
-          <tooltip_button
+          <standard_button
             tooltip_message="Previous Task"
             v-if="task"
             datacy="previous_task"
@@ -408,13 +408,13 @@
             :icon_style="true"
             :bottom="true"
           >
-          </tooltip_button>
+          </standard_button>
         </ui_schema>
 
         <!-- This is a WIP example of injecting a tombstone button to help positionally
         make it easier for user.-->
         <!--
-      <tooltip_button
+      <standard_button
         tooltip_message="Add Button"
         ui_schema_name="add_button"
         v-if="!$store.getters.get_ui_schema('previous_task', 'visible')"
@@ -424,11 +424,11 @@
         :icon_style="true"
         :bottom="true"
       >
-      </tooltip_button>
+      </standard_button>
       --></div>
       <div>
         <ui_schema name="next_task">
-          <tooltip_button
+          <standard_button
             tooltip_message="Next Task"
             v-if="task"
             datacy="next_task"
@@ -441,7 +441,7 @@
             :icon_style="true"
             :bottom="true"
           >
-          </tooltip_button>
+          </standard_button>
         </ui_schema>
       </div>
 
@@ -449,7 +449,7 @@
 
       <!--  Moving away from default of multi select here, so hide for now -->
       <!--
-  <tooltip_button
+  <standard_button
       @click="delete_instance"
       :disabled="draw_mode"
       color="primary"
@@ -457,7 +457,7 @@
       :icon_style="true"
       tooltip_message="Delete instances selected."
       :bottom="true">
-  </tooltip_button>
+  </standard_button>
   -->
 
       <button_with_menu
@@ -529,7 +529,7 @@
                   </template>
                 </button_with_menu>
                 <ui_schema v-else name="stop_shideshow">
-                  <tooltip_button
+                  <standard_button
                     data-cy="pause-annotation-show"
                     tooltip_message="Pause"
                     @click="
@@ -542,7 +542,7 @@
                   />
                 </ui_schema>
               </div>
-            <tooltip_button
+            <standard_button
                 tooltip_message="Refresh Instances"
                 v-if="$store.state.user.current.is_super_admin == true"
                 @click="$emit('refresh_all_instances')"
@@ -552,7 +552,7 @@
                 :icon_style="true"
                 :bottom="true"
               >
-              </tooltip_button>
+              </standard_button>
               <ui_schema name="brightness_contrast_filters">
               <button_with_menu
                 tooltip_message="Brightness, Contrast, Filters"
@@ -744,7 +744,7 @@
             </button_with_menu>
 
             <!-- Clear unsaved -->
-            <tooltip_button
+            <standard_button
               @click="$emit('clear__new_and_no_ids')"
               tooltip_message="Clear Unsaved"
               icon="mdi-close-circle-multiple"
@@ -753,7 +753,7 @@
               tooltip_direction="bottom"
               :small="true"
             >
-            </tooltip_button>
+            </standard_button>
 
             <!-- Settings -->
             <button_with_menu
@@ -918,7 +918,7 @@
                   </v-slider>
 
 
-                  <tooltip_button
+                  <standard_button
                     tooltip_message="Restore All User Settings & Prompts"
                     @click="$store.commit('restore_default_user_settings')"
                     color="primary"
@@ -926,7 +926,7 @@
                     :icon_style="true"
                     :bottom="true"
                   >
-                  </tooltip_button>
+                  </standard_button>
                 </v-layout>
               </template>
             </button_with_menu>
@@ -935,7 +935,7 @@
           <v-card-title v-if="task && task.id"> Task Specific </v-card-title>
 
           <v-layout v-if="task && task.id">
-            <tooltip_button
+            <standard_button
               tooltip_message="Jump to Next Task With Issues."
               @click="$emit('next_issue_task')"
               :disabled="loading || annotations_loading"
@@ -944,9 +944,9 @@
               :icon_style="true"
               :bottom="true"
             >
-            </tooltip_button>
+            </standard_button>
 
-            <tooltip_button
+            <standard_button
               v-if="$store.state.builder_or_trainer.mode == 'builder'"
               tooltip_message="Export This Task"
               @click="
@@ -962,11 +962,11 @@
               :bottom="true"
               color="primary"
             >
-            </tooltip_button>
+            </standard_button>
           </v-layout>
 
           <v-layout>
-            <tooltip_button
+            <standard_button
               tooltip_message="Copy All Instances"
               @click="$emit('copy_all_instances')"
               :disabled="loading || annotations_loading"
@@ -975,7 +975,7 @@
               :icon_style="true"
               :bottom="true"
             >
-            </tooltip_button>
+            </standard_button>
           </v-layout>
         </template>
       </button_with_menu>

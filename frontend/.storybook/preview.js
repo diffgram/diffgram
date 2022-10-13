@@ -1,9 +1,11 @@
-import { withVuetify } from "@socheatsok78/storybook-addon-vuetify/dist/decorators";
+import vuetify from './vuetify';
+import { withVuetify } from '@socheatsok78/storybook-addon-vuetify/dist/decorators';
+import '!style-loader!css-loader!sass-loader!./main.scss';
 
-export const decorators = [withVuetify];
+import Vue from 'vue';
 
 export const parameters = {
-  actions: { argTypesRegex: "^on[A-Z].*" },
+  actions: { argTypesRegex: '^on[A-Z].*' },
   controls: {
     matchers: {
       color: /(background|color)$/i,
@@ -11,3 +13,22 @@ export const parameters = {
     },
   },
 };
+
+export const decorators = [
+  (story, context) => {
+    const wrapped = story(context);
+
+    return Vue.extend({
+      vuetify,
+      components: { wrapped },
+      template: `
+        <v-app>
+          <v-container fluid>
+            <wrapped/>
+          </v-container>
+        </v-app>
+    `,
+    });
+  },
+  withVuetify,
+];

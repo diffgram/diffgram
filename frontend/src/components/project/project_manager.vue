@@ -21,7 +21,7 @@
             </v-btn>
           </v-toolbar-items>
 
-          <tooltip_button
+          <standard_button
             tooltip_message="Create Sample Project"
             icon="mdi-apps-box"
             :icon_style="true"
@@ -29,7 +29,7 @@
             color="primary"
             @click="open_confirm_dialog_sample_data"
           >
-          </tooltip_button>
+          </standard_button>
         </v-toolbar>
       </template>
     </main_menu>

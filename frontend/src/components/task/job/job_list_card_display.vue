@@ -26,7 +26,7 @@
                   right: 0"
              class="text-right pa-2">
 
-          <tooltip_button
+          <standard_button
             tooltip_message="Pin"
             v-if="!job.is_pinned"
             icon="mdi-pin-outline"
@@ -37,9 +37,9 @@
             color="primary"
             @click="pin_job(job)"
           >
-          </tooltip_button>
+          </standard_button>
 
-          <tooltip_button
+          <standard_button
             tooltip_message="Pinned"
             v-else
             icon="mdi-pin"
@@ -50,7 +50,7 @@
             color="primary"
             @click="pin_job(job)"
           >
-          </tooltip_button>
+          </standard_button>
         </div>
 
         <v-card-title
@@ -199,13 +199,13 @@
               <div class="pl-2 pt-1">
 
               </div>
-              <tooltip_button datacy='resync_button'
+              <standard_button datacy='resync_button'
                               tooltip_message="Resync Missing Files"
                               icon="mdi-refresh"
                               color="primary"
                               :icon_style="true"
                               @click="confirm_resync_dialog_open = true">
-              </tooltip_button>
+              </standard_button>
               <v-dialog
                 v-model="confirm_resync_dialog_open"
                 max-width="450"
@@ -243,41 +243,41 @@
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-              <tooltip_button datacy='view_button'
+              <standard_button datacy='view_button'
                               tooltip_message="View"
                               icon="mdi-eye"
                               color="primary"
                               :icon_style="true"
                               @click="job_detail_page_route_by_status(job)">
-              </tooltip_button>
+              </standard_button>
 
 
-              <tooltip_button datacy='next_task_button'
+              <standard_button datacy='next_task_button'
                               tooltip_message="Go To Next Pending Task"
                               icon="mdi-page-next"
                               color="primary"
                               :icon_style="true"
                               :disabled="!job.stat_count_available || job.stat_count_available === 0"
                               @click="go_to_next_task(job)">
-              </tooltip_button>
+              </standard_button>
 
 
-              <tooltip_button datacy='discussions_button'
+              <standard_button datacy='discussions_button'
                               tooltip_message="Discussions"
                               icon="mdi-comment-text-multiple-outline"
                               color="primary"
                               :icon_style="true"
                               @click="$router.push(`/job/${job.id}/discussions`)">
-              </tooltip_button>
+              </standard_button>
 
 
-              <tooltip_button datacy='pipeline_button'
+              <standard_button datacy='pipeline_button'
                               tooltip_message="Task Template Pipeline"
                               icon="mdi-relation-many-to-many"
                               color="primary"
                               :icon_style="true"
                               @click="open_task_template_pipeline_dialog(job)">
-              </tooltip_button>
+              </standard_button>
 
             </v-row>
           </v-container>
