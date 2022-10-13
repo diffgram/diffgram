@@ -162,14 +162,14 @@
       </v-card>
     </v-container>
 
-    <v-container>
-      <v-card>
-        <v-container>
-          <h2>My Visit History</h2>
-             <user_visit_history_list :project_string_id="project_string_id"></user_visit_history_list>
-          </v-container>
-      </v-card>
-    </v-container>
+<!--    <v-container>-->
+<!--      <v-card>-->
+<!--        <v-container>-->
+<!--          <h2>My Visit History</h2>-->
+<!--             <user_visit_history_list :project_string_id="project_string_id"></user_visit_history_list>-->
+<!--          </v-container>-->
+<!--      </v-card>-->
+<!--    </v-container>-->
 
     <v-snackbar v-model="no_task_snackbar" color="red">
       No tasks available
