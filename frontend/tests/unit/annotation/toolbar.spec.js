@@ -57,7 +57,7 @@ describe("Annotation core toolbar test set", () => {
   it("Emits event to change task to the next on click of Next Task button", async () => {
     const wrapper = shallowMount(toolbar, props, localVue);
     await wrapper
-      .findAll("tooltip_button")
+      .findAll("standard_button")
       .filter(w => w.attributes().tooltip_message == "Next Task")
       .at(0)
       .trigger("click");
@@ -70,7 +70,7 @@ describe("Annotation core toolbar test set", () => {
   it("Emits event to change task to the previous on click of Previous Task button", async () => {
     const wrapper = shallowMount(toolbar, props, localVue);
     await wrapper
-      .findAll("tooltip_button")
+      .findAll("standard_button")
       .filter(w => w.attributes().tooltip_message == "Previous Task")
       .at(0)
       .trigger("click");
@@ -103,7 +103,7 @@ describe("Annotation core toolbar test set", () => {
   //   props.propsData.annotation_show_on = true;
   //   const wrapper = shallowMount(toolbar, props, localVue);
   //   await wrapper
-  //     .findAll("tooltip_button")
+  //     .findAll("standard_button")
   //     .filter(w => w.attributes().tooltip_message == "Pause")
   //     .at(0)
   //     .trigger("click");
