@@ -62,17 +62,16 @@
                 >
             <v-toolbar-items>
 
-              <directory_selector
+              <global_dataset_selector
                   class="mt-4"
+                  v-if="file_dirs_view_mode === 0"
                   :project_string_id="project_string_id"
                   :show_new="true"
                   :show_update="false"
                   :change_on_mount="false"
                   :set_from_id="current_dataset.directory_id"
-                  v-if="file_dirs_view_mode === 0"
-                  @change_directory="change_directory($event)">
-              </directory_selector>
-
+                  @change_directory="change_directory($event)"
+              />
 
               <v-divider
                 vertical
@@ -877,6 +876,7 @@ import v_file_transfer from '../source_control/file_transfer'
 import directory_icon_selector from '../source_control/directory_icon_selector'
 import {get_file_list, get_file_signed_url} from '../../services/fileServices'
 import dir_attach from '../task/file/dir_attach'
+import global_dataset_selector from "../attached/global_dataset_selector.vue"
 import pLimit from "p-limit";
 
 import Vue from "vue";
@@ -887,6 +887,7 @@ import Vue from "vue";
     v_file_transfer,
     directory_icon_selector,
     dir_attach,
+    global_dataset_selector
    },
     props: {
       'project_string_id': {
@@ -1534,7 +1535,6 @@ import Vue from "vue";
     },
 
     async change_directory(event) {
-
       this.current_dataset = event
 
       this.$addQueriesToLocation({'dataset' : event.directory_id})
