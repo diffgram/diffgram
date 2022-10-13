@@ -110,18 +110,15 @@
                   @change="page_number = 0"
                 ></v-select>
 
-                <directory_selector
+                <global_dataset_selector
                   class="ml-4 mr-8"
-                  :project_string_id="project_string_id"
-                  :show_new="false"
-                  :clearable="true"
                   label="Incoming Dataset"
-                  :show_update="false"
+                  :clearable="true"
                   :update_from_state="false"
                   :set_current_dir_on_change="false"
                   :initial_dir_from_state="false"
                   @change_directory="on_change_dir, (page_number = 0)"
-                ></directory_selector>
+                />
 
                 <v-btn
                   @click="refresh_task_list"
@@ -673,6 +670,7 @@ import task_input_list_dialog from "../../input/task_input_list_dialog.vue";
 import add_assignee from "../../dialogs/add_assignee.vue"
 import { assignUserToTask, batchAssignUserToTask, batchRemoveUserFromTask } from "../../../services/tasksServices"
 import { get_task_template_members } from "../../../services/taskTemplateService"
+import global_dataset_selector from "../../attached/global_dataset_selector.vue"
 
 import pLimit from "p-limit";
 
@@ -684,7 +682,8 @@ export default Vue.extend({
     task_status_icons,
     task_status_select,
     task_input_list_dialog,
-    add_assignee
+    add_assignee,
+    global_dataset_selector
   },
   props: {
     project_string_id: {
