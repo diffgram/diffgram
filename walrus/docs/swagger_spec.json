@@ -7,7 +7,7 @@
         "/api/walrus/project/{project_string_id}/export/working_dir/list": {
             "get": {
                 "summary": "List Exports",
-                "description": "Lists all the exports on the given project.",
+                "description": "Lists all the available exports on the given project.",
                 "responses": {
                     "200": {
                         "description": "The exports list",
