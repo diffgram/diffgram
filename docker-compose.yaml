@@ -131,5 +131,29 @@ services:
     ports:
         - 5672:5672
         - 15672:15672
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./test/.minio/data:/export
+      - ./test/.minio/config:/root/.minio
+    environment:
+      - "MINIO_ACCESS_KEY=AKIAIOSFODNN7EXAMPLE"
+      - "MINIO_SECRET_KEY=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
+    command: server /export
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://minio:9000 AKIAIOSFODNN7EXAMPLE wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY;
+      /usr/bin/mc rm -r --force myminio/somebucketname;
+      /usr/bin/mc mb myminio/somebucketname;
+      /usr/bin/mc policy download myminio/somebucketname;
+      exit 0;
+      "
 volumes:
   static: {}
