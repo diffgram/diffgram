@@ -21,14 +21,12 @@
             </diffgram_select>
 
 
-            <directory_selector
+            <global_dataset_selector
               v-if="source == 'directory' "
               :project_string_id="project_string_id"
               :show_new="false"
               :show_update="false"
-              @change_directory="">
-            </directory_selector>
-
+            />
 
             <div class="pl-2 pr-2">
               <job_select
@@ -420,6 +418,8 @@
   import Export_connection_dialog from "./export_connection_dialog.vue";
   import {create_event} from "../event/create_event";
 
+  import global_dataset_selector from "../attached/global_dataset_selector.vue"
+
 
   export default Vue.extend({
       name: 'export',
@@ -427,7 +427,8 @@
       components: {
         Export_connection_dialog,
         free_tier_limit_dialog,
-        export_source_icons
+        export_source_icons,
+        global_dataset_selector
       },
       props: {
         'project_string_id': {
