@@ -46,19 +46,23 @@ export default Vue.extend({
     },
     change_on_mount: {
         type: Boolean,
-        default: true
+        default: true,
     },
     view_only_mode: {
         type: Boolean,
         default: false
     },
     multiple: {
-        type: Array,
-        default: []
+        type: Boolean,
+        default: false
     },
     show_text_buttons:{
         type: Boolean,
         default: false
+    },
+    update_from_state: {
+        type: Boolean,
+        default: true
     },
     show_new: {
         type: Boolean,
@@ -74,7 +78,7 @@ export default Vue.extend({
     },
     label: {
         type: String,
-        default: "Dataset",
+        default: "Dataset"
     }
   },
   components: {
@@ -177,10 +181,8 @@ export default Vue.extend({
           if (this.$props.update_from_state) {
             this.on_change_dataset()
           }
-
         }
       )
-
     }
 
   },
