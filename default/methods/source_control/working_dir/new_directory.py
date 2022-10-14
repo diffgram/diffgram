@@ -102,13 +102,10 @@ def new_directory_api(project_string_id):
             project_id = project.id,
             email = user_email
         )
-
         ####
 
         session.flush()  # to get id
-
         log['success'] = True
         out = jsonify(log = log,
-                      new_directory = directory.serialize(),
-                      project = project.serialize())
+                      new_directory = directory.serialize())
         return out, 200
