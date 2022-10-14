@@ -116,15 +116,15 @@
 
         <v-layout>
           <v-row>
-            <v-col cols="3">
-              <v-card>
-                <v-card-title>Visit History:</v-card-title>
-                <v-card-text>
-                  <user_visit_history_list :project_string_id="project_string_id"></user_visit_history_list>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="9">
+<!--            <v-col cols="3">-->
+<!--              <v-card>-->
+<!--                <v-card-title>Visit History:</v-card-title>-->
+<!--                <v-card-text>-->
+<!--                  <user_visit_history_list :project_string_id="project_string_id"></user_visit_history_list>-->
+<!--                </v-card-text>-->
+<!--              </v-card>-->
+<!--            </v-col>-->
+            <v-col cols="12">
 
               <v-card >
                 <v-card-title>Reports: </v-card-title>
