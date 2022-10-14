@@ -335,15 +335,17 @@ class Event(Base):
             Sends the current event to Diffgram's EventHub for anonymous data tracking.
         :return:
         """
-        if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox', 'testing', 'testing_e2e']:
+        from shared.settings import settings
+        EXCLUDED_EVENTHUB_TRACKING_EVENTS = ['user_visit']
+        if settings.DIFFGRAM_SYSTEM_MODE in ['testing', 'testing_e2e']:
             return
 
-        if settings.DIFFGRAM_SYSTEM_MODE in ['testing_e2e', 'testing']:
+        if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox'] and self.kind in EXCLUDED_EVENTHUB_TRACKING_EVENTS:
             return
-
         try:
             event_data = self.serialize()
             event_data['event_type'] = 'user'
+            event_data['install_fingerprint'] = settings.DIFFGRAM_INSTALL_FINGERPRINT
             result = requests.post(settings.EVENTHUB_URL, json = event_data, timeout = 3)
             if result.status_code == 200:
                 logger.info(f"Sent event: {self.id} to Diffgram Eventhub")
@@ -366,7 +368,8 @@ class Event(Base):
         """
         # This is just for passing info about a user
         # to system
-
+        if settings.DIFFGRAM_SYSTEM_MODE in ['testing', 'testing_e2e']:
+            return
         try:
             analytics.identify(user.member_id, {
                 'email': user.email,
@@ -387,6 +390,8 @@ class Event(Base):
         event,
         email = None):
         # Validate an event exists.
+        if settings.DIFFGRAM_SYSTEM_MODE in ['testing', 'testing_e2e']:
+            return
         if event is None:
             return
         if event.member_id is None:
