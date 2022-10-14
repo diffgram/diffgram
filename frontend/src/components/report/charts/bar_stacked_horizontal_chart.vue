@@ -1,7 +1,3 @@
-<div style="max-width: 100%">
-  <bar-chart :width="width" :height="height"></bar-chart>
-</div>
-
 <script lang="ts">
 
   import VueCharts from 'vue-chartjs'

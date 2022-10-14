@@ -16,7 +16,7 @@
         :style="`border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; min-width:400px; max-width: 400px; height: calc(100vh - 48px);`"
       >
         <div class="mb-2" style="margin-right: auto; text-align: right; border-bottom: 1px solid #e0e0e0">
-          <tooltip_button
+          <standard_button
             tooltip_message="Refresh"
             datacy="refresh_explorer"
             @click="fetch_file_list"
@@ -24,7 +24,7 @@
             :icon_style="true"
             color="primary"
           >
-          </tooltip_button>
+          </standard_button>
         </div>
         <div class="pl-4" style="width: 385px;">
           <v_error_multiple :error="query_error"></v_error_multiple>
@@ -35,19 +35,12 @@
             :project_string_id="project_string_id"
             @change="change_schema"
           />
-          <directory_selector
-            :project_string_id="project_string_id"
-            @change_directory="dataset_change_event($event)"
+          <dataset_selector
             ref="ground_truth_dir_list"
             :change_on_mount="false"
-            :show_new="false"
-            :initial_dir_from_state="false"
-            :update_from_state="false"
             :set_current_dir_on_change="false"
-            :view_only_mode="false"
-            :show_update="false"
-            :show_tag="false"
             :multiple="true"
+            @change_directory="dataset_change_event($event)"
           />
 
           <label_select_only
@@ -206,6 +199,7 @@
   import attribute_select from "../attribute/attribute_select.vue"
 import { attribute_group_list } from "../../services/attributesService";
 import { get_file_signed_url } from "../../services/fileServices";
+import dataset_selector from "../attached/global_dataset_selector.vue"
 
 export default Vue.extend({
   name: "dataset_explorer",
@@ -217,7 +211,8 @@ export default Vue.extend({
     label_select_only,
     tag_select,
     label_schema_selector,
-    attribute_select
+    attribute_select,
+    dataset_selector
   },
   props: [
     'project_string_id',

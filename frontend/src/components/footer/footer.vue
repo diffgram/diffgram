@@ -41,37 +41,37 @@
         </v-btn>
 
               
-        <tooltip_button
+        <standard_button
             href="https://diffgram.readme.io/docs"
             color="white"
             icon="help"
             tooltip_message="Help"
             :icon_style="true">
-        </tooltip_button>
+        </standard_button>
         
-         <tooltip_button
+         <standard_button
             href="https://www.linkedin.com/company/diffgram"
             color="white"
             icon="mdi-linkedin"
             tooltip_message="LinkedIn"
             :icon_style="true">
-        </tooltip_button>
+        </standard_button>
 
-        <tooltip_button
+        <standard_button
             href="https://medium.com/diffgram"
             color="white"
             icon="mdi-bullhorn"
             tooltip_message="Blog"
             :icon_style="true">
-        </tooltip_button>
+        </standard_button>
 
-        <tooltip_button
+        <standard_button
             href="https://github.com/diffgram/diffgram"
             color="white"
             icon="mdi-github"
             tooltip_message="Github"
             :icon_style="true">
-        </tooltip_button>
+        </standard_button>
 
 
 

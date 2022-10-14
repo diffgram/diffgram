@@ -35,7 +35,7 @@
         @label_file="$emit('update_label_file_list', $event)"
       >
       </label_select_only>
-      <tooltip_button
+      <standard_button
         v-if="label_select_view_only_mode == true"
         tooltip_message="Edit Locked Schema"
         @click="
@@ -46,7 +46,7 @@
         :icon_style="true"
         color="primary"
       >
-      </tooltip_button>
+      </standard_button>
       <button_with_confirm
         v-if="label_select_view_only_mode == false"
         @confirm_click="$emit('update_job')"
