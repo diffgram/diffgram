@@ -9,7 +9,7 @@
           White-label Customization (BETA)
         </h1>
 
-        <tooltip_button
+        <standard_button
           tooltip_message="Launch UI Editor"
           @click="open_ui_schema_creation"
           button_color="primary"
@@ -17,7 +17,7 @@
           :left="true"
           button_message="Launch UI Editor"
           color="white">
-        </tooltip_button>
+        </standard_button>
 
       </div>
 

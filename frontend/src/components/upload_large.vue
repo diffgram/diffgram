@@ -24,14 +24,14 @@
                         </v-btn>
 
                       </v-col>
-                      <tooltip_button
+                      <standard_button
                         tooltip_message="Generate Sample Data"
                         @click="open_confirm_dialog_sample_data"
                         icon="mdi-apps-box"
                         :bottom="true"
                         :icon_style="true"
                         color="primary">
-                      </tooltip_button>
+                      </standard_button>
                     </v-row>
                     <v-row  v-if="!bucket_name || bucket_name == ''">
                       <v-col cols="12" class="d-flex justify-center">

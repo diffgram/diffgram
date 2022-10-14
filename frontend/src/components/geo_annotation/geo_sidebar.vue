@@ -77,7 +77,7 @@
                                         />
                                     </template>
                             </button_with_menu>
-                            <tooltip_button
+                            <standard_button
                                 color="primary"
                                 icon="mdi-delete"
                                 tooltip_message="Delete instance"
