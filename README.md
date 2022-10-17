@@ -49,13 +49,10 @@ or [book a discovery call](https://diffgram.com/main/contact).
 * [Join us on Slack](https://www.jotform.com/form/222377866413058)
 * [Contribute](https://diffgram.readme.io/docs/contribute)
 
-<<<<<<< HEAD
 ## Development System
 [Development System](https://medium.com/p/8e333dd44052)
-=======
 ## Develop For Your Business
 [Develop](https://diffgram.readme.io/docs/customization) Diffgram for your business needs.
->>>>>>> 1e1fdad7e7f9431e328efcf2240ebbad9fd16ec5
 
 ## More
 
