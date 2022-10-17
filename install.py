@@ -250,7 +250,10 @@ class DiffgramInstallTool:
         return True
 
     def validate_s3_connection(self):
-        endpoint_url = self.s3_endpoint_url
+        if not self.use_docker_minio:
+            endpoint_url = self.s3_endpoint_url
+        else:
+            endpoint_url = 'http://localhost:9000'
         access_id = self.s3_access_id
         access_secret = self.s3_access_secret
         bucket_name = self.bucket_name
@@ -305,7 +308,10 @@ class DiffgramInstallTool:
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
             return False
         time.sleep(0.5)
-        bcolors.printcolor('Connection to S3 Successful!', bcolors.OKGREEN)
+        if self.static_storage_provider == 'minion':
+            bcolors.printcolor('Connection to MinIO Successful!', bcolors.OKGREEN)
+        else:
+            bcolors.printcolor('Connection to S3 Successful!', bcolors.OKGREEN)
         return True
 
     def set_minio_credentials(self):
@@ -361,16 +367,16 @@ class DiffgramInstallTool:
             self.bucket_name = bucket_name
 
         # Ask for bucket region
-        is_valid = False
-
-        while not is_valid:
-            bucket_region = bcolors.inputcolor('Please provide the Minio S3 Bucket Region: ')
-            if bucket_region == '':
-                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
-                continue
-            else:
-                self.bucket_region = bucket_region
-                is_valid = True
+        if not self.use_docker_minio:
+            is_valid = False
+            while not is_valid:
+                bucket_region = bcolors.inputcolor('Please provide the Minio S3 Bucket Region: ')
+                if bucket_region == '':
+                    bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
+                    continue
+                else:
+                    self.bucket_region = bucket_region
+                    is_valid = True
 
     def set_s3_credentials(self):
 
@@ -553,7 +559,7 @@ class DiffgramInstallTool:
         try:
             print('Launching Diffgram...')
             if self.static_storage_provider == 'minio':
-                os.system('docker-compose --profile minio up -d')
+                os.system('docker compose --profile minio up -d')
             else:
                 os.system('docker-compose up -d')
             print('✓ Diffgram Successfully Launched!')
@@ -688,8 +694,10 @@ class DiffgramInstallTool:
                 return
         elif self.static_storage_provider == 'minio':
             self.set_minio_credentials()
-            if not self.validate_s3_connection():
-                return
+            if not self.use_docker_minio:
+                self.set_minio_credentials()
+                if not self.validate_s3_connection():
+                    return
             
         self.set_diffgram_version()
         self.database_config()
@@ -697,6 +705,9 @@ class DiffgramInstallTool:
         self.rabbit_config()
         self.populate_env()
         self.launch_dockers()
+        if self.use_docker_minio:
+            if not self.validate_s3_connection():
+                return
 
     def print_logo(self):
         print("""\
