@@ -60,6 +60,7 @@ class DiffgramInstallTool:
     bucket_name = None
     bucket_region = None
     gcp_credentials_path = None
+    use_docker_minio:bool = True
     s3_endpoint_url = None
     s3_access_id = None
     s3_access_secret = None
@@ -78,13 +79,13 @@ class DiffgramInstallTool:
     rabbit_pass: str = 'admin'
 
     def set_static_storage_option(self, option_number):
-        if option_number == 1:
+        if option_number == 4:
             self.static_storage_provider = 'gcp'
         elif option_number == 2:
             self.static_storage_provider = 'aws'
         elif option_number == 3:
             self.static_storage_provider = 'azure'
-        elif option_number == 4:
+        elif option_number == 1:
             self.static_storage_provider = 'minio'
 
     def set_gcp_credentials(self):
@@ -308,40 +309,49 @@ class DiffgramInstallTool:
         return True
 
     def set_minio_credentials(self):
-
+        use_docker_minio = bcolors.inputcolor('Would you like to provide a custom MinIO host? Default will use docker Y/N?')
+        if use_docker_minio.lower() != 'y':
+            self.use_docker_minio = True
+            self.s3_endpoint_url = 'http://minio:9000'
+            self.s3_access_id = create_random_string(20)
+            self.s3_access_secret = create_random_string(40)
+        else:
+            self.use_docker_minio = False
         # Ask For Endpoint Url
-        is_valid = False
-        while not is_valid:
-            s3_endpoint_url = bcolors.inputcolor('Please provide the Minio Endpoint Url: ')
-            if s3_endpoint_url == '':
-                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
-                continue
-            else:
-                self.s3_endpoint_url = s3_endpoint_url
-                is_valid = True
+        if not self.use_docker_minio:
+            is_valid = False
+            while not is_valid:
+                s3_endpoint_url = bcolors.inputcolor('Please provide the Minio Endpoint Url: ')
+                if s3_endpoint_url == '':
+                    bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
+                    continue
+                else:
+                    self.s3_endpoint_url = s3_endpoint_url
+                    is_valid = True
 
         # Ask For Access Key ID
-        is_valid = False
-        while not is_valid:
-            s3_access_id = bcolors.inputcolor('Please provide the Minio Access Key ID: ')
-            if s3_access_id == '':
-                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
-                continue
-            else:
-                self.s3_access_id = s3_access_id
-                is_valid = True
+        if not self.use_docker_minio:
+            is_valid = False
+            while not is_valid:
+                s3_access_id = bcolors.inputcolor('Please provide the Minio Access Key ID: ')
+                if s3_access_id == '':
+                    bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
+                    continue
+                else:
+                    self.s3_access_id = s3_access_id
+                    is_valid = True
 
-        # Ask For Access Key Secret
-        is_valid = False
+            # Ask For Access Key Secret
+            is_valid = False
 
-        while not is_valid:
-            s3_access_secret = bcolors.inputcolor('Please provide the Minio Access Key Secret: ')
-            if s3_access_secret == '':
-                bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
-                continue
-            else:
-                self.s3_access_secret = s3_access_secret
-                is_valid = True
+            while not is_valid:
+                s3_access_secret = bcolors.inputcolor('Please provide the Minio Access Key Secret: ')
+                if s3_access_secret == '':
+                    bcolors.printcolor('Please a enter a valid value.', bcolors.WARNING)
+                    continue
+                else:
+                    self.s3_access_secret = s3_access_secret
+                    is_valid = True
 
         # Ask for bucket name
         bucket_name = bcolors.inputcolor('Please provide the Minio S3 Bucket Name [Default is diffgram-storage]: ')
@@ -542,7 +552,10 @@ class DiffgramInstallTool:
     def launch_dockers(self):
         try:
             print('Launching Diffgram...')
-            os.system('docker-compose up -d')
+            if self.static_storage_provider == 'minio':
+                os.system('docker-compose --profile minio up -d')
+            else:
+                os.system('docker-compose up -d')
             print('✓ Diffgram Successfully Launched!')
             print('View the Web UI at: http://localhost:8085')
         except Exception as e:
@@ -640,14 +653,17 @@ class DiffgramInstallTool:
         print('')
 
         bcolors.printcolor('First We need to know what static storage provider you will use: ', bcolors.OKCYAN)
-        print('1. Google Cloud Storage (GCP)')
+
+        print('1. Minio Local Storage [Default]')
         print('2. Amazon Web Services S3 (AWS S3)')
         print('3. Microsoft Azure Storage (Azure)')
-        print('4. Minio Web Services Storage (Minio)')
+        print('4. Google Cloud Storage (GCP)')
         option_valid = False
         while not option_valid:
             option = bcolors.inputcolor('Enter 1, 2, 3 or 4. Or write exit to quit the installation: ')
-
+            if option is None or option == '':
+                # Default to MinIO
+                option = 1
             if option.isnumeric() and int(option) in [1, 2, 3, 4]:
                 option_valid = True
                 self.set_static_storage_option(int(option))
