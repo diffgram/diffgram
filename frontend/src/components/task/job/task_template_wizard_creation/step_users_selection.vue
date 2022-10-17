@@ -38,7 +38,6 @@
 </template>
 
 <script lang="ts">
-import label_select_only from "../../../label/label_select_only";
 import label_manager_dialog from "../../../label/label_manager_dialog";
 
 import Vue from "vue";
@@ -48,7 +47,6 @@ export default Vue.extend({
   props: ["project_string_id", "job", "loading_steps", "mode", "title", "message"],
 
   components: {
-    label_select_only,
     label_manager_dialog,
   },
 
