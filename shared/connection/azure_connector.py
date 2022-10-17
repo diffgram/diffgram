@@ -20,20 +20,7 @@ from shared.export.export_view import export_view_core
 from shared.database.export import Export
 from shared.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.regular import regular_log
-
-images_allowed_file_names = [".jpg", ".jpeg", ".png"]
-videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
-allowed_content_types_images = [
-    'image/jpeg',
-    'image/png',
-]
-allowed_content_types_videos = [
-    'video/mp4',
-    'video/quicktime',
-    'video/x-msvideo',
-    'video/x-m4v',
-]
-
+from shared.ingest.allowed_ingest_extensions import images_allowed_file_names, videos_allowed_file_names
 
 def with_azure_exception_handler(f):
     def wrapper(*args):

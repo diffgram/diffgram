@@ -4,14 +4,14 @@
       <h1 data-cy="task-template-dataset-step-title" class="font-weight-medium text--primary mr-4">
         What datasets are these tasks for?
       </h1>
-      <tooltip_button
+      <standard_button
         tooltip_message="Upload File"
         @click="open_upload_wizard"
         button_color="primary"
         icon="mdi-upload"
         button_message="Upload Files"
         color="white">
-      </tooltip_button>
+      </standard_button>
     </div>
 
     <v_error_multiple :error="error"></v_error_multiple>

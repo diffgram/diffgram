@@ -23,7 +23,7 @@
           @dblclick="edit_name = true"
         >
           {{ exam.name }}
-          <tooltip_button
+          <standard_button
             v-if="edit_name == false && allow_edit"
             tooltip_message="Edit Name"
             tooltip_direction="bottom"
@@ -32,7 +32,7 @@
             :icon_style="true"
             color="primary"
           >
-          </tooltip_button>
+          </standard_button>
         </div>
         <div
           v-if="edit_name != true && !allow_edit"
@@ -69,7 +69,7 @@
           </button_with_confirm>
         </div>
 
-        <tooltip_button
+        <standard_button
           v-if="edit_name == true"
           tooltip_message="Cancel Name Edit"
           datacy="cancel_edit_name"
@@ -79,7 +79,7 @@
           color="primary"
           :disabled="loading"
         >
-        </tooltip_button>
+        </standard_button>
       </v-layout>
     </h1>
     <v-btn

@@ -12,7 +12,7 @@
         <!-- Previous Frame -->
 
         <div class="">
-          <tooltip_button
+          <standard_button
               datacy="back_3_frames"
               :disabled="loading || go_to_keyframe_loading || playing || video_current_frame_guess < 3"
               @click.stop="move_frame(-3)"
@@ -22,10 +22,10 @@
               :icon_style="true"
               :bottom="true"
                           >
-          </tooltip_button>
+          </standard_button>
         </div>
 
-        <tooltip_button
+        <standard_button
             datacy="back_1_frame"
             :disabled="loading || go_to_keyframe_loading ||
                         playing || video_current_frame_guess == 0"
@@ -36,13 +36,13 @@
             :icon_style="true"
             :bottom="true"
                         >
-        </tooltip_button>
+        </standard_button>
 
 
         <!-- Play / Pause
           caution padding needs to match play / pause -->
         <div v-show="playing == false">
-          <tooltip_button
+          <standard_button
               datacy="play_button"
               :disabled="play_loading || loading || go_to_keyframe_loading || at_end_of_video"
               @click="video_play"
@@ -52,11 +52,11 @@
               :icon_style="true"
               :bottom="true"
                           >
-          </tooltip_button>
+          </standard_button>
         </div>
 
         <div v-show="playing == true">
-            <tooltip_button
+            <standard_button
               datacy="pause_button"
               @click="video_pause"
               icon="pause"
@@ -65,12 +65,12 @@
               :icon_style="true"
               :bottom="true"
                           >
-          </tooltip_button>
+          </standard_button>
         </div>
 
 
         <!-- Next frame -->
-        <tooltip_button
+        <standard_button
             datacy="forward_1_frame"
             :disabled="loading || go_to_keyframe_loading || playing || at_end_of_video"
             @click="move_frame(1)"
@@ -80,9 +80,9 @@
             :icon_style="true"
             :bottom="true"
                         >
-        </tooltip_button>
+        </standard_button>
 
-        <tooltip_button
+        <standard_button
             datacy="forward_3_frames"
             :disabled="loading || go_to_keyframe_loading || playing || at_less_than_3_frames_from_end"
             @click="move_frame(3)"
@@ -92,7 +92,7 @@
             :icon_style="true"
             :bottom="true"
                         >
-        </tooltip_button>
+        </standard_button>
 
 
         <div class="pl-2">
@@ -200,7 +200,7 @@
 
             <v-layout class="pb-2">
 
-              <tooltip_button
+              <standard_button
                   :loading="loading"
                   :disabled="go_to_keyframe_loading || playing"
                   @click="next_instance(undefined)"
@@ -211,11 +211,11 @@
                   :large="false"
                   :bottom="true"
                 >
-              </tooltip_button>
+              </standard_button>
 
               <v-spacer> </v-spacer>
 
-              <tooltip_button
+              <standard_button
                   tooltip_message="Interpolate All Sequences"
                   @click="run_interpolation"
                   icon="filter_none"
@@ -223,7 +223,7 @@
                   :icon_style="true"
                   :disabled="running_interpolation || loading || go_to_keyframe_loading || playing"
                   color="primary">
-              </tooltip_button>
+              </standard_button>
 
               <div>
                 <v-btn color="blue darken-1" text
@@ -313,13 +313,13 @@
                 >
         End of Video
 
-        <tooltip_button
+        <standard_button
             tooltip_message="Restart Video"
             @click="restart_video"
             icon="refresh"
             :icon_style="true"
             color="white">
-        </tooltip_button>
+        </standard_button>
 
       </v-alert>
 

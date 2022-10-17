@@ -162,7 +162,10 @@ class WorkingDir(Base):
         from shared.database.project import Project
         project = Project.get_by_id(session = session, id = project_id)
         query = session.query(WorkingDir).filter(
-            WorkingDir.project_id == project_id)
+            WorkingDir.project_id == project_id,
+            or_(WorkingDir.archived == False, WorkingDir.archived.is_(None))
+
+        )
 
         from shared.database.permissions.roles import ValidObjectTypes
 

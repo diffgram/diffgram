@@ -99,14 +99,14 @@
                as we are still reviewing this feature -->
 
           <!-- Retry -->
-          <tooltip_button
+          <standard_button
             tooltip_message="Retry Selected Inputs"
             @click="update_import(null, 'RETRY')"
             icon="mdi-redo-variant"
             :disabled="loading || selected.length == 0"
             :text_style="true"
             color="primary">
-          </tooltip_button>
+          </standard_button>
 
 
           <button_with_confirm
@@ -302,7 +302,7 @@
                   <!--                  <p  v-if="props.item.status == 'failed'" class="error&#45;&#45;text">{{props.item.status_text}}</p>-->
 
                   <div class="error-status-container">
-                    <tooltip_button
+                    <standard_button
                       v-if="props.item.status === 'failed' &&
                     props.item.update_log &&
                     props.item.update_log.error &&
@@ -316,7 +316,7 @@
                       color="error">
                       <v-icon>mdi-alert</v-icon>
 
-                    </tooltip_button>
+                    </standard_button>
                     <button_with_menu
                       v-else-if="props.item.status === 'failed'"
                       icon="error"
@@ -440,7 +440,7 @@
 
               <td>
                 <!-- In update mode, Dataset doesn't really make sense to list -->
-                <regular_chip
+                <standard_chip
                   v-if="props.item.directory &&
                                  props.item.mode !='update' "
                   :message=props.item.directory.nickname
@@ -451,7 +451,7 @@
                   @click="$router.push('/studio/annotate/'
                       + project_string_id + '?dataset=' + props.item.directory.id)"
                 >
-                </regular_chip>
+                </standard_chip>
 
                 <div v-if="props.item.mode == 'update'">
                   N/A
@@ -548,14 +548,14 @@
                   </tooltip_icon>
 
 
-                  <tooltip_button
+                  <standard_button
                     v-if="props.item.mode == 'update' || props.item.mode == 'update_with_existing' || props.item.instance_list"
                     tooltip_message="Raw Instance List & Frame Map"
                     icon="mdi-dump-truck"
                     :icon_style="true"
                     @click="open_input_payload_dialog(props.item)"
                     color="primary">
-                  </tooltip_button>
+                  </standard_button>
 
 
                 </v-layout>
