@@ -162,6 +162,11 @@
               </v-slider>
             </v-layout>
 
+            <v-layout>
+              <p style="font-size: 11px">By registering you agree with the <a target="_blank" href="https://diffgram.com/policies">Diffgram data policies</a></p>
+            </v-layout>
+
+
             <v-card-actions class="pt-2">
               <v-btn  color="primary"
                       block

@@ -34,13 +34,13 @@
               </div>
 
               <div class="pl-2 pr-2">
-                <regular_chip
+                <standard_chip
                   v-if="$store.state.job.current.file_count_statistic != undefined"
                   :message=$store.state.job.current.file_count_statistic
                   tooltip_message="File Count"
                   color="primary"
                   tooltip_direction="bottom">
-                </regular_chip>
+                </standard_chip>
               </div>
 
               <v-spacer></v-spacer>

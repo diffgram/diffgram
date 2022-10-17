@@ -13,7 +13,7 @@
     <div v-if="show_detail == true">
       <h1> Status </h1>
 
-      <tooltip_button
+      <standard_button
         tooltip_message="Refresh"
         @click="check_all"
         :disabled="default_loading || walrus_loading"
@@ -22,7 +22,7 @@
         :icon_style="true"
         :bottom="true"
       >
-      </tooltip_button>
+      </standard_button>
 
       <v-card-title> Default Service </v-card-title>
       <v_error_multiple :error="default_error">

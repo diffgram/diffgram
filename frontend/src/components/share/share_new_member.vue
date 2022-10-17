@@ -18,19 +18,19 @@
         <v-spacer>
         </v-spacer>
 
-        <tooltip_button
+        <standard_button
             v-if="enable_view_existing"
             tooltip_message="View Existing"
             @click="view_existing_open = true"
             icon="mdi-account-multiple"
             :icon_style="true"
             color="primary">
-        </tooltip_button>
+        </standard_button>
 
         <!-- All this button does is toggle the member_kind
             instead of user having to "know" to do it in select.
             -->
-        <tooltip_button
+        <standard_button
           v-if="member_kind == 'User' && show_sdk_share"
           tooltip_message="Developer Authentication (API/SDK)"
           @click="member_kind = 'Developer Authentication (API/SDK)'"
@@ -39,9 +39,9 @@
           color="primary"
           :disabled="loading"
                         >
-        </tooltip_button>
+        </standard_button>
 
-        <tooltip_button
+        <standard_button
           v-if="member_kind != 'User'"
           tooltip_message="Invite User"
           @click="member_kind = 'User'"
@@ -50,7 +50,7 @@
           color="primary"
           :disabled="loading"
                         >
-        </tooltip_button>
+        </standard_button>
 
       </v-card-title>
 
@@ -80,7 +80,7 @@
                 Existing
 
                 <v-spacer></v-spacer>
-                <tooltip_button
+                <standard_button
                   tooltip_message="Close"
                   @click="view_existing_open = !view_existing_open"
                   icon="mdi-close"
@@ -90,7 +90,7 @@
                   datacy="close-view_existing_open"
                   class="text-right"
                 >
-                </tooltip_button>
+                </standard_button>
               </v-card-title>
 
               <v_collaborate_list_existing :project_string_id="project_string_id">
@@ -124,14 +124,14 @@
                       :disabled="loading"
                       prepend-icon="security"></v-select>
 
-            <tooltip_button
+            <standard_button
                 tooltip_message="Help"
                 href="https://diffgram.readme.io/docs/project#project-roles"
                 target="_blank"
                 icon="help"
                 :icon_style="true"
                 color="primary">
-            </tooltip_button>
+            </standard_button>
 
           </v-layout>
 

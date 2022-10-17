@@ -335,7 +335,7 @@
                     @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
                     :value="item.name"
                   />
-                  <tooltip_button
+                  <standard_button
                     v-if="open"
                     color="primary"
                     icon="mdi-plus"
@@ -344,7 +344,7 @@
                     :icon_style="true"
                     :bottom="true"
                   />
-                  <tooltip_button
+                  <standard_button
                     v-else
                     color="primary"
                     icon="mdi-plus"
@@ -536,7 +536,6 @@ import draggable from 'vuedraggable'
 import attribute from './attribute.vue';
 import label_select_only from '../label/label_select_only.vue'
 import attribute_new_or_update from './attribute_new_or_update.vue';
-import Tooltip_button from "../regular/tooltip_button.vue";
 import { v4 as uuidv4 } from "uuid";
 import { TreeNode } from "../../helpers/tree_view/Node"
 import { construct_tree, find_all_relatives } from "../../helpers/tree_view/construct_tree"
@@ -549,8 +548,7 @@ export default Vue.extend( {
     label_select_only,
     attribute_new_or_update,
     draggable,
-    attribute,
-    Tooltip_button
+    attribute
   },
   model: {
     prop: 'group',

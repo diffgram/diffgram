@@ -32,17 +32,17 @@ describe("is_complete.vue", () => {
         expect(wrapper.html()).toContain('icon="mdi-archive-eye-outline"')
     })
 
-    it("Should render completed regular_chip element if task has status complete", () => {
+    it("Should render completed standard_chip element if task has status complete", () => {
         props.propsData.task.status = 'complete'
         const wrapper = shallowMount(is_complete, props)
-        expect(wrapper.findAll('regular_chip').length).toBe(1)
+        expect(wrapper.findAll('standard_chip').length).toBe(1)
         expect(wrapper.html()).toContain("Complete")
     })
 
     it("Should trigger complete_dialog method when click on complete task icon", async () => {
         const wrapper = shallowMount(is_complete, props)
         wrapper.setMethods({ complete_dialog: testFunc })
-        await wrapper.findAll('tooltip_button').trigger('click')
+        await wrapper.findAll('standard_button').trigger('click')
         expect(testFunc).toHaveBeenCalled()
     })
 })
