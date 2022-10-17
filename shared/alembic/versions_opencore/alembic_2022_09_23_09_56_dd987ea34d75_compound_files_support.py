@@ -22,4 +22,4 @@ def upgrade():
 
 
 def downgrade():
-    op.add_column('file', sa.Column('ui_schema_id', sa.Integer()))
+    op.drop_column('file', 'ui_schema_id')
