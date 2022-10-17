@@ -399,8 +399,6 @@ class Sequence(Base):
             session = session,
             video_file_id = video_file_id)
 
-        print(len(sequence_list))
-
         for sequence in sequence_list:
             sequence.regenerate_keyframe_list(session = session)
             if regenerate_preview_images:

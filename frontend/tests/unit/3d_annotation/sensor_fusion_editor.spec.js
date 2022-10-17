@@ -3,7 +3,7 @@ import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
 import sensor_fusion_editor from "../../../src/components/3d_annotation/sensor_fusion_editor";
 import FileLoader3DPointClouds from "../../../src/components/3d_annotation/FileLoader3DPointClouds";
 import * as instanceServices from '../../../src/services/instanceServices';
-import * as instance_utils from "../../../src/utils/instance_utils"
+import * as instance_utils from "@/utils/instance_utils"
 import {create_test_mesh} from './3d_mocks'
 import * as AnnotationSavePrechecks from '../../../src/components/annotation/utils/AnnotationSavePrechecks';
 import * as THREE from 'three';

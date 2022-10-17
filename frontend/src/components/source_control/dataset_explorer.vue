@@ -124,7 +124,7 @@
         </div>
       </div>
 
-      <div style="border-top: 1px solid #e0e0e0; min-width:600px; width: 100%;height: 1000px; overflow-y: auto">
+      <div style="border-top: 1px solid #e0e0e0; min-width:600px; width: 100%; overflow-y: auto">
         <v-progress-linear indeterminate
                            v-if="loading"
                            height="10"
@@ -144,12 +144,13 @@
           id="infinite-list"
           fluid
           ref="infinite-list"
-          class="files-container d-flex justify-start"
+          class="files-container d-flex flex-wrap justify-start"
           data-cy="file_review_container"
           :style="{
         height: files_container_height,
         width: '100%',
-        overflowY: 'auto', ['flex-flow']: 'row wrap',
+        overflowY: 'auto',
+        ['flex-flow']: 'row wrap',
         position: 'absolute',
         oveflowX: 'hidden'
       }"
@@ -172,6 +173,7 @@
             @file_selected="on_file_selected"
           />
         </v-container>
+
         <div indeterminate v-if="infinite_scroll_loading">.
           Loading...
           <v-progress-circular indeterminate></v-progress-circular>
@@ -221,7 +223,7 @@ export default Vue.extend({
   ],
   async mounted() {
     if (window) {
-      this.list_item_width = (window.innerWidth - 400) / 3
+      this.list_item_width = (window.innerWidth - 475) / 3
     }
     if (window.Cypress) {
       window.DatasetExplorer = this;
@@ -318,7 +320,7 @@ export default Vue.extend({
       if (this.full_screen) {
         return `100%`
       } else {
-        return '1000px'
+        return 'auto'
       }
     }
   },
@@ -562,7 +564,10 @@ export default Vue.extend({
     },
     reset_file_thumbnails: function(file_list){
       for (let file of file_list){
-        file.image.url_signed = null
+        if(file.image){
+          file.image.url_signed = null
+        }
+
       }
     },
     fetch_single_file_signed_url: async function(file, project_string_id){
@@ -637,6 +642,7 @@ export default Vue.extend({
 
       }
       catch (error) {
+        console.error(error)
         if (error.toString() !== 'Cancel'){
           this.query_error = this.$route_api_errors(error)
         }
