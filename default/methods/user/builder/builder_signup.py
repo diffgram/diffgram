@@ -42,6 +42,7 @@ def builder_enable_api():
         company = data.get('company', None)
         how_many_data_labelers = data.get('how_many_data_labelers')
 
+
         # TODO shared validation with update / edit methods
         # if not account_edit.valid_name()
 
@@ -108,7 +109,6 @@ def builder_enable_core(session,
 
     user.api_enabled_builder = True
     user.last_builder_or_trainer_mode = "builder"
-
     Event.new(
         session = session,
         kind = "builder_api_enabled",
@@ -120,10 +120,5 @@ def builder_enable_core(session,
     # We have updated user information
     # So rerun identify.
     Event.identify_user(user)
-
-    try:
-        email_about_demo_interest(user)
-    except Exception as e:
-        print("email_about_demo_interest", e)
 
     return True
