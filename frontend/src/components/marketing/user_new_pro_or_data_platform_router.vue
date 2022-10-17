@@ -33,14 +33,14 @@
 
   <div class="pa-4"> </div>
 
-  <!-- Pro Network not supported here yet --> 
-  <!-- 
+  <!-- Pro Network not supported here yet -->
+  <!--
   <v-card>
     <v-card-title>
       Supervise AI
     </v-card-title>
     <v-card-text class="black--text">
-      Supervise AI from home and earn with Diffgram.  
+      Supervise AI from home and earn with Diffgram.
     </v-card-text>
     <v-card-actions>
       <v-btn  color="primary"
