@@ -562,6 +562,9 @@ export default Vue.extend({
     },
     reset_file_thumbnails: function(file_list){
       for (let file of file_list){
+        if(!file.image){
+          continue
+        }
         file.image.url_signed = null
       }
     },
