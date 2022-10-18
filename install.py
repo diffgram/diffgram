@@ -490,6 +490,7 @@ class DiffgramInstallTool:
             env_file += f"DIFFGRAM_MINIO_ACCESS_KEY_SECRET={self.s3_access_secret}\n"
             env_file += f"DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
             env_file += f"DIFFGRAM_S3_BUCKET_REGION={self.bucket_region}\n"
+            env_file += f"IS_DIFFGRAM_S3_V4_SIGNATURE={True}\n"
             env_file += f"ML__DIFFGRAM_S3_BUCKET_NAME={self.bucket_name}\n"
             env_file += 'SAME_HOST=False\n'
             env_file += f"DIFFGRAM_STATIC_STORAGE_PROVIDER={self.static_storage_provider}\n"
