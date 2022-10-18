@@ -368,9 +368,9 @@
 <script>
 import Vue from 'vue'
 import text_hotkeys from "./text_hotkeys.vue"
-import label_select_annotation from "../label/label_select_annotation.vue"
-import label_schema_selector from "../label/label_schema_selector.vue"
-import task_status from "../annotation/task_status.vue"
+import label_select_annotation from "../../label/label_select_annotation.vue"
+import label_schema_selector from "../../label/label_schema_selector.vue"
+import task_status from "../../annotation/task_status.vue"
 
 export default Vue.extend({
   name: "text_toolbar",

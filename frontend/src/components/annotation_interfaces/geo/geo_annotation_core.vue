@@ -55,17 +55,17 @@
 import Vue from "vue";
 import geo_toolbar from "./geo_toolbar.vue"
 import geo_sidebar from "./geo_sidebar.vue"
-import CommandManager from "../../helpers/command/command_manager"
-import InstanceList from "../../helpers/instance_list"
-import History from "../../helpers/history"
+import CommandManager from "../../../helpers/command/command_manager"
+import InstanceList from "../../../helpers/instance_list"
+import History from "../../../helpers/history"
 import { 
     CreateInstanceCommand, 
     DeleteInstanceCommand,
     UpdateInstanceLabelCommand,
     UpdateInstanceGeoCoordinatesCommand
-} from "../../helpers/command/available_commands"
-import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
-import { getInstanceList, postInstanceList } from "../../services/instanceList";
+} from "../../../helpers/command/available_commands"
+import { GeoCircle, GeoPoint, GeoPoly } from "../../vue_canvas/instances/GeoInstance"
+import { getInstanceList, postInstanceList } from "../../../services/instanceList";
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
 import Map from 'ol/Map';

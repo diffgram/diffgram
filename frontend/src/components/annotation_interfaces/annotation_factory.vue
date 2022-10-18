@@ -223,10 +223,10 @@ import { get_schemas } from "../../services/labelServices";
 import empty_file_editor_placeholder from "../annotation/empty_file_editor_placeholder.vue";
 import no_credentials_dialog from '../task/job/no_credentials_dialog.vue';
 import file_manager_sheet from "../source_control/file_manager_sheet.vue";
-import audio_annotation_core from "../audio_annotation/audio_annotation_core.vue";
 import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor.vue'
-import text_annotation_core from "../text_annotation/text_annotation_core.vue"
-import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
+import text_annotation_core from "./text/text_annotation_core.vue"
+import audio_annotation_core from "./audio/audio_annotation_core.vue";
+import geo_annotation_core from "./geo/geo_annotation_core.vue"
 import { fetchNextTask, fetchSingleTask } from "../../services/tasksServices";
 
 export default Vue.extend({

@@ -69,19 +69,19 @@
 import audio_toolbar from './audio_toolbar'
 import audio_sidebar from './audio_sidebar.vue'
 import waveform_selector from './render_elements/waveform_selector.vue'
-import CommandManager from "../../helpers/command/command_manager"
-import InstanceList from "../../helpers/instance_list"
-import History from "../../helpers/history"
+import CommandManager from "../../../helpers/command/command_manager"
+import InstanceList from "../../../helpers/instance_list"
+import History from "../../../helpers/history"
 import {
   CreateInstanceCommand,
   DeleteInstanceCommand,
   UpdateInstanceLabelCommand,
   UpdateInstanceAttributeCommand,
   UpdateInstanceAudioCoordinatesCommand
-} from "../../helpers/command/available_commands"
-import { AudioAnnotationInstance } from "../vue_canvas/instances/AudioInstance"
-import { deferTask, finishTaskAnnotation } from "../../services/tasksServices"
-import { getInstanceList, postInstanceList } from "../../services/instanceList";
+} from "../../../helpers/command/available_commands"
+import { AudioAnnotationInstance } from "../../vue_canvas/instances/AudioInstance"
+import { deferTask, finishTaskAnnotation } from "../../../services/tasksServices"
+import { getInstanceList, postInstanceList } from "../../../services/instanceList";
 
 export default {
   name: "audio_annotation_core",
