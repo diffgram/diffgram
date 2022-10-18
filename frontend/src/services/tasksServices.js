@@ -1,5 +1,33 @@
 import axios from './customInstance'
 
+export const fetchSingleTask = async (task_id, builder_or_trainer_mode) => {
+  try {
+    const { data } = await axios.post('/api/v1/task', { task_id, builder_or_trainer_mode })
+  
+    return [data, null]
+  } catch(e) {
+    return [null, e]
+  }
+}
+
+export const fetchNextTask = async (project_string_id, direction, task, assign_to_user = false) => {
+  try {
+    const { data } = await axios.post(
+      `/api/v1/job/${task.job_id}/next-task`,
+      {
+        project_string_id,
+        task_id: task.id,
+        direction,
+        assign_to_user,
+      }
+    );
+
+    return [data, null]
+  } catch(e) {
+    return [null, e]
+  }
+}
+
 export const nextTask = async job_id => {
   try {
     const response = await axios.post(`/api/v1/job/${job_id}/task/next`, {});
