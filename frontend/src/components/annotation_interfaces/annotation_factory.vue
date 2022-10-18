@@ -119,6 +119,9 @@
                 @request_new_task="change_task"
             />
         </div>
+        <div v-else-if="annotation_interface === 'compound'">
+            <compound_annotation_core />
+        </div>
         <div v-else-if="!annotation_interface">
             <empty_file_editor_placeholder
                 :loading="any_loading"
@@ -227,6 +230,7 @@ import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor.vue'
 import text_annotation_core from "./text/text_annotation_core.vue"
 import audio_annotation_core from "./audio/audio_annotation_core.vue";
 import geo_annotation_core from "./geo/geo_annotation_core.vue"
+import compound_annotation_core from "./compound/compound_annotation_core.vue"
 import { fetchNextTask, fetchSingleTask } from "../../services/tasksServices";
 
 export default Vue.extend({
@@ -238,7 +242,8 @@ export default Vue.extend({
     sensor_fusion_editor,
     text_annotation_core,
     geo_annotation_core,
-    audio_annotation_core
+    audio_annotation_core,
+    compound_annotation_core
   },
   props: {
     project_string_id: {
@@ -407,7 +412,7 @@ export default Vue.extend({
         else interface_type = this.task.file.type
 
         if (interface_type === 'image' || interface_type === 'video') return 'image_or_video'
-        else interface_type 
+        else return interface_type 
     },
     computed_project_string_id: function (): string {
         if (this.project_string_id) {
