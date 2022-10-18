@@ -134,14 +134,15 @@ services:
     profiles: ["minio"]
     ports:
       - "9000:9000"
-    expose: [9000]
+      - "9001:9001"
+    expose: [9000, 9001]
     volumes:
       - ./test/.minio/data:/export
       - ./test/.minio/config:/root/.minio
     environment:
       - "MINIO_ROOT_USER=${DIFFGRAM_MINIO_ACCESS_KEY_ID}"
       - "MINIO_ROOT_PASSWORD=${DIFFGRAM_MINIO_ACCESS_KEY_SECRET}"
-    command: server /export
+    command: server /export --console-address :9001
 
   createbuckets:
     image: minio/mc

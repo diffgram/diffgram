@@ -671,7 +671,9 @@ class DiffgramInstallTool:
             if option is None or option == '':
                 # Default to MinIO
                 option = 1
-            if option.isnumeric() and int(option) in [1, 2, 3, 4]:
+                option_valid = True
+                self.set_static_storage_option(option)
+            elif option.isnumeric() and int(option) in [1, 2, 3, 4]:
                 option_valid = True
                 self.set_static_storage_option(int(option))
             elif option == 'exit':
