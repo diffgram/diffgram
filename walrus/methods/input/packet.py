@@ -20,6 +20,7 @@ from sqlalchemy.orm.session import Session
 from shared.helpers.permissions import get_session_string
 from shared.url_generation import get_custom_url_supported_connector
 
+
 @routes.route('/api/walrus/v1/project/<string:project_string_id>/input/packet',
               methods = ['POST'])
 @Project_permissions.user_has_project(['admin', "Editor"])
@@ -48,6 +49,10 @@ def input_packet(project_string_id):
                  {'directory_id': None},
                  {'original_filename': None},
                  {'raw_data_blob_path': None},
+                 {'parent_file_id': {
+                     "required": False,
+                     "kind": int
+                 }},
                  {'connection_id': {
                      "required": False,
                      "kind": int
@@ -129,6 +134,7 @@ def input_packet(project_string_id):
             return jsonify(log = log), 400
         log = regular_log.default()
         connection_id_access_token = get_session_string()
+        print('NEW !!!!!', input.get('parent_file_id'))
         diffgram_input = enqueue_packet(project_string_id = project_string_id,
                                         session = session,
                                         media_url = media_url,
@@ -137,6 +143,7 @@ def input_packet(project_string_id):
                                         file_id = file_id,
                                         directory_id = directory_id,
                                         instance_list = untrusted_input.get('instance_list', None),
+                                        parent_file_id = untrusted_input.get('parent_file_id', None),
                                         original_filename = input.get('original_filename', None),
                                         raw_data_blob_path = input.get('raw_data_blob_path', None),
                                         bucket_name = input.get('bucket_name', None),
@@ -183,6 +190,7 @@ def enqueue_packet(project_string_id,
                    directory_id = None,
                    source_directory_id = None,
                    instance_list = None,
+                   parent_file_id = None,
                    video_split_duration = None,
                    frame_packet_map = None,
                    remove_link = None,
@@ -200,7 +208,7 @@ def enqueue_packet(project_string_id,
                    raw_data_blob_path = None,
                    external_map_action = None,
                    enqueue_immediately = False,
-                   image_metadata = {},
+                   image_metadata: dict = {},
                    mode = None,
                    allow_duplicates = False,
                    auto_correct_instances_from_image_metadata = False,
@@ -208,46 +216,83 @@ def enqueue_packet(project_string_id,
                    connection_id_access_token = False,
                    member = None):
     """
-        Creates Input() object and enqueues it for media processing
+            Creates Input() object and enqueues it for media processing
         Returns Input() object that was created
-    :param packet_data:
+    :param project_string_id:
+    :param session:
+    :param media_url:
+    :param media_type:
+    :param file_id:
+    :param file_name:
+    :param job_id:
+    :param batch_id:
+    :param directory_id:
+    :param source_directory_id:
+    :param instance_list:
+    :param parent_file_id:
+    :param video_split_duration:
+    :param frame_packet_map:
+    :param remove_link:
+    :param add_link:
+    :param copy_instance_list:
+    :param commit_input:
+    :param task_id:
+    :param video_parent_length:
+    :param type:
+    :param task_action:
+    :param external_map_id:
+    :param connection_id:
+    :param bucket_name:
+    :param original_filename:
+    :param raw_data_blob_path:
+    :param external_map_action:
+    :param enqueue_immediately:
+    :param image_metadata:
+    :param mode:
+    :param allow_duplicates:
+    :param auto_correct_instances_from_image_metadata:
+    :param extract_labels_from_batch:
+    :param connection_id_access_token:
+    :param do_enqueue:
+    :param member:
     :return:
     """
-    diffgram_input = Input()
+
     project = Project.get(session, project_string_id)
-    diffgram_input.file_id = file_id
     if connection_id_access_token is not None:
         image_metadata['connection_id_access_token'] = connection_id_access_token
-    diffgram_input.image_metadata = image_metadata
-    diffgram_input.auto_correct_instances_from_image_metadata = auto_correct_instances_from_image_metadata
-    diffgram_input.task_id = task_id
-    diffgram_input.batch_id = batch_id
-    diffgram_input.raw_data_blob_path = raw_data_blob_path
-    diffgram_input.video_parent_length = video_parent_length
-    diffgram_input.remove_link = remove_link
-    diffgram_input.add_link = add_link
-    diffgram_input.copy_instance_list = copy_instance_list
-    diffgram_input.external_map_id = external_map_id
-    diffgram_input.original_filename = original_filename
-    diffgram_input.external_map_action = external_map_action
-    diffgram_input.connection_id = connection_id
-    diffgram_input.bucket_name = bucket_name
-    diffgram_input.task_action = task_action
-    diffgram_input.mode = mode
-    diffgram_input.project = project
-    diffgram_input.media_type = media_type
-    diffgram_input.type = type if type is not None else "from_url"
-    diffgram_input.url = media_url
-    diffgram_input.video_split_duration = video_split_duration
-    diffgram_input.allow_duplicates = allow_duplicates
-    diffgram_input.member_created = member
-    if instance_list:
-        diffgram_input.instance_list = {}
-        diffgram_input.instance_list['list'] = instance_list
-
-    if frame_packet_map:
-        diffgram_input.frame_packet_map = frame_packet_map
-    # print(diffgram_input.frame_packet_map)
+    diffgram_input = Input.new(
+        image_metadata = image_metadata,
+        file_id = file_id,
+        task_id = task_id,
+        batch_id = batch_id,
+        parent_file_id = parent_file_id,
+        raw_data_blob_path = raw_data_blob_path,
+        video_parent_length = video_parent_length,
+        remove_link = remove_link,
+        add_link = add_link,
+        copy_instance_list = copy_instance_list,
+        external_map_id = external_map_id,
+        original_filename = original_filename,
+        external_map_action = external_map_action,
+        connection_id = connection_id,
+        bucket_name = bucket_name,
+        task_action = task_action,
+        mode = mode,
+        project = project,
+        media_type = media_type,
+        type = type if type is not None else "from_url",
+        url = media_url,
+        video_split_duration = video_split_duration,
+        auto_correct_instances_from_image_metadata = auto_correct_instances_from_image_metadata,
+        allow_duplicates = allow_duplicates,
+        member_created_id = member.id if member is not None else None,
+        job_id = job_id,
+        directory_id = directory_id,
+        source_directory_id = source_directory_id,
+        instance_list = instance_list,
+        frame_packet_map = frame_packet_map,
+    )
 
     session.add(diffgram_input)
     session.flush()
@@ -257,28 +302,10 @@ def enqueue_packet(project_string_id,
         upload_tools.extract_instance_list_from_batch(input = diffgram_input,
                                                       input_batch_id = batch_id,
                                                       file_name = file_name)
-    # Expect temp dir to be None here.
-    # because each machine should assign it's own temp dir
-    # Something else to consider for future here!
-    # Once this is part of input, it will be smoothly handled at right time as part of
-    # processing queue
-    diffgram_input.job_id = job_id
-
-    # Process media handles checking if the directory id is valid
-    diffgram_input.directory_id = directory_id
-    diffgram_input.source_directory_id = source_directory_id
 
     diffgram_input_id = diffgram_input.id
 
-    queue_limit = 0
-    if media_type == "image":
-        queue_limit = 30  # 50
-    if media_type == "video":
-        queue_limit = 1
-
     if settings.PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY is True or enqueue_immediately:
-
-        print('diffgram_input_id', diffgram_input_id)
         if commit_input:
             regular_methods.commit_with_rollback(session = session)
         item = PrioritizedItem(
@@ -290,9 +317,6 @@ def enqueue_packet(project_string_id,
         diffgram_input.processing_deferred = True  # Default
 
     return diffgram_input
-
-
-
 
 
 def validate_input_from_blob_path(project: Project, input: dict, session: Session, log: dict):

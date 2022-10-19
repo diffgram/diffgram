@@ -64,6 +64,7 @@ class PointCloud(Base):
             'soft_delete': self.soft_delete,
             'url_signed': self.url_signed,
             'url_signed_blob_path': self.url_signed_blob_path,
+            'url_signed_expiry': self.url_signed_expiry,
             'url_signed_expiry_force_refresh': self.url_signed_expiry_force_refresh,
             'time_created': self.time_created,
             'time_updated': self.time_updated,

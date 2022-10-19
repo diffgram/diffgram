@@ -538,6 +538,33 @@ class File_Browser():
             return False, count
         return file_list, count
 
+    def __build_media_type_value(self) -> str:
+        media_type = self.metadata.get("media_type", "all")
+        media_type_query = None
+        if media_type:
+            media_type_query = media_type.lower()
+        if media_type in ["All", None]:
+            media_type_query = ["image", "video", "text", "sensor_fusion", "geospatial", "audio", "compound"]
+
+        if media_type in ['Image', 'image']:
+            media_type_query = "image"
+
+        if media_type in ['Video', 'video']:
+            media_type_query = "video"
+
+        if media_type in ['Text', 'text']:
+            media_type_query = "text"
+
+        if media_type in ['Sensor Fusion', 'sensor_fusion']:
+            media_type_query = "sensor_fusion"
+
+        if media_type in ['geospatial']:
+            media_type_query = "geospatial"
+
+        if media_type in ['audio']:
+            media_type_query = 'audio'
+        return media_type_query
+
     def file_view_core(
         self,
         mode = "serialize"):
@@ -600,31 +627,7 @@ class File_Browser():
         if self.metadata['machine_made_setting'] == "Human only":
             has_some_machine_made_instances = False
 
-        media_type = self.metadata.get("media_type", "all")
-        media_type_query = None
-        if media_type:
-            media_type_query = media_type.lower()
-        if media_type in ["All", None]:
-            media_type_query = ["image", "video", "text", "sensor_fusion", "geospatial", "audio"]
-
-        if media_type in ['Image', 'image']:
-            media_type_query = "image"
-
-        if media_type in ['Video', 'video']:
-            media_type_query = "video"
-
-        if media_type in ['Text', 'text']:
-            media_type_query = "text"
-
-        if media_type in ['Sensor Fusion', 'sensor_fusion']:
-            media_type_query = "sensor_fusion"
-
-        if media_type in ['geospatial']:
-            media_type_query = "geospatial"
-
-        if media_type in ['audio']:
-            media_type_query = 'audio'
-
+        media_type_query = self.__build_media_type_value()
         exclude_removed = True
         if self.metadata['file_view_mode'] in ["changes"]:
             exclude_removed = False
@@ -711,7 +714,7 @@ class File_Browser():
                 self.metadata['prev_page'] = self.metadata['page'] - 1
             else:
                 self.metadata['prev_page'] = None
-        
+
         if mode == "serialize":
             for index_file, file in enumerate(working_dir_file_list):
                 if self.metadata['file_view_mode'] == 'explorer':

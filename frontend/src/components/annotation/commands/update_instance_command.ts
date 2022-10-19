@@ -2,6 +2,7 @@ import * as instance_utils from '../../../utils/instance_utils';
 import AnnotationScene3D from "../../3d_annotation/AnnotationScene3DOrtographicView";
 import {Instance} from "../../vue_canvas/instances/Instance";
 import { TextAnnotationInstance, TextRelationInstance } from '../../vue_canvas/instances/TextInstance';
+import {CanvasMouseCtx} from "../../../types/mouse_position";
 
 const CLASS_INSTANCE_TYPES = [
   'keypoints',
@@ -10,7 +11,7 @@ const CLASS_INSTANCE_TYPES = [
   'relation'
 ]
 
-interface ComponentWithInstanceList extends Vue {
+interface ComponentWithInstanceList extends Vue, CanvasMouseCtx {
  instance_list: any[]
 }
 

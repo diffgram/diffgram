@@ -424,15 +424,11 @@ class Process_Media():
         if self.input.allow_csv:
             self.allow_csv = self.input.allow_csv
 
-        # Advantage of doing this here is then it's set
-        # For all ways a flow can come in...
-        # Not clear if this is best place to set this.
+        self.input.status = "processing"
 
         if self.input.mode == "flow":
             # Get directory from flow
             self.input.directory = self.input.action_flow.directory
-
-        self.input.status = "processing"
 
         self.try_to_commit()
 
@@ -693,8 +689,8 @@ class Process_Media():
 
         return new_file
 
-    def __copy_image(self):
-        logger.debug(f"Copying Image {self.input.file_id}")
+    def __copy_file(self):
+        logger.debug(f"Copying file type: {self.input.media_type} {self.input.file_id}")
 
         self.input.newly_copied_file = File.copy_file_from_existing(
             session = self.session,
@@ -709,7 +705,25 @@ class Process_Media():
             flush_session = True
         )
 
+        if self.input.file.type == 'compound':
+            child_files = self.input.file.get_child_files(session = self.session)
+            for child in child_files:
+                self.input.newly_copied_file = File.copy_file_from_existing(
+                    session = self.session,
+                    working_dir = None,
+                    working_dir_id = self.input.directory_id,
+                    existing_file = child,
+                    copy_instance_list = self.input.copy_instance_list,
+                    add_link = self.input.add_link,
+                    remove_link = self.input.remove_link,
+                    sequence_map = None,
+                    previous_video_parent_id = None,
+                    flush_session = True,
+                    new_parent_id = self.input.newly_copied_file.id
+                )
+
         self.declare_success(self.input)
+
         # Perform sync operations
         source_dir = WorkingDir.get_by_id(self.session, self.input.source_directory_id)
         dest_dir = WorkingDir.get_by_id(self.session, self.input.directory_id)
@@ -737,9 +751,8 @@ class Process_Media():
             return
         elif self.input.media_type == 'frame':
             self.__copy_frame()
-        elif self.input.media_type == 'image':
-            self.__copy_image()
-
+        else:
+            self.__copy_file()
     def __update_existing_file(self,
                                file,
                                init_existing_instances = False):
@@ -961,9 +974,9 @@ class Process_Media():
             # concurrently and that may lead to a bad end result of the counter.
 
             # Commit any update job/task data.
-            self.try_to_commit()
-            job.refresh_stat_count_tasks(self.session)
 
+            job.refresh_stat_count_tasks(self.session)
+        self.try_to_commit()
     def may_attach_to_job(self):
 
         if not self.input or not self.input.file:
@@ -1507,6 +1520,7 @@ class Process_Media():
                 working_dir_id = self.working_dir_id,
                 file_type = "audio",
                 audio_file_id = self.new_audio_file.id,
+                parent_id = self.input.parent_file_id,
                 original_filename = self.input.original_filename,
                 project_id = self.project_id,
                 input_id = self.input.id,
@@ -1564,6 +1578,7 @@ class Process_Media():
                 session = self.session,
                 working_dir_id = self.working_dir_id,
                 file_type = "text",
+                parent_id = self.input.parent_file_id,
                 text_file_id = self.new_text_file.id,
                 original_filename = self.input.original_filename,
                 project_id = self.project_id,
@@ -1674,6 +1689,7 @@ class Process_Media():
             working_dir_id = self.working_dir_id,
             file_type = "image",
             image_id = self.new_image.id,
+            parent_id = self.input.parent_file_id,
             original_filename = self.input.original_filename,
             project_id = self.project_id,  # TODO test if project_id is working as expected here
             input_id = self.input.id,

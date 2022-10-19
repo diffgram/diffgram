@@ -15,7 +15,6 @@ class TagDatasetQueryElement(QueryElement):
         pass
 
     def build_query(self, session: Session, token: Token) -> Query:
-        print('AAA', token.value)
         property = token.value.split('.')[1]
         if property == "tag":
             dataset_col = DatasetTag.tag_id

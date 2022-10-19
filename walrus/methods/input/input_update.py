@@ -9,7 +9,6 @@ from shared.database.input import Input
 from shared.permissions.super_admin_only import Super_Admin
 
 
-
 # from methods.input.process_media import check_if_add_items_to_queue
 # circular import...
 
@@ -228,16 +227,26 @@ class Update_Input():
             task.status = 'archived'
             self.session.add(task)
 
-    def remove_associated_file(self, input):
+    def remove_compound_child_files(self, input_obj: Input) -> None:
+        if input_obj.file.type == 'compound':
+            return
+        child_files = input_obj.file.get_child_files(session = self.session)
+        for child in child_files:
+            child.state = "removed"
+            self.session.add(child)
+            self.remove_associated_tasks(input_obj.file)
+
+    def remove_associated_file(self, input_obj: Input) -> None:
         """
         Take input as argument in context of trying to make these
         classes more modular, ie not "assuming" that input is in self.
         """
 
-        if input.file and input.mode != 'copy_file':
-            input.file.state = "removed"
-            self.remove_associated_tasks(input.file)
-            self.log['info']['prior_file_id'] = input.file.id
+        if input_obj.file and input_obj.mode != 'copy_file':
+            input_obj.file.state = "removed"
+            self.remove_compound_child_files(input_obj)
+            self.remove_associated_tasks(input_obj.file)
+            self.log['info']['prior_file_id'] = input_obj.file.id
 
     def report_input_list_recent(
         self,
@@ -314,7 +323,6 @@ class Update_Input():
             except Exception as e:
                 print("input update, communicate_via_email", e)
 
-
     def build_input_list_eligible_for_retry(self):
 
         normal_max_updated_since_time = datetime.datetime.utcnow() - \
@@ -322,7 +330,7 @@ class Update_Input():
 
         historical_limit: int = time.time() - (60 * 60 * 24)
         exempt_statuses = ['success', 'failed', 'init', 'retrying']
-        
+
         # Dont retry update files since it can cause duplicate files or instances.
         exempt_modes = ['update', 'update_existing', 'copy_file', 'flow']
 
@@ -341,24 +349,22 @@ class Update_Input():
 
             try:
                 description = str(len(self.input_list)) + " retried [Auto Retry]. \n" + \
-                            "First project in list: " + \
-                            str(self.input_list[0].project.name) + " \n" + \
-                            str(self.input_list[0].project.project_string_id) + \
-                            "\n input ids: " + ", ".join([str(i.id) for i in self.input_list]) + \
-                            "\n prior percent complete: " + ", ".join(
+                              "First project in list: " + \
+                              str(self.input_list[0].project.name) + " \n" + \
+                              str(self.input_list[0].project.project_string_id) + \
+                              "\n input ids: " + ", ".join([str(i.id) for i in self.input_list]) + \
+                              "\n prior percent complete: " + ", ".join(
                     [str(i.percent_complete) for i in self.input_list]) + \
-                            "\n created_time: " + ", ".join([str(i.created_time) for i in self.input_list]) + \
-                            "\n time_updated: " + ", ".join([str(i.time_updated) for i in self.input_list])
+                              "\n created_time: " + ", ".join([str(i.created_time) for i in self.input_list]) + \
+                              "\n time_updated: " + ", ".join([str(i.time_updated) for i in self.input_list])
 
                 Event.new(
-                    session=self.session,
-                    kind="input_retry",
-                    description=description
+                    session = self.session,
+                    kind = "input_retry",
+                    description = description
                 )
             except:
                 print("Failed to create input_rety event")
-
-
 
     def automatic_retry(self):
 

@@ -294,6 +294,7 @@ class New_video():
             frame_count = 0,
             width = clip.w,
             height = clip.h,
+            parent_file_id = input.parent_file_id,
             directory_id = directory_id,
             parent_input_id = input.parent_input_id,
             parent_video_split_duration = parent_video_split_duration,
