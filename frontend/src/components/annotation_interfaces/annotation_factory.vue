@@ -120,7 +120,10 @@
             />
         </div>
         <div v-else-if="annotation_interface === 'compound'">
-            <compound_annotation_core />
+            <compound_annotation_core
+              :project_string_id="project_string_id"
+              :file="current_file"
+            />
         </div>
         <div v-else-if="!annotation_interface">
             <empty_file_editor_placeholder
