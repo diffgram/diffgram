@@ -1,6 +1,6 @@
 <template>
   <div class="video_canvas" style="position: relative; height: 100%" >
-    <div @click="$emit('on_click_details', current_frame)">
+    <div>
       <drawable_canvas
         :allow_zoom="allow_zoom"
         :image_bg="html_image"
@@ -34,7 +34,7 @@
     <v_video  v-if="is_mounted"
               @mouseover="hovered = true"
               :user_nav_width_for_frame_previews="false"
-              :style="{maxWidth: this.$refs.drawable_canvas.canvas_width_scaled, position: 'absolute', bottom: '-95px', right: 0}"
+              :style="{maxWidth: this.$refs.drawable_canvas.canvas_width_scaled, position: 'absolute', bottom: `-20px`, right: 0}"
               :player_width="canvas_width"
               :update_query_params="false"
               :player_height="`${video_player_height}px`"
@@ -133,6 +133,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       show_video_nav_bar:{
         default: true
       },
+      video_player_height: {
+        default: 80
+      },
 
       reticle_colour: {
         default: () => ({
@@ -164,7 +167,6 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         current_frame: 0,
         seeking: false,
         instance_frame_start: 0,
-        video_player_height: 80,
         instance_buffer_size: 60,
         instance_buffer_dict: {},
         instance_buffer_error: {},
@@ -210,10 +212,16 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         this.go_to_keyframe_loading = value
       },
       initialize_video: async function(){
-        this.$refs.video_controllers.reset_cache();
+        if(this.$refs.video_controllers){
+          await this.$refs.video_controllers.reset_cache();
+        }
+
         await this.get_instances();
         await this.$nextTick();
-        await this.$refs.video_controllers.current_video_update();
+        if(this.$refs.video_controllers){
+          await this.$refs.video_controllers.current_video_update();
+        }
+
       },
       focus_in: function(){
         this.focused = true;
@@ -222,7 +230,10 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         this.focused = false;
       },
       update_canvas: function(){
-        this.$refs.drawable_canvas.update_canvas()
+        if(this.$refs.drawable_canvas){
+          this.$refs.drawable_canvas.update_canvas()
+        }
+
       },
       video_animation_unit_of_work: async function (image) {
         /*

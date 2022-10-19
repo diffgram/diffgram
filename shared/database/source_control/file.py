@@ -15,6 +15,7 @@ from shared.database.source_control.file_perms import FilePermissions
 import time
 from shared.regular import regular_log
 from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.session import Session
 from shared.shared_logger import get_shared_logger
 from shared.database.core import MutableDict
 from sqlalchemy.dialects.postgresql import JSONB
@@ -22,6 +23,7 @@ from sqlalchemy import UniqueConstraint
 from shared.database.geospatial.geo_asset import GeoAsset
 from shared.helpers.performance import timeit
 from typing import List
+
 
 logger = get_shared_logger()
 
@@ -84,7 +86,7 @@ class File(Base, Caching):
 
     committed = Column(Boolean)
 
-    # image, frame, video, label
+    # image, frame, video, label, compound
     type = Column(String())
 
     # hash_data = [image_id, [instance-list], [n list]]
@@ -103,6 +105,11 @@ class File(Base, Caching):
     boxes_count = Column(Integer, default = 0)
     boxes_machine_made_count = Column(Integer, default = 0)
     polygon_count = Column(Integer, default = 0)
+
+    # Used for compound files mainly. To determine custom layouts for labeling UI
+    ui_schema_id = Column(Integer, ForeignKey('ui_schema.id'))
+    ui_schema = relationship("UI_Schema")
+
     ##########
 
     image_id = Column(Integer, ForeignKey('image.id'))
@@ -446,6 +453,13 @@ class File(Base, Caching):
 
         return file
 
+    def get_child_files(self, session: Session) -> List['File']:
+        child_files = session.query(File).filter(
+            File.parent_id == self.id,
+            File.state != "removed"
+        ).all()
+        return child_files
+
     def create_frame_packet_map(self, session):
         """
             Generates frame packet map dict from an existing video.
@@ -533,10 +547,6 @@ class File(Base, Caching):
 
     def serialize_instance_list_only(self):
         return [instance.serialize_with_label() for instance in self.instance_list]
-
-    # NOTE for more complex options
-    # generally use WorkingDirFileLink.file_list()
-    # Becuase we need to cross reference datasets
 
     @staticmethod
     def get_by_id(session, file_id, with_for_update = False, nowait = False, skip_locked = False):
@@ -641,7 +651,8 @@ class File(Base, Caching):
         ann_is_complete_reset = False,
         batch_id = None,
         flush_session = False,
-        working_dir_id: int = None
+        working_dir_id: int = None,
+        new_parent_id: int = None
     ):
         """
         orginal_directory_id is for Video, to get list of video files
@@ -670,11 +681,11 @@ class File(Base, Caching):
         if working_dir:
             working_dir_id = working_dir.id
 
-        # IMAGE Defer
-        if existing_file.type == 'image' and defer_copy and not remove_link:
+        # File Copy Defer
+        if defer_copy and not remove_link:
             regular_methods.transmit_interservice_request_after_commit(
                 session = session,
-                message = 'image_copy',
+                message = 'file_copy',
                 logger = logger,
                 service_target = 'walrus',
                 id = existing_file.id,
@@ -684,34 +695,11 @@ class File(Base, Caching):
                                 'destination_working_dir_id': working_dir_id,
                                 'source_working_dir_id': orginal_directory_id,
                                 'add_link': add_link,
+                                'type': existing_file.type,
                                 'batch_id': batch_id,
                                 'remove_link': remove_link,
+                                'frame_count': existing_file.video.frame_count if existing_file.video else None
                                 }
-            )
-            log['info'][
-                'message'] = 'File copy in progress. Please check progress in the file operations progress section.'
-            return
-
-        # VIDEO
-        if existing_file.type == "video" and defer_copy is True:
-            # Defer the copy to the walrus.
-            regular_methods.transmit_interservice_request_after_commit(
-                session = session,
-                message = 'video_copy',
-                logger = logger,
-                service_target = 'walrus',
-                id = existing_file.id,
-                project_string_id = existing_file.project.project_string_id,
-                extra_params = {
-                    'file_id': existing_file.id,
-                    'copy_instance_list': copy_instance_list,
-                    'destination_working_dir_id': working_dir_id,
-                    'source_working_dir_id': orginal_directory_id,
-                    'add_link': add_link,
-                    'batch_id': batch_id,
-                    'remove_link': remove_link,
-                    'frame_count': existing_file.video.frame_count
-                }
             )
             log['info'][
                 'message'] = 'File copy in progress. Please check progress in the file operations progress section.'
@@ -731,9 +719,9 @@ class File(Base, Caching):
         file.audio_file_id = existing_file.audio_file_id
         file.label_id = existing_file.label_id
         file.video_id = existing_file.video_id
+        file.parent_id = new_parent_id
         file.global_frame_number = existing_file.global_frame_number
         file.colour = existing_file.colour
-        file_relationship(session, file, existing_file)
         file.state = "changed"
         file.frame_number = existing_file.frame_number  # Ok if None
 
@@ -1068,7 +1056,6 @@ class File(Base, Caching):
 
         # Migration
         if not file and directory_id:
-            print("used file migration")
             return File.get_by_id_and_directory_untrusted(
                 session = session,
                 directory_id = directory_id,
@@ -1295,14 +1282,3 @@ def new_file_database_object_from_existing(session):
     return file
 
 
-def file_relationship(session, file, previous_file):
-    file.parent_id = previous_file.id
-    if not previous_file.child_primary_id:
-        previous_file.child_primary_id = file.id
-
-    if previous_file.root_id:
-        file.root_id = previous_file.root_id
-    else:
-        file.root_id = previous_file.id
-
-    session.add(previous_file)

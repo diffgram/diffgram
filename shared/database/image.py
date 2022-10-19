@@ -94,5 +94,6 @@ class Image(Base):
             'url_signed': self.url_signed,
             'url_signed_thumb': self.url_signed_thumb,
             'url_signed_blob_path': self.url_signed_blob_path,
-            'annotation_status': self.annotation_status
+            'annotation_status': self.annotation_status,
+            'id': self.id
         }

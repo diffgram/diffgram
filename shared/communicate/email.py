@@ -33,7 +33,6 @@ class Communicate_Via_Email():
         recipients = email_list
         if len(email_list) == 0:
             recipients = [email]
-        print('aa', self.smtp_port, self.smtp_host)
         s = smtplib.SMTP_SSL(self.smtp_host, self.smtp_port)
         s.ehlo()
         for to_email in recipients:
