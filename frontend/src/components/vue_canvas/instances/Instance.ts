@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
 import {getCenterPoint} from "../../3d_annotation/utils_3d";
 
-export interface InstanceBehaviour {
+export interface InstanceBehaviour2D {
   draw(ctx): void
 }
 
@@ -133,7 +133,6 @@ export class Instance {
       this.on_instance_unhovered(instance);
     }
   }
-
 }
 
 export abstract class Instance3D extends Instance {

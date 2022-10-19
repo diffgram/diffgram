@@ -1,9 +1,9 @@
-import {InstanceBehaviour, Instance} from './Instance'
+import {InstanceBehaviour2D, Instance} from './Instance'
 import {InstanceContext} from './InstanceContext';
 import {v4 as uuidv4} from 'uuid';
 import {getContrastColor} from '../../../utils/colorUtils'
 
-export class KeypointInstance extends Instance implements InstanceBehaviour {
+export class KeypointInstance extends Instance implements InstanceBehaviour2D {
   public mouse_position: any;
   private CONTROL_POINTS_DISPLACEMENT: number = 3
   private MINIMUM_CONTROL_POINTS_DISTANCE: number = 20
