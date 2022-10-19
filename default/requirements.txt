@@ -38,3 +38,4 @@ python-keycloak
 pyjwt==1.7.1
 labelbox==3.23.3
 pytz==2021.3
+flasgger

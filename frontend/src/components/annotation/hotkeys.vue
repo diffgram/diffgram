@@ -24,7 +24,7 @@
   <p> <kbd>Ctrl</kbd> + <kbd>c</kbd> Copy Selected Instance </p>
   <p> <kbd>Ctrl</kbd> + <kbd>v</kbd> Paste Selected Instance </p>
 
-  <p> <kbd>C</kbd> Complete. Save, Mark as Complete, Go to Next.</p>
+  <p> <kbd>Shift</kbd> + <kbd>C</kbd> Save, Mark task as Complete & Go to Next.</p>
 
   <h2> Video </h2>
 

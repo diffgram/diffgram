@@ -7,6 +7,7 @@
       class="pa-0 ma-0 drawable-wrapper"
       :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`, position: 'relative'}"
       ref="file_card"
+
     >
       <file_preview_details_card
         v-if="show_preview_details"

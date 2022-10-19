@@ -8147,7 +8147,15 @@ export default Vue.extend({
         // c
 
         if (
+          this.$props.file &&
           this.$props.file.ann_is_complete == true ||
+          this.$props.view_only_mode == true
+        ) {
+          return;
+        }
+        if (
+          this.$props.task.file &&
+          this.$props.task.file.ann_is_complete == true ||
           this.$props.view_only_mode == true
         ) {
           return;

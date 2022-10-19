@@ -9,6 +9,7 @@
        @mouseup="mouse_up"
        @contextmenu="contextmenu">
     <canvas
+      @contextmenu="on_right_click_canvas"
       data-cy="canvas"
       v-canvas:cb="onRendered"
       :id="canvas_id"
@@ -17,6 +18,7 @@
       :width="canvas_width_scaled">
       <slot :ord="3" name="instance_drawer" :canvas_transform="canvas_transform"></slot>
       <v_bg
+        oncontextmenu="false"
         :ord="1"
         :background="bg_color"
         ref="background"
@@ -89,6 +91,9 @@
         default: false
       },
       show_target_reticle: {
+        default: true
+      },
+      prevent_context_menu: {
         default: true
       },
       auto_scale_bg:{
@@ -234,7 +239,11 @@
       window.removeEventListener('resize', this.update_window_size_from_listener)
     },
     methods: {
-
+      on_right_click_canvas: function(e){
+        if(this.prevent_context_menu){
+          e.preventDefault()
+        }
+      },
       update_window_size_from_listener: async function(){
         if(!this.$props.image_bg){
           return

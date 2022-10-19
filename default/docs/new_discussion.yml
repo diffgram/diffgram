@@ -1,0 +1,36 @@
+
+---
+summary: Create Discussion Comment
+description: Creates a comment on the given discussion ID.
+tags:
+  - Discussions
+parameters:
+  - name: project_string_id
+    in: path
+    type: string
+    required: true
+  - name: discussion_id
+    in: path
+    type: number
+    required: true
+  - in: body
+    name: DiscussionCommentReqBody
+    description: The comment body content
+    schema:
+      $ref: '#/definitions/DiscussionCommentReqBody'
+definitions:
+  DiscussionComment:
+    type: object
+    properties:
+      id:
+        type: number
+  DiscussionCommentReqBody:
+    type: object
+    properties:
+      content:
+        type: string
+responses:
+  200:
+    description: The newly created comment
+    schema:
+      $ref: '#/definitions/DiscussionComment'

@@ -564,10 +564,10 @@ export default Vue.extend({
     },
     reset_file_thumbnails: function(file_list){
       for (let file of file_list){
-        if(file.image){
-          file.image.url_signed = null
+        if(!file.image){
+          continue
         }
-
+        file.image.url_signed = null
       }
     },
     fetch_single_file_signed_url: async function(file, project_string_id){

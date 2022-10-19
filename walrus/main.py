@@ -92,7 +92,11 @@ limiter.init_app(app)
 settings.DIFFGRAM_SERVICE_NAME = 'walrus_service'
 startup_checker = WalrusServiceSystemStartupChecker()
 startup_checker.execute_startup_checks()
-
+from swagger_setup import setup_swagger
+try:
+    setup_swagger(app)
+except:
+    logger.warning('Failed to generate swagger spec')
 # This starts the queue loop for processing media uploads.
 process_media_queue_manager = ProcessMediaQueueManager()
 process_media_queue_manager.start_process_media_threads()
