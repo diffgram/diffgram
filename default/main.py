@@ -141,7 +141,10 @@ startup_checker = DefaultServiceSystemStartupChecker()
 startup_checker.execute_startup_checks()
 print("Startup in", time.time() - start_time)
 from swagger_setup import setup_swagger
-setup_swagger(app)
+try:
+    setup_swagger(app)
+except:
+    logger.warning('Failed to generate swagger spec')
 # Debug
 if __name__ == '__main__':
 
