@@ -121,8 +121,31 @@
         </div>
         <div v-else-if="annotation_interface === 'compound'">
             <compound_annotation_core
-              :project_string_id="project_string_id"
+              v-if="!changing_file"
+              class="pt-1 pl-1"
+              ref="annotation_core"
+              accesskey="full"
+              :project_string_id="computed_project_string_id"
+              :label_schema="current_label_schema"
+              :model_run_id_list="model_run_id_list"
+              :model_run_color_list="model_run_color_list"
+              :task="task"
               :file="current_file"
+              :task_id_prop="task_id_prop"
+              :request_save="request_save"
+              :job_id="job_id"
+              :view_only_mode="view_only"
+              :label_list="label_list"
+              :label_file_colour_map="label_file_colour_map"
+              :enabled_edit_schema="enabled_edit_schema"
+              :finish_annotation_show="show_snackbar"
+              :global_attribute_groups_list="global_attribute_groups_list"
+              :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+              @request_file_change="request_file_change"
+              @change_label_schema="on_change_label_schema"
+              @set_file_list="set_file_list"
+              @request_new_task="change_task"
+              @replace_file="current_file = $event"
             />
         </div>
         <div v-else-if="!annotation_interface">
