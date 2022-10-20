@@ -1,5 +1,5 @@
 <template>
-<div style="display: flex; flex-direction: row">
+<div v-if="child_file_list" style="display: flex; flex-direction: row">
     <v_annotation_core
                 v-if="!changing_file"
                 class="pt-1 pl-1"
@@ -10,7 +10,7 @@
                 :model_run_id_list="model_run_id_list"
                 :model_run_color_list="model_run_color_list"
                 :task="task"
-                :file="current_file"
+                :file="child_file_list[0]"
                 :task_id_prop="task_id_prop"
                 :request_save="request_save"
                 :job_id="job_id"
@@ -32,7 +32,7 @@
                 :model_run_id_list="model_run_id_list"
                 :model_run_color_list="model_run_color_list"
                 :task="task"
-                :file="current_file"
+                :file="child_file_list[1]"
                 :task_id_prop="task_id_prop"
                 :request_save="request_save"
                 :job_id="job_id"
@@ -125,7 +125,8 @@ export default Vue.extend({
             label_schema_list: [] as Array<any>,
             labels_list_from_project: null as Array<any>,
             model_run_color_list: null  as Array<any>,
-            global_attribute_groups_list: [] as Array<any>
+            global_attribute_groups_list: [] as Array<any>,
+            child_file_list: null
         }
     },
     // async mounted() {
@@ -231,6 +232,14 @@ export default Vue.extend({
       }
       await this.get_labels_from_project();
     }
+
+    const { result, error } = await get_child_files(this.project_string_id, this.file_id)
+        if (error) {
+            console.log(error)
+        }
+        if (result) {
+            this.child_file_list = result
+        }
 
     this.initializing = false
   },
