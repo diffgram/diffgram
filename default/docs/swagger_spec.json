@@ -1,0 +1,72 @@
+{
+    "info": {
+        "title": "Diffgram Default API",
+        "version": "1.0"
+    },
+    "paths": {
+        "/api/v1/project/{project_string_id}/discussion/{discussion_id}/add-comment": {
+            "post": {
+                "summary": "Create Discussion Comment",
+                "description": "Creates a comment on the given discussion ID.",
+                "responses": {
+                    "200": {
+                        "description": "The newly created comment",
+                        "schema": {
+                            "$ref": "#/definitions/DiscussionComment"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "discussion_id",
+                        "in": "path",
+                        "type": "number",
+                        "required": true
+                    },
+                    {
+                        "in": "body",
+                        "name": "DiscussionCommentReqBody",
+                        "description": "The comment body content",
+                        "schema": {
+                            "$ref": "#/definitions/DiscussionCommentReqBody"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Discussions"
+                ]
+            }
+        }
+    },
+    "definitions": {
+        "DiscussionComment": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "number"
+                }
+            }
+        },
+        "DiscussionCommentReqBody": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "swagger": "2.0",
+    "consumes": [
+        "application/json"
+    ],
+    "produces": [
+        "application/json"
+    ]
+}

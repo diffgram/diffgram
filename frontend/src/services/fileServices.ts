@@ -1,6 +1,9 @@
 import axios from './customInstance'
 import {File} from '../types/files'
+<<<<<<< HEAD
 import { RequestResponse } from '../types/request'
+=======
+>>>>>>> ae32b8ed364eee23572814795c124e786353684d
 export const get_file_list = async (project_string_id, user_name, metadata) => {
   let url = `/api/project/${project_string_id}/user/${user_name}/file/list`
   try {
