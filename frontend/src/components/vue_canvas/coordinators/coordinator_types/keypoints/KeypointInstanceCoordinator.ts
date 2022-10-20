@@ -1,4 +1,4 @@
-import {Coordinator} from "../../Coordinator";
+import {Coordinator, CoordinatorProcessResult} from "../../Coordinator";
 import {KeypointInstance} from "../../../instances/KeypointInstance";
 import {iconFillPaint} from '../../../../../utils/custom_icons'
 
@@ -43,7 +43,11 @@ export class KeypointInstanceCoordinator extends Coordinator{
     * Handles the mouse up event for the keypoint instance by adding a node
     * selecting, or finishing a drag depending on the instances's state.
     * */
-    return this.key_point_instance.process_mouse_up()
+    let result: CoordinatorProcessResult = {
+      instance_moved: false
+    }
+    result.instance_moved = this.key_point_instance.process_mouse_up()
+    return result
   }
   public process_mouse_down(): boolean {
     this.key_point_instance.start_movement()

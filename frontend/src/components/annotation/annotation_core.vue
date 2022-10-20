@@ -988,8 +988,8 @@ import { CommandManagerAnnotationCore } from "./annotation_core_command_manager.
 import { CreateInstanceCommand } from "./commands/create_instance_command.js";
 import { UpdateInstanceCommand } from "./commands/update_instance_command.ts";
 import {
-  AnnotationCoordinatorCoreGenerator,
-} from "../vue_canvas/coordinators/AnnotationCoreGenerator";
+  ImageAnnotationCoordinatorCoreGenerator,
+} from "../vue_canvas/coordinators/ImageAnnotationCoordinatorCoreGenerator";
 import { polygon } from "../vue_canvas/polygon.js";
 import { v4 as uuidv4 } from "uuid";
 import { cloneDeep } from "lodash";
@@ -1010,8 +1010,13 @@ import { getInstanceTemplatesFromProject } from "../../services/instanceTemplate
 import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
 import {initialize_instance_object, duplicate_instance, duplicate_instance_template} from '../../utils/instance_utils.ts';
-import {AnnotationToolEvent, genAnnotationEvent, AnnotationEventCtx} from "../../types/AnnotationToolEvent";
-import {Coordinator} from "../vue_canvas/coordinators/Coordinator";
+import {
+  AnnotationToolEvent,
+  genAnnotationEvent,
+  AnnotationEventCtx,
+  ImageAnnotationEventCtx
+} from "../../types/AnnotationToolEvent";
+import {Coordinator, CoordinatorProcessResult} from "../vue_canvas/coordinators/Coordinator";
 import {Interaction} from "../../types/Interaction";
 
 Vue.prototype.$ellipse = new ellipse();
@@ -1219,7 +1224,8 @@ export default Vue.extend({
       n_key: false,
       mouse_wheel_button: false,
       submitted_to_review: false,
-      current_interaction: null,
+      current_instance_v2: null as Instance,
+      current_interaction: null as Interaction,
       go_to_keyframe_loading: false,
       show_snackbar_occlude_direction: false,
       guided_nodes_ordinal: 1,
@@ -1944,7 +1950,9 @@ export default Vue.extend({
 
       // we use computed function here since label referecnes this.current_label_file
       // and this won't work in data dictionary
-
+      if (this.instance_type === 'box'){
+        return this.current_instance_v2
+      }
       // Do we actually need to cast this as Int here if db handles it?
       var x_min = parseInt(this.mouse_down_position.x);
       var y_min = parseInt(this.mouse_down_position.y);
@@ -6045,13 +6053,7 @@ export default Vue.extend({
       }
 
       // For refactored instance types (eventually all should be here)
-      const coordinator = this.generate_interaction_coordinator(event);
-      if (coordinator) {
-        let did_move_instance = coordinator.process_mouse_move();
-        if (coordinator) {
-          this.has_changed = true;
-        }
-      }
+      this.mouse_move_v2_handler(event)
       //console.debug(this.mouse_position)
     },
 
@@ -6596,11 +6598,11 @@ export default Vue.extend({
       // For new Refactored instance types
       const coordinator = this.generate_interaction_coordinator(event);
       if (coordinator) {
-        let changed_file = coordinator.process_mouse_up();
-        if(changed_file === true){
+        let result: CoordinatorProcessResult = coordinator.process_mouse_up();
+        if(result.instance_moved === true){
           this.has_changed = true;
         }
-        if(changed_file && this.show_snackbar_occlude_direction){
+        if(result.instance_moved && this.show_snackbar_occlude_direction){
           this.show_snackbar_occlude_direction = false;
         }
 
@@ -7146,8 +7148,8 @@ export default Vue.extend({
         }
       }
     },
-    generate_interaction_coordinator: function (event) {
-      const interaction_generator = new AnnotationCoordinatorCoreGenerator(
+    generate_interaction_coordinator: function (event: AnnotationToolEvent) {
+      const interaction_generator = new ImageAnnotationCoordinatorCoreGenerator(
         event,
         this.instance_hover_index,
         this.instance_list,
@@ -7169,14 +7171,37 @@ export default Vue.extend({
     set_mouse_wheel: function(){
       this.mouse_wheel_button = true;
     },
-    mouse_down_v2_handler: function(event){
-      let ann_ctx: AnnotationEventCtx = {
+    mouse_move_v2_handler:function(event){
+      let ann_ctx: ImageAnnotationEventCtx = {
         label_file_id: this.current_label_file_id,
         instance_type: this.instance_type,
+        draw_mode: this.draw_mode,
+        is_actively_drawing: false
       }
-      let annotation_event: AnnotationToolEvent =  genAnnotationEvent(event, ann_ctx)
+      let annotation_event: AnnotationToolEvent = genAnnotationEvent(event, ann_ctx)
+      const coordinator = this.generate_interaction_coordinator(annotation_event);
+      if (coordinator) {
+        let did_move_instance = coordinator.process_mouse_move();
+        if (coordinator) {
+          this.has_changed = true;
+        }
+      }
+    },
+    mouse_down_v2_handler: function(event){
+      let ann_ctx: ImageAnnotationEventCtx = {
+        label_file_id: this.current_label_file_id,
+        instance_type: this.instance_type,
+        draw_mode: this.draw_mode,
+      }
+      let annotation_event: AnnotationToolEvent = genAnnotationEvent(event, ann_ctx)
+      console.log('ANN EVE', annotation_event)
       if (!this.current_interaction){
         this.current_interaction = new Interaction()
+      }
+      this.current_interaction.add_event(annotation_event)
+      const coordinator = this.generate_interaction_coordinator(annotation_event);
+      if (coordinator) {
+        coordinator.process_mouse_down();
       }
     },
     mouse_down: function (event) {
@@ -7203,10 +7228,7 @@ export default Vue.extend({
 
       // For new refactored instance types (eventually all should be here)
       this.mouse_down_v2_handler(event)
-      const coordinator = this.generate_interaction_coordinator(event);
-      if (coordinator) {
-        coordinator.process_mouse_down();
-      }
+
       if (this.seeking == false) {
         this.$store.commit("mouse_state_down");
 

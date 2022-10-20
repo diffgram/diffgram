@@ -5,22 +5,25 @@ import {KeypointInstance} from "../instances/KeypointInstance";
 import {KeypointInstanceCoordinator} from "./coordinator_types/keypoints/KeypointInstanceCoordinator";
 import {BoxInstance} from "../instances/BoxInstance";
 import {BoxInstanceCoordinator} from "./coordinator_types/box/BoxInstanceCoordinator";
+import {AnnotationToolEvent} from "../../../types/AnnotationToolEvent";
 
 type InstanceTypes2D = 'box' | 'polygon' | 'tag' | 'point' | 'line' | 'cuboid' | 'ellipse' | 'curve'
 
-export class AnnotationCoordinatorCoreGenerator implements CoordinatorGenerator {
+export class ImageAnnotationCoordinatorCoreGenerator implements CoordinatorGenerator {
   instance_hover_index: number;
   instance_list: Instance[];
   draw_mode: boolean;
-  event: Event;
+  event: MouseEvent;
+  annotation_event: AnnotationToolEvent;
   instance_type: InstanceTypes2D;
 
-  constructor(event: Event,
+  constructor(event: AnnotationToolEvent,
               instance_hover_index: number,
               instance_list: Instance[],
               draw_mode: boolean,
               instance_type: InstanceTypes2D) {
-    this.event = event;
+    this.annotation_event = event;
+    this.event = this.annotation_event.dom_event;
     this.instance_hover_index = instance_hover_index;
     this.instance_list = instance_list;
     this.draw_mode = draw_mode;
