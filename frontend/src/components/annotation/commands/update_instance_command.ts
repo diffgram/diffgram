@@ -1,4 +1,4 @@
-import * as instance_utils from '../../../utils/instance_utils';
+import * as instance_utils from '../../../utils/instance_utils.ts';
 import AnnotationScene3D from "../../3d_annotation/AnnotationScene3DOrtographicView";
 import {Instance} from "../../vue_canvas/instances/Instance";
 import { TextAnnotationInstance, TextRelationInstance } from '../../vue_canvas/instances/TextInstance';

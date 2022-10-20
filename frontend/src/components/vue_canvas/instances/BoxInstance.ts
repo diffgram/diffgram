@@ -2,9 +2,10 @@ import {InstanceBehaviour2D, Instance} from './Instance'
 import {InstanceContext} from './InstanceContext';
 import {v4 as uuidv4} from 'uuid';
 import {getContrastColor} from '../../../utils/colorUtils'
+import {MousePosition} from "../../../types/mouse_position";
 
 export class BoxInstance extends Instance implements InstanceBehaviour2D {
-  public mouse_position: MousePo;
+  public mouse_position: MousePosition;
   public ctx: CanvasRenderingContext2D;
   private vertex_size: number = 5;
   private line_width: number = 2;

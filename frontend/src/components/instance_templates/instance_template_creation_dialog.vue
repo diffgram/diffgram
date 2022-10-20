@@ -127,7 +127,7 @@
   import Vue from "vue";
   import {KeypointInstance} from '../vue_canvas/instances/KeypointInstance';
   import context_menu_instance_template from '../context_menu/context_menu_instance_template';
-  import {InstanceTemplateCreationInteractionGenerator} from '../vue_canvas/interactions/InstanceTemplateCreationInteractionGenerator';
+  import {InstanceTemplateCoordinatorGenerator} from '../vue_canvas/coordinators/InstanceTemplateCoordinatorGenerator';
   import drawable_canvas from '../vue_canvas/drawable_canvas';
   import axios from '../../services/customInstance';
   import instance_drawer from '../vue_canvas/instance_drawer';
@@ -380,23 +380,23 @@
         this.instance_hover_type = null;
       }
     },
-    generate_interaction_from_event(event) {
-      const interaction_generator = new InstanceTemplateCreationInteractionGenerator(
+    generate_interaction_coordinator(event) {
+      const interaction_generator = new InstanceTemplateCoordinatorGenerator(
         event,
         this.instance_hover_index,
         this.instance_list,
         this.$refs['instance_template_creation_toolbar'].draw_mode,
         this.instance,
       )
-      return interaction_generator.generate_interaction();
+      return interaction_generator.generate_coordinator();
     },
     mouse_move: function (event) {
       if(this.instance_context.color_tool_active){
         this.instance.ctx.canvas.style.cursor =  `url(${iconFillPaint}), auto`;
       }
-      const interaction = this.generate_interaction_from_event(event);
+      const interaction = this.generate_interaction_coordinator(event);
       if (interaction) {
-        interaction.process();
+        interaction.process_mouse_move();
       }
     },
     mouse_down: function (event) {
@@ -404,9 +404,9 @@
         return
       }
 
-      const interaction = this.generate_interaction_from_event(event);
+      const interaction = this.generate_interaction_coordinator(event);
       if (interaction) {
-        interaction.process();
+        interaction.process_mouse_down();
       }
 
     },
@@ -423,9 +423,9 @@
       if (!this.mouse_up_limits(event)) {
         return
       }
-      const interaction = this.generate_interaction_from_event(event);
+      const interaction = this.generate_interaction_coordinator(event);
       if (interaction) {
-        interaction.process();
+        interaction.process_mouse_up();
         this.$forceUpdate();
       }
     },

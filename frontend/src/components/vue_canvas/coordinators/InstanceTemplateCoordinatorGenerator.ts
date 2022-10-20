@@ -1,13 +1,11 @@
-import {InteractionGenerator} from "./InteractionGenerator";
-import {Interaction} from "./Interaction";
+import {CoordinatorGenerator} from "./CoordinatorGenerator";
+import {Coordinator} from "./Coordinator";
 import {Instance} from "../instances/Instance";
-import {KeypointInstanceMouseDown} from "./interaction_types/keypoints/KeypointInstanceMouseDown";
-import {KeypointInstanceMouseMove} from "./interaction_types/keypoints/KeypointInstanceMouseMove";
-import {KeypointInstanceMouseUp} from "./interaction_types/keypoints/KeypointInstanceMouseUp";
+import {KeypointInstanceCoordinator} from "./coordinator_types/keypoints/KeypointInstanceCoordinator";
 import {KeypointInstance} from "../instances/KeypointInstance";
 
 
-export class InstanceTemplateCreationInteractionGenerator implements InteractionGenerator {
+export class InstanceTemplateCoordinatorGenerator implements CoordinatorGenerator {
   instance_hover_index: number;
   instance_list: Instance[];
   current_instance: Instance;
@@ -29,35 +27,35 @@ export class InstanceTemplateCreationInteractionGenerator implements Interaction
     return this.instance_list[this.instance_hover_index];
   }
 
-  private generate_mousedown_interactions(): Interaction{
+  private generate_mousedown_interactions(): Coordinator{
     const instance = this.get_hovered_instance();
     if(instance && instance.type === 'keypoints'){
-      return new KeypointInstanceMouseDown(instance)
+      return new KeypointInstanceCoordinator(instance as KeypointInstance, this.draw_mode)
     }
     return undefined;
   }
 
-  private generate_mouseup_interaction(): Interaction{
+  private generate_mouseup_interaction(): Coordinator{
     let instance = this.get_hovered_instance();
     let current_instance = this.current_instance;
     if(!instance){
       instance = current_instance;
     }
     if(instance && instance.type === 'keypoints'){
-      return new KeypointInstanceMouseUp(instance)
+      return new KeypointInstanceCoordinator(instance as KeypointInstance, this.draw_mode)
     }
     return undefined;
   }
 
-  private generate_mousemove_interactions(): Interaction{
+  private generate_mousemove_interactions(): Coordinator{
     const instance = this.get_hovered_instance() as KeypointInstance;
     if(instance && instance.type === 'keypoints'){
-      return new KeypointInstanceMouseMove(instance, this.draw_mode)
+      return new KeypointInstanceCoordinator(instance, this.draw_mode)
     }
     return undefined;
   }
 
-  generate_interaction(): Interaction {
+  generate_coordinator(): Coordinator {
     if(this.event.type === 'mousedown'){
       return this.generate_mousedown_interactions()
     }

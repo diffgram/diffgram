@@ -1,8 +1,8 @@
-import {Interaction} from "../../Interaction";
+import {Coordinator} from "../../Coordinator";
 import {KeypointInstance} from "../../../instances/KeypointInstance";
 import {iconFillPaint} from '../../../../../utils/custom_icons'
 
-export class KeypointInstanceMouseMove extends Interaction {
+export class KeypointInstanceCoordinator extends Coordinator{
   /**
    * Represents the interaction of a user pressing the mouse button
    * over a keypoint instance (either over a node or over the bounding box.
@@ -10,13 +10,12 @@ export class KeypointInstanceMouseMove extends Interaction {
   key_point_instance: KeypointInstance
   draw_mode: boolean
 
-  constructor(key_point_instance: KeypointInstance, draw_mode: boolean = false) {
+  constructor(key_point_instance: KeypointInstance, draw_mode: boolean) {
     super();
     this.key_point_instance = key_point_instance
     this.draw_mode = draw_mode
   }
-
-  set_hover_scale_points(): void {
+  private set_hover_scale_points(): void {
     // if(!this.key_point_instance.hovered_control_point_key){
     //   return
     // }
@@ -39,8 +38,19 @@ export class KeypointInstanceMouseMove extends Interaction {
       this.key_point_instance.ctx.canvas.style.cursor = 'sw-resize'
     }
   }
+  public process_mouse_up() {
+    /*
+    * Handles the mouse up event for the keypoint instance by adding a node
+    * selecting, or finishing a drag depending on the instances's state.
+    * */
+    return this.key_point_instance.process_mouse_up()
+  }
+  public process_mouse_down(): boolean {
+    this.key_point_instance.start_movement()
+    return false;
+  }
 
-  process(): boolean {
+  public process_mouse_move() {
     if (this.draw_mode && !this.key_point_instance.instance_context.color_tool_active) {
       this.key_point_instance.ctx.canvas.style.cursor = 'none'
     } else {
@@ -80,6 +90,4 @@ export class KeypointInstanceMouseMove extends Interaction {
 
     return false
   }
-
 }
-

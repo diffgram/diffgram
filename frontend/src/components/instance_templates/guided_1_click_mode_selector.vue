@@ -17,7 +17,7 @@
   import Vue from "vue";
   import {KeypointInstance} from '../vue_canvas/instances/KeypointInstance';
   import context_menu_instance_template from '../context_menu/context_menu_instance_template';
-  import {InstanceTemplateCreationInteractionGenerator} from '../vue_canvas/interactions/InstanceTemplateCreationInteractionGenerator';
+  import {InstanceTemplateCoordinatorGenerator} from '../vue_canvas/coordinators/InstanceTemplateCoordinatorGenerator';
   import drawable_canvas from '../vue_canvas/drawable_canvas';
   import axios from '../../services/customInstance';
   import instance_drawer from '../vue_canvas/instance_drawer';
