@@ -176,7 +176,6 @@ class WorkingDir(Base):
             object_type = ValidObjectTypes.dataset,
             perm = DatasetPermissions.dataset_view
         )
-        print('allow all', perm_result.allow_all, perm_result.allowed_object_id_list)
 
         if nickname:
             if nickname_match_type == "ilike":
@@ -478,7 +477,6 @@ class WorkingDirFileLink(Base):
 
         query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == working_dir_id)
-
         if type is None:
             return query.subquery('file_link_sub_query')
 
@@ -535,20 +533,22 @@ class WorkingDirFileLink(Base):
         Is it safe that if there's a job id, the directory is ignored?
         I'm trying to think of a case where we would want to filter by both.
         """
-
-        # TODO is it save to have .state != removed here?
-
-        # Assumes working dir....
-
         if job_id:
             if not order_by_class_and_attribute:
-                query = session.query(File).distinct(File.id).filter(File.job_id == job_id)
+                query = session.query(File).distinct(File.id).filter(
+                    File.parent_id.is_(None),
+                    File.job_id == job_id
+                )
             else:
-                query = session.query(File).filter(File.job_id == job_id)
+                query = session.query(File).filter(
+                    File.parent_id.is_(None),
+                    File.job_id == job_id
+                )
 
         else:
             if directory_list is None:
-                if working_dir_id is None: return None
+                if working_dir_id is None:
+                    return None
                 file_link_sub_query = WorkingDirFileLink.get_sub_query(
                     session, working_dir_id, type)
 
@@ -556,16 +556,20 @@ class WorkingDirFileLink(Base):
                 directory_id_list = [directory.id for directory in directory_list]
                 file_link_sub_query = WorkingDirFileLink.get_list_sub_query(
                     session, directory_id_list, type)
+
             if not order_by_class_and_attribute:
                 query = session.query(File).distinct(File.id).filter(
-                    File.id == file_link_sub_query.c.file_id)
+                    File.parent_id.is_(None),
+                    File.id == file_link_sub_query.c.file_id
+                )
             else:
                 query = session.query(File).filter(
-                    File.id == file_link_sub_query.c.file_id)
+                    File.parent_id.is_(None),
+                    File.id == file_link_sub_query.c.file_id
+                )
 
         if exclude_removed is True:
             query = query.filter(File.state != "removed")
-
         # if an image with a video id, exclude it)
         # Would prefer a better way to handle this
         # BUT at least this is all in one query...

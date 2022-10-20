@@ -393,7 +393,6 @@ class DataToolsGCP:
         # TODO maybe rename to label_map_job_dir  ? to differentiate between blob and ml job
         ai.ml.label_map_dir = f"{ai.ml.job_dir}/label_map.pbtext"
 
-        print("Built label_map", file = sys.stderr)
 
         return "success"
 
@@ -408,7 +407,6 @@ class DataToolsGCP:
         Do updates
         Save YAML file to version directory
         """
-        print("[YAML processor] Started", file = sys.stderr)
         annotations_list = []
         len_images = None
 
@@ -468,8 +466,6 @@ class DataToolsGCP:
                 print("Percent done", (counter / len_images) * 100, file = sys.stderr)
             counter += 1
 
-        print("annotations_list len", len(annotations_list), file = sys.stderr)
-
         yaml_data = yaml.dump(annotations_list, default_flow_style = False)
         json_data = json.dumps(annotations_list)
         ai.ml.annotations_string_yaml = f"{ai.ml.blob_dir}/annotations.yaml"
@@ -480,7 +476,6 @@ class DataToolsGCP:
         blob = self.ML_bucket.blob(ai.ml.annotations_string_json)
         blob.upload_from_string(json_data, content_type = 'text/json')
 
-        print("[YAML processor] Built YAML", file = sys.stderr)
         return "success"
 
     # OLD TODO refactor to new style

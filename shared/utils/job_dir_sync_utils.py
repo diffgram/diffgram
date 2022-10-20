@@ -306,6 +306,7 @@ class JobDirectorySyncManager:
                         root_files_only = True,  # TODO do we need to get child files too?
                         limit = None,
                     )
+                print('files', files)
                 for file in files:
                     logger.debug('Single file sync event with file: {} and folder {}'.format(
                         directory,

@@ -199,11 +199,8 @@ class Transaction(Base):
 
 		trial_balance = balance_new + amount
 
-		#print("balance_new", balance_new, "trial_balance", trial_balance)
 
 		trial_balance -= credit_limit
-
-		#print("trial_balance", trial_balance)
 
 		if trial_balance > 0:
 			return False, "Trial balance > 0"

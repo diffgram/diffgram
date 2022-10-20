@@ -31,7 +31,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         self.final_query = self.session.query(File).filter(
             File.project_id == self.diffgram_query.project.id,
             File.state != 'removed',
-            File.type.in_(['video', 'image'])
+            File.parent_id == None,
+            File.type.in_(['video', 'image', 'compound'])
         )
         self.unfiltered_query = self.session.query(File.id).join(WorkingDirFileLink,
                                                                  WorkingDirFileLink.file_id == File.id).filter(
@@ -86,7 +87,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             expressions = []
             if not self.or_expression:
                 self.or_expression = OrExpression(expression_list = [])
-            print('OR EXPRESSION', local_tree)
             for child in local_tree.children:
                 if hasattr(child, 'and_expression'):
                     expressions.append(child.and_expression)
@@ -110,7 +110,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         if len(args) == 1:
 
             local_tree = args[0]
-            print('andddd EXPRESSION', local_tree)
             if not self.and_expression:
                 self.and_expression = AndExpression(expression_list = [])
             expression_list = []

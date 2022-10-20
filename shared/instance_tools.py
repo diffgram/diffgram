@@ -50,7 +50,6 @@ class Instance_tools():
 		
 		# migration
 		else:
-			print("Used image path migration")
 			if not instance.file.image:
 				return False
 

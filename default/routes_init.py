@@ -20,6 +20,7 @@ def do_routes_importing():
 
     from methods.project.project_update import api_project_update
     from methods.source_control.file.file_update import api_file_update
+    from methods.source_control.file.file_get_child_files import api_file_get_child_files
 
     from methods.project.project_list import project_list_api
 
@@ -103,6 +104,7 @@ def do_routes_importing():
     from methods.source_control.working_dir.directory_list import list_directory_api
 
     from methods.source_control.file.file_browser import view_file_diff
+    from methods.source_control.file.compound_file_new import api_file_compound_new
 
     from methods.source_control.file.remove import remove_file
     from methods.source_control.working_dir.view import view_working_dir_web

@@ -120,12 +120,9 @@ def enqueue_packet(project_string_id,
         queue_limit = 1
 
     # Temporary workaround until new Rabbit MQ implmentation for walrus
-    print('on_walrus', on_walrus)
     if on_walrus:
 
         if settings.PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY is True or enqueue_immediately:
-
-            print('diffgram_input_id', diffgram_input_id)
             if commit_input:
                 regular_methods.commit_with_rollback(session = session)
             item = PrioritizedItem(

@@ -1,8 +1,9 @@
 import {KeypointInstance} from "../components/vue_canvas/instances/KeypointInstance";
 import Cuboid3DInstance from "../components/vue_canvas/instances/Cuboid3DInstance";
 import CuboidDrawerTool from "../components/3d_annotation/CuboidDrawerTool";
+import {CanvasMouseCtx} from "../types/mouse_position"
 
-export const duplicate_instance = function(instance_to_copy, component_ctx){
+export const duplicate_instance = function(instance_to_copy, component_ctx: CanvasMouseCtx){
   let points = [];
   let nodes = [];
   let edges = [];
@@ -55,7 +56,7 @@ export const duplicate_instance = function(instance_to_copy, component_ctx){
   return result;
 }
 
-export const initialize_instance_object = function(instance, component_ctx, scene_controller_3d = undefined){
+export const initialize_instance_object = function(instance, component_ctx: CanvasMouseCtx, scene_controller_3d = undefined){
   let initialized_instance;
   if(instance.type === 'keypoints' && !instance.initialized){
     initialized_instance = new KeypointInstance(
@@ -102,7 +103,7 @@ export const initialize_instance_object = function(instance, component_ctx, scen
 }
 
 
-export const create_instance_list_with_class_types = function(instance_list, component_ctx, scene_controller_3d = undefined){
+export const create_instance_list_with_class_types = function(instance_list, component_ctx: CanvasMouseCtx, scene_controller_3d = undefined){
   const result = []
   if (!instance_list) { return result }
   for(let i = 0; i < instance_list.length; i++){

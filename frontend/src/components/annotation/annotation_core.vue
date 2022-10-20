@@ -1007,7 +1007,7 @@ import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksService
 import { getInstanceTemplatesFromProject } from "../../services/instanceTemplateService";
 import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
-import {initialize_instance_object, duplicate_instance, duplicate_instance_template} from '../../utils/instance_utils.js';
+import {initialize_instance_object, duplicate_instance, duplicate_instance_template} from '../../utils/instance_utils';
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
