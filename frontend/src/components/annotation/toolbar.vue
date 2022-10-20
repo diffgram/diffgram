@@ -1,12 +1,6 @@
 <template>
-  <v-toolbar
+  <div
     v-if="show_toolbar"
-    dense
-    width="100%"
-    elevation="0"
-    fixed
-    :height="height"
-    style="overflow: hidden; padding: 0; border-bottom: 1px solid #e0e0e0"
   >
     <v-toolbar-items>
       <v-chip
@@ -991,7 +985,7 @@
         ><strong> <v-icon class="mr-2">mdi-eye</v-icon>View only</strong></span
       >
     </v-chip>
-  </v-toolbar>
+  </div>
 </template>
 
 <script lang="ts">

@@ -13,11 +13,6 @@
     </ui_schema_context_menu>
 
     <div style="position: relative">
-      <main_menu
-        :height="`${show_default_navigation ? '100px' : '50px'}`"
-        :show_default_navigation="show_default_navigation"
-      >
-        <template slot="second_row">
           <toolbar
             ref="toolbar"
             :height="50"
@@ -78,8 +73,6 @@
             @smooth_canvas_changed="update_smooth_canvas($event)"
           >
           </toolbar>
-        </template>
-      </main_menu>
 
       <!-- Errors / info -->
       <v-alert v-if="task_error.task_request" type="info">

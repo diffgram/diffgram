@@ -1,49 +1,51 @@
 <template>
 <div v-if="child_file_list" style="display: flex; flex-direction: row">
-    <v_annotation_core
-        v-if="!changing_file"
-        class="pt-1 pl-1"
-        ref="annotation_core"
-        accesskey="full"
-        :project_string_id="computed_project_string_id"
-        :label_schema="current_label_schema"
-        :model_run_id_list="model_run_id_list"
-        :model_run_color_list="model_run_color_list"
-        :task="task"
-        :file="child_file_list[0]"
-        :task_id_prop="task_id_prop"
-        :request_save="request_save"
-        :job_id="job_id"
-        :view_only_mode="view_only"
-        :label_list="label_list"
-        :label_file_colour_map="label_file_colour_map"
-        :enabled_edit_schema="enabled_edit_schema"
-        :finish_annotation_show="show_snackbar"
-        :global_attribute_groups_list="global_attribute_groups_list"
-        :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-    />
-    <v_annotation_core
-        v-if="!changing_file"
-        class="pt-1 pl-1"
-        ref="annotation_core"
-        accesskey="full"
-        :project_string_id="computed_project_string_id"
-        :label_schema="current_label_schema"
-        :model_run_id_list="model_run_id_list"
-        :model_run_color_list="model_run_color_list"
-        :task="task"
-        :file="child_file_list[1]"
-        :task_id_prop="task_id_prop"
-        :request_save="request_save"
-        :job_id="job_id"
-        :view_only_mode="view_only"
-        :label_list="label_list"
-        :label_file_colour_map="label_file_colour_map"
-        :enabled_edit_schema="enabled_edit_schema"
-        :finish_annotation_show="show_snackbar"
-        :global_attribute_groups_list="global_attribute_groups_list"
-        :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-    />
+    <div style="width: 50vw; overflow: hidden">
+        <v_annotation_core
+            v-if="!changing_file"
+            class="pt-1 pl-1"
+            ref="annotation_core"
+            accesskey="full"
+            :project_string_id="computed_project_string_id"
+            :label_schema="current_label_schema"
+            :model_run_id_list="model_run_id_list"
+            :model_run_color_list="model_run_color_list"
+            :task="task"
+            :file="child_file_list[0]"
+            :task_id_prop="task_id_prop"
+            :request_save="request_save"
+            :job_id="job_id"
+            :view_only_mode="view_only"
+            :label_list="label_list"
+            :enabled_edit_schema="enabled_edit_schema"
+            :finish_annotation_show="show_snackbar"
+            :global_attribute_groups_list="global_attribute_groups_list"
+            :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+        />
+    </div>
+    <div style="width: 50vw">
+        <v_annotation_core
+            v-if="!changing_file"
+            class="pt-1 pl-1"
+            ref="annotation_core"
+            accesskey="full"
+            :project_string_id="computed_project_string_id"
+            :label_schema="current_label_schema"
+            :model_run_id_list="model_run_id_list"
+            :model_run_color_list="model_run_color_list"
+            :task="task"
+            :file="child_file_list[1]"
+            :task_id_prop="task_id_prop"
+            :request_save="request_save"
+            :job_id="job_id"
+            :view_only_mode="view_only"
+            :label_list="label_list"
+            :enabled_edit_schema="enabled_edit_schema"
+            :finish_annotation_show="show_snackbar"
+            :global_attribute_groups_list="global_attribute_groups_list"
+            :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+        />
+    </div>
 </div>
 </template>
 
@@ -199,15 +201,6 @@ export default Vue.extend({
 
         return this.$store.state.project.current.project_string_id;
     },
-    label_file_colour_map: function (): object {
-        if (this.task && this.task.label_file_colour_map) {
-            return this.task.label_dict.label_file_colour_map;
-        }
-        else if (this.label_file_colour_map_from_project) {
-            return this.label_file_colour_map_from_project;
-        }
-        return {};
-    },
     label_list: function (): Array<any> {
         if (this.task && this.task.label_list) {
             return this.task.label_dict.label_file_list_serialized;
@@ -287,7 +280,6 @@ export default Vue.extend({
         }
         if (result) {
             this.labels_list_from_project = result.labels_out
-            this.label_file_colour_map_from_project = result.label_file_colour_map
             this.global_attribute_groups_list = result.global_attribute_groups_list
             this.per_instance_attribute_groups_list = result.attribute_groups
         }
