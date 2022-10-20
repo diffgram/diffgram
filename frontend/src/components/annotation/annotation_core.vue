@@ -1441,26 +1441,13 @@ export default Vue.extend({
       // that rely on type to specifcy an icon
       instance_type_list: [
         { name: "box", display_name: "Box", icon: "mdi-checkbox-blank" },
-        {
-          name: "polygon",
-          display_name: "Polygon",
-          icon: "mdi-vector-polygon",
-        },
-
+        { name: "polygon", display_name: "Polygon", icon: "mdi-vector-polygon"},
         { name: "tag", display_name: "Tag", icon: "mdi-tag" },
         { name: "point", display_name: "Point", icon: "mdi-circle-slice-8" },
         { name: "line", display_name: "Fixed Line", icon: "mdi-minus" },
         { name: "cuboid", display_name: "Cuboid 2D", icon: "mdi-cube-outline" },
-        {
-          name: "ellipse",
-          display_name: "Ellipse & Circle", // feel free to change if circle is it's own thing with update
-          icon: "mdi-ellipse-outline",
-        },
-        {
-          name: "curve",
-          display_name: "Curve Quadratic",
-          icon: "mdi-chart-bell-curve-cumulative",
-        },
+        { name: "ellipse", display_name: "Ellipse & Circle", icon: "mdi-ellipse-outline"},
+        { name: "curve", display_name: "Curve Quadratic", icon: "mdi-chart-bell-curve-cumulative"},
       ],
 
       instance_type: "box", //"box" or "polygon" or... "text"... or "cuboid"
@@ -7157,7 +7144,9 @@ export default Vue.extend({
       const interaction_generator = new AnnotationCoreInteractionGenerator(
         event,
         this.instance_hover_index,
-        this.instance_list
+        this.instance_list,
+        this.draw_mode,
+        this.instance_type,
       );
       return interaction_generator.generate_interaction();
     },
@@ -7197,7 +7186,7 @@ export default Vue.extend({
       this.ghost_may_promote_instance_to_actual();
 
       // For new refactored instance types (eventually all should be here)
-      const mouse_down_interaction = this.generate_event_interactions(event);
+      const mouse_down_interaction: MouseDownInteraction = this.generate_event_interactions(event);
       if (mouse_down_interaction) {
         mouse_down_interaction.process();
       }
