@@ -146,15 +146,6 @@ export default Vue.extend({
     }
     this.initializing = true
 
-    this.get_model_runs_from_query(this.$route.query);
-    if (this.$route.query.view_only) {
-      this.view_only = true;
-      if (this.$route.query.view_only === 'false') {
-        this.view_only = false;
-      } else {
-        this.view_only = true;
-      }
-    }
     if (this.enabled_edit_schema) {
       this.task = {
         ...UI_SCHEMA_TASK_MOCK,
@@ -271,18 +262,6 @@ export default Vue.extend({
         else if (result) {
             this.user_has_credentials = result.has_credentials;
             this.missing_credentials = result.missing_credentials;
-        }
-    },
-    get_model_runs_from_query: function (query: any): void {
-        this.model_run_id_list = [];
-        this.model_run_color_list = [];
-
-        if (query.model_runs) {
-            this.model_run_id_list = decodeURIComponent(query.model_runs).split(",");
-            
-            if (query.color_list) {
-                this.model_run_color_list = decodeURIComponent(query.color_list).split(",");
-            }
         }
     },
     get_labels_from_project: async function (): Promise<null> {
