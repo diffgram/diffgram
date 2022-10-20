@@ -138,56 +138,6 @@ export default Vue.extend({
     //         this.child_file_list = result
     //     }
     // },
-    watch: {
-    '$route'(to, from): void {
-      if (from.name === 'task_annotation' && to.name === 'studio') {
-        this.fetch_project_file_list();
-        this.task = null;
-        if (this.$refs.file_manager_sheet) {
-          this.$refs.file_manager_sheet.display_file_manager_sheet();
-        }
-      }
-      if (from.name === 'studio' && to.name === 'task_annotation') {
-        this.current_file = null;
-        this.fetch_single_task(this.task_id_prop);
-        this.$refs.file_manager_sheet.hide_file_manager_sheet()
-      }
-      this.get_model_runs_from_query(to.query);
-    },
-    current_file: {
-      handler(newVal, oldVal): void {
-        if (newVal && newVal != oldVal) {
-          this.$addQueriesToLocation({file: newVal.id});
-        }
-      },
-    },
-  },
-  created() {
-    if (this.$route.query.edit_schema) {
-      this.enabled_edit_schema = true;
-    }
-    if (this.$route.query.view_only) {
-      if (this.$route.query.view_only === 'false') {
-        this.view_only = false;
-      } else {
-        this.view_only = true;
-      }
-    }
-    if (
-      !this.$store.getters.is_on_public_project ||
-      this.$store.state.user.current.is_super_admin == true
-    ) {
-      if (this.task_id_prop) {
-        this.add_visit_history_event("task");
-      } else if (this.file_id_prop) {
-        this.add_visit_history_event("file");
-      } else {
-        this.add_visit_history_event("page");
-      }
-    } else {
-      this.view_only = true;
-    }
-  },
   async mounted() {
     if (!this.task_id_prop) {
       await this.get_project();
@@ -244,25 +194,11 @@ export default Vue.extend({
     this.initializing = false
   },
   computed: {
-    any_loading: function (): boolean {
-        return this.loading || this.loading_project || this.initializing
-    },
     file_id: function (): number {
         let file_id = this.file_id_prop;
         if (this.$route.query.file) file_id = this.$route.query.file;
         
         return file_id;
-    },
-    annotation_interface: function (): string | null {
-        if (!this.current_file && !this.task) return null
-
-        let interface_type: string;
-
-        if (this.current_file) interface_type = this.current_file.type
-        else interface_type = this.task.file.type
-
-        if (interface_type === 'image' || interface_type === 'video') return 'image_or_video'
-        else return interface_type 
     },
     computed_project_string_id: function (): string {
         if (this.project_string_id) {
@@ -292,11 +228,6 @@ export default Vue.extend({
     },
   },
   methods: {
-    on_change_label_schema: function (schema: object): void {
-        this.current_label_schema = schema;
-        this.labels_list_from_project = null;
-        this.get_labels_from_project()
-    },
     fetch_schema_list: async function (): Promise<void> {
         this.schema_list_loading = true
         const [result, error] = await get_schemas(this.project_string_id);
@@ -353,23 +284,6 @@ export default Vue.extend({
                 this.model_run_color_list = decodeURIComponent(query.color_list).split(",");
             }
         }
-    },
-    request_file_change: function (direction: string, file: object): void {
-        this.$refs.file_manager_sheet.request_change_file(direction, file);
-    },
-    change_file: async function (file: object, model_runs: any): Promise<void> {
-        this.changing_file = true
-        this.current_file = file;
-        let model_runs_data = "";
-
-        await this.$nextTick();
-
-        if (model_runs) {
-            model_runs_data = encodeURIComponent(model_runs);
-        }
-
-        this.get_model_runs_from_query(model_runs_data);
-        this.changing_file = false;
     },
     get_labels_from_project: async function (): Promise<null> {
         if (
@@ -465,36 +379,6 @@ export default Vue.extend({
         }
         this.task_error = result.log.error;
         }
-    },
-    change_task: async function (direction: string, task: object, assign_to_user: boolean = false): Promise<void> {
-      if (!task) {
-        throw new Error("Provide task ");
-      }
-
-      const [result, error] = await fetchNextTask(this.computed_project_string_id, direction, task, assign_to_user)
-
-      if (error) {
-        console.debug(error);
-      } 
-
-      if (result) {
-        if (result.task && result.task.id !== task['id']) {
-            this.$router.push(`/task/${result.task.id}`);
-            history.pushState({}, "", `/task/${result.task.id}`);
-
-            if (this.$refs.file_manager_sheet) {
-              this.$refs.file_manager_sheet.set_file_list([this.task.file]);
-            }
-            
-            this.task = result.task;
-        }
-        else {
-            this.show_snackbar = true;
-            this.snackbar_message = 
-                `This is the ${direction === 'next' ? 'last': 'first'} task of the list. Please go to previous tasks.`;
-        }
-
-      }
     },
     get_project: async function (project_string_id: string = undefined): Promise<void> {
       try {
