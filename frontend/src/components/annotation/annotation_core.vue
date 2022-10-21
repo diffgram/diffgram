@@ -15,6 +15,7 @@
     <div style="position: relative">
           <toolbar
             ref="toolbar"
+            :show_toolbar="show_toolbar"
             :height="50"
             :command_manager="command_manager"
             :save_loading="
@@ -1047,6 +1048,10 @@ export default Vue.extend({
     project_string_id: {
       default: null,
       type: String,
+    },
+    show_toolbar: {
+      type: Boolean,
+      default: true
     },
     label_schema:{
       required: true

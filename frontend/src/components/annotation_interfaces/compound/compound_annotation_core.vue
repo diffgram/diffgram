@@ -6,6 +6,7 @@
             class="pt-1 pl-1"
             ref="annotation_core"
             accesskey="full"
+            :show_toolbar="false"
             :project_string_id="computed_project_string_id"
             :label_schema="current_label_schema"
             :model_run_id_list="model_run_id_list"
@@ -29,6 +30,7 @@
             class="pt-1 pl-1"
             ref="annotation_core"
             accesskey="full"
+            :show_toolbar="false"
             :project_string_id="computed_project_string_id"
             :label_schema="current_label_schema"
             :model_run_id_list="model_run_id_list"
@@ -59,7 +61,7 @@ import { UI_SCHEMA_TASK_MOCK } from "../../ui_schema/ui_schema_task_mock";
 import { user_has_credentials } from '../../../services/userServices'
 import { get_labels } from '../../../services/labelServices';
 import { get_schemas } from "../../../services/labelServices";
-import { fetchNextTask, fetchSingleTask } from "../../../services/tasksServices";
+import { fetchSingleTask } from "../../../services/tasksServices";
 
 
 export default Vue.extend({
