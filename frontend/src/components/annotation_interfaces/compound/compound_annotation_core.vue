@@ -1,4 +1,17 @@
 <template>
+<div>
+    <toolbar
+        ref="toolbar"
+            :show_toolbar="true"
+            :height="50"
+            :project_string_id="project_string_id"
+            :label_schema="current_label_schema"
+            :loading="loading"
+            :view_only_mode="false"
+            :task="task"
+            :file="child_file_list[0]"
+            :label_list="label_list"
+    />
 <div v-if="child_file_list" style="display: flex; flex-direction: row">
     <div style="width: 50vw; overflow: hidden">
         <v_annotation_core
@@ -49,6 +62,7 @@
         />
     </div>
 </div>
+</div>
 </template>
 
 <script lang="ts">
@@ -62,10 +76,13 @@ import { user_has_credentials } from '../../../services/userServices'
 import { get_labels } from '../../../services/labelServices';
 import { get_schemas } from "../../../services/labelServices";
 import { fetchSingleTask } from "../../../services/tasksServices";
-
+import toolbar from "../../annotation_interfaces_components/toolbar.vue"
 
 export default Vue.extend({
     name: 'compound_annotation_core',
+    components: {
+      toolbar
+    },
     // props: {
     //     project_string_id: {
     //         type: String,
