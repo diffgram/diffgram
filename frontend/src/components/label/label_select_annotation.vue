@@ -1,191 +1,167 @@
 <template>
-  <div v-cloak  id="label_select_annotation">
+  <div 
+    v-cloak 
+    id="label_select_annotation"
+  >
     <v-layout >
-
-
-      <v-autocomplete :items="label_list_with_limit"
-                v-model="selected"
-                :label="label_prompt"
-                return-object
-                :data-cy="datacy"
-                :disabled="label_refresh_loading"
-                @change="emit_selected()"
-                item-value="id"
-                data-cy="label_select"
-                ref="label_select"
-                class="ma-0"
-                :filter="on_filter_labels"
-                @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-                @blur="$store.commit('set_user_is_typing_or_menu_open')"
-                >
-
+      <v-autocomplete 
+        v-model="selected"
+        return-object
+        item-value="id"
+        ref="label_select"
+        class="ma-0"
+        :items="label_list_with_limit"
+        :label="label_prompt"
+        :data-cy="datacy"
+        :disabled="label_refresh_loading"
+        :filter="on_filter_labels"
+        @change="emit_selected()"
+        @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
+        @blur="$store.commit('set_user_is_typing_or_menu_open')"
+      >
         <template v-slot:item="data">
-
-          <v-icon left
-                  :style="style_color(data.item.colour.hex)">
+          <v-icon 
+            left
+            :style="style_color(data.item.colour.hex)">
             flag
           </v-icon>
 
-          <div class="pl-4 pr-4"
-               :data-cy="data.item.label.name">
+          <div 
+            class="pl-4 pr-4"
+            :data-cy="data.item.label.name"
+          >
             {{data.item.label.name}}
            </div>
-
-          <!-- Would like to have this but it looks kind of messy -->
-          <!--
-          <div style="color: grey">
-            {{label_list.indexOf(data.item) + 1}}</div>
-          -->
-
-
-          <div v-if="show_visibility_toggle
-                  || data.item.is_visible == false">
-
+          <div v-if="show_visibility_toggle || data.item.is_visible === false">
             <v-layout>
-
-              <div v-if="data.item.is_visible == true
-                    || data.item.is_visible == null">
+              <div v-if="data.item.is_visible === true || data.item.is_visible === null">
                 <standard_button
-                  @click="toggle_label_visible(data.item)"
+                  icon_style
+                  bottom
                   color="grey lighten-1"
-                  :icon_style="true"
                   icon="remove_red_eye"
                   tooltip_message="Hide"
-                  :bottom="true">
-                </standard_button>
+                  @click="toggle_label_visible(data.item)"
+                />
               </div>
 
-              <div v-if="data.item.is_visible == false">
+              <div v-if="data.item.is_visible === false">
                 <standard_button
-                  @click="toggle_label_visible(data.item)"
+                  icon_style
+                  bottom 
                   color="grey"
-                  :icon_style="true"
                   icon="mdi-eye-off"
                   tooltip_message="Show"
-                  :bottom="true">
-                </standard_button>
+                  @click="toggle_label_visible(data.item)"
+                />
               </div>
-
             </v-layout>
             </div>
-
-
-          <!--
-          <div v-if="$store.state.user.current.is_super_admin === true">
-            {{ data.item.id }}
-          </div>
-          -->
-
         </template>
 
         <template v-slot:selection="data">
-
           <div>
             <v-icon
               left
-              :style="style_color(data.item.colour.hex)">
+              :style="style_color(data.item.colour.hex)"
+            >
               flag
             </v-icon>
-
             {{ label_name_truncated(data.item.label.name) }}
           </div>
-
         </template>
 
         <template v-slot:no-data>
           <div class="d-flex flex-column align-center justify-center">
             No Labels Templates Created.
-            <v-btn color="primary" small @click="$router.push(`/project/${computed_project_string_id}/labels`)">
-              <v-icon>mdi-plus</v-icon>
+            <v-btn 
+              color="primary" 
+              small 
+              @click="$router.push(`/project/${computed_project_string_id}/labels`)"
+            >
+              <v-icon>
+                mdi-plus
+              </v-icon>
               Create New
             </v-btn>
           </div>
         </template>
       </v-autocomplete>
-
     </v-layout>
-
   </div>
 </template>
 
-<!--
-
--->
-
 <script lang="ts">
+import Vue from "vue";
+import { get_labels } from '../../services/labelServices';
 
-  import axios from '../../services/customInstance';
-  import {get_labels} from '../../services/labelServices';
+export default Vue.extend({
+  name: 'label_select_annotation',
+  props: {
+    project_string_id: {
+      type: String,
+      required: true
+    },
+    view_only_mode: {
+      type: Boolean,
+      default: false
+    },
+    datacy: {
+      type: String,
+      default: 'label_select_annotation'
+    },
+    default_hot_keys: {
+      type: String,
+      default: 'w'
+    },
+    request_refresh_from_project: {
+      default: null
+    },
+    label_prompt: {
+      type: String,
+      default: 'Label'
+    },
+    show_visibility_toggle: {
+      type: Boolean,
+      default: false
+    },
+    schema_id: {
+      type: Number,
+      default: undefined
+    },
+    select_this_id_at_load: {
+      type: Number,
+      default: undefined
+    },
+  },
+  watch: {
+    schema_id: function(){
+      this.get_label_list_from_project()
+    },
+    request_refresh_from_project: function () {
+      this.get_label_list_from_project()
+    },
+  },
+  mounted() {
+    if (this.label_file_list_prop) {
+      this.label_list = this.label_file_list_prop
+      this.selected = this.label_file_list_prop[0]
+    } else {
+      this.get_label_list_from_project()
+    }
 
-  import Vue from "vue";
+    if (this.select_this_id_at_load) {
+      this.selected = this.label_list.find(
+        (obj: Object): Object => obj["id"] === this.select_this_id_at_load
+      )
+      this.emit_selected()
+    }
 
-  export default Vue.extend({
-
-      name: 'label_select_annotation',
-
-      props: {
-        'project_string_id': {},
-        'view_only_mode': {},
-        'datacy': {
-          default: 'label_select_annotation',
-          type: String
-        },
-        'label_file_list': {},
-        'default_hot_keys': {
-          default: 'w'
-        },
-        'label_file_colour_map': {},
-        'request_refresh_from_project': {
-          default: null
-        },
-        'loading': {},
-        'label_prompt': {
-          default: 'Label'
-        },
-        'show_visibility_toggle': {
-          default: false
-        },
-        'schema_id': {
-          default: undefined
-        },
-        'select_this_id_at_load': {},
-      },
-
-      watch: {
-        schema_id: function(){
-          this.get_label_list_from_project()
-        },
-        request_refresh_from_project: function () {
-          this.get_label_list_from_project()
-        },
-
-      },
-      mounted() {
-
-        if (this.label_file_list_prop) {
-          this.label_list = this.label_file_list_prop
-          this.selected = this.label_file_list_prop[0]
-        } else {
-          this.get_label_list_from_project()
-        }
-
-        if (this.select_this_id_at_load) {
-          this.selected = this.label_list.find(obj => {
-            return obj.id == this.select_this_id_at_load
-          })
-          this.emit_selected() // in case something relies on this,
-          // ie the data circles back / watching $event
-          // TODO consider v-model for selected in this context.
-        }
-
-        window.addEventListener('keyup', this.keyboard_events_window);
-
-      },
-
-      beforeDestroy() {
-        window.removeEventListener('keyup', this.keyboard_events_window)
-      },
-
+    window.addEventListener('keyup', this.keyboard_events_window);
+  },
+  beforeDestroy() {
+    window.removeEventListener('keyup', this.keyboard_events_window)
+  },
       computed: {
 
         label_list_with_limit: function () {
@@ -209,14 +185,10 @@
       },
       data() {
         return {
-
-          label_refresh_loading: false,
-          error: null,
-
-          selected: {},
-
-          label_list: [],
-
+          label_refresh_loading: false as Boolean,
+          error: null as Object,
+          selected: {} as Object,
+          label_list: [] as Array<Object>,
           hotkey_dict: {
             49: 0,
             50: 1,
@@ -228,8 +200,7 @@
             56: 7,
             57: 8,
             58: 9
-          },
-
+          } as Object,
         }
       },
 
