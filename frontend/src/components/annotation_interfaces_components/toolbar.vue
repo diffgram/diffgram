@@ -90,7 +90,6 @@ import task_meta_data_card from "../annotation/task_meta_data_card.vue";
 import hotkeys from "../annotation/hotkeys.vue";
 import task_status from "../annotation/task_status.vue"
 import Guided_1_click_mode_selector from "../instance_templates/guided_1_click_mode_selector.vue";
-import instance_type_select from "../concrete/instance_type_select.vue"
 
 import instance_type_list, { InstanceType } from "./instance_types"
 
@@ -107,7 +106,6 @@ export default Vue.extend({
     task_relations_card,
     hotkeys,
     task_status,
-    instance_type_select
   },
   props: {
     project_string_id: {},
