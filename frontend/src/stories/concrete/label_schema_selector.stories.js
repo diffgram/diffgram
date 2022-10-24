@@ -4,12 +4,12 @@ const project_string_id = 'storybook-mock'
 
 let schema_list = [
   { 
-    directory_id: 1, 
+    id: 1, 
     name: 'Default', 
     is_default: true,
   },
   { 
-    directory_id: 2, 
+    id: 2, 
     name: 'Trial schema',
   }
 ]

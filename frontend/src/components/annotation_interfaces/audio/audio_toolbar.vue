@@ -441,8 +441,8 @@ export default Vue.extend({
       default: false
     },
     label_file_colour_map: {
-      type: Object,
-      requered: true
+      required: true,
+      type: Object
     },
     task: {
       type: Object,

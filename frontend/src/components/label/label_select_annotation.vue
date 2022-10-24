@@ -2,6 +2,7 @@
   <div 
     id="label_select_annotation"
     ref="label_select_annotation"
+    class="label_select_annotation"
   >
       <v-autocomplete 
         v-model="selected"
@@ -21,7 +22,7 @@
           <v-icon 
             left
             :style="style_color(data.item.colour.hex)">
-            flag
+            mdi-flag
           </v-icon>
 
           <div 
@@ -63,7 +64,7 @@
               left
               :style="style_color(data.item.colour.hex)"
             >
-              flag
+              mdi-flag
             </v-icon>
             {{ label_name_truncated(data.item.label.name) }}
           </div>
@@ -264,3 +265,9 @@ export default Vue.extend({
   }
 }) 
 </script>
+
+<style scoped>
+.label_select_annotation {
+  max-width: 300px;
+}
+</style>
