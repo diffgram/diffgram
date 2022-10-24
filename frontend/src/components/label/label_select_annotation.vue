@@ -1,23 +1,21 @@
 <template>
   <div 
-    v-cloak 
     id="label_select_annotation"
+    ref="label_select_annotation"
   >
-    <v-layout >
       <v-autocomplete 
         v-model="selected"
         return-object
         item-value="id"
         ref="label_select"
-        class="ma-0"
         :items="label_list_with_limit"
         :label="label_prompt"
         :data-cy="datacy"
         :disabled="label_refresh_loading"
         :filter="on_filter_labels"
         @change="emit_selected()"
-        @focus="$store.commit('set_user_is_typing_or_menu_open', true)"
-        @blur="$store.commit('set_user_is_typing_or_menu_open')"
+        @focus="on_focus"
+        @blur="on_blur"
       >
         <template v-slot:item="data">
           <v-icon 
@@ -77,7 +75,7 @@
             <v-btn 
               color="primary" 
               small 
-              @click="$router.push(`/project/${computed_project_string_id}/labels`)"
+              @click="$router.push(`/project/${project_string_id}/labels`)"
             >
               <v-icon>
                 mdi-plus
@@ -87,7 +85,6 @@
           </div>
         </template>
       </v-autocomplete>
-    </v-layout>
   </div>
 </template>
 
@@ -115,7 +112,8 @@ export default Vue.extend({
       default: 'w'
     },
     request_refresh_from_project: {
-      default: null
+      type: Boolean,
+      default: false
     },
     label_prompt: {
       type: String,
@@ -133,12 +131,16 @@ export default Vue.extend({
       type: Number,
       default: undefined
     },
+    is_typing_or_menu_open: {
+      type: Boolean,
+      default: false
+    }
   },
   watch: {
-    schema_id: function(){
+    schema_id: function(): void {
       this.get_label_list_from_project()
     },
-    request_refresh_from_project: function () {
+    request_refresh_from_project: function (): void {
       this.get_label_list_from_project()
     },
   },
@@ -154,6 +156,7 @@ export default Vue.extend({
       this.selected = this.label_list.find(
         (obj: Object): Object => obj["id"] === this.select_this_id_at_load
       )
+
       this.emit_selected()
     }
 
@@ -162,128 +165,102 @@ export default Vue.extend({
   beforeDestroy() {
     window.removeEventListener('keyup', this.keyboard_events_window)
   },
-      computed: {
+  computed: {
+    label_list_with_limit: function (): Array<Object> {
+      this.over_limit = false
+      return this.label_list
+    }
+  },
+  data() {
+    return {
+      label_refresh_loading: false as Boolean,
+      error: null as Object,
+      selected: {} as Object,
+      label_list: [] as Array<Object>,
+      hotkey_dict: {
+        49: 0,
+        50: 1,
+        51: 2,
+        52: 3,
+        53: 4,
+        54: 5,
+        55: 6,
+        56: 7,
+        57: 8,
+        58: 9
+      } as Object,
+    }
+  },
+  methods: {
+    on_focus: function(): void {
+      this.$emit('on_focus')
+    },
+    on_blur: function() :void {
+      this.$emit('on_blur')
+    },
+    on_filter_labels: function(item: any, query_text: string): Array<any> {
+      return item.label.name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())
+    },
+    label_name_truncated: function(name: string): string {
+      let max_size = 23
+      const default_selector_size = 290
+      const selector_offset_width = this.$refs.label_select_annotation.offsetWidth
+      
+      if (selector_offset_width < default_selector_size) max_size = 5
+          
+      if (name.length > max_size) return name.slice(0, max_size) + '...'
+      else return name
+    },
+    toggle_label_visible(label: any): void {
+      if (typeof label.is_visible === "undefined") {
+        label.is_visible = false
+      } 
+      else {
+        label.is_visible = !label.is_visible
+      }
 
-        label_list_with_limit: function () {
-          if (!this.$props.limit) {
-            this.over_limit = false
-            return this.label_list
-          }
-          if (this.label_list.length > this.$props.limit) {
-            this.over_limit = true
-          }
-          return this.label_list.slice(0, this.$props.limit)
-        },
-        computed_project_string_id: function () {
-          if (this.$props.project_string_id) {
-            return this.$props.project_string_id;
-          }
-          return this.$store.state.project.current.project_string_id;
-        },
+      this.label_list.splice(this.label_list.indexOf(label), 1, label)
+      this.$emit('update_label_file_visible', label)
+    },
+    get_label_list_from_project: async function(): Promise<void> {
+      this.label_refresh_loading = true
+      let [result, error] = await get_labels(this.project_string_id, this.$props.schema_id)
+      if (error) {
+        this.error = this.$route_api_errors(error)
+      }
+      
+      if (result) {
+        this.label_list = result.labels_out
+        this.selected = this.label_list[0]
+        this.emit_selected()
+      }
+      
+      this.label_refresh_loading = false
+    },
+    toggle_label_menu: function(): void {
+      this.$refs.label_select.isMenuActive = !this.$refs.label_select.isMenuActive;
+    },
+    style_color: function (hex: string): string {
+      return "color:" + hex
+    },
+    emit_selected: function (): void {
+      this.$emit('change', this.selected);
+      this.$refs.label_select.blur()
+    },
+    keyboard_events_window: function (event: KeyboardEvent): void {
+      if (this.is_typing_or_menu_open === true) return
+      
+      if (event.key === this.default_hot_keys) {
+        this.toggle_label_menu()
+        return
+      }
 
-
-      },
-      data() {
-        return {
-          label_refresh_loading: false as Boolean,
-          error: null as Object,
-          selected: {} as Object,
-          label_list: [] as Array<Object>,
-          hotkey_dict: {
-            49: 0,
-            50: 1,
-            51: 2,
-            52: 3,
-            53: 4,
-            54: 5,
-            55: 6,
-            56: 7,
-            57: 8,
-            58: 9
-          } as Object,
-        }
-      },
-
-      methods: {
-        on_filter_labels: function(item, query_text, item_text){
-          return item.label.name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())
-
-        },
-        label_name_truncated: function(name) {
-          let max_size = 23
-          let default_selector_size = 290 // feels pretty brittle
-          if (document.getElementById('label_select_annotation').offsetWidth
-                < default_selector_size) {
-            max_size = 5
-          }
-          if (name.length > max_size) {
-            return name.slice(0, max_size) + '...'
-          } else {
-            return name
-          }
-        },
-
-        toggle_label_visible(label) {
-          if (typeof label.is_visible == "undefined") {
-            label.is_visible = false
-          } else {
-            label.is_visible = !label.is_visible
-          }
-          this.label_list.splice(this.label_list.indexOf(label), 1, label)
-          this.$emit('update_label_file_visible', label)
-        },
-
-
-        get_label_list_from_project: async function () {
-
-          var url = null
-          this.label_refresh_loading = true
-          let [result, error] = await get_labels(this.computed_project_string_id, this.$props.schema_id)
-          if(error){
-            this.error = this.$route_api_errors(error)
-            return
-          }
-          if(result){
-            this.label_list = result.labels_out
-            this.selected = this.label_list[0]
-            this.emit_selected()
-            this.label_refresh_loading = false
-          }
-
-        },
-
-        toggle_label_menu: function () {
-          this.$refs['label_select'].isMenuActive = !this.$refs['label_select'].isMenuActive;
-        },
-
-        style_color: function (hex) {
-          return "color:" + hex
-        },
-
-        emit_selected: function () {
-          this.$emit('change', this.selected);
-          this.$refs.label_select.blur()
-        },
-
-        keyboard_events_window: function (event) {
-
-          if (this.$store.state.user.is_typing_or_menu_open == true) {
-            return
-          }
-          if (event.key === this.$props.default_hot_keys) {
-            this.toggle_label_menu()
-            return
-          }
-
-          let hotkey = null
-          hotkey = this.hotkey_dict[event.keyCode]
-          if (hotkey != null) {
-            this.selected = this.label_list[hotkey]
-            this.emit_selected()
-          }
-
-        },
-
+      const hotkey = this.hotkey_dict[event.keyCode]
+      if (hotkey !== null) {
+        this.selected = this.label_list[hotkey]
+        this.emit_selected()
       }
     }
-  ) </script>
+  }
+}) 
+</script>

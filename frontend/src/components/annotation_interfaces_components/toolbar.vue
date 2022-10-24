@@ -21,7 +21,19 @@
       @change="$emit('change_label_schema', $event)"
     />
     <div class="toolbar_space" />
-    <label_select />
+    <label_select_annotation
+      :project_string_id="project_string_id"
+      :label_file_list="label_list"
+      :schema_id="label_schema.id"
+      :label_file_colour_map="label_file_colour_map"
+      :request_refresh_from_project="true"
+      :show_visibility_toggle="true"
+      :is_typing_or_menu_open="$store.state.user.is_typing_or_menu_open"
+      @on_focus="set_typing_state(true)"
+      @on_blue="set_typing_state(false)"
+      @change="$emit('change_label_file', $event)"
+      @update_label_file_visible="$emit('update_label_file_visibility', $event)"
+    />
     <div class="toolbar_space" />
     <instance_type_select />
     <v-divider vertical class="toolbar-divider" />
@@ -70,7 +82,6 @@ import hotkeys from "../annotation/hotkeys.vue";
 import task_status from "../annotation/task_status.vue"
 import Guided_1_click_mode_selector from "../instance_templates/guided_1_click_mode_selector.vue";
 
-import label_select from "../concrete/label_select.vue"
 import instance_type_select from "../concrete/instance_type_select.vue"
 
 export default Vue.extend({
@@ -87,7 +98,6 @@ export default Vue.extend({
     hotkeys,
     task_status,
 
-    label_select,
     instance_type_select
   },
   props: {

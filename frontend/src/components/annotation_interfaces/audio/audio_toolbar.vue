@@ -135,6 +135,9 @@
                       :request_refresh_from_project="true"
                       :show_visibility_toggle="true"
                       :schema_id="label_schema.id"
+                      :is_typing_or_menu_open="$store.state.user.is_typing_or_menu_open"
+                      @on_focus="set_typing_state(true)"
+                      @on_blue="set_typing_state(false)"
                       @change="$emit('change_label_file', $event)"
                       @update_label_file_visible="$emit('change_label_visibility', $event)"
                     />
@@ -307,6 +310,9 @@
             :schema_id="label_schema.id"
             :request_refresh_from_project="true"
             :show_visibility_toggle="true"
+            :is_typing_or_menu_open="$store.state.user.is_typing_or_menu_open"
+            @on_focus="set_typing_state(true)"
+            @on_blue="set_typing_state(false)"
             @change="$emit('change_label_file', $event)"
             @update_label_file_visible="$emit('change_label_visibility', $event)"
           />
@@ -388,7 +394,7 @@
   </v-toolbar>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from 'vue'
 import audio_hotkeys from "./audio_hotkeys.vue"
 import label_select_annotation from "../../label/label_select_annotation"
@@ -450,6 +456,11 @@ export default Vue.extend({
       type: Object,
       required: true
     }
+  },
+  methods: {
+    set_typing_state: function(state: boolean): void {
+      this.$store.commit('set_user_is_typing_or_menu_open', state)
+    },
   }
 })
 </script>

@@ -58,11 +58,14 @@
         :schema_id="label_schema.id"
         default_hot_keys="l"
         :label_file_colour_map="label_file_colour_map"
+        @on_focus="set_typing_state(true)"
+        @on_blue="set_typing_state(false)"
         @change="$emit('change_label_file', $event)"
         :loading="loading"
         :request_refresh_from_project="true"
         :show_visibility_toggle="true"
         @update_label_file_visible="$emit('update_label_file_visibility', $event)"
+        :is_typing_or_menu_open="$store.state.user.is_typing_or_menu_open"
       >
       </label_select_annotation>
     </div>
@@ -679,7 +682,9 @@
         },
       },
       methods: {
-
+        set_typing_state: function(state: boolean): void {
+          this.$store.commit('set_user_is_typing_or_menu_open', state)
+        },
         filter_reset: function () {
           this.label_settings_local.filter_brightness = 100
           this.label_settings_local.filter_contrast = 100

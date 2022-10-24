@@ -205,9 +205,12 @@
               :schema_id="label_schema.id"
               :label_file_colour_map="label_file_colour_map"
               @change="$emit('change_label_file', $event)"
+              @on_focus="set_typing_state(true)"
+              @on_blue="set_typing_state(false)"
               :loading="loading"
               :request_refresh_from_project="true"
               :show_visibility_toggle="true"
+              :is_typing_or_menu_open="$store.state.user.is_typing_or_menu_open"
               @update_label_file_visible="
                 $emit('update_label_file_visibility', $event)
               "
@@ -1121,6 +1124,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    set_typing_state: function(state: boolean): void {
+      this.$store.commit('set_user_is_typing_or_menu_open', state)
+    },
     set_instance_type: function(inst_type){
       this.instance_type = inst_type
     },
