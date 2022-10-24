@@ -12,7 +12,14 @@
     />
 
     <v-divider vertical class="toolbar-divider" />
-    <label_schema_select />
+    <label_schema_selector
+      ref="label_scehma_selector"
+      :project_string_id="project_string_id"
+      :initial_schema="label_schema"
+      @on_focus="set_typing_state(true)"
+      @on_blue="set_typing_state(false)"
+      @change="$emit('change_label_schema', $event)"
+    />
     <div class="toolbar_space" />
     <label_select />
     <div class="toolbar_space" />
@@ -63,7 +70,6 @@ import hotkeys from "../annotation/hotkeys.vue";
 import task_status from "../annotation/task_status.vue"
 import Guided_1_click_mode_selector from "../instance_templates/guided_1_click_mode_selector.vue";
 
-import label_schema_select from "../concrete/label_schema_select.vue"
 import label_select from "../concrete/label_select.vue"
 import instance_type_select from "../concrete/instance_type_select.vue"
 
@@ -81,7 +87,6 @@ export default Vue.extend({
     hotkeys,
     task_status,
 
-    label_schema_select,
     label_select,
     instance_type_select
   },
@@ -191,6 +196,11 @@ export default Vue.extend({
     },
   },
   methods: {
+    // REFACTORED
+    set_typing_state: function(state: boolean): void {
+      this.$store.commit('set_user_is_typing_or_menu_open', state)
+    },
+    ///
     set_instance_type: function(inst_type){
       this.instance_type = inst_type
     },
