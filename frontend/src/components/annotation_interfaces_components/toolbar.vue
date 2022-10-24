@@ -1,5 +1,5 @@
 <template>
-  <div style="display: flex; flex-direction: row">
+  <div class="toolbar-container">
     <standard_button
       icon_style
       icon="mdi-undo"
@@ -10,7 +10,43 @@
       icon="mdi-redo"
       tooltip_message="redo"
     />
-    <v-divider vertical />
+
+    <v-divider vertical class="toolbar-divider" />
+    <label_schema_select />
+    <div class="toolbar_space" />
+    <label_select />
+    <div class="toolbar_space" />
+    <instance_type_select />
+    <v-divider vertical class="toolbar-divider" />
+
+    <v-switch label="Mode" />
+
+    <v-divider vertical class="toolbar-divider" />
+
+    <standard_button
+      text_style
+      icon="mdi-content-save"
+      button_message="save"
+    />
+
+    <v-divider vertical class="toolbar-divider" />
+    <standard_button
+      icon_style
+      icon="mdi-arrow-left-circle"
+      tooltip_message="Prevous file"
+    />
+    <standard_button
+      icon_style
+      icon="mdi-arrow-right-circle"
+      tooltip_message="Next file"
+    />
+    <v-divider vertical class="toolbar-divider" />
+
+    <standard_button
+      icon_style
+      icon="mdi-keyboard-settings"
+      tooltip_message="Hotkeys"
+    />
   </div>
 </template>
 
@@ -26,7 +62,10 @@ import task_meta_data_card from "../annotation/task_meta_data_card.vue";
 import hotkeys from "../annotation/hotkeys.vue";
 import task_status from "../annotation/task_status.vue"
 import Guided_1_click_mode_selector from "../instance_templates/guided_1_click_mode_selector.vue";
-import Standard_button from "../base/standard_button.vue";
+
+import label_schema_select from "../concrete/label_schema_select.vue"
+import label_select from "../concrete/label_select.vue"
+import instance_type_select from "../concrete/instance_type_select.vue"
 
 export default Vue.extend({
   name: "toolbar",
@@ -41,7 +80,10 @@ export default Vue.extend({
     task_relations_card,
     hotkeys,
     task_status,
-    Standard_button
+
+    label_schema_select,
+    label_select,
+    instance_type_select
   },
   props: {
     project_string_id: {},
@@ -200,3 +242,21 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style scoped>
+.toolbar-container {
+  display: flex; 
+  flex-direction: row;
+  align-items: center;
+  border-bottom: 1px solid rgba(0,0,0,.12);
+}
+
+.toolbar-divider {
+  margin-right: 10px;
+  margin-left: 10px
+}
+
+.toolbar_space {
+  width: 10px;
+}
+</style>
