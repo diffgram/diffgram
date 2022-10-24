@@ -15,7 +15,13 @@
       @focus="on_focus"
       @blur="on_blur"
       @change="on_change_schema"
-    />
+    >
+      <template v-slot:selection="data">
+        <div>
+          {{ data.item.name }}
+        </div>
+      </template>
+    </v-autocomplete>
 </template>
 
 <script lang="ts">
