@@ -35,7 +35,16 @@
       @update_label_file_visible="$emit('update_label_file_visibility', $event)"
     />
     <div class="toolbar_space" />
-    <instance_type_select />
+    <diffgram_select
+      v-model="instance_type"
+      v-if="instance_type_list"
+      data_cy="instance-type-select"
+      label="New Instance Type"
+      class="select-width"
+      :item_list="instance_type_list"
+      :disabled="loading || loading_instance_templates || view_only_mode"
+      @change="$emit('change_instance_type', instance_type)"
+    />
     <v-divider vertical class="toolbar-divider" />
 
     <v-switch label="Mode" />
@@ -81,8 +90,9 @@ import task_meta_data_card from "../annotation/task_meta_data_card.vue";
 import hotkeys from "../annotation/hotkeys.vue";
 import task_status from "../annotation/task_status.vue"
 import Guided_1_click_mode_selector from "../instance_templates/guided_1_click_mode_selector.vue";
-
 import instance_type_select from "../concrete/instance_type_select.vue"
+
+import instance_type_list, { InstanceType } from "./instance_types"
 
 export default Vue.extend({
   name: "toolbar",
@@ -97,7 +107,6 @@ export default Vue.extend({
     task_relations_card,
     hotkeys,
     task_status,
-
     instance_type_select
   },
   props: {
@@ -147,7 +156,6 @@ export default Vue.extend({
     instance_template_selected: {},
 
     loading_instance_templates: {},
-    instance_type_list: {},
     view_issue_mode: {},
     is_keypoint_template: {},
     enabled_edit_schema: {
@@ -166,9 +174,13 @@ export default Vue.extend({
       draw_mode_local: true,
       loading_instance_type: true,
       instance_type: "box",
+      instance_type_list: null as Array<InstanceType>,
       numberValue: 1,
       duration_labels: ["1", "2", "3", "4", "5"],
     };
+  },
+  created() {
+    this.instance_type_list = instance_type_list.image_video
   },
   watch: {
     label_settings_local: {
@@ -278,5 +290,9 @@ export default Vue.extend({
 
 .toolbar_space {
   width: 10px;
+}
+
+.select-width {
+  max-width: 200px;
 }
 </style>
