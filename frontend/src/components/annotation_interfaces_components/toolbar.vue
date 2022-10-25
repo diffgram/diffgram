@@ -18,21 +18,20 @@
       :initial_schema="label_schema"
       @on_focus="set_typing_state(true)"
       @on_blue="set_typing_state(false)"
-      @change="$emit('change_label_schema', $event)"
+      @change="change_label_schema"
     />
     <div class="toolbar_space" />
     <label_select_annotation
       :project_string_id="project_string_id"
       :label_file_list="label_list"
       :schema_id="label_schema.id"
-      :label_file_colour_map="label_file_colour_map"
       :request_refresh_from_project="true"
       :show_visibility_toggle="true"
       :is_typing_or_menu_open="$store.state.user.is_typing_or_menu_open"
       @on_focus="set_typing_state(true)"
       @on_blue="set_typing_state(false)"
-      @change="$emit('change_label_file', $event)"
-      @update_label_file_visible="$emit('update_label_file_visibility', $event)"
+      @change="change_label_file"
+      @update_label_file_visible="update_label_file_visibility"
     />
     <div class="toolbar_space" />
     <diffgram_select
@@ -43,11 +42,11 @@
       class="select-width"
       :item_list="instance_type_list"
       :disabled="loading || loading_instance_templates || view_only_mode"
-      @change="$emit('change_instance_type', instance_type)"
+      @change="change_instance_type"
     />
     <v-divider vertical class="toolbar-divider" />
 
-    <v-switch label="Mode" />
+    <v-switch :label="mode_text" />
 
     <v-divider vertical class="toolbar-divider" />
 
@@ -90,7 +89,6 @@ import task_meta_data_card from "../annotation/task_meta_data_card.vue";
 import hotkeys from "../annotation/hotkeys.vue";
 import task_status from "../annotation/task_status.vue"
 import Guided_1_click_mode_selector from "../instance_templates/guided_1_click_mode_selector.vue";
-
 import instance_type_list, { InstanceType } from "./instance_types"
 
 export default Vue.extend({
@@ -108,73 +106,72 @@ export default Vue.extend({
     task_status,
   },
   props: {
-    project_string_id: {},
+    project_string_id: {
+      type: String,
+      required: true
+    },
     label_schema: {
+      type: Object,
       required: true
     },
     label_settings: {
+      type: Object,
       default: null,
     },
-    task: {},
-    file: {},
-    canvas_scale_local: {},
-    label_list: {},
-    label_file_colour_map: {},
+    task: {
+      type: Object,
+      default: null
+    },
+    file: {
+      type: Object,
+      default: null
+    },
+    label_list: {
+      type: Array,
+      default: []
+    },
     show_toolbar: {
       default: true,
       type: Boolean,
     },
-    height: {
-      default: null,
-    },
-    command_manager: {
-      default: null,
-    },
-    save_loading: {
-      default: false,
-    },
     loading: {
+      type: Boolean,
       default: false,
     },
     view_only_mode: {
-      default: false,
-    },
-    show_undo_redo: {
-      default: true,
       type: Boolean,
-    },
-    has_changed: {
       default: false,
     },
     draw_mode: {
-      default: true,
-    },
-    full_file_loading: {},
-    annotations_loading: {},
-    instance_template_selected: {},
-
-    loading_instance_templates: {},
-    view_issue_mode: {},
-    is_keypoint_template: {},
-    enabled_edit_schema: {
-      default: false,
       type: Boolean,
+      default: true
+    },
+    loading_instance_templates: {
+      type: Boolean,
+      default: false
     },
     annotation_show_on: {
       type: Boolean,
+      default:  false
     },
   },
   data() {
     return {
       label_settings_local: {
         canvas_scale_global_is_automatic: true,
-      },
-      draw_mode_local: true,
-      loading_instance_type: true,
-      instance_type: "box",
+      } as Object,
+      draw_mode_local: true as Boolean,
+      loading_instance_type: true as Boolean,
+      instance_type: "box" as String,
       instance_type_list: null as Array<InstanceType>,
-      numberValue: 1,
-      duration_labels: ["1", "2", "3", "4", "5"],
+      numberValue: 1 as Number,
+      duration_labels: [
+        "1", 
+        "2", 
+        "3", 
+        "4", 
+        "5"
+      ] as Array<String>,
     };
   },
   created() {
@@ -183,15 +180,15 @@ export default Vue.extend({
   watch: {
     label_settings_local: {
       deep: true,
-      handler: function (event) {
-        this.$emit("label_settings_change", event);
+      handler: function (new_value) {
+        this.$emit("label_settings_change", new_value);
       },
     },
-    label_settings(event) {
-      this.label_settings_local = event;
+    label_settings(new_nalue) {
+      this.label_settings_local = new_nalue;
     },
-    draw_mode(event) {
-      this.draw_mode_local = event;
+    draw_mode(new_nalue) {
+      this.draw_mode_local = new_nalue;
     },
   },
   async mounted() {
@@ -203,72 +200,32 @@ export default Vue.extend({
   },
 
   computed: {
-    mode_text: function () {
+    mode_text: function (): string {
       if (this.draw_mode_local == true) {
         return "Drawing";
       } else {
         return "Editing";
       }
-    },
-    anootations_show_icon: function () {
-      if (this.annotation_show_on) return "pause";
-      return "play_circle";
-    },
+    }
   },
   methods: {
     // REFACTORED
     set_typing_state: function(state: boolean): void {
       this.$store.commit('set_user_is_typing_or_menu_open', state)
     },
+    change_label_schema: function(label_schema: Object): void {
+      this.$emit('change_label_schema', label_schema)
+    },
+    change_label_file: function(label_file: Object): void {
+      this.$emit('change_label_file', label_file)
+    },
+    update_label_file_visibility: function(label_file: Object): void {
+      this.$emit('update_label_file_visibility', label_file)
+    },
+    change_instance_type: function(instance_type: string): void {
+      this.$emit('change_instance_type', instance_type)
+    }
     ///
-    set_instance_type: function(inst_type){
-      this.instance_type = inst_type
-    },
-    on_mode_set: function(mode){
-      this.$emit('keypoints_mode_set', mode)
-    },
-    set_mode: function(mode){
-      if(!this.$refs.keypoints_mode_selector){
-        return
-      }
-      if(mode === '1_click'){
-        this.$refs.keypoints_mode_selector.set_active(0)
-      }
-      else if(mode === 'guided'){
-        this.$refs.keypoints_mode_selector.set_active(1)
-      }
-    },
-    go_to_job: function(){
-      if(this.task.job.type === 'examination'){
-        this.$router.push(`/${this.project_string_id}/examination/${this.task.job_id}`)
-      }
-      else{
-        this.$router.push(`/job/${this.task.job_id}`)
-      }
-
-    },
-    on_change_canvas_scale_global: function () {
-      this.label_settings_local.canvas_scale_global_is_automatic = false;
-      this.$emit(
-        "canvas_scale_global_changed",
-        this.label_settings_local.canvas_scale_global_setting
-      );
-    },
-    trigger_smooth_canvas_events: function () {
-      this.$emit('smooth_canvas_changed', this.label_settings_local.smooth_canvas),
-      this.$store.commit('set_user_setting', [
-        'smooth_canvas',
-        this.label_settings_local.smooth_canvas,
-      ])
-    },
-    filter_reset: function () {
-      this.label_settings_local.filter_brightness = 100;
-      this.label_settings_local.filter_contrast = 100;
-      this.label_settings_local.filter_grayscale = 0;
-
-      this.label_settings_local.smooth_canvas = true
-      this.trigger_smooth_canvas_events()
-    },
   },
 });
 </script>
