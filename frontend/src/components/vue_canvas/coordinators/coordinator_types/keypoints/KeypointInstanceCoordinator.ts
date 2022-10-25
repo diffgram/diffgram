@@ -49,12 +49,18 @@ export class KeypointInstanceCoordinator extends Coordinator{
     result.instance_moved = this.key_point_instance.process_mouse_up()
     return result
   }
-  public process_mouse_down(): boolean {
+  public process_mouse_down(): CoordinatorProcessResult {
+    let result: CoordinatorProcessResult = {
+      instance_moved: false
+    }
     this.key_point_instance.start_movement()
-    return false;
+    return result;
   }
 
   public process_mouse_move() {
+    let result: CoordinatorProcessResult = {
+      instance_moved: false
+    }
     if (this.draw_mode && !this.key_point_instance.instance_context.color_tool_active) {
       this.key_point_instance.ctx.canvas.style.cursor = 'none'
     } else {
@@ -89,9 +95,10 @@ export class KeypointInstanceCoordinator extends Coordinator{
       this.key_point_instance.ctx.canvas.style.cursor = 'all-scroll'
     }
     if (!this.key_point_instance.instance_context.draw_mode) {
-      return this.key_point_instance.move();
+      result.instance_moved = this.key_point_instance.move()
+      return result;
     }
 
-    return false
+    return result
   }
 }

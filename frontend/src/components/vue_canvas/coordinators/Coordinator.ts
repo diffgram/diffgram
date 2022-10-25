@@ -9,10 +9,6 @@ export type CoordinatorProcessResult = {
 export abstract class Coordinator {
   public type: string
 
-  abstract process_mouse_down(): CoordinatorProcessResult
-
-  abstract process_mouse_up(): CoordinatorProcessResult
-
-  abstract process_mouse_move(): CoordinatorProcessResult
+  abstract perform_action_from_event(ann_tool_event: AnnotationToolEvent): CoordinatorProcessResult
 
 }

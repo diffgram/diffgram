@@ -2,6 +2,7 @@ import {KeypointInstance} from "../components/vue_canvas/instances/KeypointInsta
 import Cuboid3DInstance from "../components/vue_canvas/instances/Cuboid3DInstance";
 import CuboidDrawerTool from "../components/3d_annotation/CuboidDrawerTool";
 import {CanvasMouseCtx} from "../types/mouse_position"
+import {BoxInstance} from "../components/vue_canvas/instances/BoxInstance";
 
 export const duplicate_instance = function(instance_to_copy, component_ctx: CanvasMouseCtx){
   let points = [];
@@ -72,6 +73,17 @@ export const initialize_instance_object = function(instance, component_ctx: Canv
     );
     initialized_instance.populate_from_instance_obj(instance);
     return initialized_instance
+  }
+  else if(instance.type === 'box' && !instance.initialized){
+    initialized_instance = new BoxInstance(
+      component_ctx.mouse_position,
+      component_ctx.canvas_element_ctx,
+      component_ctx.trigger_instance_changed,
+      component_ctx.instance_selected,
+      component_ctx.instance_deselected,
+      component_ctx.mouse_down_delta_event,
+      component_ctx.mouse_down_position
+    )
   }
   else if(instance.type === 'cuboid_3d' && !instance.initialized){
     if(!instance.mesh){

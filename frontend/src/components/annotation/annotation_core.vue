@@ -988,8 +988,8 @@ import { CommandManagerAnnotationCore } from "./annotation_core_command_manager.
 import { CreateInstanceCommand } from "./commands/create_instance_command.js";
 import { UpdateInstanceCommand } from "./commands/update_instance_command.ts";
 import {
-  ImageAnnotationCoordinatorCoreGenerator,
-} from "../vue_canvas/coordinators/ImageAnnotationCoordinatorCoreGenerator";
+  ImageAnnotationCoordinatorRouter,
+} from "../vue_canvas/coordinators/ImageAnnotationCoordinatorRouter";
 import { polygon } from "../vue_canvas/polygon.js";
 import { v4 as uuidv4 } from "uuid";
 import { cloneDeep } from "lodash";
@@ -1012,12 +1012,16 @@ import v_sequence_list from "../video/sequence_list"
 import {initialize_instance_object, duplicate_instance, duplicate_instance_template} from '../../utils/instance_utils.ts';
 import {
   AnnotationToolEvent,
-  genAnnotationEvent,
+  genImageAnnotationEvent,
   AnnotationEventCtx,
   ImageAnnotationEventCtx
 } from "../../types/AnnotationToolEvent";
 import {Coordinator, CoordinatorProcessResult} from "../vue_canvas/coordinators/Coordinator";
 import {Interaction} from "../../types/Interaction";
+import {BoxInstance} from "../vue_canvas/instances/BoxInstance";
+import {LabelColourMap} from "../../types/label_colour_map";
+import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
+import {ImageCanvasTransform} from "../../types/CanvasTransform";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -1224,6 +1228,7 @@ export default Vue.extend({
       n_key: false,
       mouse_wheel_button: false,
       submitted_to_review: false,
+      SUPPORTED_CLASS_INSTANCE_TYPES: ['box', 'keypoints'],
       current_instance_v2: null as Instance,
       current_interaction: null as Interaction,
       go_to_keyframe_loading: false,
@@ -1902,27 +1907,27 @@ export default Vue.extend({
       return new_size;
     },
 
-    canvas_width_scaled: function () {
+    canvas_width_scaled: function (): number {
       return this.canvas_width * this.canvas_scale_global;
     },
 
-    canvas_height_scaled: function () {
+    canvas_height_scaled: function (): number {
       return this.canvas_height * this.canvas_scale_global;
     },
 
-    canvas_scale_combined: function () {
+    canvas_scale_combined: function (): number {
       return this.canvas_scale_local * this.canvas_scale_global;
     },
 
-    canvas_transform: function () {
-      return {
+    canvas_transform: function (): ImageCanvasTransform {
+      let transform: ImageCanvasTransform = {
         canvas_scale_global: this.canvas_scale_global,
         canvas_scale_local: this.canvas_scale_local,
-        canvas_scale_combined:
-          this.canvas_scale_local * this.canvas_scale_global,
+        canvas_scale_combined: this.canvas_scale_local * this.canvas_scale_global,
         translate: this.canvas_translate,
         zoom: this.zoom_canvas,
-      };
+      }
+      return transform
     },
 
     canvas_filters: function () {
@@ -1943,6 +1948,7 @@ export default Vue.extend({
         selected: false,
       };
     },
+
     current_instance: function () {
       // QUESTIONs
       // how do we want to name space this better as we get more instance types
@@ -1950,8 +1956,8 @@ export default Vue.extend({
 
       // we use computed function here since label referecnes this.current_label_file
       // and this won't work in data dictionary
-      if (this.instance_type === 'box'){
-        return this.current_instance_v2
+      if (this.SUPPORTED_CLASS_INSTANCE_TYPES.includes(this.instance_type)){
+        return this.build_current_instance_class()
       }
       // Do we actually need to cast this as Int here if db handles it?
       var x_min = parseInt(this.mouse_down_position.x);
@@ -2195,6 +2201,12 @@ export default Vue.extend({
   },
   // TODO 311 Methods!! refactor in multiple files and classes.
   methods: {
+    build_current_instance_class: function(): Instance{
+      let instance_type_mapper = {
+        'box': () => {return new BoxInstance()}
+      }
+      return instance_type_mapper[this.instance_type]()
+    },
     on_change_label_schema: function(schema){
       this.$emit('change_label_schema', schema)
     },
@@ -4729,7 +4741,7 @@ export default Vue.extend({
         this.detect_hover_on_curve();
         this.detect_hover_on_curve_control_points();
 
-        this.detect_if_movement_string_update_needed_for_box();
+        // this.detect_if_movement_string_update_needed_for_box();
 
         this.detect_nearest_polygon_point();
         this.detect_hover_polygon_midpoints();
@@ -5591,7 +5603,7 @@ export default Vue.extend({
 
       //console.debug("at move_something()", this.lock_point_hover_change, this.instance_hover_index, this.box_edit_point_hover)
 
-      let box_did_move = this.move_box(event);
+      // let box_did_move = this.move_box(event);
       let polygon_did_move = this.move_polygon_line_or_point(event);
       let polygon_dragged = false;
       if (!polygon_did_move) {
@@ -5599,7 +5611,7 @@ export default Vue.extend({
       }
 
       if (
-        box_did_move ||
+        // box_did_move ||
         polygon_did_move ||
         cuboid_did_move ||
         ellipse_did_move ||
@@ -6596,17 +6608,8 @@ export default Vue.extend({
       }
 
       // For new Refactored instance types
-      const coordinator = this.generate_interaction_coordinator(event);
-      if (coordinator) {
-        let result: CoordinatorProcessResult = coordinator.process_mouse_up();
-        if(result.instance_moved === true){
-          this.has_changed = true;
-        }
-        if(result.instance_moved && this.show_snackbar_occlude_direction){
-          this.show_snackbar_occlude_direction = false;
-        }
+      this.mouse_up_v2_handler(event)
 
-      }
     },
     stop_ellipse_resize: function () {
       this.ellipse_hovered_instance = undefined;
@@ -7149,12 +7152,25 @@ export default Vue.extend({
       }
     },
     generate_interaction_coordinator: function (event: AnnotationToolEvent) {
-      const interaction_generator = new ImageAnnotationCoordinatorCoreGenerator(
+      let canvas_mouse_ctx: CanvasMouseCtx = {
+        mouse_position: this.mouse_position,
+        canvas_element_ctx:  this.canvas_element_ctx,
+        instance_context: this.instance_context,
+        trigger_instance_changed: this.trigger_instance_changed,
+        instance_selected: () => this.instance_selected,
+        instance_deselected: () => this.instance_deselected,
+        new_global_instance: () => {return new Instance()},
+        mouse_down_delta_event: this.mouse_down_delta_event,
+        mouse_down_position: this.mouse_down_position,
+        label_settings: this.label_settings
+      }
+      const interaction_generator = new ImageAnnotationCoordinatorRouter(
         event,
         this.instance_hover_index,
         this.instance_list,
         this.draw_mode,
         this.instance_type,
+        canvas_mouse_ctx
       );
       return interaction_generator.generate_coordinator();
     },
@@ -7171,37 +7187,65 @@ export default Vue.extend({
     set_mouse_wheel: function(){
       this.mouse_wheel_button = true;
     },
-    mouse_move_v2_handler:function(event){
+    build_ann_event_ctx: function(): ImageAnnotationEventCtx{
       let ann_ctx: ImageAnnotationEventCtx = {
         label_file_id: this.current_label_file_id,
         instance_type: this.instance_type,
         draw_mode: this.draw_mode,
-        is_actively_drawing: false
+        is_actively_drawing: false,
+        hovered_instance: this.hovered_instance,
+        current_drawing_instance: this.current_instance,
+        label_file_colour_map: this.label_file_colour_map as LabelColourMap,
+        mouse_position: this.mouse_position as MousePosition,
+        canvas_transform: this.canvas_transform,
+        canvas_element: this.canvas_element,
+        view_issue_mode: this.view_issue_mode,
       }
-      let annotation_event: AnnotationToolEvent = genAnnotationEvent(event, ann_ctx)
-      const coordinator = this.generate_interaction_coordinator(annotation_event);
+      return ann_ctx
+    },
+    mouse_move_v2_handler: function(event){
+
+      let ann_ctx = this.build_ann_event_ctx()
+      let ann_tool_event: AnnotationToolEvent = genImageAnnotationEvent(event, ann_ctx)
+      const coordinator = this.generate_interaction_coordinator(ann_tool_event);
       if (coordinator) {
-        let did_move_instance = coordinator.process_mouse_move();
-        if (coordinator) {
+        let result: CoordinatorProcessResult = coordinator.perform_action_from_event(ann_tool_event);
+        if (result.instance_moved) {
           this.has_changed = true;
         }
       }
     },
     mouse_down_v2_handler: function(event){
-      let ann_ctx: ImageAnnotationEventCtx = {
-        label_file_id: this.current_label_file_id,
-        instance_type: this.instance_type,
-        draw_mode: this.draw_mode,
-      }
-      let annotation_event: AnnotationToolEvent = genAnnotationEvent(event, ann_ctx)
-      console.log('ANN EVE', annotation_event)
+      let ann_ctx = this.build_ann_event_ctx()
+      let ann_tool_event: AnnotationToolEvent = genImageAnnotationEvent(event, ann_ctx)
       if (!this.current_interaction){
         this.current_interaction = new Interaction()
       }
-      this.current_interaction.add_event(annotation_event)
-      const coordinator = this.generate_interaction_coordinator(annotation_event);
+      this.current_interaction.add_event(ann_tool_event)
+      const coordinator = this.generate_interaction_coordinator(ann_tool_event);
       if (coordinator) {
-        coordinator.process_mouse_down();
+        let result = coordinator.perform_action_from_event(ann_tool_event);
+        if (result){
+          this.is_actively_drawing = result.is_actively_drawing
+        }
+      }
+    },
+    mouse_up_v2_handler: function(event){
+      let ann_ctx = this.build_ann_event_ctx()
+      let ann_tool_event: AnnotationToolEvent = genImageAnnotationEvent(event, ann_ctx)
+      if (!this.current_interaction){
+        this.current_interaction = new Interaction()
+      }
+      this.current_interaction.add_event(ann_tool_event)
+      const coordinator = this.generate_interaction_coordinator(ann_tool_event);
+      if (coordinator) {
+        let result: CoordinatorProcessResult = coordinator.perform_action_from_event(ann_tool_event);
+        if(result.instance_moved === true){
+          this.has_changed = true;
+        }
+        if(result.instance_moved && this.show_snackbar_occlude_direction){
+          this.show_snackbar_occlude_direction = false;
+        }
       }
     },
     mouse_down: function (event) {
@@ -7243,7 +7287,7 @@ export default Vue.extend({
           this.ellipse_mouse_down(locked_frame_number);
         }
         if (this.instance_type == "box") {
-          this.bounding_box_mouse_down(locked_frame_number);
+          // this.bounding_box_mouse_down(locked_frame_number);
         }
         if (this.instance_type == "keypoints") {
           this.key_points_mouse_down();

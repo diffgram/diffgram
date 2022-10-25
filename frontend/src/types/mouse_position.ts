@@ -9,6 +9,21 @@ export type MousePosition = {
   y: number
   raw?: Raw
 }
+export function point_is_intersecting_circle (mouse: MousePosition,
+                                              point: Raw, radius = 8,
+                                              zoom_value: number = 1): boolean{
+  if(!point){
+    return false
+  }
+  if(!mouse){
+    return false
+  }
+  let radius_scaled = radius / zoom_value;
+  const result =
+    Math.sqrt((point.x - mouse.x) ** 2 + (mouse.y - point.y) ** 2) <
+    radius_scaled; // < number == circle.radius
+  return result;
+}
 
 export type CanvasMouseCtx ={
   mouse_position: MousePosition

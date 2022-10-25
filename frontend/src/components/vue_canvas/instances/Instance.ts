@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
 import {getCenterPoint} from "../../3d_annotation/utils_3d";
+import {LabelColourMap} from "../../../types/label_colour_map";
 
 export interface InstanceBehaviour2D {
+
   draw(ctx): void
 }
 
@@ -22,6 +24,7 @@ export class Instance {
   public auto_border_polygon_p1: object = null;
   public auto_border_polygon_p2: object = null;
   public cuboid_current_drawing_face: object = null;
+  private label_file_colour_map: LabelColourMap = null;
   public nodes: any[] = [];
   public edges: any[] = [];
   public front_face: object = null;
@@ -32,7 +35,7 @@ export class Instance {
   public model_run_id: number = null;
   public width: number = null;
   public height: number = null;
-  public label_file: { id: number, label: any, colour: {hex: string} } = null;
+  public label_file: { id: number, label: any, colour: { hex: string } } = null;
   public label_file_id: number = null;
   public selected: boolean = false;
   public number: number = null;
@@ -40,6 +43,9 @@ export class Instance {
   public points: object[] = [];
   public sequence_id: number = null;
   public soft_delete: boolean = false;
+  public interpolated: boolean = false;
+  public status: string = '';
+
   public on_instance_updated: Function = undefined;
   public on_instance_selected: Function = undefined;
   public on_instance_hovered: Function = undefined;
@@ -47,6 +53,13 @@ export class Instance {
   public on_instance_deselected: Function = undefined;
   public pause_object: false
 
+  public set_label_file_colour_map(map: LabelColourMap): void {
+    this.label_file_colour_map = map
+  }
+
+  public get_label_file_colour_map(): LabelColourMap {
+    return this.label_file_colour_map
+  }
 
   // Returns any just to avoid warnings in the new Command pattern related class. Need to be replaces with the interface
   public get_instance_data(): any {

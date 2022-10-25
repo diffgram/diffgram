@@ -9,6 +9,7 @@
   import Vue from 'vue'
   import { cuboid } from './cuboid.js'
   import { ellipse } from './ellipse.js'
+  import {BoxInstance} from "./instances/BoxInstance";
   Vue.prototype.$cuboid = new cuboid()
   Vue.prototype.$ellipse = new ellipse()
 
@@ -515,11 +516,14 @@
             }
           }
           if (instance.type == "box") {
-            ctx.beginPath()
-
-            this.draw_box(instance, ctx, i)
-            ctx.lineWidth = this.get_spatial_line_size()
-            ctx.stroke()
+            // ctx.beginPath()
+            //
+            // this.draw_box(instance, ctx, i)
+            // ctx.lineWidth = this.get_spatial_line_size()
+            // ctx.stroke()
+            let box: BoxInstance = instance as BoxInstance
+            box.set_line_width(this.get_spatial_line_size())
+            box.draw(ctx)
           }
 
           else if (["polygon", "line"].includes(instance.type)) {
