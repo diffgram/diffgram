@@ -4,11 +4,13 @@
       icon_style
       icon="mdi-undo"
       tooltip_message="undo"
+      @click="on_undo"
     />
     <standard_button
       icon_style
       icon="mdi-redo"
       tooltip_message="redo"
+      @click="on_redo"
     />
 
     <v-divider vertical class="toolbar-divider" />
@@ -46,7 +48,10 @@
     />
     <v-divider vertical class="toolbar-divider" />
 
-    <v-switch :label="mode_text" />
+    <v-switch
+      v-model="draw_mode"
+      :label="mode_text" 
+    />
 
     <v-divider vertical class="toolbar-divider" />
 
@@ -61,11 +66,13 @@
       icon_style
       icon="mdi-arrow-left-circle"
       tooltip_message="Prevous file"
+      @click="on_change_file_or_tast('next')"
     />
     <standard_button
       icon_style
       icon="mdi-arrow-right-circle"
       tooltip_message="Next file"
+      @click="on_change_file_or_tast('previous')"
     />
     <v-divider vertical class="toolbar-divider" />
 
@@ -160,22 +167,14 @@ export default Vue.extend({
       label_settings_local: {
         canvas_scale_global_is_automatic: true,
       } as Object,
-      draw_mode_local: true as Boolean,
       loading_instance_type: true as Boolean,
-      instance_type: "box" as String,
+      instance_type: null as String,
       instance_type_list: null as Array<InstanceType>,
-      numberValue: 1 as Number,
-      duration_labels: [
-        "1", 
-        "2", 
-        "3", 
-        "4", 
-        "5"
-      ] as Array<String>,
     };
   },
   created() {
     this.instance_type_list = instance_type_list.image_video
+    this.instance_type = this.instance_type_list[0].name
   },
   watch: {
     label_settings_local: {
@@ -187,29 +186,20 @@ export default Vue.extend({
     label_settings(new_nalue) {
       this.label_settings_local = new_nalue;
     },
-    draw_mode(new_nalue) {
-      this.draw_mode_local = new_nalue;
-    },
   },
   async mounted() {
-    this.label_settings_local = this.$props.label_settings;
-    this.draw_mode_local = this.$props.draw_mode;
-
+    this.label_settings_local = this.label_settings;
 
     this.loading_instance_type = false;
   },
 
   computed: {
     mode_text: function (): string {
-      if (this.draw_mode_local == true) {
-        return "Drawing";
-      } else {
-        return "Editing";
-      }
+      if (this.draw_mode) return "Drawing";
+      else return "Editing";
     }
   },
   methods: {
-    // REFACTORED
     set_typing_state: function(state: boolean): void {
       this.$store.commit('set_user_is_typing_or_menu_open', state)
     },
@@ -224,8 +214,19 @@ export default Vue.extend({
     },
     change_instance_type: function(instance_type: string): void {
       this.$emit('change_instance_type', instance_type)
+    },
+    on_save: function(): void {
+      this.$emit('on_save')
+    },
+    on_undo: function(): void {
+      this.$emit('undo')
+    },
+    on_redo: function(): void {
+      this.$emit('redo')
+    },
+    on_change_file_or_tast: function(direction: string): void {
+      this.$emit('on_change_file_or_tast', direction)
     }
-    ///
   },
 });
 </script>
