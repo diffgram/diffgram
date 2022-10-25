@@ -273,11 +273,12 @@
       <div class="flex-column" v-if="view_mode === 'table'">
         <div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
           <v-select
-            :items="[2, 5, 10, 15, 100]"
+            :items="[5, 10, 25, 50, 100]"
             label="Rows per page"
             return-object
-            v-model="itemsPerPage"
             style="max-width: 150px;"
+            v-model="itemsPerPage"
+            v-on:change="change_items_per_page"
           />
           <v-pagination
             v-model="page"
@@ -974,7 +975,7 @@ export default Vue.extend({
     methods: {
       handleScroll (event) {
         var limit = (document.documentElement.scrollHeight - document.documentElement.clientHeight);
-        if(window.scrollY >= limit && view_mode === 'cards'){
+        if(window.scrollY >= limit && this.view_mode === 'cards'){
           if(!this.loading && 
             this.Job_list.length < this.Job_list_server_length) 
           {
@@ -1104,7 +1105,9 @@ export default Vue.extend({
         }
       },
       change_items_per_page(number) {
-        this.itemsPerPage = Number(number);
+        if(number > this.Job_list.length && this.Job_list_server_length > this.Job_list.length) {
+          this.job_list_api();
+        }
       },
       change_selected_page(pageNumber) {
         if(pageNumber == this.numberOfPages && this.Job_list_server_length > this.Job_list.length) {
