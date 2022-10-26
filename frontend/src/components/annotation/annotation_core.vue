@@ -224,7 +224,7 @@
           permanent
           left
           style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; height: 100%"
-          v-if="!error_no_permissions.data"
+          v-if="!error_no_permissions.data && show_sidebar"
           :width="label_settings.left_nav_width"
         >
           <v-alert
@@ -1050,6 +1050,10 @@ export default Vue.extend({
       type: String,
     },
     show_toolbar: {
+      type: Boolean,
+      default: true
+    },
+    show_sidebar: {
       type: Boolean,
       default: true
     },

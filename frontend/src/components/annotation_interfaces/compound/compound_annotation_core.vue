@@ -1,68 +1,70 @@
 <template>
-<div>
-    <toolbar
+  <div>
+      <toolbar
         ref="toolbar"
-            :show_toolbar="true"
-            :height="50"
-            :project_string_id="project_string_id"
-            :label_schema="current_label_schema"
-            :loading="loading"
-            :view_only_mode="false"
-            :task="task"
-            :file="child_file_list[0]"
-            :label_list="label_list"
-    />
-<div v-if="child_file_list" style="display: flex; flex-direction: row">
-    <div style="width: 50vw; overflow: hidden">
-        <v_annotation_core
-            v-if="!changing_file"
-            class="pt-1 pl-1"
-            ref="annotation_core"
-            accesskey="full"
-            :show_toolbar="false"
-            :project_string_id="computed_project_string_id"
-            :label_schema="current_label_schema"
-            :model_run_id_list="model_run_id_list"
-            :model_run_color_list="model_run_color_list"
-            :task="task"
-            :file="child_file_list[0]"
-            :task_id_prop="task_id_prop"
-            :request_save="request_save"
-            :job_id="job_id"
-            :view_only_mode="view_only"
-            :label_list="label_list"
-            :enabled_edit_schema="enabled_edit_schema"
-            :finish_annotation_show="show_snackbar"
-            :global_attribute_groups_list="global_attribute_groups_list"
-            :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-        />
+        :show_toolbar="true"
+        :height="50"
+        :project_string_id="project_string_id"
+        :label_schema="current_label_schema"
+        :loading="loading"
+        :view_only_mode="false"
+        :task="task"
+        :file="child_file_list[0]"
+        :label_list="label_list"
+      />
+    <div v-if="child_file_list" style="display: flex; flex-direction: row">
+        <div style="width: 50vw; overflow: hidden">
+            <v_annotation_core
+                v-if="!changing_file"
+                class="pt-1 pl-1"
+                ref="annotation_core"
+                accesskey="full"
+                :show_toolbar="false"
+                :show_sidebar="false"
+                :project_string_id="computed_project_string_id"
+                :label_schema="current_label_schema"
+                :model_run_id_list="model_run_id_list"
+                :model_run_color_list="model_run_color_list"
+                :task="task"
+                :file="child_file_list[0]"
+                :task_id_prop="task_id_prop"
+                :request_save="request_save"
+                :job_id="job_id"
+                :view_only_mode="view_only"
+                :label_list="label_list"
+                :enabled_edit_schema="enabled_edit_schema"
+                :finish_annotation_show="show_snackbar"
+                :global_attribute_groups_list="global_attribute_groups_list"
+                :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+            />
+        </div>
+        <div style="width: 50vw">
+            <v_annotation_core
+                v-if="!changing_file"
+                class="pt-1 pl-1"
+                ref="annotation_core"
+                accesskey="full"
+                :show_toolbar="false"
+                :show_sidebar="false"
+                :project_string_id="computed_project_string_id"
+                :label_schema="current_label_schema"
+                :model_run_id_list="model_run_id_list"
+                :model_run_color_list="model_run_color_list"
+                :task="task"
+                :file="child_file_list[1]"
+                :task_id_prop="task_id_prop"
+                :request_save="request_save"
+                :job_id="job_id"
+                :view_only_mode="view_only"
+                :label_list="label_list"
+                :enabled_edit_schema="enabled_edit_schema"
+                :finish_annotation_show="show_snackbar"
+                :global_attribute_groups_list="global_attribute_groups_list"
+                :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+            />
+        </div>
     </div>
-    <div style="width: 50vw">
-        <v_annotation_core
-            v-if="!changing_file"
-            class="pt-1 pl-1"
-            ref="annotation_core"
-            accesskey="full"
-            :show_toolbar="false"
-            :project_string_id="computed_project_string_id"
-            :label_schema="current_label_schema"
-            :model_run_id_list="model_run_id_list"
-            :model_run_color_list="model_run_color_list"
-            :task="task"
-            :file="child_file_list[1]"
-            :task_id_prop="task_id_prop"
-            :request_save="request_save"
-            :job_id="job_id"
-            :view_only_mode="view_only"
-            :label_list="label_list"
-            :enabled_edit_schema="enabled_edit_schema"
-            :finish_annotation_show="show_snackbar"
-            :global_attribute_groups_list="global_attribute_groups_list"
-            :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-        />
-    </div>
-</div>
-</div>
+  </div>
 </template>
 
 <script lang="ts">
