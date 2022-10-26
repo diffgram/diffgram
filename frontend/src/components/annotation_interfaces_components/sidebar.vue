@@ -27,9 +27,6 @@
                                 v-for="(item, item_index) in items"
                                 :key="item.id"
                                 :style="current_instance && current_instance.id === item.id && 'background-color: #ecf0f1'"
-                                @mouseover="on_hover_item(item)"
-                                @mouseleave="on_stop_hover_item"
-                                @click="on_select_instance(item)"
                             >
                                 <td 
                                     v-if="$store.state.user.settings.show_ids == true" 
@@ -40,17 +37,9 @@
 
                                 <td class="centered-table-items">
                                     <v-icon 
-                                        v-if="item.type === 'relation'"
                                         :color="item.label_file.colour.hex"
                                     >
-                                         mdi-relation-one-to-one
-                                    </v-icon>
-                                    
-                                    <v-icon 
-                                        v-if="item.type === 'text_token'"
-                                        :color="item.label_file.colour.hex"
-                                    >
-                                        mdi-label
+                                      {{ instance_types[item.type] }}
                                     </v-icon>
                                 </td>
                                 
@@ -113,6 +102,7 @@
 
 <script lang="ts">
 import Vue from "vue";
+import instance_types from "./instance_types"
 
 export default Vue.extend({
   name: "sidebar",
@@ -121,44 +111,47 @@ export default Vue.extend({
       type: String,
       required: true
     },
+		instance_list: {
+			type: Array,
+			default: []
+		}
   },
 	data() {
 		return {
-			instance_list: [] as Array<Object>,
 			headers: [
-                {
-                    text: 'Id',
-                    align: 'center',
-                    sortable: false,
-                    value: 'id'
-                },
-                {
-                    text: 'Type',
-                    align: 'center',
-                    sortable: false,
-                    value: 'type'
-                },
-                { 
-                    text: 'Name', 
-                    value: 'label_file.label.name',
-                    sortable: false,
-                    align: 'center'
-                },
-                { 
-                    text: 'Action', 
-                    value: 'action',
-                    sortable: false,
-                    align: 'center'
-                }
-            ]
+        {
+          text: 'Type',
+          align: 'center',
+          sortable: false,
+          value: 'type'
+        },
+        { 
+          text: 'Name', 
+          value: 'label_file.label.name',
+          sortable: false,
+          align: 'center'
+        },
+        { 
+        	text: 'Action', 
+          value: 'action',
+          sortable: false,
+          align: 'center'
+        }
+    	],
+			instance_types: {} as Object,
 		}
+	},
+	mounted() {
+		instance_types.image_video.map(instance_type => {
+			this.instance_types[instance_type.name] = instance_type.icon
+		})
 	}
 })
 </script>
 
 <style scoped>
 .sidebar {
-    width: 300px;
+    width: 350px;
     height: calc(100vh - 75px);
     border-right: 1px solid rgba(0,0,0,.12);
 }

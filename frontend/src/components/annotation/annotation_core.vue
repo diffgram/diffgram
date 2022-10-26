@@ -1208,6 +1208,9 @@ export default Vue.extend({
         }
       }
     },
+    instance_list: function() {
+      this.$emit('instance_update', this.instance_list)
+    }
   },
 
   // data()   comment is here for searching

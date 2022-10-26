@@ -13,8 +13,10 @@
         :label_list="label_list"
       />
     <div v-if="child_file_list" style="display: flex; flex-direction: row">
-      <sidebar />
-        <div style="width: calc(50vw - 150px); overflow: hidden">
+        <sidebar
+          :instance_list="instance_list"
+        />
+        <div style="width: calc(50vw - 175px); overflow: hidden">
             <v_annotation_core
                 v-if="!changing_file"
                 class="pt-1 pl-1"
@@ -37,9 +39,10 @@
                 :finish_annotation_show="show_snackbar"
                 :global_attribute_groups_list="global_attribute_groups_list"
                 :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+                @instance_update="update_instance_list_from_interafce"
             />
         </div>
-        <div style="width: calc(50vw - 150px);">
+        <div style="width: calc(50vw - 175px);">
             <v_annotation_core
                 v-if="!changing_file"
                 class="pt-1 pl-1"
@@ -62,6 +65,7 @@
                 :finish_annotation_show="show_snackbar"
                 :global_attribute_groups_list="global_attribute_groups_list"
                 :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+                @instance_update="update_instance_list_from_interafce"
             />
         </div>
     </div>
@@ -152,7 +156,8 @@ export default Vue.extend({
             labels_list_from_project: null as Array<any>,
             model_run_color_list: null  as Array<any>,
             global_attribute_groups_list: [] as Array<any>,
-            child_file_list: null
+            child_file_list: null,
+            instance_list: [] as Array<any>
         }
     },
     // async mounted() {
@@ -236,6 +241,23 @@ export default Vue.extend({
     },
   },
   methods: {
+    /// REFACTORED
+    update_instance_list_from_interafce: function(instance_list: Array<any>): void {
+      const updated_instance_list = [...this.instance_list, ...instance_list]
+
+      const id_track = []
+      const to_set = updated_instance_list.map(instance => {
+        const instance_id = instance.id
+        
+        if (!id_track.includes(instance_id)) {
+          id_track.push(instance_id)
+          return instance
+        }
+      })
+
+      this.instance_list = to_set
+    },
+    ///
     fetch_schema_list: async function (): Promise<void> {
         this.schema_list_loading = true
         const [result, error] = await get_schemas(this.project_string_id);
