@@ -13,7 +13,8 @@
         :label_list="label_list"
       />
     <div v-if="child_file_list" style="display: flex; flex-direction: row">
-        <div style="width: 50vw; overflow: hidden">
+      <sidebar />
+        <div style="width: calc(50vw - 150px); overflow: hidden">
             <v_annotation_core
                 v-if="!changing_file"
                 class="pt-1 pl-1"
@@ -38,7 +39,7 @@
                 :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
             />
         </div>
-        <div style="width: 50vw">
+        <div style="width: calc(50vw - 150px);">
             <v_annotation_core
                 v-if="!changing_file"
                 class="pt-1 pl-1"
@@ -79,11 +80,13 @@ import { get_labels } from '../../../services/labelServices';
 import { get_schemas } from "../../../services/labelServices";
 import { fetchSingleTask } from "../../../services/tasksServices";
 import toolbar from "../../annotation_interfaces_components/toolbar.vue"
+import sidebar from "../../annotation_interfaces_components/sidebar.vue"
 
 export default Vue.extend({
     name: 'compound_annotation_core',
     components: {
-      toolbar
+      toolbar,
+      sidebar
     },
     // props: {
     //     project_string_id: {
