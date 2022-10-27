@@ -8,13 +8,20 @@ import {InstanceColor} from "../../../types/instance_color";
 import {LabelColourMap} from "../../../types/label_colour_map";
 import {ImageCanvasTransform} from "../../../types/CanvasTransform";
 
-type BoxHoverPoints = 'x_min_y_min' | 'x_max_y_min' | 'x_min_y_max' | 'x_max_y_max' | 'not_intersecting_special_points' | 'blocked'
+type BoxHoverPoints =
+  'x_min_y_min'
+  | 'x_max_y_min'
+  | 'x_min_y_max'
+  | 'x_max_y_max'
+  | 'not_intersecting_special_points'
+  | 'blocked'
 
 export class BoxInstance extends Instance implements InstanceBehaviour2D {
   public mouse_position: MousePosition;
   public ctx: CanvasRenderingContext2D;
   public canvas_element: HTMLCanvasElement;
   public canvas_transform: ImageCanvasTransform;
+  public canvas_mouse_tools: ImageCanvasTransform;
   public colour: InstanceColor;
   private vertex_size: number = 5;
   private line_width: number = 2;
@@ -59,9 +66,10 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     this.initialized = true;
     this.ctx = ctx;
   }
-  public set_canvas(val: HTMLCanvasElement){
+
+  public set_canvas(val: HTMLCanvasElement) {
     this.canvas_element = val
-    if(this.canvas_element){
+    if (this.canvas_element) {
       this.ctx = this.canvas_element.getContext("2d");
     }
   }
@@ -82,27 +90,9 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     return this.is_actively_drawing;
   }
 
-  private draw_currently_drawing_box(ctx: CanvasRenderingContext2D) {
-
-    ctx.fillStyle = get_sequence_color(this.sequence_id)
-    ctx.fillText(this.label_file.label.name, this.x_min, this.y_min);
-    this.set_stroke_and_fill_styles(ctx, 1)
-    ctx.setLineDash([0])
-    ctx.rect(this.x_min,
-      this.y_min,
-      this.width,
-      this.height)
-
-    ctx.stroke()
-  }
-
-  private draw_finished_box() {
-
-  }
-
   private set_stroke_and_fill_styles(ctx: CanvasRenderingContext2D, opacity: number) {
     let label_color_map = this.get_label_file_colour_map()
-    this.colour = label_color_map[this.label_file.id]
+    this.colour = label_color_map[this.label_file_id]
     if (this.colour != undefined) {
       ctx.strokeStyle = this.colour.hex
       let r = this.colour.rgba.r
@@ -112,7 +102,7 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     }
   }
 
-  public set_mouse_cursor_from_hovered_point(movement_point: BoxHoverPoints){
+  public set_mouse_cursor_from_hovered_point(movement_point: BoxHoverPoints) {
     let movement_point_hover_style_map = {
       'x_min_y_min': 'nwse-resize',
       'x_max_y_min': 'nesw-resize',
@@ -124,6 +114,7 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     }
     this.canvas_element.style.cursor = movement_point_hover_style_map[movement_point]
   }
+
   public determine_movement_point_for_box(): BoxHoverPoints {
     // if (this.lock_point_hover_change == true) {
     //   return false;
@@ -157,7 +148,8 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
 
     return this.box_edit_point_hover;
   }
-  public drag(mouse_delta: MousePosition){
+
+  public drag(mouse_delta: MousePosition) {
     this.x_min += mouse_delta.x;
     this.y_min += mouse_delta.y;
 
@@ -165,7 +157,8 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     this.y_max += mouse_delta.y;
     this.interpolated = false;
   }
-  private invert_origin_on_overflow(){
+
+  private invert_origin_on_overflow() {
     if (this.x_max < this.x_min) {
       let x_max_temp = this.x_max;
       this.x_max = this.x_min;
@@ -177,8 +170,15 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
       this.y_max = this.y_min;
       this.y_min = y_max_temp;
     }
+    if (this.x_min < 0) {
+      this.x_min = 0;
+    }
+    if (this.y_min < 0) {
+      this.y_min = 0;
+    }
   }
-  private update_width_and_height(){
+
+  private update_width_and_height() {
     this.width = this.x_max - this.x_min;
     this.height = this.y_max - this.y_min;
 
@@ -186,16 +186,32 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
 
     // this.instance_list.splice(i, 1, instance);
   }
-  public resize_from_mouse_position(event: MouseEvent, mouse_position: MousePosition) {
 
+  private check_canvas_overflow() {
+    if (this.canvas_transform && this.canvas_transform.canvas_width) {
+      if (this.x_max >= this.canvas_transform.canvas_width) {
+        this.x_max = this.canvas_transform.canvas_width - 1;
+      }
+
+      if (this.y_max >= this.canvas_transform.canvas_height) {
+        this.y_max = this.canvas_transform.canvas_height - 1;
+      }
+    }
+  }
+
+  public update_min_max_points() {
+    // For boxes, no special calculations are needed for min max point calculation.
+  }
+
+  public resize_from_corner_drag(event: MouseEvent, mouse_position: MousePosition) {
     let x_new = mouse_position.x;
     let y_new = mouse_position.y;
 
     let x_movement = parseInt(String(event.movementX / this.canvas_transform.canvas_scale_combined));
     let y_movement = Math.ceil(event.movementY / this.canvas_transform.canvas_scale_combined);
 
-
-
+    let movement_point_hover = this.determine_movement_point_for_box()
+    this.set_mouse_cursor_from_hovered_point(movement_point_hover)
     if (this.box_edit_point_hover == "x_min_y_min") {
       this.x_min = x_new;
       this.y_min = y_new;
@@ -212,23 +228,51 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     this.interpolated = false;
     this.invert_origin_on_overflow()
     this.update_width_and_height()
+    this.update_min_max_points()
+    this.check_canvas_overflow()
+  }
+
+  public resize_from_mouse_position(event: MouseEvent, mouse_position: MousePosition, mouse_down_position: MousePosition) {
+
+    let x_new = mouse_position.x;
+    let y_new = mouse_position.y;
+
+    let x_movement = parseInt(String(event.movementX / this.canvas_transform.canvas_scale_combined));
+    let y_movement = Math.ceil(event.movementY / this.canvas_transform.canvas_scale_combined);
+
+    this.x_min = Math.ceil(mouse_down_position.x);
+    this.y_min = Math.ceil(mouse_down_position.y);
+    this.x_max = Math.ceil(mouse_position.x);
+    this.y_max = Math.ceil(mouse_position.y);
+    this.interpolated = false;
+    this.invert_origin_on_overflow()
+    this.update_width_and_height()
+    this.update_min_max_points()
+    this.check_canvas_overflow()
     // move whole box
     // else if (this.box_edit_point_hover == "not_intersecting_special_points") {
     //   this.drag(this.mouse_down_delta_event)
     //
     // }
   }
-  public set_line_width(val: number){
+
+  public set_line_width(val: number) {
     this.line_width = val
   }
+
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath()
-    if (this.is_actively_drawing) {
-      this.draw_currently_drawing_box(ctx)
 
-    } else {
-      this.draw_finished_box()
-    }
+    ctx.fillStyle = get_sequence_color(this.sequence_id)
+    ctx.fillText(this.label_file.label.name, this.x_min, this.y_min);
+    this.set_stroke_and_fill_styles(ctx, 1)
+    ctx.setLineDash([0])
+    ctx.rect(this.x_min,
+      this.y_min,
+      this.width,
+      this.height)
+
+
     ctx.lineWidth = this.line_width
     ctx.stroke()
   }

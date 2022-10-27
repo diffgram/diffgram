@@ -985,7 +985,7 @@ import view_edit_issue_panel from "../discussions/view_edit_issue_panel.vue";
 import {getContrastColor} from '../../utils/colorUtils'
 import { ellipse } from "../vue_canvas/ellipse.js";
 import { CommandManagerAnnotationCore } from "./annotation_core_command_manager.js";
-import { CreateInstanceCommand } from "./commands/create_instance_command.js";
+import { CreateInstanceCommand } from "./commands/create_instance_command";
 import { UpdateInstanceCommand } from "./commands/update_instance_command.ts";
 import {
   ImageAnnotationCoordinatorRouter,
@@ -1011,17 +1011,18 @@ import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
 import {initialize_instance_object, duplicate_instance, duplicate_instance_template} from '../../utils/instance_utils.ts';
 import {
-  AnnotationToolEvent,
+  InteractionEvent,
   genImageAnnotationEvent,
   AnnotationEventCtx,
-  ImageAnnotationEventCtx
-} from "../../types/AnnotationToolEvent";
+  ImageAnnotationEventCtx, ImageInteractionEvent
+} from "../../types/InteractionEvent";
 import {Coordinator, CoordinatorProcessResult} from "../vue_canvas/coordinators/Coordinator";
 import {Interaction} from "../../types/Interaction";
 import {BoxInstance} from "../vue_canvas/instances/BoxInstance";
 import {LabelColourMap} from "../../types/label_colour_map";
 import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
 import {ImageCanvasTransform} from "../../types/CanvasTransform";
+import {LabelFile} from "../../types/label";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -1231,6 +1232,7 @@ export default Vue.extend({
       SUPPORTED_CLASS_INSTANCE_TYPES: ['box', 'keypoints'],
       current_instance_v2: null as Instance,
       current_interaction: null as Interaction,
+      current_drawing_box_instance: new BoxInstance(),
       go_to_keyframe_loading: false,
       show_snackbar_occlude_direction: false,
       guided_nodes_ordinal: 1,
@@ -1606,6 +1608,13 @@ export default Vue.extend({
     };
   },
   computed: {
+    label_file_map: function(){
+      let result = {}
+      for (let elm of this.label_list){
+        result[elm.id] = elm
+      }
+      return result
+    },
     actively_drawing_keypoints_instance: function(){
       if(this.actively_drawing_instance_template && this.actively_drawing_instance_template.instance_list){
         return this.actively_drawing_instance_template.instance_list[0]
@@ -1925,6 +1934,8 @@ export default Vue.extend({
         canvas_scale_local: this.canvas_scale_local,
         canvas_scale_combined: this.canvas_scale_local * this.canvas_scale_global,
         translate: this.canvas_translate,
+        canvas_width: this.canvas_width,
+        canvas_height: this.canvas_height,
         zoom: this.zoom_canvas,
       }
       return transform
@@ -2203,9 +2214,9 @@ export default Vue.extend({
   methods: {
     build_current_instance_class: function(): Instance{
       let instance_type_mapper = {
-        'box': () => {return new BoxInstance()}
+        'box': this.current_drawing_box_instance
       }
-      return instance_type_mapper[this.instance_type]()
+      return instance_type_mapper[this.instance_type]
     },
     on_change_label_schema: function(schema){
       this.$emit('change_label_schema', schema)
@@ -2908,7 +2919,10 @@ export default Vue.extend({
         let current_instance = instance_list[i];
         // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
         // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
+        let label_file = this.label_file_map[current_instance.label_file_id]
         let initialized_instance = initialize_instance_object(current_instance, this);
+        initialized_instance.label_file_colour_map = this.label_file_colour_map
+        initialized_instance.label_file = label_file
         if (initialized_instance) {
           result.push(initialized_instance);
         }
@@ -3093,7 +3107,7 @@ export default Vue.extend({
         this.current_frame
       );
       // Auto select on label view detail for inmediate attribute edition.
-      this.create_instance_events();
+      this.refresh_instance_list_sidebar();
     },
     start_polygon_select_for_merge(merge_instance_index) {
       // Close context menu and set select instance mode
@@ -5757,7 +5771,7 @@ export default Vue.extend({
         this.original_edit_instance = { ...instance };
         this.original_edit_instance_index = i;
       }
-
+      console.log('BOX EDIT POINT LEGACY', this.box_edit_point_hover)
       if (this.box_edit_point_hover == "x_min_y_min") {
         instance.x_min = x_new;
         instance.y_min = y_new;
@@ -6034,31 +6048,29 @@ export default Vue.extend({
 
       this.update_mouse_style();
 
-      if (this.draw_mode == true) {
-        if (this.instance_type == "polygon") {
-          this.detect_other_polygon_points();
-          if (this.current_polygon_point_list.length >= 1) {
+      if (this.draw_mode == true && this.instance_type == "polygon") {
+        this.detect_other_polygon_points();
+        if (this.current_polygon_point_list.length >= 1) {
 
-            if (this.shift_key == true) {
-              let x_diff = this.helper_difference_absolute(
-                this.mouse_position.x,
-                this.current_polygon_point_list[
-                  this.current_polygon_point_list.length - 1
-                ].x
-              );
-              let y_diff = this.helper_difference_absolute(
-                this.mouse_position.y,
-                this.current_polygon_point_list[
-                  this.current_polygon_point_list.length - 1
-                ].y
-              );
+          if (this.shift_key == true) {
+            let x_diff = this.helper_difference_absolute(
+              this.mouse_position.x,
+              this.current_polygon_point_list[
+                this.current_polygon_point_list.length - 1
+              ].x
+            );
+            let y_diff = this.helper_difference_absolute(
+              this.mouse_position.y,
+              this.current_polygon_point_list[
+                this.current_polygon_point_list.length - 1
+              ].y
+            );
 
-              if (x_diff > 10 || y_diff > 10) {
-                //TODO this is a hacky way to do it!!!
-                this.mouse_down_position.x = this.mouse_position.x;
-                this.mouse_down_position.y = this.mouse_position.y;
-                this.polygon_insert_point();
-              }
+            if (x_diff > 10 || y_diff > 10) {
+              //TODO this is a hacky way to do it!!!
+              this.mouse_down_position.x = this.mouse_position.x;
+              this.mouse_down_position.y = this.mouse_position.y;
+              this.polygon_insert_point();
             }
           }
         }
@@ -6596,13 +6608,14 @@ export default Vue.extend({
         }
 
         if (this.instance_type == "box") {
-          if (this.$store.state.annotation_state.draw == false) {
-            this.is_actively_drawing = true; // required for current_instance visual to display
-            this.$store.commit("init_draw");
-          } else {
-            // is actively drawing negation handled by generic instance push method now
-            this.$store.commit("finish_draw");
-          }
+          console.log('MOUSE UP BBOX', this.is_actively_drawing)
+          // if (this.$store.state.annotation_state.draw == false) {
+          //   this.is_actively_drawing = true; // required for current_instance visual to display
+          //   this.$store.commit("init_draw");
+          // } else {
+          //   // is actively drawing negation handled by generic instance push method now
+          //   this.$store.commit("finish_draw");
+          // }
         }
 
       }
@@ -6823,7 +6836,7 @@ export default Vue.extend({
       return true;
     },
 
-    create_instance_events: function (
+    refresh_instance_list_sidebar: function (
       instance_index = this.instance_list.length - 1
     ) {
       this.event_create_instance = { ...this.current_instance };
@@ -6843,7 +6856,7 @@ export default Vue.extend({
             frame_number
           );
           this.command_manager.executeCommand(create_box_command);
-          this.create_instance_events();
+          this.refresh_instance_list_sidebar();
         }
       }
     },
@@ -7151,7 +7164,7 @@ export default Vue.extend({
         }
       }
     },
-    generate_interaction_coordinator: function (event: AnnotationToolEvent) {
+    generate_interaction_coordinator: function (event: ImageInteractionEvent) {
       let canvas_mouse_ctx: CanvasMouseCtx = {
         mouse_position: this.mouse_position,
         canvas_element_ctx:  this.canvas_element_ctx,
@@ -7162,7 +7175,8 @@ export default Vue.extend({
         new_global_instance: () => {return new Instance()},
         mouse_down_delta_event: this.mouse_down_delta_event,
         mouse_down_position: this.mouse_down_position,
-        label_settings: this.label_settings
+        label_settings: this.label_settings,
+        canvas_transform: this.canvas_transform
       }
       const interaction_generator = new ImageAnnotationCoordinatorRouter(
         event,
@@ -7170,7 +7184,8 @@ export default Vue.extend({
         this.instance_list,
         this.draw_mode,
         this.instance_type,
-        canvas_mouse_ctx
+        canvas_mouse_ctx,
+        this.command_manager
       );
       return interaction_generator.generate_coordinator();
     },
@@ -7189,24 +7204,28 @@ export default Vue.extend({
     },
     build_ann_event_ctx: function(): ImageAnnotationEventCtx{
       let ann_ctx: ImageAnnotationEventCtx = {
-        label_file_id: this.current_label_file_id,
+        label_file: this.current_label_file as LabelFile,
         instance_type: this.instance_type,
+        instance_list: this.instance_list as Instance[],
         draw_mode: this.draw_mode,
-        is_actively_drawing: false,
+        is_actively_drawing: this.is_actively_drawing,
         hovered_instance: this.hovered_instance,
         current_drawing_instance: this.current_instance,
         label_file_colour_map: this.label_file_colour_map as LabelColourMap,
         mouse_position: this.mouse_position as MousePosition,
+        mouse_down_position: this.mouse_down_position as MousePosition,
         canvas_transform: this.canvas_transform,
         canvas_element: this.canvas_element,
         view_issue_mode: this.view_issue_mode,
+        frame_number: this.frame_number,
+        ann_core_ctx: this
       }
       return ann_ctx
     },
     mouse_move_v2_handler: function(event){
 
       let ann_ctx = this.build_ann_event_ctx()
-      let ann_tool_event: AnnotationToolEvent = genImageAnnotationEvent(event, ann_ctx)
+      let ann_tool_event: InteractionEvent = genImageAnnotationEvent(event, ann_ctx)
       const coordinator = this.generate_interaction_coordinator(ann_tool_event);
       if (coordinator) {
         let result: CoordinatorProcessResult = coordinator.perform_action_from_event(ann_tool_event);
@@ -7217,10 +7236,11 @@ export default Vue.extend({
     },
     mouse_down_v2_handler: function(event){
       let ann_ctx = this.build_ann_event_ctx()
-      let ann_tool_event: AnnotationToolEvent = genImageAnnotationEvent(event, ann_ctx)
+      let ann_tool_event: InteractionEvent = genImageAnnotationEvent(event, ann_ctx)
       if (!this.current_interaction){
         this.current_interaction = new Interaction()
       }
+
       this.current_interaction.add_event(ann_tool_event)
       const coordinator = this.generate_interaction_coordinator(ann_tool_event);
       if (coordinator) {
@@ -7230,9 +7250,12 @@ export default Vue.extend({
         }
       }
     },
+    reset_current_instances: function(){
+      this.current_drawing_box_instance = new BoxInstance()
+    },
     mouse_up_v2_handler: function(event){
       let ann_ctx = this.build_ann_event_ctx()
-      let ann_tool_event: AnnotationToolEvent = genImageAnnotationEvent(event, ann_ctx)
+      let ann_tool_event: InteractionEvent = genImageAnnotationEvent(event, ann_ctx)
       if (!this.current_interaction){
         this.current_interaction = new Interaction()
       }
@@ -7242,6 +7265,10 @@ export default Vue.extend({
         let result: CoordinatorProcessResult = coordinator.perform_action_from_event(ann_tool_event);
         if(result.instance_moved === true){
           this.has_changed = true;
+        }
+        if (result.new_instance_index != undefined){
+          this.refresh_instance_list_sidebar()
+          this.reset_current_instances()
         }
         if(result.instance_moved && this.show_snackbar_occlude_direction){
           this.show_snackbar_occlude_direction = false;
@@ -8320,29 +8347,7 @@ export default Vue.extend({
       this.snackbar_paste_message = 'Instance Pasted on Frames ahead.';
     },
     initialize_instance: function(instance){
-      if(instance.type === 'keypoints' && !instance.initialized){
-        let initialized_instance = new KeypointInstance(
-          this.mouse_position,
-          this.canvas_element_ctx,
-          this.instance_context,
-          this.trigger_instance_changed,
-          this.instance_selected,
-          this.instance_deselected,
-          this.mouse_down_delta_event,
-          this.mouse_down_position,
-          this.label_settings
-        );
-        initialized_instance.populate_from_instance_obj(instance);
-        return initialized_instance
-      }
-      else if (instance.type === 'global') {
-        let new_global_instance = this.new_global_instance();
-        new_global_instance.populate_from_instance_obj(instance)
-        return new_global_instance
-      }
-      else {
-        return instance
-      }
+      return initialize_instance_object(instance, this)
     },
     save_multiple_frames: async function(frames_list){
       const limit = pLimit(25); // 25 Max concurrent request.
@@ -8472,7 +8477,7 @@ export default Vue.extend({
           this.add_instance_to_file(new_frame_instance, i);
           frames_to_save.push(i);
         }
-        this.create_instance_events();
+        this.refresh_instance_list_sidebar();
         this.show_loading_paste();
         await this.save_multiple_frames(frames_to_save);
         this.show_success_paste();
@@ -8482,7 +8487,7 @@ export default Vue.extend({
           frame_number
         );
         // Auto select on label view detail for inmediate attribute edition.
-        this.create_instance_events();
+        this.refresh_instance_list_sidebar();
       }
     },
     paste_instance: async function (

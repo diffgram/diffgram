@@ -8,6 +8,8 @@
 
   import Vue from 'vue'
   import { cuboid } from './cuboid.js'
+  import {BoxInstance} from "./instances/BoxInstance";
+
   Vue.prototype.$cuboid = new cuboid()
 
 export default Vue.extend({

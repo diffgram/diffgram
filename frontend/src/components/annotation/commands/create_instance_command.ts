@@ -1,33 +1,49 @@
-import { TextAnnotationInstance, TextRelationInstance } from "../../vue_canvas/instances/TextInstance";
+import {TextAnnotationInstance, TextRelationInstance} from "../../vue_canvas/instances/TextInstance";
+import {Instance} from "../../vue_canvas/instances/Instance";
+import {initialize_instance_object} from "../../../utils/instance_utils";
 
 export class CreateInstanceCommand {
+  ann_core_ctx: any
+  instance: Instance
+  frame_number: number
+  created_instance_index: number
+
+  constructor(instance, ann_core_ctx, frame_number = undefined) {
+    this.ann_core_ctx = ann_core_ctx;
+    this.instance = this._copyInstance(instance);
+    console.log('COPY INSTANCE', this.instance)
+    this.frame_number = frame_number;
+    this.created_instance_index = undefined;
+  }
+
+
   _copyInstance(instance) {
     if (instance.initialized != true) {
       // legacy instances
       if (!Array.isArray(instance.points)) return null;
       const newInstance = {
         ...instance,
-        points: [...instance.points.map(p => ({ ...p }))]
+        points: [...instance.points.map(p => ({...p}))]
       };
       if (instance.type === "curve") {
-        newInstance.p1 = { ...instance.p1 };
-        newInstance.p2 = { ...instance.p2 };
-        newInstance.cp = { ...instance.cp };
+        newInstance.p1 = {...instance.p1};
+        newInstance.p2 = {...instance.p2};
+        newInstance.cp = {...instance.cp};
       }
       if (instance.type === "cuboid") {
         newInstance.rear_face = {
           ...instance.rear_face,
-          top_right: { ...instance.rear_face.top_right },
-          top_left: { ...instance.rear_face.top_left },
-          bot_left: { ...instance.rear_face.bot_left },
-          bot_right: { ...instance.rear_face.bot_right }
+          top_right: {...instance.rear_face.top_right},
+          top_left: {...instance.rear_face.top_left},
+          bot_left: {...instance.rear_face.bot_left},
+          bot_right: {...instance.rear_face.bot_right}
         };
         newInstance.front_face = {
           ...instance.front_face,
-          top_right: { ...instance.front_face.top_right },
-          top_left: { ...instance.front_face.top_left },
-          bot_left: { ...instance.front_face.bot_left },
-          bot_right: { ...instance.front_face.bot_right }
+          top_right: {...instance.front_face.top_right},
+          top_left: {...instance.front_face.top_left},
+          bot_left: {...instance.front_face.bot_left},
+          bot_right: {...instance.front_face.bot_right}
         };
       }
       return newInstance;
@@ -36,6 +52,14 @@ export class CreateInstanceCommand {
     if (instance.type == "keypoints") {
       let newInstance = instance.get_instance_data();
 
+      let initializedInstance = this.ann_core_ctx.initialize_instance(
+        newInstance
+      );
+      return initializedInstance;
+    }
+    if (instance.type == "box") {
+
+      let newInstance = instance.get_instance_data();
       let initializedInstance = this.ann_core_ctx.initialize_instance(
         newInstance
       );
@@ -55,12 +79,6 @@ export class CreateInstanceCommand {
     }
   }
 
-  constructor(instance, ann_core_ctx, frame_number = undefined) {
-    this.ann_core_ctx = ann_core_ctx;
-    this.instance = this._copyInstance(instance);
-    this.frame_number = frame_number;
-    this.created_instance_index = undefined;
-  }
 
   execute() {
     if (this.instance.creation_ref_id) {
@@ -79,14 +97,15 @@ export class CreateInstanceCommand {
       );
       if (existing_instance.length === 0) {
         this.instance.soft_delete = false;
+        let instance_to_push = {...this.instance,  points: [...this.instance.points.map(p => ({...p}))], initialized: false}
+        let instance_init = initialize_instance_object(instance_to_push, this.ann_core_ctx)
         this.ann_core_ctx.add_instance_to_file(
-          {
-            ...this.instance,
-            points: [...this.instance.points.map(p => ({ ...p }))]
-          },
+          instance_init,
           this.frame_number
         );
         this.created_instance_index = this.ann_core_ctx.instance_list.length - 1;
+        console.log('this.ann_core_ctx.instance_list[this.created_instance_index]', this.ann_core_ctx.instance_list[this.created_instance_index])
+        console.log('instance_init', instance_init)
         // Get the pushed instance to have the creation ref ID in future redo's
         this.instance = this._copyInstance(
           this.ann_core_ctx.instance_list[this.created_instance_index]
@@ -114,7 +133,7 @@ export class CreateInstanceCommand {
   undo() {
     const instance = this.ann_core_ctx.instance_list[
       this.created_instance_index
-    ];
+      ];
 
     // We don't want to delete instances that already have an ID on backend, just soft delete them.
     instance.soft_delete = true;

@@ -1,15 +1,17 @@
 import { size } from "lodash";
+import {MousePosition} from "../../types/mouse_position";
 
 export class CanvasMouseTools {
-  private mouse_position: any;
+  private mouse_position: MousePosition;
   private canvas_translate: any;
-  private canvas_rectangle: any;
-  private canvas_ctx: any;
-  private canvas_elm: any;
+  private canvas_rectangle: DOMRect;
+  private canvas_ctx: CanvasRenderingContext2D;
+  private canvas_elm: HTMLCanvasElement;
   private scale: number;
   private canvas_scale_global: number;
-  private canvas_width: any;
-  private canvas_height: any;
+  private canvas_width: number;
+  private canvas_height: number;
+
 
 
   constructor(mouse_position, canvas_translate, canvas_elm, canvas_scale_global, canvas_width, canvas_height) {

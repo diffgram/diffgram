@@ -82,8 +82,11 @@ export const initialize_instance_object = function(instance, component_ctx: Canv
       component_ctx.instance_selected,
       component_ctx.instance_deselected,
       component_ctx.mouse_down_delta_event,
-      component_ctx.mouse_down_position
+      component_ctx.mouse_down_position,
+      component_ctx.canvas_transform,
     )
+    initialized_instance.populate_from_instance_obj(instance);
+    return initialized_instance
   }
   else if(instance.type === 'cuboid_3d' && !instance.initialized){
     if(!instance.mesh){

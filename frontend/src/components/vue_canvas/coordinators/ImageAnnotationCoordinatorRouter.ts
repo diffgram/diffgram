@@ -6,11 +6,12 @@ import {KeypointInstanceCoordinator} from "./coordinator_types/keypoints/Keypoin
 import {BoxInstance} from "../instances/BoxInstance";
 import {BoxInstanceCoordinator} from "./coordinator_types/box/BoxInstanceCoordinator";
 import {
-  AnnotationToolEvent,
+  InteractionEvent,
   ImageAnnotationEventCtx,
-  ImageAnnotationToolEvent
-} from "../../../types/AnnotationToolEvent";
+  ImageInteractionEvent
+} from "../../../types/InteractionEvent";
 import {CanvasMouseCtx} from "../../../types/mouse_position";
+import CommandManager from "../../../helpers/command/command_manager";
 
 type InstanceTypes2D = 'box' | 'polygon' | 'tag' | 'point' | 'line' | 'cuboid' | 'ellipse' | 'curve'
 
@@ -19,16 +20,18 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
   instance_list: Instance[];
   draw_mode: boolean;
   event: MouseEvent;
-  annotation_event: ImageAnnotationToolEvent;
+  annotation_event: ImageInteractionEvent;
   instance_type: InstanceTypes2D;
   canvas_mouse_ctx: CanvasMouseCtx;
+  command_manager: CommandManager;
 
-  constructor(annotation_event: ImageAnnotationToolEvent,
+  constructor(annotation_event: ImageInteractionEvent,
               instance_hover_index: number,
               instance_list: Instance[],
               draw_mode: boolean,
               instance_type: InstanceTypes2D,
               canvas_mouse_ctx: CanvasMouseCtx,
+              command_manager: CommandManager
               ) {
     this.annotation_event = annotation_event;
     this.event = this.annotation_event.dom_event;
@@ -37,6 +40,7 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
     this.draw_mode = draw_mode;
     this.instance_type = instance_type;
     this.canvas_mouse_ctx = canvas_mouse_ctx;
+    this.command_manager = command_manager;
 
   }
   private get_hovered_instance(): Instance{
@@ -48,11 +52,11 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
     const instance = this.get_hovered_instance();
     const instance_type = instance ? instance.type : this.instance_type
     if(instance && instance.type === 'keypoints'){
-      return new KeypointInstanceCoordinator(instance as KeypointInstance, this.draw_mode)
+      return new KeypointInstanceCoordinator(instance as KeypointInstance, this.draw_mode, this.command_manager)
     }
 
     if(instance_type === 'box'){
-      return new BoxInstanceCoordinator(instance as BoxInstance, this.canvas_mouse_ctx)
+      return new BoxInstanceCoordinator(instance as BoxInstance, this.canvas_mouse_ctx, this.command_manager)
     }
 
     return undefined;

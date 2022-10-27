@@ -1,6 +1,7 @@
 import {Coordinator, CoordinatorProcessResult} from "../../Coordinator";
 import {KeypointInstance} from "../../../instances/KeypointInstance";
 import {iconFillPaint} from '../../../../../utils/custom_icons'
+import CommandManager from "../../../../../helpers/command/command_manager";
 
 export class KeypointInstanceCoordinator extends Coordinator{
   /**
@@ -8,12 +9,14 @@ export class KeypointInstanceCoordinator extends Coordinator{
    * over a keypoint instance (either over a node or over the bounding box.
    * */
   key_point_instance: KeypointInstance
+  command_manager: CommandManager
   draw_mode: boolean
 
-  constructor(key_point_instance: KeypointInstance, draw_mode: boolean) {
+  constructor(key_point_instance: KeypointInstance, draw_mode: boolean, command_manager: CommandManager) {
     super();
     this.key_point_instance = key_point_instance
     this.draw_mode = draw_mode
+    this.command_manager = command_manager
   }
   private set_hover_scale_points(): void {
     // if(!this.key_point_instance.hovered_control_point_key){

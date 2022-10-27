@@ -1,4 +1,5 @@
 import {Instance} from "../components/vue_canvas/instances/Instance";
+import {ImageCanvasTransform} from "./CanvasTransform";
 
 export type Raw = {
   x: number
@@ -36,4 +37,5 @@ export type CanvasMouseCtx ={
   mouse_down_delta_event: MousePosition,
   mouse_down_position: MousePosition,
   label_settings: any
+  canvas_transform: ImageCanvasTransform
 }

@@ -2,9 +2,10 @@ import * as THREE from 'three';
 import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
 import {getCenterPoint} from "../../3d_annotation/utils_3d";
 import {LabelColourMap} from "../../../types/label_colour_map";
+import {LabelFile} from "../../../types/label";
 
 export interface InstanceBehaviour2D {
-
+  update_min_max_points(): void
   draw(ctx): void
 }
 
@@ -35,7 +36,7 @@ export class Instance {
   public model_run_id: number = null;
   public width: number = null;
   public height: number = null;
-  public label_file: { id: number, label: any, colour: { hex: string } } = null;
+  public label_file: LabelFile;
   public label_file_id: number = null;
   public selected: boolean = false;
   public number: number = null;
@@ -76,6 +77,7 @@ export class Instance {
       center_y: this.center_y,
       x_max: this.x_max,
       y_max: this.y_max,
+      label_file_colour_map: this.label_file_colour_map,
       p1: this.p1,
       cp: this.cp,
       p2: this.p2,
@@ -124,7 +126,10 @@ export class Instance {
   public delete() {
     this.soft_delete = true;
   }
-
+  public set_label_file(value: LabelFile){
+    this.label_file = value
+    this.label_file_id = value.id
+  }
   public instance_hovered_callback(instance) {
     if (this.on_instance_hovered) {
       this.on_instance_hovered(instance)
