@@ -7,11 +7,9 @@ export class KeypointInstance extends Instance implements InstanceBehaviour2D {
   public mouse_position: any;
   private CONTROL_POINTS_DISPLACEMENT: number = 3
   private MINIMUM_CONTROL_POINTS_DISTANCE: number = 20
-  public ctx: CanvasRenderingContext2D;
+
   private vertex_size: number = 5;
   private line_width: number = 2;
-  public strokeColor: string = 'black';
-  public fillColor: string = 'white';
   public instance_context: InstanceContext = undefined;
   public is_hovered: boolean = false; // Is true if any of the nodes or bounding box is being hovered.
   public is_node_hovered: boolean = false;
@@ -1226,7 +1224,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour2D {
     return true
   }
 
-  private is_mouse_in_stoke(ctx) {
+  private is_mouse_in_stroke(ctx) {
     if (!this.mouse_position || !this.mouse_position.raw) {
       return false
     }
@@ -1239,18 +1237,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour2D {
 
   }
 
-  private is_mouse_in_path(ctx) {
-    if (!this.mouse_position || !this.mouse_position.raw) {
-      return false
-    }
-    if (ctx.isPointInPath(
-      this.mouse_position.raw.x,
-      this.mouse_position.raw.y)) {
-      return true;
-    }
-    return false
 
-  }
 
   private draw_instance_bounding_box(ctx) {
     if(this.template_creation_mode){
@@ -1452,7 +1439,7 @@ export class KeypointInstance extends Instance implements InstanceBehaviour2D {
         ctx.stroke()
         ctx.fill();
 
-        if (this.is_mouse_in_stoke(ctx)) {
+        if (this.is_mouse_in_stroke(ctx)) {
           edge.is_hovered = true
           this.is_edge_hovered = true
         } else {

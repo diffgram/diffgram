@@ -1,8 +1,8 @@
 
 
 export type InstanceColor = {
-  a: number
-  hex: string
+  a?: number
+  hex?: string
   hsl?: {
     a: number
     h: number
@@ -15,7 +15,7 @@ export type InstanceColor = {
     s: number
     v: number
   }
-  rgba: {
+  rgba?: {
     a: number
     r: number
     g: number

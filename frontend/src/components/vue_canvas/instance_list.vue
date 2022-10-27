@@ -10,6 +10,7 @@
   import { cuboid } from './cuboid.js'
   import { ellipse } from './ellipse.js'
   import {BoxInstance} from "./instances/BoxInstance";
+  import {SUPPORTED_CLASS_INSTANCE_TYPES} from "./instances/Instance";
   Vue.prototype.$cuboid = new cuboid()
   Vue.prototype.$ellipse = new ellipse()
 
@@ -90,7 +91,6 @@
           colour: null,
           circle_size: null,
           hovered_figure_id: null,
-
           count_instance_in_ctx_paths: 0,
           cuboid_hovered_face: undefined,
           prev_cuboid_hovered_face: undefined,
@@ -356,17 +356,14 @@
         },
 
         color_instance: function (instance, ctx) {
-          // TODO test this better, and also try to move other colors stuff here...
-
+          // Ignoring instances that are already refactored as classes.
+          if(SUPPORTED_CLASS_INSTANCE_TYPES.includes(instance.type) ){
+            return
+          }
           let strokeColor = undefined;
           let fillColor = undefined;
           let lineWidth = undefined;
 
-          if (instance.fan_made == true) {
-            ctx.setLineDash([3])
-          } else {
-            ctx.setLineDash([0])
-          }
           if(this.instance_select_for_issue){
             // Case of selecting instance for issue creation
             let r = 255

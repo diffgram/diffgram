@@ -31,8 +31,10 @@ export interface ImageAnnotationEventCtx extends AnnotationEventCtx {
   canvas_transform: ImageCanvasTransform
   canvas_element: HTMLCanvasElement
   view_issue_mode: boolean
+  instance_select_for_issue: boolean
   frame_number: number
   ann_core_ctx: any
+  view_only_mode: boolean
 
 }
 export interface AudioAnnotationEvent extends AnnotationEventCtx{

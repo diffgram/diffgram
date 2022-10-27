@@ -994,7 +994,7 @@ import { polygon } from "../vue_canvas/polygon.js";
 import { v4 as uuidv4 } from "uuid";
 import { cloneDeep } from "lodash";
 import { KeypointInstance } from "../vue_canvas/instances/KeypointInstance";
-import { Instance } from "../vue_canvas/instances/Instance";
+import {Instance, SUPPORTED_CLASS_INSTANCE_TYPES} from "../vue_canvas/instances/Instance";
 import userscript from "./userscript/userscript.vue";
 import toolbar from "./toolbar.vue";
 import { sha256 } from "js-sha256";
@@ -1229,7 +1229,7 @@ export default Vue.extend({
       n_key: false,
       mouse_wheel_button: false,
       submitted_to_review: false,
-      SUPPORTED_CLASS_INSTANCE_TYPES: ['box', 'keypoints'],
+
       current_instance_v2: null as Instance,
       current_interaction: null as Interaction,
       current_drawing_box_instance: new BoxInstance(),
@@ -1967,7 +1967,7 @@ export default Vue.extend({
 
       // we use computed function here since label referecnes this.current_label_file
       // and this won't work in data dictionary
-      if (this.SUPPORTED_CLASS_INSTANCE_TYPES.includes(this.instance_type)){
+      if (SUPPORTED_CLASS_INSTANCE_TYPES.includes(this.instance_type)){
         return this.build_current_instance_class()
       }
       // Do we actually need to cast this as Int here if db handles it?
@@ -2870,7 +2870,7 @@ export default Vue.extend({
       //TODO: implement
     },
     instance_hovered: function (instance) {
-      // Callback for when an instance is selected
+      // Callback for when an instance is hovered
       // This is a WIP that will be used for all the class Instance Types
       // For now we only have Kepoints instance using this.
 
@@ -2923,6 +2923,11 @@ export default Vue.extend({
         let initialized_instance = initialize_instance_object(current_instance, this);
         initialized_instance.label_file_colour_map = this.label_file_colour_map
         initialized_instance.label_file = label_file
+        if(SUPPORTED_CLASS_INSTANCE_TYPES.includes(initialized_instance.type)){
+          initialized_instance.set_color_from_label()
+          initialized_instance.set_canvas(this.canvas_element)
+          initialized_instance.set_canvas_transform(this.canvas_transform)
+        }
         if (initialized_instance) {
           result.push(initialized_instance);
         }
@@ -3241,7 +3246,6 @@ export default Vue.extend({
       // If we only want one can just pass that singluar instance as the "focus" one
       // this.instance_list[index].focused = True
       // careful can't use id, since newly created instances won't have an ID!
-      console.log('FOCUSSS', focus)
       this.instance_focused_index = focus.index;
       this.selected_instance_list = [
         this.instance_list[this.instance_focused_index],
@@ -3720,7 +3724,6 @@ export default Vue.extend({
       }
       await this.$nextTick();
       this.$refs.toolbar.set_mode(this.current_instance_template.mode)
-      console.log('AAAA', this.current_instance_template, this.current_instance_template.mode === 'guided' && this.draw_mode)
       if(this.current_instance_template.mode === 'guided' && this.draw_mode){
         this.show_snackbar_guided_keypoints_drawing(1);
       }
@@ -5771,7 +5774,6 @@ export default Vue.extend({
         this.original_edit_instance = { ...instance };
         this.original_edit_instance_index = i;
       }
-      console.log('BOX EDIT POINT LEGACY', this.box_edit_point_hover)
       if (this.box_edit_point_hover == "x_min_y_min") {
         instance.x_min = x_new;
         instance.y_min = y_new;
@@ -7218,7 +7220,9 @@ export default Vue.extend({
         canvas_element: this.canvas_element,
         view_issue_mode: this.view_issue_mode,
         frame_number: this.frame_number,
-        ann_core_ctx: this
+        ann_core_ctx: this,
+        instance_select_for_issue: this.instance_select_for_issue,
+        view_only_mode: this.view_only_mode
       }
       return ann_ctx
     },
@@ -7246,6 +7250,7 @@ export default Vue.extend({
       if (coordinator) {
         let result = coordinator.perform_action_from_event(ann_tool_event);
         if (result){
+          console.log('result.is_actively_drawing', result.is_actively_drawing)
           this.is_actively_drawing = result.is_actively_drawing
         }
       }
@@ -7255,6 +7260,7 @@ export default Vue.extend({
     },
     mouse_up_v2_handler: function(event){
       let ann_ctx = this.build_ann_event_ctx()
+      console.log('AAA SACIAIAIAIA', ann_ctx.is_actively_drawing)
       let ann_tool_event: InteractionEvent = genImageAnnotationEvent(event, ann_ctx)
       if (!this.current_interaction){
         this.current_interaction = new Interaction()

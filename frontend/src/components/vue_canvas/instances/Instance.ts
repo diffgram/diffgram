@@ -3,7 +3,10 @@ import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
 import {getCenterPoint} from "../../3d_annotation/utils_3d";
 import {LabelColourMap} from "../../../types/label_colour_map";
 import {LabelFile} from "../../../types/label";
+import {MousePosition} from "../../../types/mouse_position";
+import {ImageCanvasTransform} from "../../../types/CanvasTransform";
 
+export const SUPPORTED_CLASS_INSTANCE_TYPES: Array<string> = ['box', 'keypoints'];
 export interface InstanceBehaviour2D {
   update_min_max_points(): void
   draw(ctx): void
@@ -22,6 +25,10 @@ export class Instance {
   public p1: object = null;
   public cp: object = null;
   public p2: object = null;
+  public ctx: CanvasRenderingContext2D;
+  public mouse_position: MousePosition;
+  public canvas_transform: ImageCanvasTransform;
+  public canvas_element: HTMLCanvasElement
   public auto_border_polygon_p1: object = null;
   public auto_border_polygon_p2: object = null;
   public cuboid_current_drawing_face: object = null;
@@ -41,6 +48,8 @@ export class Instance {
   public selected: boolean = false;
   public number: number = null;
   public type: string = null;
+  public strokeColor: string = 'black';
+  public fillColor: string = 'white';
   public points: object[] = [];
   public sequence_id: number = null;
   public soft_delete: boolean = false;
@@ -53,6 +62,19 @@ export class Instance {
   public on_instance_unhovered: Function = undefined;
   public on_instance_deselected: Function = undefined;
   public pause_object: false
+
+  protected is_mouse_in_path(ctx) {
+    if (!this.mouse_position || !this.mouse_position.raw) {
+      return false
+    }
+    if (ctx.isPointInPath(
+      this.mouse_position.raw.x,
+      this.mouse_position.raw.y)) {
+      return true;
+    }
+    return false
+
+  }
 
   public set_label_file_colour_map(map: LabelColourMap): void {
     this.label_file_colour_map = map
@@ -153,6 +175,32 @@ export class Instance {
       this.on_instance_unhovered(instance);
     }
   }
+  public set_color_from_label(){
+    let colour = this.get_label_file_colour_map()[this.label_file_id]
+    if (colour){
+      this.set_border_color(colour)
+      this.set_fill_color(colour.rgba.r,colour.rgba.g, colour.rgba.b, colour.rgba.a)
+    }
+  }
+
+  public set_border_color(colorHex: string){
+    this.strokeColor = colorHex
+  }
+
+  public set_fill_color(r: number, g: number, b: number, a: number){
+
+    this.fillColor = "rgba(" + r + "," + g + "," + b + "," + a + ")";
+  }
+  public set_canvas(val: HTMLCanvasElement) {
+    this.canvas_element = val
+    if (this.canvas_element) {
+      this.ctx = this.canvas_element.getContext("2d");
+    }
+  }
+
+  public set_canvas_transform(val: ImageCanvasTransform) {
+    this.canvas_transform = val
+  }
 }
 
 export abstract class Instance3D extends Instance {
@@ -222,4 +270,5 @@ export abstract class Instance3D extends Instance {
     }
 
   }
+
 }

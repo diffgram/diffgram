@@ -19,14 +19,10 @@ type BoxHoverPoints =
 export class BoxInstance extends Instance implements InstanceBehaviour2D {
   public mouse_position: MousePosition;
   public ctx: CanvasRenderingContext2D;
-  public canvas_element: HTMLCanvasElement;
-  public canvas_transform: ImageCanvasTransform;
   public canvas_mouse_tools: ImageCanvasTransform;
   public colour: InstanceColor;
   private vertex_size: number = 5;
   private line_width: number = 2;
-  private strokeColor: string = 'black';
-  private fillColor: string = 'white';
   public is_dragging_instance: boolean = false;
   public is_hovered: boolean = false;
   private is_actively_drawing: boolean = false;
@@ -67,16 +63,7 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     this.ctx = ctx;
   }
 
-  public set_canvas(val: HTMLCanvasElement) {
-    this.canvas_element = val
-    if (this.canvas_element) {
-      this.ctx = this.canvas_element.getContext("2d");
-    }
-  }
 
-  public set_canvas_transform(val: ImageCanvasTransform) {
-    this.canvas_transform = val
-  }
 
   public get_canvas_transform(): ImageCanvasTransform {
     return this.canvas_transform
@@ -90,17 +77,6 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     return this.is_actively_drawing;
   }
 
-  private set_stroke_and_fill_styles(ctx: CanvasRenderingContext2D, opacity: number) {
-    let label_color_map = this.get_label_file_colour_map()
-    this.colour = label_color_map[this.label_file_id]
-    if (this.colour != undefined) {
-      ctx.strokeStyle = this.colour.hex
-      let r = this.colour.rgba.r
-      let g = this.colour.rgba.g
-      let b = this.colour.rgba.b
-      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + "," + opacity + ")";
-    }
-  }
 
   public set_mouse_cursor_from_hovered_point(movement_point: BoxHoverPoints) {
     let movement_point_hover_style_map = {
@@ -116,11 +92,6 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
   }
 
   public determine_movement_point_for_box(): BoxHoverPoints {
-    // if (this.lock_point_hover_change == true) {
-    //   return false;
-    // }
-
-
     let point_list = [
       [this.x_min, this.y_min, "x_min_y_min", "nwse-resize"],
       [this.x_max, this.y_min, "x_max_y_min", "nesw-resize"],
@@ -143,8 +114,6 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
       }
     }
     this.box_edit_point_hover = "not_intersecting_special_points";
-
-    this.set_mouse_cursor_from_hovered_point(this.box_edit_point_hover as BoxHoverPoints)
 
     return this.box_edit_point_hover;
   }
@@ -183,8 +152,6 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     this.height = this.y_max - this.y_min;
 
     this.status = "updated";
-
-    // this.instance_list.splice(i, 1, instance);
   }
 
   private check_canvas_overflow() {
@@ -233,13 +200,6 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
   }
 
   public resize_from_mouse_position(event: MouseEvent, mouse_position: MousePosition, mouse_down_position: MousePosition) {
-
-    let x_new = mouse_position.x;
-    let y_new = mouse_position.y;
-
-    let x_movement = parseInt(String(event.movementX / this.canvas_transform.canvas_scale_combined));
-    let y_movement = Math.ceil(event.movementY / this.canvas_transform.canvas_scale_combined);
-
     this.x_min = Math.ceil(mouse_down_position.x);
     this.y_min = Math.ceil(mouse_down_position.y);
     this.x_max = Math.ceil(mouse_position.x);
@@ -259,20 +219,43 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
   public set_line_width(val: number) {
     this.line_width = val
   }
-
+  private draw_circle(x, y, ctx){
+    ctx.arc(x, y, this.vertex_size, 0, 2 * Math.PI);
+    ctx.moveTo(x, y) // reset
+  }
+  private draw_box_edit_corners(ctx){
+    this.draw_circle(this.x_min, this.y_min, ctx)
+    ctx.moveTo(this.x_max, this.y_min);
+    this.draw_circle(this.x_max, this.y_min, ctx)
+    ctx.moveTo(this.x_max, this.y_max);
+    this.draw_circle(this.x_max, this.y_max, ctx)
+    ctx.moveTo(this.x_min, this.y_max);
+    this.draw_circle(this.x_min, this.y_max, ctx)
+    ctx.fill()
+  }
+  private check_box_hovered(ctx){
+    if(this.is_mouse_in_path(ctx)){
+      this.is_hovered = true
+      let hover_point = this.determine_movement_point_for_box()
+      console.log('hoverr', hover_point)
+      this.set_mouse_cursor_from_hovered_point(hover_point)
+      this.draw_box_edit_corners(ctx)
+    } else{
+      this.is_hovered = false
+    }
+  }
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath()
 
     ctx.fillStyle = get_sequence_color(this.sequence_id)
     ctx.fillText(this.label_file.label.name, this.x_min, this.y_min);
-    this.set_stroke_and_fill_styles(ctx, 1)
     ctx.setLineDash([0])
     ctx.rect(this.x_min,
       this.y_min,
       this.width,
       this.height)
 
-
+    this.check_box_hovered(ctx)
     ctx.lineWidth = this.line_width
     ctx.stroke()
   }
