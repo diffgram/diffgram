@@ -16,7 +16,10 @@
         <sidebar
           :instance_list="instance_list"
         />
-        <div style="width: calc(50vw - 175px); overflow: hidden">
+        <div 
+          style="width: calc(50vw - 175px); overflow: hidden"
+          :class="active_interface === 0 && 'active_interface'"
+        >
             <v_annotation_core
                 v-if="!changing_file"
                 class="pt-1 pl-1"
@@ -42,7 +45,10 @@
                 @instance_update="update_instance_list_from_interafce"
             />
         </div>
-        <div style="width: calc(50vw - 175px);">
+        <div 
+          style="width: calc(50vw - 175px);" 
+          :class="active_interface === 1 && 'active_interface'"
+        >
             <v_annotation_core
                 v-if="!changing_file"
                 class="pt-1 pl-1"
@@ -157,7 +163,8 @@ export default Vue.extend({
             model_run_color_list: null  as Array<any>,
             global_attribute_groups_list: [] as Array<any>,
             child_file_list: null,
-            instance_list: [] as Array<any>
+            instance_list: [] as Array<any>,
+            active_interface: null
         }
     },
     // async mounted() {
@@ -214,6 +221,8 @@ export default Vue.extend({
         }
 
     this.initializing = false
+
+    window.addEventListener('mousemove', this.active_interface_listeer)
   },
   computed: {
     file_id: function (): number {
@@ -256,6 +265,24 @@ export default Vue.extend({
       })
 
       this.instance_list = to_set
+    },
+    active_interface_listeer: function(e) {
+      const clientX = e.clientX
+      const clientY = e.clientY
+
+      console.log(clientX, clientY)
+
+      if (clientX > 350 && clientY > 75 && clientX < 1000) {
+        this.active_interface = 0
+      }
+
+      else if (clientX > 1000 && clientY > 75) {
+        this.active_interface = 1
+      }
+
+      else {
+        this.active_interface = null
+      }
     },
     ///
     fetch_schema_list: async function (): Promise<void> {
@@ -457,3 +484,9 @@ export default Vue.extend({
   },
 })
 </script>
+
+<style scoped>
+.active_interface {
+  border: 1px solid blue;
+}
+</style>
