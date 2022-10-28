@@ -56,6 +56,7 @@ export class Instance {
   public sequence_id: number = null;
   public soft_delete: boolean = false;
   public is_hovered: boolean = false;
+  public is_resizing: boolean = false;
   public interpolated: boolean = false;
   public status: string = '';
 

@@ -30,7 +30,7 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
   public mouse_down_delta_event: any = undefined;
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
-  private box_edit_point_hover: BoxHoverPoints = undefined
+  public box_edit_point_hover: BoxHoverPoints = undefined
   private nearest_points_dict: any = undefined
   private zoom_value: number = 1
   private font_size: number = 10
@@ -72,6 +72,9 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     if(event_type === 'hover_out'){
       this.on_instance_unhovered = null
     }
+  }
+  public set_is_resizing(val: boolean){
+    this.is_resizing = val
   }
   public set_is_moving(val: boolean){
     this.is_moving = val
@@ -184,14 +187,14 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     // For boxes, no special calculations are needed for min max point calculation.
   }
 
-  public resize_from_corner_drag(event: MouseEvent, mouse_position: MousePosition) {
+  public resize_from_corner_drag(mouse_position: MousePosition) {
     let x_new = mouse_position.x;
     let y_new = mouse_position.y;
+    let movement_point_hover = this.box_edit_point_hover
+    if(!this.is_resizing){
+      let movement_point_hover = this.determine_movement_point_for_box()
+    }
 
-    let x_movement = parseInt(String(event.movementX / this.canvas_transform.canvas_scale_combined));
-    let y_movement = Math.ceil(event.movementY / this.canvas_transform.canvas_scale_combined);
-
-    let movement_point_hover = this.determine_movement_point_for_box()
     this.set_mouse_cursor_from_hovered_point(movement_point_hover)
     if (this.box_edit_point_hover == "x_min_y_min") {
       this.x_min = x_new;
@@ -207,6 +210,7 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
       this.y_min = y_new;
     }
     this.interpolated = false;
+    this.is_resizing = true
     this.invert_origin_on_overflow()
     this.update_width_and_height()
     this.update_min_max_points()
@@ -310,7 +314,7 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
       this.height)
 
     this.check_box_hovered(ctx)
-    if (this.draw_corners) {
+    if (this.draw_corners || this.selected) {
       this.draw_box_edit_corners(ctx)
     }
     ctx.lineWidth = this.line_width
