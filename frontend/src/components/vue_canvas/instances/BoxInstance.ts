@@ -24,7 +24,7 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
   private vertex_size: number = 5;
   private line_width: number = 2;
   public is_dragging_instance: boolean = false;
-  public is_hovered: boolean = false;
+  public draw_corners: boolean = false;
   private is_actively_drawing: boolean = false;
   public is_moving: boolean = false;
   public mouse_down_delta_event: any = undefined;
@@ -60,11 +60,22 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     this.type = 'box'
     this.mouse_position = mouse_position;
     this.initialized = true;
+    this.on_instance_hovered = this.set_default_hover_in_style
+    this.on_instance_unhovered = this.set_default_hover_out_style
     this.ctx = ctx;
   }
 
-
-
+  public remove_listener(event_type: string, callback: Function) {
+    if(event_type === 'hover_in'){
+      this.on_instance_hovered = null
+    }
+    if(event_type === 'hover_out'){
+      this.on_instance_unhovered = null
+    }
+  }
+  public set_is_moving(val: boolean){
+    this.is_moving = val
+  }
   public get_canvas_transform(): ImageCanvasTransform {
     return this.canvas_transform
   }
@@ -88,7 +99,10 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
       'blocked': 'not-allowed',
 
     }
-    this.canvas_element.style.cursor = movement_point_hover_style_map[movement_point]
+    if(this.canvas_element){
+      this.canvas_element.style.cursor = movement_point_hover_style_map[movement_point]
+    }
+
   }
 
   public determine_movement_point_for_box(): BoxHoverPoints {
@@ -198,7 +212,13 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     this.update_min_max_points()
     this.check_canvas_overflow()
   }
+  public move_from_mouse_position(mouse_down_delta_event: MousePosition){
+    this.x_min += mouse_down_delta_event.x;
+    this.y_min += mouse_down_delta_event.y;
 
+    this.x_max += mouse_down_delta_event.x;
+    this.y_max += mouse_down_delta_event.y;
+  }
   public resize_from_mouse_position(event: MouseEvent, mouse_position: MousePosition, mouse_down_position: MousePosition) {
     this.x_min = Math.ceil(mouse_down_position.x);
     this.y_min = Math.ceil(mouse_down_position.y);
@@ -216,14 +236,45 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     // }
   }
 
+  public set_default_hover_in_style(box: BoxInstance) {
+    let hover_point = this.determine_movement_point_for_box()
+
+    this.set_mouse_cursor_from_hovered_point(hover_point)
+    this.show_box_corners()
+  }
+
+  public set_default_hover_out_style(box: BoxInstance) {
+    if(this.canvas_element){
+      this.canvas_element.style.cursor = 'default'
+    }
+    this.hide_box_corners()
+    if(!box.selected){
+
+      this.set_color_from_label()
+    }
+
+  }
+
+
+
   public set_line_width(val: number) {
     this.line_width = val
   }
-  private draw_circle(x, y, ctx){
+
+  private draw_circle(x, y, ctx) {
     ctx.arc(x, y, this.vertex_size, 0, 2 * Math.PI);
     ctx.moveTo(x, y) // reset
   }
-  private draw_box_edit_corners(ctx){
+
+  public show_box_corners() {
+    this.draw_corners = true
+  }
+
+  public hide_box_corners() {
+    this.draw_corners = false
+  }
+
+  private draw_box_edit_corners(ctx) {
     this.draw_circle(this.x_min, this.y_min, ctx)
     ctx.moveTo(this.x_max, this.y_min);
     this.draw_circle(this.x_max, this.y_min, ctx)
@@ -233,21 +284,24 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
     this.draw_circle(this.x_min, this.y_max, ctx)
     ctx.fill()
   }
-  private check_box_hovered(ctx){
-    if(this.is_mouse_in_path(ctx)){
+
+  private check_box_hovered(ctx) {
+    if (this.is_mouse_in_path(ctx)) {
       this.is_hovered = true
-      let hover_point = this.determine_movement_point_for_box()
-      console.log('hoverr', hover_point)
-      this.set_mouse_cursor_from_hovered_point(hover_point)
-      this.draw_box_edit_corners(ctx)
-    } else{
+      this.on_instance_hovered(this)
+    } else {
       this.is_hovered = false
+      this.on_instance_unhovered(this)
     }
   }
+
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath()
+    if (this.sequence_id) {
+      ctx.fillStyle = get_sequence_color(this.sequence_id)
+    }
 
-    ctx.fillStyle = get_sequence_color(this.sequence_id)
+    this.grab_color_from_instance(ctx)
     ctx.fillText(this.label_file.label.name, this.x_min, this.y_min);
     ctx.setLineDash([0])
     ctx.rect(this.x_min,
@@ -256,6 +310,9 @@ export class BoxInstance extends Instance implements InstanceBehaviour2D {
       this.height)
 
     this.check_box_hovered(ctx)
+    if (this.draw_corners) {
+      this.draw_box_edit_corners(ctx)
+    }
     ctx.lineWidth = this.line_width
     ctx.stroke()
   }

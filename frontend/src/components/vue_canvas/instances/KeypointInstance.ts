@@ -11,7 +11,6 @@ export class KeypointInstance extends Instance implements InstanceBehaviour2D {
   private vertex_size: number = 5;
   private line_width: number = 2;
   public instance_context: InstanceContext = undefined;
-  public is_hovered: boolean = false; // Is true if any of the nodes or bounding box is being hovered.
   public is_node_hovered: boolean = false;
   public is_edge_hovered: boolean = false;
   public hovered_scale_control_points: boolean = false;

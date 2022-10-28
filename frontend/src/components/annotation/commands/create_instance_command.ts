@@ -11,7 +11,7 @@ export class CreateInstanceCommand {
   constructor(instance, ann_core_ctx, frame_number = undefined) {
     this.ann_core_ctx = ann_core_ctx;
     this.instance = this._copyInstance(instance);
-    console.log('COPY INSTANCE', this.instance)
+
     this.frame_number = frame_number;
     this.created_instance_index = undefined;
   }

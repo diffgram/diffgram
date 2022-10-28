@@ -2,8 +2,9 @@ import {Coordinator, CoordinatorProcessResult} from "../../Coordinator";
 import {KeypointInstance} from "../../../instances/KeypointInstance";
 import {iconFillPaint} from '../../../../../utils/custom_icons'
 import CommandManager from "../../../../../helpers/command/command_manager";
+import {ImageAnnotationCoordinator} from "../ImageAnnotationCoordinator";
 
-export class KeypointInstanceCoordinator extends Coordinator{
+export class KeypointInstanceCoordinator extends ImageAnnotationCoordinator{
   /**
    * Represents the interaction of a user pressing the mouse button
    * over a keypoint instance (either over a node or over the bounding box.

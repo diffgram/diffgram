@@ -7,8 +7,10 @@ import {MousePosition} from "../../../types/mouse_position";
 import {ImageCanvasTransform} from "../../../types/CanvasTransform";
 
 export const SUPPORTED_CLASS_INSTANCE_TYPES: Array<string> = ['box', 'keypoints'];
+export const GLOBAL_SELECTED_COLOR = '#0000ff'
 export interface InstanceBehaviour2D {
   update_min_max_points(): void
+
   draw(ctx): void
 }
 
@@ -53,6 +55,7 @@ export class Instance {
   public points: object[] = [];
   public sequence_id: number = null;
   public soft_delete: boolean = false;
+  public is_hovered: boolean = false;
   public interpolated: boolean = false;
   public status: string = '';
 
@@ -93,6 +96,8 @@ export class Instance {
       id: this.id,
       creation_ref_id: this.creation_ref_id,
       attribute_groups: this.attribute_groups,
+      strokeColor: this.strokeColor,
+      fillColor: this.fillColor,
       x_min: this.x_min,
       y_min: this.y_min,
       center_x: this.center_x,
@@ -127,10 +132,12 @@ export class Instance {
 
   public select() {
     this.selected = true
+    this.on_instance_selected(this)
   }
 
   public unselect() {
     this.selected = false
+    this.on_instance_deselected(this)
   }
 
   public populate_from_instance_obj(inst) {
@@ -148,15 +155,12 @@ export class Instance {
   public delete() {
     this.soft_delete = true;
   }
-  public set_label_file(value: LabelFile){
+
+  public set_label_file(value: LabelFile) {
     this.label_file = value
     this.label_file_id = value.id
   }
-  public instance_hovered_callback(instance) {
-    if (this.on_instance_hovered) {
-      this.on_instance_hovered(instance)
-    }
-  }
+
 
   public instance_selected_callback(instance) {
     if (this.on_instance_selected) {
@@ -170,27 +174,28 @@ export class Instance {
     }
   }
 
-  public instance_unhovered_callback(instance) {
-    if (this.on_instance_unhovered) {
-      this.on_instance_unhovered(instance);
-    }
-  }
-  public set_color_from_label(){
+  public set_color_from_label() {
+    console.log('SET COLOR FROM LAEBL', this.get_label_file_colour_map(), this.label_file_id)
     let colour = this.get_label_file_colour_map()[this.label_file_id]
-    if (colour){
-      this.set_border_color(colour)
-      this.set_fill_color(colour.rgba.r,colour.rgba.g, colour.rgba.b, colour.rgba.a)
+    if (colour) {
+      this.set_border_color(colour.hex)
+      this.set_fill_color(colour.rgba.r, colour.rgba.g, colour.rgba.b, 0.1)
     }
   }
 
-  public set_border_color(colorHex: string){
+  public set_border_color(colorHex: string) {
     this.strokeColor = colorHex
   }
 
-  public set_fill_color(r: number, g: number, b: number, a: number){
-
+  public set_fill_color(r: number, g: number, b: number, a: number) {
     this.fillColor = "rgba(" + r + "," + g + "," + b + "," + a + ")";
   }
+
+  protected grab_color_from_instance(ctx: CanvasRenderingContext2D) {
+    ctx.fillStyle = this.fillColor
+    ctx.strokeStyle = this.strokeColor
+  }
+
   public set_canvas(val: HTMLCanvasElement) {
     this.canvas_element = val
     if (this.canvas_element) {
@@ -200,6 +205,22 @@ export class Instance {
 
   public set_canvas_transform(val: ImageCanvasTransform) {
     this.canvas_transform = val
+  }
+  public on(event_type: string, callback: Function) {
+    if(event_type === 'hover_in'){
+      this.on_instance_hovered = callback
+    }
+    if(event_type === 'hover_out'){
+      this.on_instance_unhovered = callback
+    }
+  }
+  public remove_listener(event_type: string, callback: Function) {
+    if(event_type === 'hover_in'){
+      this.on_instance_hovered = null
+    }
+    if(event_type === 'hover_out'){
+      this.on_instance_unhovered = null
+    }
   }
 }
 
