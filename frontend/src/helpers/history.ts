@@ -5,8 +5,8 @@ export default class CommandHistory implements HistoryInterface {
     private history: Array<CommandInterface> = [];
     private undone_history: Array<CommandInterface> = [];
 
-    public undo_posible: Boolean = false;
-    public redo_posible: Boolean = false;
+    public undo_posible: boolean = false;
+    public redo_posible: boolean = false;
 
     public push(command: CommandInterface) {
         this.undone_history = [];
