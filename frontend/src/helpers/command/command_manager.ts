@@ -1,12 +1,20 @@
 import { HistoryInterface } from "../interfaces/History";
 import { CommandInterface } from "../interfaces/Command";
+import { CommandManager as CommandManagerType } from "../../types/CommandManager"
 
-
-export default class CommandManager {
+export default class CommandManager implements CommandManagerType {
     private command_history: HistoryInterface;
     
     constructor(command_history: HistoryInterface) {
         this.command_history = command_history;
+    }
+
+    get undo_possible(): boolean {
+        return this.command_history.undo_posible
+    }
+
+    get redo_possible(): boolean {
+        return this.command_history.undo_posible
     }
 
     public executeCommand(command: CommandInterface) {
