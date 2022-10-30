@@ -14,3 +14,15 @@ export type LabelFile = {
   label: Label
   stated: string
 }
+
+export type LabelSchema = {
+  id: number,
+  name: string,
+  project_id: number,
+  member_created_id: number | null,
+  member_updated_id: number | null,
+  is_default: boolean,
+  archived: boolean,
+  time_created: string,
+  time_updated: string | null
+}
