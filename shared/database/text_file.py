@@ -67,13 +67,14 @@ class TextFile(Base):
         }
         return text
 
-    def serialize(self, session, connection_id = None, bucket_name = None, regen_url = True):
+    def serialize(self, session, connection_id = None, bucket_name = None, regen_url = True, create_thumbnails = True):
         if regen_url:
             from shared.url_generation import blob_regenerate_url
             blob_regenerate_url(blob_object = self,
                                 session = session,
                                 connection_id = connection_id,
-                                bucket_name = bucket_name)
+                                bucket_name = bucket_name,
+                                create_thumbnails = create_thumbnails)
 
         text = {
             'original_filename': self.original_filename,
