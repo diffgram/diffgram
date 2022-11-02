@@ -15,6 +15,7 @@
           disabled
           text_color="black"
           color="grey"
+          custom_style="font-size: 8px"
           :message="item"
         />
       </div>
@@ -67,8 +68,6 @@ export default Vue.extend({
 
         selected_names = [...selected_names, ...group_attribute_names]
       })
-
-      console.log()
 
       this.selected = selected_names    
     }

@@ -15,7 +15,7 @@
         :disabled="disabled"
         :small="small"
         :style="custom_style"
-        :class="is_clicable ? 'clickable' : ''"
+        :class="is_clickable ? 'clickable' : ''"
         @click="$emit('click', $event)"
       >
         <slot name="chip" />
@@ -56,17 +56,25 @@ export default Vue.extend({
       default: "bottom",
     },
     loading: {
+      type: Boolean,
       default: false,
     },
     disabled: {
+      type: Boolean,
       default: false,
     },
     small: {
+      type: Boolean,
       default: false,
     },
     is_clickable: {
+      type: Boolean,
       default: false,
     },
+    custom_style: {
+      type: String,
+      default: ''
+    }
   },
   data() {
     return {
