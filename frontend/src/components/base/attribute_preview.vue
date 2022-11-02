@@ -28,7 +28,9 @@ import Vue from "vue";
 import standard_chip from "./standard_chip.vue";
 
 export default Vue.extend({
-  components: { standard_chip },
+  components: { 
+    standard_chip 
+  },
   name: "attribute_preview",
   props: {
     global_attribute_groups_list: {
@@ -51,11 +53,14 @@ export default Vue.extend({
         this.set_attributes()
       }
     },
-    current_instance(newVal) {
-      if (newVal && newVal.attribute_groups && this.global_attribute_groups_list) {
-        this.set_attributes()
+    current_instance: {
+      deep: true,
+      handler(newVal) {
+        if (newVal && newVal.attribute_groups && this.global_attribute_groups_list) {
+          this.set_attributes()
+        }
       }
-    }
+    },
   },
   methods: {
     set_attributes: function() {
