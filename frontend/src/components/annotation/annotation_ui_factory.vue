@@ -129,6 +129,7 @@
         ref="file_manager_sheet"
         :project_string_id="computed_project_string_id"
         :task="task"
+        :context="context"
         :view_only="view_only"
         :enabled_edit_schema="enabled_edit_schema"
         :show_explorer_full_screen="show_explorer_full_screen"
@@ -258,6 +259,7 @@ export default Vue.extend({
       loading: false,
       loading_project: true,
       task: null,
+      context: null,
       current_file: null,
       error: null,
       request_save: false,
@@ -314,12 +316,13 @@ export default Vue.extend({
       }
 
     }
-
+    this.context = 'file'
     if (
       !this.$store.getters.is_on_public_project ||
       this.$store.state.user.current.is_super_admin == true
     ) {
       if (this.$props.task_id_prop) {
+        this.context = 'task'
         this.add_visit_history_event("task");
       } else if (this.$props.file_id_prop) {
         this.add_visit_history_event("file");
@@ -536,6 +539,7 @@ export default Vue.extend({
     },
 
     change_file: async function (file, model_runs, color_list) {
+      console.log('CHANGE FILE')
       this.changing_file = true
       this.current_file = file;
       await this.$nextTick();
