@@ -13,18 +13,23 @@
 
       </div>
     </v-alert>
+      <attribute_preview
+        v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
+        :global_attribute_groups_list="global_attribute_groups_list"
+        :current_instance="current_global_instance"
+      />
     <div class="d-flex flex-column">
+
       <div v-if="render_mode=='gold_standard'">Gold standard instances</div>
 
-
       <global_attributes_list
-         v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
+        v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
         :global_attribute_groups_list="global_attribute_groups_list"
         :current_global_instance="current_global_instance"
         :schema_id="schema_id"
         :view_only_mode="view_only_mode"
         @attribute_change="global_attribute_change($event)"
-      ></global_attributes_list>
+      />
 
       <v-divider v-if="attribute_group_list_prop.length != 0 || (current_instance && current_instance.attribute_groups)"></v-divider>
 
@@ -509,6 +514,7 @@ import rating_review from './rating_review'
 import attribute_group_list from '../attribute/attribute_group_list.vue';
 import label_select_only from '../label/label_select_only.vue'
 import global_attributes_list from '../attribute/global_attributes_list'
+import attribute_preview from "../base/attribute_preview.vue"
 import Vue from "vue";
 
 export default Vue.extend({
@@ -517,7 +523,8 @@ export default Vue.extend({
       rating_review,
       attribute_group_list,
       label_select_only,
-      global_attributes_list
+      global_attributes_list,
+      attribute_preview
     },
     // TODO defaults with dicts here
     props: [
