@@ -44,25 +44,25 @@ export default Vue.extend({
   },
   data() {
     return {
-      selected: []
+      selected: [] as Array<string>
     }
   },
   watch: {
-    global_attribute_groups_list(newVal) {
+    global_attribute_groups_list(): void {
       this.set_attributes()
     },
     current_instance: {
       deep: true,
-      handler() {
+      handler(): void {
         this.set_attributes()
       }
     },
   },
-  mounted() {
+  mounted(): void {
     this.set_attributes()
   },
   methods: {
-    set_attributes: function() {
+    set_attributes: function(): void {
       if (this.global_attribute_groups_list && this.current_instance && this.current_instance.attribute_groups) {
         const attribute_groups = this.global_attribute_groups_list.map((group: any) => group.id)
         let selected_names = []
