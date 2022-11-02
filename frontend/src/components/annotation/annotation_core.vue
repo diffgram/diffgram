@@ -3214,7 +3214,6 @@ export default Vue.extend({
       // If we only want one can just pass that singluar instance as the "focus" one
       // this.instance_list[index].focused = True
       // careful can't use id, since newly created instances won't have an ID!
-      console.log('FOCUSSS', focus)
       this.instance_focused_index = focus.index;
       this.selected_instance_list = [
         this.instance_list[this.instance_focused_index],
@@ -3693,7 +3692,6 @@ export default Vue.extend({
       }
       await this.$nextTick();
       this.$refs.toolbar.set_mode(this.current_instance_template.mode)
-      console.log('AAAA', this.current_instance_template, this.current_instance_template.mode === 'guided' && this.draw_mode)
       if(this.current_instance_template.mode === 'guided' && this.draw_mode){
         this.show_snackbar_guided_keypoints_drawing(1);
       }
@@ -7270,58 +7268,6 @@ export default Vue.extend({
     trigger_refresh_with_delay: function () {
       setTimeout(() => (this.refresh = Date.now()), 80);
     },
-    get_parent_instance_list_for_video: async function(){
-      let url = undefined;
-      let file = this.$props.file;
-      let payload = {}
-      if (this.$store.getters.is_on_public_project) {
-        url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
-        payload = {
-          directory_id:
-          this.$store.state.project.current_directory.directory_id,
-          job_id: this.job_id,
-          attached_to_job: file.attached_to_job,
-        };
-      } else if (this.$store.state.builder_or_trainer.mode == "builder") {
-        if (this.task && this.task.id) {
-          if(this.task.id === '-1' || this.task.id === -1){
-            return
-          }
-          // If a task is present, prefer this route to handle permissions
-          url = "/api/v1/task/" + this.task.id + "/annotation/list";
-          file = this.$props.task.file;
-        } else {
-          url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
-        }
-        payload = {
-          directory_id:
-          this.$store.state.project.current_directory.directory_id,
-          job_id: this.job_id,
-          attached_to_job: file.attached_to_job,
-        };
-      }
-      else if (this.$store.state.builder_or_trainer.mode == "trainer") {
-        if(this.task.id === '-1' || this.task.id === -1){
-          return
-        }
-        url = "/api/v1/task/" + this.task.id + "/annotation/list";
-      }
-      try {
-        const response = await axios.post(url, payload);
-        if (response.data['file_serialized']) {
-          let new_instance_list = this.create_instance_list_with_class_types(
-            response.data['file_serialized']['instance_list']
-          );
-          this.video_parent_file_instance_list = new_instance_list
-        }
-        this.annotations_loading = false;
-        this.trigger_refresh_with_delay();
-      } catch (error) {
-        console.error(error);
-        this.loading = false;
-      }
-
-    },
     get_instance_list_for_image: async function () {
       let url = undefined;
       let file = this.$props.file;
@@ -7829,7 +7775,6 @@ export default Vue.extend({
           }
           this.html_image = new_image;
           this.refresh = Date.now();
-          await this.get_parent_instance_list_for_video();
           await this.get_instances();
           this.canvas_width = file.image.width;
           this.canvas_height = file.image.height;

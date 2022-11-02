@@ -277,7 +277,8 @@ def connection_url_regenerate(session: Session,
                               bucket_name: str,
                               new_offset_in_seconds: int,
                               access_token: str = None,
-                              reference_file: File = None) -> [DiffgramBlobObjectType, dict]:
+                              reference_file: File = None,
+                              create_thumbnails: bool = True) -> [DiffgramBlobObjectType, dict]:
     """
         Regenerates signed url from the given connection ID, bucket and blob path.
     :param session:
@@ -317,7 +318,7 @@ def connection_url_regenerate(session: Session,
     blob_object.url_signed = signed_url
 
     # Extra assets (Depending on type)
-    if type(blob_object) == Image:
+    if type(blob_object) == Image and create_thumbnails:
         blob_object, url = generate_thumbnails_for_image(
             session = session,
             log = log,
@@ -345,10 +346,11 @@ def connection_url_regenerate(session: Session,
 
 def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
                         session: Session,
-                        connection_id = None,
-                        bucket_name = None,
-                        access_token = None,
-                        reference_file: File = None) -> [str, dict]:
+                        connection_id: int = None,
+                        bucket_name: str = None,
+                        access_token: str = None,
+                        reference_file: File = None,
+                        create_thumbnails: bool = True) -> [str, dict]:
     """
         Regenerates the signed url of the given blob object.
     :param blob_object:
@@ -386,7 +388,8 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
             bucket_name = bucket_name,
             new_offset_in_seconds = new_offset_in_seconds,
             reference_file = reference_file,
-            access_token = access_token
+            access_token = access_token,
+            create_thumbnails = create_thumbnails
         )
 
     if regular_log.log_has_error(log):
