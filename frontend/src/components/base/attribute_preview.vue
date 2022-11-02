@@ -1,15 +1,23 @@
 <template>
-  <div class="attribute-preview">
-    <div
-      v-for="(item, index) in selected"
-      v-bind:key="`attribute_preview_${index}`"
-      class="chip-wrapper"
-    >
-      <standard_chip
-        text_color="grey"
-        :message="item"
-        :small="true"
-      />
+  <div
+    v-if="selected.length > 0"
+    class="attribute-preview"
+  >
+    <h4>Global attributes applied:</h4>
+    <div class="attribute-preview-chips">
+      <div
+        v-for="(item, index) in selected"
+        v-bind:key="`attribute_preview_${index}`"
+        class="chip-wrapper"
+      >
+        <standard_chip
+          small
+          disabled
+          text_color="black"
+          color="grey"
+          :message="item"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -36,28 +44,47 @@ export default Vue.extend({
       selected: []
     }
   },
-  mounted() {
-    const attribute_groups = this.global_attribute_groups_list.map((group: any) => group.id)
-    let selected_names = []
+  watch: {
+    global_attribute_groups_list(newVal) {
+      if (newVal && this.current_instance && this.current_instance.attribute_groups) {
+        this.set_attributes()
+      }
+    },
+    current_instance(newVal) {
+      if (newVal && newVal.attribute_groups && this.global_attribute_groups_list) {
+        this.set_attributes()
+      }
+    }
+  },
+  methods: {
+    set_attributes: function() {
+      const attribute_groups = this.global_attribute_groups_list.map((group: any) => group.id)
+      let selected_names = []
 
-    attribute_groups.map((group_id: number) => {
-      const group_selected_ids = Object.keys(this.current_instance.attribute_groups[group_id]).map(key => parseInt(key))
-      const group_attribute_names = group_selected_ids.map(key => this.current_instance.attribute_groups[group_id][key].name)
+      attribute_groups.map((group_id: number) => {
+        const group_selected_ids = Object.keys(this.current_instance.attribute_groups[group_id]).map(key => parseInt(key))
+        const group_attribute_names = group_selected_ids.map(key => this.current_instance.attribute_groups[group_id][key].name)
 
-      selected_names = [...selected_names, ...group_attribute_names]
-    })
+        selected_names = [...selected_names, ...group_attribute_names]
+      })
 
-    this.selected = selected_names
+      console.log()
+
+      this.selected = selected_names    
+    }
   }
 });
 </script>
 
 <style scoped>
 .attribute-preview {
+  padding: 10px;
+}
+
+.attribute-preview-chips {
   display: flex;
   flex-shrink: 0;
   flex-flow: row wrap;
-  padding: 10px;
   max-width: 100%;
 }
 
