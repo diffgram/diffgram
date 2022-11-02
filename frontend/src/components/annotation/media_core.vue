@@ -1395,7 +1395,8 @@ import Compound_file_preview from "../source_control/compound_file_preview.vue";
       if(!file){
         return
       }
-      let [url_data, err] = await get_file_signed_url(project_string_id, file.id);
+      let create_thumbnails = this.context === 'task' ? false : true
+      let [url_data, err] = await get_file_signed_url(project_string_id, file.id, create_thumbnails);
       if (err){
         this.error = this.$route_api_errors(err)
       }
