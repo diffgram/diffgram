@@ -539,7 +539,6 @@ export default Vue.extend({
     },
 
     change_file: async function (file, model_runs, color_list) {
-      console.log('CHANGE FILE')
       this.changing_file = true
       this.current_file = file;
       await this.$nextTick();
@@ -667,7 +666,6 @@ export default Vue.extend({
             assign_to_user: assign_to_user,
           }
         );
-        console.log(response)
         if (response.data) {
           if (response.data.task && response.data.task.id !== task.id) {
             this.$router.push(`/task/${response.data.task.id}`);

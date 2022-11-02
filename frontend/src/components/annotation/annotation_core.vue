@@ -1129,7 +1129,6 @@ export default Vue.extend({
     },
     task: {
       handler(newVal, oldVal) {
-        console.log('WATCHER TASK', newVal, oldVal)
         if (newVal != oldVal) {
           this.on_change_current_task();
         }
@@ -3215,7 +3214,6 @@ export default Vue.extend({
       // If we only want one can just pass that singluar instance as the "focus" one
       // this.instance_list[index].focused = True
       // careful can't use id, since newly created instances won't have an ID!
-      console.log('FOCUSSS', focus)
       this.instance_focused_index = focus.index;
       this.selected_instance_list = [
         this.instance_list[this.instance_focused_index],
@@ -3438,7 +3436,6 @@ export default Vue.extend({
       if (this.$props.file) {
         this.on_change_current_file();
       } else if (this.$props.task) {
-        console.log('CREATED TASK ANN CORE')
         this.on_change_current_task();
       }
 
@@ -3695,7 +3692,6 @@ export default Vue.extend({
       }
       await this.$nextTick();
       this.$refs.toolbar.set_mode(this.current_instance_template.mode)
-      console.log('AAAA', this.current_instance_template, this.current_instance_template.mode === 'guided' && this.draw_mode)
       if(this.current_instance_template.mode === 'guided' && this.draw_mode){
         this.show_snackbar_guided_keypoints_drawing(1);
       }
