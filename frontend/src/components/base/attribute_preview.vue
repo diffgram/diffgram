@@ -72,7 +72,7 @@ export default Vue.extend({
             const group_selected_ids = Object.keys(this.current_instance.attribute_groups[group_id]).map(key => parseInt(key))
             const group_attribute_names = group_selected_ids.map(key => {
               if (this.current_instance.attribute_groups[group_id][key]) return this.current_instance.attribute_groups[group_id][key].name
-            })
+            }).filter(item => item)
     
             selected_names = [...selected_names, ...group_attribute_names]
           }
