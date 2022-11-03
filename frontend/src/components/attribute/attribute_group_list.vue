@@ -347,7 +347,7 @@ import attribute_group_new from './attribute_group_new.vue'
 
         let attr_data, error;
 
-        if (!this.attribute_list) {
+        if (!this.attribute_list && this.project_string_id) {
           [attr_data, error] = await attribute_group_list(
             this.project_string_id,
             undefined,

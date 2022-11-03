@@ -938,6 +938,10 @@ import Compound_file_preview from "../source_control/compound_file_preview.vue";
         type: Boolean,
         default: false
        },
+      'context':{
+        type: String,
+        default: null
+      }
 
 
     },
@@ -1318,7 +1322,6 @@ import Compound_file_preview from "../source_control/compound_file_preview.vue";
     },
 
     get_media: async function (fetch_single_file = true, file_id) {
-      console.log('GET MEDIA', fetch_single_file, file_id)
       this.loading = true
       this.error = {}   // reset
       this.media_loading = true;
@@ -1392,7 +1395,8 @@ import Compound_file_preview from "../source_control/compound_file_preview.vue";
       if(!file){
         return
       }
-      let [url_data, err] = await get_file_signed_url(project_string_id, file.id);
+      let create_thumbnails = this.context === 'task' ? false : true
+      let [url_data, err] = await get_file_signed_url(project_string_id, file.id, create_thumbnails);
       if (err){
         this.error = this.$route_api_errors(err)
       }
@@ -1405,6 +1409,10 @@ import Compound_file_preview from "../source_control/compound_file_preview.vue";
       }
     },
     fetch_file_list_signed_urls: async function(file_list){
+
+      if(this.context === 'task'){
+        return
+      }
       for (let file of file_list){
         this.fetch_single_file_signed_url(file, this.$props.project_string_id)
       }

@@ -78,14 +78,16 @@ class Image(Base):
                                      connection_id = None,
                                      bucket_name = None,
                                      reference_file: 'File' = None,
-                                     regen_url = True):
+                                     regen_url = True,
+                                     create_thumbnails: bool = True):
         if regen_url:
             from shared.url_generation import blob_regenerate_url
             blob_regenerate_url(blob_object = self,
                                 session = session,
                                 connection_id = connection_id,
                                 bucket_name = bucket_name,
-                                reference_file = reference_file)
+                                reference_file = reference_file,
+                                create_thumbnails = create_thumbnails)
         return {
             'original_filename': self.original_filename,
             'width': self.width,

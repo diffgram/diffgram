@@ -20,10 +20,12 @@ export const get_file_list = async (project_string_id, user_name, metadata) => {
   }
 }
 
-export const get_file_signed_url = async (project_string_id, file_id) => {
+export const get_file_signed_url = async (project_string_id: string, file_id: number, create_thumbnails: boolean = true) => {
   let url = `/api/project/${project_string_id}/file/${file_id}/get-signed-url`
   try {
-    const response = await axios.get(url)
+    const response = await axios.get(url, {
+      params:{ create_thumbnails: create_thumbnails}
+    })
 
     return [response.data, null]
   } catch(e) {
