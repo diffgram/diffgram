@@ -319,19 +319,22 @@ def connection_url_regenerate(session: Session,
 
     # Extra assets (Depending on type)
     if type(blob_object) == Image and create_thumbnails:
-        blob_object, url = generate_thumbnails_for_image(
-            session = session,
-            log = log,
-            blob_object = blob_object,
-            params = params,
-            client = client,
-            connection_id = connection_id,
-            bucket_name = bucket_name,
-            new_offset_in_seconds = new_offset_in_seconds,
-            member = member,
-            access_token = None,
-            reference_file = reference_file
-        )
+        blob_object.url_signed_thumb = signed_url
+        # Temp removal to re use original image instead of building thumbnail
+
+        # blob_object, url = generate_thumbnails_for_image(
+        #     session = session,
+        #     log = log,
+        #     blob_object = blob_object,
+        #     params = params,
+        #     client = client,
+        #     connection_id = connection_id,
+        #     bucket_name = bucket_name,
+        #     new_offset_in_seconds = new_offset_in_seconds,
+        #     member = member,
+        #     access_token = None,
+        #     reference_file = reference_file
+        # )
     if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
         blob_object, log = generate_text_token_url(
             session = session,
