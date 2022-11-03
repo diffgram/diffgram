@@ -68,18 +68,20 @@ export default Vue.extend({
         let selected_names = []
   
         attribute_groups.map(({group_id, kind}) => {
+          const attribute = this.current_instance.attribute_groups[group_id]
           if (kind === 'tree') {            
-            if (this.current_instance.attribute_groups[group_id]) {
-              const group_selected_ids = Object.keys(this.current_instance.attribute_groups[group_id]).map(key => parseInt(key))
-              const group_attribute_names = group_selected_ids.map(key => {
-                if (this.current_instance.attribute_groups[group_id][key]) return this.current_instance.attribute_groups[group_id][key].name
-              }).filter(item => item)
+            if (attribute) {
+              const group_selected_ids = Object.keys(attribute).map(key => parseInt(key))
+              const group_attribute_names = group_selected_ids
+                .map(key => { if (attribute[key]) return attribute[key].name})
+                .filter(item => item)
       
               selected_names = [...selected_names, ...group_attribute_names]
             }
           }
-          else if (kind === 'select') selected_names = [...selected_names, this.current_instance.attribute_groups[group_id].display_name]
-
+          else if (['select', 'radio'].includes(kind)) selected_names = [...selected_names, attribute.display_name]
+          else if (kind === 'multiple_select') attribute.map(option => selected_names.push(option.display_name))
+          else if (['text', 'slider', 'time', 'date'].includes(kind)) selected_names.push(`${attribute}`)
         })
   
         this.selected = selected_names    
