@@ -61,8 +61,7 @@ export default Vue.extend({
     },
     current_instance: {
       deep: true,
-      handler(newValue, oldValue): void {
-        console.log(newValue, oldValue)
+      handler(): void {
         this.set_attributes()
       }
     },
@@ -72,6 +71,10 @@ export default Vue.extend({
   },
   methods: {
     set_attributes: function(): void {
+      if (this.added_attributes.length === 0) {
+        this.selected = []
+        return
+      }
       if (this.global_attribute_groups_list && this.current_instance && this.current_instance.attribute_groups) {
         const attribute_groups = this.global_attribute_groups_list.map((group: any) => ({group_id: group.id, kind: group.kind}))
         let selected_names = []
