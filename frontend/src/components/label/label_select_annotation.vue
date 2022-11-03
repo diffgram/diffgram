@@ -158,13 +158,17 @@
         request_refresh_from_project: function () {
           this.get_label_list_from_project()
         },
+        label_file_list: function () {
+          this.label_list = this.label_file_list
+          this.selected = this.label_file_list[0]
+        }
 
       },
       mounted() {
 
-        if (this.label_file_list_prop) {
-          this.label_list = this.label_file_list_prop
-          this.selected = this.label_file_list_prop[0]
+        if (this.label_file_list) {
+          this.label_list = this.label_file_list
+          this.selected = this.label_file_list[0]
         } else {
           this.get_label_list_from_project()
         }

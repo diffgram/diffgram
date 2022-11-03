@@ -123,7 +123,7 @@
       </div>
 
       <file_manager_sheet
-        v-if="!task"
+        v-if="!task && context === 'file'"
         v-show="!loading_project && !initializing"
         :show_sheet="!loading_project"
         ref="file_manager_sheet"
