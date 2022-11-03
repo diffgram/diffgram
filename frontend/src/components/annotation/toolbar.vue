@@ -768,6 +768,13 @@
                   <v-card-title> Settings </v-card-title>
 
                   <v-checkbox
+                    label="Show Attribute Preview"
+                    data-cy="show_attribute_preview"
+                    v-model="$store.state.user.settings.show_attribute_preview"
+                  >
+                  </v-checkbox>
+
+                  <v-checkbox
                     label="Show Any Text"
                     data-cy="show_any_text_checkbox"
                     v-model="label_settings_local.show_text"

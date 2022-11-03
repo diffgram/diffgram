@@ -14,7 +14,9 @@
       </div>
     </v-alert>
       <attribute_preview
-        v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
+        v-if="
+          global_attribute_groups_list && global_attribute_groups_list.length > 0 &&
+          $store.state.user.settings.show_attribute_preview"
         :global_attribute_groups_list="global_attribute_groups_list"
         :current_instance="current_global_instance"
       />
