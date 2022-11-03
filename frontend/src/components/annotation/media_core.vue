@@ -24,8 +24,7 @@
     This includes server side results which <b> may not be displayed.</b>
     </v-alert>
 
-    <v-alert v-if="!loading && !media_loading && file_list.length == 0"
-             type="info">
+    <v-alert  v-if="!loading && !media_loading && file_list.length == 0 && initialized"type="info">
       <v-layout>
 
         <p class="pr-4">
@@ -537,7 +536,7 @@
         or something but it doesn't quite work
         (overflows y funny)
         -->
-      <v-card class="pa-4" elevation-1
+      <v-card class="pt-0 pl-4 pr-4 pb-0" elevation-1
               v-if="layout_view == 'icons' ">
 
         <v-skeleton-loader
@@ -547,13 +546,15 @@
         >
           <v-container container--fluid
                        grid-list-md
-                       style="overflow-x:auto"
+                       class="pt-4"
+                       style="overflow-x:auto; border-top: 1px solid #e0e0e0"
           >
             <v-layout :style="full_screen ? {display: 'flex', flexWrap: 'wrap'}: undefined">
 
-              <v-row align="end"
+              <v-row align="center"
                      v-if="file_list.length === 0"
-                     class="pa-4"
+                     class="ma-4 d-flex flex-column"
+                     style="height: 100%; width: 100%"
                      justify="center">
 
                 <!-- Value of being inside Media Browser to help understand that connection.
@@ -562,6 +563,7 @@
                      For alignment consider how it looks with media,
                      and case of no media. ie with no media looks nicer to center perhaps.
                 -->
+                <h3>No Files on dataset. Click Below to Upload Files</h3>
                 <standard_button
                   tooltip_message="Add Media"
                   @click="$router.push('/studio/upload/' +
@@ -920,6 +922,9 @@ import Compound_file_preview from "../source_control/compound_file_preview.vue";
       'file_id_prop': {
         default: null
       },
+      'request_media_on_mount':{
+        default: true
+      },
       'job_id': {
         default: null
       },
@@ -983,6 +988,7 @@ import Compound_file_preview from "../source_control/compound_file_preview.vue";
 
       current_dataset: {},
       current_file: null,
+      initialized: false,
       request_next_page: null,
       file_list: [],
 
@@ -1285,8 +1291,10 @@ import Compound_file_preview from "../source_control/compound_file_preview.vue";
     }
 
     this.headers_selected_backup = this.headers_selected
+    if(this.request_media_on_mount){
+      this.request_media()
+    }
 
-    this.request_media()
 
     // ie triggered by  this.$store.commit('init_media_refresh')
     var self = this
@@ -1678,6 +1686,7 @@ import Compound_file_preview from "../source_control/compound_file_preview.vue";
       this.selected = []
 
       this.get_media();
+      this.initialized = true
     },
     async next_page() {
       this.page_number += 1
