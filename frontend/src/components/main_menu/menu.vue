@@ -100,7 +100,7 @@
                 <v-layout>
                   <div v-if="display_projectName" id="project_name">
 
-                    <v-menu offset-y :close-on-click="false" :close-on-content-click="false">
+                    <v-menu offset-y :close-on-content-click="false">
                       <template
                         v-slot:activator="{ on, attrs }"
                         v-bind="attrs"
@@ -115,10 +115,12 @@
                         </v-btn>
                       </template>
 
-
+                        <div v-if="loading">
+                          <v-progress-circular indeterminate></v-progress-circular>
+                        </div>
                         <v-list
                           id="project_list"
-                          v-if="$store.state.project_list && $store.state.project_list.user_projects_list">
+                          v-if="!loading && $store.state.project_list && $store.state.project_list.user_projects_list">
                             <div class="d-flex">
 
                               <div class="d-flex flex-column">
