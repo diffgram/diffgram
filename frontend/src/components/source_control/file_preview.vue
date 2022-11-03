@@ -192,7 +192,12 @@
 
     async mounted() {
       if (this.$props.file) {
-        await this.set_bg(this.$props.file);
+        try{
+          await this.set_bg(this.$props.file);
+        } catch (e){
+          console.error(e)
+        }
+
       }
       if(this.$refs.file_card){
         if(this.$props.selectable){

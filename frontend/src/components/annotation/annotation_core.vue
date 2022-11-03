@@ -1412,7 +1412,7 @@ export default Vue.extend({
       annotations_loading: false,
       save_loading_image: false,
 
-      issues_expansion_panel: false,
+      issues_expansion_panel: true,
 
       source_control_menu: false,
 
@@ -3553,6 +3553,9 @@ export default Vue.extend({
       this.add_event_listeners();
       this.fetch_model_run_list();
       this.fetch_instance_template();
+      if(this.$refs.issues_sidepanel){
+        this.$refs.issues_sidepanel.get_issues_list()
+      }
       this.update_canvas()
       this.populate_canvas_element()
       this.canvas_mouse_tools = new CanvasMouseTools(
@@ -5825,12 +5828,6 @@ export default Vue.extend({
         if (this.$props.file.type == "video") {
           await this.video_update_core();
         }
-        if (this.$props.file.type == "text") {
-          this.video_mode = false;
-          this.show_text_file_place_holder = true;
-          this.loading = false;
-          this.annotations_loading = false;
-        }
       } else {
         this.loading = false;
         this.annotations_loading = false;
@@ -7775,7 +7772,6 @@ export default Vue.extend({
           }
           this.html_image = new_image;
           this.refresh = Date.now();
-          await this.get_instances();
           this.canvas_width = file.image.width;
           this.canvas_height = file.image.height;
           this.update_canvas();
