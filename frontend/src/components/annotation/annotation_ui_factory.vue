@@ -123,10 +123,11 @@
       </div>
 
       <file_manager_sheet
-        v-if="!task"
+        v-if="!task && context === 'file'"
         v-show="!loading_project && !initializing"
         :show_sheet="!loading_project"
         ref="file_manager_sheet"
+        :request_media_on_mount="false"
         :project_string_id="computed_project_string_id"
         :task="task"
         :context="context"
@@ -366,7 +367,7 @@ export default Vue.extend({
         await this.check_credentials();
         this.credentials_granted = this.has_credentials_or_admin();
         if (!this.credentials_granted) {
-          this.show_missing_credentials_dialog();
+          this.show_missing_credentials_dialog()  ;
         }
       } else if (this.$props.file_id_prop) {
         await this.fetch_schema_list()
@@ -466,7 +467,9 @@ export default Vue.extend({
   },
   methods: {
     on_change_label_schema: function (schema) {
-
+      if(schema.id === this.current_label_schema.id){
+        return
+      }
       this.current_label_schema = schema;
       this.labels_list_from_project = null;
       this.get_labels_from_project()

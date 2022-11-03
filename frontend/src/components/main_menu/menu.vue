@@ -100,7 +100,7 @@
                 <v-layout>
                   <div v-if="display_projectName" id="project_name">
 
-                    <v-menu offset-y>
+                    <v-menu offset-y :close-on-content-click="false">
                       <template
                         v-slot:activator="{ on, attrs }"
                         v-bind="attrs"
@@ -114,22 +114,36 @@
                           </h2>
                         </v-btn>
                       </template>
-                      <v-list
-                        id="project_list"
-                        v-if="$store.state.project_list &&
-                              $store.state.project_list.user_projects_list">
-                        <v-list-item
-                          class="project-option"
-                          style="cursor: pointer"
-                          v-for="project in user_project_list"
-                          :key="project.id"
-                        >
-                          <v-list-item-title @click="change_project(project)">{{
-                            project.name
-                            }}
-                          </v-list-item-title>
-                        </v-list-item>
-                      </v-list>
+
+                        <div v-if="loading">
+                          <v-progress-circular indeterminate></v-progress-circular>
+                        </div>
+                        <v-list
+                          id="project_list"
+                          v-if="!loading && $store.state.project_list && $store.state.project_list.user_projects_list">
+                            <div class="d-flex">
+
+                              <div class="d-flex flex-column">
+                                <v-list-item
+                                  class="project-option"
+                                  style="cursor: pointer"
+                                  v-for="project in user_project_list"
+                                  :key="project.id"
+                                >
+                                  <v-list-item-title @click="change_project(project)">{{
+                                      project.name
+                                    }}
+                                  </v-list-item-title>
+                                </v-list-item>
+
+                              </div>
+                              <v-btn @click="get_avalible_projects"class="mt-2 mr-4" color="primary" x-small >
+                                <v-icon dark>mdi-refresh</v-icon>
+                              </v-btn>
+                            </div>
+
+                        </v-list>
+
                     </v-menu>
                   </div>
                 </v-layout>
@@ -316,6 +330,7 @@
       return {
         title: "Diffgram",
         project_menu: false,
+        loading: false,
         project_manager_dialog: false,
         pending_files_dialog_is_open: false,
         do_not_show_menu: false,
@@ -376,10 +391,10 @@
     mounted() {
       if (
         !this.$store.state.project_list ||
-        this.$store.state.project_list.user_projects_list ||
-        (this.$store.state.project_list.user_projects_list &&
-          this.$store.state.project_list.user_projects_list.length === 0)
+        (this.$store.state.project_list && !this.$store.state.project_list.user_projects_list) ||
+        (this.$store.state.project_list && this.$store.state.project_list.user_projects_list && this.$store.state.project_list.user_projects_list.length === 0)
       ) {
+        console.log('GET AVAILABLE PROJECTS', this.$store.state.project_list, this.$store.state.project_list.user_projects_list.length)
         this.get_avalible_projects()
       }
     },
@@ -429,9 +444,11 @@
         }
       },
       get_avalible_projects: async function () {
+        this.loading = true
         const response = await getProjectList();
         const project_list = response.data.project_list;
         this.$store.commit("set_userProjects_list", project_list);
+        this.loading = false
       },
       contact_us: function(){
         window.open('https://diffgram.com/main/contact')

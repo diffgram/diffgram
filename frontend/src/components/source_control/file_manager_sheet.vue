@@ -83,6 +83,7 @@
                               file_view_mode="annotation"
                               :task="task"
                               :context="context"
+                              :request_media_on_mount="request_media_on_mount"
                               :full_screen="full_screen"
                               :view_only_mode="view_only"
                               :file_id_prop="file_id_prop"
@@ -149,6 +150,7 @@
       'enabled_edit_schema',
       'initializing',
       'context',
+      'request_media_on_mount',
 
     ],
     components:{
