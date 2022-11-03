@@ -109,7 +109,7 @@
 
       },
       mounted() {
-
+        this.get_issues_list()
       },
 
       data() {
@@ -179,6 +179,7 @@
           this.issues_list.push(new_issue)
         },
         async get_issues_list() {
+
           if(!this.$props.task && !this.$props.file){
             return;
           }

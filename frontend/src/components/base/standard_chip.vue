@@ -15,7 +15,7 @@
         :disabled="disabled"
         :small="small"
         :style="custom_style"
-        :class="is_clicable ? 'clickable' : ''"
+        :class="is_clickable ? 'clickable' : ''"
         @click="$emit('click', $event)"
       >
         <slot name="chip" />

@@ -161,6 +161,7 @@
         label_file_list: function () {
           this.label_list = this.label_file_list
           this.selected = this.label_file_list[0]
+          this.emit_selected()
         }
 
       },
@@ -169,6 +170,7 @@
         if (this.label_file_list) {
           this.label_list = this.label_file_list
           this.selected = this.label_file_list[0]
+          this.emit_selected()
         } else {
           this.get_label_list_from_project()
         }
