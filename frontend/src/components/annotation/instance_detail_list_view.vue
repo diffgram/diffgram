@@ -19,6 +19,7 @@
         v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task"
         :global_attribute_groups_list="global_attribute_groups_list"
         :current_instance="current_global_instance"
+        :added_attributes="current_global_instance && current_global_instance.attribute_groups ? Object.keys(current_global_instance.attribute_groups) : []"
       />
     </ui_schema>
 
@@ -30,6 +31,7 @@
       "
       :global_attribute_groups_list="global_attribute_groups_list"
       :current_instance="current_global_instance"
+      :added_attributes="current_global_instance && current_global_instance.attribute_groups ? Object.keys(current_global_instance.attribute_groups) : []"
     />
 
     <div class="d-flex flex-column">

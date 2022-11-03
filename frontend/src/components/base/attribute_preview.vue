@@ -40,6 +40,11 @@ export default Vue.extend({
     current_instance: {
       type: Object,
       default: null
+    },
+    // This prob is not really needed, but due to vue limitation need to have it
+    added_attributes: {
+      type: Array,
+      required: true
     }
   },
   data() {
@@ -48,15 +53,16 @@ export default Vue.extend({
     }
   },
   watch: {
-    global_attribute_groups_list: {
-      deep: true,
-      handler(): void {
-        this.set_attributes()
-      }
+    global_attribute_groups_list(): void {
+      this.set_attributes()
+    },
+    added_attributes(): void {
+      this.set_attributes()
     },
     current_instance: {
       deep: true,
-      handler(): void {
+      handler(newValue, oldValue): void {
+        console.log(newValue, oldValue)
         this.set_attributes()
       }
     },
