@@ -64,18 +64,22 @@ export default Vue.extend({
   methods: {
     set_attributes: function(): void {
       if (this.global_attribute_groups_list && this.current_instance && this.current_instance.attribute_groups) {
-        const attribute_groups = this.global_attribute_groups_list.map((group: any) => group.id)
+        const attribute_groups = this.global_attribute_groups_list.map((group: any) => ({group_id: group.id, kind: group.kind}))
         let selected_names = []
   
-        attribute_groups.map((group_id: number) => {
-          if (this.current_instance.attribute_groups[group_id]) {
-            const group_selected_ids = Object.keys(this.current_instance.attribute_groups[group_id]).map(key => parseInt(key))
-            const group_attribute_names = group_selected_ids.map(key => {
-              if (this.current_instance.attribute_groups[group_id][key]) return this.current_instance.attribute_groups[group_id][key].name
-            }).filter(item => item)
-    
-            selected_names = [...selected_names, ...group_attribute_names]
+        attribute_groups.map(({group_id, kind}) => {
+          if (kind === 'tree') {            
+            if (this.current_instance.attribute_groups[group_id]) {
+              const group_selected_ids = Object.keys(this.current_instance.attribute_groups[group_id]).map(key => parseInt(key))
+              const group_attribute_names = group_selected_ids.map(key => {
+                if (this.current_instance.attribute_groups[group_id][key]) return this.current_instance.attribute_groups[group_id][key].name
+              }).filter(item => item)
+      
+              selected_names = [...selected_names, ...group_attribute_names]
+            }
           }
+          else if (kind === 'select') selected_names = [...selected_names, this.current_instance.attribute_groups[group_id].display_name]
+
         })
   
         this.selected = selected_names    
