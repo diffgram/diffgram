@@ -2164,7 +2164,6 @@ export default Vue.extend({
   },
 
   created() {
-    console.log('ANN CORE CREATEDDDD')
     this.created();
     // put all created stuff in here, workaround so we can call created internal refresh concept
   },
