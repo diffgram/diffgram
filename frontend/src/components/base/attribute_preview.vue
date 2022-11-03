@@ -48,8 +48,11 @@ export default Vue.extend({
     }
   },
   watch: {
-    global_attribute_groups_list(): void {
-      this.set_attributes()
+    global_attribute_groups_list: {
+      deep: true,
+      handler(): void {
+        this.set_attributes()
+      }
     },
     current_instance: {
       deep: true,
@@ -69,19 +72,21 @@ export default Vue.extend({
   
         attribute_groups.map(({group_id, kind}) => {
           const attribute = this.current_instance.attribute_groups[group_id]
-          if (kind === 'tree') {            
-            if (attribute) {
-              const group_selected_ids = Object.keys(attribute).map(key => parseInt(key))
-              const group_attribute_names = group_selected_ids
-                .map(key => { if (attribute[key]) return attribute[key].name})
-                .filter(item => item)
-      
-              selected_names = [...selected_names, ...group_attribute_names]
+          if (attribute) {
+            if (kind === 'tree') {            
+              if (attribute) {
+                const group_selected_ids = Object.keys(attribute).map(key => parseInt(key))
+                const group_attribute_names = group_selected_ids
+                  .map(key => { if (attribute[key]) return attribute[key].name})
+                  .filter(item => item)
+        
+                selected_names = [...selected_names, ...group_attribute_names]
+              }
             }
+            else if (['select', 'radio'].includes(kind)) selected_names = [...selected_names, attribute.display_name]
+            else if (kind === 'multiple_select') attribute.map(option => selected_names.push(option.display_name))
+            else if (['text', 'slider', 'time', 'date'].includes(kind)) selected_names.push(`${attribute}`)
           }
-          else if (['select', 'radio'].includes(kind)) selected_names = [...selected_names, attribute.display_name]
-          else if (kind === 'multiple_select') attribute.map(option => selected_names.push(option.display_name))
-          else if (['text', 'slider', 'time', 'date'].includes(kind)) selected_names.push(`${attribute}`)
         })
   
         this.selected = selected_names    

@@ -13,13 +13,25 @@
 
       </div>
     </v-alert>
+
+    <ui_schema name="attribute_preview">
       <attribute_preview
-        v-if="
-          global_attribute_groups_list && global_attribute_groups_list.length > 0 &&
-          $store.state.user.settings.show_attribute_preview"
+        v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task"
         :global_attribute_groups_list="global_attribute_groups_list"
         :current_instance="current_global_instance"
       />
+    </ui_schema>
+
+    <attribute_preview
+      v-if="
+        global_attribute_groups_list && global_attribute_groups_list.length > 0 &&
+        $store.state.user.settings.show_attribute_preview &&
+        !task
+      "
+      :global_attribute_groups_list="global_attribute_groups_list"
+      :current_instance="current_global_instance"
+    />
+
     <div class="d-flex flex-column">
 
       <div v-if="render_mode=='gold_standard'">Gold standard instances</div>
