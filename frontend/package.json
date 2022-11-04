@@ -8,7 +8,7 @@
     "build": "node build/build.js",
     "test:unit": "vue-cli-service test:unit --silent",
     "test:unit-dev": "vue-cli-service test:unit",
-    "test:unit-verbose": "vue-cli-service test:unit --coverage",
+    "test:unit-verbose": "vue-cli-service test:unit --coverage --verbose=true --useStderr",
     "test:unit-update": "vue-cli-service test:unit --coverage --silent -u",
     "lint": "npx eslint './src/**/*.vue'",
     "dev": "webpack-dev-server --host 0.0.0.0 --inline --progress --config build/webpack.dev.conf.js",

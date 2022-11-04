@@ -21,6 +21,9 @@ describe("Annotation core toolbar test set", () => {
             user: {
               current: {
                 is_super_admin: true
+              },
+              settings:{
+                show_attribute_preview: false
               }
             },
             project: {
