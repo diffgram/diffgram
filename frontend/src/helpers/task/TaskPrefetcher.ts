@@ -1,6 +1,8 @@
 import { getFollowingTask } from "../../services/tasksServices"
 
 export default class TaskPrefetcher {
+  cached_next_tasks: any[] = [];
+  cached_previous_tasks: any[] = [];
   project_string_id: string;
 
   constructor(project_string_id: string) {
@@ -8,14 +10,33 @@ export default class TaskPrefetcher {
   }
 
   async prefetch_next_task(task: any) {
-    const response = await getFollowingTask(
+    const [result, error] = await getFollowingTask(
       this.project_string_id,
-      task.job_id,
       task.id,
+      task.job_id,
       'next',
       true
     )
 
-    console.log(response)
+    this.cached_next_tasks.push(result.task)
+  }
+
+  async prefetch_previous_task(task: any) {
+    const [result, error] = await getFollowingTask(
+      this.project_string_id,
+      task.id,
+      task.job_id,
+      'previous',
+      true
+    )
+
+    this.cached_previous_tasks.push(result.task)
+  }
+
+  async change_task(task: any) {
+    await this.prefetch_next_task(task)
+    await this.prefetch_previous_task(task)
+
+    console.log(this.cached_next_tasks, this.cached_previous_tasks)
   }
 } 

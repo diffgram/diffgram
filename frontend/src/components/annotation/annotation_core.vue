@@ -1133,7 +1133,7 @@ export default Vue.extend({
     task: {
       handler(newVal, oldVal) {
         if (newVal != oldVal) {
-          if (newVal) this.task_prefetcher.prefetch_next_task(newVal)
+          if (newVal) this.task_prefetcher.change_task(newVal)
           this.on_change_current_task();
         }
       },
