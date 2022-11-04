@@ -1005,6 +1005,7 @@ import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
 import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
 import { getInstanceTemplatesFromProject } from "../../services/instanceTemplateService";
+import { File } from "../../types/files";
 import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
 import {initialize_instance_object, duplicate_instance, duplicate_instance_template} from '../../utils/instance_utils';
@@ -5799,14 +5800,14 @@ export default Vue.extend({
         image.onerror = reject;
       });
     },
-    video_update_core: async function () {
+    video_update_core: async function (file: File) {
       // TODO change this to update video component?
 
-      this.canvas_width = this.$props.file.video.width;
-      this.canvas_height = this.$props.file.video.height;
+      this.canvas_width = file.video.width;
+      this.canvas_height = file.video.height;
       this.video_mode = true;
-      this.current_video = this.$props.file.video;
-      this.current_video_file_id = this.$props.file.id;
+      this.current_video = file.video;
+      this.current_video_file_id = file.id;
       await this.get_instances();
       // We need to trigger components and DOM updates before updating frames and sequences.
       // To read more: https://medium.com/javascript-in-plain-english/what-is-vue-nexttick-89d6878c1162
@@ -5820,13 +5821,13 @@ export default Vue.extend({
       await this.$refs.sequence_list.get_sequence_list();
       // We need to update sequence lists synchronously to know when to remove the placeholder.
     },
-    prepare_canvas_for_new_file: async function () {
-      if (this.$props.file != undefined) {
-        if (this.$props.file.type == "image") {
-          await this.image_update_core();
+    prepare_canvas_for_new_file: async function (file: File) {
+      if (file != undefined) {
+        if (file.type == "image") {
+          await this.image_update_core(file);
         }
-        if (this.$props.file.type == "video") {
-          await this.video_update_core();
+        if (file.type == "video") {
+          await this.video_update_core(file);
         }
       } else {
         this.loading = false;
@@ -5848,16 +5849,16 @@ export default Vue.extend({
       }
     },
 
-    image_update_core: async function () {
+    image_update_core: async function (file: File) {
       /*
         Performs updates to image.
         Shared between project images method and annotation assignment methods.
 
       */
-      if (!this.$props.file) {
+      if (!file) {
         this.loading = false;
       } else {
-        this.$emit("current_file", this.$props.file);
+        this.$emit("current_file", file);
       }
 
       /*
@@ -5873,16 +5874,16 @@ export default Vue.extend({
 
       await this.get_instances();
 
-      this.canvas_width = this.$props.file.image.width;
-      this.canvas_height = this.$props.file.image.height;
+      this.canvas_width = file.image.width;
+      this.canvas_height = file.image.height;
 
-      await this.addImageProcess_with_canvas_refresh();
+      await this.addImageProcess_with_canvas_refresh(file);
     },
 
-    addImageProcess_with_canvas_refresh: async function () {
+    addImageProcess_with_canvas_refresh: async function (file: Files) {
       try {
         const new_image = await this.addImageProcess(
-          this.$props.file.image.url_signed
+          file.image.url_signed
         );
         this.html_image = new_image;
         this.update_canvas();
@@ -7696,7 +7697,7 @@ export default Vue.extend({
       await this.refresh_attributes_from_current_file(this.$props.task.file);
 
       this.current_file_updates(this.$props.task.file);
-      await this.prepare_canvas_for_new_file();
+      await this.prepare_canvas_for_new_file(this.$props.task.file);
 
       this.full_file_loading = false;
       this.annotation_show_progress = 0;
@@ -7737,7 +7738,7 @@ export default Vue.extend({
       await this.refresh_attributes_from_current_file(this.$props.file);
 
       this.current_file_updates(this.$props.file);
-      await this.prepare_canvas_for_new_file();
+      await this.prepare_canvas_for_new_file(this.$props.file);
 
       this.full_file_loading = false;
       this.ghost_clear_for_file_change_context();
