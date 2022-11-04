@@ -216,6 +216,8 @@ import text_annotation_core from "../text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
 import Vue from "vue";
 
+import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
+
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -247,6 +249,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      task_prefetcher: null,
       show_snackbar: false,
       schema_list_loading: false,
       dialog: false,
@@ -302,6 +305,9 @@ export default Vue.extend({
         }
       },
     },
+    task() {
+      console.log("This si swatcher on task")
+    }
   },
   created() {
 
@@ -378,6 +384,8 @@ export default Vue.extend({
       }
       await this.get_labels_from_project();
     }
+
+    this.task_prefetcher = new TaskPrefetcher(this.computed_project_string_id)
 
     this.initializing = false
   },
@@ -654,6 +662,7 @@ export default Vue.extend({
     },
 
     change_task: async function (direction, task, assign_to_user = false) {
+      console.log("chnage task")
       // Assumes it does NOT assign the user
       if (!task) {
         throw new Error("Provide task ");
