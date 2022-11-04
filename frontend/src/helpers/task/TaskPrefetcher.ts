@@ -3,10 +3,13 @@ import { getFollowingTask } from "../../services/tasksServices"
 export default class TaskPrefetcher {
   cached_next_tasks: any[] = [];
   cached_previous_tasks: any[] = [];
+  
   project_string_id: string;
+  prefetch_number_of_tasks: number
 
-  constructor(project_string_id: string) {
+  constructor(project_string_id: string, prefetch_number_of_tasks: number = 2) {
     this.project_string_id = project_string_id
+    this.prefetch_number_of_tasks = prefetch_number_of_tasks
   }
 
   async prefetch_next_task(task: any) {
@@ -17,7 +20,7 @@ export default class TaskPrefetcher {
       'next',
       true
     )
-
+  
     this.cached_next_tasks.push(result.task)
   }
 
@@ -34,8 +37,10 @@ export default class TaskPrefetcher {
   }
 
   async change_task(task: any) {
-    await this.prefetch_next_task(task)
-    await this.prefetch_previous_task(task)
+    for (let i = 0; i < this.prefetch_number_of_tasks; i++) {
+      await this.prefetch_next_task(task)
+      await this.prefetch_previous_task(task)
+    } 
 
     console.log(this.cached_next_tasks, this.cached_previous_tasks)
   }
