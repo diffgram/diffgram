@@ -1010,6 +1010,8 @@ import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
 import {initialize_instance_object, duplicate_instance, duplicate_instance_template} from '../../utils/instance_utils';
 
+import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
+
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
 
@@ -1131,6 +1133,7 @@ export default Vue.extend({
     task: {
       handler(newVal, oldVal) {
         if (newVal != oldVal) {
+          if (newVal) this.task_prefetcher.prefetch_next_task(newVal.id)
           this.on_change_current_task();
         }
       },
@@ -1212,6 +1215,7 @@ export default Vue.extend({
   // data()   comment is here for searching
   data() {
     return {
+      task_prefetcher: null,
       n_key: false,
       mouse_wheel_button: false,
       submitted_to_review: false,
@@ -2191,6 +2195,7 @@ export default Vue.extend({
     if (window.Cypress) {
       window.AnnotationCore = this;
     }
+    this.task_prefetcher = new TaskPrefetcher()
     this.mounted();
   },
   // TODO 311 Methods!! refactor in multiple files and classes.
