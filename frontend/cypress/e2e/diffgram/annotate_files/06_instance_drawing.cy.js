@@ -20,26 +20,28 @@ describe('Annotate Files Tests', () => {
 
     context('It Correctly Draws and Edits all Instance Types', () => {
       it('Correctly creates a bounding box.', () => {
-        cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-        cy.select_label()
-        cy.wait(3000)
         const min_x = 75;
         const min_y = 75;
         const max_x = 120;
         const max_y = 120;
-        cy.mousedowncanvas(min_x, min_y);
-        cy.wait(500)
+        cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
 
-        cy.mouseupcanvas();
-        cy.wait(1000)
+        .select_label()
+        .wait(3000)
 
-        cy.mousedowncanvas(max_x, max_y);
-        cy.wait(500)
-        cy.mouseupcanvas();
+        .mousedowncanvas(min_x, min_y)
+        .wait(500)
 
-        cy.wait(2000)
+        .mouseupcanvas()
+        .wait(1000)
 
-        cy.document().then((doc) => {
+        .mousedowncanvas(max_x, max_y)
+        .wait(500)
+        .mouseupcanvas()
+
+        .wait(2000)
+
+        .document().then((doc) => {
           cy.window().then((window) => {
             const canvas_wrapper = doc.getElementById('canvas_wrapper');
             const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
@@ -241,7 +243,8 @@ describe('Annotate Files Tests', () => {
       })
 
       it('Correctly Saves The created instances', () => {
-        cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
+        cy.wait(2000)
+          .intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
           .window().then((window) => {
           window.AnnotationCore.has_changed = true;
         })
