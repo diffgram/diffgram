@@ -1133,7 +1133,7 @@ export default Vue.extend({
     task: {
       handler(newVal, oldVal) {
         if (newVal != oldVal) {
-          if (newVal) this.task_prefetcher.prefetch_next_task(newVal.id)
+          if (newVal) this.task_prefetcher.prefetch_next_task(newVal)
           this.on_change_current_task();
         }
       },
@@ -2195,7 +2195,7 @@ export default Vue.extend({
     if (window.Cypress) {
       window.AnnotationCore = this;
     }
-    this.task_prefetcher = new TaskPrefetcher()
+    this.task_prefetcher = new TaskPrefetcher(this.project_string_id)
     this.mounted();
   },
   // TODO 311 Methods!! refactor in multiple files and classes.
