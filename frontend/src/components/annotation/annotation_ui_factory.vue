@@ -387,8 +387,10 @@ export default Vue.extend({
       await this.get_labels_from_project();
     }
 
-    this.task_prefetcher = new TaskPrefetcher(this.computed_project_string_id)
-    this.task_prefetcher.update_tasks(this.task)
+    if (this.task) {
+      this.task_prefetcher = new TaskPrefetcher(this.computed_project_string_id)
+      this.task_prefetcher.update_tasks(this.task)
+    }
 
     this.initializing = false
   },
