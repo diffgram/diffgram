@@ -305,8 +305,10 @@ export default Vue.extend({
         }
       },
     },
-    task() {
-      console.log("This si swatcher on task")
+    task(newVal) {
+      if (newVal && this.task_prefetcher) {
+        this.task_prefetcher.update_tasks(newVal)
+      }
     }
   },
   created() {
@@ -386,6 +388,7 @@ export default Vue.extend({
     }
 
     this.task_prefetcher = new TaskPrefetcher(this.computed_project_string_id)
+    this.task_prefetcher.update_tasks(this.task)
 
     this.initializing = false
   },
@@ -662,34 +665,25 @@ export default Vue.extend({
     },
 
     change_task: async function (direction, task, assign_to_user = false) {
-      await this.task_prefetcher.next_task(this.task)
-      console.log("chnage task")
+      await this.task_prefetcher.change_task(this.task, direction)
       // Assumes it does NOT assign the user
       if (!task) {
         throw new Error("Provide task ");
       }
 
       try {
-        const response = await axios.post(
-          `/api/v1/job/${task.job_id}/next-task`,
-          {
-            project_string_id: this.computed_project_string_id,
-            task_id: task.id,
-            direction: direction,
-            assign_to_user: assign_to_user,
-          }
-        );
-        if (response.data) {
-          if (response.data.task && response.data.task.id !== task.id) {
-            this.$router.push(`/task/${response.data.task.id}`);
-            history.pushState({}, "", `/task/${response.data.task.id}`);
+        const new_task = await this.task_prefetcher.change_task(this.task, direction)
+        if (new_task) {
+          if (new_task && new_task.id !== task.id) {
+            this.$router.push(`/task/${new_task.id}`);
+            history.pushState({}, "", `/task/${new_task.id}`);
             // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
             // In the task context we reset the file list on media core to keep only the current task's file.
             if (this.$refs.file_manager_sheet) {
               this.$refs.file_manager_sheet.set_file_list([this.task.file]);
             }
 
-            this.task = response.data.task;
+            this.task = new_task;
           } else {
             if (direction === "next") {
               this.dialog = true;
