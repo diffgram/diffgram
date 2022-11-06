@@ -56,25 +56,6 @@ export default class TaskPrefetcher {
     this.cached_previous_tasks.push(result.task)
   }
 
-  // async change_task(task: any) {
-  //   this.current_task = task
-
-  //   for (let i = 0; i < this.prefetch_number_of_tasks; i++) {
-  //     if (i === 0) {
-  //       await this.prefetch_next_task(task)
-  //       await this.prefetch_previous_task(task)
-  //     } else {
-  //       const most_recent_next_task = this.cached_next_tasks[i - 1]
-  //       const most_recent_previous_task = this.cached_previous_tasks[i - 1]
-  //       await this.prefetch_next_task(most_recent_next_task)
-  //       await this.prefetch_previous_task(most_recent_previous_task)
-  //     }
-  //   }
-
-  //   console.log(this.cached_next_tasks, this.cached_previous_tasks)
-  // }
-
-
   async change_task(direction: string) {
     let new_task: any;
 
