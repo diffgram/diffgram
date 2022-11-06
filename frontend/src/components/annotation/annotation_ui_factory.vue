@@ -662,6 +662,7 @@ export default Vue.extend({
     },
 
     change_task: async function (direction, task, assign_to_user = false) {
+      await this.task_prefetcher.next_task(this.task)
       console.log("chnage task")
       // Assumes it does NOT assign the user
       if (!task) {

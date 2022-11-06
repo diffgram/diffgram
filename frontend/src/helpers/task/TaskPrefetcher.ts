@@ -50,8 +50,12 @@ export default class TaskPrefetcher {
         await this.prefetch_next_task(most_recent_next_task)
         await this.prefetch_previous_task(most_recent_previous_task)
       }
-    } 
+    }
 
     console.log(this.cached_next_tasks, this.cached_previous_tasks)
+  }
+
+  async next_task(task: any) {
+    console.log('Next task')
   }
 } 
