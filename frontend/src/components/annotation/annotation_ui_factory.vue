@@ -667,14 +667,13 @@ export default Vue.extend({
     },
 
     change_task: async function (direction, task, assign_to_user = false) {
-      await this.task_prefetcher.change_task(this.task, direction)
       // Assumes it does NOT assign the user
       if (!task) {
         throw new Error("Provide task ");
       }
 
       try {
-        const new_task = await this.task_prefetcher.change_task(this.task, direction)
+        const new_task = await this.task_prefetcher.change_task(direction)
         if (new_task) {
           if (new_task && new_task.id !== task.id) {
             this.$router.push(`/task/${new_task.id}`);

@@ -29,6 +29,7 @@ export default class TaskPrefetcher {
   async update_tasks(task: any) {
     this.current_task = task
     this.prefetch_next_task()
+    this.prefetch_previous_task()
   }
 
   async prefetch_next_task() {
@@ -74,14 +75,17 @@ export default class TaskPrefetcher {
   // }
 
 
-  async change_task(task: any, direction: string) {
-    console.log("here", this.cached_next_tasks)
+  async change_task(direction: string) {
+    let new_task: any;
+
     if (direction === 'next') {
-      return this.cached_next_tasks[0]
+      new_task = this.cached_next_tasks.splice(0, 1);
     }
 
     if (direction === 'previous') {
-      return this.cached_previous_tasks[0]
+      new_task = this.cached_previous_tasks.splice(0, 1);
     }
+    
+    return new_task[0]
   }
 } 
