@@ -13,6 +13,8 @@ import { getFollowingTask } from "../../services/tasksServices"
 export default class TaskPrefetcher {
   current_task: any
   cached_next_tasks: any[] = [];
+  cached_next_images: any[] = [];
+
   cached_previous_tasks: any[] = [];
   
   project_string_id: string;
@@ -32,6 +34,12 @@ export default class TaskPrefetcher {
     this.prefetch_previous_task()
   }
 
+  async prefetch_image(src: string) {
+      const image = new Image()
+      image.src = src
+      image.onload = () => this.cached_next_images.push(image)
+  }
+
   async prefetch_next_task() {
     const [result, error] = await getFollowingTask(
       this.project_string_id,
@@ -40,7 +48,8 @@ export default class TaskPrefetcher {
       'next',
       false
     )
-  
+
+    await this.prefetch_image(result.task.file.image.url_signed)
     this.cached_next_tasks.push(result.task)
   }
 
@@ -58,15 +67,20 @@ export default class TaskPrefetcher {
 
   async change_task(direction: string) {
     let new_task: any;
+    let new_image: any;
 
     if (direction === 'next') {
       new_task = this.cached_next_tasks.splice(0, 1);
+      new_image = this.cached_next_images.splice(0, 1);
     }
 
     if (direction === 'previous') {
       new_task = this.cached_previous_tasks.splice(0, 1);
     }
     
-    return new_task[0]
+    return {
+      task: new_task[0],
+      image: new_image[0]
+    }
   }
 } 

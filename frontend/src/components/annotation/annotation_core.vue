@@ -1056,6 +1056,7 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    task_image: {},
     label_schema:{
       required: true
     },
@@ -7707,6 +7708,8 @@ export default Vue.extend({
       );
       this.canvas_mouse_tools.reset_transform_with_global_scale();
       this.set_ui_schema();
+
+      this.html_image = this.task_image
     },
     on_change_current_file: async function () {
       if (!this.$props.file) {

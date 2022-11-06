@@ -40,6 +40,7 @@
 
     methods: {
       draw_image_bg: function (ctx) {
+        console.log("BACKNGID IAMGE", this.image)
         if(!ctx.canvas){
           return
         }
