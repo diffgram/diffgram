@@ -73,10 +73,12 @@ export default class TaskPrefetcher {
       false
     )
 
-    await this.prefetch_image(result.task.file.image.url_signed, this.cached_previous_images)
-    await this.prefetch_instances(result.task.id, this.cached_previous_annotations)
-
-    this.cached_previous_tasks.push(result.task)
+    if (!error && result.task) {
+      await this.prefetch_image(result.task.file.image.url_signed, this.cached_previous_images)
+      await this.prefetch_instances(result.task.id, this.cached_previous_annotations)
+      
+      this.cached_previous_tasks.push(result.task)
+    }
   }
 
   async change_task(direction: string) {
@@ -85,12 +87,14 @@ export default class TaskPrefetcher {
     let new_instances: any;
 
     if (direction === 'next') {
+      if (this.cached_next_tasks.length === 0) await this.prefetch_next_task()
       new_task = this.cached_next_tasks.splice(0, 1);
       new_image = this.cached_next_images.splice(0, 1);
       new_instances = this.cached_next_annotations.splice(0, 1);
     }
     
     if (direction === 'previous') {
+      if (this.cached_previous_tasks.length === 0) await this.prefetch_previous_task()
       new_task = this.cached_previous_tasks.splice(0, 1);
       new_image = this.cached_previous_images.splice(0, 1);
       new_instances = this.cached_previous_annotations.splice(0, 1);
