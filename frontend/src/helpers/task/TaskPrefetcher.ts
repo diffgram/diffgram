@@ -1,3 +1,4 @@
+import { get_instance_list_from_task } from "../../services/instanceServices";
 import { getFollowingTask } from "../../services/tasksServices"
 
 //
@@ -14,6 +15,7 @@ export default class TaskPrefetcher {
   current_task: any
   cached_next_tasks: any[] = [];
   cached_next_images: any[] = [];
+  cached_next_annotations: any[] = [];
 
   cached_previous_tasks: any[] = [];
   
@@ -22,7 +24,7 @@ export default class TaskPrefetcher {
 
   constructor(
     project_string_id: string, 
-    prefetch_number_of_tasks: number = 2
+    prefetch_number_of_tasks: number = 1
   ) {
     this.project_string_id = project_string_id
     this.prefetch_number_of_tasks = prefetch_number_of_tasks
@@ -40,6 +42,11 @@ export default class TaskPrefetcher {
       image.onload = () => this.cached_next_images.push(image)
   }
 
+  async prefetch_instances(task_id: number) {
+    const response = await get_instance_list_from_task(this.project_string_id, task_id)
+    this.cached_next_annotations.push(response)
+  }
+
   async prefetch_next_task() {
     const [result, error] = await getFollowingTask(
       this.project_string_id,
@@ -50,6 +57,8 @@ export default class TaskPrefetcher {
     )
 
     await this.prefetch_image(result.task.file.image.url_signed)
+    await this.prefetch_instances(result.task.id)
+    
     this.cached_next_tasks.push(result.task)
   }
 
@@ -68,10 +77,12 @@ export default class TaskPrefetcher {
   async change_task(direction: string) {
     let new_task: any;
     let new_image: any;
+    let new_instances: any;
 
     if (direction === 'next') {
       new_task = this.cached_next_tasks.splice(0, 1);
       new_image = this.cached_next_images.splice(0, 1);
+      new_instances = this.cached_next_annotations.splice(0, 1);
     }
 
     if (direction === 'previous') {
@@ -80,7 +91,8 @@ export default class TaskPrefetcher {
     
     return {
       task: new_task[0],
-      image: new_image[0]
+      image: new_image[0],
+      instances: new_instances[0]
     }
   }
 } 

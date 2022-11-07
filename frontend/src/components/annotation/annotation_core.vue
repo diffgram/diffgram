@@ -1057,6 +1057,7 @@ export default Vue.extend({
       type: String,
     },
     task_image: {},
+    task_instances: {},
     label_schema:{
       required: true
     },
@@ -7249,6 +7250,7 @@ export default Vue.extend({
 
     },
     get_instances_core: function (response) {
+      console.log(response)
       // TODO improve to take dict instead of response
       // since may use in other contexts
       this.show_annotations = true
@@ -7273,6 +7275,12 @@ export default Vue.extend({
     get_instance_list_for_image: async function () {
       let url = undefined;
       let file = this.$props.file;
+
+      if (this.task_instances) {
+        this.get_instances_core({data: this.task_instances})
+        return
+      }
+
       if (this.$store.getters.is_on_public_project) {
         url = `/api/project/${this.$props.project_string_id}/file/${String(
           this.$props.file.id

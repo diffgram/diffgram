@@ -40,6 +40,7 @@
           :global_attribute_groups_list="global_attribute_groups_list"
           :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
           :task_image="task_image"
+          :task_instances="task_instances"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @change_label_schema="on_change_label_schema"
@@ -252,6 +253,7 @@ export default Vue.extend({
     return {
       task_prefetcher: null,
       task_image: null,
+      task_instances: null,
       show_snackbar: false,
       schema_list_loading: false,
       dialog: false,
@@ -688,7 +690,7 @@ export default Vue.extend({
 
             this.task = new_task.task;
             this.task_image = new_task.image
-            console.log("here", this.task_image)
+            this.task_instances = new_task.instances
           } else {
             if (direction === "next") {
               this.dialog = true;
