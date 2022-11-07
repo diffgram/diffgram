@@ -18,6 +18,8 @@ export default class TaskPrefetcher {
   cached_next_annotations: any[] = [];
 
   cached_previous_tasks: any[] = [];
+  cached_previous_images: any[] = [];
+  cached_previous_annotations: any[] = [];
   
   project_string_id: string;
   prefetch_number_of_tasks: number
@@ -36,15 +38,15 @@ export default class TaskPrefetcher {
     this.prefetch_previous_task()
   }
 
-  async prefetch_image(src: string) {
+  async prefetch_image(src: string, image_array: Array<any>) {
       const image = new Image()
       image.src = src
-      image.onload = () => this.cached_next_images.push(image)
+      image.onload = () => image_array.push(image)
   }
 
-  async prefetch_instances(task_id: number) {
+  async prefetch_instances(task_id: number, instances_array: Array<any>) {
     const response = await get_instance_list_from_task(this.project_string_id, task_id)
-    this.cached_next_annotations.push(response)
+    instances_array.push(response)
   }
 
   async prefetch_next_task() {
@@ -56,8 +58,8 @@ export default class TaskPrefetcher {
       false
     )
 
-    await this.prefetch_image(result.task.file.image.url_signed)
-    await this.prefetch_instances(result.task.id)
+    await this.prefetch_image(result.task.file.image.url_signed, this.cached_next_images)
+    await this.prefetch_instances(result.task.id, this.cached_next_annotations)
     
     this.cached_next_tasks.push(result.task)
   }
@@ -70,6 +72,9 @@ export default class TaskPrefetcher {
       'previous',
       false
     )
+
+    await this.prefetch_image(result.task.file.image.url_signed, this.cached_previous_images)
+    await this.prefetch_instances(result.task.id, this.cached_previous_annotations)
 
     this.cached_previous_tasks.push(result.task)
   }
@@ -84,9 +89,11 @@ export default class TaskPrefetcher {
       new_image = this.cached_next_images.splice(0, 1);
       new_instances = this.cached_next_annotations.splice(0, 1);
     }
-
+    
     if (direction === 'previous') {
       new_task = this.cached_previous_tasks.splice(0, 1);
+      new_image = this.cached_previous_images.splice(0, 1);
+      new_instances = this.cached_previous_annotations.splice(0, 1);
     }
     
     return {
