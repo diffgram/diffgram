@@ -1784,6 +1784,9 @@ export default Vue.extend({
     },
 
     show_place_holder() {
+      // task_image is preloaded image on teh task context
+      if (this.task_image) return false
+
       return this.full_file_loading;
     },
     any_loading() {
