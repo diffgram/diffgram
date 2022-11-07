@@ -39,7 +39,7 @@
           :finish_annotation_show="show_snackbar"
           :global_attribute_groups_list="global_attribute_groups_list"
           :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-          :image="task_image"
+          :task_image="task_image"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @change_label_schema="on_change_label_schema"
