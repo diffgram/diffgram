@@ -31,12 +31,12 @@ export default class TaskPrefetcher {
   async prefetch_image(src: string, image_array: Array<any>) {
       const image = new Image()
       image.src = src
-      image.onload = () => image_array = [image]
+      image.onload = () => image_array.push(image)
   }
 
   async prefetch_instances(task_id: number, instances_array: Array<any>) {
     const response = await get_instance_list_from_task(this.project_string_id, task_id)
-    instances_array = [response]
+    instances_array.push(response)
   }
 
   async prefetch_next_task() {
@@ -47,6 +47,9 @@ export default class TaskPrefetcher {
       'next',
       false
     )
+
+    this.cached_next_images = []
+    this.cached_next_annotations = []
 
     if (!error && result.task) {
       await this.prefetch_image(result.task.file.image.url_signed, this.cached_next_images)
@@ -64,6 +67,9 @@ export default class TaskPrefetcher {
       'previous',
       false
     )
+
+    this.cached_previous_images = []
+    this.cached_previous_annotations = []
 
     if (!error && result.task) {
       await this.prefetch_image(result.task.file.image.url_signed, this.cached_previous_images)
