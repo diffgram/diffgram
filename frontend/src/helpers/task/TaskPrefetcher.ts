@@ -1,16 +1,6 @@
 import { get_instance_list_from_task } from "../../services/instanceServices";
 import { getFollowingTask } from "../../services/tasksServices"
 
-//
-// How does this calss should work:
-
-// 1. Constructor called with project_string_id and optionally can be passed prefetch_number_of_tasks
-// 2. On teh contructor prfect next and previous tasks, and set ethem to the class
-// 3. When the next task is called, insteead if doing immidiate API call, we will check if the next task is on the state
-//         a. If it on the state -  we don't do API call, get it from the state and then do a call for cashe more tasks
-//         b. if there is nothing on the state (for exmaple switching too fast) - we do an API call
-//
-
 export default class TaskPrefetcher {
   current_task: any
   cached_next_tasks: any[] = [];
@@ -58,10 +48,12 @@ export default class TaskPrefetcher {
       false
     )
 
-    await this.prefetch_image(result.task.file.image.url_signed, this.cached_next_images)
-    await this.prefetch_instances(result.task.id, this.cached_next_annotations)
-    
-    this.cached_next_tasks = [result.task]
+    if (!error && result.task) {
+      await this.prefetch_image(result.task.file.image.url_signed, this.cached_next_images)
+      await this.prefetch_instances(result.task.id, this.cached_next_annotations)
+      
+      this.cached_next_tasks = [result.task]
+    }
   }
 
   async prefetch_previous_task() {
