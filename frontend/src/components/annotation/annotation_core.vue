@@ -7252,7 +7252,6 @@ export default Vue.extend({
 
     },
     get_instances_core: function (response) {
-      console.log(response)
       // TODO improve to take dict instead of response
       // since may use in other contexts
       this.show_annotations = true
@@ -7279,7 +7278,7 @@ export default Vue.extend({
       let file = this.$props.file;
 
       if (this.task_instances) {
-        this.get_instances_core({data: this.task_instances})
+        this.get_instances_core({ data: this.task_instances })
         return
       }
 
@@ -7722,7 +7721,9 @@ export default Vue.extend({
       this.canvas_mouse_tools.reset_transform_with_global_scale();
       this.set_ui_schema();
 
-      this.html_image = this.task_image
+      if (this.task_image) {
+        this.html_image = this.task_image
+      }
     },
     on_change_current_file: async function () {
       if (!this.$props.file) {
