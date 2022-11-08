@@ -1058,6 +1058,7 @@ export default Vue.extend({
     },
     task_image: {},
     task_instances: {},
+    task_loading: {},
     label_schema:{
       required: true
     },
@@ -1786,6 +1787,7 @@ export default Vue.extend({
 
     show_place_holder() {
       // task_image is preloaded image on teh task context
+      if (this.task_loading) return true
       if (this.task_image) return false
 
       return this.full_file_loading;

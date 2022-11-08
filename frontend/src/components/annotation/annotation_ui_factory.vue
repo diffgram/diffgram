@@ -41,6 +41,7 @@
           :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
           :task_image="task_image"
           :task_instances="task_instances"
+          :task_loading="task_loading"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @change_label_schema="on_change_label_schema"
@@ -254,6 +255,7 @@ export default Vue.extend({
       task_prefetcher: null,
       task_image: null,
       task_instances: null,
+      task_loading: false,
       show_snackbar: false,
       schema_list_loading: false,
       dialog: false,
@@ -677,7 +679,9 @@ export default Vue.extend({
       }
 
       try {
+        this.task_loading = true
         const new_task = await this.task_prefetcher.change_task(direction)
+        this.task_loading = false
         if (new_task) {
           if (new_task.task && new_task.task.id !== task.id) {
             this.$router.push(`/task/${new_task.task.id}`);
