@@ -62,7 +62,7 @@ class ExternalMigrationManager:
             connection_class = LabelboxConnector,
             session = self.session)
         connector, success = connection_strategy.get_connector(
-            connector_id = self.project_migration.connection_id, 
+            connection_id = self.project_migration.connection_id,
             check_perms = False)
         if not success:
             message = f'Failed to get Connector for ID {self.project_migration.connection_id}'
