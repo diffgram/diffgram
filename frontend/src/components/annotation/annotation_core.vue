@@ -1056,9 +1056,18 @@ export default Vue.extend({
       default: null,
       type: String,
     },
-    task_image: {},
-    task_instances: {},
-    task_loading: {},
+    task_image: {
+      type: HTMLImageElement,
+      default: null
+    },
+    task_instances: {
+      type: Object,
+      default: null
+    },
+    task_loading: {
+      type: Boolean,
+      default: null
+    },
     label_schema:{
       required: true
     },
