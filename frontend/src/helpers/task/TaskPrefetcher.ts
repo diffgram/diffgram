@@ -95,9 +95,10 @@ export default class TaskPrefetcher {
     
     if (direction === 'previous') {
       if (this.cached_previous_tasks.length === 0) await this.prefetch_previous_task()
-      new_task = this.cached_previous_tasks.splice(0, 1);
-      new_image = this.cached_previous_images.splice(0, 1);
-      new_instances = this.cached_previous_annotations.splice(0, 1);
+      const last_index = this.cached_previous_tasks.length - 1
+      new_task = this.cached_previous_tasks.splice(last_index, 1);
+      new_image = this.cached_previous_images.splice(last_index, 1);
+      new_instances = this.cached_previous_annotations.splice(last_index, 1);
     }
     
     return {
