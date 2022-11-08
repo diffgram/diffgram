@@ -681,7 +681,6 @@ export default Vue.extend({
       try {
         this.task_loading = true
         const new_task = await this.task_prefetcher.change_task(direction)
-        this.task_loading = false
         if (new_task) {
           if (new_task.task && new_task.task.id !== task.id) {
             this.$router.push(`/task/${new_task.task.id}`);
@@ -695,6 +694,7 @@ export default Vue.extend({
             this.task = new_task.task;
             this.task_image = new_task.image
             this.task_instances = new_task.instances
+            this.task_loading = false
           } else {
             if (direction === "next") {
               this.dialog = true;
