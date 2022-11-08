@@ -22,24 +22,18 @@ export default class TaskPrefetcher {
     this.prefetch_number_of_tasks = prefetch_number_of_tasks
   }
 
-  async update_tasks(task: any) {
-    this.current_task = task
-    this.prefetch_next_task()
-    this.prefetch_previous_task()
-  }
-
-  async prefetch_image(src: string, image_array: Array<any>) {
+  private async prefetch_image(src: string, image_array: Array<any>) {
       const image = new Image()
       image.src = src
       image.onload = () => image_array.push(image)
   }
 
-  async prefetch_instances(task_id: number, instances_array: Array<any>) {
+  private async prefetch_instances(task_id: number, instances_array: Array<any>) {
     const response = await get_instance_list_from_task(this.project_string_id, task_id)
     instances_array.push(response)
   }
-
-  async prefetch_next_task() {
+  
+  private async prefetch_next_task() {
     const [result, error] = await getFollowingTask(
       this.project_string_id,
       this.current_task.id,
@@ -59,7 +53,7 @@ export default class TaskPrefetcher {
     }
   }
 
-  async prefetch_previous_task() {
+  private async prefetch_previous_task() {
     const [result, error] = await getFollowingTask(
       this.project_string_id,
       this.current_task.id,
@@ -77,6 +71,12 @@ export default class TaskPrefetcher {
       
       this.cached_previous_tasks = [result.task]
     }
+  }
+
+  async update_tasks(task: any) {
+    this.current_task = task
+    this.prefetch_next_task()
+    this.prefetch_previous_task()
   }
 
   async change_task(direction: string) {
