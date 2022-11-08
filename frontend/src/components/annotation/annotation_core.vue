@@ -1056,6 +1056,9 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    task_image: {},
+    task_instances: {},
+    task_loading: {},
     label_schema:{
       required: true
     },
@@ -1783,6 +1786,10 @@ export default Vue.extend({
     },
 
     show_place_holder() {
+      // task_image is preloaded image on teh task context
+      if (this.task_loading) return true
+      if (this.task_image) return false
+
       return this.full_file_loading;
     },
     any_loading() {
@@ -7269,6 +7276,12 @@ export default Vue.extend({
     get_instance_list_for_image: async function () {
       let url = undefined;
       let file = this.$props.file;
+
+      if (this.task_instances) {
+        this.get_instances_core({ data: this.task_instances })
+        return
+      }
+
       if (this.$store.getters.is_on_public_project) {
         url = `/api/project/${this.$props.project_string_id}/file/${String(
           this.$props.file.id
@@ -7707,6 +7720,10 @@ export default Vue.extend({
       );
       this.canvas_mouse_tools.reset_transform_with_global_scale();
       this.set_ui_schema();
+
+      if (this.task_image) {
+        this.html_image = this.task_image
+      }
     },
     on_change_current_file: async function () {
       if (!this.$props.file) {

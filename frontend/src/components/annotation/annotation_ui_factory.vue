@@ -39,6 +39,9 @@
           :finish_annotation_show="show_snackbar"
           :global_attribute_groups_list="global_attribute_groups_list"
           :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+          :task_image="task_image"
+          :task_instances="task_instances"
+          :task_loading="task_loading"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @change_label_schema="on_change_label_schema"
@@ -250,6 +253,9 @@ export default Vue.extend({
   data() {
     return {
       task_prefetcher: null,
+      task_image: null,
+      task_instances: null,
+      task_loading: false,
       show_snackbar: false,
       schema_list_loading: false,
       dialog: false,
@@ -673,18 +679,22 @@ export default Vue.extend({
       }
 
       try {
+        this.task_loading = true
         const new_task = await this.task_prefetcher.change_task(direction)
+        this.task_loading = false
         if (new_task) {
-          if (new_task && new_task.id !== task.id) {
-            this.$router.push(`/task/${new_task.id}`);
-            history.pushState({}, "", `/task/${new_task.id}`);
+          if (new_task.task && new_task.task.id !== task.id) {
+            this.$router.push(`/task/${new_task.task.id}`);
+            history.pushState({}, "", `/task/${new_task.task.id}`);
             // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
             // In the task context we reset the file list on media core to keep only the current task's file.
             if (this.$refs.file_manager_sheet) {
               this.$refs.file_manager_sheet.set_file_list([this.task.file]);
             }
 
-            this.task = new_task;
+            this.task = new_task.task;
+            this.task_image = new_task.image
+            this.task_instances = new_task.instances
           } else {
             if (direction === "next") {
               this.dialog = true;
