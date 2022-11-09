@@ -234,6 +234,14 @@
       Launching! Tasks will populate over time. See Launch Log for more info.
     </v-alert>
 
+    <br />
+
+    <v-pagination
+      v-model="page"
+      v-if="job_list_metadata"
+      :length="job_list_metadata.number_of_pages"
+    />
+
     <v-layout class="d-flex flex-column">
       <div class="d-flex align-center mt-1">
         <div style="border: 1px solid #e1e4e8" class="d-flex">
@@ -592,6 +600,12 @@
                               :project_string_id="project_string">
 
     </project_pipelines_dialog>
+
+    <v-pagination
+      v-model="page"
+      v-if="job_list_metadata"
+      :length="job_list_metadata.number_of_pages"
+    />
   </div>
 </template>
 
@@ -634,10 +648,16 @@ export default Vue.extend({
 
     },
     watch: {
-      '$route': 'mount'
+      '$route': 'mount',
+      async page(newVal) {
+        await this.job_list_api()
+      }
     },
     data() {
       return {
+        page: 1,
+        job_list_metadata: null,
+
         selected_member_list_ids: [],
         success_launch: null,
         text_search: undefined,
@@ -899,7 +919,8 @@ export default Vue.extend({
           'project_string_id': project_string_id,
           'org': this.org,
           'share_type': this.share_type,
-          'tag_list': this.tag_selected_list_ids_only
+          'tag_list': this.tag_selected_list_ids_only,
+          'page_number': this.page
         }
 
       }
@@ -1033,6 +1054,7 @@ export default Vue.extend({
           if (response.data['Job_list'] != null) {
 
             this.Job_list = response.data['Job_list']
+            this.job_list_metadata = response.data['metadata']
             this.metadata_previous = response.data['metadata']
           }
 
