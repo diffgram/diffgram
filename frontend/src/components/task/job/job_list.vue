@@ -649,7 +649,7 @@ export default Vue.extend({
     },
     watch: {
       '$route': 'mount',
-      async page(newVal) {
+      async page() {
         await this.job_list_api()
       }
     },
@@ -955,9 +955,8 @@ export default Vue.extend({
       if (this.$route.query.type) {
         this.type = this.$route.query.type;
       }
+
       await this.mount()
-
-
     },
     methods: {
       set_view_mode: function (new_mode) {
