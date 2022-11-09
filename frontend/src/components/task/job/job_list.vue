@@ -236,11 +236,16 @@
 
     <br />
 
-    <v-pagination
-      v-model="page"
+    <div
       v-if="job_list_metadata"
-      :length="job_list_metadata.number_of_pages"
-    />
+      class="job-align"
+    >
+      <v-pagination
+        v-model="page"
+        :length="job_list_metadata.number_of_pages"
+      />
+      ({{job_list_metadata.total_job_number}} jobs)
+    </div>
 
     <v-layout class="d-flex flex-column">
       <div class="d-flex align-center mt-1">
@@ -601,11 +606,16 @@
 
     </project_pipelines_dialog>
 
-    <v-pagination
-      v-model="page"
+    <div
       v-if="job_list_metadata"
-      :length="job_list_metadata.number_of_pages"
-    />
+      class="job-align"
+    >
+      <v-pagination
+        v-model="page"
+        :length="job_list_metadata.number_of_pages"
+      />
+      ({{job_list_metadata.total_job_number}} jobs)
+    </div>
   </div>
 </template>
 
@@ -1100,5 +1110,12 @@ export default Vue.extend({
 
 html {
   overflow: auto;
+}
+
+.job-align {
+  display: flex; 
+  flex-direction: row; 
+  align-items: center; 
+  justify-content: center
 }
 </style>
