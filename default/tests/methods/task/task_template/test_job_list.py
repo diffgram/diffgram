@@ -52,7 +52,6 @@ class TestJobList(testing_setup.DiffgramBaseTestCase):
                 'limit': 5,
                 'project_string_id': self.project.project_string_id,
                 'page_number': 1,
-                
             }
         }
 
@@ -84,8 +83,8 @@ class TestJobList(testing_setup.DiffgramBaseTestCase):
             },
             'limit': num_jobs,
             'my_jobs_only': False,
-            'project_string_id': self.project.project_string_id
-
+            'project_string_id': self.project.project_string_id,
+            'page_number': 1,
         }
         all_jobs = []
         for i in range(0, num_jobs):
