@@ -16,8 +16,7 @@ from shared.database.tag.tag import Tag
 from shared.database.tag.tag import JobTag
 
 
-@routes.route('/api/v1/job/list',
-              methods = ['POST'])
+@routes.route('/api/v1/job/list', methods = ['POST'])
 def job_list_api():
     spec_list = [{"metadata": dict}]
 
@@ -31,9 +30,11 @@ def job_list_api():
                                            metadata_proposed = input['metadata'])
 
         log['success'] = True
-        return jsonify(Job_list = Job_list,
-                       metadata = metadata,
-                       log = log), 200
+        return jsonify(
+            Job_list = Job_list,
+            metadata = metadata,
+            log = log
+        ), 200
 
 
 def job_view_core(session,
@@ -49,6 +50,8 @@ def job_view_core(session,
     """
 
     meta = default_metadata(metadata_proposed)
+
+    print("--------------", meta)
 
     output_file_list = []
     limit_counter = 0
@@ -132,6 +135,9 @@ def job_view_core(session,
     query = add_name_search_filter(query, meta)
 
     query = query.order_by(Job.time_created.desc())
+
+    meta["total_job_number"] = len(query.all())
+    meta["page_size"] = 50
 
     if meta.get("limit") is not None:
         query = query.limit(meta["limit"])
