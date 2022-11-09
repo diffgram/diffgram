@@ -144,7 +144,7 @@ def job_view_core(session,
     if meta.get("limit") is not None:
         query = query.limit(meta["limit"])
 
-    query = query.offset(int((meta["page_number"] - 1)) * int(meta["page_size"]))
+    query = query.offset((meta["page_number"] - 1) * meta["page_size"])
 
     # Avoid multiple queries on serializer by fetching joined data
     query = query.options(joinedload(Job.completion_directory))

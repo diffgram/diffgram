@@ -50,7 +50,9 @@ class TestJobList(testing_setup.DiffgramBaseTestCase):
                     'mode': 'builder'
                 },
                 'limit': 5,
-                'project_string_id': self.project.project_string_id
+                'project_string_id': self.project.project_string_id,
+                'page_number': 1,
+                
             }
         }
 
