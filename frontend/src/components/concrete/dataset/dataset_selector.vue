@@ -257,7 +257,13 @@ export default Vue.extend({
     }
 
     if (this.set_from_id) {
-      this.current_directory = this.dataset_list_filtered.find((dataset:any) => dataset.directory_id === this.set_from_id)
+      const selected = this.dataset_list_filtered.find((dataset:any) => dataset.directory_id === this.set_from_id)
+      
+      if (this.multiple) {
+        this.current_directory.push(selected)
+      } else {
+        this.current_directory = selected
+      }
     }
 
     if(this.change_on_mount){
