@@ -231,6 +231,8 @@ export default Vue.extend({
     if (!this.metadata.directory_id) {
       this.metadata.directory_id = this.$props.directory.directory_id;
 
+      if (this.$props.directory) this.datasets_selected.push(this.$props.directory)
+
       this.selected_dir = this.$props.directory;
     }
     if (this.$props.directory) {
