@@ -234,6 +234,19 @@
       Launching! Tasks will populate over time. See Launch Log for more info.
     </v-alert>
 
+    <br />
+
+    <div
+      v-if="job_list_metadata"
+      class="job-align"
+    >
+      <v-pagination
+        v-model="page"
+        :length="job_list_metadata.number_of_pages"
+      />
+      ({{job_list_metadata.total_job_number}} jobs)
+    </div>
+
     <v-layout class="d-flex flex-column">
       <div class="d-flex align-center mt-1">
         <div style="border: 1px solid #e1e4e8" class="d-flex">
@@ -592,6 +605,17 @@
                               :project_string_id="project_string">
 
     </project_pipelines_dialog>
+
+    <div
+      v-if="job_list_metadata"
+      class="job-align"
+    >
+      <v-pagination
+        v-model="page"
+        :length="job_list_metadata.number_of_pages"
+      />
+      ({{job_list_metadata.total_job_number}} jobs)
+    </div>
   </div>
 </template>
 
@@ -634,10 +658,16 @@ export default Vue.extend({
 
     },
     watch: {
-      '$route': 'mount'
+      '$route': 'mount',
+      async page() {
+        await this.job_list_api()
+      }
     },
     data() {
       return {
+        page: 1,
+        job_list_metadata: null,
+
         selected_member_list_ids: [],
         success_launch: null,
         text_search: undefined,
@@ -899,7 +929,8 @@ export default Vue.extend({
           'project_string_id': project_string_id,
           'org': this.org,
           'share_type': this.share_type,
-          'tag_list': this.tag_selected_list_ids_only
+          'tag_list': this.tag_selected_list_ids_only,
+          'page_number': this.page
         }
 
       }
@@ -934,9 +965,8 @@ export default Vue.extend({
       if (this.$route.query.type) {
         this.type = this.$route.query.type;
       }
+
       await this.mount()
-
-
     },
     methods: {
       set_view_mode: function (new_mode) {
@@ -1033,6 +1063,7 @@ export default Vue.extend({
           if (response.data['Job_list'] != null) {
 
             this.Job_list = response.data['Job_list']
+            this.job_list_metadata = response.data['metadata']
             this.metadata_previous = response.data['metadata']
           }
 
@@ -1079,5 +1110,12 @@ export default Vue.extend({
 
 html {
   overflow: auto;
+}
+
+.job-align {
+  display: flex; 
+  flex-direction: row; 
+  align-items: center; 
+  justify-content: center
 }
 </style>
