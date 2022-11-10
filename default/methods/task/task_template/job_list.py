@@ -15,9 +15,10 @@ from sqlalchemy.orm import joinedload
 from shared.database.tag.tag import Tag
 from shared.database.tag.tag import JobTag
 
+import math
 
-@routes.route('/api/v1/job/list',
-              methods = ['POST'])
+
+@routes.route('/api/v1/job/list', methods = ['POST'])
 def job_list_api():
     spec_list = [{"metadata": dict}]
 
@@ -31,9 +32,11 @@ def job_list_api():
                                            metadata_proposed = input['metadata'])
 
         log['success'] = True
-        return jsonify(Job_list = Job_list,
-                       metadata = metadata,
-                       log = log), 200
+        return jsonify(
+            Job_list = Job_list,
+            metadata = metadata,
+            log = log
+        ), 200
 
 
 def job_view_core(session,
@@ -133,10 +136,15 @@ def job_view_core(session,
 
     query = query.order_by(Job.time_created.desc())
 
+    meta["total_job_number"] = len(query.all())
+    meta["page_size"] = 50
+
+    meta["number_of_pages"] = math.ceil(meta["total_job_number"] / meta["page_size"])
+
     if meta.get("limit") is not None:
         query = query.limit(meta["limit"])
 
-    query = query.offset(meta["start_index"])
+    query = query.offset((meta["page_number"] - 1) * meta["page_size"])
 
     # Avoid multiple queries on serializer by fetching joined data
     query = query.options(joinedload(Job.completion_directory))
@@ -217,6 +225,7 @@ def default_metadata(meta_proposed):
     meta["tag_list"] = meta_proposed.get("tag_list", None)
 
     meta["org"] = meta_proposed.get("org", "None")
+    meta["page_number"] = meta_proposed.get("page_number", "None")
 
     meta["share_type"] = meta_proposed.get("share_type", None)
 
