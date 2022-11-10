@@ -258,9 +258,9 @@ export default Vue.extend({
 
     if (this.set_from_id) {
       const selected = this.dataset_list_filtered.find((dataset:any) => dataset.directory_id === this.set_from_id)
-      
+
       if (this.multiple) {
-        this.current_directory.push(selected)
+        this.current_directory = [selected]
       } else {
         this.current_directory = selected
       }
