@@ -559,6 +559,9 @@
                 :canvas_element="canvas_element"
                 :ord="1"
                 :annotations_loading="any_loading"
+                :canvas_width="canvas_width"
+                :canvas_height="canvas_height"
+                :degrees="degrees"
               >
               </v_bg>
 
@@ -572,9 +575,8 @@
                 :mouse_position="mouse_position"
                 :height="canvas_height"
                 :width="canvas_width"
+                :degrees="degrees"
                 :canvas_element="canvas_element"
-                :width_scaled="canvas_width_scaled"
-                :height_scaled="canvas_height_scaled"
                 :canvas_mouse_tools="canvas_mouse_tools"
                 :show="show_target_reticle"
                 :target_colour="
@@ -1212,6 +1214,7 @@ export default Vue.extend({
   // data()   comment is here for searching
   data() {
     return {
+      degrees: 0,
       n_key: false,
       mouse_wheel_button: false,
       submitted_to_review: false,
@@ -5873,9 +5876,36 @@ export default Vue.extend({
       this.canvas_wrapper.style.display = "";
 
       await this.get_instances();
-
-      this.canvas_width = file.image.width;
-      this.canvas_height = file.image.height;
+      let determineSize = function (width, height, maxW, maxH, degrees) {
+        let w, h;
+        degrees = Math.abs(degrees)
+        if (degrees === 90 || degrees === 270) { // values for width and height are swapped for these rotation positions
+          w = height
+          h = width
+        }
+        else {
+          w = width
+          h = height
+        }
+        if (w > h) {
+          // if (w > maxW) {
+          //   h = h * maxW / w
+          //   w = maxW
+          // }
+        }
+        else {
+          // if (h > maxH) {
+          //   w = w * maxH / h
+          //   h = maxH
+          // }
+        }
+        return { width: w, height: h }
+      }
+      this.degrees = 0
+      let maxSize = {width: 800, height: 800}
+      let newSize = determineSize(file.image.width, file.image.height, maxSize.width, maxSize.height, this.degrees)
+      this.canvas_width = newSize.width;
+      this.canvas_height = newSize.height;
 
       await this.addImageProcess_with_canvas_refresh(file);
     },
