@@ -27,6 +27,7 @@ from shared.helpers.performance import timeit
 from sqlalchemy import Time
 from shared.utils.attributes.attributes_values_parsing import get_attribute_value
 from shared.database.project import Project
+
 logger = get_shared_logger()
 
 from sqlalchemy.schema import Index
@@ -76,6 +77,32 @@ class FileStats(Base, Caching):
     member_updated_id = Column(Integer, ForeignKey('member.id'))
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
+    def serialize(self):
+        return {
+            'id': self.id,
+            'file_id': self.file_id,
+            'count_instances': self.count_instances,
+            'label_file_id': self.label_file_id,
+            'annotators_member_list': self.annotators_member_list,
+            'attribute_value_text': self.attribute_value_text,
+            'attribute_value_number': self.attribute_value_number,
+            'attribute_value_selected': self.attribute_value_selected,
+            'attribute_value_selected_date': self.attribute_value_selected_date,
+            'attribute_value_selected_time': self.attribute_value_selected_time,
+            'attribute_template_id': self.attribute_template_id,
+            'attribute_template_group_id': self.attribute_template_group_id,
+            'member_created_id': self.member_created_id,
+            'member_updated_id': self.member_updated_id,
+
+        }
+    @staticmethod
+    def list(session, file_id):
+        res = session.query(FileStats).filter(
+            FileStats.file_id == int(file_id)
+        ).all()
+        print('A22', res)
+        return res
+
     @staticmethod
     def new(session: Session,
             file_id: int,
@@ -115,7 +142,8 @@ class FileStats(Base, Caching):
         return file_stat
 
     @staticmethod
-    def update_file_stats_data(session: Session, instance_list: list, file_id: int, project: Project, reset: bool = True):
+    def update_file_stats_data(session: Session, instance_list: list, file_id: int, project: Project,
+                               reset: bool = True):
         # First Delete existing
         if instance_list is None:
             return
@@ -224,4 +252,3 @@ class FileStats(Base, Caching):
                         attribute_value_text = value,
                         attribute_template_group_id = int(key)
                     )
-
