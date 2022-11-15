@@ -2215,12 +2215,12 @@ export default Vue.extend({
           console.error(err)
           return
         }
-        this.$props.file.image.rotation_degrees = updated_file.image.rotation_degrees
+        file.image.rotation_degrees = updated_file.image.rotation_degrees
         this.$store.commit('display_snackbar', {
           text: 'Image rotated.',
           color: 'success'
         })
-        await this.image_update_core(this.$props.file)
+        await this.image_update_core(file)
         this.loading = false
       } catch (e){
         console.error(e)
