@@ -17,9 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    with op.get_context().autocommit_block():
-        op.create_index('index__job_project_id', 'job', ['project_id', 'status'],
-                        postgresql_concurrently = True)
+    op.create_index('index__job_project_id', 'job', ['project_id', 'status'])
+
 
 
 def downgrade():
