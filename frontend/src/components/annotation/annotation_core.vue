@@ -7988,6 +7988,14 @@ export default Vue.extend({
         this.insert_tag_type();
       }
 
+      if (event.key === "r") {
+        let file = this.file
+        if (this.task) { file = this.task.file }
+        let current_rotation_degrees = file.image.rotation_degrees
+        if (current_rotation_degrees == 360) { current_rotation_degrees = 0}
+        this.on_image_rotation(current_rotation_degrees + 90);
+      }
+
       if (event.keyCode === 13) {
         // enter
         if (this.instance_type == "polygon") {
