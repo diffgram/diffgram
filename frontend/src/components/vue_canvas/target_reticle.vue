@@ -14,8 +14,9 @@
         "y": {},
         "show": {},
         "canvas_transform": {},
-        "width_scaled": {},
-        "height_scaled": {},
+        "degrees": {
+          default: 0
+        },
         "target_colour": {},
         "text_color": {},
         "canvas_element": {},
@@ -42,7 +43,9 @@
 
               var x = this.mouse_position.x;
               var y = this.mouse_position.y
-
+            let canvas = ctx.canvas
+            console.log('canvaswidt hiehg', canvas.width, canvas.height)
+            console.log(' degrees', this.degrees)
               if (this.$props.target_colour != undefined) {
                 ctx.strokeStyle = this.$props.target_colour.hex;
                 let r = this.$props.target_colour.rgba.r
