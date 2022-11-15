@@ -373,6 +373,9 @@
                       </v-layout>
                     </template>
                   </button_with_confirm>
+                  <v-chip class="ma-auto" x-small v-if="$store.state.user.settings.show_ids === true">
+                    ID: {{ item.id }}
+                  </v-chip>
                 </v-layout>
                 <v-layout @click="add_root_tree_item" v-else flexe>
                   Add new
