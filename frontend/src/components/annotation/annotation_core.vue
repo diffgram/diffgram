@@ -7992,8 +7992,9 @@ export default Vue.extend({
         let file = this.file
         if (this.task) { file = this.task.file }
         let current_rotation_degrees = file.image.rotation_degrees
+        current_rotation_degrees += 90
         if (current_rotation_degrees == 360) { current_rotation_degrees = 0}
-        this.on_image_rotation(current_rotation_degrees + 90);
+        this.on_image_rotation(current_rotation_degrees);
       }
 
       if (event.keyCode === 13) {
