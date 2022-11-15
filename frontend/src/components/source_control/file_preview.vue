@@ -20,6 +20,7 @@
         ref="drawable_canvas"
         :allow_zoom="false"
         :image_bg="image_bg"
+        :rotation_degrees="file.image.rotation_degrees"
         :canvas_height="file_preview_height"
         :canvas_width="file_preview_width"
         :editable="false"

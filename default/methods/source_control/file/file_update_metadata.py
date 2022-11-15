@@ -35,7 +35,7 @@ def api_file_update_metadata(project_string_id: str, file_id: int):
         member = get_member(session)
         project = Project.get(session, project_string_id)
 
-        log = file_update_metadata_core(
+        updated_file, log = file_update_metadata_core(
             session = session,
             project = project,
             file_id = file_id,
@@ -45,17 +45,8 @@ def api_file_update_metadata(project_string_id: str, file_id: int):
 
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
-
-        Event.new(
-            session = session,
-            kind = "file_list_update",
-            member_id = user.member_id,
-            project_id = project.id,
-            description = str(log['info'])
-        )
-
         log['success'] = True
-        return jsonify(log = log), 200
+        return jsonify(log = log, file = updated_file), 200
 
 
 def file_update_metadata_core(session: Session,
@@ -69,6 +60,13 @@ def file_update_metadata_core(session: Session,
         return None, log
 
     if file.type == 'image':
-        file.image.r
-
-    return file, log
+        if rotation_degrees is not None:
+            valid_degrees = [0, 90, 180, 270]
+            if rotation_degrees not in valid_degrees:
+                log['error']['rotation_degrees'] = f'Invalid rotation degrees can only be {valid_degrees}'
+                return None, log
+            file.image.rotation_degrees = rotation_degrees
+            session.add(file.image)
+    session.add(file)
+    result = file.serialize_with_type(session = session, regen_url = False)
+    return result, log

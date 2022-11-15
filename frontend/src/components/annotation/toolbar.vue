@@ -1170,7 +1170,7 @@ export default Vue.extend({
     this.label_settings_local = this.$props.label_settings;
     this.draw_mode_local = this.$props.draw_mode;
 
-
+    this.rotation_degrees = this.$props.file.image.rotation_degrees
     this.loading_instance_type = false;
   },
 

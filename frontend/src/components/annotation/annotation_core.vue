@@ -61,6 +61,7 @@
             @save="save()"
             @change_file="change_file($event)"
             @annotation_show="annotation_show_activate"
+            @rotate_image="on_image_rotation"
             @keypoints_mode_set="on_keypoints_mode_set"
             @show_duration_change="set_annotation_show_duration"
             @canvas_scale_global_changed="on_canvas_scale_global_changed"
@@ -1007,6 +1008,7 @@ import { CanvasMouseTools } from "../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
 import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
+import { update_file_metadata } from "../../services/fileServices";
 import { getInstanceTemplatesFromProject } from "../../services/instanceTemplateService";
 import { File } from "../../types/files";
 import task_status from "./task_status.vue"
@@ -2197,8 +2199,31 @@ export default Vue.extend({
     }
     this.mounted();
   },
-  // TODO 311 Methods!! refactor in multiple files and classes.
+  // TODO 312 Methods!! refactor in multiple files and classes.
   methods: {
+    on_image_rotation: async function(rotation_degrees: number){
+      try{
+        this.loading = true
+        let [updated_file, err] = await update_file_metadata(
+          this.project_string_id,
+          this.file.id,
+          {rotation_degrees: rotation_degrees}
+        )
+        if (err) {
+          console.error(err)
+          return
+        }
+        this.$props.file.image.rotation_degrees = updated_file.image.rotation_degrees
+        this.$store.commit('display_snackbar', {
+          text: 'Image rotated.',
+          color: 'success'
+        })
+        await this.image_update_core(this.$props.file)
+        this.loading = false
+      } catch (e){
+        console.error(e)
+      }
+    },
     on_change_label_schema: function(schema){
       this.$emit('change_label_schema', schema)
     },
@@ -5902,7 +5927,7 @@ export default Vue.extend({
         }
         return { width: w, height: h }
       }
-      this.degrees = 0
+      this.degrees = file.image.rotation_degrees
       let maxSize = {width: 800, height: 800}
       let newSize = determineSize(file.image.width, file.image.height, maxSize.width, maxSize.height, this.degrees)
       this.canvas_width = newSize.width;

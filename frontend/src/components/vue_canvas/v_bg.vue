@@ -62,7 +62,6 @@
         let contrast = `contrast(${this.canvas_filters['contrast']}%)`
         let grayscale = `grayscale(${this.canvas_filters['grayscale']}%)`
         ctx.filter = brightness + contrast + grayscale
-        console.log('this.$props.auto_scale_bg', this.$props.auto_scale_bg)
 
         let drawOptimizedImage = (image, degrees) => {
           var canvas = document.createElement('canvas');
@@ -111,6 +110,7 @@
         } else {
           let scale_x = ctx.canvas.width / this.image.width;
           let scale_y = ctx.canvas.height / this.image.height;
+          let scaledImage = drawOptimizedImage(this.image, this.degrees)
           // ctx.clearRect(
           //   0,
           //   0,
@@ -119,11 +119,11 @@
           // );
           ctx.resetTransform();
           ctx.drawImage(
-            this.image,
+            scaledImage,
             0,
             0,
-            this.image.width,
-            this.image.height,
+            scaledImage.width,
+            scaledImage.height,
             0,
             0,
             ctx.canvas.width,
