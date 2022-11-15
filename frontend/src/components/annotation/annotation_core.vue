@@ -2204,9 +2204,11 @@ export default Vue.extend({
     on_image_rotation: async function(rotation_degrees: number){
       try{
         this.loading = true
+        let file = this.file
+        if (this.task) { file = this.task.file }
         let [updated_file, err] = await update_file_metadata(
           this.project_string_id,
-          this.file.id,
+          file.id,
           {rotation_degrees: rotation_degrees}
         )
         if (err) {
