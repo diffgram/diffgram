@@ -14,7 +14,10 @@
         color="error"
         small
         class="mt-3"
-        ><v-icon small>mdi-archive</v-icon>Archived</v-chip
+      >
+        <v-icon small>mdi-archive</v-icon>
+        Archived
+      </v-chip
       >
       <div v-show="task && task.id">
         <v-layout>
@@ -262,21 +265,21 @@
       >
       </standard_button>
 
-    <!-- Known bug when edited directly in studio context -->
-    <!--
-    <ui_schema name="edit_instance_template">
-      <standard_button
-        tooltip_message="Edit Instance Template"
-        v-if="instance_template_selected && is_keypoint_template"
-        @click="$emit('open_instance_template_dialog')"
-        color="primary"
-        icon="mdi-vector-polyline-edit"
-        :icon_style="true"
-        :bottom="true"
-      >
-      </standard_button>
-    </ui_schema>
-    -->
+      <!-- Known bug when edited directly in studio context -->
+      <!--
+      <ui_schema name="edit_instance_template">
+        <standard_button
+          tooltip_message="Edit Instance Template"
+          v-if="instance_template_selected && is_keypoint_template"
+          @click="$emit('open_instance_template_dialog')"
+          color="primary"
+          icon="mdi-vector-polyline-edit"
+          :icon_style="true"
+          :bottom="true"
+        >
+        </standard_button>
+      </ui_schema>
+      -->
 
       <v-divider vertical></v-divider>
 
@@ -385,10 +388,10 @@
 
       <v-divider vertical v-if="task && task.id && task.job"></v-divider>
 
-          <time_tracker
-            v-if="task && task.id && task.job"
-            :task="task"
-          />
+      <time_tracker
+        v-if="task && task.id && task.job"
+        :task="task"
+      />
 
 
       <v-divider vertical></v-divider>
@@ -493,67 +496,67 @@
       >
         <template slot="content">
           <v-layout class="pb-4">
-             <div>
-                <button_with_menu
-                  datacy="open-annotation-show-menu"
-                  v-if="annotation_show_on !== true"
-                  tooltip_message="Annotation show"
-                  color="primary"
-                  :icon="anootations_show_icon"
-                  :close_by_button="true"
-                  :disabled="loading || annotations_loading || full_file_loading"
-                >
-                  <template slot="content">
-                    <v-btn
-                      data-cy="start-annotation-show"
-                      @click="
+            <div>
+              <button_with_menu
+                datacy="open-annotation-show-menu"
+                v-if="annotation_show_on !== true"
+                tooltip_message="Annotation show"
+                color="primary"
+                :icon="anootations_show_icon"
+                :close_by_button="true"
+                :disabled="loading || annotations_loading || full_file_loading"
+              >
+                <template slot="content">
+                  <v-btn
+                    data-cy="start-annotation-show"
+                    @click="
                         $emit(
                           'annotation_show',
                           !task && file && file.id ? 'file' : 'task'
                         )
                       "
-                    >
-                      <span> Start </span>
-                    </v-btn>
-                    <v-slider
-                      v-model="numberValue"
-                      :tick-labels="duration_labels"
-                      :max="4"
-                      step="1"
-                      ticks="always"
-                      tick-size="4"
-                      hint="Duration in seconds"
-                      persistent-hint
-                      @change="$emit('show_duration_change', $event)"
-                    />
-                  </template>
-                </button_with_menu>
-                <ui_schema v-else name="stop_shideshow">
-                  <standard_button
-                    data-cy="pause-annotation-show"
-                    tooltip_message="Pause"
-                    @click="
+                  >
+                    <span> Start </span>
+                  </v-btn>
+                  <v-slider
+                    v-model="numberValue"
+                    :tick-labels="duration_labels"
+                    :max="4"
+                    step="1"
+                    ticks="always"
+                    tick-size="4"
+                    hint="Duration in seconds"
+                    persistent-hint
+                    @change="$emit('show_duration_change', $event)"
+                  />
+                </template>
+              </button_with_menu>
+              <ui_schema v-else name="stop_shideshow">
+                <standard_button
+                  data-cy="pause-annotation-show"
+                  tooltip_message="Pause"
+                  @click="
                       $emit('annotation_show', !task && file && file.id ? 'file' : 'task')
                     "
-                    color="primary"
-                    icon="pause"
-                    :icon_style="true"
-                    :bottom="true"
-                  />
-                </ui_schema>
-              </div>
+                  color="primary"
+                  icon="pause"
+                  :icon_style="true"
+                  :bottom="true"
+                />
+              </ui_schema>
+            </div>
             <standard_button
-                tooltip_message="Refresh Instances"
-                v-if="$store.state.user.current.is_super_admin == true"
-                @click="$emit('refresh_all_instances')"
-                :loading="loading || annotations_loading"
-                color="primary"
-                icon="mdi-refresh"
-                :icon_style="true"
-                :bottom="true"
-              >
-              </standard_button>
-              <ui_schema name="brightness_contrast_filters">
+              tooltip_message="Refresh Instances"
+              v-if="$store.state.user.current.is_super_admin == true"
+              @click="$emit('refresh_all_instances')"
+              :loading="loading || annotations_loading"
+              color="primary"
+              icon="mdi-refresh"
+              :icon_style="true"
+              :bottom="true"
+            >
+            </standard_button>
+            <ui_schema name="brightness_contrast_filters">
               <button_with_menu
                 tooltip_message="Brightness, Contrast, Filters"
                 color="primary"
@@ -593,7 +596,32 @@
 
 
                     <v-btn icon @click="filter_reset()">
-                      <v-icon color="primary"> autorenew </v-icon>
+                      <v-icon color="primary"> autorenew</v-icon>
+                    </v-btn>
+                  </v-layout>
+                </template>
+              </button_with_menu>
+            </ui_schema>
+            <ui_schema name="image_rotation" v-if="!video_mode">
+              <button_with_menu
+                v-if="!video_mode"
+                tooltip_message="Rotate Image"
+                color="primary"
+                icon="mdi-rotate-right-variant"
+              >
+                <template slot="content">
+                  <v-layout column class="mt-4 mb-4  justify-start align-center">
+                    <div>
+                      <diffgram_select
+                        v-model="rotation_degrees"
+                        label="Set Rotation Degrees"
+                        :item_list="rotation_degrees_options"
+                      ></diffgram_select>
+                      <p class="font-weight-light small">*Rotation degrees are based on original image.</p>
+                    </div>
+                    <v-btn color="success" @click="rotate_image(rotation_degrees)">
+                      <v-icon color="white">mdi-rotate-right-variant</v-icon>
+                      Rotate
                     </v-btn>
                   </v-layout>
                 </template>
@@ -700,7 +728,7 @@
             >
               <template slot="content">
                 <v-layout column>
-                  <v-card-title> Panel Sizes </v-card-title>
+                  <v-card-title> Panel Sizes</v-card-title>
 
                   <v-checkbox
                     label="Auto Size Canvas"
@@ -728,7 +756,7 @@
                     min="200"
                     step="50"
                     max="750"
-                    thumb-label="always"
+                    thumb-label="always" rian
                     ticks
                     @input="
                       $store.commit('set_user_setting', [
@@ -765,7 +793,7 @@
             >
               <template slot="content">
                 <v-layout column data-cy="annotation_setting_menu">
-                  <v-card-title> Settings </v-card-title>
+                  <v-card-title> Settings</v-card-title>
 
                   <v-checkbox
                     label="Show Attribute Preview"
@@ -939,7 +967,7 @@
             </button_with_menu>
           </v-layout>
 
-          <v-card-title v-if="task && task.id"> Task Specific </v-card-title>
+          <v-card-title v-if="task && task.id"> Task Specific</v-card-title>
 
           <v-layout v-if="task && task.id">
             <standard_button
@@ -995,7 +1023,7 @@
       class="d-flex pa-2 justify-center align-center"
     >
       <span style="font-size: 12px" class="mr-2"
-        ><strong> <v-icon class="mr-2">mdi-eye</v-icon>View only</strong></span
+      ><strong> <v-icon class="mr-2">mdi-eye</v-icon>View only</strong></span
       >
     </v-chip>
   </v-toolbar>
@@ -1030,6 +1058,9 @@ export default Vue.extend({
   },
   props: {
     project_string_id: {},
+    video_mode: {
+      default: false
+    },
     label_schema: {
       required: true
     },
@@ -1095,6 +1126,29 @@ export default Vue.extend({
       loading_instance_type: true,
       instance_type: "box",
       numberValue: 1,
+      rotation_degrees: 0,
+      rotation_degrees_options: [
+        {
+          'name': 0,
+          'display_name': '0',
+          'color': 'primary'
+        },
+        {
+          'name': 90,
+          'display_name': '90',
+          'color': 'primary'
+        },
+        {
+          'name': 180,
+          'display_name': '180',
+          'color': 'primary'
+        },
+        {
+          'name': 270,
+          'display_name': '270',
+          'color': 'primary'
+        },
+      ],
       duration_labels: ["1", "2", "3", "4", "5"],
     };
   },
@@ -1134,28 +1188,30 @@ export default Vue.extend({
     },
   },
   methods: {
-    set_instance_type: function(inst_type){
+    rotate_image: function (degrees) {
+      this.$emit('rotate_image', degrees)
+    },
+    set_instance_type: function (inst_type) {
       this.instance_type = inst_type
     },
-    on_mode_set: function(mode){
+
+    on_mode_set: function (mode) {
       this.$emit('keypoints_mode_set', mode)
     },
-    set_mode: function(mode){
-      if(!this.$refs.keypoints_mode_selector){
+    set_mode: function (mode) {
+      if (!this.$refs.keypoints_mode_selector) {
         return
       }
-      if(mode === '1_click'){
+      if (mode === '1_click') {
         this.$refs.keypoints_mode_selector.set_active(0)
-      }
-      else if(mode === 'guided'){
+      } else if (mode === 'guided') {
         this.$refs.keypoints_mode_selector.set_active(1)
       }
     },
-    go_to_job: function(){
-      if(this.task.job.type === 'examination'){
+    go_to_job: function () {
+      if (this.task.job.type === 'examination') {
         this.$router.push(`/${this.project_string_id}/examination/${this.task.job_id}`)
-      }
-      else{
+      } else {
         this.$router.push(`/job/${this.task.job_id}`)
       }
 
@@ -1169,10 +1225,10 @@ export default Vue.extend({
     },
     trigger_smooth_canvas_events: function () {
       this.$emit('smooth_canvas_changed', this.label_settings_local.smooth_canvas),
-      this.$store.commit('set_user_setting', [
-        'smooth_canvas',
-        this.label_settings_local.smooth_canvas,
-      ])
+        this.$store.commit('set_user_setting', [
+          'smooth_canvas',
+          this.label_settings_local.smooth_canvas,
+        ])
     },
     filter_reset: function () {
       this.label_settings_local.filter_brightness = 100;
