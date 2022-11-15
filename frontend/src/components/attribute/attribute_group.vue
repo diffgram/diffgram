@@ -153,7 +153,7 @@
             v-if="group.kind === 'tree'"
           >
             <div style="padding: 5px">
-              <v-chip 
+              <v-chip
                 class="ma-1"
                 x-small
                 v-for="(name, index) in internal_selected_names"
@@ -193,10 +193,15 @@
               <template v-slot:prepend="{ item }">
                   <v-checkbox
                     :input-value="internal_selected.includes(item.id)"
-                    @change="tree_input(item)" 
-                    style="margin-top: 0" 
-                    hide-details 
+                    @change="tree_input(item)"
+                    style="margin-top: 0"
+                    hide-details
                   />
+              </template>
+              <template v-slot:append="{item}">
+                <v-chip x-small v-if="$store.state.user.settings.show_ids === true">
+                  ID: {{ item.id }}
+                </v-chip>
               </template>
             </v-treeview>
             </v-lazy>
@@ -774,7 +779,7 @@
           if (already_selected) {
             const index_to_delete = this.internal_selected.indexOf(e.id);
             this.internal_selected.splice(index_to_delete, 1);
-            
+
             const index_to_delete_name = this.internal_selected_names.indexOf(e.name);
             this.internal_selected_names.splice(index_to_delete_name, 1);
           }
