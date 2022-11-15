@@ -97,7 +97,7 @@
               <div class="d-flex">
                 <div style="width: 75px">
                   <v-chip 
-                    v-if="is_super_admin"
+                    v-if="is_super_admin || show_id"
                     x-small 
                   >
                     ID: {{ data.item.directory_id }}
@@ -117,7 +117,7 @@
 
           <template v-slot:selection="data">
             <v-chip  
-              v-if="is_super_admin"
+              v-if="is_super_admin || show_id"
               x-small 
             >
               ID: {{ data.item.directory_id }}
@@ -221,6 +221,10 @@ export default Vue.extend({
       default: "Dataset"
     },
     is_super_admin: {
+      type: Boolean,
+      default: false
+    },
+    show_id: {
       type: Boolean,
       default: false
     },

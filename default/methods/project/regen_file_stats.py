@@ -19,14 +19,14 @@ def api_project_regen_file_stats(project_string_id):
     log = regular_log.default()
     with sessionMaker.session_scope() as session:
 
-        user = User.get(session = session)
+        member = get_member(session)
         project = Project.get(session, project_string_id)
 
         log = project_regen_file_stats_core(
             session = session,
             project = project,
             log = log,
-            member = user.member)
+            member = member)
 
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
