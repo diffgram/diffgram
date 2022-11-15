@@ -36,6 +36,7 @@
   <p> <kbd>Shift</kbd> + <kbd>n</kbd> Jump to Next Instance </p>
   <h2> Image / Frame </h2>
   <p> <kbd>S</kbd> Save </p>
+  <p> <kbd>R</kbd> Rotate </p>
 
   <p> <kbd>Delete</kbd> Deletes selected instances </p>
 
