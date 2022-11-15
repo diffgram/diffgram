@@ -31,6 +31,7 @@
             :label_schema="label_schema"
             :loading="loading"
             :view_only_mode="view_only_mode"
+            :video_mode="video_mode"
             :label_settings="label_settings"
 
             :project_string_id="project_string_id"
