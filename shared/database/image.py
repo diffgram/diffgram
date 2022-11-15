@@ -9,6 +9,7 @@ class Image(Base):
     description = Column(String(250))
     width = Column(Integer)
     height = Column(Integer)
+    rotation_degrees = Column(Integer, default = 0)
     soft_delete = Column(Boolean, default = False)
 
     mask_joint_url = Column(String())
@@ -50,6 +51,7 @@ class Image(Base):
         image = {
             'width': self.width,
             'height': self.height,
+            'rotation_degrees': self.rotation_degrees,
             'is_annotation_example': self.is_annotation_example,
             'url_annotation_example': self.url_annotation_example,
             'url_annotation_example_thumb': self.url_annotation_example_thumb
@@ -63,6 +65,7 @@ class Image(Base):
             'original_filename': self.original_filename,
             'width': self.width,
             'height': self.height,
+            'rotation_degrees': self.rotation_degrees,
             'soft_delete': self.soft_delete,
             'url_signed': self.url_signed,
             'url_signed_thumb': self.url_signed_thumb,
@@ -92,6 +95,7 @@ class Image(Base):
             'original_filename': self.original_filename,
             'width': self.width,
             'height': self.height,
+            'rotation_degrees': self.rotation_degrees,
             'soft_delete': self.soft_delete,
             'url_signed': self.url_signed,
             'url_signed_thumb': self.url_signed_thumb,

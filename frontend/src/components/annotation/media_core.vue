@@ -585,13 +585,6 @@
               >
                 <a @click="change_file_request(item)" style="position: relative">
                   <div v-if="current_file && item.id == current_file.id" style="position: absolute; top: -10px; right: -18px; z-index: 99999">
-
-                    <!-- Badge thing actually seems to make it worse here -->
-                    <!--
-                    <v-badge color="primary">
-                      <v-icon dark slot="badge">check</v-icon>
-                    </v-badge>
-                    -->
                     <tooltip_icon
                       tooltip_message="Current File"
                       icon="mdi-check-circle"

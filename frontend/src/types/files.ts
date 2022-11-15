@@ -44,6 +44,7 @@ export type Image = {
   original_filename: string
   width: number
   height: number
+  rotation_degrees: number
   soft_delete: boolean
   url_signed?: string
   url_signed_thumb?: string

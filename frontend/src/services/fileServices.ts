@@ -45,3 +45,19 @@ export const get_child_files = async (project_string_id: string, parent_file_id:
     return [null, e]
   }
 }
+
+type FileMetadata = {
+  rotation_degrees: number
+}
+
+export const update_file_metadata = async (project_string_id: string, file_id: number, updated_metadata: FileMetadata): Promise<File[]> => {
+  let url = `/api/v1/project/${project_string_id}/file/${file_id}/update-metadata`
+  try {
+    const response = await axios.put(url, updated_metadata)
+
+    return [response.data.file, null]
+  } catch(e) {
+    console.error(e)
+    return [null, e]
+  }
+}
