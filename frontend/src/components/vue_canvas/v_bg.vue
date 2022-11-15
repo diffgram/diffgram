@@ -82,7 +82,7 @@
               ctx.drawImage(image, -this.canvas_width / 2, -this.canvas_height / 2, this.canvas_width, this.canvas_height)
             }
             else { // 90 or 270 degrees (values for width and height are swapped for these rotation positions)
-              ctx.drawImage(image, -this.canvas_width / 2, -this.canvas_height / 2, this.canvas_width, this.canvas_height)
+              ctx.drawImage(image, -this.canvas_height / 2, -this.canvas_width / 2, this.canvas_height, this.canvas_width)
             }
           }
           ctx.restore()
