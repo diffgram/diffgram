@@ -13,6 +13,7 @@
         :change_on_mount="change_on_mount"
         :show_text_buttons="show_text_buttons"
         :is_super_admin="is_super_admin"
+        :show_id="show_id"
         @change_dataset="on_change_dataset"
         @on_set_current_directory="on_set_current_directory"
         @on_refresh_dataset_list="on_refresh_dataset_list"
@@ -102,6 +103,9 @@ export default Vue.extend({
     },
     is_super_admin: function(): boolean {
         return this.$store.state.user.current.is_super_admin
+    },
+    show_id: function(): boolean {
+      return this.$store.state.user.current.is_super_admin || this.$store.state.user.settings.show_ids
     }
   },
   methods: {
