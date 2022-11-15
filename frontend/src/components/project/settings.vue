@@ -22,6 +22,13 @@
                 </v-text-field>
               </v-flex>
 
+              <v-flex lg4>
+                <v-checkbox
+                  v-model="$store.state.user.settings.show_ids"
+                  label="Show ids"
+                />
+              </v-flex>
+
             </v-card-text>
 
             </v-container>
