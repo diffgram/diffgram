@@ -46,7 +46,9 @@ export default class TaskPrefetcher {
     this.cached_next_annotations = []
 
     if (!error && result.task) {
-      await this.prefetch_image(result.task.file.image.url_signed, this.cached_next_images)
+      if (result.task.file.type === 'image') {
+        await this.prefetch_image(result.task.file.image.url_signed, this.cached_next_images)
+      }
       await this.prefetch_instances(result.task.id, this.cached_next_annotations)
       
       this.cached_next_tasks = [result.task]
@@ -66,7 +68,9 @@ export default class TaskPrefetcher {
     this.cached_previous_annotations = []
 
     if (!error && result.task) {
-      await this.prefetch_image(result.task.file.image.url_signed, this.cached_previous_images)
+      if (result.task.file.type === 'image') {
+        await this.prefetch_image(result.task.file.image.url_signed, this.cached_previous_images)
+      }
       await this.prefetch_instances(result.task.id, this.cached_previous_annotations)
       
       this.cached_previous_tasks = [result.task]
