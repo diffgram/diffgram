@@ -23,6 +23,7 @@
         :background="bg_color"
         ref="background"
         :image="image_bg"
+        :degrees="rotation_degrees"
         :refresh="refresh"
         :canvas_width="canvas_width"
         :canvas_height="canvas_height"
@@ -100,6 +101,9 @@
         default: false
       },
       text_color: {
+        default: "#000000"
+      },
+      rotation_degrees: {
         default: "#000000"
       },
       bg_color: {
