@@ -47,6 +47,7 @@ export default class TaskPrefetcher {
 
     this.cached_next_images = []
     this.cached_next_annotations = []
+    this.no_next_task = false
 
     if (!error && result.task) {
       if (result.task.file.type === 'image') {
@@ -71,6 +72,7 @@ export default class TaskPrefetcher {
 
     this.cached_previous_images = []
     this.cached_previous_annotations = []
+    this.no_prev_task = false
 
     if (!error && result.task) {
       if (result.task.file.type === 'image') {
@@ -82,6 +84,10 @@ export default class TaskPrefetcher {
     } else {
       this.no_prev_task = true
     }
+  }
+
+  has_next(direction: string) {
+    return direction === 'next' ? !this.no_next_task : !this.no_prev_task
   }
 
   async update_tasks(task: any) {

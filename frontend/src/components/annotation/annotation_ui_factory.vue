@@ -696,8 +696,8 @@ export default Vue.extend({
               }
           );
 
-          if (response.data) {
-            if (response.data.task && response.data.task.id !== task.id) {
+          if (response.data && response.data.task) {
+            if (response.data.task.id !== task.id) {
               this.$router.push(`/task/${response.data.task.id}`);
               history.pushState({}, "", `/task/${response.data.task.id}`);
               this.task = response.data.task;
@@ -708,8 +708,7 @@ export default Vue.extend({
           }
         }
         else {
-          console.log("here", this.task_prefetcher.no_prev_task)
-          if (!this.task_prefetcher.no_prev_task) {
+          if (this.task_prefetcher.has_next(direction)) {
             this.task_loading = true
             const new_task = await this.task_prefetcher.change_task(direction)
             if (new_task) {
@@ -726,14 +725,12 @@ export default Vue.extend({
                 this.task_image = new_task.image
                 this.task_instances = new_task.instances
                 this.task_loading = false
-                success = new_task.success
               }
             } else {
               success = false
             }
           } else {
             success = false
-            console.log("here")
           }
         }
 
