@@ -682,6 +682,9 @@ export default Vue.extend({
       try {
         let success = true;
 
+        this.task_image = null
+        this.task_instances = null
+
         if (this.task.file.type !== 'image') {
           const response = await axios.post(
             `/api/v1/job/${task.job_id}/next-task`,
@@ -698,8 +701,6 @@ export default Vue.extend({
               this.$router.push(`/task/${response.data.task.id}`);
               history.pushState({}, "", `/task/${response.data.task.id}`);
               this.task = response.data.task;
-              this.task_image = null
-              this.task_instances = null
               this.task_loading = false
             }
           } else {
