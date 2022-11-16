@@ -5931,6 +5931,9 @@ export default Vue.extend({
         return { width: w, height: h }
       }
       this.degrees = file.image.rotation_degrees
+      if(this.degrees == undefined){
+        this.degrees = 0
+      }
       let maxSize = {width: 800, height: 800}
       let newSize = determineSize(file.image.width, file.image.height, maxSize.width, maxSize.height, this.degrees)
       this.canvas_width = newSize.width;
@@ -7962,6 +7965,7 @@ export default Vue.extend({
         //
         this.shift_key = false;
       }
+
       if (event.keyCode === 78) {
         // shift
         //
@@ -7989,7 +7993,7 @@ export default Vue.extend({
         this.insert_tag_type();
       }
 
-      if (event.key === "r") {
+      if (event.key === "r" && this.alt_key) {
         let file = this.file
         if (this.task) { file = this.task.file }
         let current_rotation_degrees = file.image.rotation_degrees
