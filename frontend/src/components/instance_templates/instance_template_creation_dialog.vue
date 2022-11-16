@@ -4,7 +4,7 @@
 
     <v-card elevation="0" class="pa-4 ma-0 pointertest">
       <v-card-title>
-        Create KeyPoints Template:
+        Create Instance Template:
 
       </v-card-title>
       <v-card-text>
@@ -123,17 +123,32 @@
   </v-dialog>
 </template>
 
-<script>
+<script lang="ts">
   import Vue from "vue";
   import {KeypointInstance} from '../vue_canvas/instances/KeypointInstance';
   import context_menu_instance_template from '../context_menu/context_menu_instance_template';
-  import {InstanceTemplateCreationInteractionGenerator} from '../vue_canvas/interactions/InstanceTemplateCreationInteractionGenerator';
   import drawable_canvas from '../vue_canvas/drawable_canvas';
   import axios from '../../services/customInstance';
   import instance_drawer from '../vue_canvas/instance_drawer';
   import instance_template_creation_toolbar from './instance_template_creation_toolbar'
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
-  import {iconFillPaint} from "@/utils/custom_icons";
+  import {iconFillPaint} from "../../utils/custom_icons.js";
+  import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
+  import {Instance} from "../vue_canvas/instances/Instance";
+  import {
+    ImageAnnotationCoordinatorRouter
+  } from "../vue_canvas/coordinators/ImageAnnotationCoordinatorRouter";
+  import {
+    genImageAnnotationEvent,
+    ImageAnnotationEventCtx,
+    ImageInteractionEvent,
+    InteractionEvent
+  } from "../../types/InteractionEvent";
+  import {LabelFile} from "../../types/label";
+  import {LabelColourMap} from "../../types/label_colour_map";
+  import {CoordinatorProcessResult} from "../vue_canvas/coordinators/Coordinator";
+  import {ImageAnnotationCoordinator} from "../vue_canvas/coordinators/coordinator_types/ImageAnnotationCoordinator";
+  import {createDefaultLabelSettings} from "../../types/image_label_settings";
 
   export default Vue.extend({
   name: "instance_template_creation_dialog",
@@ -171,10 +186,7 @@
       is_open: false,
       loading: false,
       name: undefined,
-      label_settings: {
-        show_occluded_keypoints: true,
-        show_left_right_arrows: true
-      }
+      label_settings: createDefaultLabelSettings()
     }
   },
   mounted() {
@@ -200,7 +212,7 @@
       this.mode = mode;
     },
     change_color: function(color){
-      console.log('asadasd', color)
+
       this.instance_context.color = color;
     },
     activate_color_tool: function(){
@@ -286,6 +298,7 @@
         () => {
         },
         this.$refs.instance_template_canvas.mouse_down_delta_event,
+        this.$refs.instance_template_canvas.mouse_down_position,
         this.label_settings
       );
 
@@ -380,33 +393,87 @@
         this.instance_hover_type = null;
       }
     },
-    generate_interaction_from_event(event) {
-      const interaction_generator = new InstanceTemplateCreationInteractionGenerator(
+    build_ann_event_ctx: function (): ImageAnnotationEventCtx {
+
+      let ann_ctx: ImageAnnotationEventCtx = {
+        label_file: this.current_label_file as LabelFile,
+        instance_type: this.instance_type,
+        instance_list: this.instance_list as Instance[],
+        draw_mode: this.instance_context.draw_mode,
+        is_actively_drawing: this.is_actively_drawing,
+        hovered_instance: this.hovered_instance,
+        current_drawing_instance: this.current_instance,
+        label_file_colour_map: this.label_file_colour_map as LabelColourMap,
+        mouse_position: this.mouse_position as MousePosition,
+        mouse_down_position: this.mouse_down_position as MousePosition,
+        canvas_transform: this.canvas_transform,
+        canvas_element: this.canvas_element,
+        view_issue_mode: this.view_issue_mode,
+        frame_number: this.current_frame,
+        ann_core_ctx: this,
+        instance_select_for_issue: this.instance_select_for_issue,
+        view_only_mode: this.view_only_mode,
+        image_label_settings: this.label_settings,
+        original_edit_instance: this.original_edit_instance,
+        locked_editing_instance: this.instance, //TODO: refactor when able to support multiple instances.
+        lock_point_hover_change: this.lock_point_hover_change,
+      }
+      return ann_ctx
+    },
+    generate_interaction_coordinator(event: ImageInteractionEvent) {
+
+
+      let canvas_mouse_ctx: CanvasMouseCtx = {
+        mouse_position: this.mouse_position,
+        canvas_element_ctx: this.canvas_element_ctx,
+        instance_context: this.instance_context,
+        trigger_instance_changed: this.trigger_instance_changed,
+        instance_selected: () => this.instance_selected,
+        instance_deselected: () => this.instance_deselected,
+        new_global_instance: () => {
+          return new Instance()
+        },
+        mouse_down_delta_event: this.mouse_down_delta_event,
+        mouse_down_position: this.mouse_down_position,
+        label_settings: this.label_settings,
+        canvas_transform: this.canvas_transform
+      }
+      const interaction_generator = new ImageAnnotationCoordinatorRouter(
         event,
         this.instance_hover_index,
         this.instance_list,
-        this.$refs['instance_template_creation_toolbar'].draw_mode,
-        this.instance,
-      )
-      return interaction_generator.generate_interaction();
+        this.draw_mode,
+        this.instance_type,
+        canvas_mouse_ctx,
+        this.command_manager
+      );
+      return interaction_generator.generate_coordinator();
     },
     mouse_move: function (event) {
       if(this.instance_context.color_tool_active){
         this.instance.ctx.canvas.style.cursor =  `url(${iconFillPaint}), auto`;
+      } else{
+        this.instance.ctx.canvas.style.cursor =  `default`;
       }
-      const interaction = this.generate_interaction_from_event(event);
-      if (interaction) {
-        interaction.process();
+
+      let ann_ctx = this.build_ann_event_ctx(event)
+      let ann_tool_event: ImageInteractionEvent = genImageAnnotationEvent(event, ann_ctx)
+      const coordinator = this.generate_interaction_coordinator(ann_tool_event);
+      if (coordinator) {
+        // coordinator.process_mouse_down();
+        let result: CoordinatorProcessResult = coordinator.perform_action_from_event(ann_tool_event);
       }
     },
     mouse_down: function (event) {
       if (!this.mouse_down_limits(event)) {
         return
       }
-
-      const interaction = this.generate_interaction_from_event(event);
-      if (interaction) {
-        interaction.process();
+      let ann_ctx = this.build_ann_event_ctx(event)
+      let ann_tool_event: ImageInteractionEvent = genImageAnnotationEvent(event, ann_ctx)
+      const coordinator = this.generate_interaction_coordinator(ann_tool_event);
+      if (coordinator) {
+        // coordinator.process_mouse_down();
+        let result: CoordinatorProcessResult = coordinator.perform_action_from_event(ann_tool_event);
       }
 
     },
@@ -423,10 +490,13 @@
       if (!this.mouse_up_limits(event)) {
         return
       }
-      const interaction = this.generate_interaction_from_event(event);
-      if (interaction) {
-        interaction.process();
-        this.$forceUpdate();
+      let ann_ctx = this.build_ann_event_ctx(event)
+      let ann_tool_event: ImageInteractionEvent = genImageAnnotationEvent(event, ann_ctx)
+      const coordinator = this.generate_interaction_coordinator(ann_tool_event);
+      if (coordinator) {
+        // coordinator.process_mouse_down();
+        let result: CoordinatorProcessResult = coordinator.perform_action_from_event(ann_tool_event);
+        this.$forceUpdate()
       }
     },
     contextmenu: function (event) {

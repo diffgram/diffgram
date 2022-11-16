@@ -239,7 +239,7 @@
                         for now padding seems like best effort still-->
 
                       <h3 class="pl-2">
-                        <a @click="$store.commit('go_to_keyframe_via_store', keyframe)">
+                        <a @click="on_keyframe_clicked(keyframe)">
                         {{keyframe}}
                         </a>
                       </h3>
@@ -643,6 +643,10 @@ export default Vue.extend( {
 
   },
   methods: {
+    on_keyframe_clicked: function(keyframe){
+
+      this.$emit('keyframe_click', keyframe)
+    },
     add_frame_number_to_sequence(sequence_id, frame_number){
 
       if(frame_number == undefined){
@@ -650,6 +654,10 @@ export default Vue.extend( {
       }
       let sequence = this.sequence_list.find(seq => seq.id === sequence_id);
       if(sequence){
+        let key_frame_list = sequence.keyframe_list
+        if(!key_frame_list){
+          return
+        }
         let existing_frames = sequence.keyframe_list.frame_number_list;
         if(!existing_frames.includes(frame_number)){
           existing_frames.push(frame_number);

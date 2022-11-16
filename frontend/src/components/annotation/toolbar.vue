@@ -906,7 +906,7 @@
                   <v-slider
                     label="Spatial Line Size"
                     min="0"
-                    max="4"
+                    max="10"
                     thumb-label
                     ticks
                     v-model="label_settings_local.spatial_line_size"
@@ -1200,6 +1200,7 @@ export default Vue.extend({
     },
     set_instance_type: function (inst_type) {
       this.instance_type = inst_type
+      this.$emit('change_instance_type', inst_type)
     },
 
     on_mode_set: function (mode) {

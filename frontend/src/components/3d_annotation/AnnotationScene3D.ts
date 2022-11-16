@@ -2,10 +2,12 @@ import * as THREE from 'three';
 import {OrbitControls} from './OrbitControls';
 import ObjectTransformControls from "./ObjectTransformControls";
 import CuboidDrawerTool from "./CuboidDrawerTool";
-import {Instance, Instance3D} from '../vue_canvas/instances/Instance';
+import {Instance3D} from '../vue_canvas/instances/Instance3D';
+import {Instance} from '../vue_canvas/instances/Instance';
 import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
 import {getCenterPoint} from "./utils_3d";
 import Vue from 'vue';
+import {LabelFile} from "../../types/label";
 
 export default class AnnotationScene3D {
   public scene: THREE.Scene;
@@ -22,7 +24,7 @@ export default class AnnotationScene3D {
   public grid_helper: THREE.GridHelper;
 
   public component_ctx: Vue;
-  public label_file: { id: number, label: any, label_file: any, colour: {hex: string} } = null;
+  public label_file: LabelFile = null;
   public mouse_position_3d: THREE.Vector3;
 
   public plane_normal: THREE.Vector3;
@@ -195,10 +197,7 @@ export default class AnnotationScene3D {
       }
 
 
-    } else {
-
     }
-
     // this.create_mini_sphere()
 
   }
@@ -232,10 +231,7 @@ export default class AnnotationScene3D {
         this.cuboid_drawer_tool.resize_place_holder_cuboid();
       }
 
-    } else {
-
     }
-
   }
 
   private get_3d_mouse_position() {

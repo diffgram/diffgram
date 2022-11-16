@@ -43,6 +43,7 @@
         :global_attribute_groups_list="global_attribute_groups_list"
         :current_global_instance="current_global_instance"
         :schema_id="schema_id"
+        :project_string_id="project_string_id"
         :view_only_mode="view_only_mode"
         @attribute_change="global_attribute_change($event)"
       />
@@ -382,7 +383,7 @@
                       <!--
                       <v-btn v-if=""
                              icon @click="toggle_instance_focus(props.item.instance_list_index, props.item.id)">
-                        <v-icon color="grey">remove_red_eye</v-icon>
+                        <v-icon color="grey">removmdi-checke_red_eye</v-icon>
                       </v-btn>
                           -->
                     </div>
@@ -728,6 +729,9 @@ export default Vue.extend({
         return count
       },
       filtered_instance_set: function () {
+        if(this.instance_list == undefined){
+          return
+        }
         const instance_list = this.instance_list.map((inst, i) => ({
           ...inst,
           instance_list_index: i
@@ -819,6 +823,9 @@ export default Vue.extend({
     },
     methods: {
       set_instance_index_numbers: function () {
+        if(this.instance_list == undefined){
+          return
+        }
         for (let i = 0; i < this.instance_list.length; i++) {
           this.instance_list[i].instance_list_index = i;
         }

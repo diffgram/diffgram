@@ -134,9 +134,6 @@
     },
     watch: {
       hovered: function(new_val, old_val){
-        console.log(
-          new_val, 'aksjdlkasjdk'
-        )
         if(new_val){
           this.start_file_thumb_rotation()
         }

@@ -20,7 +20,7 @@
       </div>
       <div v-else-if="annotation_interface === 'image_or_video'">
         <v_annotation_core
-          v-if="!changing_file"
+          v-if="!changing_file && !changing_task"
           class="pt-1 pl-1"
           :project_string_id="computed_project_string_id"
           :label_schema="current_label_schema"
@@ -249,6 +249,7 @@ export default Vue.extend({
     return {
       show_snackbar: false,
       schema_list_loading: false,
+      changing_task: false,
       dialog: false,
       changing_file: false,
       enabled_edit_schema: false,
@@ -363,12 +364,15 @@ export default Vue.extend({
 
     } else {
       if (this.$props.task_id_prop) {
+        this.changing_task = true
         await this.fetch_single_task(this.$props.task_id_prop);
         await this.check_credentials();
+        await this.$nextTick()
         this.credentials_granted = this.has_credentials_or_admin();
         if (!this.credentials_granted) {
           this.show_missing_credentials_dialog()  ;
         }
+        this.changing_task = false
       } else if (this.$props.file_id_prop) {
         await this.fetch_schema_list()
         await this.fetch_single_file();

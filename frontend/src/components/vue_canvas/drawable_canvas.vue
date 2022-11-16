@@ -233,7 +233,7 @@
       this.canvas_ctx = this.canvas_element.getContext('2d');
 
       this.update_canvas();
-
+      this.$emit('canvas_element_ready', this.canvas_element)
     },
 
     beforeDestroy() {

@@ -3,12 +3,6 @@ import Router from 'vue-router'
 
 const routerOptions = [
   {
-    path: '/learn/build_vs_buy',
-    component: 'marketing/build_vs_buy',
-    alias: ['/build_vs_buy'],
-    meta: {external_page: true}
-  },
-  {
     path: '/order/premium',
     component: 'account/billing/order_premium'
   },

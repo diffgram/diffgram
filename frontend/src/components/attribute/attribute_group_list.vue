@@ -376,7 +376,9 @@ import attribute_group_new from './attribute_group_new.vue'
 
       },
       api_attribute_group_list: async function (mode) {
-
+        if(!this.project_string_id){
+          return
+        }
         this.loading = true
         this.error = {}
         this.success = false
