@@ -540,10 +540,9 @@
             </div>
 
             <canvas
-              v-else
               data-cy="canvas"
               ref="canvas"
-              v-show="!show_place_holder"
+              v-show="!show_place_holder && !file_cant_be_accessed && !loading"
               id="my_canvas"
               v-canvas:cb="onRendered"
               :height="canvas_height_scaled"
