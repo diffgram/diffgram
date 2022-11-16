@@ -698,6 +698,9 @@ export default Vue.extend({
               this.$router.push(`/task/${response.data.task.id}`);
               history.pushState({}, "", `/task/${response.data.task.id}`);
               this.task = response.data.task;
+              this.task_image = null
+              this.task_instances = null
+              this.task_loading = false
             }
           } else {
             success = false
