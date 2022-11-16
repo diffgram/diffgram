@@ -44,8 +44,6 @@
               var x = this.mouse_position.x;
               var y = this.mouse_position.y
             let canvas = ctx.canvas
-            console.log('canvaswidt hiehg', canvas.width, canvas.height)
-            console.log(' degrees', this.degrees)
               if (this.$props.target_colour != undefined) {
                 ctx.strokeStyle = this.$props.target_colour.hex;
                 let r = this.$props.target_colour.rgba.r
@@ -103,11 +101,9 @@
                 // This dynamically scales it
 
                 ctx.lineWidth = (1.5 / this.$props.zoom_value).toString()
-                //console.log(ctx.lineWidth)
 
 
                 let line_length = this.$props.reticle_size / this.$props.zoom_value
-                //console.log(line_length)
                 ctx.setLineDash([]) // solid
                 ctx.moveTo(x - 1, y)
                 ctx.lineTo(x - line_length, y)  // x coordinate line to, y line to (end)
