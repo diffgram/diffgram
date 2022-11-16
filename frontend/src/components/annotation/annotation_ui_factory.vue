@@ -708,25 +708,32 @@ export default Vue.extend({
           }
         }
         else {
-          this.task_loading = true
-          const new_task = await this.task_prefetcher.change_task(direction)
-          if (new_task) {
-            if (new_task.task && new_task.task.id !== task.id) {
-              this.$router.push(`/task/${new_task.task.id}`);
-              history.pushState({}, "", `/task/${new_task.task.id}`);
-              // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
-              // In the task context we reset the file list on media core to keep only the current task's file.
-              if (this.$refs.file_manager_sheet) {
-                this.$refs.file_manager_sheet.set_file_list([this.task.file]);
+          console.log("here", this.task_prefetcher.no_prev_task)
+          if (!this.task_prefetcher.no_prev_task) {
+            this.task_loading = true
+            const new_task = await this.task_prefetcher.change_task(direction)
+            if (new_task) {
+              if (new_task.task && new_task.task.id !== task.id) {
+                this.$router.push(`/task/${new_task.task.id}`);
+                history.pushState({}, "", `/task/${new_task.task.id}`);
+                // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
+                // In the task context we reset the file list on media core to keep only the current task's file.
+                if (this.$refs.file_manager_sheet) {
+                  this.$refs.file_manager_sheet.set_file_list([this.task.file]);
+                }
+  
+                this.task = new_task.task;
+                this.task_image = new_task.image
+                this.task_instances = new_task.instances
+                this.task_loading = false
+                success = new_task.success
               }
-
-              this.task = new_task.task;
-              this.task_image = new_task.image
-              this.task_instances = new_task.instances
-              this.task_loading = false
+            } else {
+              success = false
             }
           } else {
             success = false
+            console.log("here")
           }
         }
 

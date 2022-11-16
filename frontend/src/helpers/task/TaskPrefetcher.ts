@@ -2,6 +2,9 @@ import { get_instance_list_from_task } from "../../services/instanceServices";
 import { getFollowingTask } from "../../services/tasksServices"
 
 export default class TaskPrefetcher {
+  no_prev_task: boolean
+  no_next_task: boolean
+  
   current_task: any
   cached_next_tasks: any[] = [];
   cached_next_images: any[] = [];
@@ -52,6 +55,8 @@ export default class TaskPrefetcher {
       await this.prefetch_instances(result.task.id, this.cached_next_annotations)
       
       this.cached_next_tasks = [result.task]
+    } else {
+      this.no_next_task = true
     }
   }
 
@@ -74,6 +79,8 @@ export default class TaskPrefetcher {
       await this.prefetch_instances(result.task.id, this.cached_previous_annotations)
       
       this.cached_previous_tasks = [result.task]
+    } else {
+      this.no_prev_task = true
     }
   }
 
