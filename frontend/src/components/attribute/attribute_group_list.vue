@@ -215,6 +215,9 @@ import attribute_group_new from './attribute_group_new.vue'
       attribute_group_list_prop() {
         this.attribute_group_list = this.attribute_group_list_prop
         this.attribute_group_list_computed
+        if(this.attribute_group_list.length > 0 && this.openedPanel == undefined){
+          this.openedPanel = 0
+        }
       },
       current_instance(){
         this.fetch_current_instance_missing_attributes("from_project")
@@ -253,7 +256,9 @@ import attribute_group_new from './attribute_group_new.vue'
       if (this.$route.query.attribute_group) {
         this.open_panel_by_id(this.$route.query.attribute_group)
       }
-
+      if(this.attribute_group_list.length > 0 && this.openedPanel == undefined){
+        this.openedPanel = 0
+      }
     },
     destroyed() {
       this.refresh_watcher() // destroy
