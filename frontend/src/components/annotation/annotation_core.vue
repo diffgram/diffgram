@@ -31,6 +31,7 @@
             :label_schema="label_schema"
             :loading="loading"
             :view_only_mode="view_only_mode"
+            :video_mode="video_mode"
             :label_settings="label_settings"
 
             :project_string_id="project_string_id"
@@ -60,6 +61,7 @@
             @save="save()"
             @change_file="change_file($event)"
             @annotation_show="annotation_show_activate"
+            @rotate_image="on_image_rotation"
             @keypoints_mode_set="on_keypoints_mode_set"
             @show_duration_change="set_annotation_show_duration"
             @canvas_scale_global_changed="on_canvas_scale_global_changed"
@@ -538,10 +540,9 @@
             </div>
 
             <canvas
-              v-else
               data-cy="canvas"
               ref="canvas"
-              v-show="!show_place_holder"
+              v-show="!show_place_holder && !file_cant_be_accessed && !loading"
               id="my_canvas"
               v-canvas:cb="onRendered"
               :height="canvas_height_scaled"
@@ -559,6 +560,9 @@
                 :canvas_element="canvas_element"
                 :ord="1"
                 :annotations_loading="any_loading"
+                :canvas_width="canvas_width"
+                :canvas_height="canvas_height"
+                :degrees="degrees"
               >
               </v_bg>
 
@@ -572,9 +576,8 @@
                 :mouse_position="mouse_position"
                 :height="canvas_height"
                 :width="canvas_width"
+                :degrees="degrees"
                 :canvas_element="canvas_element"
-                :width_scaled="canvas_width_scaled"
-                :height_scaled="canvas_height_scaled"
                 :canvas_mouse_tools="canvas_mouse_tools"
                 :show="show_target_reticle"
                 :target_colour="
@@ -1004,6 +1007,7 @@ import { CanvasMouseTools } from "../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
 import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
+import { update_file_metadata } from "../../services/fileServices";
 import { getInstanceTemplatesFromProject } from "../../services/instanceTemplateService";
 import { File } from "../../types/files";
 import task_status from "./task_status.vue"
@@ -1224,6 +1228,7 @@ export default Vue.extend({
   // data()   comment is here for searching
   data() {
     return {
+      degrees: 0,
       n_key: false,
       mouse_wheel_button: false,
       submitted_to_review: false,
@@ -2209,8 +2214,34 @@ export default Vue.extend({
     }
     this.mounted();
   },
-  // TODO 311 Methods!! refactor in multiple files and classes.
+  // TODO 312 Methods!! refactor in multiple files and classes.
   methods: {
+    on_image_rotation: async function(rotation_degrees: number){
+      try{
+        this.loading = true
+        await this.save()
+        let file = this.file
+        if (this.task) { file = this.task.file }
+        let [updated_file, err] = await update_file_metadata(
+          this.project_string_id,
+          file.id,
+          {rotation_degrees: rotation_degrees}
+        )
+        if (err) {
+          console.error(err)
+          return
+        }
+        file.image.rotation_degrees = updated_file.image.rotation_degrees
+        this.$store.commit('display_snackbar', {
+          text: 'Image rotated.',
+          color: 'success'
+        })
+        await this.image_update_core(file)
+        this.loading = false
+      } catch (e){
+        console.error(e)
+      }
+    },
     on_change_label_schema: function(schema){
       this.$emit('change_label_schema', schema)
     },
@@ -5889,9 +5920,39 @@ export default Vue.extend({
       this.canvas_wrapper.style.display = "";
 
       await this.get_instances();
-
-      this.canvas_width = file.image.width;
-      this.canvas_height = file.image.height;
+      let determineSize = function (width, height, maxW, maxH, degrees) {
+        let w, h;
+        degrees = Math.abs(degrees)
+        if (degrees === 90 || degrees === 270) { // values for width and height are swapped for these rotation positions
+          w = height
+          h = width
+        }
+        else {
+          w = width
+          h = height
+        }
+        if (w > h) {
+          // if (w > maxW) {
+          //   h = h * maxW / w
+          //   w = maxW
+          // }
+        }
+        else {
+          // if (h > maxH) {
+          //   w = w * maxH / h
+          //   h = maxH
+          // }
+        }
+        return { width: w, height: h }
+      }
+      this.degrees = file.image.rotation_degrees
+      if(this.degrees == undefined){
+        this.degrees = 0
+      }
+      let maxSize = {width: 800, height: 800}
+      let newSize = determineSize(file.image.width, file.image.height, maxSize.width, maxSize.height, this.degrees)
+      this.canvas_width = newSize.width;
+      this.canvas_height = newSize.height;
 
       await this.addImageProcess_with_canvas_refresh(file);
     },
@@ -7929,6 +7990,7 @@ export default Vue.extend({
         //
         this.shift_key = false;
       }
+
       if (event.keyCode === 78) {
         // shift
         //
@@ -7954,6 +8016,15 @@ export default Vue.extend({
 
       if (event.key === "t") {
         this.insert_tag_type();
+      }
+
+      if (event.key === "r" && this.alt_key) {
+        let file = this.file
+        if (this.task) { file = this.task.file }
+        let current_rotation_degrees = file.image.rotation_degrees
+        current_rotation_degrees += 90
+        if (current_rotation_degrees == 360) { current_rotation_degrees = 0}
+        this.on_image_rotation(current_rotation_degrees);
       }
 
       if (event.keyCode === 13) {

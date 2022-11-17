@@ -26,6 +26,7 @@
         :right="menu_direction_right"
         :left="menu_direction_left"
         :max-width="max_width"
+        style="z-index: 9999;"
       >
         <!-- Default to offset y for now can fiddle with later -->
 

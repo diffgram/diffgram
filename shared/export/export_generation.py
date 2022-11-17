@@ -515,6 +515,7 @@ def build_image_packet(
 
     image_dict = {'width': file.image.width,
                   'height': file.image.height,
+                  'rotation_degrees': file.image.rotation_degrees,
                   'image_signed_expiry': file.image.url_signed_expiry,
                   'image_signed_url': file.image.url_signed,
                   'original_filename': file.image.original_filename}
