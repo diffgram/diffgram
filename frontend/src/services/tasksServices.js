@@ -1,5 +1,6 @@
 import axios from './customInstance'
 
+
 export const nextTask = async job_id => {
   try {
     const response = await axios.post(`/api/v1/job/${job_id}/task/next`, {});
@@ -11,6 +12,23 @@ export const nextTask = async job_id => {
     };
   }
 };
+
+export const getFollowingTask = async (project_string_id, task_id, job_id, direction, assign_to_user = false) => {
+  try {
+    const payload = {
+      project_string_id,
+      task_id,
+      direction,
+      assign_to_user
+    }
+
+    const response = await axios.post(`/api/v1/job/${job_id}/next-task`, payload)
+    
+    return [response.data, null]
+  } catch(e) {
+    return [null, e]
+  }
+}
 
 export const deferTask = async payload => {
   try {

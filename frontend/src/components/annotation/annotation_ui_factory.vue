@@ -39,6 +39,9 @@
           :finish_annotation_show="show_snackbar"
           :global_attribute_groups_list="global_attribute_groups_list"
           :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
+          :task_image="task_image"
+          :task_instances="task_instances"
+          :task_loading="task_loading"
           @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @change_label_schema="on_change_label_schema"
@@ -216,6 +219,8 @@ import text_annotation_core from "../text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
 import Vue from "vue";
 
+import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
+
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -247,6 +252,10 @@ export default Vue.extend({
   },
   data() {
     return {
+      task_prefetcher: null,
+      task_image: null,
+      task_instances: null,
+      task_loading: false,
       show_snackbar: false,
       schema_list_loading: false,
       dialog: false,
@@ -302,6 +311,11 @@ export default Vue.extend({
         }
       },
     },
+    task(newVal) {
+      if (newVal && this.task_prefetcher && newVal.file.type === 'image') {
+        this.task_prefetcher.update_tasks(newVal)
+      }
+    }
   },
   created() {
 
@@ -377,6 +391,11 @@ export default Vue.extend({
         await this.fetch_project_file_list();
       }
       await this.get_labels_from_project();
+    }
+
+    if (this.task && this.task.file.type === 'image') {
+      this.task_prefetcher = new TaskPrefetcher(this.computed_project_string_id)
+      this.task_prefetcher.update_tasks(this.task)
     }
 
     this.initializing = false
@@ -659,28 +678,63 @@ export default Vue.extend({
         throw new Error("Provide task ");
       }
 
+      // This should be refactored, for now this prefecting is only for images
       try {
-        const response = await axios.post(
-          `/api/v1/job/${task.job_id}/next-task`,
-          {
-            project_string_id: this.computed_project_string_id,
-            task_id: task.id,
-            direction: direction,
-            assign_to_user: assign_to_user,
-          }
-        );
-        if (response.data) {
-          if (response.data.task && response.data.task.id !== task.id) {
-            this.$router.push(`/task/${response.data.task.id}`);
-            history.pushState({}, "", `/task/${response.data.task.id}`);
-            // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
-            // In the task context we reset the file list on media core to keep only the current task's file.
-            if (this.$refs.file_manager_sheet) {
-              this.$refs.file_manager_sheet.set_file_list([this.task.file]);
-            }
+        let success = true;
 
-            this.task = response.data.task;
+        this.task_image = null
+        this.task_instances = null
+
+        if (this.task.file.type !== 'image') {
+          const response = await axios.post(
+            `/api/v1/job/${task.job_id}/next-task`,
+              {
+                project_string_id: this.computed_project_string_id,
+                task_id: task.id,
+                direction: direction,
+                assign_to_user: assign_to_user,
+              }
+          );
+
+          if (response.data && response.data.task) {
+            if (response.data.task.id !== task.id) {
+              this.$router.push(`/task/${response.data.task.id}`);
+              history.pushState({}, "", `/task/${response.data.task.id}`);
+              this.task = response.data.task;
+              this.task_loading = false
+            }
           } else {
+            success = false
+          }
+        }
+        else {
+          if (this.task_prefetcher.has_next(direction)) {
+            this.task_loading = true
+            const new_task = await this.task_prefetcher.change_task(direction)
+            if (new_task) {
+              if (new_task.task && new_task.task.id !== task.id) {
+                this.$router.push(`/task/${new_task.task.id}`);
+                history.pushState({}, "", `/task/${new_task.task.id}`);
+                // Refresh task Data. This will change the props of the annotation_ui and trigger watchers.
+                // In the task context we reset the file list on media core to keep only the current task's file.
+                if (this.$refs.file_manager_sheet) {
+                  this.$refs.file_manager_sheet.set_file_list([this.task.file]);
+                }
+  
+                this.task = new_task.task;
+                this.task_image = new_task.image
+                this.task_instances = new_task.instances
+                this.task_loading = false
+              }
+            } else {
+              success = false
+            }
+          } else {
+            success = false
+          }
+        }
+
+        if (!success) {
             if (direction === "next") {
               this.dialog = true;
               this.snackbar_message =
@@ -691,7 +745,6 @@ export default Vue.extend({
                 "This is the first task of the list. Please go to the next tasks.";
             }
           }
-        }
       } catch (error) {
         console.debug(error);
       } finally {
