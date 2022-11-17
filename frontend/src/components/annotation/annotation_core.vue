@@ -1089,7 +1089,19 @@ export default Vue.extend({
       default: null,
       type: String,
     },
-    label_schema: {
+    task_image: {
+      type: HTMLImageElement,
+      default: null
+    },
+    task_instances: {
+      type: Object,
+      default: null
+    },
+    task_loading: {
+      type: Boolean,
+      default: null
+    },
+    label_schema:{
       required: true
     },
     // TODO review this being a prop...
@@ -1816,6 +1828,10 @@ export default Vue.extend({
     },
 
     show_place_holder() {
+      // task_image is preloaded image on teh task context
+      if (this.task_loading) return true
+      if (this.task_image) return false
+
       return this.full_file_loading;
     },
     any_loading() {
@@ -7536,6 +7552,12 @@ export default Vue.extend({
     get_instance_list_for_image: async function () {
       let url = undefined;
       let file = this.$props.file;
+
+      if (this.task_instances) {
+        this.get_instances_core({ data: this.task_instances })
+        return
+      }
+
       if (this.$store.getters.is_on_public_project) {
         url = `/api/project/${this.$props.project_string_id}/file/${String(
           this.$props.file.id
@@ -7842,23 +7864,24 @@ export default Vue.extend({
       this.$emit("request_new_task", direction, task, assign_to_user);
     },
 
-    reset_for_file_change_context: function () {
-      this.current_sequence_annotation_core_prop = {
-        id: null,
-        number: null
-      }
-      this.video_mode = false   // if we don't have this can be issues switching to say an image
-      this.instance_buffer_dict = {}
-      this.instance_buffer_metadata = {}
-      this.instance_list = []
-      if (this.video_mode) {
-        this.$refs.video_controllers.reset_cache();
-      }
-      if (this.$refs.qa_carrousel) {
-        this.$refs.qa_carrousel.annotation_show_previous_instance = 0
-        this.$refs.qa_carrousel.annotation_show_progress = 0
-        this.annotation_show_current_instance = 0
-      }
+      reset_for_file_change_context: function (){
+        this.current_sequence_annotation_core_prop = {
+          id: null,
+          number: null
+        }
+        this.video_mode = false   // if we don't have this can be issues switching to say an image
+        this.degrees = 0 
+        this.instance_buffer_dict = {}
+        this.instance_buffer_metadata = {}
+        this.instance_list = []
+        if(this.video_mode){
+          this.$refs.video_controllers.reset_cache();
+        }
+        if(this.$refs.qa_carrousel){
+          this.$refs.qa_carrousel.annotation_show_previous_instance = 0
+          this.$refs.qa_carrousel.annotation_show_progress = 0
+          this.annotation_show_current_instance = 0
+        }
 
     },
     annotation_show_activate(show_type) {
@@ -7968,6 +7991,10 @@ export default Vue.extend({
       );
       this.canvas_mouse_tools.reset_transform_with_global_scale();
       this.set_ui_schema();
+
+      if (this.task_image) {
+        this.html_image = this.task_image
+      }
     },
     on_change_current_file: async function () {
       if (!this.$props.file) {
@@ -8193,7 +8220,8 @@ export default Vue.extend({
         this.insert_tag_type();
       }
 
-      if (event.key === "r" && this.alt_key) {
+      if (event.key === "r" && !this.alt_key && !this.ctrl_key && !this.shift_key) {
+
         let file = this.file
         if (this.task) { file = this.task.file }
         let current_rotation_degrees = file.image.rotation_degrees
