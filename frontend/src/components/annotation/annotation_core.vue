@@ -7992,7 +7992,8 @@ export default Vue.extend({
         this.insert_tag_type();
       }
 
-      if (event.key === "r" && this.alt_key) {
+      if (event.key === "r" && !this.alt_key && !this.ctrl_key && !this.shift_key) {
+
         let file = this.file
         if (this.task) { file = this.task.file }
         let current_rotation_degrees = file.image.rotation_degrees
