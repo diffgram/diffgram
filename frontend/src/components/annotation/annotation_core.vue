@@ -8783,6 +8783,7 @@ export default Vue.extend({
       frame_number_param = undefined,
       instance_list_param = undefined
     ) {
+      console.log('KEYFRAME', this.current_frame, this.instance_list)
       this.save_error = {};
       this.save_warning = {};
       if (this.go_to_keyframe_loading) {
@@ -8812,6 +8813,7 @@ export default Vue.extend({
           instance_list = this.instance_buffer_dict[frame_number]
         }
       }
+      console.log('KEYFRAME', this.current_frame, instance_list)
       if (this.get_save_loading(frame_number) == true) {
         // If we have new instances created while saving. We might still need to save them after the first
         // save has been completed.
