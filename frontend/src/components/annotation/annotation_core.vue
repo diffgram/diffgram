@@ -7669,6 +7669,7 @@ export default Vue.extend({
           number: null
         }
         this.video_mode = false   // if we don't have this can be issues switching to say an image
+        this.degrees = 0 
         this.instance_buffer_dict = {}
         this.instance_buffer_metadata = {}
         this.instance_list = []
