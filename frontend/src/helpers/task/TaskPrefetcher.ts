@@ -6,6 +6,9 @@ export default class TaskPrefetcher {
   no_next_task: boolean
   
   current_task: any
+  current_image: any
+  current_annotations: any
+
   cached_next_tasks: any[] = [];
   cached_next_images: any[] = [];
   cached_next_annotations: any[] = [];
@@ -15,7 +18,10 @@ export default class TaskPrefetcher {
   cached_previous_annotations: any[] = [];
   
   project_string_id: string;
-  prefetch_number_of_tasks: number
+  prefetch_number_of_tasks: number;
+
+  prefetch_next_promise: Promise<any> | null = null;
+  prefetch_prev_promise: Promise<any> | null = null;
 
   constructor(
     project_string_id: string, 
@@ -36,7 +42,7 @@ export default class TaskPrefetcher {
     instances_array.push(response)
   }
   
-  private async prefetch_next_task() {
+  private async prefetch_next_task(): Promise<any> {
     const [result, error] = await getFollowingTask(
       this.project_string_id,
       this.current_task.id,
@@ -61,7 +67,7 @@ export default class TaskPrefetcher {
     }
   }
 
-  private async prefetch_previous_task() {
+  private async prefetch_previous_task(): Promise<any> {
     const [result, error] = await getFollowingTask(
       this.project_string_id,
       this.current_task.id,
@@ -92,8 +98,8 @@ export default class TaskPrefetcher {
 
   async update_tasks(task: any) {
     this.current_task = task
-    this.prefetch_next_task()
-    this.prefetch_previous_task()
+    this.prefetch_next_promise = this.prefetch_next_task()
+    this.prefetch_prev_promise = this.prefetch_previous_task()
   }
 
   async change_task(direction: string) {
@@ -102,18 +108,23 @@ export default class TaskPrefetcher {
     let new_instances: any;
 
     if (direction === 'next') {
-      if (this.cached_next_tasks.length === 0) await this.prefetch_next_task()
+      if (this.prefetch_next_promise) {
+        await this.prefetch_next_promise
+        this.prefetch_next_promise = null
+      }
       new_task = this.cached_next_tasks.splice(0, 1);
       new_image = this.cached_next_images.splice(0, 1);
       new_instances = this.cached_next_annotations.splice(0, 1);
     }
     
     if (direction === 'previous') {
-      if (this.cached_previous_tasks.length === 0) await this.prefetch_previous_task()
-      const last_index = this.cached_previous_tasks.length - 1
-      new_task = this.cached_previous_tasks.splice(last_index, 1);
-      new_image = this.cached_previous_images.splice(last_index, 1);
-      new_instances = this.cached_previous_annotations.splice(last_index, 1);
+      if (this.prefetch_prev_promise) {
+        await this.prefetch_prev_promise
+        this.prefetch_prev_promise = null
+      }
+      new_task = this.cached_previous_tasks.splice(0, 1);
+      new_image = this.cached_previous_images.splice(0, 1);
+      new_instances = this.cached_previous_annotations.splice(0, 1);
     }
     
     return {
