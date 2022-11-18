@@ -87,15 +87,19 @@ import attribute_group_list from './attribute_group_list.vue';
         loading: false,
         error: {},
         success: false,
-        open: true
+        open: undefined
       }
     },
 
     watch: {
 
     },
-
-    created() {
+    mounted() {
+     if(this.global_attribute_groups_list.length > 0 ){
+       this.open = 0
+     }
+    },
+  created() {
 
 
     },
