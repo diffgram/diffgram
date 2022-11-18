@@ -44,8 +44,8 @@ describe('Annotate Files Tests', () => {
             expect(response.statusCode, 'response status').to.eq(200)
 
           })
-          .log(window.AnnotationCore)
-          expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
+
+          .wrap(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).should('equal', true);
         });
 
       })
@@ -60,8 +60,7 @@ describe('Annotate Files Tests', () => {
           .get('[data-cy="back_1_frame"]').click({force: true})
           .wait(8000)
 
-
-          expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
+            .wrap(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).should('exist')
           // expect(window.AnnotationCore.instance_list[0].x_min).to.equal(true);
         });
 
@@ -159,10 +158,10 @@ describe('Annotate Files Tests', () => {
             .get('[data-cy="forward_1_frame"]').click({force: true})
             .wait(2000).then(() =>{
                 let instance_dup = {...window.AnnotationCore.instance_buffer_dict[6][0]};
-                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
-                window.AnnotationCore.instance_list.push({...instance_dup, id: null});
+                window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({...instance_dup, id: null}));
+                window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({...instance_dup, id: null}));
+                window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({...instance_dup, id: null}));
+                window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({...instance_dup, id: null}));
                 window.AnnotationCore.has_changed = true;
 
             })

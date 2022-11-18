@@ -36,6 +36,7 @@
                               && global_attribute_groups_list.length != 0"
           :mode=" 'annotate' "
           :schema_id="schema_id"
+          :project_string_id="project_string_id"
           :view_only_mode="view_only_mode"
           :attribute_group_list_prop = "global_attribute_groups_list"
           :current_instance = "current_global_instance"
@@ -73,6 +74,9 @@ import attribute_group_list from './attribute_group_list.vue';
         default: false
       },
       'schema_id': {
+        required: true
+      },
+      'project_string_id':{
         required: true
       }
     },

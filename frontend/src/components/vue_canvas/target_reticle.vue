@@ -35,7 +35,7 @@
         draw: function (ctx, done) {
           if(!this.$props.canvas_element){return}
           if (this.show == true) {
-              //var canvas = ctx.canvas;
+     
               if (this.width == 0) {
                 done()
                 return
@@ -43,7 +43,8 @@
 
               var x = this.mouse_position.x;
               var y = this.mouse_position.y
-            let canvas = ctx.canvas
+              let canvas = ctx.canvas
+
               if (this.$props.target_colour != undefined) {
                 ctx.strokeStyle = this.$props.target_colour.hex;
                 let r = this.$props.target_colour.rgba.r
@@ -51,8 +52,6 @@
                 let b = this.$props.target_colour.rgba.b
                 ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", 1)";
 
-                // redeclaring a scale here messes the other stuff up
-                // would have to isolate if we wanted to do that
                 //let font_size = "50"
                 //ctx.font = font_size + "px Verdana";
               }
@@ -102,8 +101,8 @@
 
                 ctx.lineWidth = (1.5 / this.$props.zoom_value).toString()
 
-
                 let line_length = this.$props.reticle_size / this.$props.zoom_value
+
                 ctx.setLineDash([]) // solid
                 ctx.moveTo(x - 1, y)
                 ctx.lineTo(x - line_length, y)  // x coordinate line to, y line to (end)
@@ -127,7 +126,7 @@
 
         },
         draw_text: function (ctx, x, y, text, fill_color) {
-          //let message = instance.label_file.label.name
+
           let message = ""
 
           if (text != undefined) {

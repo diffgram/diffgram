@@ -55,7 +55,7 @@
         @on_update_attribute="on_update_attribute"
         @change_instance_label="change_instance_label"
       />
-      <text_fast_label 
+      <text_fast_label
         v-if="show_label_selection"
         :rects="selection_rects"
         :arrow_position="render_drawing_arrow && render_drawing_arrow.arrow ? render_drawing_arrow.arrow : null"
@@ -107,7 +107,7 @@
           <text x="40">Resizing...</text>
         </g>
         <g ref="main-text-container" transform="translate(0, 23.5)" v-else>
-          <relation_in_progress 
+          <relation_in_progress
             v-if="relation_drawing"
             :render_drawing_arrow="render_drawing_arrow"
           />
@@ -224,9 +224,9 @@
               {{ token.word }}
             </text>
           </g>
-          <text_selection_svg 
+          <text_selection_svg
             v-if="selection_rects"
-            :rects="selection_rects" 
+            :rects="selection_rects"
             @on_change_selection_border="on_change_selection_border"
             @on_start_moving_borders="on_start_moving_borders"
           />
@@ -245,7 +245,7 @@ import text_fast_label from "./render_elements/fast_label_menu.vue"
 import text_context_menu from "./render_elements/text_context_menu.vue"
 import relation_in_progress from "./render_elements/relation_in_progress.vue"
 import {CommandManagerAnnotationCore} from "../annotation/annotation_core_command_manager"
-import {CreateInstanceCommand as CreateInstanceCommandLegacy} from "../annotation/commands/create_instance_command";
+import {CreateInstanceCommand as CreateInstanceCommandLegacy} from "../annotation/commands/create_instance_command.ts";
 import {TextAnnotationInstance, TextRelationInstance} from "../vue_canvas/instances/TextInstance"
 import {postInstanceList, getInstanceList} from "../../services/instanceList"
 import getTextService from "../../services/getTextService"
@@ -393,7 +393,7 @@ export default Vue.extend({
       if (!this.instance_in_progress) return {}
       const scroll_y = window.pageYOffset || document.documentElement.scrollTop
       const inst = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
-      
+
       if (!inst) return {}
       const {x, y} = inst
 
@@ -685,7 +685,7 @@ export default Vue.extend({
     },
     on_select_text: function(start_token_id, end_token_id, direction = "right") {
       if (start_token_id < 0 || end_token_id > this.tokens.length + 1) return
-      
+
       let start_token;
       while(!start_token) {
         start_token = this.tokens.find(token => token.id == start_token_id)
@@ -771,7 +771,7 @@ export default Vue.extend({
     on_trigger_instance_click: function (e, instance_id) {
       const context = e.ctrlKey && e.button === 0 || e.button === 2
       if (context) return
-      
+
       if (this.bulk_label) return this.bulk_labeling(instance_id)
       this.on_draw_relation(instance_id)
     },

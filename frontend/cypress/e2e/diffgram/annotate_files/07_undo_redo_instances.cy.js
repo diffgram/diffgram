@@ -16,9 +16,10 @@ describe('Annotate Files Tests', () => {
       cy.createLabels(testLabels)
       cy.uploadAndViewSampleImage(testUser.project_string_id);
       // Minimize file explorer
-      cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
+      cy.wait(3000)
+      .get('[data-cy="minimize-file-explorer-button"]').click({force: true})
       // Select Label
-      cy.select_label()
+      .select_label()
     })
 
     context('Undo/Redo All Instance Type Creations', () => {

@@ -9,6 +9,8 @@
   import Vue from 'vue'
   import { cuboid } from './cuboid.js'
   import { ellipse } from './ellipse.js'
+  import {BoxInstance} from "./instances/BoxInstance";
+  import {SUPPORTED_CLASS_INSTANCE_TYPES} from "./instances/Instance";
   Vue.prototype.$cuboid = new cuboid()
   Vue.prototype.$ellipse = new ellipse()
 
@@ -89,7 +91,6 @@
           colour: null,
           circle_size: null,
           hovered_figure_id: null,
-
           count_instance_in_ctx_paths: 0,
           cuboid_hovered_face: undefined,
           prev_cuboid_hovered_face: undefined,
@@ -263,7 +264,6 @@
 
         // MAIN function
         draw: function (ctx, done) {
-
           if (this.show_annotations != true) {
             done()
             return
@@ -277,6 +277,7 @@
 
 
           // MAIN loop
+
           for (var i in this.instance_list) {
             this.draw_single_instance(ctx, i)
           }
@@ -355,17 +356,14 @@
         },
 
         color_instance: function (instance, ctx) {
-          // TODO test this better, and also try to move other colors stuff here...
-
+          // Ignoring instances that are already refactored as classes.
+          if(SUPPORTED_CLASS_INSTANCE_TYPES.includes(instance.type) ){
+            return
+          }
           let strokeColor = undefined;
           let fillColor = undefined;
           let lineWidth = undefined;
 
-          if (instance.fan_made == true) {
-            ctx.setLineDash([3])
-          } else {
-            ctx.setLineDash([0])
-          }
           if(this.instance_select_for_issue){
             // Case of selecting instance for issue creation
             let r = 255
@@ -484,7 +482,6 @@
           var instance = this.instance_list[i]
 
           let result = this.draw_single_instance_limits(instance, i)
-
           if (result == false)  {
             return
           }
@@ -515,11 +512,15 @@
             }
           }
           if (instance.type == "box") {
-            ctx.beginPath()
+            // ctx.beginPath()
+            //
+            // this.draw_box(instance, ctx, i)
+            // ctx.lineWidth = this.get_spatial_line_size()
+            // ctx.stroke()
 
-            this.draw_box(instance, ctx, i)
-            ctx.lineWidth = this.get_spatial_line_size()
-            ctx.stroke()
+            let box: BoxInstance = instance as BoxInstance
+
+            box.draw(ctx)
           }
 
           else if (["polygon", "line"].includes(instance.type)) {
@@ -553,9 +554,6 @@
             ctx.stroke()
           }
           else if (instance.type == "keypoints") {
-            instance.strokeColor = color_data.strokeColor;
-            instance.lineWidth = this.get_spatial_line_size();
-            instance.vertex_size = this.$props.vertex_size;
             instance.draw(ctx);
             if(instance.is_hovered || instance.hovered_scale_control_points){
               this.instance_hover_index = i
@@ -606,7 +604,9 @@
         },
 
         get_spatial_line_size: function (){
-          return this.$props.label_settings.spatial_line_size / this.$props.zoom_value
+          let size = this.$props.label_settings.spatial_line_size / this.$props.zoom_value
+
+          return size
         },
 
         // edit circles
@@ -1291,13 +1291,6 @@
         },
 
         draw_label: function (ctx, x, y, instance) {
-          /* There's a lot of random stuff we may want to
-           * draw about something. I wonder if we are better to just place it all
-           * into one string...
-           * I think for now let's simplify to a message
-           * and can get more fancy later if we want
-           */
-
           if ( this.label_settings == null
                || this.label_settings.show_text == false
                || instance == undefined) {

@@ -4,6 +4,4 @@ export class InstanceContext{
   public keypoints_draw_mode: string = null;
   public color_tool_active: boolean = false;
   public color: string = null;
-  public instance_list: [] = [];
-
 }

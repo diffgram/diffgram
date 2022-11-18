@@ -7,7 +7,7 @@
 
       <div v-on="on">
         <file_preview
-          v-if="file.type === 'image' || file.type === 'video' || file.type === 'compound'"
+          v-if="file.instance_list && (file.type === 'image' || file.type === 'video' || file.type === 'compound')"
           :class="`d-flex file-preview ${file.type}-preview`"
           :file_preview_width="file_preview_width"
           :file_preview_height="file_preview_height"
@@ -28,7 +28,7 @@
     </template>
 
       <file_preview
-        v-if="file.type === 'image' || file.type === 'video' || file.type === 'compound'"
+        v-if="file.instance_list && (file.type === 'image' || file.type === 'video' || file.type === 'compound')"
         :class="`d-flex file-preview ${file.type}-preview`"
         :file_preview_width="500"
         :file_preview_height="500"

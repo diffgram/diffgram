@@ -15,25 +15,28 @@ describe('Annotate Files Tests', () => {
       cy.gotToProject(testUser.project_string_id);
       cy.createLabels(testLabels)
       cy.uploadAndViewSampleImage(testUser.project_string_id);
-
     })
 
     context('It Correctly Draws and Edits all Instance Types', () => {
+
+
       it('Correctly creates a bounding box.', () => {
         const min_x = 75;
         const min_y = 75;
         const max_x = 120;
         const max_y = 120;
         cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-
-        .select_label()
         .wait(3000)
+        .select_label()
 
+        .mousemovecanvas(min_x, min_y)
         .mousedowncanvas(min_x, min_y)
         .wait(500)
 
         .mouseupcanvas()
-        .wait(1000)
+        .wait(500)
+        .mousemovecanvas(max_x, max_y)
+        .wait(500)
 
         .mousedowncanvas(max_x, max_y)
         .wait(500)
@@ -48,28 +51,32 @@ describe('Annotate Files Tests', () => {
             const annCore = window.AnnotationCore;
             const min_clientX = min_x + canvas_client_box.x;
             const min_clientY = min_y + canvas_client_box.y;
+            cy.log(`min client_x ${min_clientX} min client y ${min_clientY}`)
+            cy.log(`canvas_client_box x ${canvas_client_box.x} canvas_client_box y ${canvas_client_box.y}`)
             const box_point_min = get_transformed_coordinates({
               x: min_clientX,
               y: min_clientY
             }, canvas_client_box, annCore.canvas_element, canvas_wrapper, annCore.canvas_element_ctx)
-            const max_clientX = 120 + canvas_client_box.x;
-            const max_clientY = 120 + canvas_client_box.y;
+            cy.log(`min box_point_min ${box_point_min}`)
+            const max_clientX = max_x + canvas_client_box.x;
+            const max_clientY = max_y + canvas_client_box.y;
             const box_point_max = get_transformed_coordinates({
               x: max_clientX,
               y: max_clientY
             }, canvas_client_box, annCore.canvas_element, canvas_wrapper, annCore.canvas_element_ctx);
             expect(annCore.instance_list[0]).to.exist;
-            expect(annCore.instance_list[0].x_min).to.equal(box_point_min.x);
-            expect(annCore.instance_list[0].x_max).to.equal(box_point_max.x);
-            expect(annCore.instance_list[0].y_min).to.equal(box_point_min.y);
-            expect(annCore.instance_list[0].y_max).to.equal(box_point_max.y);
+            expect(annCore.instance_list[0].x_min).to.equal(box_point_min.x + 1);
+            expect(annCore.instance_list[0].x_max).to.equal(box_point_max.x + 1);
+            expect(annCore.instance_list[0].y_min).to.equal(box_point_min.y + 1);
+            expect(annCore.instance_list[0].y_max).to.equal(box_point_max.y + 1);
           })
 
         })
       })
 
       it('Correctly creates a polygon.', () => {
-
+        cy.wait(3000)
+        cy.mousemovecanvas(0,0)
         cy.selectDrawValidatePolygon()
 
       })
@@ -307,8 +314,8 @@ describe('Annotate Files Tests', () => {
       it('Correcly Moves a line', () => {
         cy.mousedowncanvas(145, 145);
         cy.mouseupcanvas()
-        cy.wait(2000)
-        cy.dragcanvas(145, 145, 180, 180);
+        cy.wait(500)
+        cy.dragcanvas(145, 145, 350, 350);
         cy.wait(1000)
 
       })

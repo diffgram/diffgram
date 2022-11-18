@@ -930,9 +930,9 @@
            * This was really more for the "single select" otherwise can just load from instance right?
            *
            */
-
           // reset
           this.internal_selected = []
+          this.internal_selected_names = []
 
           if (this.group.kind === 'date') this.internal_selected = ''
 
@@ -985,14 +985,13 @@
           let value = null    // shared with existing and default
           let existing_value = null
           let default_value = null
-
           if (this.current_instance.attribute_groups) {
             existing_value = this.current_instance.attribute_groups[this.group.id]
           }
+
           if (existing_value != null){
             value = existing_value
           }
-
           else  {
             // If not existing value, check for default
             // We must be careful here, we don't want to "reset" to the default value
@@ -1005,7 +1004,6 @@
               value = this.format_default()
             }
           }
-
           // Code below is for LOADING VALUES / formatting.
           // At this point we around know the value itself as ( existing_value )
 

@@ -93,6 +93,7 @@ export const filter_global_instance_list = (filtered_instance_list: Array<Instan
                                             base_model_run: ModelRun,
                                             compare_to_model_run_list: Array<any>,
                                             show_ground_truth: boolean) => {
+
   if (base_model_run) {
     filtered_instance_list = filter_from_model_id(
       filtered_instance_list,
