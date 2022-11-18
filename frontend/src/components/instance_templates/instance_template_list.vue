@@ -80,13 +80,7 @@
 
 
     </v-card>
-    <instance_template_creation_dialog
-      :project_string_id="project_string_id"
-      :schema_id="schema_id"
-      :instance_template="selected_instance_template"
-      ref="instance_template_creation_dialog"
-      @instance_template_create_success="instance_template_create_success"
-    ></instance_template_creation_dialog>
+
   </v-container>
 
 
@@ -96,13 +90,14 @@
 
   import axios from '../../services/customInstance';
   import instance_template_creation_dialog from './instance_template_creation_dialog';
+  import instance_template_creation_page from './instance_template_creation_page';
 
   import Vue from "vue";
 
   export default Vue.extend({
       name: 'instance_template_list',
       components: {
-        instance_template_creation_dialog
+        instance_template_creation_page
       },
       props: {
         'project_string_id': {},
@@ -176,8 +171,9 @@
           this.$refs.instance_template_creation_dialog.open();
         },
         open_instance_template_create_dialog: function () {
-          this.selected_instance_template = undefined;
-          this.$refs.instance_template_creation_dialog.open();
+          // this.selected_instance_template = undefined;
+          // this.$refs.instance_template_creation_dialog.open();
+          this.$router.push(`/project/${this.$props.project_string_id}/schema/${this.schema_id}/create-template`)
         },
         instance_template_create_success: function(){
           this.show_success_alert = true;

@@ -159,6 +159,21 @@ const routerOptions = [
   },
 
   {
+    path: '/project/:project_string_id/schema/:schema_id/create-template',
+    component: 'instance_templates/instance_template_creation_page',
+    props: (route) => ({
+      // why do we need this "override" again?
+      project_string_id: route.params.project_string_id,
+      schema_id: route.params.schema_id
+    }),
+    meta: (route) => ({
+      requiresAuth: true,
+      title: "Schema " + route.params.project_string_id
+    }),
+    name: 'labels'
+  },
+
+  {
     path: '/project/:project_string_id/workflow/:workflow_id/run/:workflow_run_id',
     component: 'action/action_event_list',
     props: true,

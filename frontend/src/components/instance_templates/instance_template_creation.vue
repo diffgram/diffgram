@@ -1,41 +1,77 @@
 <template>
-  <v-dialog v-model="is_open" width="700px" :persistent="true" :no-click-animation="true"
-            content-class="dialog-instance-template">
+  <v-container class="flex flex-column pa-0 ma-0" >
 
-    <v-card elevation="0" class="pa-4 ma-0 pointertest">
-      <v-card-title>
-        Create Instance Template:
+    <v-alert
+      dismissible
+      color="secondary"
+      text icon="mdi-information"
+      class="ma-0 pa-0 pr-2 pl-2">
+      Right Click on a Point to Name it, or Set Default Occlusion Value.
+      Press Esc to stop drawing and go to edit mode.
+      Double click a point to delete it.
+    </v-alert>
+    <instance_template_creation_toolbar
+      class="ma-0 pa-0"
+      ref="instance_template_creation_toolbar"
+      :color_tool_active="instance_context.color_tool_active"
+      @draw_mode_update="update_draw_mode_on_instances"
+      @set_background="set_background"
+      :project_string_id="project_string_id"
+      :instance="instance"
+      @zoom_in="zoom_in"
+      @zoom_out="zoom_out"
+      @mode_set="on_mode_set"
+      @change_color="change_color"
+      @coloring_tool_clicked="activate_color_tool"
+    >
 
-      </v-card-title>
-      <v-card-text>
-        <instance_template_creation
-          :project_string_id="project_string_id"
-          :instance_template="instance_template"
-          :schema_id="schema_id"
-        ></instance_template_creation>
+    </instance_template_creation_toolbar>
 
-      </v-card-text>
+    <v_error_multiple :error="error">
+    </v_error_multiple>
+    <drawable_canvas
+      @mousemove="mouse_move"
+      @mousedown="mouse_down"
+      @dblclick="double_click"
+      @mouseup="mouse_up"
+      @contextmenu="contextmenu"
+      :canvas_width="canvas_width"
+      :show_target_reticle="instance_context.draw_mode && instance && !instance.is_drawing_edge && !instance_context.color_tool_active"
+      :show_context_menu="show_context_menu"
+      :canvas_height="canvas_height"
+      :reticle_colour="{
+              hex: '#f0f0f0',
+              rgba: {
+                r: 255,
+                g: 0,
+                b: 0,
+                a: 1
+              }
+            }"
+      :image_bg="image_bg"
+      :annotations_loading="false"
+      :bg_color="bg_color"
+      :auto_scale_bg="true"
+      ref="instance_template_canvas"
+    >
+      <instance_drawer
+        slot="instance_drawer"
+        @instance_hover_update="instance_hover_update($event[0], $event[1])"
+        :instance_list="instance_list"
+      ></instance_drawer>
+      <context_menu_instance_template
+        slot="context_menu"
+        slot-scope="props"
+        :show_context_menu="show_context_menu"
+        :project_string_id="project_string_id"
+        :mouse_position="props.mouse_position"
+        :instance="instance"
+        @hide_context_menu="hide_context_menu"
 
-      <v-card-actions class="flex justify-end pa-0">
-        <v-btn color="error"
-               text
-               @click="is_open = false"
-               :disabled="loading"
-        >
-          <v-icon>mdi-close</v-icon>
-          Discard Changes
-        </v-btn>
-        <v-btn color="success"
-               data-cy="save_instance_template_button"
-               text
-               @click="save_instance_template"
-               :disabled="loading">
-          <v-icon>mdi-content-save</v-icon>
-          Save Instance Template
-        </v-btn>
-      </v-card-actions>
 
-    </v-card>
+      />
+
+    </drawable_canvas>
     <v-snackbar color="primary"
                 :timeout="5000"
                 v-if="show_snackbar"
@@ -45,7 +81,8 @@
     >
       {{ snackbar_text }}
     </v-snackbar>
-  </v-dialog>
+  </v-container>
+
 </template>
 
 <script lang="ts">
@@ -55,7 +92,6 @@
   import drawable_canvas from '../vue_canvas/drawable_canvas';
   import axios from '../../services/customInstance';
   import instance_drawer from '../vue_canvas/instance_drawer';
-  import instance_template_creation from './instance_template_creation'
   import instance_template_creation_toolbar from './instance_template_creation_toolbar'
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   import {iconFillPaint} from "../../utils/custom_icons.js";
@@ -77,17 +113,19 @@
   import {createDefaultLabelSettings} from "../../types/image_label_settings";
 
   export default Vue.extend({
-  name: "instance_template_creation_dialog",
+  name: "instance_template_creation",
   props: {
     project_string_id: undefined,
     instance_template: undefined,
     schema_id: {
       required: true
     },
+    name: {
+      required: false
+    },
   },
   components: {
     drawable_canvas: drawable_canvas,
-    instance_template_creation: instance_template_creation,
     instance_drawer: instance_drawer,
     instance_template_creation_toolbar: instance_template_creation_toolbar,
     context_menu_instance_template: context_menu_instance_template,
@@ -112,7 +150,6 @@
       canvas_height: 600,
       is_open: false,
       loading: false,
-      name: undefined,
       label_settings: createDefaultLabelSettings()
     }
   },
@@ -334,7 +371,7 @@
         mouse_position: this.mouse_position as MousePosition,
         mouse_down_position: this.mouse_down_position as MousePosition,
         canvas_transform: this.canvas_transform,
-        canvas_element: this.canvas_element,
+        canvas_element: this.$refs.instance_template_canvas.canvas_element,
         view_issue_mode: this.view_issue_mode,
         frame_number: this.current_frame,
         ann_core_ctx: this,
@@ -352,7 +389,7 @@
 
       let canvas_mouse_ctx: CanvasMouseCtx = {
         mouse_position: this.mouse_position,
-        canvas_element_ctx: this.canvas_element_ctx,
+        canvas_element_ctx: this.$refs.instance_template_canvas.canvas_element_ctx,
         instance_context: this.instance_context,
         trigger_instance_changed: this.trigger_instance_changed,
         instance_selected: () => this.instance_selected,
@@ -377,11 +414,16 @@
       return interaction_generator.generate_coordinator();
     },
     mouse_move: function (event) {
-      if(this.instance_context.color_tool_active){
-        this.instance.ctx.canvas.style.cursor =  `url(${iconFillPaint}), auto`;
-      } else{
-        this.instance.ctx.canvas.style.cursor =  `default`;
+      if(this.$refs.instance_template_canvas.canvas_element_ctx){
+
+        if(this.instance_context.color_tool_active){
+
+          this.$refs.instance_template_canvas.canvas_element_ctx.canvas.style.cursor =  `url(${iconFillPaint}), auto`;
+        } else{
+          this.$refs.instance_template_canvas.canvas_element_ctx.canvas.style.cursor =  `default`;
+        }
       }
+
 
       let ann_ctx = this.build_ann_event_ctx(event)
       let ann_tool_event: ImageInteractionEvent = genImageAnnotationEvent(event, ann_ctx)
