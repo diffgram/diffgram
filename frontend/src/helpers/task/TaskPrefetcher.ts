@@ -126,11 +126,15 @@ export default class TaskPrefetcher {
       new_image = this.cached_previous_images.splice(0, 1);
       new_instances = this.cached_previous_annotations.splice(0, 1);
     }
+
+    this.current_task = new_task[0]
+    this.current_image = new_image[0]
+    this.current_annotations = new_instances[0]
     
     return {
-      task: new_task[0],
-      image: new_image[0],
-      instances: new_instances[0]
+      task: this.current_task,
+      image: this.current_image,
+      instances: this.current_annotations
     }
   }
 } 
