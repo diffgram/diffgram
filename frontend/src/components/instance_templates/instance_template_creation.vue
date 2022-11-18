@@ -165,6 +165,7 @@
       rgba: { r: 25, g: 77, b: 51, a: 1 },
       a: 1
     };
+    this.initialize_keypoints_instance_template_drawing()
 
   },
   beforeDestroy() {
@@ -172,6 +173,45 @@
   },
 
   methods: {
+    initialize_keypoints_instance_template_drawing: async function(){
+      await this.$nextTick();
+      let nodes = [];
+      let edges = [];
+      this.instance = new KeypointInstance(
+        this.$refs.instance_template_canvas.mouse_position,
+        this.$refs.instance_template_canvas.canvas_ctx,
+        this.instance_context,
+        () => {
+        },
+        () => {
+        },
+        () => {
+        },
+        this.$refs.instance_template_canvas.mouse_down_delta_event,
+        this.$refs.instance_template_canvas.mouse_down_position,
+        this.label_settings
+      );
+
+
+      // Set this to allow the creation of new nodes and edges.
+      this.instance.template_creation_mode = true;
+
+      if (this.$props.instance_template) {
+        for (let i = 0; i < this.instance_template.instance_list.length; i++) {
+          nodes = this.$props.instance_template.instance_list[i].nodes;
+          edges = this.$props.instance_template.instance_list[i].edges;
+          this.name = this.$props.instance_template.name;
+          this.instance.nodes = nodes;
+          this.instance.nodes.sort((a, b) => a.ordinal < b.ordinal ? -1 : 1)
+          this.instance.edges = edges;
+          this.instance.id = this.$props.instance_template.instance_list[i].id
+          this.mode = this.$props.instance_template.mode;
+          this.$refs.instance_template_creation_toolbar.set_mode(this.mode)
+        }
+
+      }
+      window.addEventListener('keydown', this.key_down_handler);
+    },
     on_mode_set: function(mode){
       this.mode = mode;
     },
@@ -248,43 +288,7 @@
     },
     open: async function () {
       this.is_open = true;
-      await this.$nextTick();
-      let nodes = [];
-      let edges = [];
-      this.instance = new KeypointInstance(
-        this.$refs.instance_template_canvas.mouse_position,
-        this.$refs.instance_template_canvas.canvas_ctx,
-        this.instance_context,
-        () => {
-        },
-        () => {
-        },
-        () => {
-        },
-        this.$refs.instance_template_canvas.mouse_down_delta_event,
-        this.$refs.instance_template_canvas.mouse_down_position,
-        this.label_settings
-      );
 
-
-      // Set this to allow the creation of new nodes and edges.
-      this.instance.template_creation_mode = true;
-
-      if (this.$props.instance_template) {
-        for (let i = 0; i < this.instance_template.instance_list.length; i++) {
-          nodes = this.$props.instance_template.instance_list[i].nodes;
-          edges = this.$props.instance_template.instance_list[i].edges;
-          this.name = this.$props.instance_template.name;
-          this.instance.nodes = nodes;
-          this.instance.nodes.sort((a, b) => a.ordinal < b.ordinal ? -1 : 1)
-          this.instance.edges = edges;
-          this.instance.id = this.$props.instance_template.instance_list[i].id
-          this.mode = this.$props.instance_template.mode;
-          this.$refs.instance_template_creation_toolbar.set_mode(this.mode)
-        }
-
-      }
-      window.addEventListener('keydown', this.key_down_handler);
 
     },
     zoom_in: function () {
