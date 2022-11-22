@@ -724,6 +724,8 @@ export default Vue.extend({
       this.initialize_instance_list()
     },
     initialize_token_render: async function () {
+      if (!this.$refs.initial_svg_element) return
+      
       const fixed_svg_width = this.$refs.initial_svg_element.clientWidth;
       const tokens = [];
       let token_x_position = 40;
