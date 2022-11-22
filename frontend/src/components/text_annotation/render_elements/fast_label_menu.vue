@@ -14,6 +14,7 @@
                     hide-details="auto"
                     v-model="search_value"
                     @input="on_search_label"
+                    @blur="on_input_blur"
                 />
             </div>
             <v-list dense>
@@ -81,7 +82,8 @@ export default Vue.extend({
     data() {
         return {
             search_value: "",
-            search_label: null
+            search_label: null,
+            blured: true
         }
     },
     mounted() {
@@ -103,7 +105,12 @@ export default Vue.extend({
             if (this.rects) this.$emit('create_instance', label)
             else this.$emit('create_relation', label)
         },
+        on_input_blur: function() {
+            this.blured = true
+        },
         on_hotkeys_listener: function(e) {
+            if (this.blured) return
+            
             let key = Number(e.key)
             if (key || key === 0) {
                 if (key === 0) key = 9
