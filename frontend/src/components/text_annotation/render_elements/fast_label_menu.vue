@@ -13,6 +13,7 @@
                     label="Start by typing label name"
                     hide-details="auto"
                     v-model="search_value"
+                    autofocus
                     @input="on_search_label"
                     @blur="on_input_blur"
                 />
