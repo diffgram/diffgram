@@ -435,6 +435,8 @@ export default Vue.extend({
       this.command_manager = null;
       this.initial_words_measures = [];
       this.lines = []
+      this.show_label_selection = false
+      this.selection_rects = null
       this.on_mount()
     },
     task: function () {
@@ -444,6 +446,8 @@ export default Vue.extend({
       this.command_manager = null;
       this.initial_words_measures = [];
       this.lines = []
+      this.show_label_selection = false
+      this.selection_rects = null
       this.on_mount()
     }
   },
