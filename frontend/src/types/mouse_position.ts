@@ -2,17 +2,18 @@ import {Instance} from "../components/vue_canvas/instances/Instance";
 import {ImageCanvasTransform} from "./CanvasTransform";
 import {createDefaultLabelSettings, ImageLabelSettings} from "./image_label_settings";
 
-export type Raw = {
+
+export type Point = {
   x: number
   y: number
 }
 export type MousePosition = {
   x: number
   y: number
-  raw?: Raw
+  raw?: Point
 }
 export function point_is_intersecting_circle (mouse: MousePosition,
-                                              point: Raw,
+                                              point: Point,
                                               radius = 8,
                                               zoom_value: number = 1): boolean{
   if(!point){

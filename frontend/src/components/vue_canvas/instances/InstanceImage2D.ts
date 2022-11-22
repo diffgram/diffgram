@@ -12,6 +12,37 @@ export abstract class InstanceImage2D extends Instance {
   public strokeColor: string = 'black';
   public fillColor: string = 'white';
   public image_label_settings: ImageLabelSettings
+  public is_moving: boolean = false;
+  private is_actively_drawing: boolean = false;
+
+  public get_canvas_transform(): ImageCanvasTransform {
+    return this.canvas_transform
+  }
+
+  public set_actively_drawing(val: boolean): void {
+    this.is_actively_drawing = val
+  }
+
+  public get_is_actively_drawing(): boolean {
+    return this.is_actively_drawing;
+  }
+
+  public set_is_resizing(val: boolean) {
+    this.is_resizing = val
+  }
+
+  public set_is_moving(val: boolean) {
+    this.is_moving = val
+  }
+
+  public remove_listener(event_type: string, callback: Function) {
+    if (event_type === 'hover_in') {
+      this.on_instance_hovered = null
+    }
+    if (event_type === 'hover_out') {
+      this.on_instance_unhovered = null
+    }
+  }
 
   public set_color_from_label() {
     let colour = this.get_label_file_colour_map()[this.label_file_id]
@@ -58,7 +89,7 @@ export abstract class InstanceImage2D extends Instance {
   }
 
 
-  public draw_text(ctx, message, x, y, font, background_color, background_opacity){
+  public draw_text(ctx, message, x, y, font, background_color, background_opacity) {
     ctx.textBaseline = 'bottom'
     ctx.font = font
 
@@ -81,8 +112,8 @@ export abstract class InstanceImage2D extends Instance {
     ctx.fillText(message, x, y);
   }
 
-  public draw_label(ctx, x, y){
-    if ( this.image_label_settings == null
+  public draw_label(ctx, x, y) {
+    if (this.image_label_settings == null
       || this.image_label_settings.show_text == false) {
       return
     }
@@ -106,12 +137,12 @@ export abstract class InstanceImage2D extends Instance {
       }
     }
 
-    if (  this.soft_delete
+    if (this.soft_delete
       && this.soft_delete == true) {
       message += " Removed"
     }
 
-    if (  this.interpolated
+    if (this.interpolated
       && this.interpolated == true) {
       message += " Interpolated"
     }
@@ -137,7 +168,7 @@ export abstract class InstanceImage2D extends Instance {
 
   public get_instance_data(): any {
     let res = super.get_instance_data();
-    return  {
+    return {
       ...res,
       strokeColor: this.strokeColor,
       fillColor: this.fillColor,

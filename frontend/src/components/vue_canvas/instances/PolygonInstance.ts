@@ -2,7 +2,7 @@ import {InstanceBehaviour2D, Instance} from './Instance'
 import {InstanceContext} from './InstanceContext';
 import {v4 as uuidv4} from 'uuid';
 import {getContrastColor} from '../../../utils/colorUtils'
-import {MousePosition, point_is_intersecting_circle} from "../../../types/mouse_position";
+import {MousePosition, Point, point_is_intersecting_circle} from "../../../types/mouse_position";
 import {get_sequence_color} from '../../regular/regular_annotation'
 import {InstanceColor} from "../../../types/instance_color";
 import {LabelColourMap} from "../../../types/label_colour_map";
@@ -18,15 +18,14 @@ type BoxHoverPoints =
   | 'not_intersecting_special_points'
   | 'blocked'
 
-export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D {
+export class PolygonInstance extends InstanceImage2D implements InstanceBehaviour2D {
   public mouse_position: MousePosition;
   public ctx: CanvasRenderingContext2D;
   public canvas_mouse_tools: ImageCanvasTransform;
   public colour: InstanceColor;
   public is_dragging_instance: boolean = false;
   public draw_corners: boolean = false;
-
-  public is_moving: boolean = false;
+  private is_actively_drawing: boolean = false;
   public mouse_down_delta_event: any = undefined;
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
@@ -59,7 +58,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     this.mouse_down_position = mouse_down_position;
     this.canvas_transform = canvas_transform;
     this.image_label_settings = image_label_settings;
-    this.type = 'box'
+    this.type = 'polygon'
     this.mouse_position = mouse_position;
     this.initialized = true;
     this.on_instance_hovered = this.set_default_hover_in_style
@@ -68,7 +67,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
   }
 
   public duplicate_for_undo() {
-    let duplicate_instance = new BoxInstance(
+    let duplicate_instance = new PolygonInstance(
       this.mouse_position,
       this.ctx,
       this.on_instance_updated,
@@ -85,11 +84,6 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     return duplicate_instance
   }
 
-  public get_canvas_transform(): ImageCanvasTransform {
-    return this.canvas_transform
-  }
-
-
   public set_mouse_cursor_from_hovered_point(movement_point: BoxHoverPoints) {
     let movement_point_hover_style_map = {
       'x_min_y_min': 'nwse-resize',
@@ -103,34 +97,6 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     if(this.canvas_element){
       this.canvas_element.style.cursor = movement_point_hover_style_map[movement_point]
     }
-  }
-
-  public determine_movement_point_for_box(): BoxHoverPoints {
-    let point_list = [
-      [this.x_min, this.y_min, "x_min_y_min", "nwse-resize"],
-      [this.x_max, this.y_min, "x_max_y_min", "nesw-resize"],
-      [this.x_min, this.y_max, "x_min_y_max", "nesw-resize"],
-      [this.x_max, this.y_max, "x_max_y_max", "nwse-resize"],
-    ];
-
-    for (let point of point_list) {
-      let intersection = point_is_intersecting_circle(
-        this.mouse_position,
-        {
-          x: point[0] as number,
-          y: point[1] as number
-        },
-        this.image_label_settings.vertex_size + 2,
-      );
-
-      if (intersection == true) {
-        this.box_edit_point_hover = point[2] as BoxHoverPoints;
-        return this.box_edit_point_hover;
-      }
-    }
-    this.box_edit_point_hover = "not_intersecting_special_points";
-
-    return this.box_edit_point_hover;
   }
 
   public drag(mouse_delta: MousePosition) {
@@ -147,25 +113,6 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     this.y_max = Math.ceil(this.y_max)
   }
 
-  private invert_origin_on_overflow() {
-    if (this.x_max < this.x_min) {
-      let x_max_temp = this.x_max;
-      this.x_max = this.x_min;
-      this.x_min = x_max_temp;
-    }
-
-    if (this.y_max < this.y_min) {
-      let y_max_temp = this.y_max;
-      this.y_max = this.y_min;
-      this.y_min = y_max_temp;
-    }
-    if (this.x_min < 0) {
-      this.x_min = 0;
-    }
-    if (this.y_min < 0) {
-      this.y_min = 0;
-    }
-  }
 
   private update_width_and_height() {
     this.width = this.x_max - this.x_min;
@@ -189,7 +136,24 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
   }
 
   public update_min_max_points() {
-    // For boxes, no special calculations are needed for min max point calculation.
+    const point_max_x = this.points.reduce((previous: Point, current: Point): Point => {
+      return current.x > previous.x ? current : previous;
+    }) as Point;
+    const point_min_x = this.points.reduce((previous: Point, current: Point) => {
+      return current.x < previous.x ? current : previous;
+    }) as Point;
+
+    const point_min_y = this.points.reduce((previous: Point, current: Point) => {
+      return current.y < previous.y ? current : previous;
+    }) as Point;
+
+    const point_max_y = this.points.reduce((previous: Point, current: Point) => {
+      return current.y < previous.y ? current : previous;
+    }) as Point;
+    this.x_max = point_max_x.x;
+    this.x_min = point_min_x.x;
+    this.y_min = point_min_y.y;
+    this.y_min = point_max_y.y;
   }
 
   public resize_from_corner_drag(mouse_position: MousePosition) {
