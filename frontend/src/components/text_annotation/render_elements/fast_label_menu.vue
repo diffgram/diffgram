@@ -87,6 +87,12 @@ export default Vue.extend({
             blured: true
         }
     },
+    watch: {
+        label_list: function() {
+            this.search_label = [...this.label_list]
+            this.search_value = ""
+        }
+    },
     mounted() {
         this.$emit('remove_listeners')
         this.search_label = [...this.label_list]
