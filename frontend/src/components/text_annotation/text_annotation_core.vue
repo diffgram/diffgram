@@ -70,6 +70,8 @@
         :context_menu="context_menu"
         @delete_instance="delete_instance"
       />
+      <div v-if="resizing">Resizing...</div>
+      <div v-if="rendering">Loading...</div>
       <svg
         ref="initial_svg_element"
         version="1.1"
@@ -91,7 +93,6 @@
             text-anchor="middle">
             {{ word.value }}
           </text>
-          <text x="40">Loading...</text>
         </g>
         <g v-if="resizing" transform="translate(0, 23.5)">
           <text
@@ -104,7 +105,6 @@
             text-anchor="middle">
             {{ word.value }}
           </text>
-          <text x="40">Resizing...</text>
         </g>
         <g ref="main-text-container" transform="translate(0, 23.5)" v-else>
           <relation_in_progress
