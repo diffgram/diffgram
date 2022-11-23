@@ -634,8 +634,23 @@ export default Vue.extend({
       else if (e.keyCode === 37 && this.selection_rects) {
         this.on_select_text(this.selection_rects[0].start_token_id - 1, this.selection_rects[0].start_token_id - 1, "left")
       } else if (e.keyCode === 39 && this.selection_rects) {
-        this.on_select_text(this.selection_rects[0].end_token_id + 1, this.selection_rects[0].end_token_id + 1)
+        const token_id = this.get_next_toke_id(this.selection_rects[0].end_token_id)
+        this.on_select_text(token_id, token_id)
       }
+    },
+    get_next_toke_id: function(id) {
+      let working_id = id
+      let token_id;
+
+      while (!token_id) {
+        const token = this.tokens.find(token => token.id === working_id + 1)
+        if (token) {
+          token_id = token.id
+        }
+        working_id += 1
+      }
+
+      return token_id
     },
     start_autosave: function () {
       this.interval_autosave = setInterval(
