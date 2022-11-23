@@ -642,6 +642,9 @@ export default Vue.extend({
       let working_id = id
       let token_id;
 
+      const last_token_id = this.tokens[this.tokens.length -1].id
+      if (last_token_id <= working_id) return last_token_id
+
       while (!token_id) {
         const token = this.tokens.find(token => token.id === working_id + 1)
         if (token) {
@@ -719,7 +722,7 @@ export default Vue.extend({
       this.remove_browser_selection()
     },
     on_select_text: function(start_token_id, end_token_id, direction = "right") {
-      if (start_token_id < 0 || end_token_id > this.tokens.length + 1) return
+      if (start_token_id < 0 || end_token_id > this.tokens[this.tokens.length - 1].id) return
 
       let start_token;
       while(!start_token) {
