@@ -343,6 +343,7 @@ export default Vue.extend({
       text_field_width: '100%',
       re_render_func: undefined,
       selection_rects: null,
+      selection_rects_next_token: null,
       show_label_selection: false,
       moving_border: false,
       context_menu: null,
@@ -387,6 +388,8 @@ export default Vue.extend({
         rects_to_draw = [...rects_to_draw, ...instance_rects]
       })
       this.find_intersections(rects_to_draw)
+
+      if (this.selection_rects_next_token) this.on_select_text(this.selection_rects_next_token, this.selection_rects_next_token)
       return rects_to_draw
     },
     render_drawing_arrow: function () {
@@ -704,6 +707,7 @@ export default Vue.extend({
       this.on_start_draw_instance(start_token_id, end_token_id)
       this.selection_rects = rects
       this.show_label_selection = true
+      this.selection_rects_next_token = null
     },
     on_mount: async function () {
       let set_words;
@@ -904,7 +908,7 @@ export default Vue.extend({
     },
     on_popup_create_instance: function(label) {
       this.on_finish_draw_instance(label)
-      this.on_select_text(this.instance_in_progress.end_token + 1, this.instance_in_progress.end_token + 1)
+      this.selection_rects_next_token = this.instance_in_progress.end_token + 1
     },
     change_instance_label: async function (event) {
       const {instance, label} = event
