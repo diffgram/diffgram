@@ -101,13 +101,13 @@ export default Vue.extend({
         end_move_listener: function(e) {
             this.end_border_moved = {
                 x: e.clientX - 350,
-                y: e.clientY - 150
+                y: window.scrollY + e.clientY - 150
             }
         },
         start_move_listener: function(e) {
             this.start_border_moved = {
                 x: e.clientX - 350,
-                y: e.clientY - 125
+                y: window.scrollY + e.clientY - 125
             }
         },
         on_apply_new_border: function() {
