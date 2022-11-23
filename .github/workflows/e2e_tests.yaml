@@ -63,8 +63,8 @@ jobs:
       minio:
         image: minio/minio
         env:
-          - MINIO_ROOT_USER: root
-          - MINIO_ROOT_PASSWORD: toor
+          MINIO_ROOT_USER: root
+          MINIO_ROOT_PASSWORD: toor
       rabbitmq:
         image: rabbitmq:3.10-rc-management-alpine
         env:
