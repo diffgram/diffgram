@@ -6,7 +6,9 @@ import {createDefaultLabelSettings, ImageLabelSettings} from "./image_label_sett
 export type Point = {
   x: number
   y: number
+  figure_id?: number
 }
+
 export type MousePosition = {
   x: number
   y: number

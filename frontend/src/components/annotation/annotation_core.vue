@@ -5949,7 +5949,7 @@ export default Vue.extend({
               //TODO this is a hacky way to do it!!!
               this.mouse_down_position.x = this.mouse_position.x;
               this.mouse_down_position.y = this.mouse_position.y;
-              this.polygon_insert_point();
+              this.instance_insert_point();
             }
           }
         }
@@ -6122,7 +6122,7 @@ export default Vue.extend({
       this.is_actively_drawing = false;
       this.current_polygon_point_list = []; // reset list
     },
-    polygon_insert_point: function (frame_number = undefined) {
+    instance_insert_point: function (frame_number = undefined) {
       const current_point = this.polygon_point_limits();
       // check if we should auto complete polygon (or can use enter)
       if (this.current_polygon_point_list.length >= 2) {
@@ -6429,10 +6429,10 @@ export default Vue.extend({
         // it's finished
         // for now it seeems like we are handling this on the "per instance" level
         // polygon sets is_actively_drawing to false with "enter"
-        if (["polygon", "line", "curve"].includes(this.instance_type)) {
+        if (["line", "curve"].includes(this.instance_type)) {
 
           this.is_actively_drawing = true;
-          this.polygon_insert_point(locked_frame_number);
+          this.instance_insert_point(locked_frame_number);
         }
 
         if (
@@ -6451,7 +6451,7 @@ export default Vue.extend({
         }
 
         if (this.instance_type == "point") {
-          this.polygon_insert_point(locked_frame_number);
+          this.instance_insert_point(locked_frame_number);
           const command = new CreateInstanceCommand(
             this.current_instance,
             this,
@@ -6465,15 +6465,6 @@ export default Vue.extend({
           this.curve_mouse_up(locked_frame_number);
         }
 
-        if (this.instance_type == "box") {
-          // if (this.$store.state.annotation_state.draw == false) {
-          //   this.is_actively_drawing = true; // required for current_instance visual to display
-          //   this.$store.commit("init_draw");
-          // } else {
-          //   // is actively drawing negation handled by generic instance push method now
-          //   this.$store.commit("finish_draw");
-          // }
-        }
 
       }
 
@@ -7200,10 +7191,6 @@ export default Vue.extend({
         if (this.is_actively_resizing == false) {
           this.is_actively_resizing = true;
         }
-      }
-
-      if (this.canvas_element) {
-        var canvas_rectangle = this.canvas_element.getBoundingClientRect();
       }
 
       this.polygon_auto_border_mouse_down()

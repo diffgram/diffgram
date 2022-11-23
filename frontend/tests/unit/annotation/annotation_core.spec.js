@@ -477,7 +477,7 @@ describe("Test annotation_core", () => {
     wrapper.vm.move_something = () => {};
     wrapper.vm.update_mouse_style = () => {};
     wrapper.vm.detect_other_polygon_points = () => {};
-    wrapper.vm.polygon_insert_point = () => {};
+    wrapper.vm.instance_insert_point = () => {};
     wrapper.vm.generate_event_interactions = () => {};
     wrapper.vm.mouse_transform = () => ({x: 25, y: 25});
 
@@ -512,7 +512,7 @@ describe("Test annotation_core", () => {
     wrapper.vm.helper_difference_absolute = () => {};
     wrapper.vm.update_mouse_style = () => {};
     wrapper.vm.detect_other_polygon_points = () => {};
-    wrapper.vm.polygon_insert_point = () => {};
+    wrapper.vm.instance_insert_point = () => {};
     wrapper.vm.generate_event_interactions = () => {};
 
     const spy = jest.spyOn(wrapper.vm, 'move_position_based_on_mouse');

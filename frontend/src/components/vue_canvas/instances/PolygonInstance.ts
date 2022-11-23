@@ -25,7 +25,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   public colour: InstanceColor;
   public is_dragging_instance: boolean = false;
   public draw_corners: boolean = false;
-  private is_actively_drawing: boolean = false;
   public mouse_down_delta_event: any = undefined;
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
@@ -133,6 +132,9 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
         this.y_max = this.canvas_transform.canvas_height - 1;
       }
     }
+  }
+  public add_point(point: Point){
+    this.points.push(point)
   }
 
   public update_min_max_points() {
@@ -285,7 +287,83 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
     }
   }
+  private draw_polygon_figure(ctx, points, figure_id){
+    if(this.selected){
+      this.generate_polygon_mid_points(instance, ctx, i, points, figure_id)
+      this.draw_polygon_midpoints(instance, ctx, i, figure_id)
+    }
+    ctx.beginPath();
+    const instance_colour = this.colour;
+    let r = instance_colour.rgba.r
+    let g = instance_colour.rgba.g
+    let b = instance_colour.rgba.b
+    const preStrokeStyle = ctx.strokeStyle;
+    ctx.strokeStyle = preStrokeStyle;
+    if (points.length >= 1) {
 
+      this.draw_label(ctx, points[0].x, points[0].y, this)
+      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + `,${this.$props.default_instance_opacity})`;
+      ctx.moveTo(points[0].x, points[0].y)
+
+    }
+
+    if (points.length >= 2) {
+      this.draw_polygon_lines(instance, ctx, points)
+      ctx.lineTo(points[0].x, points[0].y)
+    }
+
+    this.is_mouse_in_path(ctx, i, instance, figure_id) // must be seperate from when circles are drawn
+
+    let spatial_line_size = this.get_spatial_line_size()
+    if (spatial_line_size != 0) {
+      ctx.lineWidth = spatial_line_size
+      ctx.stroke()
+    }
+
+    // We may want these selection values to be user definable
+    // Context of wanting a lower value when selected is so the person can still see the raw image
+    // AND the overall coverage is still visible. Especially relevant if spatial_line is 0.
+    if (this.selected == true && this.image_label_settings.default_instance_opacity != 1) {
+      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", .1)";
+    }
+
+    if (this.is_hovered && this.image_label_settings.default_instance_opacity != 1) {
+      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ",.1)";
+    }
+
+    if (instance.type == "polygon") {
+      ctx.fill()
+    }
+    if (instance.type == "line") {
+      ctx.lineWidth *= 2
+    }
+  }
+  private draw_polygon_main_section(ctx){
+    let figure_id_list = [];
+
+    for (const point of this.points){
+      if(!point.figure_id){
+        continue
+      }
+      if(!figure_id_list.includes(point.figure_id)){
+        figure_id_list.push(point.figure_id)
+      }
+    }
+    if(figure_id_list.length === 0){
+      let points = this.points;
+      this.draw_polygon_figure(instance, ctx, i, points)
+    }
+    else{
+      for(const figure_id of figure_id_list){
+        let points = this.points.filter(p => p.figure_id === figure_id);
+        this.draw_polygon_figure(instance, ctx, i, points, figure_id)
+      }
+    }
+
+
+
+    return true
+  }
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath()
     if (this.sequence_id) {
@@ -295,21 +373,16 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
     this.draw_label(ctx, this.x_min, this.y_min)
     this.grab_color_from_instance(ctx)
-    ctx.fillText(this.label_file.label.name, this.x_min, this.y_min);
-    ctx.setLineDash([0])
-    ctx.rect(this.x_min,
-      this.y_min,
-      this.width,
-      this.height)
 
-    this.check_box_hovered(ctx)
-    if (this.draw_corners || this.selected) {
-      this.draw_box_edit_corners(ctx)
-    }
 
-    if(this.image_label_settings){
-      ctx.lineWidth = this.image_label_settings.spatial_line_size
-    }
+    // this.check_box_hovered(ctx)
+    // if (this.draw_corners || this.selected) {
+    //   this.draw_box_edit_corners(ctx)
+    // }
+    //
+    // if(this.image_label_settings){
+    //   ctx.lineWidth = this.image_label_settings.spatial_line_size
+    // }
 
     ctx.stroke()
   }

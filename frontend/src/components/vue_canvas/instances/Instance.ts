@@ -3,7 +3,7 @@ import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
 import {getCenterPoint} from "../../3d_annotation/utils_3d";
 import {LabelColourMap} from "../../../types/label_colour_map";
 import {LabelFile} from "../../../types/label";
-import {MousePosition} from "../../../types/mouse_position";
+import {MousePosition, Point} from "../../../types/mouse_position";
 import {ImageCanvasTransform} from "../../../types/CanvasTransform";
 
 export const SUPPORTED_CLASS_INSTANCE_TYPES: Array<string> = ['box', 'keypoints'];
@@ -47,7 +47,7 @@ export class Instance {
   public selected: boolean = false;
   public number: number = null;
   public type: string = null;
-  public points: object[] = [];
+  public points: Point[] = [];
   public sequence_id: number = null;
   public soft_delete: boolean = false;
   public is_hovered: boolean = false;

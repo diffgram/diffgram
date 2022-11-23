@@ -512,20 +512,15 @@
             }
           }
           if (instance.type == "box") {
-            // ctx.beginPath()
-            //
-            // this.draw_box(instance, ctx, i)
-            // ctx.lineWidth = this.get_spatial_line_size()
-            // ctx.stroke()
-
             let box: BoxInstance = instance as BoxInstance
-
             box.draw(ctx)
           }
 
           else if (["polygon", "line"].includes(instance.type)) {
-            ctx.beginPath()
-            this.draw_polygon(instance, ctx, i)
+            let polygon = instance as PolygonInstance
+            polygon.draw(ctx)
+            // ctx.beginPath()
+            // this.draw_polygon(instance, ctx, i)
           }
 
           else if (instance.type == "cuboid") {
