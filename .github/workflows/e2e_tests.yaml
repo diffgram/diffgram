@@ -62,7 +62,7 @@ jobs:
           --health-retries 5
       minio:
         image: minio/minio
-        environment:
+        env:
           - MINIO_ROOT_USER: root
           - MINIO_ROOT_PASSWORD: toor
       rabbitmq:
