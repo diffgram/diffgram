@@ -204,21 +204,17 @@
       set_bg: async function (newFile) {
         return new Promise((resolve, reject) => {
           if (!newFile) {
-            console.log('NO NEW FILE',newFile)
             this.image_bg = undefined;
             this.refresh = new Date();
             resolve();
           }
           else {
-            console.log('NO NEW FILE',newFile)
             if (newFile.image && newFile.image.url_signed) {
-              console.log('newFile.image.url_signed',newFile.image.url_signed)
               if(!newFile.html_image){
                 const image = new Image();
                 image.onload = () => {
                   this.image_bg = image;
                   this.refresh = new Date();
-                  console.log('RESOLVE', image)
                   image.onload = () => resolve(image)
                 }
                 image.src = newFile.image.url_signed;

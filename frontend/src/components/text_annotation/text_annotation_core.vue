@@ -463,7 +463,6 @@ export default Vue.extend({
 
       if (start_coordinates) {
         start_token_id = closest_token(this.tokens, this.lines, start_coordinates).id
-        console.log(start_token_id)
         end_token_id = this.selection_rects[0].end_token_id
       }
 
