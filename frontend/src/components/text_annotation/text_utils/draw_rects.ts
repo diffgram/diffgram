@@ -27,15 +27,17 @@ export default class DrawRects {
     generate_rects_from_instance(instance: InstanceData) {
         let start_token_id: number;
         let end_token_id: number;
-
+        
         const { id: instance_id, type: instance_type, start_token, end_token, from_instance_id, to_instance_id, label_file} = instance.get_instance_data()
         const { hex: color } = label_file.colour;
 
         if (instance_type === "relation") {
             const start_instance = this.instance_list.get().find(find_instance => find_instance.get_instance_data().id === from_instance_id)
+            if (!start_instance) return []
             start_token_id = this.token_list.find(token => token.id === start_instance["start_token"]).id
             
             const end_instance = this.instance_list.get().find(find_instance => find_instance.get_instance_data().id === to_instance_id)
+            if (!end_instance) return []
             end_token_id = this.token_list.find(token => token.id === end_instance["end_token"]).id
         } else {
             start_token_id = start_token;

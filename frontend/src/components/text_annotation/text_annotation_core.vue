@@ -112,82 +112,91 @@
             :render_drawing_arrow="render_drawing_arrow"
           />
           <g v-if="render_rects.length > 0">
-            <rect
+            <g
               v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
               :key="`instance_rect_${instance.get_instance_data().id}`"
-              :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x"
-              :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y - 15"
-              :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'rgba(255, 0, 0, 0.2)' : `rgba(${instance.label_file.colour.rgba.r}, ${instance.label_file.colour.rgba.g}, ${instance.label_file.colour.rgba.b}, 0.2)`"
-              :width="instance.label_file.label.name.length * 8"
-              :height="15"
-              @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-              @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
-              @mouseleave="on_instance_stop_hover"
-              @contextmenu="(e) => on_open_context_menu(e, instance)"
-              style="font-size: 10px; cursor: pointer"
-              class="unselectable"
-            />
-            <text
-              v-for="(instance, instance_index) in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
-              :data-cy="`text_label_${instance_index}`"
-              :key="`instance_${instance.get_instance_data().id}`"
-              :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x + 2"
-              :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y - 3"
-              :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
-              @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-              @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
-              @mouseleave="on_instance_stop_hover"
-              @contextmenu="(e) => on_open_context_menu(e, instance)"
-              style="font-size: 10px; cursor: pointer;"
-              class="unselectable"
             >
-              {{ instance.label_file.label.name }}
-            </text>
-            <rect
+              <rect
+                v-if="get_instance_rects(instance)"
+                :x="get_instance_rects(instance).x"
+                :y="get_instance_rects(instance).y - 15"
+                :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'rgba(255, 0, 0, 0.2)' : `rgba(${instance.label_file.colour.rgba.r}, ${instance.label_file.colour.rgba.g}, ${instance.label_file.colour.rgba.b}, 0.2)`"
+                :width="instance.label_file.label.name.length * 8"
+                :height="15"
+                @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
+                @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
+                @mouseleave="on_instance_stop_hover"
+                @contextmenu="(e) => on_open_context_menu(e, instance)"
+                style="font-size: 10px; cursor: pointer"
+                class="unselectable"
+              />
+            </g>
+            <g
+              v-for="(instance, instance_index) in new_instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
+              :key="`instance_${instance.get_instance_data().id}`"
+            >
+              <text
+                :data-cy="`text_label_${instance_index}`"
+                v-if="get_instance_rects(instance)"
+                :x="get_instance_rects(instance).x + 2"
+                :y="get_instance_rects(instance).y - 3"
+                :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
+                @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
+                @mouseleave="on_instance_stop_hover"
+                @contextmenu="(e) => on_open_context_menu(e, instance)"
+                style="font-size: 10px; cursor: pointer;"
+                class="unselectable"
+              >
+                {{ instance.label_file.label.name }}
+              </text>
+            </g>
+            <g
               v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
               :key="`rel_start_${instance.get_instance_data().id}`"
-              :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x"
-              :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y"
-              :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
-              :width="1"
-              :height="10"
-              @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-              @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
-              @mouseleave="on_instance_stop_hover"
-              @contextmenu="(e) => on_open_context_menu(e, instance)"
-              style="font-size: 10px; cursor: pointer"
-              class="unselectable"
-            />
-            <circle
-              v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
-              :key="`rel_start_marker_${instance.get_instance_data().id}`"
-              :cx="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width"
-              :cy="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10"
-              :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
-              r="2"
-              class="unselectable"
-            />
-            <rect
-              v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
-              :key="`rel_end_${instance.get_instance_data().id}`"
-              :x="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width"
-              :y="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y"
-              :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
-              :width="1"
-              :height="10"
-              @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
-              @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
-              @mouseleave="on_instance_stop_hover"
-              style="font-size: 10px; cursor: pointer"
-              class="unselectable"
-            />
-            <path
-              v-for="instance in new_instance_list.get().filter(instance => !instance.soft_delete && instance.type === 'relation' && !invisible_labels.includes(instance.label_file_id))"
-              :key="`rel_end_marker_${instance.get_instance_data().id}`"
-              :d="`M ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width} ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10} l -5, -5 l 10, 0 l -5, 5`"
-              :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
-              class="unselectable"
-            />
+            >
+              <g
+                v-if="get_instance_rects(instance)"
+              >
+                <rect
+                  :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x"
+                  :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y"
+                  :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                  :width="1"
+                  :height="10"
+                  @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
+                  @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
+                  @mouseleave="on_instance_stop_hover"
+                  @contextmenu="(e) => on_open_context_menu(e, instance)"
+                  style="font-size: 10px; cursor: pointer"
+                  class="unselectable"
+                />
+                <circle
+                  :cx="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width"
+                  :cy="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10"
+                  :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                  r="2"
+                  class="unselectable"
+                />
+                <rect
+                  :x="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width"
+                  :y="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y"
+                  :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                  :width="1"
+                  :height="10"
+                  @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
+                  @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
+                  @mouseleave="on_instance_stop_hover"
+                  style="font-size: 10px; cursor: pointer"
+                  class="unselectable"
+                />
+                <path
+                  :d="`M ${!insatance_orientation_direct(instance) ? get_instance_rects(instance).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width} ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10} l -5, -5 l 10, 0 l -5, 5`"
+                  :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                  class="unselectable"
+                />
+              </g>
+            </g>
             <rect
               v-for="rect in render_rects"
               :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
@@ -455,6 +464,10 @@ export default Vue.extend({
     }
   },
   methods: {
+    get_instance_rects: function(instance) {
+      const rects = this.render_rects.find(rect => rect.instance_id === instance.get_instance_data().id)
+      return rects
+    },
     on_start_moving_borders: function() {
       this.show_label_selection = false
       this.moving_border = true
@@ -729,6 +742,7 @@ export default Vue.extend({
     },
     initialize_token_render: async function () {
       if (!this.$refs.initial_svg_element) return
+
       
       const fixed_svg_width = this.$refs.initial_svg_element.clientWidth;
       const tokens = [];
@@ -769,6 +783,7 @@ export default Vue.extend({
         tokens.push(token)
         token_x_position = word.tag !== 'word' ? token_x_position + current_token_width + 5 : token_x_position + current_token_width
       })
+
 
       this.tokens = tokens
       this.rendering = false
