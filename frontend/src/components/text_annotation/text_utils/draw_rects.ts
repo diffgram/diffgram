@@ -42,7 +42,7 @@ export default class DrawRects {
             end_token_id = end_token;
         }
         
-        const base_rects = this.generate_rects(start_token_id, end_token_id)
+        const base_rects = this.generate_rects(start_token_id, end_token_id).filter(rect => rect.x !== 0 && rect.y !== 0 && rect.width !== 0)
         const instance_rects = base_rects.map(rect => ({...rect, instance_id, instance_type, color }))
 
         return instance_rects
