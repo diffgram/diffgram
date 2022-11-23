@@ -83,7 +83,7 @@ jobs:
     - run: |
           python3 - <<'EOF'
           from minio import Minio
-          from minio.error import ResponseError
+          from minio.error import InvalidResponseError
 
           try:
               minio = Minio(
