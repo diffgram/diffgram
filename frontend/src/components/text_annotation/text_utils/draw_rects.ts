@@ -125,9 +125,15 @@ export default class DrawRects {
                     const last_token_in_the_line = this.token_list.filter(token => token.line == this.line_list[i].id)
                     const first_token_in_the_line = this.token_list.find(token => token.line == this.line_list[i].id)
 
-                    x = first_token_in_the_line.start_x;
-                    y = this.line_list[first_token_in_the_line.line].y + 3;
-                    width = last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x;
+                    if (first_token_in_the_line) {
+                        x = first_token_in_the_line.start_x;
+                        y = this.line_list[first_token_in_the_line.line].y + 3;
+                        width = last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x;
+                    } else {
+                        x = 0;
+                        y = 0;
+                        width = 0;
+                    }
                 }
 
                 rects.push({ x, y, line: i, width })
