@@ -37,8 +37,20 @@ const token_search = (tokens: Array<Token>, x: number): Token => {
 }
 
 export default function(token_list: Array<Token>, line_list: Array<Line>, coordinates: TextCoordinates): Token {
+    const max_line_id = line_list[line_list.length - 1].id
+    console.log(max_line_id)
+
     const new_line: Line = line_search(line_list, coordinates.y)
-    const line_tokens: Array<Token> = token_list.filter(token => token.line === new_line.id)
+    let line_tokens: Token[] = [];
+    let line_id = new_line.id
+
+    while (line_tokens.length === 0) {
+        if (line_id > max_line_id) break
+
+        line_tokens = token_list.filter(token => token.line === line_id)
+        if (line_tokens.length === 0) line_id += 1
+    }
+    
     const token_to_return = token_search(line_tokens, coordinates.x)
     return token_to_return
 }
