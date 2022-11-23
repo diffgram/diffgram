@@ -754,7 +754,7 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
     cy.server()
       .route({
         method: "POST",
-        url: `/api/walrus/project/${store.state.project.current.project_string_id}/upload/large`,
+        url: `/api/walrus/project/${project_string_id}/upload/large`,
       })
       .as('upload_large')
       .then(() => {
