@@ -15,7 +15,9 @@ interface Token {
     width: number;
 }
 
-const line_search = (lines: Array<Line>, y: number): Line => {
+const line_search = (lines: Array<Line>, y: number, max_line: number): Line => {
+    if (y > lines[max_line].y) return lines[max_line]
+
     const start_line: Line = lines.filter(line => line.y <= y).pop();
     const finish_line: Line = lines.find(line => line.y >= y);
 
@@ -39,17 +41,30 @@ const token_search = (tokens: Array<Token>, x: number): Token => {
     return prev_token
 }
 
+const last_line_with_tokens = (tokens:  Array<Token>) => {
+    const last_token = [...tokens].pop()
+    return last_token.line
+}
+
 export default function(token_list: Array<Token>, line_list: Array<Line>, coordinates: TextCoordinates): Token {
-    const max_line_id = line_list[line_list.length - 1].id
-    const new_line: Line = line_search(line_list, coordinates.y)
+    const max_line = line_list[last_line_with_tokens(token_list)].id
+    const new_line: Line = line_search(line_list, coordinates.y, max_line)
     let line_tokens: Token[] = [];
     let line_id = new_line.id
 
-    while (line_tokens.length === 0) {
-        if (line_id > max_line_id) break
-
-        line_tokens = token_list.filter(token => token.line === line_id)
-        if (line_tokens.length === 0) line_id += 1
+    if (line_id !== max_line) {
+        while (line_tokens.length === 0) {
+            if (line_id > max_line) break
+    
+            line_tokens = token_list.filter(token => token.line === line_id)
+            if (line_tokens.length === 0) line_id += 1
+        }
+    }
+    else {
+        while (line_tokens.length === 0) {    
+            line_tokens = token_list.filter(token => token.line === line_id)
+            if (line_tokens.length === 0) line_id -= 1
+        }
     }
     
     const token_to_return = token_search(line_tokens, coordinates.x)
