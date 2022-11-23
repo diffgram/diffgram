@@ -66,7 +66,7 @@ jobs:
           - 9000:9000
         env:
           MINIO_ACCESS_KEY: root
-          MINIO_SECRET_KEY: toor
+          MINIO_SECRET_KEY: actionskeye2etests
         volumes:
           - ${{ github.workspace }}/data:/data
         options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
@@ -89,7 +89,7 @@ jobs:
               minio = Minio(
                   'minio:9000',
                   access_key='root',
-                  secret_key='toor',
+                  secret_key='actionskeye2etests',
                   secure=False
               )
           except Exception as ex:
