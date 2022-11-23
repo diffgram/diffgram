@@ -87,9 +87,9 @@ jobs:
 
           try:
               minio = Minio(
-                  'localhost:9000',
-                  access_key='${{ secrets.MINIO_ACCESS_KEY }}',
-                  secret_key='${{ secrets.MINIO_SECRET_KEY }}',
+                  'minio:9000',
+                  access_key='root',
+                  secret_key='toor',
                   secure=False
               )
           except Exception as ex:
