@@ -23,10 +23,13 @@ jobs:
         PYTHONPATH: /__w/diffgram
         DIFFGRAM_SYSTEM_MODE: testing_e2e
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
-        DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
+        DIFFGRAM_STATIC_STORAGE_PROVIDER: minio
         SAME_HOST: True
         DIFFGRAM_AZURE_CONNECTION_STRING: ${{ secrets.E2E_TESTS_AZURE_CONNECTION_STRING }}
         DIFFGRAM_AZURE_CONTAINER_NAME: testsgithubactions
+        DIFFGRAM_S3_BUCKET_NAME: testsgithubactions
+        ML__DIFFGRAM_S3_BUCKET_NAME: testsgithubactions
+        DIFFGRAM_MINIO_ENDPOINT_URL: http://minio:9000
         ML__DIFFGRAM_AZURE_CONTAINER_NAME: testsgithubactions
         CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
@@ -57,6 +60,11 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      minio:
+        image: minio/minio
+        environment:
+          - MINIO_ROOT_USER: root
+          - MINIO_ROOT_PASSWORD: toor
       rabbitmq:
         image: rabbitmq:3.10-rc-management-alpine
         env:
