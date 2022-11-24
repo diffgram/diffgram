@@ -940,56 +940,19 @@
           if (!this.current_instance) {
             return
           }
-
-          // note this is basing off the current instance!
-
-          /*
-           * TYPES: Different types treated differently
-           *
-           *  the values for attribute groups are diverse
-           *  effectively we assume that whatever format it stores the value in is what we will
-           *  reload it as
-           *
-           *  we can't just use ids because of free text fields (like 137 in this example)
-           *
-           *  and the form of the data changes since some things prefer to store in arrays
-           *  some as objects and some as straight ids...
-           *
-           *  the form is determined by the group type
-           *  and then by the front end select controls here
-           *
-           *  the backend stores whatever it is given for these things
-           *
-           *  EXAMPLE:
-             *    136: Object
-                  137: "dog"
-                  138: Array[3]
-                  139: 180
-                  // future maybe a Node
-           */
-
-          /*
-           * Prior we iterated through the whole list but that doesn't really make sense
-           * because we only care about the group id
-           *
-           * IMPORTANT - instance group value != current group
-           *
-           *    this is the current instance data which is different from
-           *    the current group
-           *
-           *    for example the current group may be "apple"
-           *    but there may be no selection for "apple" yet on the specific instance.
-           *
-           */
+          if(!this.current_instance.attribute_groups){
+            return
+          }
 
           let value = null    // shared with existing and default
           let existing_value = null
           let default_value = null
+
           if (this.current_instance.attribute_groups) {
             existing_value = this.current_instance.attribute_groups[this.group.id]
           }
-
-          if (existing_value != null){
+          if ((existing_value != null && this.group.kind != 'multiple_select' )
+            || (this.group.kind === 'multiple_select' && existing_value && existing_value.length > 0)){
             value = existing_value
           }
           else  {
@@ -1032,19 +995,20 @@
             this.internal_selected = value
 
           } else if (this.group.kind == "multiple_select") {
-
-            this.internal_selected = []
+            if(value && value.length > 0){
+              this.internal_selected = []
+            }
             // value is an array now
             for (let single_selected of value) {
               if(!single_selected){
                 return
               }
-              this.internal_selected.push(this.select_format.find(
+              let selected_attr = this.select_format.find(
                 attribute => {
                   return attribute.id == single_selected.id
-                }))
+                })
+              this.internal_selected.push(selected_attr)
             }
-
           }
           else if(this.group.kind === 'slider'){
             if(!this.group.min_value){
@@ -1237,7 +1201,7 @@
                 this.error = error.response.data.log.error
               }
               this.loading_update = false
-              console.log(error)
+              console.error(error)
             }
           });
 
