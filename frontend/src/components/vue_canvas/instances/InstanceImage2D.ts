@@ -13,7 +13,7 @@ export abstract class InstanceImage2D extends Instance {
   public fillColor: string = 'white';
   public image_label_settings: ImageLabelSettings
   public is_moving: boolean = false;
-  private is_actively_drawing: boolean = false;
+  protected is_actively_drawing: boolean = false;
 
   public get_canvas_transform(): ImageCanvasTransform {
     return this.canvas_transform
@@ -165,7 +165,20 @@ export abstract class InstanceImage2D extends Instance {
     }
     return false
   }
+  protected update_width_and_height() {
+    this.width = this.x_max - this.x_min;
+    this.height = this.y_max - this.y_min;
 
+    this.width = Math.ceil(this.width)
+    this.height = Math.ceil(this.height)
+    this.status = "updated";
+  }
+
+  protected get_spatial_line_size(){
+    let size = this.image_label_settings.spatial_line_size
+
+    return size
+  }
   public get_instance_data(): any {
     let res = super.get_instance_data();
     return {

@@ -31,9 +31,6 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
   public box_edit_point_hover: BoxHoverPoints = undefined
-  private nearest_points_dict: any = undefined
-  private zoom_value: number = 1
-  private font_size: number = 10
 
 
   public get_instance_data(): object {
@@ -165,15 +162,6 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     if (this.y_min < 0) {
       this.y_min = 0;
     }
-  }
-
-  private update_width_and_height() {
-    this.width = this.x_max - this.x_min;
-    this.height = this.y_max - this.y_min;
-
-    this.width = Math.ceil(this.width)
-    this.height = Math.ceil(this.height)
-    this.status = "updated";
   }
 
   private check_canvas_overflow() {

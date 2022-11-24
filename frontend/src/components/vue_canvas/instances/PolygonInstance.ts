@@ -10,13 +10,6 @@ import {ImageCanvasTransform} from "../../../types/CanvasTransform";
 import {InstanceImage2D} from "./InstanceImage2D";
 import {ImageLabelSettings} from "../../../types/image_label_settings";
 
-type BoxHoverPoints =
-  'x_min_y_min'
-  | 'x_max_y_min'
-  | 'x_min_y_max'
-  | 'x_max_y_max'
-  | 'not_intersecting_special_points'
-  | 'blocked'
 
 export class PolygonInstance extends InstanceImage2D implements InstanceBehaviour2D {
   public mouse_position: MousePosition;
@@ -25,19 +18,18 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   public colour: InstanceColor;
   public is_dragging_instance: boolean = false;
   public draw_corners: boolean = false;
+  public midpoints_polygon: { [p: number]: PolygonPoint[] } | PolygonPoint[] = null;
   public mouse_down_delta_event: any = undefined;
+  public polygon_point_hover_index: number = undefined;
+  public hovered_figure_id: number = undefined;
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
-  public box_edit_point_hover: BoxHoverPoints = undefined
+  public midpoint_hover: number = undefined
   private nearest_points_dict: any = undefined
   private zoom_value: number = 1
-  private font_size: number = 10
-
-
-  public get_instance_data(): object {
-    const result = super.get_instance_data();
-    return result;
-  }
+  private circle_size: number = null
+  private auto_border_polygon_p1: PolygonPoint = null
+  private auto_border_polygon_p2: PolygonPoint = null
 
   constructor(mouse_position: MousePosition = undefined,
               ctx: CanvasRenderingContext2D = undefined,
@@ -83,18 +75,31 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     return duplicate_instance
   }
 
-  public set_mouse_cursor_from_hovered_point(movement_point: BoxHoverPoints) {
-    let movement_point_hover_style_map = {
-      'x_min_y_min': 'nwse-resize',
-      'x_max_y_min': 'nesw-resize',
-      'x_min_y_max': 'nesw-resize',
-      'x_max_y_max': 'nwse-resize',
-      'not_intersecting_special_points': 'pointer',
-      'blocked': 'not-allowed',
+  private check_polygon_intersection_on_points(): boolean {
+    for (let i = 0; i < this.points.length; i++) {
+      let result = point_is_intersecting_circle(
+        this.mouse_position,
+        this.points[i]
+      );
 
+      if (result == true) {
+        this.canvas_element.style.cursor = "all-scroll";
+        this.polygon_point_hover_index = i;
+        return true;
+      }
     }
-    if(this.canvas_element){
-      this.canvas_element.style.cursor = movement_point_hover_style_map[movement_point]
+    return false;
+  }
+
+  public set_mouse_cursor_from_hovered_point() {
+
+    if (this.canvas_element) {
+      if (this.check_polygon_intersection_on_points()) {
+        this.canvas_element.style.cursor = 'all-scroll'
+      } else {
+        this.canvas_element.style.cursor = 'pointer'
+      }
+
     }
   }
 
@@ -113,15 +118,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
 
-  private update_width_and_height() {
-    this.width = this.x_max - this.x_min;
-    this.height = this.y_max - this.y_min;
-
-    this.width = Math.ceil(this.width)
-    this.height = Math.ceil(this.height)
-    this.status = "updated";
-  }
-
   private check_canvas_overflow() {
     if (this.canvas_transform && this.canvas_transform.canvas_width) {
       if (this.x_max >= this.canvas_transform.canvas_width) {
@@ -133,103 +129,49 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       }
     }
   }
-  public add_point(point: Point){
+
+  public add_point(point: PolygonPoint) {
     this.points.push(point)
   }
 
   public update_min_max_points() {
-    const point_max_x = this.points.reduce((previous: Point, current: Point): Point => {
+    const point_max_x = this.points.reduce((previous: PolygonPoint, current: PolygonPoint): PolygonPoint => {
       return current.x > previous.x ? current : previous;
-    }) as Point;
-    const point_min_x = this.points.reduce((previous: Point, current: Point) => {
+    }) as PolygonPoint;
+    const point_min_x = this.points.reduce((previous: PolygonPoint, current: PolygonPoint) => {
       return current.x < previous.x ? current : previous;
-    }) as Point;
+    }) as PolygonPoint;
 
-    const point_min_y = this.points.reduce((previous: Point, current: Point) => {
+    const point_min_y = this.points.reduce((previous: PolygonPoint, current: PolygonPoint) => {
       return current.y < previous.y ? current : previous;
-    }) as Point;
+    }) as PolygonPoint;
 
-    const point_max_y = this.points.reduce((previous: Point, current: Point) => {
+    const point_max_y = this.points.reduce((previous: PolygonPoint, current: PolygonPoint) => {
       return current.y < previous.y ? current : previous;
-    }) as Point;
+    }) as PolygonPoint;
     this.x_max = point_max_x.x;
     this.x_min = point_min_x.x;
     this.y_min = point_min_y.y;
     this.y_min = point_max_y.y;
   }
 
-  public resize_from_corner_drag(mouse_position: MousePosition) {
-    let x_new = mouse_position.x;
-    let y_new = mouse_position.y;
-    let movement_point_hover = this.box_edit_point_hover
-    if(!this.is_resizing){
-      let movement_point_hover = this.determine_movement_point_for_box()
-    }
 
-    this.set_mouse_cursor_from_hovered_point(movement_point_hover)
-    if (this.box_edit_point_hover == "x_min_y_min") {
-      this.x_min = x_new;
-      this.y_min = y_new;
-    } else if (this.box_edit_point_hover == "x_max_y_max") {
-      this.x_max = x_new;
-      this.y_max = y_new;
-    } else if (this.box_edit_point_hover == "x_min_y_max") {
-      this.x_min = x_new;
-      this.y_max = y_new;
-    } else if (this.box_edit_point_hover == "x_max_y_min") {
-      this.x_max = x_new;
-      this.y_min = y_new;
-    }
-    this.interpolated = false;
-    this.is_resizing = true
-    this.invert_origin_on_overflow()
-    this.update_width_and_height()
-    this.update_min_max_points()
-    this.check_canvas_overflow()
-    this.x_min = Math.ceil(this.x_min)
-    this.y_min = Math.ceil(this.y_min)
-    this.x_max = Math.ceil(this.x_max)
-    this.y_max = Math.ceil(this.y_max)
-  }
-  public move_from_mouse_position(mouse_down_delta_event: MousePosition){
-    this.x_min += mouse_down_delta_event.x;
-    this.y_min += mouse_down_delta_event.y;
-
-    this.x_max += mouse_down_delta_event.x;
-    this.y_max += mouse_down_delta_event.y;
-
-    this.x_min = Math.ceil(this.x_min)
-    this.y_min = Math.ceil(this.y_min)
-    this.x_max = Math.ceil(this.x_max)
-    this.y_max = Math.ceil(this.y_max)
-  }
-  public resize_from_mouse_position(event: MouseEvent, mouse_position: MousePosition, mouse_down_position: MousePosition) {
-    this.x_min = Math.ceil(mouse_down_position.x);
-    this.y_min = Math.ceil(mouse_down_position.y);
-    this.x_max = Math.ceil(mouse_position.x);
-    this.y_max = Math.ceil(mouse_position.y);
-    this.interpolated = false;
-    this.invert_origin_on_overflow()
-    this.update_width_and_height()
-    this.update_min_max_points()
-    this.check_canvas_overflow()
+  public move_from_mouse_position(mouse_down_delta_event: MousePosition) {
+    // TODO: Add polygon drag logic here
   }
 
-  public set_default_hover_in_style(box: BoxInstance) {
-    let hover_point = this.determine_movement_point_for_box()
+  public set_default_hover_in_style(polygon: PolygonInstance) {
 
-    this.set_mouse_cursor_from_hovered_point(hover_point)
-    this.show_box_corners()
+    this.set_mouse_cursor_from_hovered_point()
+    this.show_polygon_vertices()
   }
 
-  public set_default_hover_out_style(box: BoxInstance) {
-    if(this.canvas_element){
+  public set_default_hover_out_style(polygon: PolygonInstance) {
+    if (this.canvas_element) {
       this.canvas_element.style.cursor = 'default'
     }
-    let hover_point = this.determine_movement_point_for_box()
-    this.hide_box_corners()
-    if(!box.selected){
-
+    this.hide_polygon_vertices()
+    if (!polygon.selected) {
       this.set_color_from_label()
     }
 
@@ -240,11 +182,11 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     ctx.moveTo(x, y) // reset
   }
 
-  public show_box_corners() {
+  public show_polygon_vertices() {
     this.draw_corners = true
   }
 
-  public hide_box_corners() {
+  public hide_polygon_vertices() {
     this.draw_corners = false
   }
 
@@ -259,38 +201,85 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     ctx.fill()
   }
 
-  private check_box_hovered(ctx) {
-    const prev_hover_point = this.box_edit_point_hover
-    let box_hover_point = this.determine_movement_point_for_box()
-    if (this.is_mouse_in_path(ctx) || box_hover_point != prev_hover_point) {
-      if(!this.is_hovered){
-        this.on_instance_hovered(this)
-        this.is_hovered = true
-        this.set_mouse_cursor_from_hovered_point(this.box_edit_point_hover)
-      }
-      if(prev_hover_point != box_hover_point){
-        this.on_instance_hovered(this)
-        this.is_hovered = true
-        this.set_mouse_cursor_from_hovered_point(this.box_edit_point_hover)
+
+  private generate_polygon_mid_points(points, figure_id = undefined) {
+    const midpoints_polygon = []
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1];
+      const current = points[i];
+      midpoints_polygon.push({
+        x: (prev.x + current.x) / 2,
+        y: (prev.y + current.y) / 2,
+        figure_id: figure_id
+      })
+    }
+    midpoints_polygon.push({
+      x: (points[0].x + points[points.length - 1].x) / 2,
+      y: (points[0].y + points[points.length - 1].y) / 2
+    })
+    if (figure_id) {
+      if (!this.midpoints_polygon) {
+        this.midpoints_polygon = {
+          [figure_id]: midpoints_polygon
+        }
+      } else {
+        this.midpoints_polygon[figure_id] = midpoints_polygon
       }
 
     } else {
-      if(this.is_hovered && box_hover_point == 'not_intersecting_special_points'){
-        this.is_hovered = false
-        if(this.on_instance_unhovered){
-          this.on_instance_unhovered(this)
-        }
-        this.set_mouse_cursor_from_hovered_point(this.box_edit_point_hover)
-      }
-
-
-
+      this.midpoints_polygon = midpoints_polygon;
     }
   }
-  private draw_polygon_figure(ctx, points, figure_id){
-    if(this.selected){
-      this.generate_polygon_mid_points(instance, ctx, i, points, figure_id)
-      this.draw_polygon_midpoints(instance, ctx, i, figure_id)
+
+  private draw_polygon_midpoints(ctx, figure_id = undefined) {
+    let midpoints_polygon = this.midpoints_polygon
+    if (figure_id) {
+      midpoints_polygon = this.midpoints_polygon[figure_id] as PolygonPoint[]
+    }
+    if (this.midpoint_hover == undefined) {
+      return
+    }
+    // Only draw when hovered in
+    const point = midpoints_polygon[this.midpoint_hover] as Point;
+    if (point == undefined) {
+      return
+    }
+    const radius = (this.image_label_settings.vertex_size) / this.zoom_value
+    this.draw_single_path_circle(point.x, point.y, radius, ctx);
+
+  }
+
+  private draw_single_path_circle(x, y, radius, ctx, strokeStyle = '#bdbdbd', fillStyle = 'white', lineWidth = '2px') {
+    ctx.beginPath();
+    ctx.strokeStyle = strokeStyle;
+    ctx.fillStyle = fillStyle;
+    ctx.lineWidth = lineWidth;
+    ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    ctx.fill()
+    ctx.stroke()
+  }
+
+  private check_poly_hovered(ctx, figure_id: number = undefined) {
+    if (this.is_mouse_in_path(ctx)) {
+      if (!this.is_hovered) {
+        this.on_instance_hovered(this)
+        this.is_hovered = true
+        this.hovered_figure_id = figure_id
+        this.set_mouse_cursor_from_hovered_point()
+      }
+    }
+  }
+
+  private draw_polygon_lines(ctx, points) {
+    for (var j = 0; j < points.length - 1; j++) {
+      ctx.lineTo(points[j + 1].x, points[j + 1].y)
+    }
+  }
+
+  private draw_polygon_figure(ctx, points, figure_id = undefined) {
+    if (this.selected) {
+      this.generate_polygon_mid_points(points, figure_id)
+      this.draw_polygon_midpoints(ctx, figure_id)
     }
     ctx.beginPath();
     const instance_colour = this.colour;
@@ -301,18 +290,17 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     ctx.strokeStyle = preStrokeStyle;
     if (points.length >= 1) {
 
-      this.draw_label(ctx, points[0].x, points[0].y, this)
-      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + `,${this.$props.default_instance_opacity})`;
+      this.draw_label(ctx, points[0].x, points[0].y)
+      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + `,${this.image_label_settings.default_instance_opacity})`;
       ctx.moveTo(points[0].x, points[0].y)
 
     }
 
     if (points.length >= 2) {
-      this.draw_polygon_lines(instance, ctx, points)
+      this.draw_polygon_lines(ctx, points)
       ctx.lineTo(points[0].x, points[0].y)
     }
-
-    this.is_mouse_in_path(ctx, i, instance, figure_id) // must be seperate from when circles are drawn
+    this.check_poly_hovered(ctx, figure_id)
 
     let spatial_line_size = this.get_spatial_line_size()
     if (spatial_line_size != 0) {
@@ -320,9 +308,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       ctx.stroke()
     }
 
-    // We may want these selection values to be user definable
-    // Context of wanting a lower value when selected is so the person can still see the raw image
-    // AND the overall coverage is still visible. Especially relevant if spatial_line is 0.
     if (this.selected == true && this.image_label_settings.default_instance_opacity != 1) {
       ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", .1)";
     }
@@ -331,40 +316,133 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ",.1)";
     }
 
-    if (instance.type == "polygon") {
+    if (this.type == "polygon") {
       ctx.fill()
     }
-    if (instance.type == "line") {
-      ctx.lineWidth *= 2
-    }
   }
-  private draw_polygon_main_section(ctx){
+
+  private draw_polygon_main_section(ctx) {
     let figure_id_list = [];
 
-    for (const point of this.points){
-      if(!point.figure_id){
+    for (const point of this.points) {
+      if (!point.figure_id) {
         continue
       }
-      if(!figure_id_list.includes(point.figure_id)){
+      if (!figure_id_list.includes(point.figure_id)) {
         figure_id_list.push(point.figure_id)
       }
     }
-    if(figure_id_list.length === 0){
+    if (figure_id_list.length === 0) {
       let points = this.points;
-      this.draw_polygon_figure(instance, ctx, i, points)
-    }
-    else{
-      for(const figure_id of figure_id_list){
+      this.draw_polygon_figure(ctx, points)
+    } else {
+      for (const figure_id of figure_id_list) {
         let points = this.points.filter(p => p.figure_id === figure_id);
-        this.draw_polygon_figure(instance, ctx, i, points, figure_id)
+        this.draw_polygon_figure(ctx, points, figure_id)
       }
     }
-
 
 
     return true
   }
+
+  private draw_many_polygon_circles(ctx) {
+
+    // note different stopping point from lines
+    const fillStyle = ctx.fillStyle;
+    const strokeStyle = ctx.strokeStyle
+
+    for (var j = 0; j < this.points.length; j++) {
+      ctx.beginPath();
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#bdbdbd';
+      if (this.points[j].hovered_while_drawing) {
+        ctx.fillStyle = 'white';
+        ctx.strokeStyle = 'white';
+      }
+      if (this.points[j].point_set_as_auto_border) {
+        ctx.fillStyle = '#4caf50';
+        ctx.strokeStyle = '#4caf50';
+      }
+      this.draw_circle_from_instance(ctx, this.points, j)
+      ctx.fillStyle = fillStyle;
+      ctx.strokeStyle = strokeStyle;
+      this.check_poly_hovered(ctx)
+    }
+    ctx.fillStyle = fillStyle;
+    ctx.strokeStyle = strokeStyle;
+  }
+
+  private draw_circle_from_instance(ctx, points, index) {
+    let x = points[index].x
+    let y = points[index].y
+
+    this.draw_circle(x, y, ctx)
+    ctx.fill();
+    ctx.stroke();
+
+  }
+
+  private draw_autoborder_control_points(ctx) {
+    let spatial_line_size = this.get_spatial_line_size()
+    if (this.auto_border_polygon_p1) {
+      this.draw_single_path_circle(this.auto_border_polygon_p1.x,
+        this.auto_border_polygon_p1.y,
+        this.circle_size,
+        ctx,
+        '#4caf50',
+        '#4caf50',
+        `${spatial_line_size}px`);
+    }
+
+    if (this.auto_border_polygon_p2) {
+
+      this.draw_single_path_circle(this.auto_border_polygon_p2.x,
+        this.auto_border_polygon_p2.y,
+        this.circle_size,
+        ctx,
+        '#4caf50',
+        '#4caf50',
+        `${spatial_line_size}px`)
+    }
+
+  }
+
+  private draw_polygon_control_points(ctx) {
+    ctx.beginPath();
+    let points = this.points
+    if (this.selected || this.is_actively_drawing) {
+      if (points.length >= 1) {
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#bdbdbd';
+        if (this.points[0].hovered_while_drawing) {
+          ctx.fillStyle = 'white';
+          ctx.strokeStyle = 'white';
+        }
+        if (this.points[0].point_set_as_auto_border) {
+          ctx.fillStyle = '#4caf50';
+          ctx.strokeStyle = '#4caf50';
+        }
+        this.draw_circle_from_instance(ctx, points, 0)
+      }
+      if (points.length >= 2) {
+        this.draw_many_polygon_circles(ctx)
+      }
+
+      // Need to run this again otherwise edges of circles
+      // outside of polygon won't be detected for edit which makes
+      // edit break
+      this.check_poly_hovered(ctx)
+
+    }
+    this.draw_autoborder_control_points(ctx)
+
+    ctx.stroke()
+  }
+
   public draw(ctx: CanvasRenderingContext2D): void {
+    this.zoom_value = this.ctx.getTransform().a
+    this.circle_size = 6 / this.zoom_value
     ctx.beginPath()
     if (this.sequence_id) {
       ctx.fillStyle = get_sequence_color(this.sequence_id)
@@ -374,6 +452,8 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     this.draw_label(ctx, this.x_min, this.y_min)
     this.grab_color_from_instance(ctx)
 
+    this.draw_polygon_main_section(ctx)
+    this.draw_polygon_control_points(ctx)
 
     // this.check_box_hovered(ctx)
     // if (this.draw_corners || this.selected) {
@@ -387,5 +467,19 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     ctx.stroke()
   }
 
+  public get_instance_data(): any {
+    let data = super.get_instance_data()
+    return {
+      ...data,
+      auto_border_polygon_p1: this.auto_border_polygon_p1,
+      auto_border_polygon_p2: this.auto_border_polygon_p2,
+    }
+  }
 
+
+}
+
+export interface PolygonPoint extends Point {
+  hovered_while_drawing: boolean
+  point_set_as_auto_border: boolean
 }

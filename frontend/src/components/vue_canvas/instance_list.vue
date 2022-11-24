@@ -248,16 +248,8 @@
           let y = points[index].y
 
           this.draw_circle(x, y, ctx)
-
-
-          if(points[index].hovered_while_drawing || instance.type === 'line'){
-            ctx.fill();
-            ctx.stroke();
-          }
-          else{
-            ctx.fill();
-            ctx.stroke();
-          }
+          ctx.fill();
+          ctx.stroke();
 
 
         },
@@ -599,7 +591,7 @@
         },
 
         get_spatial_line_size: function (){
-          let size = this.$props.label_settings.spatial_line_size / this.$props.zoom_value
+          let size = this.$props.label_settings.spatial_line_sizedraw_many / this.$props.zoom_value
 
           return size
         },

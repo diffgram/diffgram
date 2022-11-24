@@ -5,6 +5,7 @@ import {LabelColourMap} from "../../../types/label_colour_map";
 import {LabelFile} from "../../../types/label";
 import {MousePosition, Point} from "../../../types/mouse_position";
 import {ImageCanvasTransform} from "../../../types/CanvasTransform";
+import {PolygonPoint} from "./PolygonInstance";
 
 export const SUPPORTED_CLASS_INSTANCE_TYPES: Array<string> = ['box', 'keypoints'];
 export const GLOBAL_SELECTED_COLOR = '#0000ff'
@@ -28,8 +29,6 @@ export class Instance {
   public cp: object = null;
   public p2: object = null;
 
-  public auto_border_polygon_p1: object = null;
-  public auto_border_polygon_p2: object = null;
   public cuboid_current_drawing_face: object = null;
   public label_file_colour_map: LabelColourMap = null;
   public nodes: any[] = [];
@@ -47,7 +46,7 @@ export class Instance {
   public selected: boolean = false;
   public number: number = null;
   public type: string = null;
-  public points: Point[] = [];
+  public points: PolygonPoint[] = [];
   public sequence_id: number = null;
   public soft_delete: boolean = false;
   public is_hovered: boolean = false;
@@ -90,8 +89,6 @@ export class Instance {
       p1: this.p1,
       cp: this.cp,
       p2: this.p2,
-      auto_border_polygon_p1: this.auto_border_polygon_p1,
-      auto_border_polygon_p2: this.auto_border_polygon_p2,
       cuboid_current_drawing_face: this.cuboid_current_drawing_face,
       nodes: this.nodes,
       edges: this.edges,
