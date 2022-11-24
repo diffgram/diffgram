@@ -1,5 +1,4 @@
 import {Coordinator, CoordinatorProcessResult} from "../Coordinator";
-import {BoxInstance} from "../../instances/BoxInstance";
 import {
   InteractionEvent,
   ImageAnnotationEventCtx,
@@ -7,12 +6,14 @@ import {
 } from "../../../../types/InteractionEvent";
 import {ImageAnnotationCoordinator} from "./ImageAnnotationCoordinator";
 import {duplicate_instance} from "../../../../utils/instance_utils";
-import {CanvasMouseCtx, Point} from "../../../../types/mouse_position";
+import {CanvasMouseCtx, Point, point_is_intersecting_circle} from "../../../../types/mouse_position";
 import {CreateInstanceCommand} from "../../../annotation/commands/create_instance_command";
 import CommandManager from "../../../../helpers/command/command_manager";
 import {InstanceColor} from "../../../../types/instance_color";
 import {UpdateInstanceCommand} from "../../../annotation/commands/update_instance_command";
-import {PolygonInstance} from "../../instances/PolygonInstance";
+import {PolygonInstance, PolygonPoint} from "../../instances/PolygonInstance";
+import {InstanceImage2D} from "../../instances/InstanceImage2D";
+import {BoxInstance} from "../../instances/BoxInstance";
 
 export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
   /**
@@ -26,13 +27,21 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     this.canvas_mouse_ctx = canvas_mouse_ctx
     this.command_manager = command_manager
   }
-  private should_add_polygon_point(annotation_event: ImageInteractionEvent): boolean {
-    return this.is_mouse_up_event(annotation_event) &&
+  private should_start_drawing(annotation_event: ImageInteractionEvent): boolean {
+    return this.is_mouse_down_event(annotation_event) &&
       !annotation_event.annotation_ctx.is_actively_drawing
       && annotation_event.annotation_ctx.draw_mode
   }
-  private check_point_canvas_limits(point: Point, canvas_width: number, canvas_height: number){
-    let result = point
+  private start_polygon_draw(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){
+    this.initialize_instance_drawing(coordinator_result, annotation_event)
+  }
+  private should_add_polygon_point(annotation_event: ImageInteractionEvent): boolean {
+    return this.is_mouse_up_event(annotation_event) &&
+      annotation_event.annotation_ctx.is_actively_drawing
+      && annotation_event.annotation_ctx.draw_mode
+  }
+  private check_point_canvas_limits(point: Point, canvas_width: number, canvas_height: number): PolygonPoint{
+    let result = point as PolygonPoint
     if (point.x <= this.snap_to_edges_num_pixels) {
       result.x = 1;
     }
@@ -53,6 +62,12 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     }
     return result
   }
+  public finish_drawing_polygon(instance: PolygonInstance, coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){
+    let polygon = annotation_event.annotation_ctx.current_drawing_instance as BoxInstance
+    this.finish_drawing_instance(polygon, coordinator_result, annotation_event)
+
+  }
+
   private add_polygon_point(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){
     coordinator_result.is_actively_drawing = true
     let polygon = annotation_event.annotation_ctx.current_drawing_instance as PolygonInstance
@@ -60,6 +75,9 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     let corrected_point = this.check_point_canvas_limits(point,
       annotation_event.annotation_ctx.canvas_transform.canvas_width,
       annotation_event.annotation_ctx.canvas_transform.canvas_height)
+    if(point_is_intersecting_circle(point, polygon.points[0])){
+      this.finish_drawing_polygon(polygon, coordinator_result, annotation_event)
+    }
     polygon.add_point(corrected_point)
   }
   public perform_action_from_event(annotation_event: ImageInteractionEvent): CoordinatorProcessResult {
@@ -73,6 +91,9 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       lock_point_hover_change: annotation_event.annotation_ctx.lock_point_hover_change,
     }
     // Start Drawing
+    if(this.should_start_drawing(annotation_event)){
+      this.start_polygon_draw(result, annotation_event)
+    }
     if(this.should_add_polygon_point(annotation_event)){
       this.add_polygon_point(result, annotation_event)
     }

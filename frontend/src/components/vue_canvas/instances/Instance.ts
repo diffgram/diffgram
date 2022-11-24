@@ -7,7 +7,7 @@ import {MousePosition, Point} from "../../../types/mouse_position";
 import {ImageCanvasTransform} from "../../../types/CanvasTransform";
 import {PolygonPoint} from "./PolygonInstance";
 
-export const SUPPORTED_CLASS_INSTANCE_TYPES: Array<string> = ['box', 'keypoints'];
+export const SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES: Array<string> = ['box', 'keypoints', 'polygon'];
 export const GLOBAL_SELECTED_COLOR = '#0000ff'
 export interface InstanceBehaviour2D {
   update_min_max_points(): void

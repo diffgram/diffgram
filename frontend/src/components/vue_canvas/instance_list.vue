@@ -10,7 +10,7 @@
   import { cuboid } from './cuboid.js'
   import { ellipse } from './ellipse.js'
   import {BoxInstance} from "./instances/BoxInstance";
-  import {SUPPORTED_CLASS_INSTANCE_TYPES} from "./instances/Instance";
+  import {SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "./instances/Instance";
   Vue.prototype.$cuboid = new cuboid()
   Vue.prototype.$ellipse = new ellipse()
 
@@ -349,7 +349,7 @@
 
         color_instance: function (instance, ctx) {
           // Ignoring instances that are already refactored as classes.
-          if(SUPPORTED_CLASS_INSTANCE_TYPES.includes(instance.type) ){
+          if(SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance.type) ){
             return
           }
           let strokeColor = undefined;

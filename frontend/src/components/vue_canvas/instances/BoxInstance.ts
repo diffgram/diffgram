@@ -9,6 +9,7 @@ import {LabelColourMap} from "../../../types/label_colour_map";
 import {ImageCanvasTransform} from "../../../types/CanvasTransform";
 import {InstanceImage2D} from "./InstanceImage2D";
 import {ImageLabelSettings} from "../../../types/image_label_settings";
+import {CanvasMouseTools} from "../CanvasMouseTools";
 
 type BoxHoverPoints =
   'x_min_y_min'
@@ -19,9 +20,8 @@ type BoxHoverPoints =
   | 'blocked'
 
 export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D {
-  public mouse_position: MousePosition;
   public ctx: CanvasRenderingContext2D;
-  public canvas_mouse_tools: ImageCanvasTransform;
+  public canvas_mouse_tools: CanvasMouseTools;
   public colour: InstanceColor;
   public is_dragging_instance: boolean = false;
   public draw_corners: boolean = false;
@@ -38,8 +38,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     return result;
   }
 
-  constructor(mouse_position: MousePosition = undefined,
-              ctx: CanvasRenderingContext2D = undefined,
+  constructor(ctx: CanvasRenderingContext2D = undefined,
               on_instance_updated: Function = undefined,
               on_instance_selected: Function = undefined,
               on_instance_deselected: Function = undefined,
@@ -57,7 +56,6 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     this.canvas_transform = canvas_transform;
     this.image_label_settings = image_label_settings;
     this.type = 'box'
-    this.mouse_position = mouse_position;
     this.initialized = true;
     this.on_instance_hovered = this.set_default_hover_in_style
     this.on_instance_unhovered = this.set_default_hover_out_style
@@ -66,7 +64,6 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
 
   public duplicate_for_undo() {
     let duplicate_instance = new BoxInstance(
-      this.mouse_position,
       this.ctx,
       this.on_instance_updated,
       this.on_instance_selected,

@@ -1,5 +1,5 @@
 import {TextAnnotationInstance, TextRelationInstance} from "../../vue_canvas/instances/TextInstance";
-import {Instance} from "../../vue_canvas/instances/Instance";
+import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../../vue_canvas/instances/Instance";
 import {initialize_instance_object} from "../../../utils/instance_utils";
 
 export class CreateInstanceCommand {
@@ -53,16 +53,7 @@ export class CreateInstanceCommand {
       return newInstance;
     }
 
-    if (instance.type == "keypoints") {
-      let newInstance = instance.get_instance_data();
-
-      let initializedInstance = this.ann_core_ctx.initialize_instance(
-        newInstance
-      );
-      return initializedInstance;
-    }
-    else if (instance.type == "box") {
-
+    if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance.type)) {
       let newInstance = instance.get_instance_data();
       let initializedInstance = this.ann_core_ctx.initialize_instance(
         newInstance

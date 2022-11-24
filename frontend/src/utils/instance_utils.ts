@@ -4,12 +4,13 @@ import CuboidDrawerTool from "../components/3d_annotation/CuboidDrawerTool";
 import {CanvasMouseCtx} from "../types/mouse_position"
 import {BoxInstance} from "../components/vue_canvas/instances/BoxInstance";
 import {TextAnnotationInstance, TextRelationInstance} from "../components/vue_canvas/instances/TextInstance";
-import {Instance, SUPPORTED_CLASS_INSTANCE_TYPES} from "../components/vue_canvas/instances/Instance";
+import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../components/vue_canvas/instances/Instance";
 import {LabelColourMap} from "../types/label_colour_map";
 import {ImageLabelSettings} from "../types/image_label_settings";
 import {InstanceImage2D} from "../components/vue_canvas/instances/InstanceImage2D";
 import {ImageCanvasTransform} from "../types/CanvasTransform";
 import {LabelFileMap} from "../types/label";
+import {PolygonInstance} from "../components/vue_canvas/instances/PolygonInstance";
 
 export const duplicate_instance = function (instance_to_copy, component_ctx: CanvasMouseCtx, with_ids = false) {
   let points = [];
@@ -127,7 +128,19 @@ export const initialize_instance_object = function (instance, component_ctx: Can
     return initialized_instance
   } else if (instance.type === 'box' && !instance.initialized) {
     initialized_instance = new BoxInstance(
-      component_ctx.mouse_position,
+      component_ctx.canvas_element_ctx,
+      component_ctx.trigger_instance_changed,
+      component_ctx.instance_selected,
+      component_ctx.instance_deselected,
+      component_ctx.mouse_down_delta_event,
+      component_ctx.mouse_down_position,
+      component_ctx.canvas_transform,
+      component_ctx.label_settings
+    )
+    initialized_instance.populate_from_instance_obj(instance);
+    return initialized_instance
+  } else if (instance.type === 'polygon' && !instance.initialized) {
+    initialized_instance = new PolygonInstance(
       component_ctx.canvas_element_ctx,
       component_ctx.trigger_instance_changed,
       component_ctx.instance_selected,
@@ -201,20 +214,20 @@ export const post_init_instance = function (instance: Instance,
     return
   }
   let colour_map = {} as LabelColourMap
-  for (let key of Object.keys(label_file_map)){
+  for (let key of Object.keys(label_file_map)) {
     colour_map[key] = label_file_map[key].colour
   }
-  if(instance.label_file && instance.label_file_id){
+  if (instance.label_file && instance.label_file_id) {
     label_file_map[instance.label_file_id] = instance.label_file
     colour_map[instance.label_file_id] = instance.label_file.colour
   }
   instance.label_file_colour_map = colour_map
   let label_file = label_file_map[instance.label_file_id]
-  if(!instance.label_file){
+  if (!instance.label_file) {
     instance.label_file = label_file
   }
 
-  if (SUPPORTED_CLASS_INSTANCE_TYPES.includes(instance.type)) {
+  if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance.type)) {
     let inst = instance as InstanceImage2D
     inst.set_label_file_colour_map(colour_map)
     inst.set_color_from_label()

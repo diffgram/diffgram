@@ -1,20 +1,13 @@
 import {InstanceBehaviour2D, Instance} from './Instance'
-import {InstanceContext} from './InstanceContext';
-import {v4 as uuidv4} from 'uuid';
-import {getContrastColor} from '../../../utils/colorUtils'
 import {MousePosition, Point, point_is_intersecting_circle} from "../../../types/mouse_position";
 import {get_sequence_color} from '../../regular/regular_annotation'
 import {InstanceColor} from "../../../types/instance_color";
-import {LabelColourMap} from "../../../types/label_colour_map";
-import {ImageCanvasTransform} from "../../../types/CanvasTransform";
 import {InstanceImage2D} from "./InstanceImage2D";
 import {ImageLabelSettings} from "../../../types/image_label_settings";
 
-
 export class PolygonInstance extends InstanceImage2D implements InstanceBehaviour2D {
-  public mouse_position: MousePosition;
   public ctx: CanvasRenderingContext2D;
-  public canvas_mouse_tools: ImageCanvasTransform;
+
   public colour: InstanceColor;
   public is_dragging_instance: boolean = false;
   public draw_corners: boolean = false;
@@ -31,8 +24,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   private auto_border_polygon_p1: PolygonPoint = null
   private auto_border_polygon_p2: PolygonPoint = null
 
-  constructor(mouse_position: MousePosition = undefined,
-              ctx: CanvasRenderingContext2D = undefined,
+  constructor(ctx: CanvasRenderingContext2D = undefined,
               on_instance_updated: Function = undefined,
               on_instance_selected: Function = undefined,
               on_instance_deselected: Function = undefined,
@@ -50,7 +42,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     this.canvas_transform = canvas_transform;
     this.image_label_settings = image_label_settings;
     this.type = 'polygon'
-    this.mouse_position = mouse_position;
     this.initialized = true;
     this.on_instance_hovered = this.set_default_hover_in_style
     this.on_instance_unhovered = this.set_default_hover_out_style
@@ -59,7 +50,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
   public duplicate_for_undo() {
     let duplicate_instance = new PolygonInstance(
-      this.mouse_position,
       this.ctx,
       this.on_instance_updated,
       this.on_instance_selected,
@@ -131,7 +121,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   public add_point(point: PolygonPoint) {
-    this.points.push(point)
+    this.points.push({...point} as PolygonPoint)
   }
 
   public update_min_max_points() {
@@ -282,18 +272,12 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       this.draw_polygon_midpoints(ctx, figure_id)
     }
     ctx.beginPath();
-    const instance_colour = this.colour;
-    let r = instance_colour.rgba.r
-    let g = instance_colour.rgba.g
-    let b = instance_colour.rgba.b
     const preStrokeStyle = ctx.strokeStyle;
     ctx.strokeStyle = preStrokeStyle;
     if (points.length >= 1) {
-
       this.draw_label(ctx, points[0].x, points[0].y)
-      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + `,${this.image_label_settings.default_instance_opacity})`;
+      this.set_color_from_label()
       ctx.moveTo(points[0].x, points[0].y)
-
     }
 
     if (points.length >= 2) {
@@ -308,17 +292,15 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       ctx.stroke()
     }
 
-    if (this.selected == true && this.image_label_settings.default_instance_opacity != 1) {
-      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", .1)";
-    }
+    // if (this.selected == true && this.image_label_settings.default_instance_opacity != 1) {
+    //   ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", .1)";
+    // }
+    //
+    // if (this.is_hovered && this.image_label_settings.default_instance_opacity != 1) {
+    //   ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ",.1)";
+    // }
 
-    if (this.is_hovered && this.image_label_settings.default_instance_opacity != 1) {
-      ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ",.1)";
-    }
-
-    if (this.type == "polygon") {
-      ctx.fill()
-    }
+    ctx.fill()
   }
 
   private draw_polygon_main_section(ctx) {
@@ -439,10 +421,38 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
     ctx.stroke()
   }
+  public draw_actively_drawing_polygon(ctx){
+    console.log('asctt', this.points)
+    let points = this.points
+    let circle_size = 4 / this.zoom_value
 
+    // If there is at least 2 points, draw the rest
+    if (points.length >= 1) {
+      if (this.number != undefined) {
+        ctx.fillText(this.number, points[0].x, points[0].y)
+      }
+      ctx.fillText(this.label_file.label.name, points[0].x, points[0].y)
+
+      for (var i = 0; i < points.length - 1; i++) {
+        ctx.arc(points[i].x, points[i].y, circle_size, 0, 2 * Math.PI);
+        ctx.lineTo(points[i + 1].x, points[i + 1].y)
+      }
+      ctx.arc(points[points.length - 1].x,
+        points[points.length - 1].y, circle_size, 0, 2 * Math.PI);
+      ctx.moveTo(points[i].x, points[i].y)
+    }
+    if (points.length >= 1){
+      ctx.lineTo(this.canvas_mouse_tools.mouse_position.x, this.canvas_mouse_tools.mouse_position.y)
+
+    }
+    ctx.closePath()
+    ctx.stroke()
+    ctx.fill()
+  }
   public draw(ctx: CanvasRenderingContext2D): void {
     this.zoom_value = this.ctx.getTransform().a
     this.circle_size = 6 / this.zoom_value
+
     ctx.beginPath()
     if (this.sequence_id) {
       ctx.fillStyle = get_sequence_color(this.sequence_id)
@@ -450,10 +460,15 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
 
     this.draw_label(ctx, this.x_min, this.y_min)
+    this.set_color_from_label()
     this.grab_color_from_instance(ctx)
+    if(this.is_actively_drawing){
+      this.draw_actively_drawing_polygon(ctx)
+    } else{
+      this.draw_polygon_main_section(ctx)
+      this.draw_polygon_control_points(ctx)
+    }
 
-    this.draw_polygon_main_section(ctx)
-    this.draw_polygon_control_points(ctx)
 
     // this.check_box_hovered(ctx)
     // if (this.draw_corners || this.selected) {

@@ -5,6 +5,7 @@ import {ImageCanvasTransform} from "./CanvasTransform";
 import {LabelFile} from "./label";
 import {ImageLabelSettings} from "./image_label_settings";
 import {Sequence} from "./Sequence";
+import {CanvasMouseTools} from "../components/vue_canvas/CanvasMouseTools";
 
 export type InteractionEvent = {
   dom_event: MouseEvent
@@ -34,6 +35,7 @@ export interface ImageAnnotationEventCtx extends AnnotationEventCtx {
   mouse_position: MousePosition
   mouse_down_position: MousePosition
   canvas_transform: ImageCanvasTransform
+  canvas_mouse_tools: CanvasMouseTools
   canvas_element: HTMLCanvasElement
   image_label_settings: ImageLabelSettings
   view_issue_mode: boolean

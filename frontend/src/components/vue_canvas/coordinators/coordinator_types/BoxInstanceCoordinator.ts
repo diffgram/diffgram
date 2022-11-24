@@ -62,25 +62,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
   }
 
   private start_drawing_box(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent): void {
-    let number = null;
-    let sequence_id = null;
-
-    let currently_drawing_box: BoxInstance = annotation_event.annotation_ctx.current_drawing_instance as BoxInstance
-    if (annotation_event.annotation_ctx.video_mode == true) {
-      number = annotation_event.annotation_ctx.current_sequence_from_sequence_component.number;
-      sequence_id = annotation_event.annotation_ctx.current_sequence_from_sequence_component.id;
-      currently_drawing_box.set_sequence_id(sequence_id)
-      currently_drawing_box.set_sequence_number(number)
-    }
-    currently_drawing_box.set_actively_drawing(true)
-    currently_drawing_box.set_canvas(annotation_event.annotation_ctx.canvas_element)
-    currently_drawing_box.set_label_file(annotation_event.annotation_ctx.label_file)
-    currently_drawing_box.set_canvas_transform(annotation_event.annotation_ctx.canvas_transform)
-    currently_drawing_box.set_label_file_colour_map(annotation_event.annotation_ctx.label_file_colour_map)
-    currently_drawing_box.set_image_label_settings(annotation_event.annotation_ctx.image_label_settings)
-    currently_drawing_box.set_color_from_label()
-
-    coordinator_result.is_actively_drawing = true
+    this.initialize_instance_drawing(coordinator_result, annotation_event)
   }
 
   private do_new_box_resize(annotation_event: ImageInteractionEvent) {
@@ -131,16 +113,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
 
   private finish_box_drawing(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent): void {
     let box = annotation_event.annotation_ctx.current_drawing_instance as BoxInstance
-    box.set_color_from_label()
-    box.set_actively_drawing(false)
-    result.is_actively_drawing = false
-    const create_box_command = new CreateInstanceCommand(
-      box,
-      annotation_event.annotation_ctx.ann_core_ctx,
-      annotation_event.annotation_ctx.frame_number
-    );
-    this.command_manager.executeCommand(create_box_command);
-    result.new_instance_index = annotation_event.annotation_ctx.instance_list.length - 1
+    this.finish_drawing_instance(box, result, annotation_event)
 
   }
   private should_start_moving_box(annotation_event: ImageInteractionEvent): boolean {

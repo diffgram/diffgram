@@ -3,6 +3,7 @@ import {MousePosition} from "../../../types/mouse_position";
 import {ImageCanvasTransform} from "../../../types/CanvasTransform";
 import {ImageLabelSettings} from "../../../types/image_label_settings";
 import {get_sequence_color} from '../../regular/regular_annotation'
+import {CanvasMouseTools} from "../CanvasMouseTools";
 
 export abstract class InstanceImage2D extends Instance {
   public ctx: CanvasRenderingContext2D;
@@ -14,6 +15,7 @@ export abstract class InstanceImage2D extends Instance {
   public image_label_settings: ImageLabelSettings
   public is_moving: boolean = false;
   protected is_actively_drawing: boolean = false;
+  public canvas_mouse_tools: CanvasMouseTools;
 
   public get_canvas_transform(): ImageCanvasTransform {
     return this.canvas_transform
@@ -63,6 +65,7 @@ export abstract class InstanceImage2D extends Instance {
   protected grab_color_from_instance(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = this.fillColor
     ctx.strokeStyle = this.strokeColor
+
   }
 
   public set_canvas(val: HTMLCanvasElement) {
@@ -82,6 +85,9 @@ export abstract class InstanceImage2D extends Instance {
 
   public set_canvas_transform(val: ImageCanvasTransform) {
     this.canvas_transform = val
+  }
+  public set_canvas_mouse_tools(val: CanvasMouseTools) {
+    this.canvas_mouse_tools = val
   }
 
   public set_image_label_settings(val: ImageLabelSettings) {

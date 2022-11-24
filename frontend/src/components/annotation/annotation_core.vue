@@ -941,7 +941,7 @@ import {polygon} from "../vue_canvas/polygon.js";
 import {v4 as uuidv4} from "uuid";
 import {cloneDeep} from "lodash";
 import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
-import {Instance, SUPPORTED_CLASS_INSTANCE_TYPES} from "../vue_canvas/instances/Instance";
+import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../vue_canvas/instances/Instance";
 import userscript from "./userscript/userscript.vue";
 import toolbar from "./toolbar.vue";
 import {sha256} from "js-sha256";
@@ -980,6 +980,7 @@ import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
 import {ImageCanvasTransform} from "../../types/CanvasTransform";
 import {LabelFile} from "../../types/label";
 import {InstanceImage2D} from "../vue_canvas/instances/InstanceImage2D";
+import {PolygonInstance} from "../vue_canvas/instances/PolygonInstance";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -1204,6 +1205,7 @@ export default Vue.extend({
       current_instance_v2: null as Instance,
       current_interaction: null as Interaction,
       current_drawing_box_instance: new BoxInstance(),
+      current_drawing_polygon_instance: new PolygonInstance(),
       go_to_keyframe_loading: false,
       show_snackbar_occlude_direction: false,
       guided_nodes_ordinal: 1,
@@ -1942,7 +1944,7 @@ export default Vue.extend({
 
       // we use computed function here since label referecnes this.current_label_file
       // and this won't work in data dictionary
-      if (SUPPORTED_CLASS_INSTANCE_TYPES.includes(this.instance_type)) {
+      if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(this.instance_type)) {
         return this.build_current_instance_class()
       }
       // Do we actually need to cast this as Int here if db handles it?
@@ -2197,7 +2199,8 @@ export default Vue.extend({
     },
     build_current_instance_class: function (): Instance {
       let instance_type_mapper = {
-        'box': this.current_drawing_box_instance
+        'box': this.current_drawing_box_instance,
+        'polygon': this.current_drawing_polygon_instance
       }
       return instance_type_mapper[this.instance_type]
     },
@@ -2883,7 +2886,7 @@ export default Vue.extend({
       this.has_changed = true;
     },
     deselect_instance: function(instance){
-      if (SUPPORTED_CLASS_INSTANCE_TYPES.includes(instance.type)) {
+      if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance.type)) {
         let coord_router: ImageAnnotationCoordinatorRouter = this.create_coordinator_router()
         let instance_coordinator: ImageAnnotationCoordinator = coord_router.generate_from_instance(instance, instance.type)
         instance_coordinator.deselect()
@@ -3226,7 +3229,7 @@ export default Vue.extend({
           continue
         }
 
-        if (SUPPORTED_CLASS_INSTANCE_TYPES.includes(elm.type)) {
+        if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(elm.type)) {
           if (elm.is_hovered) {
             continue
           }
@@ -4751,7 +4754,7 @@ export default Vue.extend({
       if (this.draw_mode == false) {
         if (this.lock_point_hover_change == false) {
           let hovered_instance = this.instance_list[this.instance_hover_index]
-          if (this.canvas_element && (!hovered_instance || !SUPPORTED_CLASS_INSTANCE_TYPES.includes(hovered_instance.type))) {
+          if (this.canvas_element && (!hovered_instance || !SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(hovered_instance.type))) {
             this.canvas_element.style.cursor = "default";
           }
 
@@ -4950,7 +4953,7 @@ export default Vue.extend({
         return;
       }
       const instance_to_select = this.instance_list[this.instance_hover_index];
-      if (instance_to_select && !SUPPORTED_CLASS_INSTANCE_TYPES.includes(instance_to_select.type)) {
+      if (instance_to_select && !SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance_to_select.type)) {
         this.request_change_current_instance = this.instance_hover_index;
         this.trigger_refresh_current_instance = Date.now(); // decouple, for case of file changing but instance list being the same index
 
@@ -4968,7 +4971,7 @@ export default Vue.extend({
       }
 
 
-      if (instance_to_select && !SUPPORTED_CLASS_INSTANCE_TYPES.includes(instance_to_select.type)) {
+      if (instance_to_select && !SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance_to_select.type)) {
         instance_to_select.selected = !instance_to_select.selected;
         instance_to_select.status = "updated";
         Vue.set(
@@ -6424,11 +6427,6 @@ export default Vue.extend({
         if (this.instance_template_selected) {
           this.instance_template_mouse_up(locked_frame_number);
         }
-
-        // careful, polygon does not want to take off active drawing until
-        // it's finished
-        // for now it seeems like we are handling this on the "per instance" level
-        // polygon sets is_actively_drawing to false with "enter"
         if (["line", "curve"].includes(this.instance_type)) {
 
           this.is_actively_drawing = true;
@@ -7059,6 +7057,7 @@ export default Vue.extend({
         label_file_colour_map: this.label_file_colour_map as LabelColourMap,
         mouse_position: this.mouse_position as MousePosition,
         mouse_down_position: this.mouse_down_position as MousePosition,
+        canvas_mouse_tools: this.canvas_mouse_tools,
         canvas_transform: this.canvas_transform,
         canvas_element: this.canvas_element,
         view_issue_mode: this.view_issue_mode,
@@ -7088,6 +7087,15 @@ export default Vue.extend({
         this.locked_editing_instance = result.locked_editing_instance
       }
     },
+    new_instance_refresh: function(new_instance_index: number){
+      this.refresh_instance_list_sidebar()
+      this.reset_current_instances()
+      let instance = this.instance_list[new_instance_index]
+      console.log('instanceee', instance)
+      instance.on('hover_in', this.instance_hovered)
+      instance.on('hover_out', this.instance_unhovered)
+      this.update_canvas()
+    },
     mouse_down_v2_handler: function (event) {
 
       let ann_ctx = this.build_ann_event_ctx()
@@ -7104,12 +7112,7 @@ export default Vue.extend({
           this.is_actively_drawing = result.is_actively_drawing
         }
         if (result.new_instance_index != undefined) {
-          this.refresh_instance_list_sidebar()
-          this.reset_current_instances()
-          let instance = this.instance_list[result.new_instance_index]
-          instance.on('hover_in', this.instance_hovered)
-          instance.on('hover_out', this.instance_unhovered)
-          this.update_canvas()
+          this.new_instance_refresh(result.new_instance_index)
         }
         this.original_edit_instance = result.original_edit_instance
         this.locked_editing_instance = result.locked_editing_instance
@@ -7118,6 +7121,7 @@ export default Vue.extend({
     },
     reset_current_instances: function () {
       this.current_drawing_box_instance = new BoxInstance()
+      this.current_drawing_polygon_instance = new PolygonInstance()
     },
     mouse_up_v2_handler: function (event) {
       let ann_ctx = this.build_ann_event_ctx()
@@ -7132,7 +7136,9 @@ export default Vue.extend({
         if (result.instance_moved === true) {
           this.has_changed = true;
         }
-
+        if (result.new_instance_index != undefined) {
+          this.new_instance_refresh(result.new_instance_index)
+        }
         if (result.instance_moved && this.show_snackbar_occlude_direction) {
           this.show_snackbar_occlude_direction = false;
         }
