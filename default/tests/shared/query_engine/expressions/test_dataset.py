@@ -46,4 +46,4 @@ class TestDatasetCompareExpression(testing_setup.DiffgramBaseTestCase):
         )
         self.assertEqual(type(expr), DatasetCompareExpression)
         expr.build_expression_subquery(session = self.session)
-        self.assertIsNotNone(expr.subquery)
+        self.assertIsNotNone(expr.expression)
