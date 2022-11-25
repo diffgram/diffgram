@@ -32,7 +32,7 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             File.project_id == self.diffgram_query.project.id,
             File.state != 'removed',
             File.parent_id == None,
-            File.type.in_(['video', 'image', 'compound'])
+            File.type.in_(['video', 'image', 'compound', 'text'])
         )
 
 
