@@ -28,18 +28,13 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         self.session = session
         self.and_expression = None
         self.or_expression = None
-        self.final_query = self.session.query(File).filter(
+        self.final_query = self.session.query(File).join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id).filter(
             File.project_id == self.diffgram_query.project.id,
             File.state != 'removed',
             File.parent_id == None,
             File.type.in_(['video', 'image', 'compound'])
         )
-        self.unfiltered_query = self.session.query(File.id).join(WorkingDirFileLink,
-                                                                 WorkingDirFileLink.file_id == File.id).filter(
-            File.project_id == self.diffgram_query.project.id,
-            File.state != 'removed',
-            File.type.in_(['video', 'image'])
-        )
+
 
         Project_permissions.by_project_core(
             project_string_id = self.diffgram_query.project.project_string_id,
@@ -132,7 +127,10 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             if len(local_tree.children) == 1:
                 compare_expr = local_tree.children[0].compare_expression
                 AliasFile = aliased(File)
-                filter_value = File.id.in_(compare_expr.subquery)
+                if hasattr(compare_expr, 'subquery'):
+                    filter_value = File.id.in_(compare_expr.subquery)
+                elif hasattr(compare_expr, 'expression'):
+                    filter_value = compare_expr.expression
                 result = Factor(filter_value = filter_value)
                 local_tree.factor = result
                 return local_tree

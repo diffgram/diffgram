@@ -17,14 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.create_index('index__project_id_parent_id_type', 'file', ['project_id', 'state', 'type', 'parent_id'])
-    op.create_index(
-        'index__parent_files',
-        'file',
-        ['project_id', 'parent_id'],
-        postgresql_where = text("file.parent_id IS NOT Null"))
+    op.create_index('index__project_id_parent_id_type', 'file', ['project_id', 'state', 'parent_id', 'type'])
 
 
 def downgrade():
     op.drop_index('index__project_id_parent_id_type', 'file')
-    op.drop_index('index__parent_files', 'file')
