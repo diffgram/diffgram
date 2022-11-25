@@ -944,7 +944,7 @@ export default Vue.extend({
         this.new_command_manager.executeCommand(new_command)
         this.has_changed = true
       }
-      this.remove_browser_selection()
+      // this.remove_browser_selection()
     },
     remove_browser_selection: function() {
       if (window.getSelection) {
