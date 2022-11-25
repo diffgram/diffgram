@@ -513,6 +513,8 @@ export default Vue.extend({
         y: e.clientY - 85,
         instance
       }
+      this.selection_rects = null
+      this.show_label_selection = false
       this.current_instance = instance
     },
     on_change_label_schema: function(schema){
