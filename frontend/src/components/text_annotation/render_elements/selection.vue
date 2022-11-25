@@ -23,6 +23,7 @@
             :width="rect.width + 4"
             :height="20"
             :fill="transparent_fill"
+            @click="on_selection_click"
         />
         <rect
             :x="end_border_position.x"
@@ -123,6 +124,9 @@ export default Vue.extend({
 
             this.end_border_moved = null
             this.start_border_moved = null
+        },
+        on_selection_click: function(e) {
+            this.$emit('on_selection_click', e)
         }
     }
 })

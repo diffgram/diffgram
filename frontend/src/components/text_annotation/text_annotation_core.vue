@@ -238,6 +238,7 @@
             :rects="selection_rects"
             @on_change_selection_border="on_change_selection_border"
             @on_start_moving_borders="on_start_moving_borders"
+            @on_selection_click="on_selection_click"
           />
         </g>
       </svg>
@@ -464,6 +465,15 @@ export default Vue.extend({
     }
   },
   methods: {
+    on_selection_click: function(e) {
+      const draw_class = new DrawRects(this.tokens, this.lines, this.new_instance_list)
+      const coordinates = {
+        x: e.clientX - 350,
+        y: e.clientY - 100 - 40
+      }
+      const clicked_token = closest_token(this.tokens, this.lines, coordinates)
+      this.selection_rects = draw_class.generate_selection_rect(clicked_token.id, clicked_token.id)
+    },
     get_instance_rects: function(instance) {
       const rects = this.render_rects.find(rect => rect.instance_id === instance.get_instance_data().id)
       return rects
