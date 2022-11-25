@@ -100,6 +100,9 @@ export default Vue.extend({
         this.$emit('remove_listeners')
         this.search_label = [...this.label_list]
     },
+    beforeDestroy() {
+        this.$emit('add_listeners')
+    },
     methods: {
         check_key_down: function(e) {
             const input_is_number = parseInt(e.key)
