@@ -78,9 +78,10 @@
         xmlns="http://www.w3.org/2000/svg"
         direction="ltr"
         id="svg0:60"
-        @mouseup="trigger_mouseup"
         :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${text_field_width}`"
         :class="unselectable && 'unselectable'"
+        @mouseup="trigger_mouseup"
+        @mousedown="trigger_mousedown"
       >
         <g v-if="rendering" transform="translate(0, 23.5)">
           <text
@@ -675,6 +676,13 @@ export default Vue.extend({
       if (this.has_changed && !this.instance_in_progress) {
         await this.save();
         await this.save();
+      }
+    },
+    trigger_mousedown: function(e) {
+      const click_on_selection = ['circle', 'rect'].includes(e.target.localName)
+      if (!click_on_selection && this.selection_rects) {
+        this.selection_rects = null
+        this.show_label_selection = null
       }
     },
     trigger_mouseup: function (e) {
