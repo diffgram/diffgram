@@ -690,6 +690,8 @@ export default Vue.extend({
     trigger_mouseup: function (e) {
       if (this.search_mode) return this.search_in_google(e)
       if (this.selection_rects && !e.target.nodeName.includes('text')) return;
+      if (e.ctrlKey) return
+
       this.on_draw_text_token(e)
     },
     search_in_google: function (e) {
