@@ -13,9 +13,12 @@
                     label="Start by typing label name"
                     hide-details="auto"
                     v-model="search_value"
+                    ref="search_label"
                     autofocus
+                    @keydown="check_key_down"
                     @input="on_search_label"
                     @blur="on_input_blur"
+                    @focus="on_input_focus"
                 />
             </div>
             <v-list dense>
@@ -96,14 +99,15 @@ export default Vue.extend({
     mounted() {
         this.$emit('remove_listeners')
         this.search_label = [...this.label_list]
-        window.removeEventListener("keyup", this.on_hotkeys_listener)
-        window.addEventListener("keyup", this.on_hotkeys_listener)
-    },
-    beforeDestroy() {
-        window.removeEventListener("keyup", this.on_hotkeys_listener)
-        this.$emit('add_listeners')
     },
     methods: {
+        check_key_down: function(e) {
+            const input_is_number = parseInt(e.key)
+            if (input_is_number) {
+                e.preventDefault()
+                this.on_input_number(e)
+            }
+        },
         on_search_label: function(e) {
             const to_search = e.toLowerCase()
             this.search_label = [...this.label_list].filter(label => label.label.name.toLowerCase().includes(to_search))
@@ -115,7 +119,10 @@ export default Vue.extend({
         on_input_blur: function() {
             this.blured = true
         },
-        on_hotkeys_listener: function(e) {
+        on_input_focus: function() {
+            this.blured = false
+        },
+        on_input_number: function(e) {
             if (this.blured) return
             
             let key = Number(e.key)
