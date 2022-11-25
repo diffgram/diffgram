@@ -100,45 +100,6 @@ describe("Tests for fast_label_menu.vue", () => {
         expect(wrapper.vm.search_label.length).toEqual(1)
     })
 
-    it("Should update search value state on event listener", () => {
-        const props = {
-            propsData: {
-                label_list,
-                arrow_position
-            }
-        }
-        const charcter_key_event = {
-            key: "a"
-        }
-        
-        const number_key_event = {
-            key: 1
-        }
-
-        const zero_key_event = {
-            key: 0
-        }
-
-        const backspace_event = {
-            keyCode: 8,
-            key: "delete"
-        }
-
-        const wrapper = shallowMount(fast_label_menu, props)
-        
-        wrapper.vm.on_hotkeys_listener(charcter_key_event)
-        expect(wrapper.vm.search_value).toEqual(charcter_key_event.key)
-
-        wrapper.vm.on_hotkeys_listener(backspace_event)
-        expect(wrapper.vm.search_value).toEqual("")
-
-        wrapper.vm.on_hotkeys_listener(number_key_event)
-        expect(wrapper.emitted('create_relation')).toBeTruthy()
-
-        wrapper.vm.on_hotkeys_listener(zero_key_event)
-        expect(wrapper.emitted('create_relation')).toBeTruthy()
-    })
-
     it("Should emit add_listeners event before destroy", () => {
         const props = {
             propsData: {
