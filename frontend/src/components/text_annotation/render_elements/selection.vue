@@ -16,7 +16,7 @@
             :fill="solid_fill"
         />
         <rect
-            v-for="rect in rects"
+            v-for="rect in no_empty_rects"
             :key="`selection_${rect.x}_${rect.y}_${rect.width}`"
             :x="rect.x - 2"
             :y="rect.y + 5"
@@ -54,6 +54,9 @@ export default Vue.extend({
         }
     },
     computed: {
+        no_empty_rects: function() {
+            return this.rects.filter(rect => rect.x && rect.y && rect.width)
+        },
         last_element: function() {
             const index = this.rects.length - 1
             return index
