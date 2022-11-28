@@ -41,11 +41,6 @@ describe("text_annotation_core.vue", () => {
         })
     })
 
-    it("Renders text interface loading state properly", () => {
-        const local_wrapper = shallowMount(text_annotation_core, props, localVue)
-        expect(local_wrapper.text()).toEqual("Loading...")
-    })
-
     it("Should properly update state when on_start_moving_borders is called", () => {
         wrapper.setData({
             show_label_selection: null,
