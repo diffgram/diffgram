@@ -70,8 +70,10 @@
         :context_menu="context_menu"
         @delete_instance="delete_instance"
       />
-      <div v-if="resizing">Resizing...</div>
-      <div v-if="rendering">Loading...</div>
+      <v-progress-linear
+        v-if="resizing || rendering"
+        indeterminate 
+      />
       <svg
         ref="initial_svg_element"
         version="1.1"
