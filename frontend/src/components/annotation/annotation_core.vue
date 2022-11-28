@@ -3439,6 +3439,7 @@ export default Vue.extend({
         }
       }
 
+
       if (update.mode == "attribute_change") {
         /*
          *   We expect the event to supply a group_id
@@ -3475,6 +3476,11 @@ export default Vue.extend({
           value: {...instance.attribute_groups[group.id]},
         };
         instance.attribute_groups[group.id] = value;
+
+        if (instance.type === "global") {
+
+          this.current_global_instance = instance
+        }
         //console.debug(group, value)
       }
 

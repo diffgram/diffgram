@@ -58,10 +58,14 @@ class TaskReportRejectRatioReport:
             'values_metadata': [],
             'header_name': 'Tasks Completed / Changes Requested',
         }
+        print('completed', data_completed)
+        print('data_rejected', data_rejected)
         for i in range(0, len(data_completed)):
             result['labels'].append(data_completed[i][0])
             result['values_completed'].append(data_completed[i][1])
-            result['values_rejected'].append(data_rejected[i][1])
+            if len(data_completed) == len(data_rejected):
+
+                result['values_rejected'].append(data_rejected[i][1])
 
         users = self.session.query(User).filter(
             User.id.in_(result['labels'])

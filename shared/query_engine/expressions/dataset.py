@@ -5,7 +5,7 @@ from shared.database.source_control.file import File
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import Selectable
-
+from sqlalchemy.sql.expression import and_, or_
 
 class DatasetCompareExpression(CompareExpression):
 
@@ -19,7 +19,12 @@ class DatasetCompareExpression(CompareExpression):
         sql_compare_operator = self.operator.operator_value
 
         AliasFile = aliased(File)
-        self.subquery = session.query(AliasFile.id) \
-            .join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id) \
-            .filter(sql_compare_operator(sql_column, raw_scalar_value)).subquery(name = "ds_compare")
-        return self.subquery
+        # self.subquery = session.query(AliasFile.id) \
+        #     .join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id) \
+        #     .filter(sql_compare_operator(sql_column, raw_scalar_value),
+        #             File.project_id == self.project_id,
+        #             File.state != 'removed').subquery(name = "ds_compare")
+        self.expression = and_(sql_compare_operator(sql_column, raw_scalar_value),
+                             File.project_id == self.project_id,
+                             File.state != 'removed')
+        return self.expression

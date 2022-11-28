@@ -28,6 +28,7 @@ NAME_EQUALS_MAIN = os.getenv('NAME_EQUALS_MAIN', False)  # Assumed to be running
 DATABASE_URL = os.environ.get('DATABASE_URL', 'postgresql+psycopg2://postgres:postgres@127.0.0.1:5432/diffgram_testing')
 UNIT_TESTING_DATABASE_URL = os.environ.get('UNIT_TESTING_DATABASE_URL')
 DATABASE_CONNECTION_POOL_SIZE = int(os.getenv('DATABASE_CONNECTION_POOL_SIZE', 10))
+DATABASE_IDLE_SESSION_TRANSACTION_TIMEOUT = int(os.getenv('DATABASE_IDLE_SESSION_TRANSACTION_TIMEOUT', 3600000)) # 1 Hour
 
 # System Internal Secrets
 USER_PASSWORDS_SECRET = os.environ.get('USER_PASSWORDS_SECRET', 'secret_for_users')

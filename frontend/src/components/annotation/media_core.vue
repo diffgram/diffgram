@@ -99,7 +99,7 @@
               <!-- Note show conditions are different for next / previous
                 and show conditions are inverted as opposed to disable-->
               <!-- Only show next/previous page if it exists, saves real estate vs disabling-->
-              <div>
+              <div class="d-flex align-center">
                 <standard_button
                   v-show="!loading &&
                       metadata_previous.start_index != 0"

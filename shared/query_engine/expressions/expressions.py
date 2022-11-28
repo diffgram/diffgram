@@ -6,7 +6,7 @@ from sqlalchemy.sql.expression import BooleanClauseList
 from shared.shared_logger import get_shared_logger
 from shared.database.source_control.file_stats import FileStats
 from sqlalchemy.sql.elements import FunctionFilter
-from sqlalchemy.sql.expression import and_, or_
+from sqlalchemy.sql.expression import and_, or_, BinaryExpression
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator, QueryEntity
 from shared.query_engine.sql_alchemy_query_elements.scalar import ScalarQueryElement
 
@@ -27,6 +27,7 @@ class CompareExpression:
     operator: CompareOperator
     query_right: QueryElement
     subquery: Selectable
+    expression: BinaryExpression
     left_raw: Token or object
     compare_op_raw: Token or object
     right_raw: Token or object
