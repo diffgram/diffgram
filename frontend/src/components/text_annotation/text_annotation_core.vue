@@ -561,7 +561,7 @@ export default Vue.extend({
       const newly_created_instances = [];
       const working_insatnce_list = this.new_instance_list.get().filter(inst => inst.type === "text_token")
       same_token_indexes.map(index => {
-        const instance_already_exists = working_insatnce_list.find(inst => inst.start_token === index && inst.end_token === index)
+        const instance_already_exists = working_insatnce_list.find(inst => inst.start_token === this.tokens[index].id && inst.end_token === this.tokens[index].id)
         if (!instance_already_exists) {
           const created_instance = new TextAnnotationInstance();
           created_instance.create_frontend_instance(
