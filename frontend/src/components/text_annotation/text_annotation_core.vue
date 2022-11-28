@@ -139,8 +139,8 @@
               :key="`instance_${instance.get_instance_data().id}`"
             >
               <text
-                :data-cy="`text_label_${instance_index}`"
                 v-if="get_instance_rects(instance)"
+                :data-cy="`text_label_${instance_index}`"
                 :x="get_instance_rects(instance).x + 2"
                 :y="get_instance_rects(instance).y - 3"
                 :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
@@ -728,6 +728,7 @@ export default Vue.extend({
     },
     on_draw_text_token: function (e) {
       if (this.instance_in_progress && this.instance_in_progress.type === "relation" || !window.getSelection().anchorNode) return
+      if (this.bulk_label) return
       this.context_menu = null
 
       const selection = window.getSelection()
@@ -742,12 +743,12 @@ export default Vue.extend({
         this.instance_in_progress = null
         return
       }
+
       this.on_select_text(start_token_id, end_token_id)
       this.remove_browser_selection()
     },
     on_select_text: function(start_token_id, end_token_id, direction = "right") {
       if (start_token_id < 0 || end_token_id > this.tokens[this.tokens.length - 1].id) return
-
       let start_token;
       while(!start_token) {
         start_token = this.tokens.find(token => token.id == start_token_id)
