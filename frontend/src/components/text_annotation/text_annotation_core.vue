@@ -750,6 +750,7 @@ export default Vue.extend({
       this.remove_browser_selection()
     },
     on_select_text: function(start_token_id, end_token_id, direction = "right") {
+      if (!start_token_id && start_token_id !== 0 || !end_token_id) return
       if (start_token_id < 0 || end_token_id > this.tokens[this.tokens.length - 1].id) return
       let start_token;
       while(!start_token) {
