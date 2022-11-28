@@ -711,7 +711,7 @@ export default Vue.extend({
       }
       let search_quiery = '';
       for (let i = start_token_id; i <= end_token_id; i++) {
-        search_quiery += this.tokens[i].word;
+        search_quiery += this.tokens.find(token => token.id === i).word;
         if (i < end_token_id) search_quiery += "+"
       }
       window.open(`https://www.google.com/search?q=${search_quiery}`, '_newtab');
