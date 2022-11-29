@@ -450,7 +450,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   public draw(ctx: CanvasRenderingContext2D): void {
     this.zoom_value = this.ctx.getTransform().a
     this.circle_size = 6 / this.zoom_value
-
+    ctx.setLineDash([0])
     ctx.beginPath()
     if (this.sequence_id) {
       ctx.fillStyle = get_sequence_color(this.sequence_id)

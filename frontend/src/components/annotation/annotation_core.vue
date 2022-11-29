@@ -2917,8 +2917,8 @@ export default Vue.extend({
 
 
     },
-    instance_deselected: function () {
-      //TODO: implement
+    instance_deselected: function (instance) {
+      //TODO: implement when all instances have callbacks
     },
 
 
@@ -2973,14 +2973,11 @@ export default Vue.extend({
       if (!instance_list) {
         return result;
       }
-      console.log('instance list', instance_list)
       for (let i = 0; i < instance_list.length; i++) {
         let current_instance = instance_list[i];
         // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
         // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
-        console.log('i', i, current_instance.type)
         let initialized_instance = initialize_instance_object(current_instance, this);
-        console.log('INITIALIZED',i, initialized_instance)
         initialized_instance = post_init_instance(initialized_instance,
           this.label_file_map,
           this.canvas_element,
@@ -3225,6 +3222,7 @@ export default Vue.extend({
       this.share_dialog_open = false;
     },
     clear_selected: function (except_instance = undefined) {
+
       for (let i in this.instance_list) {
         let elm = this.instance_list[i]
         if (except_instance && (elm.creation_ref_id === except_instance.creation_ref_id)) {
@@ -3232,12 +3230,14 @@ export default Vue.extend({
         }
 
         if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(elm.type)) {
+
           if (elm.is_hovered) {
             continue
           }
           let coord_router: ImageAnnotationCoordinatorRouter = this.create_coordinator_router()
           let coordinator: ImageAnnotationCoordinator = coord_router.generate_from_instance(elm, elm.type)
           coordinator.deselect()
+          this.trigger_refresh_current_instance = new Date()
 
         } else {
 
@@ -4960,6 +4960,7 @@ export default Vue.extend({
       if (this.view_issue_mode && !this.instance_select_for_issue) {
         return;
       }
+
       const instance_to_select = this.instance_list[this.instance_hover_index];
       if (instance_to_select && !SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance_to_select.type)) {
         this.request_change_current_instance = this.instance_hover_index;
@@ -4969,6 +4970,9 @@ export default Vue.extend({
 
       if (this.label_settings.allow_multiple_instance_select == false) {
         this.clear_selected(this.instance_list[this.instance_hover_index]);
+        if( this.instance_hover_index == null){
+          this.refresh_instance_list_sidebar(null)
+        }
       }
 
       if (this.instance_select_for_merge) {
@@ -7120,6 +7124,15 @@ export default Vue.extend({
           this.is_actively_drawing = result.is_actively_drawing
         }
         if (result.new_instance_index != undefined) {
+          post_init_instance(this.instance_list[result.new_instance_index],
+            this.label_file_map,
+            this.canvas_element,
+            this.label_settings,
+            this.canvas_transform,
+            this.instance_hovered,
+            this.instance_unhovered,
+            this.canvas_mouse_tools
+          )
           this.new_instance_refresh(result.new_instance_index)
         }
         this.original_edit_instance = result.original_edit_instance
@@ -7145,7 +7158,17 @@ export default Vue.extend({
           this.has_changed = true;
         }
         if (result.new_instance_index != undefined) {
+          post_init_instance(this.instance_list[result.new_instance_index],
+            this.label_file_map,
+            this.canvas_element,
+            this.label_settings,
+            this.canvas_transform,
+            this.instance_hovered,
+            this.instance_unhovered,
+            this.canvas_mouse_tools
+          )
           this.new_instance_refresh(result.new_instance_index)
+
         }
         if (result.instance_moved && this.show_snackbar_occlude_direction) {
           this.show_snackbar_occlude_direction = false;
@@ -8505,7 +8528,6 @@ export default Vue.extend({
       frame_number_param = undefined,
       instance_list_param = undefined
     ) {
-      console.log('KEYFRAME', this.current_frame, this.instance_list)
       this.save_error = {};
       this.save_warning = {};
       if (this.go_to_keyframe_loading) {
@@ -8535,7 +8557,6 @@ export default Vue.extend({
           instance_list = this.instance_buffer_dict[frame_number]
         }
       }
-      console.log('KEYFRAME', this.current_frame, instance_list)
       if (this.get_save_loading(frame_number) == true) {
         // If we have new instances created while saving. We might still need to save them after the first
         // save has been completed.
