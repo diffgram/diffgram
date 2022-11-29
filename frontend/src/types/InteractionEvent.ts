@@ -28,6 +28,7 @@ export interface ImageAnnotationEventCtx extends AnnotationEventCtx {
   hovered_instance?: Instance
   is_actively_drawing: boolean
   lock_point_hover_change: boolean
+  shift_key: boolean
   current_drawing_instance: Instance
   original_edit_instance: Instance
   locked_editing_instance: Instance

@@ -5855,10 +5855,6 @@ export default Vue.extend({
       );
     },
 
-    helper_difference_absolute: function (a, b) {
-      return Math.abs(a - b);
-    },
-
     move_position_based_on_mouse: function (movementX, movementY) {
       if (this.canvas_mouse_tools.scale === this.canvas_scale_global) {
         return;
@@ -7064,6 +7060,7 @@ export default Vue.extend({
         instance_type: this.instance_type,
         instance_list: this.instance_list as Instance[],
         draw_mode: this.draw_mode,
+        shift_key: this.shift_key,
         is_actively_drawing: this.is_actively_drawing,
         hovered_instance: this.hovered_instance,
         current_drawing_instance: this.current_instance,

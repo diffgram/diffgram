@@ -57,6 +57,40 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     }
     return result
   }
+  private add_point_turbo_mode(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){
+    // this.detect_other_polygon_points();
+    let mouse_position = annotation_event.annotation_ctx.mouse_position
+    let mouse_down_position = annotation_event.annotation_ctx.mouse_down_position
+    let current_polygon_point_list = annotation_event.annotation_ctx.current_drawing_instance.points
+    if (current_polygon_point_list.length >= 1 && annotation_event.annotation_ctx.shift_key) {
+      let x_diff = Math.abs(mouse_position.x - current_polygon_point_list[current_polygon_point_list.length - 1].x);
+      let y_diff = Math.abs(mouse_position.y -  current_polygon_point_list[current_polygon_point_list.length - 1].y)
+      if (x_diff > 10 || y_diff > 10) {
+        mouse_down_position.x = mouse_position.x;
+        mouse_down_position.y = mouse_position.y;
+        this.add_polygon_point(coordinator_result, annotation_event);
+      }
+    }
+  }
+  private detect_other_polygon_points(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
+      if (!annotation_event.annotation_ctx.is_actively_drawing) {
+      return;
+    }
+    const polygons_list = annotation_event.annotation_ctx.instance_list.filter(
+      (x) => x.type == "polygon"
+    );
+
+    for (const polygon of polygons_list) {
+      for (const point of polygon.points) {
+        if (point_is_intersecting_circle(annotation_event.annotation_ctx.mouse_position, point, 8)) {
+          point.hovered_while_drawing = true;
+        } else {
+          point.hovered_while_drawing = false;
+        }
+      }
+    }
+  }
+
   public finish_drawing_polygon(instance: PolygonInstance, coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){
     let polygon = annotation_event.annotation_ctx.current_drawing_instance as BoxInstance
     this.finish_drawing_instance(polygon, coordinator_result, annotation_event)

@@ -73,11 +73,11 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       );
 
       if (result == true) {
-        this.canvas_element.style.cursor = "all-scroll";
         this.polygon_point_hover_index = i;
         return true;
       }
     }
+    this.polygon_point_hover_index = null
     return false;
   }
 
@@ -242,6 +242,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       if (!this.is_hovered) {
         this.is_hovered = true
         this.hovered_figure_id = figure_id
+        this.check_polygon_intersection_on_points()
         if(this.on_instance_hovered){
           this.on_instance_hovered(this)
         }
@@ -250,6 +251,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       if(this.is_hovered){
         this.is_hovered = false
         this.hovered_figure_id = null
+        this.check_polygon_intersection_on_points()
         if(this.on_instance_unhovered){
           this.on_instance_unhovered(this)
         }
