@@ -774,6 +774,7 @@ export default Vue.extend({
       this.selection_rects_next_token = null
     },
     on_mount: async function () {
+      this.fetching_error = false
       let set_words;
 
       try {
