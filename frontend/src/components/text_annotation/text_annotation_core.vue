@@ -72,8 +72,12 @@
       />
       <div style="width: 100%; display: flex; flex-direction: column">
         <v-progress-linear
-          v-if="resizing || rendering"
+          v-if="!fetching_error && (resizing || rendering)"
           indeterminate 
+        />
+        <v_error_multiple 
+          v-if="fetching_error"
+          :error="['Error occured while dowloading text file']" 
         />
         <svg
           ref="initial_svg_element"
@@ -331,6 +335,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      fetching_error: false,
       text: null,
       current_label: null,
       rendering: true,
@@ -770,21 +775,27 @@ export default Vue.extend({
     },
     on_mount: async function () {
       let set_words;
-      if (this.task) {
-        const {nltk: {words}} = await getTextService(this.task.file.text.tokens_url_signed)
-        set_words = words
-      } else {
-        const {nltk: {words}} = await getTextService(this.file.text.tokens_url_signed)
-        set_words = words
-      }
-      this.command_manager = new CommandManagerAnnotationCore()
-      // New command pattern
-      this.new_history = new History()
-      this.new_command_manager = new CommandManager(this.new_history)
 
-      this.initial_words_measures = set_words
-      setTimeout(() => this.initialize_token_render(), 1000)
-      this.initialize_instance_list()
+      try {
+        if (this.task) {
+          const {nltk: {words}} = await getTextService(this.task.file.text.tokens_url_signed)
+          set_words = words
+        } else {
+          const {nltk: {words}} = await getTextService(this.file.text.tokens_url_signed)
+          set_words = words
+        }
+        
+        this.command_manager = new CommandManagerAnnotationCore()
+        // New command pattern
+        this.new_history = new History()
+        this.new_command_manager = new CommandManager(this.new_history)
+  
+        this.initial_words_measures = set_words
+        setTimeout(() => this.initialize_token_render(), 1000)
+        this.initialize_instance_list()
+      } catch(e) {
+        this.fetching_error = true
+      }
     },
     initialize_token_render: async function () {
       if (!this.$refs.initial_svg_element) return
