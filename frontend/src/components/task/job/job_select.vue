@@ -337,7 +337,9 @@
               'builder_or_trainer': this.$store.state.builder_or_trainer,
               'data_mode': 'name_and_id_only',
               'project_string_id': this.$store.state.project.current.project_string_id,
-              'status': status
+              'status': status,
+              'limit': 1000,
+              'page_number': 1
             }
 
           }).then(response => {

@@ -843,68 +843,6 @@
       </v-layout>
     </v-sheet>
 
-    <!-- Right Side navigation -->
-    <!--
-    <v-navigation-drawer right
-                          absolute
-                          permanent
-                          v-if="!error_no_permissions.data"
-                          :width="right_nav_width"
-                          >
-
-        <v-alert type="info" v-if="render_mode == 'home'" dismissible>
-          All Labels are shown here for viewing existing instances
-          on files. Only the labels chosen at the Start will
-          be available to annotators.
-        </v-alert>
-
-        <v_labels_view
-                         v-if="label_settings.show_list == true &&
-                                !task_error.task_request && !error_no_permissions.data"
-                         :project_string_id="project_string_id"
-                         @change_label_file_function="change_current_label_file_template($event)"
-                         :loading="loading"
-                         @request_boxes_refresh="request_boxes_refresh"
-                         @update_label_file_visible="update_label_file_visible($event)"
-                         :video_mode="video_mode"
-                         :view_only_mode="view_only_mode"
-                         :instance_type="instance_type"
-                         :push_label_file_colour_map="label_file_colour_map"
-                         :with_next_instance_buttons="video_mode"
-                         :push_label_list="label_list"
-                         :task="task"
-                         :video_playing="video_playing"
-                         :show_visibility_toggle="true"
-                         @get_next_instance="request_next_instance"
-        >
-        </v_labels_view>
-
-
-  </v-navigation-drawer>
-  -->
-
-    <!-- Media core -->
-
-    <!--
-    CAUTION: We still need this to render behind the scences
-      to get data for other stuff even if we don't show it.
-
-      no-click-animation:
-          Disables the bounce effect when clicking outside of a
-          v-dialog's content when using the persistent prop.
-
-      persistent:
-          Clicking outside of the element will not deactivate it.
-
-    This can't be in the "absolute components"
-
-    https://vuetifyjs.com/en/components/bottom-sheets
-
-      https://github.com/vuetifyjs/vuetify/issues/8640
-      needs :retain-focus="false" (but shouldn't)
-
-    -->
-
     <instance_template_creation_dialog
       :schema_id="label_schema.id"
       :project_string_id="project_string_id"
@@ -3498,6 +3436,7 @@ export default Vue.extend({
         }
       }
 
+
       if (update.mode == "attribute_change") {
         /*
          *   We expect the event to supply a group_id
@@ -3534,6 +3473,11 @@ export default Vue.extend({
           value: {...instance.attribute_groups[group.id]},
         };
         instance.attribute_groups[group.id] = value;
+
+        if (instance.type === "global") {
+
+          this.current_global_instance = instance
+        }
         //console.debug(group, value)
       }
 
@@ -4405,11 +4349,6 @@ export default Vue.extend({
         }
       }
     },
-
-    request_boxes_refresh() {
-      this.get_instances();
-    },
-
     change_current_label_file_template: function (label_file) {
       this.current_label_file = label_file;
       if (this.instance_type == "tag") {
@@ -4728,64 +4667,6 @@ export default Vue.extend({
       return false;
     },
 
-    determine_movement_point_for_box: function (instance: Object) {
-      /*
-       * Keep in mind these concepts can be realtive too right
-       * like "max" from which side etc. can flip if I recall right
-       *
-       * See move_box_literal_points for where this gets used
-       *
-       * Not sure if we need to invert the resize things
-       * or if we should use different ones.
-       */
-
-      if (instance.type != "box" || this.lock_point_hover_change == true) {
-        return false;
-      }
-
-      // where x == 0th index y == 1st index, string name of point 2nd index
-      let point_list = [
-        [instance.x_min, instance.y_min, "x_min_y_min", "nwse-resize"], //north east south west
-        [instance.x_max, instance.y_min, "x_max_y_min", "nesw-resize"], // see https://www.w3schools.com/cssref/pr_class_cursor.asp
-        [instance.x_min, instance.y_max, "x_min_y_max", "nesw-resize"],
-        [instance.x_max, instance.y_max, "x_max_y_max", "nwse-resize"],
-      ];
-
-      for (let point of point_list) {
-        let intersection = this.point_is_intersecting_circle(
-          this.mouse_position,
-          {x: point[0], y: point[1]}
-        );
-
-        if (intersection == true) {
-          this.box_edit_point_hover = point[2];
-          if (this.view_issue_mode) {
-            // When viewing an issue we will not allow moving/resizing of instances
-            this.canvas_element.style.cursor = "not-allowed";
-          } else {
-            this.canvas_element.style.cursor = point[3];
-          }
-
-          return true;
-        }
-      }
-
-      /*
-       * Inside the box but not on a corner detection,
-       * we assume we are in the context of a box,
-       * ie because we have a instance_hover_index SO
-       * if we are in a box, and NOT intersecting a "special"
-       * point like a corner, default is inside the whole box right???
-       *
-       */
-      this.box_edit_point_hover = "not_intersecting_special_points";
-
-      this.canvas_element.style.cursor = "pointer";
-
-      // no intersection found
-      // not clear what this would be used for....
-      return false;
-    },
     find_midpoint_index: function (instance, midpoints_polygon) {
       let midpoint_hover = undefined;
       let count = 0;
@@ -4889,7 +4770,6 @@ export default Vue.extend({
         this.detect_hover_on_curve();
         this.detect_hover_on_curve_control_points();
 
-        // this.detect_if_movement_string_update_needed_for_box();
 
         this.detect_nearest_polygon_point();
         this.detect_hover_polygon_midpoints();
@@ -4917,23 +4797,7 @@ export default Vue.extend({
         this.canvas_element.style.cursor = "pointer";
       }
     },
-    detect_if_movement_string_update_needed_for_box: function () {
-      if (
-        this.instance_hover_index != undefined &&
-        this.instance_hover_type == "box"
-      ) {
-        let instance = this.instance_list[this.instance_hover_index];
 
-        // CAREFUL here we want to compare the transformed mouse point
-        // to the actual boxes
-
-        if (instance != null) {
-          if (!this.hidden_label_id_list.includes(instance.label_file_id)) {
-            this.determine_movement_point_for_box(instance);
-          }
-        }
-      }
-    },
     check_polygon_intersection_on_points: function (instance, points) {
       for (var j in points) {
         let result = this.point_is_intersecting_circle(
@@ -5705,12 +5569,6 @@ export default Vue.extend({
     },
 
     move_something: function (event) {
-
-      /*
-   * Limits (ie in edit mode) are assumed to be here.
-   * ie move_box() doesn't check in edit mode.
-   */
-
       if (this.draw_mode == true) {
         return;
       }
@@ -5784,47 +5642,6 @@ export default Vue.extend({
         );
         this.has_changed = true;
       }
-
-      /* Assumption is that if we return early in anywhere in this function
-       * there are no changes.
-       * However if we get to end, then did some valid change.
-       * By having it at end here we can expand to add more types of change /
-       * moving handling.
-       * And don't have to worry about how far down it is in these chains
-       * ie if it's after a certain point or not etc.
-       */
-    },
-
-    move_box: function (event) {
-      /* Returns true if moved something.
-       * TODO invert if statment so we can have default
-       * path as true
-       */
-      if (
-        this.instance_hover_index != undefined &&
-        this.instance_hover_type == "box"
-      ) {
-        // why did I need vuex here again?
-        // maybe only allow one at a time, and then if needed can do more??
-        // (ie multi select more for delete?)
-        if (this.$store.state.annotation_state.mouse_down == true) {
-          let i = this.instance_hover_index;
-          let instance = this.instance_list[i];
-
-          if (instance.soft_delete == true) {
-            this.snackbar_warning = true;
-            this.snackbar_warning_text = "Undo delete first.";
-            return;
-          }
-
-          if (instance.type != "box") {
-            return;
-          }
-
-          this.move_box_literal_points(instance, i, event);
-          return true;
-        }
-      }
     },
 
     move_polygon_line_or_point: function (event) {
@@ -5873,81 +5690,6 @@ export default Vue.extend({
         }
       }
     },
-
-    move_box_literal_points: function (instance: Object, i: Number, event) {
-      /* Case #1 -> Move from center point of box
-       * Case #2 -> Move from either min or max point
-       *
-       *
-       *  Options: "x_min_y_min" "x_max_y_min"  "x_min_y_max" "x_max_y_max"],
-       * as defined by the hover index
-       *
-       * See  determine_movement_point_for_box for where this gets generated
-       *
-       * because we detect that when mouse is first moving
-       * but then this done as it drags
-       *
-       * Basically match up which direction with which
-       * If both min and both max then straight forward,
-       * if say one is min and one is max then match that direction
-       *
-       * Not sure if there is a better way to map this ,
-       * despite looking similar each pair is different
-       *
-       * we check lock both for the individual thing within the box,
-       * and for which of the boxes in the instance list we are on.
-       */
-
-      // why parseInt: backend expects this as an integer like value
-
-      if (instance.type != "box") {
-        return;
-      }
-
-      let x_new = parseInt(this.mouse_position.x);
-      let y_new = parseInt(this.mouse_position.y);
-
-      let x_movement = parseInt(event.movementX / this.canvas_scale_combined);
-      let y_movement = parseInt(event.movementY / this.canvas_scale_combined);
-
-      if (!this.original_edit_instance) {
-        this.original_edit_instance = {...instance};
-        this.original_edit_instance_index = i;
-      }
-      if (this.box_edit_point_hover == "x_min_y_min") {
-        instance.x_min = x_new;
-        instance.y_min = y_new;
-      } else if (this.box_edit_point_hover == "x_max_y_max") {
-        instance.x_max = x_new;
-        instance.y_max = y_new;
-      } else if (this.box_edit_point_hover == "x_min_y_max") {
-        instance.x_min = x_new;
-        instance.y_max = y_new;
-      } else if (this.box_edit_point_hover == "x_max_y_min") {
-        instance.x_max = x_new;
-        instance.y_min = y_new;
-      }
-      // move whole box
-      else if (this.box_edit_point_hover == "not_intersecting_special_points") {
-        instance.x_min += this.mouse_down_delta_event.x;
-        instance.y_min += this.mouse_down_delta_event.y;
-
-        instance.x_max += this.mouse_down_delta_event.x;
-        instance.y_max += this.mouse_down_delta_event.y;
-      }
-
-      /* Interpolated set to false motivation:
-       *  Any movement removes the interpolated flag when we save
-       *  (through a different process)
-       *  so pro-actively show this here so it's clearer to user
-       */
-      if (instance.interpolated) {
-        instance.interpolated = false;
-      }
-
-      this.box_update_position(instance, i);
-    },
-
     get_media_promise: function () {
       return new Promise((resolve) => {
         resolve(this.get_media());
@@ -6417,28 +6159,6 @@ export default Vue.extend({
         this.command_manager.executeCommand(command);
       }
     },
-    bounding_box_mouse_up_edit: function () {
-      if (this.instance_hover_type !== "box") {
-        return;
-      }
-      if (!this.instance_hover_index == undefined) {
-        return;
-      }
-      if (!this.original_edit_instance) {
-        return;
-      }
-
-      const new_instance = this.instance_list[this.instance_hover_index];
-      const command = new UpdateInstanceCommand(
-        new_instance,
-        this.instance_hover_index,
-        this.original_edit_instance,
-        this
-      );
-      this.command_manager.executeCommand(command);
-      this.original_edit_instance = undefined;
-      this.original_edit_instance_index = undefined;
-    },
     polygon_mouse_up_edit: function () {
       if (!this.original_edit_instance) {
         return;
@@ -6693,7 +6413,6 @@ export default Vue.extend({
             this.stop_ellipse_resize();
           }
           this.polygon_mouse_up_edit();
-          // this.bounding_box_mouse_up_edit();
           this.cuboid_mouse_up_edit();
           this.curve_mouse_up_edit();
           this.keypoint_mouse_up_edit();
@@ -6992,23 +6711,6 @@ export default Vue.extend({
       this.event_create_instance = null;
       this.request_change_current_instance = null;
       this.trigger_refresh_current_instance = Date.now();
-    },
-
-    bounding_box_mouse_down: function (frame_number) {
-      if (this.$store.state.annotation_state.draw == true) {
-        if (
-          this.current_instance.x_max - this.current_instance.x_min >= 5 &&
-          this.current_instance.y_max - this.current_instance.y_min >= 5
-        ) {
-          const create_box_command = new CreateInstanceCommand(
-            this.current_instance,
-            this,
-            frame_number
-          );
-          this.command_manager.executeCommand(create_box_command);
-          this.refresh_instance_list_sidebar();
-        }
-      }
     },
     polygon_mid_point_mouse_down: function () {
       if (!this.selected_instance) {
@@ -7492,9 +7194,6 @@ export default Vue.extend({
         if (this.instance_type == "ellipse") {
           this.ellipse_mouse_down(locked_frame_number);
         }
-        if (this.instance_type == "box") {
-          // this.bounding_box_mouse_down(locked_frame_number);
-        }
         if (this.instance_type == "keypoints") {
           this.key_points_mouse_down();
         }
@@ -7870,7 +7569,7 @@ export default Vue.extend({
           number: null
         }
         this.video_mode = false   // if we don't have this can be issues switching to say an image
-        this.degrees = 0 
+        this.degrees = 0
         this.instance_buffer_dict = {}
         this.instance_buffer_metadata = {}
         this.instance_list = []

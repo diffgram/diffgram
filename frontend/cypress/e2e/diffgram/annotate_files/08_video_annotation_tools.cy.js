@@ -11,11 +11,11 @@ describe('Annotate Files Tests', () => {
         preserve: ['session']
       })
       // login before all tests
-      cy.loginByForm(testUser.email, testUser.password);
-      cy.gotToProject(testUser.project_string_id);
-      cy.createLabels(testLabels)
-      cy.uploadAndViewSampleVideo(testUser.project_string_id);
-      cy.wait(3500);
+      cy.loginByForm(testUser.email, testUser.password)
+      .gotToProject(testUser.project_string_id)
+      .createLabels(testLabels)
+      .uploadAndViewSampleVideo(testUser.project_string_id)
+      .wait(8500);
 
     })
 

@@ -23,10 +23,13 @@ jobs:
         PYTHONPATH: /__w/diffgram
         DIFFGRAM_SYSTEM_MODE: testing_e2e
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
-        DIFFGRAM_STATIC_STORAGE_PROVIDER: azure
+        DIFFGRAM_STATIC_STORAGE_PROVIDER: minio
         SAME_HOST: True
         DIFFGRAM_AZURE_CONNECTION_STRING: ${{ secrets.E2E_TESTS_AZURE_CONNECTION_STRING }}
         DIFFGRAM_AZURE_CONTAINER_NAME: testsgithubactions
+        DIFFGRAM_S3_BUCKET_NAME: foo
+        ML__DIFFGRAM_S3_BUCKET_NAME: foo
+        DIFFGRAM_MINIO_ENDPOINT_URL: http://localhost:9000
         ML__DIFFGRAM_AZURE_CONTAINER_NAME: testsgithubactions
         CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
@@ -57,6 +60,17 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+      minio:
+        image: lazybit/minio
+        ports:
+          - 9000:9000
+        env:
+          MINIO_ACCESS_KEY: root
+          MINIO_SECRET_KEY: actionskeye2etests
+        volumes:
+          - ${{ github.workspace }}/data:/data
+        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
+
       rabbitmq:
         image: rabbitmq:3.10-rc-management-alpine
         env:
@@ -65,7 +79,26 @@ jobs:
         ports:
           - 5672
     steps:
+    - run: pip3 install minio
+    - run: |
+          python3 - <<'EOF'
+          from minio import Minio
+          from minio.error import InvalidResponseError
 
+          try:
+              minio = Minio(
+                  'minio:9000',
+                  access_key='root',
+                  secret_key='actionskeye2etests',
+                  secure=False
+              )
+          except Exception as ex:
+              raise
+
+          minio.make_bucket('foo')
+          minio.make_bucket('bar')
+          print(f'{minio.list_buckets()}')
+          EOF
     - uses: actions/setup-node@v2
     - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
     - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
