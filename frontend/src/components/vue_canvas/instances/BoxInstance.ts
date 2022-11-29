@@ -109,7 +109,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
 
     for (let point of point_list) {
       let intersection = point_is_intersecting_circle(
-        this.mouse_position,
+        this.canvas_mouse_tools.mouse_position,
         {
           x: point[0] as number,
           y: point[1] as number

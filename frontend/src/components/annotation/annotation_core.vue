@@ -2636,7 +2636,8 @@ export default Vue.extend({
         this.label_settings,
         this.canvas_transform,
         this.instance_hovered,
-        this.instance_unhovered
+        this.instance_unhovered,
+        this.canvas_mouse_tools
       )
       new_instance.set_la
       new_instance.x_min = parseInt(x_min);
@@ -2972,21 +2973,22 @@ export default Vue.extend({
       if (!instance_list) {
         return result;
       }
-
+      console.log('instance list', instance_list)
       for (let i = 0; i < instance_list.length; i++) {
         let current_instance = instance_list[i];
         // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
         // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
-
+        console.log('i', i, current_instance.type)
         let initialized_instance = initialize_instance_object(current_instance, this);
-
+        console.log('INITIALIZED',i, initialized_instance)
         initialized_instance = post_init_instance(initialized_instance,
           this.label_file_map,
           this.canvas_element,
           this.label_settings,
           this.canvas_transform,
           this.instance_hovered,
-          this.instance_unhovered
+          this.instance_unhovered,
+          this.canvas_mouse_tools,
         )
         if (initialized_instance) {
           result.push(initialized_instance);
@@ -3670,7 +3672,7 @@ export default Vue.extend({
         this.canvas_element,
         this.canvas_scale_global,
         this.canvas_width,
-        this.canvas_height
+        this.canvas_height,
       );
       this.on_canvas_scale_global_changed();
       // assumes canvas wrapper available
@@ -5461,7 +5463,8 @@ export default Vue.extend({
         this.label_settings,
         this.canvas_transform,
         this.instance_hovered,
-        this.instance_unhovered
+        this.instance_unhovered,
+        this.canvas_mouse_tools
       )
       this.add_instance_to_file(instance, this.current_frame); // this handles the creation_ref_id stuff too
       this.ghost_instance_list.splice(ghost_index, 1); // remove from ghost list
@@ -7097,7 +7100,6 @@ export default Vue.extend({
       this.refresh_instance_list_sidebar()
       this.reset_current_instances()
       let instance = this.instance_list[new_instance_index]
-      console.log('instanceee', instance)
       instance.on('hover_in', this.instance_hovered)
       instance.on('hover_out', this.instance_unhovered)
       this.update_canvas()

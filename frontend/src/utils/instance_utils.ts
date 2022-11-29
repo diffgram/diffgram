@@ -11,6 +11,7 @@ import {InstanceImage2D} from "../components/vue_canvas/instances/InstanceImage2
 import {ImageCanvasTransform} from "../types/CanvasTransform";
 import {LabelFileMap} from "../types/label";
 import {PolygonInstance} from "../components/vue_canvas/instances/PolygonInstance";
+import {CanvasMouseTools} from "../components/vue_canvas/CanvasMouseTools";
 
 export const duplicate_instance = function (instance_to_copy, component_ctx: CanvasMouseCtx, with_ids = false) {
   let points = [];
@@ -209,7 +210,8 @@ export const post_init_instance = function (instance: Instance,
                                             label_settings: ImageLabelSettings,
                                             canvas_transform: ImageCanvasTransform,
                                             hover_callback: Function,
-                                            unhovered_callback: Function) {
+                                            unhovered_callback: Function,
+                                            canvas_mouse_tool: CanvasMouseTools) {
   if (!instance) {
     return
   }
@@ -234,6 +236,11 @@ export const post_init_instance = function (instance: Instance,
     inst.set_canvas(canvas_elm)
     inst.set_image_label_settings(label_settings)
     inst.set_canvas_transform(canvas_transform)
+    inst.set_label_file(label_file)
+    inst.set_canvas_mouse_tools(canvas_mouse_tool)
+
+
+
     inst.on('hover_in', hover_callback)
     inst.on('hover_out', unhovered_callback)
     return inst

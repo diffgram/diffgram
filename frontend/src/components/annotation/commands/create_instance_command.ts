@@ -1,6 +1,6 @@
 import {TextAnnotationInstance, TextRelationInstance} from "../../vue_canvas/instances/TextInstance";
 import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../../vue_canvas/instances/Instance";
-import {initialize_instance_object} from "../../../utils/instance_utils";
+import {initialize_instance_object, post_init_instance} from "../../../utils/instance_utils";
 
 export class CreateInstanceCommand {
   ann_core_ctx: any
@@ -125,7 +125,6 @@ export class CreateInstanceCommand {
         this.instance.soft_delete = false;
         let instance_to_push = {...this.instance,  points: [...this.instance.points.map(p => ({...p}))], initialized: false}
         let instance_init = initialize_instance_object(instance_to_push, this.ann_core_ctx)
-        console.log('CREATE INSTANCE COMMAND')
         this.ann_core_ctx.add_instance_to_file(
           instance_init,
           this.frame_number

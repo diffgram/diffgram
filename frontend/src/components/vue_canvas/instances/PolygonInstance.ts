@@ -68,7 +68,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   private check_polygon_intersection_on_points(): boolean {
     for (let i = 0; i < this.points.length; i++) {
       let result = point_is_intersecting_circle(
-        this.mouse_position,
+        this.canvas_mouse_tools.mouse_position,
         this.points[i]
       );
 
@@ -168,6 +168,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   private draw_circle(x, y, ctx) {
+    console.log('draw',x,y)
     ctx.arc(x, y, this.image_label_settings.vertex_size, 0, 2 * Math.PI);
     ctx.moveTo(x, y) // reset
   }
@@ -273,10 +274,11 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     }
     ctx.beginPath();
     const preStrokeStyle = ctx.strokeStyle;
-    ctx.strokeStyle = preStrokeStyle;
+    ctx.strokeStyle = this.strokeColor;
     if (points.length >= 1) {
       this.draw_label(ctx, points[0].x, points[0].y)
       this.set_color_from_label()
+      ctx.fillStyle = this.fillColor
       ctx.moveTo(points[0].x, points[0].y)
     }
 
@@ -291,7 +293,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       ctx.lineWidth = spatial_line_size
       ctx.stroke()
     }
-
     // if (this.selected == true && this.image_label_settings.default_instance_opacity != 1) {
     //   ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", .1)";
     // }
@@ -393,7 +394,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   private draw_polygon_control_points(ctx) {
     ctx.beginPath();
     let points = this.points
-    if (this.selected || this.is_actively_drawing) {
+    if (this.selected || this.is_actively_drawing || this.is_hovered) {
       if (points.length >= 1) {
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#bdbdbd';
@@ -418,11 +419,10 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
     }
     this.draw_autoborder_control_points(ctx)
-
+    console.log('storkeeee')
     ctx.stroke()
   }
   public draw_actively_drawing_polygon(ctx){
-    console.log('asctt', this.points)
     let points = this.points
     let circle_size = 4 / this.zoom_value
 
@@ -470,7 +470,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     }
 
 
-    // this.check_box_hovered(ctx)
+
     // if (this.draw_corners || this.selected) {
     //   this.draw_box_edit_corners(ctx)
     // }

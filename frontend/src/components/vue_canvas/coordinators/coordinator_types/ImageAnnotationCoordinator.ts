@@ -43,14 +43,19 @@ export abstract class ImageAnnotationCoordinator extends Coordinator{
       currently_drawing_instance.set_sequence_id(sequence_id)
       currently_drawing_instance.set_sequence_number(number)
     }
-    currently_drawing_instance.set_actively_drawing(true)
-    currently_drawing_instance.set_canvas(annotation_event.annotation_ctx.canvas_element)
-    currently_drawing_instance.set_label_file(annotation_event.annotation_ctx.label_file)
-    currently_drawing_instance.set_canvas_transform(annotation_event.annotation_ctx.canvas_transform)
-    currently_drawing_instance.set_canvas_mouse_tools(annotation_event.annotation_ctx.canvas_mouse_tools)
     currently_drawing_instance.set_label_file_colour_map(annotation_event.annotation_ctx.label_file_colour_map)
-    currently_drawing_instance.set_image_label_settings(annotation_event.annotation_ctx.image_label_settings)
     currently_drawing_instance.set_color_from_label()
+    currently_drawing_instance.set_canvas(annotation_event.annotation_ctx.canvas_element)
+    currently_drawing_instance.set_image_label_settings(annotation_event.annotation_ctx.image_label_settings)
+    currently_drawing_instance.set_canvas_transform(annotation_event.annotation_ctx.canvas_transform)
+    currently_drawing_instance.set_label_file(annotation_event.annotation_ctx.label_file)
+    currently_drawing_instance.set_canvas_mouse_tools(annotation_event.annotation_ctx.canvas_mouse_tools)
+
+    currently_drawing_instance.set_actively_drawing(true)
+
+
+
+
     coordinator_result.is_actively_drawing = true
   }
   public finish_drawing_instance(instance: InstanceImage2D, coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){

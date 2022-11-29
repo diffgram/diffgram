@@ -7,7 +7,6 @@ import {CanvasMouseTools} from "../CanvasMouseTools";
 
 export abstract class InstanceImage2D extends Instance {
   public ctx: CanvasRenderingContext2D;
-  public mouse_position: MousePosition;
   public canvas_transform: ImageCanvasTransform;
   public canvas_element: HTMLCanvasElement
   public strokeColor: string = 'black';
@@ -161,16 +160,18 @@ export abstract class InstanceImage2D extends Instance {
   }
 
   protected is_mouse_in_path(ctx) {
-    if (!this.mouse_position || !this.mouse_position.raw) {
+    let mouse_position = this.canvas_mouse_tools.mouse_position;
+    if (!mouse_position || !mouse_position.raw) {
       return false
     }
     if (ctx.isPointInPath(
-      this.mouse_position.raw.x,
-      this.mouse_position.raw.y)) {
+      mouse_position.raw.x,
+      mouse_position.raw.y)) {
       return true;
     }
     return false
   }
+
   protected update_width_and_height() {
     this.width = this.x_max - this.x_min;
     this.height = this.y_max - this.y_min;
