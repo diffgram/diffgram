@@ -22,7 +22,9 @@
                 />
             </div>
             <v-list dense>
-                <v-list-item-group>
+                <v-list-item-group
+                    v-if="search_label"
+                >
                     <v-list-item 
                         v-for="(label, index) in search_label.slice(0, 9)" :key="`labl+list_item${index}`" 
                         @click="on_apply_label(label)"
