@@ -6,7 +6,7 @@ import {GLOBAL_SELECTED_COLOR, Instance} from "../../instances/Instance";
 import {InstanceImage2D} from "../../instances/InstanceImage2D";
 import {CreateInstanceCommand} from "../../../annotation/commands/create_instance_command";
 
-export abstract class ImageAnnotationCoordinator extends Coordinator{
+export abstract class ImageAnnotationCoordinator extends Coordinator {
   /*
   * Extends the base coordinator for the context of image annotation.
   * */
@@ -16,6 +16,7 @@ export abstract class ImageAnnotationCoordinator extends Coordinator{
   }
 
   instance: InstanceImage2D
+
   protected is_mouse_down_event(event: ImageInteractionEvent): boolean {
     if (event.dom_event.type === 'mousedown') {
       return true
@@ -29,13 +30,15 @@ export abstract class ImageAnnotationCoordinator extends Coordinator{
     }
     return false
   }
+
   protected is_mouse_move_event(event: ImageInteractionEvent): boolean {
     if (event.dom_event.type === 'mousemove') {
       return true
     }
     return false
   }
-  public initialize_instance_drawing(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){
+
+  public initialize_instance_drawing(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
     let currently_drawing_instance: InstanceImage2D = annotation_event.annotation_ctx.current_drawing_instance as InstanceImage2D
     if (annotation_event.annotation_ctx.video_mode == true) {
       let number = annotation_event.annotation_ctx.current_sequence_from_sequence_component.number;
@@ -54,11 +57,10 @@ export abstract class ImageAnnotationCoordinator extends Coordinator{
     currently_drawing_instance.set_actively_drawing(true)
 
 
-
-
     coordinator_result.is_actively_drawing = true
   }
-  public finish_drawing_instance(instance: InstanceImage2D, coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){
+
+  public finish_drawing_instance(instance: InstanceImage2D, coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
     instance.set_color_from_label()
     instance.set_actively_drawing(false)
     const create_box_command = new CreateInstanceCommand(
@@ -69,6 +71,28 @@ export abstract class ImageAnnotationCoordinator extends Coordinator{
     this.command_manager.executeCommand(create_box_command);
     coordinator_result.is_actively_drawing = false;
     coordinator_result.new_instance_index = annotation_event.annotation_ctx.instance_list.length - 1
+  }
+
+  protected should_select_instance(annotation_event: ImageInteractionEvent): boolean {
+    return this.is_mouse_down_event(annotation_event) &&
+      this.instance &&
+      !this.instance.selected &&
+      this.instance.is_hovered &&
+      !annotation_event.annotation_ctx.draw_mode &&
+      !annotation_event.annotation_ctx.view_issue_mode &&
+      !annotation_event.annotation_ctx.instance_select_for_issue &&
+      !annotation_event.annotation_ctx.view_only_mode
+  }
+
+  protected should_deselect_instance(annotation_event: ImageInteractionEvent): boolean {
+    return this.is_mouse_down_event(annotation_event) &&
+      this.instance &&
+      this.instance.selected &&
+      !this.instance.is_hovered &&
+      !annotation_event.annotation_ctx.draw_mode &&
+      !annotation_event.annotation_ctx.view_issue_mode &&
+      !annotation_event.annotation_ctx.instance_select_for_issue &&
+      !annotation_event.annotation_ctx.view_only_mode
   }
 
   public select(): void {

@@ -89,28 +89,6 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
       annotation_event.annotation_ctx.is_actively_drawing
   }
 
-  private should_select_instance(annotation_event: ImageInteractionEvent): boolean {
-    return this.is_mouse_down_event(annotation_event) &&
-      this.instance &&
-      !this.instance.selected &&
-      this.instance.is_hovered &&
-      !annotation_event.annotation_ctx.draw_mode &&
-      !annotation_event.annotation_ctx.view_issue_mode &&
-      !annotation_event.annotation_ctx.instance_select_for_issue &&
-      !annotation_event.annotation_ctx.view_only_mode
-  }
-
-  private should_deselect_instance(annotation_event: ImageInteractionEvent): boolean {
-    return this.is_mouse_down_event(annotation_event) &&
-      this.instance &&
-      this.instance.selected &&
-      !this.instance.is_hovered &&
-      !annotation_event.annotation_ctx.draw_mode &&
-      !annotation_event.annotation_ctx.view_issue_mode &&
-      !annotation_event.annotation_ctx.instance_select_for_issue &&
-      !annotation_event.annotation_ctx.view_only_mode
-  }
-
   private finish_box_drawing(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent): void {
     let box = annotation_event.annotation_ctx.current_drawing_instance as BoxInstance
     this.finish_drawing_instance(box, result, annotation_event)

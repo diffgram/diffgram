@@ -4776,8 +4776,8 @@ export default Vue.extend({
         this.detect_hover_on_curve_control_points();
 
 
-        this.detect_nearest_polygon_point();
-        this.detect_hover_polygon_midpoints();
+        // this.detect_nearest_polygon_point();
+        // this.detect_hover_polygon_midpoints();
 
         this.detect_issue_hover();
 

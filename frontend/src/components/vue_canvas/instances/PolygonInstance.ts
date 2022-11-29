@@ -168,7 +168,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   private draw_circle(x, y, ctx) {
-    console.log('draw',x,y)
+    console.log('draw', x, y)
     ctx.arc(x, y, this.image_label_settings.vertex_size, 0, 2 * Math.PI);
     ctx.moveTo(x, y) // reset
   }
@@ -180,18 +180,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   public hide_polygon_vertices() {
     this.draw_corners = false
   }
-
-  private draw_box_edit_corners(ctx) {
-    this.draw_circle(this.x_min, this.y_min, ctx)
-    ctx.moveTo(this.x_max, this.y_min);
-    this.draw_circle(this.x_max, this.y_min, ctx)
-    ctx.moveTo(this.x_max, this.y_max);
-    this.draw_circle(this.x_max, this.y_max, ctx)
-    ctx.moveTo(this.x_min, this.y_max);
-    this.draw_circle(this.x_min, this.y_max, ctx)
-    ctx.fill()
-  }
-
 
   private generate_polygon_mid_points(points, figure_id = undefined) {
     const midpoints_polygon = []
@@ -251,12 +239,26 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   private check_poly_hovered(ctx, figure_id: number = undefined) {
+    console.log('HOVERED', this.is_hovered)
     if (this.is_mouse_in_path(ctx)) {
+      console.log('START HOEVER IN PATH')
       if (!this.is_hovered) {
-        this.on_instance_hovered(this)
         this.is_hovered = true
         this.hovered_figure_id = figure_id
         this.set_mouse_cursor_from_hovered_point()
+        if(this.on_instance_hovered){
+          this.on_instance_hovered(this)
+        }
+      } else{
+        if(this.is_hovered){
+          console.log('UNHOVER')
+          this.is_hovered = false
+          this.hovered_figure_id = null
+          this.set_mouse_cursor_no_hover()
+          if(this.on_instance_unhovered){
+            this.on_instance_unhovered(this)
+          }
+        }
       }
     }
   }
@@ -277,7 +279,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     ctx.strokeStyle = this.strokeColor;
     if (points.length >= 1) {
       this.draw_label(ctx, points[0].x, points[0].y)
-      this.set_color_from_label()
       ctx.fillStyle = this.fillColor
       ctx.moveTo(points[0].x, points[0].y)
     }
@@ -286,7 +287,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       this.draw_polygon_lines(ctx, points)
       ctx.lineTo(points[0].x, points[0].y)
     }
-    this.check_poly_hovered(ctx, figure_id)
+
 
     let spatial_line_size = this.get_spatial_line_size()
     if (spatial_line_size != 0) {
@@ -306,7 +307,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
   private draw_polygon_main_section(ctx) {
     let figure_id_list = [];
-
+    console.log('draw_polygon_main_section')
     for (const point of this.points) {
       if (!point.figure_id) {
         continue
@@ -318,10 +319,12 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     if (figure_id_list.length === 0) {
       let points = this.points;
       this.draw_polygon_figure(ctx, points)
+      this.check_poly_hovered(ctx)
     } else {
       for (const figure_id of figure_id_list) {
         let points = this.points.filter(p => p.figure_id === figure_id);
         this.draw_polygon_figure(ctx, points, figure_id)
+        this.check_poly_hovered(ctx, figure_id)
       }
     }
 
@@ -350,7 +353,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       this.draw_circle_from_instance(ctx, this.points, j)
       ctx.fillStyle = fillStyle;
       ctx.strokeStyle = strokeStyle;
-      this.check_poly_hovered(ctx)
     }
     ctx.fillStyle = fillStyle;
     ctx.strokeStyle = strokeStyle;
@@ -390,11 +392,19 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     }
 
   }
+  public select(){
+    super.select()
+    this.show_polygon_vertices()
+  }
+  public unselect() {
+    super.unselect();
+    this.hide_polygon_vertices()
+  }
 
   private draw_polygon_control_points(ctx) {
     ctx.beginPath();
     let points = this.points
-    if (this.selected || this.is_actively_drawing || this.is_hovered) {
+    if (this.draw_corners) {
       if (points.length >= 1) {
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#bdbdbd';
@@ -412,17 +422,12 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
         this.draw_many_polygon_circles(ctx)
       }
 
-      // Need to run this again otherwise edges of circles
-      // outside of polygon won't be detected for edit which makes
-      // edit break
-      this.check_poly_hovered(ctx)
-
     }
     this.draw_autoborder_control_points(ctx)
-    console.log('storkeeee')
     ctx.stroke()
   }
-  public draw_actively_drawing_polygon(ctx){
+
+  public draw_actively_drawing_polygon(ctx) {
     let points = this.points
     let circle_size = 4 / this.zoom_value
 
@@ -441,7 +446,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
         points[points.length - 1].y, circle_size, 0, 2 * Math.PI);
       ctx.moveTo(points[i].x, points[i].y)
     }
-    if (points.length >= 1){
+    if (points.length >= 1) {
       ctx.lineTo(this.canvas_mouse_tools.mouse_position.x, this.canvas_mouse_tools.mouse_position.y)
 
     }
@@ -449,6 +454,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     ctx.stroke()
     ctx.fill()
   }
+
   public draw(ctx: CanvasRenderingContext2D): void {
     this.zoom_value = this.ctx.getTransform().a
     this.circle_size = 6 / this.zoom_value
@@ -460,15 +466,13 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
 
     this.draw_label(ctx, this.x_min, this.y_min)
-    this.set_color_from_label()
     this.grab_color_from_instance(ctx)
-    if(this.is_actively_drawing){
+    if (this.is_actively_drawing) {
       this.draw_actively_drawing_polygon(ctx)
-    } else{
+    } else {
       this.draw_polygon_main_section(ctx)
       this.draw_polygon_control_points(ctx)
     }
-
 
 
     // if (this.draw_corners || this.selected) {

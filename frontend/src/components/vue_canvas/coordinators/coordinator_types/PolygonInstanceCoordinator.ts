@@ -5,14 +5,9 @@ import {
   ImageInteractionEvent
 } from "../../../../types/InteractionEvent";
 import {ImageAnnotationCoordinator} from "./ImageAnnotationCoordinator";
-import {duplicate_instance} from "../../../../utils/instance_utils";
 import {CanvasMouseCtx, Point, point_is_intersecting_circle} from "../../../../types/mouse_position";
-import {CreateInstanceCommand} from "../../../annotation/commands/create_instance_command";
 import CommandManager from "../../../../helpers/command/command_manager";
-import {InstanceColor} from "../../../../types/instance_color";
-import {UpdateInstanceCommand} from "../../../annotation/commands/update_instance_command";
 import {PolygonInstance, PolygonPoint} from "../../instances/PolygonInstance";
-import {InstanceImage2D} from "../../instances/InstanceImage2D";
 import {BoxInstance} from "../../instances/BoxInstance";
 
 export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
@@ -80,6 +75,7 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     }
     polygon.add_point(corrected_point)
   }
+
   public perform_action_from_event(annotation_event: ImageInteractionEvent): CoordinatorProcessResult {
     let result: CoordinatorProcessResult = {
       instance_moved: false,
@@ -90,6 +86,15 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       locked_editing_instance: annotation_event.annotation_ctx.locked_editing_instance,
       lock_point_hover_change: annotation_event.annotation_ctx.lock_point_hover_change,
     }
+    // Polygon Select
+    console.log('should_deselect_instance POLYGON', this.should_deselect_instance(annotation_event) )
+    if (this.should_select_instance(annotation_event)) {
+      this.select()
+    }
+    else if (this.should_deselect_instance(annotation_event)) {
+      this.deselect()
+    }
+
     // Start Drawing
     if(this.should_start_drawing(annotation_event)){
       this.start_polygon_draw(result, annotation_event)
