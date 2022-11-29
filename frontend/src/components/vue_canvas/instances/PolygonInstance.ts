@@ -168,7 +168,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   private draw_circle(x, y, ctx) {
-    console.log('draw', x, y)
     ctx.arc(x, y, this.image_label_settings.vertex_size, 0, 2 * Math.PI);
     ctx.moveTo(x, y) // reset
   }
@@ -239,25 +238,20 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   private check_poly_hovered(ctx, figure_id: number = undefined) {
-    console.log('HOVERED', this.is_hovered)
     if (this.is_mouse_in_path(ctx)) {
-      console.log('START HOEVER IN PATH')
       if (!this.is_hovered) {
         this.is_hovered = true
         this.hovered_figure_id = figure_id
-        this.set_mouse_cursor_from_hovered_point()
         if(this.on_instance_hovered){
           this.on_instance_hovered(this)
         }
-      } else{
-        if(this.is_hovered){
-          console.log('UNHOVER')
-          this.is_hovered = false
-          this.hovered_figure_id = null
-          this.set_mouse_cursor_no_hover()
-          if(this.on_instance_unhovered){
-            this.on_instance_unhovered(this)
-          }
+      }
+    }else{
+      if(this.is_hovered){
+        this.is_hovered = false
+        this.hovered_figure_id = null
+        if(this.on_instance_unhovered){
+          this.on_instance_unhovered(this)
         }
       }
     }
@@ -278,7 +272,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     const preStrokeStyle = ctx.strokeStyle;
     ctx.strokeStyle = this.strokeColor;
     if (points.length >= 1) {
-      this.draw_label(ctx, points[0].x, points[0].y)
       ctx.fillStyle = this.fillColor
       ctx.moveTo(points[0].x, points[0].y)
     }
@@ -307,7 +300,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
   private draw_polygon_main_section(ctx) {
     let figure_id_list = [];
-    console.log('draw_polygon_main_section')
     for (const point of this.points) {
       if (!point.figure_id) {
         continue

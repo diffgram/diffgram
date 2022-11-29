@@ -87,7 +87,6 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       lock_point_hover_change: annotation_event.annotation_ctx.lock_point_hover_change,
     }
     // Polygon Select
-    console.log('should_deselect_instance POLYGON', this.should_deselect_instance(annotation_event) )
     if (this.should_select_instance(annotation_event)) {
       this.select()
     }
