@@ -22,6 +22,7 @@
         <v_annotation_core
           v-if="!changing_file && !changing_task"
           class="pt-1 pl-1"
+          :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
           :label_schema="current_label_schema"
           :model_run_id_list="model_run_id_list"
@@ -220,6 +221,7 @@ import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
 import Vue from "vue";
 
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
+import InstanceStore from "../../helpers/InstanceStore"
 
 
 export default Vue.extend({
@@ -252,6 +254,7 @@ export default Vue.extend({
   },
   data() {
     return {
+      instance_store: null,
       task_prefetcher: null,
       task_image: null,
       task_instances: null,
@@ -319,8 +322,6 @@ export default Vue.extend({
     }
   },
   created() {
-
-
     if (this.$route.query.edit_schema) {
       this.enabled_edit_schema = true;
     }
@@ -350,6 +351,8 @@ export default Vue.extend({
     }
   },
   async mounted() {
+    this.instance_store = new InstanceStore()
+
     if (!this.$props.task_id_prop) {
       await this.get_project();
     } else {
