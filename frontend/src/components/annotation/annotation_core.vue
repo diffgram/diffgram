@@ -4296,7 +4296,6 @@ export default Vue.extend({
       }
       // important, we don't change the value if it's locked
       // otherwise it's easy for user to get "off" of the point they want
-
       if (index != null) {
         this.instance_hover_index = parseInt(index);
         this.hovered_figure_id = figure_id;

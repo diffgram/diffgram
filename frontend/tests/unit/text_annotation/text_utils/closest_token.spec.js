@@ -55,15 +55,6 @@ describe("Closes token search, closest_token.ts", () => {
         expect(token.line).toEqual(0)
     })
 
-    it("Should return token that does not exist if the line falls of text space", () => {
-        const coordinates = {
-            x: 50,
-            y: 400
-        }
-        const token = closest_token(tokens, lines, coordinates)
-        expect(token).toBeUndefined()
-    })
-
     it("Should return token from the previous like if it's closer to it", () => {
         const coordinates = {
             x: 50,

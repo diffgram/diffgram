@@ -13,13 +13,20 @@
                     label="Start by typing label name"
                     hide-details="auto"
                     v-model="search_value"
+                    ref="search_label"
+                    autofocus
+                    @keydown="check_key_down"
                     @input="on_search_label"
+                    @blur="on_input_blur"
+                    @focus="on_input_focus"
                 />
             </div>
             <v-list dense>
-                <v-list-item-group>
+                <v-list-item-group
+                    v-if="search_label"
+                >
                     <v-list-item 
-                        v-for="(label, index) in search_label" :key="`labl+list_item${index}`" 
+                        v-for="(label, index) in search_label.slice(0, 9)" :key="`labl+list_item${index}`" 
                         @click="on_apply_label(label)"
                     >
                         <v-list-item-content>
@@ -64,7 +71,7 @@ export default Vue.extend({
                 const top = this.rects[last_element_index].y + 50
                 const left = this.rects[last_element_index].x + this.rects[last_element_index].width + 360
     
-                const container_height = this.search_label ? this.search_label.length * 40 + 50 : 0
+                const container_height = this.search_label ? this.search_label.slice(0, 9).length * 40 + 50 : 0
     
                 return {
                     top: top + container_height + 100 < window.innerHeight ? top : top - container_height - 50,
@@ -81,20 +88,31 @@ export default Vue.extend({
     data() {
         return {
             search_value: "",
-            search_label: null
+            search_label: null,
+            blured: true
+        }
+    },
+    watch: {
+        label_list: function() {
+            this.search_label = [...this.label_list]
+            this.search_value = ""
         }
     },
     mounted() {
         this.$emit('remove_listeners')
         this.search_label = [...this.label_list]
-        window.removeEventListener("keyup", this.on_hotkeys_listener)
-        window.addEventListener("keyup", this.on_hotkeys_listener)
     },
     beforeDestroy() {
-        window.removeEventListener("keyup", this.on_hotkeys_listener)
         this.$emit('add_listeners')
     },
     methods: {
+        check_key_down: function(e) {
+            const input_is_number = parseInt(e.key)
+            if (input_is_number) {
+                e.preventDefault()
+                this.on_input_number(e)
+            }
+        },
         on_search_label: function(e) {
             const to_search = e.toLowerCase()
             this.search_label = [...this.label_list].filter(label => label.label.name.toLowerCase().includes(to_search))
@@ -103,7 +121,15 @@ export default Vue.extend({
             if (this.rects) this.$emit('create_instance', label)
             else this.$emit('create_relation', label)
         },
-        on_hotkeys_listener: function(e) {
+        on_input_blur: function() {
+            this.blured = true
+        },
+        on_input_focus: function() {
+            this.blured = false
+        },
+        on_input_number: function(e) {
+            if (this.blured) return
+            
             let key = Number(e.key)
             if (key || key === 0) {
                 if (key === 0) key = 9

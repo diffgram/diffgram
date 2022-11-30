@@ -16,13 +16,14 @@
             :fill="solid_fill"
         />
         <rect
-            v-for="rect in rects"
+            v-for="rect in no_empty_rects"
             :key="`selection_${rect.x}_${rect.y}_${rect.width}`"
             :x="rect.x - 2"
             :y="rect.y + 5"
             :width="rect.width + 4"
             :height="20"
             :fill="transparent_fill"
+            @click="on_selection_click"
         />
         <rect
             :x="end_border_position.x"
@@ -54,6 +55,9 @@ export default Vue.extend({
         }
     },
     computed: {
+        no_empty_rects: function() {
+            return this.rects.filter(rect => rect.x && rect.y && rect.width)
+        },
         last_element: function() {
             const index = this.rects.length - 1
             return index
@@ -101,13 +105,13 @@ export default Vue.extend({
         end_move_listener: function(e) {
             this.end_border_moved = {
                 x: e.clientX - 350,
-                y: e.clientY - 150
+                y: window.scrollY + e.clientY - 150
             }
         },
         start_move_listener: function(e) {
             this.start_border_moved = {
                 x: e.clientX - 350,
-                y: e.clientY - 125
+                y: window.scrollY + e.clientY - 125
             }
         },
         on_apply_new_border: function() {
@@ -120,6 +124,9 @@ export default Vue.extend({
 
             this.end_border_moved = null
             this.start_border_moved = null
+        },
+        on_selection_click: function(e) {
+            this.$emit('on_selection_click', e)
         }
     }
 })
