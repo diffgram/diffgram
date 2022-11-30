@@ -11,13 +11,14 @@
 
           <v-expansion-panel @change="on_change_expansion(0)">
               <global_attributes_list
-                  v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
+                v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
+                :project_string_id="project_string_id"
                 :global_attribute_groups_list="global_attribute_groups_list"
                 :current_global_instance="current_global_instance"
                 :schema_id="schema_id"
                 :view_only_mode="false"
                 @attribute_change="attribute_change($event, true)"
-              ></global_attributes_list>
+              />
           </v-expansion-panel>
 
             <v-expansion-panel @change="on_change_expansion(1)" :disabled="!current_instance">

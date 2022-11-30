@@ -27,22 +27,24 @@ export default class DrawRects {
     generate_rects_from_instance(instance: InstanceData) {
         let start_token_id: number;
         let end_token_id: number;
-
+        
         const { id: instance_id, type: instance_type, start_token, end_token, from_instance_id, to_instance_id, label_file} = instance.get_instance_data()
         const { hex: color } = label_file.colour;
 
         if (instance_type === "relation") {
             const start_instance = this.instance_list.get().find(find_instance => find_instance.get_instance_data().id === from_instance_id)
+            if (!start_instance) return []
             start_token_id = this.token_list.find(token => token.id === start_instance["start_token"]).id
             
             const end_instance = this.instance_list.get().find(find_instance => find_instance.get_instance_data().id === to_instance_id)
+            if (!end_instance) return []
             end_token_id = this.token_list.find(token => token.id === end_instance["end_token"]).id
         } else {
             start_token_id = start_token;
             end_token_id = end_token;
         }
         
-        const base_rects = this.generate_rects(start_token_id, end_token_id)
+        const base_rects = this.generate_rects(start_token_id, end_token_id).filter(rect => rect.x !== 0 && rect.y !== 0 && rect.width !== 0)
         const instance_rects = base_rects.map(rect => ({...rect, instance_id, instance_type, color }))
 
         return instance_rects
@@ -100,10 +102,17 @@ export default class DrawRects {
                   } else {
                     const last_token_in_the_line = this.token_list.filter(token => token.line == this.line_list[i].id)
                     const first_token_in_the_line = this.token_list.find(token => token.line == this.line_list[i].id)
+
+                    if (first_token_in_the_line) {
+                        x = first_token_in_the_line.start_x;
+                        y = this.line_list[first_token_in_the_line.line].y + 3;
+                        width = last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x;
+                    } else {
+                        x = 0;
+                        y = 0;
+                        width = 0;
+                    }
                     
-                    x = first_token_in_the_line.start_x;
-                    y = this.line_list[first_token_in_the_line.line].y + 3;
-                    width = last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x;
                 }
                 rects.push({ x, y, line: i, width })
             }
@@ -125,9 +134,15 @@ export default class DrawRects {
                     const last_token_in_the_line = this.token_list.filter(token => token.line == this.line_list[i].id)
                     const first_token_in_the_line = this.token_list.find(token => token.line == this.line_list[i].id)
 
-                    x = first_token_in_the_line.start_x;
-                    y = this.line_list[first_token_in_the_line.line].y + 3;
-                    width = last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x;
+                    if (first_token_in_the_line) {
+                        x = first_token_in_the_line.start_x;
+                        y = this.line_list[first_token_in_the_line.line].y + 3;
+                        width = last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - first_token_in_the_line.start_x;
+                    } else {
+                        x = 0;
+                        y = 0;
+                        width = 0;
+                    }
                 }
 
                 rects.push({ x, y, line: i, width })
