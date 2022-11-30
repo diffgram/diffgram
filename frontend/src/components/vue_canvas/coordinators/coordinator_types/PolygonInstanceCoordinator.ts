@@ -35,6 +35,14 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       annotation_event.annotation_ctx.is_actively_drawing
       && annotation_event.annotation_ctx.draw_mode
   }
+  private should_use_turbo_mode(annotation_event: ImageInteractionEvent): boolean {
+    let current_polygon_point_list = annotation_event.annotation_ctx.current_drawing_instance.points
+    return this.is_mouse_move_event(annotation_event) &&
+      annotation_event.annotation_ctx.is_actively_drawing
+      && annotation_event.annotation_ctx.shift_key
+      && current_polygon_point_list.length >= 1
+      && annotation_event.annotation_ctx.draw_mode
+  }
   private check_point_canvas_limits(point: Point, canvas_width: number, canvas_height: number): PolygonPoint{
     let result = point as PolygonPoint
     if (point.x <= this.snap_to_edges_num_pixels) {
@@ -62,14 +70,12 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     let mouse_position = annotation_event.annotation_ctx.mouse_position
     let mouse_down_position = annotation_event.annotation_ctx.mouse_down_position
     let current_polygon_point_list = annotation_event.annotation_ctx.current_drawing_instance.points
-    if (current_polygon_point_list.length >= 1 && annotation_event.annotation_ctx.shift_key) {
-      let x_diff = Math.abs(mouse_position.x - current_polygon_point_list[current_polygon_point_list.length - 1].x);
-      let y_diff = Math.abs(mouse_position.y -  current_polygon_point_list[current_polygon_point_list.length - 1].y)
-      if (x_diff > 10 || y_diff > 10) {
-        mouse_down_position.x = mouse_position.x;
-        mouse_down_position.y = mouse_position.y;
-        this.add_polygon_point(coordinator_result, annotation_event);
-      }
+    let x_diff = Math.abs(mouse_position.x - current_polygon_point_list[current_polygon_point_list.length - 1].x);
+    let y_diff = Math.abs(mouse_position.y -  current_polygon_point_list[current_polygon_point_list.length - 1].y)
+    if (x_diff > 10 || y_diff > 10) {
+      mouse_down_position.x = mouse_position.x;
+      mouse_down_position.y = mouse_position.y;
+      this.add_polygon_point(coordinator_result, annotation_event);
     }
   }
   private detect_other_polygon_points(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
@@ -131,6 +137,9 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     // Start Drawing
     if(this.should_start_drawing(annotation_event)){
       this.start_polygon_draw(result, annotation_event)
+    }
+    if(this.should_use_turbo_mode(annotation_event)){
+      this.add_point_turbo_mode(result, annotation_event)
     }
     if(this.should_add_polygon_point(annotation_event)){
       this.add_polygon_point(result, annotation_event)

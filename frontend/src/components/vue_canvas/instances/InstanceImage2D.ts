@@ -46,6 +46,7 @@ export abstract class InstanceImage2D extends Instance {
   }
 
   public set_color_from_label() {
+
     let colour = this.get_label_file_colour_map()[this.label_file_id]
     if (colour) {
       this.set_border_color(colour.hex)
