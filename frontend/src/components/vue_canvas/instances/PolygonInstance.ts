@@ -47,6 +47,56 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     this.on_instance_unhovered = this.set_default_hover_out_style
     this.ctx = ctx;
   }
+  private find_midpoint_index(midpoints_polygon){
+    let midpoint_hover = undefined;
+    let count = 0;
+
+    for (const point of midpoints_polygon) {
+      // TODO use user set param here
+      let result = point_is_intersecting_circle(
+        this.canvas_mouse_tools.mouse_position,
+        point,
+        this.image_label_settings.vertex_size * 4
+      );
+
+      if (result) {
+        midpoint_hover = count;
+        this.canvas_element.style.cursor = "all-scroll";
+      }
+      count += 1;
+    }
+    if (midpoint_hover != undefined) {
+      this.midpoint_hover = midpoint_hover;
+    } else {
+      this.midpoint_hover = undefined;
+    }
+    return midpoint_hover;
+  }
+  public detect_hover_polygon_midpoints(){
+    const instance = this;
+    if (!instance.selected) {
+      return;
+    }
+    if (!instance.midpoints_polygon) {
+      return;
+    }
+
+    // Check for hover on any middle point
+    let midpoints_polygon = instance.midpoints_polygon;
+    if (!Array.isArray(midpoints_polygon)) {
+      for (let figure_id of Object.keys(midpoints_polygon)) {
+        let figure_midpoints = midpoints_polygon[figure_id];
+        let midpoint_hovered_point = this.find_midpoint_index(
+          figure_midpoints
+        );
+        if (midpoint_hovered_point != undefined) {
+          break;
+        }
+      }
+    } else {
+      this.find_midpoint_index(midpoints_polygon);
+    }
+  }
   public move_polygon_points(x_move: number, y_move: number, figure_id: number = undefined){
     let points = this.points;
     if (this.hovered_figure_id) {
@@ -224,6 +274,50 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     } else {
       this.midpoints_polygon = midpoints_polygon;
     }
+  }
+  public add_hovered_midpoint_polygon(){
+    let points = this.points.map((p) => ({...p}));
+
+    let rest_of_points = [];
+    if (this.hovered_figure_id) {
+      points = this.points.filter(
+        (p) => p.figure_id === this.hovered_figure_id
+      );
+      rest_of_points = this.points.filter(
+        (p) => p.figure_id !== this.hovered_figure_id
+      );
+    }
+    let midpoints_polygon = this.midpoints_polygon;
+    if (this.hovered_figure_id) {
+      midpoints_polygon = this.midpoints_polygon[this.hovered_figure_id] as PolygonPoint;
+    }
+
+    let new_point_to_add = midpoints_polygon[this.midpoint_hover] as PolygonPoint;
+    if (new_point_to_add == undefined) {
+      return;
+    }
+    points.splice(this.midpoint_hover + 1, 0, {
+      ...new_point_to_add,
+      figure_id: this.hovered_figure_id,
+    });
+    this.polygon_point_hover_index = this.midpoint_hover + 1;
+    this.polygon_point_click_index = this.midpoint_hover + 1;
+    this.polygon_click_index = this.selected_instance_index;
+
+    let hovered_point = points[this.polygon_point_hover_index];
+    if (!hovered_point) {
+      return;
+    }
+    hovered_point.selected = true;
+    this.lock_point_hover_change = true;
+    instance.midpoint_hover = undefined;
+    instance.selected = true;
+    if (this.hovered_figure_id) {
+      instance.points = points.concat(rest_of_points);
+    } else {
+      instance.points = points;
+    }
+    this.instance_list.splice(this.selected_instance_index, 1, instance);
   }
 
   private draw_polygon_midpoints(ctx, figure_id = undefined) {

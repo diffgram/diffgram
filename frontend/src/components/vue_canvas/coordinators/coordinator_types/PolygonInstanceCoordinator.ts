@@ -94,6 +94,38 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       !annotation_event.annotation_ctx.instance_select_for_issue &&
       !annotation_event.annotation_ctx.view_only_mode
   }
+
+  private should_detect_polygon_point(annotation_event: ImageInteractionEvent): boolean {
+    let poly = this.instance as PolygonInstance
+    return this.is_mouse_move_event(annotation_event) &&
+      poly &&
+      poly.selected &&
+      !poly.soft_delete &&
+      !annotation_event.annotation_ctx.draw_mode &&
+      !annotation_event.annotation_ctx.view_issue_mode &&
+      !annotation_event.annotation_ctx.instance_select_for_issue &&
+      !annotation_event.annotation_ctx.view_only_mode
+  }
+
+  private should_insert_polygon_point(annotation_event: ImageInteractionEvent): boolean {
+    let poly = this.instance as PolygonInstance
+    return this.is_mouse_down_event(annotation_event) &&
+      poly &&
+      poly.selected &&
+      poly.midpoint_hover != undefined &&
+      !poly.soft_delete &&
+      annotation_event.annotation_ctx.is_actively_drawing &&
+      !annotation_event.annotation_ctx.draw_mode &&
+      !annotation_event.annotation_ctx.view_issue_mode &&
+      !annotation_event.annotation_ctx.instance_select_for_issue &&
+      !annotation_event.annotation_ctx.view_only_mode
+  }
+
+  private detect_polygon_midpoints(){
+    console.log('detect_polygon_midpoints')
+    let poly = this.instance as PolygonInstance
+    poly.detect_hover_polygon_midpoints()
+  }
   private start_polygon_point_move(result: CoordinatorProcessResult) {
     let poly = this.instance as PolygonInstance
     let original_instance = this.save_original_instance_for_undo()
@@ -279,6 +311,23 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     }
     else if (this.should_stop_drag_polygon(annotation_event)){
       this.stop_polygon_move(result, annotation_event)
+    }
+
+    // Polygon Drag
+    if (this.should_start_dragging_polygon(annotation_event)){
+      this.start_polygon_drag(result)
+    }
+    else if (this.should_drag_polygon(annotation_event)){
+      this.drag_polygon(result, annotation_event)
+    }
+    else if (this.should_stop_drag_polygon(annotation_event)){
+      this.stop_polygon_move(result, annotation_event)
+    }
+
+
+    // Polygon Midpoints
+    if (this.should_detect_polygon_point(annotation_event)){
+      this.detect_polygon_midpoints()
     }
 
     // Start Drawing
