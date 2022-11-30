@@ -3906,7 +3906,7 @@ export default Vue.extend({
         this.initialize_instance_buffer_dict_frame(this.current_frame);
         // IMPORTANT  This is a POINTER not a new object. This is a critical assumption.
         // See https://docs.google.com/document/d/1KkpccWaCoiVWkiit8W_F5xlH0Ap_9j4hWduZteU4nxE/edit
-        this.instance_list = this.instance_buffer_dict[this.current_frame]
+        this.instance_list = this.instance_buffer_dict[this.current_frame];
       } else {
         this.video_pause = Date.now();
         this.get_instances(true);
@@ -7388,7 +7388,7 @@ export default Vue.extend({
         // IMPORTANT  This is a POINTER not a new object. This is a critical assumption.
         // See https://docs.google.com/document/d/1KkpccWaCoiVWkiit8W_F5xlH0Ap_9j4hWduZteU4nxE/edit
 
-        this.instance_list = this.instance_buffer_dict[this.current_frame]
+        this.instance_list = this.instance_buffer_dict[this.current_frame];
         this.add_override_colors_for_model_runs();
         this.show_annotations = true;
         this.loading = false;
@@ -7495,10 +7495,10 @@ export default Vue.extend({
         if (this.instance_buffer_dict) {
           // We want to do the equals because that creates the reference on the instance list to buffer dict
           this.initialize_instance_buffer_dict_frame(this.current_frame);
-          this.instance_list = this.instance_buffer_dict[this.current_frame]
+          this.instance_list = this.instance_buffer_dict[this.current_frame];
         } else {
           // handle if buffer list doesn't load all the way?
-          this.insatnce_list = []
+          this.insatnce_list = [];
         }
 
         this.show_annotations = true;
