@@ -53,6 +53,7 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
     }
     let result = []
     if(this.instance_hover_index != undefined){
+      console.log('RESULE GET HOVERED', this.instance_hover_index, this.instance_list)
       result.push(this.instance_list[this.instance_hover_index])
     }
     for (let i = 0; i < this.instance_list.length; i++) {
@@ -60,6 +61,7 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
         result.push(this.instance_list[i])
       }
     }
+    console.log('RESULE GET HOVERED', result)
     // Sort by selected instances first
     result = result.sort((a,b) => b.selected - a.selected)
     return result
