@@ -1094,7 +1094,7 @@ export default Vue.extend({
   },
   watch: {
     instance_list: function(newVal) {
-      this.instance_store.set_instance_list(this.file.id, newVal)
+      this.instance_store.set_instance_list(this.file_id, newVal)
     },
     finish_annotation_show: function (val) {
       if (val) this.annotation_show_on = false;
@@ -1586,6 +1586,10 @@ export default Vue.extend({
     };
   },
   computed: {
+    file_id: function() {
+      if (!this.task) return this.file.id
+      else return this.task.file.id
+    },
     label_file_map: function () {
       let result = {}
       for (let elm of this.label_list) {
