@@ -7498,7 +7498,7 @@ export default Vue.extend({
           this.instance_list = this.instance_buffer_dict[this.current_frame];
         } else {
           // handle if buffer list doesn't load all the way?
-          this.insatnce_list = [];
+          this.instance_list = [];
         }
 
         this.show_annotations = true;
