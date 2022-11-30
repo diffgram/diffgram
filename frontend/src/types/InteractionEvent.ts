@@ -30,6 +30,7 @@ export interface ImageAnnotationEventCtx extends AnnotationEventCtx {
   lock_point_hover_change: boolean
   shift_key: boolean
   current_drawing_instance: Instance
+  polygon_point_click_index: number
   original_edit_instance: Instance
   locked_editing_instance: Instance
   label_file_colour_map: LabelColourMap

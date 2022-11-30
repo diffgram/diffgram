@@ -100,6 +100,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     return this.is_mouse_down_event(annotation_event) &&
       box &&
       box.is_hovered &&
+      !box.soft_delete &&
       box.box_edit_point_hover == 'not_intersecting_special_points' &&
       !annotation_event.annotation_ctx.draw_mode &&
       !annotation_event.annotation_ctx.view_issue_mode &&
@@ -125,6 +126,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     return this.is_mouse_move_event(annotation_event) &&
       box &&
       box.selected &&
+      !box.soft_delete &&
       box.is_moving &&
       !box.is_resizing &&
       box.box_edit_point_hover == 'not_intersecting_special_points' &&
@@ -139,6 +141,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     return this.is_mouse_down_event(annotation_event) &&
       box &&
       box.selected &&
+      !box.soft_delete &&
       (box.box_edit_point_hover == 'x_min_y_min' ||
         box.box_edit_point_hover == 'x_max_y_min' ||
         box.box_edit_point_hover == 'x_min_y_max' ||
@@ -224,17 +227,6 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
 
   }
 
-  private edit_instance_command_creation(annotation_event: ImageInteractionEvent, result: CoordinatorProcessResult){
-    const new_instance = this.instance;
-    const command = new UpdateInstanceCommand(
-      new_instance,
-      annotation_event.annotation_ctx.instance_list.indexOf(new_instance),
-      annotation_event.annotation_ctx.original_edit_instance,
-      annotation_event.annotation_ctx.ann_core_ctx
-    );
-    this.command_manager.executeCommand(command);
-    result.original_edit_instance = undefined;
-  }
   public route_event_to_box_drawing(annotation_event: ImageInteractionEvent, result: CoordinatorProcessResult){
     // Box Drawing
     if (this.should_start_drawing_box(annotation_event)) {
@@ -279,6 +271,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     else if (this.should_stop_moving_box(annotation_event)) {
       this.stop_box_move(annotation_event, result)
     }
+
     // Box Resize
     else if (this.should_start_resizing_box(annotation_event)) {
       this.start_box_resize(result)

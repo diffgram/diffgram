@@ -13,6 +13,22 @@ import {LabelFileMap} from "../types/label";
 import {PolygonInstance} from "../components/vue_canvas/instances/PolygonInstance";
 import {CanvasMouseTools} from "../components/vue_canvas/CanvasMouseTools";
 
+export const duplicate_for_undo = function() {
+  let duplicate_instance = new BoxInstance(
+    this.ctx,
+    this.on_instance_updated,
+    this.on_instance_selected,
+    this.on_instance_deselected,
+    this.mouse_down_delta_event,
+    this.mouse_down_position,
+    this.image_label_settings,
+  );
+  let instance_data_to_keep = {
+    ...this,
+  };
+  duplicate_instance.populate_from_instance_obj(instance_data_to_keep);
+  return duplicate_instance
+}
 export const duplicate_instance = function (instance_to_copy, component_ctx: CanvasMouseCtx, with_ids = false) {
   let points = [];
   let nodes = [];

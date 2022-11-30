@@ -66,25 +66,31 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   private check_polygon_intersection_on_points(): boolean {
+
     for (let i = 0; i < this.points.length; i++) {
       let result = point_is_intersecting_circle(
         this.canvas_mouse_tools.mouse_position,
-        this.points[i]
+        this.points[i],
+        this.image_label_settings.vertex_size,
+        this.zoom_value
       );
 
       if (result == true) {
         this.polygon_point_hover_index = i;
+        this.set_mouse_cursor_from_hovered_point()
         return true;
       }
     }
+    this.set_mouse_cursor_from_hovered_point()
     this.polygon_point_hover_index = null
+
     return false;
   }
 
   public set_mouse_cursor_from_hovered_point() {
 
     if (this.canvas_element) {
-      if (this.check_polygon_intersection_on_points()) {
+      if (this.polygon_point_hover_index != undefined) {
         this.canvas_element.style.cursor = 'all-scroll'
       } else {
         this.canvas_element.style.cursor = 'pointer'
@@ -238,25 +244,29 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   private check_poly_hovered(ctx, figure_id: number = undefined) {
+
+
     if (this.is_mouse_in_path(ctx)) {
+      this.check_polygon_intersection_on_points()
       if (!this.is_hovered) {
         this.is_hovered = true
         this.hovered_figure_id = figure_id
-        this.check_polygon_intersection_on_points()
         if(this.on_instance_hovered){
           this.on_instance_hovered(this)
         }
       }
     }else{
-      if(this.is_hovered){
+      this.check_polygon_intersection_on_points()
+      if(this.is_hovered && this.polygon_point_hover_index == undefined){
+        this.set_mouse_cursor_from_hovered_point()
         this.is_hovered = false
         this.hovered_figure_id = null
-        this.check_polygon_intersection_on_points()
         if(this.on_instance_unhovered){
           this.on_instance_unhovered(this)
         }
       }
     }
+
   }
 
   private draw_polygon_lines(ctx, points) {

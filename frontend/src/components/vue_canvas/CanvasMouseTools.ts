@@ -12,6 +12,8 @@ export class CanvasMouseTools {
   public canvas_width: number;
   public canvas_height: number;
 
+  public mouse_is_down: boolean
+
 
 
   constructor(mouse_position, canvas_translate, canvas_elm, canvas_scale_global, canvas_width, canvas_height) {

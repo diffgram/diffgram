@@ -7,6 +7,7 @@ export type CoordinatorProcessResult = {
   is_actively_drawing?: boolean
   lock_point_hover_change?: boolean
   new_instance_index?: number
+  polygon_point_click_index?: number
   new_instance?: Instance
   original_edit_instance?: Instance
   instance_hover_index?: number

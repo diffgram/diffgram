@@ -27,6 +27,72 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       !annotation_event.annotation_ctx.is_actively_drawing
       && annotation_event.annotation_ctx.draw_mode
   }
+  private should_move_polygon_points(annotation_event: ImageInteractionEvent): boolean {
+    return this.is_mouse_move_event(annotation_event) &&
+      !annotation_event.annotation_ctx.is_actively_drawing
+      && !annotation_event.annotation_ctx.draw_mode
+      && annotation_event.annotation_ctx.polygon_point_click_index != undefined
+      && annotation_event.annotation_ctx.canvas_mouse_tools.mouse_is_down
+  }
+  private should_start_moving_polygon_points(annotation_event: ImageInteractionEvent): boolean {
+    let poly = this.instance as PolygonInstance
+    return this.is_mouse_down_event(annotation_event) &&
+      poly &&
+      poly.polygon_point_hover_index != undefined &&
+      !poly.soft_delete &&
+      !annotation_event.annotation_ctx.draw_mode &&
+      !annotation_event.annotation_ctx.view_issue_mode &&
+      !annotation_event.annotation_ctx.instance_select_for_issue &&
+      !annotation_event.annotation_ctx.view_only_mode
+  }
+  private start_polygon_point_move(result: CoordinatorProcessResult) {
+    let poly = this.instance as PolygonInstance
+    let original_instance = this.save_original_instance_for_undo()
+
+    poly.set_is_moving(true)
+    result.locked_editing_instance = poly
+    result.polygon_point_click_index = poly.polygon_point_hover_index
+    result.original_edit_instance = original_instance
+
+  }
+  private save_original_instance_for_undo(): PolygonInstance {
+
+    let poly = this.instance as PolygonInstance
+    const original_edit_instance = poly.duplicate_for_undo()
+    return original_edit_instance
+  }
+
+  private should_stop_move_polygon_points(annotation_event: ImageInteractionEvent): boolean {
+    let polygon = annotation_event.annotation_ctx.locked_editing_instance as PolygonInstance
+    return this.is_mouse_up_event(annotation_event) &&
+      polygon &&
+      polygon.selected &&
+      polygon.is_moving &&
+      !annotation_event.annotation_ctx.draw_mode &&
+      !annotation_event.annotation_ctx.view_issue_mode &&
+      !annotation_event.annotation_ctx.instance_select_for_issue &&
+      !annotation_event.annotation_ctx.view_only_mode
+  }
+  private stop_polygon_move(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent, ) {
+    let poly = result.locked_editing_instance as PolygonInstance
+    poly.set_is_moving(false)
+    this.edit_instance_command_creation(annotation_event, result)
+    result.locked_editing_instance = null
+    result.polygon_point_click_index = null
+
+  }
+  private move_polygon_points(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){
+    let instance = this.instance
+    var polygon_point_click_index = annotation_event.annotation_ctx.polygon_point_click_index;
+
+    if (instance && instance.points && instance.points[polygon_point_click_index]) {
+      let x_new = annotation_event.annotation_ctx.mouse_position.x;
+      let y_new = annotation_event.annotation_ctx.mouse_position.y;
+      instance.points[polygon_point_click_index].x = x_new;
+      instance.points[polygon_point_click_index].y = y_new;
+      coordinator_result.instance_moved = true
+    }
+  }
   private start_polygon_draw(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){
     this.initialize_instance_drawing(coordinator_result, annotation_event)
   }
@@ -132,6 +198,17 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     }
     else if (this.should_deselect_instance(annotation_event)) {
       this.deselect()
+    }
+
+    // Polygon Move
+    if (this.should_start_moving_polygon_points(annotation_event)){
+      this.start_polygon_point_move(result)
+    }
+    else if (this.should_move_polygon_points(annotation_event)){
+      this.move_polygon_points(result, annotation_event)
+    }
+    else if (this.should_stop_move_polygon_points(annotation_event)){
+      this.stop_polygon_move(result, annotation_event)
     }
 
     // Start Drawing

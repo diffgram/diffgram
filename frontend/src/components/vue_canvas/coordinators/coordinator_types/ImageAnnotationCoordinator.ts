@@ -5,17 +5,20 @@ import {BoxInstance} from "../../instances/BoxInstance";
 import {GLOBAL_SELECTED_COLOR, Instance} from "../../instances/Instance";
 import {InstanceImage2D} from "../../instances/InstanceImage2D";
 import {CreateInstanceCommand} from "../../../annotation/commands/create_instance_command";
+import {UpdateInstanceCommand} from "../../../annotation/commands/update_instance_command";
 
 export abstract class ImageAnnotationCoordinator extends Coordinator {
   /*
   * Extends the base coordinator for the context of image annotation.
   * */
+  public canvas_mouse_ctx: CanvasMouseCtx
+  instance: InstanceImage2D
+
   constructor() {
     super();
 
   }
 
-  instance: InstanceImage2D
 
   protected is_mouse_down_event(event: ImageInteractionEvent): boolean {
     if (event.dom_event.type === 'mousedown') {
@@ -37,7 +40,6 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
     }
     return false
   }
-
   public initialize_instance_drawing(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
     let currently_drawing_instance: InstanceImage2D = annotation_event.annotation_ctx.current_drawing_instance as InstanceImage2D
     if (annotation_event.annotation_ctx.video_mode == true) {
@@ -110,5 +112,15 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
 
   }
 
-  public canvas_mouse_ctx: CanvasMouseCtx
+  protected edit_instance_command_creation(annotation_event: ImageInteractionEvent, result: CoordinatorProcessResult){
+    const new_instance = this.instance;
+    const command = new UpdateInstanceCommand(
+      new_instance,
+      annotation_event.annotation_ctx.instance_list.indexOf(new_instance),
+      annotation_event.annotation_ctx.original_edit_instance,
+      annotation_event.annotation_ctx.ann_core_ctx
+    );
+    this.command_manager.executeCommand(command);
+    result.original_edit_instance = undefined;
+  }
 }

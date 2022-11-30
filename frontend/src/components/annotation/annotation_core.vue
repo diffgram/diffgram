@@ -1245,7 +1245,7 @@ export default Vue.extend({
       show_instance_history: false,
       regenerate_file_cache_loading: false,
       display_refresh_cache_button: false,
-      canvas_mouse_tools: false,
+      canvas_mouse_tools: undefined as CanvasMouseTools,
       show_custom_snackbar: false,
       custom_snackbar_timeout: -1,
       custom_snackbar_text_color: 'white',
@@ -5629,19 +5629,19 @@ export default Vue.extend({
         this.lock_point_hover_change = false;
       }
 
-      let polygon_did_move = this.move_polygon_line_or_point(event);
-      let polygon_dragged = false;
-      if (!polygon_did_move) {
-        polygon_dragged = this.drag_polygon(event);
-      }
+      // let polygon_did_move = this.move_polygon_line_or_point(event);
+      // let polygon_dragged = false;
+      // if (!polygon_did_move) {
+      //   polygon_dragged = this.drag_polygon(event);
+      // }
 
       if (
         // box_did_move ||
-        polygon_did_move ||
+        // polygon_did_move ||
         cuboid_did_move ||
         ellipse_did_move ||
         curve_did_move ||
-        polygon_dragged ||
+        // polygon_dragged ||
         key_points_did_move
       ) {
         this.calculate_min_max_points(
@@ -6383,6 +6383,8 @@ export default Vue.extend({
 
     mouse_up: function (event) {
       // start LIMITS, returns immediately
+      this.canvas_mouse_tools.mouse_is_down = false
+
       let locked_frame_number = this.current_frame;
       if (this.$props.view_only_mode == true) {
         return;
@@ -6407,9 +6409,6 @@ export default Vue.extend({
       }
       this.$store.commit("mouse_state_up");
 
-      this.polygon_click_index = null;
-      this.polygon_point_click_index = null;
-
       if (this.draw_mode == false) {
         //console.debug('mouse upp edit', this.instance_hover_index, this.instance_hover_type);
         if (this.instance_list != undefined) {
@@ -6418,7 +6417,7 @@ export default Vue.extend({
           if (this.ellipse_hovered_instance) {
             this.stop_ellipse_resize();
           }
-          this.polygon_mouse_up_edit();
+          // this.polygon_mouse_up_edit();
           this.cuboid_mouse_up_edit();
           this.curve_mouse_up_edit();
           this.keypoint_mouse_up_edit();
@@ -7061,6 +7060,7 @@ export default Vue.extend({
         instance_list: this.instance_list as Instance[],
         draw_mode: this.draw_mode,
         shift_key: this.shift_key,
+        polygon_point_click_index: this.polygon_point_click_index,
         is_actively_drawing: this.is_actively_drawing,
         hovered_instance: this.hovered_instance,
         current_drawing_instance: this.current_instance,
@@ -7135,6 +7135,7 @@ export default Vue.extend({
         this.original_edit_instance = result.original_edit_instance
         this.locked_editing_instance = result.locked_editing_instance
         this.lock_point_hover_change = result.lock_point_hover_change
+        this.polygon_point_click_index = result.polygon_point_click_index
       }
     },
     reset_current_instances: function () {
@@ -7201,6 +7202,7 @@ export default Vue.extend({
       this.mouse_down_v2_handler(event)
 
       if (this.seeking == false) {
+        this.canvas_mouse_tools.mouse_is_down = true
         this.$store.commit("mouse_state_down");
 
         this.select_something();
@@ -7227,11 +7229,11 @@ export default Vue.extend({
         }
       }
 
-      this.polygon_auto_border_mouse_down()
+      // this.polygon_auto_border_mouse_down()
       this.mouse_down_position = this.mouse_transform(event, this.mouse_down_position)
       this.mouse_down_position.request_time = Date.now()
-      this.lock_polygon_corner();
-      this.polygon_mid_point_mouse_down()
+      // this.lock_polygon_corner();
+      // this.polygon_mid_point_mouse_down()
 
 
     },
@@ -7578,24 +7580,24 @@ export default Vue.extend({
       this.$emit("request_new_task", direction, task, assign_to_user);
     },
 
-      reset_for_file_change_context: function (){
-        this.current_sequence_annotation_core_prop = {
-          id: null,
-          number: null
-        }
-        this.video_mode = false   // if we don't have this can be issues switching to say an image
-        this.degrees = 0
-        this.instance_buffer_dict = {}
-        this.instance_buffer_metadata = {}
-        this.instance_list = []
-        if(this.video_mode){
-          this.$refs.video_controllers.reset_cache();
-        }
-        if(this.$refs.qa_carrousel){
-          this.$refs.qa_carrousel.annotation_show_previous_instance = 0
-          this.$refs.qa_carrousel.annotation_show_progress = 0
-          this.annotation_show_current_instance = 0
-        }
+    reset_for_file_change_context: function (){
+      this.current_sequence_annotation_core_prop = {
+        id: null,
+        number: null
+      }
+      this.video_mode = false   // if we don't have this can be issues switching to say an image
+      this.degrees = 0
+      this.instance_buffer_dict = {}
+      this.instance_buffer_metadata = {}
+      this.instance_list = []
+      if(this.video_mode){
+        this.$refs.video_controllers.reset_cache();
+      }
+      if(this.$refs.qa_carrousel){
+        this.$refs.qa_carrousel.annotation_show_previous_instance = 0
+        this.$refs.qa_carrousel.annotation_show_progress = 0
+        this.annotation_show_current_instance = 0
+      }
 
     },
     annotation_show_activate(show_type) {
