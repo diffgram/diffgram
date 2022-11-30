@@ -36,6 +36,7 @@ export interface ImageAnnotationEventCtx extends AnnotationEventCtx {
   label_file_colour_map: LabelColourMap
   mouse_position: MousePosition
   mouse_down_position: MousePosition
+  mouse_down_delta_event: MousePosition
   canvas_transform: ImageCanvasTransform
   canvas_mouse_tools: CanvasMouseTools
   canvas_element: HTMLCanvasElement

@@ -47,7 +47,18 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     this.on_instance_unhovered = this.set_default_hover_out_style
     this.ctx = ctx;
   }
-
+  public move_polygon_points(x_move: number, y_move: number, figure_id: number = undefined){
+    let points = this.points;
+    if (this.hovered_figure_id) {
+      points = this.points.filter(
+        (p) => p.figure_id === this.hovered_figure_id
+      );
+    }
+    for (const point of points) {
+      point.x += x_move;
+      point.y += y_move;
+    }
+  }
   public duplicate_for_undo() {
     let duplicate_instance = new PolygonInstance(
       this.ctx,

@@ -34,11 +34,60 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       && annotation_event.annotation_ctx.polygon_point_click_index != undefined
       && annotation_event.annotation_ctx.canvas_mouse_tools.mouse_is_down
   }
+
+  private should_drag_polygon(annotation_event: ImageInteractionEvent): boolean {
+    return this.is_mouse_move_event(annotation_event) &&
+      !annotation_event.annotation_ctx.is_actively_drawing
+      && !annotation_event.annotation_ctx.draw_mode
+      && annotation_event.annotation_ctx.locked_editing_instance
+      && annotation_event.annotation_ctx.locked_editing_instance.selected
+      && annotation_event.annotation_ctx.polygon_point_click_index == undefined
+      && annotation_event.annotation_ctx.canvas_mouse_tools.mouse_is_down
+  }
+
+  private should_stop_drag_polygon(annotation_event: ImageInteractionEvent): boolean {
+    let poly = annotation_event.annotation_ctx.locked_editing_instance as PolygonInstance
+    return this.is_mouse_up_event(annotation_event) &&
+      poly &&
+      poly.selected &&
+      poly.is_moving &&
+      !annotation_event.annotation_ctx.draw_mode &&
+      !annotation_event.annotation_ctx.view_issue_mode &&
+      !annotation_event.annotation_ctx.instance_select_for_issue &&
+      !annotation_event.annotation_ctx.view_only_mode
+
+
+  }
+  private drag_polygon(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){
+    const poly = annotation_event.annotation_ctx.locked_editing_instance as PolygonInstance
+    if (!poly.selected) {
+      return;
+    }
+    let x_move = annotation_event.annotation_ctx.mouse_down_delta_event.x;
+    let y_move = annotation_event.annotation_ctx.mouse_down_delta_event.y;
+    poly.move_polygon_points(x_move, y_move, poly.hovered_figure_id)
+    result.instance_moved = true
+    result.locked_editing_instance = poly
+
+  }
   private should_start_moving_polygon_points(annotation_event: ImageInteractionEvent): boolean {
     let poly = this.instance as PolygonInstance
     return this.is_mouse_down_event(annotation_event) &&
       poly &&
       poly.polygon_point_hover_index != undefined &&
+      !poly.soft_delete &&
+      !annotation_event.annotation_ctx.draw_mode &&
+      !annotation_event.annotation_ctx.view_issue_mode &&
+      !annotation_event.annotation_ctx.instance_select_for_issue &&
+      !annotation_event.annotation_ctx.view_only_mode
+  }
+
+  private should_start_dragging_polygon(annotation_event: ImageInteractionEvent): boolean {
+    let poly = this.instance as PolygonInstance
+    return this.is_mouse_down_event(annotation_event) &&
+      poly &&
+      poly.polygon_point_hover_index == undefined &&
+      poly.is_hovered &&
       !poly.soft_delete &&
       !annotation_event.annotation_ctx.draw_mode &&
       !annotation_event.annotation_ctx.view_issue_mode &&
@@ -52,6 +101,16 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     poly.set_is_moving(true)
     result.locked_editing_instance = poly
     result.polygon_point_click_index = poly.polygon_point_hover_index
+    result.original_edit_instance = original_instance
+
+  }
+
+  private start_polygon_drag(result: CoordinatorProcessResult) {
+    let poly = this.instance as PolygonInstance
+    let original_instance = this.save_original_instance_for_undo()
+
+    poly.set_is_moving(true)
+    result.locked_editing_instance = poly
     result.original_edit_instance = original_instance
 
   }
@@ -73,7 +132,7 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       !annotation_event.annotation_ctx.instance_select_for_issue &&
       !annotation_event.annotation_ctx.view_only_mode
   }
-  private stop_polygon_move(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent, ) {
+  private stop_polygon_move(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
     let poly = result.locked_editing_instance as PolygonInstance
     poly.set_is_moving(false)
     this.edit_instance_command_creation(annotation_event, result)
@@ -208,6 +267,17 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       this.move_polygon_points(result, annotation_event)
     }
     else if (this.should_stop_move_polygon_points(annotation_event)){
+      this.stop_polygon_move(result, annotation_event)
+    }
+
+    // Polygon Drag
+    if (this.should_start_dragging_polygon(annotation_event)){
+      this.start_polygon_drag(result)
+    }
+    else if (this.should_drag_polygon(annotation_event)){
+      this.drag_polygon(result, annotation_event)
+    }
+    else if (this.should_stop_drag_polygon(annotation_event)){
       this.stop_polygon_move(result, annotation_event)
     }
 

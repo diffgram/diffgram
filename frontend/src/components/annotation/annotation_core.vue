@@ -7067,6 +7067,7 @@ export default Vue.extend({
         label_file_colour_map: this.label_file_colour_map as LabelColourMap,
         mouse_position: this.mouse_position as MousePosition,
         mouse_down_position: this.mouse_down_position as MousePosition,
+        mouse_down_delta_event: this.mouse_down_delta_event as MousePosition,
         canvas_mouse_tools: this.canvas_mouse_tools,
         canvas_transform: this.canvas_transform,
         canvas_element: this.canvas_element,
