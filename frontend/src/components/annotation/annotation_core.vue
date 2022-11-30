@@ -4291,7 +4291,6 @@ export default Vue.extend({
       }
       // important, we don't change the value if it's locked
       // otherwise it's easy for user to get "off" of the point they want
-
       if (index != null) {
         this.instance_hover_index = parseInt(index);
         this.hovered_figure_id = figure_id;
@@ -6403,7 +6402,6 @@ export default Vue.extend({
 
       this.polygon_click_index = null;
       this.polygon_point_click_index = null;
-
       if (this.draw_mode == false) {
         //console.debug('mouse upp edit', this.instance_hover_index, this.instance_hover_type);
         if (this.instance_list != undefined) {
@@ -8510,7 +8508,6 @@ export default Vue.extend({
       frame_number_param = undefined,
       instance_list_param = undefined
     ) {
-      console.log('KEYFRAME', this.current_frame, this.instance_list)
       this.save_error = {};
       this.save_warning = {};
       if (this.go_to_keyframe_loading) {
@@ -8540,7 +8537,6 @@ export default Vue.extend({
           instance_list = this.instance_buffer_dict[frame_number]
         }
       }
-      console.log('KEYFRAME', this.current_frame, instance_list)
       if (this.get_save_loading(frame_number) == true) {
         // If we have new instances created while saving. We might still need to save them after the first
         // save has been completed.
