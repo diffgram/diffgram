@@ -752,7 +752,7 @@
               @open_issue_panel="open_issue_panel"
               @on_click_polygon_unmerge="polygon_unmerge"
               @on_click_polygon_merge="start_polygon_select_for_merge"
-              @delete_polygon_point="polygon_delete_point"
+              @delete_polygon_point="polygon_delete_point_click_callback"
               @copy_instance="on_context_menu_copy_instance"
               @paste_instance="(num_frames, index_instance) => paste_instance(num_frames, index_instance, current_frame)"
               @paste_instance_on_next_frames="(num_frames, index_instance) => paste_instance(num_frames, index_instance, current_frame)"
@@ -981,6 +981,7 @@ import {ImageCanvasTransform} from "../../types/CanvasTransform";
 import {LabelFile} from "../../types/label";
 import {InstanceImage2D} from "../vue_canvas/instances/InstanceImage2D";
 import {PolygonInstance} from "../vue_canvas/instances/PolygonInstance";
+import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -6318,36 +6319,17 @@ export default Vue.extend({
       this.original_edit_instance = undefined;
       this.original_edit_instance_index = undefined;
     },
-    polygon_delete_point: function (polygon_point_index) {
-      if (this.draw_mode) {
-        return;
+    polygon_delete_point_click_callback: function (polygon_point_index) {
+      if(!this.selected_instance){
+        return
       }
-      if (!this.selected_instance) {
-        return;
-      }
-      if (this.selected_instance.type !== "polygon") {
-        return;
-      }
-      let i = 0;
-      if (polygon_point_index != undefined) {
-        this.selected_instance.points.splice(polygon_point_index, 1);
-      } else {
-        for (const point of this.selected_instance.points) {
-          if (
-            this.point_is_intersecting_circle(this.mouse_position, point, 8)
-          ) {
-            this.selected_instance.points.splice(i, 1);
-            break;
-          }
-          i += 1;
-        }
-      }
+      let ann_ctx = this.build_ann_event_ctx()
+      let ann_tool_event: InteractionEvent = genImageAnnotationEvent(null, ann_ctx)
+      const coordinator = this.generate_interaction_coordinator(ann_tool_event) as PolygonInstanceCoordinator;
 
-      this.instance_list.splice(
-        this.selected_instance_index,
-        1,
-        this.selected_instance
-      );
+      let result = {} as CoordinatorProcessResult
+      coordinator.polygon_delete_point(result, polygon_point_index)
+
     },
 
     get_node_hover_index: function () {
@@ -6374,9 +6356,25 @@ export default Vue.extend({
       this.instance_update(update);
     },
 
-    double_click: function ($event) {
-      this.mouse_position = this.mouse_transform($event, this.mouse_position);
-      this.polygon_delete_point();
+    double_click: function (event) {
+
+      this.mouse_position = this.mouse_transform(event, this.mouse_position);
+      let ann_ctx = this.build_ann_event_ctx()
+      let ann_tool_event: InteractionEvent = genImageAnnotationEvent(event, ann_ctx)
+      if (!this.current_interaction) {
+        this.current_interaction = new Interaction()
+      }
+      // this.current_interaction.add_event(ann_tool_event)
+      const coordinator = this.generate_interaction_coordinator(ann_tool_event);
+      if (coordinator) {
+        let result: CoordinatorProcessResult = coordinator.perform_action_from_event(ann_tool_event);
+        if (result.instance_moved === true) {
+          this.has_changed = true;
+        }
+        if (result.instance_moved && this.show_snackbar_occlude_direction) {
+          this.show_snackbar_occlude_direction = false;
+        }
+      }
       this.double_click_keypoint_special_action();
     },
 
@@ -7005,7 +7003,7 @@ export default Vue.extend({
         }
       }
     },
-    create_coordinator_router: function (event): ImageAnnotationCoordinatorRouter {
+    create_coordinator_router: function (event: ImageInteractionEvent): ImageAnnotationCoordinatorRouter {
       let canvas_mouse_ctx: CanvasMouseCtx = {
         mouse_position: this.mouse_position,
         canvas_element_ctx: this.canvas_element_ctx,
@@ -7093,6 +7091,7 @@ export default Vue.extend({
         if (result.instance_moved) {
           this.has_changed = true;
         }
+        this.polygon_point_hover_index = result.polygon_point_hover_index
         this.original_edit_instance = result.original_edit_instance
         this.locked_editing_instance = result.locked_editing_instance
       }

@@ -16,9 +16,9 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
    * */
   snap_to_edges_num_pixels = 5
 
-  constructor(box_instance, canvas_mouse_ctx: CanvasMouseCtx, command_manager: CommandManager) {
+  constructor(poly_instance, canvas_mouse_ctx: CanvasMouseCtx, command_manager: CommandManager) {
     super();
-    this.instance = box_instance
+    this.instance = poly_instance
     this.canvas_mouse_ctx = canvas_mouse_ctx
     this.command_manager = command_manager
   }
@@ -107,22 +107,93 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       !annotation_event.annotation_ctx.view_only_mode
   }
 
-  private should_insert_polygon_point(annotation_event: ImageInteractionEvent): boolean {
+  private should_insert_polygon_midpoint(annotation_event: ImageInteractionEvent): boolean {
     let poly = this.instance as PolygonInstance
+    console.log('poly midpoint_hover', poly.soft_delete)
     return this.is_mouse_down_event(annotation_event) &&
       poly &&
       poly.selected &&
       poly.midpoint_hover != undefined &&
       !poly.soft_delete &&
-      annotation_event.annotation_ctx.is_actively_drawing &&
+      !annotation_event.annotation_ctx.is_actively_drawing &&
       !annotation_event.annotation_ctx.draw_mode &&
       !annotation_event.annotation_ctx.view_issue_mode &&
       !annotation_event.annotation_ctx.instance_select_for_issue &&
       !annotation_event.annotation_ctx.view_only_mode
   }
 
+  private polygon_should_delete_point(annotation_event: ImageInteractionEvent): boolean{
+    let poly = this.instance as PolygonInstance
+    return this.is_mouse_double_click_event(annotation_event) &&
+      poly &&
+      poly.selected &&
+      !poly.soft_delete &&
+      poly.polygon_point_hover_index != undefined
+      !annotation_event.annotation_ctx.is_actively_drawing &&
+      !annotation_event.annotation_ctx.draw_mode &&
+      !annotation_event.annotation_ctx.view_issue_mode &&
+      !annotation_event.annotation_ctx.instance_select_for_issue &&
+      !annotation_event.annotation_ctx.view_only_mode
+  }
+
+  public polygon_delete_point(result: CoordinatorProcessResult, point_index: number = undefined){
+    let instance = this.instance as PolygonInstance
+    let index_to_delete = point_index
+    if(index_to_delete == undefined){
+      index_to_delete = instance.polygon_point_hover_index
+    }
+    instance.delete_point(index_to_delete)
+    result.instance_moved = true
+  }
+
+  public insert_polygon_midpoint(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent){
+    let instance = this.instance as PolygonInstance
+    let points = instance.points.map((p) => ({...p}));
+
+    let rest_of_points = [];
+    if (instance.hovered_figure_id) {
+      points = instance.points.filter(
+        (p) => p.figure_id === instance.hovered_figure_id
+      );
+      rest_of_points = instance.points.filter(
+        (p) => p.figure_id !== instance.hovered_figure_id
+      );
+    }
+    let midpoints_polygon = instance.midpoints_polygon;
+    if (instance.hovered_figure_id) {
+      midpoints_polygon = instance.midpoints_polygon[instance.hovered_figure_id] as PolygonPoint[];
+    }
+
+    let new_point_to_add = midpoints_polygon[instance.midpoint_hover] as PolygonPoint;
+    if (new_point_to_add == undefined) {
+      return;
+    }
+    points.splice(instance.midpoint_hover + 1, 0, {
+      ...new_point_to_add,
+      figure_id: instance.hovered_figure_id,
+    });
+
+    instance.polygon_point_hover_index = instance.midpoint_hover + 1;
+    result.polygon_point_click_index = instance.midpoint_hover + 1;
+    // this.polygon_click_index = this.selected_instance_index;
+
+    let hovered_point = points[instance.polygon_point_hover_index];
+    if (!hovered_point) {
+      return;
+    }
+    hovered_point.selected = true;
+    result.lock_point_hover_change = true;
+    instance.midpoint_hover = undefined;
+    instance.selected = true;
+    if (instance.hovered_figure_id) {
+      instance.points = points.concat(rest_of_points);
+    } else {
+      instance.points = points;
+    }
+    // this.instance_list.splice(this.selected_instance_index, 1, instance);
+  }
+
   private detect_polygon_midpoints(){
-    console.log('detect_polygon_midpoints')
     let poly = this.instance as PolygonInstance
     poly.detect_hover_polygon_midpoints()
   }
@@ -274,6 +345,7 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
   }
 
   public perform_action_from_event(annotation_event: ImageInteractionEvent): CoordinatorProcessResult {
+    let instance = this.instance as PolygonInstance
     let result: CoordinatorProcessResult = {
       instance_moved: false,
       is_actively_drawing: annotation_event.annotation_ctx.is_actively_drawing,
@@ -282,6 +354,7 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       instance_hover_type: this.instance ? this.instance.type : null,
       locked_editing_instance: annotation_event.annotation_ctx.locked_editing_instance,
       lock_point_hover_change: annotation_event.annotation_ctx.lock_point_hover_change,
+      polygon_point_hover_index: instance ? instance.polygon_point_hover_index : null,
     }
     // Polygon Select
     if (this.should_select_instance(annotation_event)) {
@@ -328,6 +401,14 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     // Polygon Midpoints
     if (this.should_detect_polygon_point(annotation_event)){
       this.detect_polygon_midpoints()
+    }
+    if(this.should_insert_polygon_midpoint(annotation_event)){
+      this.insert_polygon_midpoint(result,annotation_event)
+    }
+
+    // Delete
+    if(this.polygon_should_delete_point(annotation_event)){
+      this.polygon_delete_point(result)
     }
 
     // Start Drawing

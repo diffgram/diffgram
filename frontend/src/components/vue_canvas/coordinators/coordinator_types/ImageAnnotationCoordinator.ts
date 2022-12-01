@@ -19,7 +19,12 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
 
   }
 
-
+  protected is_mouse_double_click_event(event: ImageInteractionEvent): boolean {
+    if (event.dom_event.type === 'dblclick') {
+      return true
+    }
+    return false
+  }
   protected is_mouse_down_event(event: ImageInteractionEvent): boolean {
     if (event.dom_event.type === 'mousedown') {
       return true
