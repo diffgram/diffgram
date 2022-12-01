@@ -812,7 +812,7 @@
             :project_string_id="
               project_string_id
                 ? project_string_id
-                : this.$props.project_string_id
+                : this.project_string_id
             "
             :view_only_mode="view_only_mode"
             :current_video_file_id="current_video_file_id"
@@ -1620,13 +1620,13 @@ export default Vue.extend({
       return this.unsaved_frames.length > 0;
     },
     filtered_instance_type_list: function () {
-      if (!this.$props.task || !this.$props.task.job) {
+      if (!this.task || !this.task.job) {
         return this.instance_type_list;
       }
-      if (!this.$props.task.job.ui_schema) {
+      if (!this.task.job.ui_schema) {
         return this.instance_type_list;
       }
-      let ui_schema = this.$props.task.job.ui_schema;
+      let ui_schema = this.task.job.ui_schema;
       let allowed_types = undefined;
 
       if (ui_schema && ui_schema.instance_selector) {
@@ -1694,7 +1694,7 @@ export default Vue.extend({
     },
     show_target_reticle: function () {
       if (
-        this.$props.view_only_mode == true ||
+        this.view_only_mode == true ||
         this.space_bar == true ||
         this.any_loading == true
       ) {
@@ -1830,7 +1830,7 @@ export default Vue.extend({
         return this.label_settings.canvas_scale_global_setting;
       }
 
-      if (this.$props.file && this.$props.file.type == "text") {
+      if (this.file && this.file.type == "text") {
         // Temp until more text functions. eg so canvas doesn't 'explode' to large size.
         return 100;
       }
@@ -2303,9 +2303,9 @@ export default Vue.extend({
       if (new_status !== "complete") {
         this.submitted_to_review = true;
       }
-      if (this.$props.task && this.$props.task.id) {
+      if (this.task && this.task.id) {
         this.save_loading_image = false;
-        this.trigger_task_change("next", this.$props.task, true);
+        this.trigger_task_change("next", this.task, true);
       }
     },
     on_canvas_scale_global_changed: async function (new_scale) {
@@ -2474,12 +2474,12 @@ export default Vue.extend({
       this.regenerate_file_cache_loading = true;
       let frame_number = this.current_frame;
       let file_id = undefined;
-      if (this.$props.task) {
-        file_id = this.$props.task.file.id;
+      if (this.task) {
+        file_id = this.task.file.id;
       } else {
-        file_id = this.$props.file.id;
+        file_id = this.file.id;
       }
-      let project_string = this.$props.project_string_id;
+      let project_string = this.project_string_id;
       if (!project_string) {
         project_string = this.$store.state.project.current.project_string_id;
       }
@@ -2510,10 +2510,10 @@ export default Vue.extend({
 
     get_metadata: function () {
       let metadata;
-      if (this.$props.file.type == "video") {
-        metadata = {...this.$props.file.video};
+      if (this.file.type == "video") {
+        metadata = {...this.file.video};
       } else {
-        metadata = {...this.$props.file.image};
+        metadata = {...this.file.image};
       }
       return metadata;
     },
@@ -2557,10 +2557,10 @@ export default Vue.extend({
       }
     },
     get_create_instance_template_url: function () {
-      if (this.$props.project_string_id) {
-        return `/api/v1/project/${this.$props.project_string_id}/instance-template/new`;
+      if (this.project_string_id) {
+        return `/api/v1/project/${this.project_string_id}/instance-template/new`;
       } else {
-        return `/api/v1/task/${this.$props.task.id}/instance-template/new`;
+        return `/api/v1/task/${this.task.id}/instance-template/new`;
       }
     },
 
@@ -3038,7 +3038,7 @@ export default Vue.extend({
       this.loading_instance_templates = true;
       this.canvas_element = document.getElementById("my_canvas");
       this.canvas_element_ctx = this.canvas_element.getContext("2d");
-      const [data, error] = await getInstanceTemplatesFromProject(this.$props.project_string_id, this.label_schema.id);
+      const [data, error] = await getInstanceTemplatesFromProject(this.project_string_id, this.label_schema.id);
       if (data && data.instance_template_list) {
         this.instance_template_list =
           data.instance_template_list.map((instance_template) => {
@@ -3111,10 +3111,10 @@ export default Vue.extend({
     },
     set_canvas_dimensions: function () {
       let file = null;
-      if (this.$props.file) {
-        file = this.$props.file;
-      } else if (this.$props.task) {
-        file = this.$props.task.file;
+      if (this.file) {
+        file = this.file;
+      } else if (this.task) {
+        file = this.task.file;
       } else {
         throw new Error("Must provide task or file in props.");
       }
@@ -3352,7 +3352,7 @@ export default Vue.extend({
       // propagating to main
       // Once the list is updated here it filters back to instance_list component
 
-      if (this.$props.view_only_mode == true) {
+      if (this.view_only_mode == true) {
         return;
       }
 
@@ -3544,13 +3544,13 @@ export default Vue.extend({
       this.update_user_settings_from_store();
       this.command_manager = new CommandManagerAnnotationCore();
       // Initial File Set
-      if (this.$props.file) {
+      if (this.file) {
         this.on_change_current_file();
-      } else if (this.$props.task) {
+      } else if (this.task) {
         this.on_change_current_task();
       }
 
-      if (this.$props.enabled_edit_schema == true) {
+      if (this.enabled_edit_schema == true) {
         this.edit_ui_schema()
       }
     },
@@ -3710,7 +3710,7 @@ export default Vue.extend({
         }
       );
 
-      if (this.$props.task || this.job_id) {
+      if (this.task || this.job_id) {
         this.task_mode_mounted();
       }
 
@@ -3728,19 +3728,19 @@ export default Vue.extend({
       }
     },
     fetch_model_run_list: async function () {
-      if (!this.$props.model_run_id_list) {
+      if (!this.model_run_id_list) {
         return;
       }
-      if (this.$props.model_run_id_list.length === 0) {
+      if (this.model_run_id_list.length === 0) {
         return;
       }
 
       this.loading = true;
       try {
         const response = await axios.post(
-          `/api/v1/project/${this.$props.project_string_id}/model-runs/list`,
+          `/api/v1/project/${this.project_string_id}/model-runs/list`,
           {
-            id_list: this.$props.model_run_id_list.map((x) => parseInt(x, 10)),
+            id_list: this.model_run_id_list.map((x) => parseInt(x, 10)),
           }
         );
         if (response.data["model_run_list"] != undefined) {
@@ -4320,8 +4320,8 @@ export default Vue.extend({
             this.File_list.splice(i, 1);
 
             if (this.File_list.length > 0) {
-              if (this.File_list[i].id == this.$props.file.id) {
-                this.$props.file = this.File_list[0];
+              if (this.File_list[i].id == this.file.id) {
+                this.file = this.File_list[0];
                 this.change_file("none", this.File_list[0]);
               }
             }
@@ -4346,7 +4346,7 @@ export default Vue.extend({
     },
 
     delete_instance: function () {
-      if (this.$props.view_only_mode == true) {
+      if (this.view_only_mode == true) {
         return;
       }
 
@@ -4757,7 +4757,7 @@ export default Vue.extend({
     },
     // TODO clarify this does more than update styling
     update_mouse_style: function () {
-      if (this.$props.view_only_mode == true) {
+      if (this.view_only_mode == true) {
         return;
       }
 
@@ -4882,7 +4882,7 @@ export default Vue.extend({
       }
     },
     select_issue: function () {
-      if (this.$props.view_only_mode == true) {
+      if (this.view_only_mode == true) {
         return;
       }
       if (
@@ -5579,7 +5579,7 @@ export default Vue.extend({
       if (this.draw_mode == true) {
         return;
       }
-      if (this.$props.view_only_mode == true) {
+      if (this.view_only_mode == true) {
         return;
       }
       if (this.instance_select_for_issue == true) {
@@ -6385,7 +6385,7 @@ export default Vue.extend({
     mouse_up: function (event) {
       // start LIMITS, returns immediately
       let locked_frame_number = this.current_frame;
-      if (this.$props.view_only_mode == true) {
+      if (this.view_only_mode == true) {
         return;
       }
       if (this.seeking == true) {
@@ -7170,7 +7170,7 @@ export default Vue.extend({
       let locked_frame_number = this.current_frame;
       this.mouse_position = this.mouse_transform(event, this.mouse_position);
 
-      if (this.$props.view_only_mode == true) {
+      if (this.view_only_mode == true) {
         return;
       }
 
@@ -7256,7 +7256,7 @@ export default Vue.extend({
     },
     get_instance_list_for_image: async function () {
       let url = undefined;
-      let file = this.$props.file;
+      let file = this.file;
 
       if (this.task_instances) {
         this.get_instances_core({ data: this.task_instances })
@@ -7264,8 +7264,8 @@ export default Vue.extend({
       }
 
       if (this.$store.getters.is_on_public_project) {
-        url = `/api/project/${this.$props.project_string_id}/file/${String(
-          this.$props.file.id
+        url = `/api/project/${this.project_string_id}/file/${String(
+          this.file.id
         )}/annotation/list`;
 
         const response = await axios.post(url, {
@@ -7283,10 +7283,10 @@ export default Vue.extend({
           }
           // If a task is present, prefer this route to handle permissions
           url = "/api/v1/task/" + this.task.id + "/annotation/list";
-          file = this.$props.task.file;
+          file = this.task.file;
         } else {
-          url = `/api/project/${this.$props.project_string_id}/file/${String(
-            this.$props.file.id
+          url = `/api/project/${this.project_string_id}/file/${String(
+            this.file.id
           )}/annotation/list`;
         }
         try {
@@ -7445,7 +7445,7 @@ export default Vue.extend({
       } else {
         url +=
           "/api/project/" +
-          this.$props.project_string_id +
+          this.project_string_id +
           "/video/" +
           String(this.current_video_file_id);
         // careful it's the video file we want here
@@ -7637,7 +7637,7 @@ export default Vue.extend({
 
       if (do_change_item == true) {
         if (this.annotation_show_type === "task") {
-          return this.trigger_task_change(direction, this.$props.task, false);
+          return this.trigger_task_change(direction, this.task, false);
         }
         this.change_file(direction);
       }
@@ -7652,20 +7652,20 @@ export default Vue.extend({
     },
     set_ui_schema() {
       if (
-        this.$props.task &&
-        this.$props.task.job &&
-        this.$props.task.job.ui_schema
+        this.task &&
+        this.task.job &&
+        this.task.job.ui_schema
       ) {
-        this.$store.commit("set_ui_schema", this.$props.task.job.ui_schema);
+        this.$store.commit("set_ui_schema", this.task.job.ui_schema);
       } else {
         this.$store.commit("clear_ui_schema");
       }
     },
     on_change_current_task: async function () {
-      if (!this.$props.task) {
+      if (!this.task) {
         return;
       }
-      if (!this.$props.task.id) {
+      if (!this.task.id) {
         return;
       }
 
@@ -7683,10 +7683,10 @@ export default Vue.extend({
         await this.save();
       }
       this.reset_for_file_change_context();
-      await this.refresh_attributes_from_current_file(this.$props.task.file);
+      await this.refresh_attributes_from_current_file(this.task.file);
 
-      this.current_file_updates(this.$props.task.file);
-      await this.prepare_canvas_for_new_file(this.$props.task.file);
+      this.current_file_updates(this.task.file);
+      await this.prepare_canvas_for_new_file(this.task.file);
 
       this.full_file_loading = false;
       this.annotation_show_progress = 0;
@@ -7702,10 +7702,10 @@ export default Vue.extend({
       }
     },
     on_change_current_file: async function () {
-      if (!this.$props.file) {
+      if (!this.file) {
         return;
       }
-      if (!this.$props.file.id) {
+      if (!this.file.id) {
         return;
       }
 
@@ -7726,12 +7726,12 @@ export default Vue.extend({
       }
       this.reset_for_file_change_context();
 
-      this.$addQueriesToLocation({file: this.$props.file.id});
+      this.$addQueriesToLocation({file: this.file.id});
 
-      await this.refresh_attributes_from_current_file(this.$props.file);
+      await this.refresh_attributes_from_current_file(this.file);
 
-      this.current_file_updates(this.$props.file);
-      await this.prepare_canvas_for_new_file(this.$props.file);
+      this.current_file_updates(this.file);
+      await this.prepare_canvas_for_new_file(this.file);
 
       this.full_file_loading = false;
       this.ghost_clear_for_file_change_context();
@@ -7825,7 +7825,7 @@ export default Vue.extend({
             this.snackbar_success = true;
             this.snackbar_success_text = "Deferred for review. Moved to next.";
 
-            this.trigger_task_change("next", this.$props.task, true);
+            this.trigger_task_change("next", this.task, true);
           }
           if (mode === 'incomplete') {
             this.task.status = 'in_progress'
@@ -8020,7 +8020,7 @@ export default Vue.extend({
     may_toggle_escape_key: function (event) {
       if (event.keyCode === 27) {
         // Esc
-        if (this.$props.view_only_mode == true) {
+        if (this.view_only_mode == true) {
           return;
         }
         if (this.instance_select_for_issue || this.view_issue_mode) {
@@ -8093,16 +8093,16 @@ export default Vue.extend({
         // c
 
         if (
-          this.$props.file &&
-          this.$props.file.ann_is_complete == true ||
-          this.$props.view_only_mode == true
+          this.file &&
+          this.file.ann_is_complete == true ||
+          this.view_only_mode == true
         ) {
           return;
         }
         if (
-          this.$props.task.file &&
-          this.$props.task.file.ann_is_complete == true ||
-          this.$props.view_only_mode == true
+          this.task.file &&
+          this.task.file.ann_is_complete == true ||
+          this.view_only_mode == true
         ) {
           return;
         }
@@ -8142,7 +8142,7 @@ export default Vue.extend({
       }
     },
     reset_drawing: function () {
-      if (this.$props.view_only_mode == true) {
+      if (this.view_only_mode == true) {
         return;
       }
       this.lock_point_hover_change = false; // reset
@@ -8275,10 +8275,10 @@ export default Vue.extend({
       ) {
         on_new_frame_or_file = true;
       }
-      if (this.$props.file && this.$props.file.id != original_file_id) {
+      if (this.file && this.file.id != original_file_id) {
         on_new_frame_or_file = true;
       }
-      if (this.$props.task && this.$props.task.file.id != original_file_id) {
+      if (this.task && this.task.file.id != original_file_id) {
         on_new_frame_or_file = true;
       }
       if (!on_new_frame_or_file) {
@@ -8382,15 +8382,15 @@ export default Vue.extend({
     },
     set_clipboard: function (instance_list) {
       let file_id = undefined;
-      if (this.$props.file && this.$props.file.id) {
-        file_id = this.$props.file.id;
+      if (this.file && this.file.id) {
+        file_id = this.file.id;
       }
       if (
-        this.$props.task &&
-        this.$props.task.file &&
-        this.$props.task.file.id
+        this.task &&
+        this.task.file &&
+        this.task.file.id
       ) {
-        file_id = this.$props.task.file.id;
+        file_id = this.task.file.id;
       }
       this.$store.commit("set_clipboard", {
         instance_list: instance_list,
@@ -8492,7 +8492,7 @@ export default Vue.extend({
         return
       }
       let current_user_id = this.$store.state.user.current.id;
-      let record = this.$props.task.time_tracking.find(elm => elm.user_id === current_user_id)
+      let record = this.task.time_tracking.find(elm => elm.user_id === current_user_id)
       let [result, error] = await trackTimeTask(
         record.time_spent,
         this.task.id,
@@ -8520,7 +8520,7 @@ export default Vue.extend({
       if (this.go_to_keyframe_loading) {
         return
       }
-      if (this.$props.view_only_mode == true) {
+      if (this.view_only_mode == true) {
         return;
       }
       let frame_number = undefined;
@@ -8590,10 +8590,10 @@ export default Vue.extend({
       // a video file can now be
       // saved from file id + frame, so the current file
       let current_file_id = null;
-      if (this.$props.file) {
-        current_file_id = this.$props.file.id;
-      } else if (this.$props.task) {
-        current_file_id = this.$props.task.file.id;
+      if (this.file) {
+        current_file_id = this.file.id;
+      } else if (this.task) {
+        current_file_id = this.task.file.id;
       } else {
         throw new Error(
           "You must provide either a file or a task in props in order to save."
@@ -8669,8 +8669,8 @@ export default Vue.extend({
           // now that complete completes whole video, we can move to next as expected.
           this.snackbar_success = true;
           this.snackbar_success_text = "Saved and completed. Moved to next.";
-          if (this.$props.task && this.$props.task.id) {
-            this.trigger_task_change("next", this.$props.task, true);
+          if (this.task && this.task.id) {
+            this.trigger_task_change("next", this.task, true);
           } else {
             this.trigger_task_change("next", "none", true); // important
           }
@@ -8683,7 +8683,7 @@ export default Vue.extend({
           }
         }
         this.ghost_refresh_instances();
-        if (this.$props.task) {
+        if (this.task) {
           // Track time (nonblocking)
           this.save_time_tracking();
         }
