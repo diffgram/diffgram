@@ -1,6 +1,7 @@
 import {InteractionEvent} from "../../../types/InteractionEvent";
 import CommandManager from "../../../helpers/command/command_manager";
 import {Instance} from "../instances/Instance";
+import {AutoborderContext} from "../instances/PolygonInstance";
 
 export type CoordinatorProcessResult = {
   instance_moved?: boolean
@@ -14,6 +15,7 @@ export type CoordinatorProcessResult = {
   instance_hover_index?: number
   instance_hover_type?: string
   locked_editing_instance?: Instance
+  autoborder_context: AutoborderContext
 
 }
 

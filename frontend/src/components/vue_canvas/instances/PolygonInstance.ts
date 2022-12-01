@@ -47,6 +47,18 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     this.on_instance_unhovered = this.set_default_hover_out_style
     this.ctx = ctx;
   }
+  public get_polygon_figures(): number[]{
+    let figure_list = [];
+    for (const p of this.points) {
+      if (!p.figure_id) {
+        continue;
+      }
+      if (!figure_list.includes(p.figure_id)) {
+        figure_list.push(p.figure_id);
+      }
+    }
+    return figure_list;
+  }
   private find_midpoint_index(midpoints_polygon){
     let midpoint_hover = undefined;
     let count = 0;
@@ -572,4 +584,19 @@ export interface PolygonPoint extends Point {
   hovered_while_drawing: boolean
   point_set_as_auto_border: boolean
   selected?: boolean
+}
+
+export type AutoborderContext = {
+  auto_border_polygon_p1: PolygonPoint
+  auto_border_polygon_p2: PolygonPoint
+  auto_border_polygon_p1_index: number
+  auto_border_polygon_p2_index: number
+
+  auto_border_polygon_p1_instance_index: number
+  auto_border_polygon_p2_instance_index: number
+
+  auto_border_polygon_p1_figure: number
+  auto_border_polygon_p2_figure: number
+
+  show_snackbar_auto_border: boolean
 }

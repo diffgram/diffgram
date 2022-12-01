@@ -6,6 +6,7 @@ import {LabelFile} from "./label";
 import {ImageLabelSettings} from "./image_label_settings";
 import {Sequence} from "./Sequence";
 import {CanvasMouseTools} from "../components/vue_canvas/CanvasMouseTools";
+import {AutoborderContext, PolygonPoint} from "../components/vue_canvas/instances/PolygonInstance";
 
 export type InteractionEvent = {
   dom_event: MouseEvent
@@ -49,6 +50,7 @@ export interface ImageAnnotationEventCtx extends AnnotationEventCtx {
   ann_core_ctx: any
   view_only_mode: boolean
   video_mode: boolean
+  autoborder_context: AutoborderContext
 
 }
 export interface AudioAnnotationEvent extends AnnotationEventCtx{
