@@ -333,7 +333,7 @@
                   :project_string_id_prop="project_string_id"
                   :create_instance="event_create_instance"
                   :current_userscript_prop="get_userscript()"
-                  :userscript_select_disabled="userscript_select_disabled()"
+                  :userscript_select_disabled="userscript_select_disabled"
                   :show_code_editor="!task || !task.id"
                   :show_external_scripts="!task || !task.id"
                   :show_save="!task || !task.id"
@@ -1027,6 +1027,10 @@ export default Vue.extend({
     project_string_id: {
       default: null,
       type: String,
+    },
+    userscript_select_disabled: {
+      default: false,
+      type: Boolean
     },
     instance_store: {
       required:  true
@@ -2514,7 +2518,6 @@ export default Vue.extend({
       }
       return metadata;
     },
-
     get_userscript: function () {
       if (this.job && this.job.default_userscript) {
         return this.job.default_userscript;
@@ -2526,11 +2529,6 @@ export default Vue.extend({
         return this.$refs.userscript.userscript_literal;
       }
       return undefined;
-    },
-    userscript_select_disabled: function () {
-      if (this.task && this.task.id) {
-        return true;
-      }
     },
     go_to_key_frame_handler: function () {
       this.close_instance_history_panel();

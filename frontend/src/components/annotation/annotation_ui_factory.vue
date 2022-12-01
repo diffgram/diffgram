@@ -22,6 +22,7 @@
         <v_annotation_core
           v-if="!changing_file && !changing_task"
           class="pt-1 pl-1"
+          :userscript_select_disabled="userscript_select_disabled()"
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
           :label_schema="current_label_schema"
@@ -492,6 +493,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    userscript_select_disabled: function () {
+      return this.task && this.task.id
+    },
     on_change_label_schema: function (schema) {
       if(schema.id === this.current_label_schema.id){
         return
