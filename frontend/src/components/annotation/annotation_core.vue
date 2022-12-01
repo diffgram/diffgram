@@ -1028,6 +1028,10 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    working_file: {
+      required: true,
+      type: Object
+    },
     userscript_select_disabled: {
       default: false,
       type: Boolean
@@ -1098,7 +1102,7 @@ export default Vue.extend({
   },
   watch: {
     instance_list: function(newVal) {
-      this.instance_store.set_instance_list(this.file_id, newVal)
+      this.instance_store.set_instance_list(this.working_file.id, newVal)
     },
     finish_annotation_show: function (val) {
       if (val) this.annotation_show_on = false;
@@ -1590,10 +1594,6 @@ export default Vue.extend({
     };
   },
   computed: {
-    file_id: function() {
-      if (!this.task) return this.file.id
-      else return this.task.file.id
-    },
     label_file_map: function () {
       let result = {}
       for (let elm of this.label_list) {
@@ -2220,8 +2220,7 @@ export default Vue.extend({
       try{
         await this.detect_is_ok_to_save()
         this.loading = true
-        let file = this.file
-        if (this.task) { file = this.task.file }
+        const file = this.working_file
         let [updated_file, err] = await update_file_metadata(
           this.project_string_id,
           file.id,
@@ -7609,7 +7608,7 @@ export default Vue.extend({
     async annotation_show_change_item(direction = "next") {
       let do_change_item
 
-      let file = this.file || this.task.file;
+      const file = this.working_file;
       if (file.type == "video") {
         if (this.$refs.video_controllers.at_end_of_video == true) {
           do_change_item = true;
@@ -7928,8 +7927,7 @@ export default Vue.extend({
 
       if (event.key === "r" && !this.alt_key && !this.ctrl_key && !this.shift_key) {
 
-        let file = this.file
-        if (this.task) { file = this.task.file }
+        const file = this.working_file
         let current_rotation_degrees = file.image.rotation_degrees
         current_rotation_degrees += 90
         if (current_rotation_degrees == 360) { current_rotation_degrees = 0}
@@ -8500,7 +8498,7 @@ export default Vue.extend({
         this.task.id,
         this.task.status,
         this.task.job.id,
-        this.task.file.id,
+        this.working_file.id,
         null
       )
       if (error) {

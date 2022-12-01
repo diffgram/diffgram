@@ -23,6 +23,7 @@
           v-if="!changing_file && !changing_task"
           class="pt-1 pl-1"
           :userscript_select_disabled="userscript_select_disabled()"
+          :working_file="working_file"
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
           :label_schema="current_label_schema"
@@ -283,6 +284,8 @@ export default Vue.extend({
       missing_credentials: [],
       label_schema_list: [],
 
+      working_file: null,
+
       view_only: false,
 
       labels_list_from_project: null,
@@ -311,12 +314,14 @@ export default Vue.extend({
     },
     current_file: {
       handler(newVal, oldVal) {
+        this.update_working_file()
         if (newVal && newVal != oldVal) {
           this.$addQueriesToLocation({file: newVal.id});
         }
       },
     },
     task(newVal) {
+      this.update_working_file()
       if (newVal && this.task_prefetcher && newVal.file.type === 'image') {
         this.task_prefetcher.update_tasks(newVal)
       }
@@ -493,6 +498,10 @@ export default Vue.extend({
     },
   },
   methods: {
+    update_working_file: function() {
+      if (this.task && this.task.id) this.working_file = this.task.file
+      else this.working_file = this.current_file
+    },
     userscript_select_disabled: function () {
       return this.task && this.task.id
     },
