@@ -261,6 +261,7 @@
           <instance_detail_list_view ref="instance_detail_list"
                                      v-if="!task_error.task_request"
                                      :instance_list="instance_list"
+                                     :instance_store="instance_store"
                                      :model_run_list="model_run_list"
                                      :label_file_colour_map="label_file_colour_map"
                                      :refresh="refresh"
@@ -1027,6 +1028,9 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    instance_store: {
+      required:  true
+    },
     task_image: {
       type: HTMLImageElement,
       default: null
@@ -1089,6 +1093,9 @@ export default Vue.extend({
     },
   },
   watch: {
+    instance_list: function(newVal) {
+      this.instance_store.set_instance_list(this.file_id, newVal)
+    },
     finish_annotation_show: function (val) {
       if (val) this.annotation_show_on = false;
     },
@@ -1579,6 +1586,10 @@ export default Vue.extend({
     };
   },
   computed: {
+    file_id: function() {
+      if (!this.task) return this.file.id
+      else return this.task.file.id
+    },
     label_file_map: function () {
       let result = {}
       for (let elm of this.label_list) {
