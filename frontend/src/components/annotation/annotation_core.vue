@@ -1028,6 +1028,10 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    url_instance_buffer: {
+      required: true,
+      type: String
+    },
     working_file: {
       required: true,
       type: Object
@@ -7438,20 +7442,6 @@ export default Vue.extend({
 
 
     },
-    get_url_instance_buffer: function () {
-      let url = "";
-      if (this.task && this.task.id) {
-        url += "/api/v1/task/" + this.task.id + "/video/file_from_task";
-      } else {
-        url +=
-          "/api/project/" +
-          this.project_string_id +
-          "/video/" +
-          String(this.current_video_file_id);
-        // careful it's the video file we want here
-      }
-      return url
-    },
     async get_video_instance_buffer(play_after_success) {
       /*
        * Directly triggers getting buffer
@@ -7472,7 +7462,7 @@ export default Vue.extend({
 
       this.instance_frame_start = this.current_frame;
 
-      let url = this.get_url_instance_buffer();
+      let url = this.url_instance_buffer;
 
       try {
         // Get the buffer from the Server. Note that at this point it is not initialized.
@@ -8303,7 +8293,7 @@ export default Vue.extend({
 
         let min_frame = Math.min(...missing_frames);
         let max_frame = Math.max(...missing_frames);
-        let url = this.get_url_instance_buffer();
+        let url = this.url_instance_buffer;
         let new_instance_buffer = await this.get_instance_buffer_parallel(url, min_frame, max_frame)
         if (!new_instance_buffer) {
           return

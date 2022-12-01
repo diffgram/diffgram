@@ -22,8 +22,11 @@
         <v_annotation_core
           v-if="!changing_file && !changing_task"
           class="pt-1 pl-1"
+
           :userscript_select_disabled="userscript_select_disabled()"
           :working_file="working_file"
+          :url_instance_buffer="get_url_instance_buffer()"
+          
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
           :label_schema="current_label_schema"
@@ -498,6 +501,11 @@ export default Vue.extend({
     },
   },
   methods: {
+    get_url_instance_buffer: function() {
+      if (this.task && this.task.id) return `/api/v1/task/${this.task.id}/video/file_from_task`
+
+      return `/api/project/${this.project_string_id}/video/${this.working_file.id}`
+    },
     update_working_file: function() {
       if (this.task && this.task.id) this.working_file = this.task.file
       else this.working_file = this.current_file
