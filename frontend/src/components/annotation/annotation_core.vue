@@ -6822,11 +6822,7 @@ export default Vue.extend({
         return;
       }
       let found_point = false;
-      for (
-        let instance_index = 0;
-        instance_index < this.instance_list.length;
-        instance_index++
-      ) {
+      for (let instance_index = 0;instance_index < this.instance_list.length;instance_index++) {
         const polygon = this.instance_list[instance_index];
         if (polygon.type !== "polygon" || polygon.soft_delete) {
           continue;

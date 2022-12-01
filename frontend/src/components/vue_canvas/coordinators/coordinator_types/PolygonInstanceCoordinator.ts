@@ -14,7 +14,9 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
   /**
    * Routes an annotation_event and interaction of a user to box instances.
    * */
-  snap_to_edges_num_pixels = 5
+  public snap_to_edges_num_pixels: number = 5
+  public auto_border_polygon_p1: PolygonPoint = null
+  public auto_border_polygon_p2: PolygonPoint = null
 
   constructor(poly_instance, canvas_mouse_ctx: CanvasMouseCtx, command_manager: CommandManager) {
     super();
