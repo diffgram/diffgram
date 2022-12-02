@@ -10,6 +10,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
   public colour: InstanceColor;
   public is_dragging_instance: boolean = false;
+  public show_active_drawing_mouse_point: boolean = true;
   public draw_corners: boolean = false;
   public midpoints_polygon: { [p: number]: PolygonPoint[] } | PolygonPoint[] = null;
   public mouse_down_delta_event: any = undefined;
@@ -486,7 +487,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   private draw_polygon_control_points(ctx) {
     ctx.beginPath();
     let points = this.points
-    if (this.draw_corners) {
+    if (this.draw_corners || this.is_actively_drawing) {
       if (points.length >= 1) {
         ctx.fillStyle = '#ffffff';
         ctx.strokeStyle = '#bdbdbd';
@@ -528,7 +529,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
         points[points.length - 1].y, circle_size, 0, 2 * Math.PI);
       ctx.moveTo(points[i].x, points[i].y)
     }
-    if (points.length >= 1) {
+    if (points.length >= 1 && this.show_active_drawing_mouse_point) {
       ctx.lineTo(this.canvas_mouse_tools.mouse_position.x, this.canvas_mouse_tools.mouse_position.y)
 
     }
@@ -586,17 +587,3 @@ export interface PolygonPoint extends Point {
   selected?: boolean
 }
 
-export type AutoborderContext = {
-  auto_border_polygon_p1: PolygonPoint
-  auto_border_polygon_p2: PolygonPoint
-  auto_border_polygon_p1_index: number
-  auto_border_polygon_p2_index: number
-
-  auto_border_polygon_p1_instance_index: number
-  auto_border_polygon_p2_instance_index: number
-
-  auto_border_polygon_p1_figure: number
-  auto_border_polygon_p2_figure: number
-
-  show_snackbar_auto_border: boolean
-}

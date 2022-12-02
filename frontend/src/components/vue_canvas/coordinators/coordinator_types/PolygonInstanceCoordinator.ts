@@ -9,6 +9,7 @@ import {CanvasMouseCtx, Point, point_is_intersecting_circle} from "../../../../t
 import CommandManager from "../../../../helpers/command/command_manager";
 import {PolygonInstance, PolygonPoint} from "../../instances/PolygonInstance";
 import {BoxInstance} from "../../instances/BoxInstance";
+import {PolygonAutoBorderTool} from "../../advanced_tools/PolygonAutoBorderTool";
 
 export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
   /**
@@ -37,83 +38,14 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       && annotation_event.annotation_ctx.draw_mode
   }
 
-  private find_auto_border_point(result: CoordinatorProcessResult, points: PolygonPoint[], instance_index: number) {
-    let found_point = false;
-    let point_index = 0;
-    for (const point of points) {
-      if (point.hovered_while_drawing) {
-        if (!this.auto_border_polygon_p1) {
-          this.auto_border_polygon_p1 = point;
-          result.autoborder_context.auto_border_polygon_p1_index = point_index;
-          result.autoborder_context.auto_border_polygon_p1_figure = point.figure_id;
-          result.autoborder_context.auto_border_polygon_p1_instance_index = instance_index;
-          point.point_set_as_auto_border = true;
-          found_point = true;
-          result.autoborder_context.show_snackbar_auto_border = true;
-          break;
-        } else if (
-          !this.auto_border_polygon_p2 &&
-          point != this.auto_border_polygon_p1 &&
-          instance_index === result.autoborder_context.auto_border_polygon_p1_instance_index
-        ) {
-          result.autoborder_context.auto_border_polygon_p2 = point;
-          result.autoborder_context.auto_border_polygon_p2_index = point_index;
-          result.autoborder_context.auto_border_polygon_p2_figure = point.figure_id;
-          point.point_set_as_auto_border = true;
-          result.autoborder_context.auto_border_polygon_p2_instance_index = instance_index;
-          result.autoborder_context.show_snackbar_auto_border = false;
-          found_point = true;
-          break;
-        }
-      }
-      point_index += 1;
-    }
-    return found_point;
-  }
 
-  private polygon_autoborder_set_indexes(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
+  private polygon_auto_border_set_indexes(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
+    const auto_border_tool = new PolygonAutoBorderTool(annotation_event.annotation_ctx.auto_border_context);
+    const current_poly = annotation_event.annotation_ctx.current_drawing_instance;
     let instance_list = annotation_event.annotation_ctx.instance_list
-    if (!this.auto_border_polygon_p1 && this.auto_border_polygon_p2) {
-      return;
-    }
-    let found_point = false;
-    for (let instance_index = 0; instance_index < instance_list.length; instance_index++) {
-      const polygon = instance_list[instance_index] as PolygonInstance;
-      if (polygon.type !== "polygon" || polygon.soft_delete) {
-        continue;
-      }
-
-      let points = polygon.points;
-      let figure_list = polygon.get_polygon_figures();
-
-      if (figure_list.length === 0) {
-        let autoborder_point_exists = this.find_auto_border_point(
-          result,
-          points,
-          instance_index
-        );
-        if (autoborder_point_exists) {
-          found_point = true;
-        }
-      } else {
-        for (const figure_id of figure_list) {
-          points = polygon.points.filter((p) => p.figure_id === figure_id);
-          let autoborder_point_exists = this.find_auto_border_point(
-            result,
-            points,
-            instance_index
-          );
-          if (autoborder_point_exists) {
-            found_point = true;
-          }
-        }
-      }
-      if (found_point) {
-        break;
-      }
-    }
+    auto_border_tool.polygon_auto_border_set_indexes(instance_list, current_poly)
+    result.autoborder_context = auto_border_tool.context
   }
-
   private should_move_polygon_points(annotation_event: ImageInteractionEvent): boolean {
     return this.is_mouse_move_event(annotation_event) &&
       !annotation_event.annotation_ctx.is_actively_drawing
@@ -198,7 +130,6 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
 
   private should_insert_polygon_midpoint(annotation_event: ImageInteractionEvent): boolean {
     let poly = this.instance as PolygonInstance
-    console.log('poly midpoint_hover', poly.soft_delete)
     return this.is_mouse_down_event(annotation_event) &&
       poly &&
       poly.selected &&
@@ -351,17 +282,24 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
 
   private start_polygon_draw(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
     this.initialize_instance_drawing(coordinator_result, annotation_event)
+    let polygons = annotation_event.annotation_ctx.instance_list.filter(inst => inst.type === 'polygon')
+    for(let i = 0; i < polygons.length; i++){
+      let poly = polygons[i] as PolygonInstance
+      poly.show_polygon_vertices()
+    }
   }
 
   private should_add_polygon_point(annotation_event: ImageInteractionEvent): boolean {
     return this.is_mouse_up_event(annotation_event) &&
       annotation_event.annotation_ctx.is_actively_drawing
       && annotation_event.annotation_ctx.draw_mode
+      && !annotation_event.annotation_ctx.auto_border_context.auto_border_polygon_p2_index
+
   }
 
   private polygon_point_limits(annotation_event: ImageInteractionEvent, current_point: PolygonPoint) {
     let is_actively_drawing = annotation_event.annotation_ctx.is_actively_drawing
-    let autoborder_context = annotation_event.annotation_ctx.autoborder_context
+    let autoborder_context = annotation_event.annotation_ctx.auto_border_context
     let canvas_width = annotation_event.annotation_ctx.canvas_transform.canvas_width
     let canvas_height = annotation_event.annotation_ctx.canvas_transform.canvas_height
     // Set Autoborder point if exists
@@ -469,7 +407,7 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
   private add_polygon_point(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
     coordinator_result.is_actively_drawing = true
     let polygon = annotation_event.annotation_ctx.current_drawing_instance as PolygonInstance
-    let point = annotation_event.annotation_ctx.mouse_position
+    let point = annotation_event.annotation_ctx.mouse_position as PolygonPoint
     point = this.polygon_point_limits(annotation_event, point)
     let corrected_point = this.check_point_canvas_limits(point,
       annotation_event.annotation_ctx.canvas_transform.canvas_width,
@@ -479,7 +417,6 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     }
     polygon.add_point(corrected_point)
   }
-
   public perform_action_from_event(annotation_event: ImageInteractionEvent): CoordinatorProcessResult {
     let instance = this.instance as PolygonInstance
     let result: CoordinatorProcessResult = {
@@ -491,7 +428,7 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       locked_editing_instance: annotation_event.annotation_ctx.locked_editing_instance,
       lock_point_hover_change: annotation_event.annotation_ctx.lock_point_hover_change,
       polygon_point_hover_index: instance ? instance.polygon_point_hover_index : null,
-      autoborder_context: annotation_event.annotation_ctx.autoborder_context
+      auto_border_context: annotation_event.annotation_ctx.auto_border_context
     }
     // Polygon Select
     if (this.should_select_instance(annotation_event)) {
@@ -543,7 +480,7 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
 
     // Autoborder
     if (this.should_set_autoborder_point_index(annotation_event)) {
-      this.polygon_autoborder_set_indexes(result, annotation_event)
+      this.polygon_auto_border_set_indexes(result, annotation_event)
     }
     // Start Drawing
     if (this.should_start_drawing(annotation_event)) {
@@ -555,6 +492,7 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     if (this.should_add_polygon_point(annotation_event)) {
       this.add_polygon_point(result, annotation_event)
     }
+
 
     return result
   }

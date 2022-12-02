@@ -185,8 +185,8 @@
 
 
     <v-snackbar
-      v-if="show_snackbar_auto_border"
-      v-model="show_snackbar_auto_border"
+      v-if="auto_border_context && auto_border_context.show_snackbar_auto_border"
+      v-model="auto_border_context.show_snackbar_auto_border"
       :multi-line="true"
       :timeout="-1"
       data-cy="auto_border_first_point_selected_usage_prompt"
@@ -199,7 +199,7 @@
           color="red"
           text
           v-bind="attrs"
-          @click="show_snackbar_auto_border = false"
+          @click="auto_border_context.show_snackbar_auto_border = false"
         >
           Ok.
         </v-btn>
@@ -537,7 +537,6 @@
                   </a>
                   <p v-else> {{ file.image.url_signed ? file.image.url_signed : "null" }}</p>
                 </div>
-                </p>
               </div>
               <v_error_multiple :error="file_cant_be_accessed_error"></v_error_multiple>
             </div>
@@ -605,8 +604,8 @@
                 :vertex_size="label_settings.vertex_size"
                 :cuboid_corner_move_point="cuboid_corner_move_point"
                 :video_mode="video_mode"
-                :auto_border_polygon_p1="auto_border_polygon_p1"
-                :auto_border_polygon_p2="auto_border_polygon_p2"
+                :auto_border_polygon_p1="auto_border_context.auto_border_polygon_p1"
+                :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"
                 :issues_list="issues_list"
                 :current_frame="current_frame"
                 :label_settings="label_settings"
@@ -676,8 +675,8 @@
                 :cuboid_corner_move_point="cuboid_corner_move_point"
                 :mode="'gold_standard'"
                 :instance_list="gold_standard_file.instance_list"
-                :auto_border_polygon_p1="auto_border_polygon_p1"
-                :auto_border_polygon_p2="auto_border_polygon_p2"
+                :auto_border_polygon_p1="auto_border_context.auto_border_polygon_p1"
+                :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"
                 :video_mode="video_mode"
                 :is_actively_drawing="is_actively_drawing"
                 :current_frame="current_frame"
@@ -723,11 +722,11 @@
             </canvas>
 
             <polygon_borders_context_menu
-              :show_context_menu="show_polygon_border_context_menu"
+              :show_context_menu="auto_border_context.show_polygon_border_context_menu"
               :mouse_position="mouse_position"
               :project_string_id="project_string_id"
-              @start_auto_bordering="perform_auto_bordering"
-              @close_context_menu="show_polygon_border_context_menu = false"
+              @start_auto_bordering="perform_auto_bordering_v2"
+              @close_context_menu="auto_border_context.show_polygon_border_context_menu = false"
             ></polygon_borders_context_menu>
 
             <context_menu
@@ -905,7 +904,7 @@
 <script lang="ts">
 // @ts-nocheck
 import moment from "moment";
-import axios from "../../services/customInstance";
+import axios from "../../services/customInstance/index.js";
 import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view";
 import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
@@ -928,7 +927,7 @@ import current_instance_template from "../vue_canvas/current_instance_template.v
 import instance_template_creation_dialog from "../instance_templates/instance_template_creation_dialog";
 import create_issue_panel from "../discussions/create_issue_panel.vue";
 import view_edit_issue_panel from "../discussions/view_edit_issue_panel.vue";
-import {getContrastColor} from '../../utils/colorUtils'
+import {getContrastColor} from '../../utils/colorUtils.js'
 import {ellipse} from "../vue_canvas/ellipse.js";
 import {CommandManagerAnnotationCore} from "./annotation_core_command_manager.js";
 import {CreateInstanceCommand} from "./commands/create_instance_command";
@@ -980,7 +979,8 @@ import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
 import {ImageCanvasTransform} from "../../types/CanvasTransform";
 import {LabelFile} from "../../types/label";
 import {InstanceImage2D} from "../vue_canvas/instances/InstanceImage2D";
-import {PolygonInstance, AutoborderContext} from "../vue_canvas/instances/PolygonInstance";
+import {PolygonInstance} from "../vue_canvas/instances/PolygonInstance";
+import {AutoBorderContext, PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBorderTool";
 import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
 
 Vue.prototype.$ellipse = new ellipse();
@@ -1269,7 +1269,7 @@ export default Vue.extend({
       ctrl_key: false,
       alt_key: false,
       command_manager: undefined,
-      show_snackbar_auto_border: false,
+
       show_snackbar_paste: false,
 
       sequence_list_local_copy: null,
@@ -1544,7 +1544,7 @@ export default Vue.extend({
       canvas_rectangle: null,
       loading_instance_templates: false,
       instance_template_list: [],
-      autoborder_context: {
+      auto_border_context: {
         auto_border_polygon_p1: undefined,
         auto_border_polygon_p1_index: undefined,
         auto_border_polygon_p1_figure: undefined,
@@ -1554,6 +1554,7 @@ export default Vue.extend({
         auto_border_polygon_p2_figure: undefined,
         auto_border_polygon_p2_instance_index: undefined,
         show_polygon_border_context_menu: false,
+        show_snackbar_auto_border: false,
       } as AutoborderContext,
 
       has_changed: false,
@@ -2107,8 +2108,8 @@ export default Vue.extend({
         p2: p2,
         edges: [],
         nodes: [],
-        auto_border_polygon_p1: this.autoborder_context.auto_border_polygon_p1,
-        auto_border_polygon_p2: this.autoborder_context.auto_border_polygon_p2,
+        auto_border_polygon_p1: this.auto_border_context.auto_border_polygon_p1,
+        auto_border_polygon_p2: this.auto_border_context.auto_border_polygon_p2,
         cuboid_current_drawing_face: this.cuboid_current_drawing_face,
         front_face: front_face,
         angle: 0,
@@ -5981,20 +5982,20 @@ export default Vue.extend({
       // Set Autoborder point if exists
       if (
         this.is_actively_drawing &&
-        this.autoborder_context.auto_border_polygon_p1 &&
-        !this.autoborder_context.auto_border_polygon_p2
+        this.auto_border_context.auto_border_polygon_p1 &&
+        !this.auto_border_context.auto_border_polygon_p2
       ) {
-        current_point.x = this.autoborder_context.auto_border_polygon_p1.x;
-        current_point.y = this.autoborder_context.auto_border_polygon_p1.y;
+        current_point.x = this.auto_border_context.auto_border_polygon_p1.x;
+        current_point.y = this.auto_border_context.auto_border_polygon_p1.y;
         current_point.point_set_as_auto_border = true;
       }
       if (
         this.is_actively_drawing &&
-        this.autoborder_context.auto_border_polygon_p1 &&
-        this.autoborder_context.auto_border_polygon_p2
+        this.auto_border_context.auto_border_polygon_p1 &&
+        this.auto_border_context.auto_border_polygon_p2
       ) {
-        current_point.x = this.autoborder_context.auto_border_polygon_p2.x;
-        current_point.y = this.autoborder_context.auto_border_polygon_p2.y;
+        current_point.x = this.auto_border_context.auto_border_polygon_p2.x;
+        current_point.y = this.auto_border_context.auto_border_polygon_p2.y;
         current_point.point_set_as_auto_border = true;
       }
       // TODO look at if this should be 0 or 1  and width or width -1
@@ -6018,23 +6019,27 @@ export default Vue.extend({
       }
       return current_point;
     },
+    perform_auto_bordering_v2: function(path_type: string){
+      const auto_border_tool = new PolygonAutoBorderTool(this.auto_border_context)
+      auto_border_tool.perform_auto_bordering(path_type, this.instance_list, this.current_drawing_polygon_instance)
+    },
     perform_auto_bordering: function (path_type) {
       const auto_border_polygon =
-        this.instance_list[this.autoborder_context.auto_border_polygon_p2_instance_index];
+        this.instance_list[this.auto_border_context.auto_border_polygon_p2_instance_index];
       let points = auto_border_polygon.points;
-      if (this.autoborder_context.auto_border_polygon_p1_figure) {
+      if (this.auto_border_context.auto_border_polygon_p1_figure) {
         points = auto_border_polygon.points.filter(
-          (p) => p.figure_id === this.autoborder_context.auto_border_polygon_p1_figure
+          (p) => p.figure_id === this.auto_border_context.auto_border_polygon_p1_figure
         );
       }
 
       // Forward Path
-      let current_index = this.autoborder_context.auto_border_polygon_p1_index;
+      let current_index = this.auto_border_context.auto_border_polygon_p1_index;
       let forward_count = 0;
       let forward_index_list = [];
-      while (current_index != this.autoborder_context.auto_border_polygon_p2_index) {
+      while (current_index != this.auto_border_context.auto_border_polygon_p2_index) {
         // Don't add p1 index
-        if (current_index !== this.autoborder_context.auto_border_polygon_p1_index) {
+        if (current_index !== this.auto_border_context.auto_border_polygon_p1_index) {
           forward_index_list.push(current_index);
         }
         if (current_index >= points.length) {
@@ -6047,12 +6052,12 @@ export default Vue.extend({
       }
 
       // Backwards path
-      current_index = this.autoborder_context.auto_border_polygon_p1_index;
+      current_index = this.auto_border_context.auto_border_polygon_p1_index;
       let backward_count = 0;
       let backward_index_list = [];
-      while (current_index != this.autoborder_context.auto_border_polygon_p2_index) {
+      while (current_index != this.auto_border_context.auto_border_polygon_p2_index) {
         // Don't add p1 index
-        if (current_index !== this.autoborder_context.auto_border_polygon_p1_index) {
+        if (current_index !== this.auto_border_context.auto_border_polygon_p1_index) {
           backward_index_list.push(current_index);
         }
         if (current_index < 0) {
@@ -6114,18 +6119,18 @@ export default Vue.extend({
       }
 
       this.current_polygon_point_list.push({
-        ...this.autoborder_context.auto_border_polygon_p2,
+        ...this.auto_border_context.auto_border_polygon_p2,
         figure_id: undefined,
       });
-      this.autoborder_context.auto_border_polygon_p1 = undefined;
-      this.autoborder_context.auto_border_polygon_p1_index = undefined;
-      this.autoborder_context.auto_border_polygon_p1_figure = undefined;
-      this.autoborder_context.auto_border_polygon_p1_instance_index = undefined;
-      this.autoborder_context.auto_border_polygon_p2 = undefined;
-      this.autoborder_context.auto_border_polygon_p2_index = undefined;
-      this.autoborder_context.auto_border_polygon_p2_figure = undefined;
-      this.autoborder_context.auto_border_polygon_p2_instance_index = undefined;
-      this.autoborder_context.show_polygon_border_context_menu = false;
+      this.auto_border_context.auto_border_polygon_p1 = undefined;
+      this.auto_border_context.auto_border_polygon_p1_index = undefined;
+      this.auto_border_context.auto_border_polygon_p1_figure = undefined;
+      this.auto_border_context.auto_border_polygon_p1_instance_index = undefined;
+      this.auto_border_context.auto_border_polygon_p2 = undefined;
+      this.auto_border_context.auto_border_polygon_p2_index = undefined;
+      this.auto_border_context.auto_border_polygon_p2_figure = undefined;
+      this.auto_border_context.auto_border_polygon_p2_instance_index = undefined;
+      this.auto_border_context.show_polygon_border_context_menu = false;
     },
     finish_polygon_drawing: function (instance, frame_number = undefined) {
       const command = new CreateInstanceCommand(
@@ -6152,8 +6157,8 @@ export default Vue.extend({
         }
       }
 
-      if (this.autoborder_context.auto_border_polygon_p1 && this.autoborder_context.auto_border_polygon_p2) {
-        this.autoborder_context.show_polygon_border_context_menu = true;
+      if (this.auto_border_context.auto_border_polygon_p1 && this.auto_border_context.auto_border_polygon_p2) {
+        this.auto_border_context.show_polygon_border_context_menu = true;
       } else {
         this.current_polygon_point_list.push(current_point); // points only
       }
@@ -6786,25 +6791,25 @@ export default Vue.extend({
       let point_index = 0;
       for (const point of points) {
         if (point.hovered_while_drawing) {
-          if (!this.autoborder_context.auto_border_polygon_p1) {
-            this.autoborder_context.auto_border_polygon_p1 = point;
-            this.autoborder_context.auto_border_polygon_p1_index = point_index;
-            this.autoborder_context.auto_border_polygon_p1_figure = point.figure_id;
-            this.autoborder_context.auto_border_polygon_p1_instance_index = instance_index;
+          if (!this.auto_border_context.auto_border_polygon_p1) {
+            this.auto_border_context.auto_border_polygon_p1 = point;
+            this.auto_border_context.auto_border_polygon_p1_index = point_index;
+            this.auto_border_context.auto_border_polygon_p1_figure = point.figure_id;
+            this.auto_border_context.auto_border_polygon_p1_instance_index = instance_index;
             point.point_set_as_auto_border = true;
             found_point = true;
             this.show_snackbar_auto_border = true;
             break;
           } else if (
-            !this.autoborder_context.auto_border_polygon_p2 &&
-            point != this.autoborder_context.auto_border_polygon_p1 &&
-            instance_index === this.autoborder_context.auto_border_polygon_p1_instance_index
+            !this.auto_border_context.auto_border_polygon_p2 &&
+            point != this.auto_border_context.auto_border_polygon_p1 &&
+            instance_index === this.auto_border_context.auto_border_polygon_p1_instance_index
           ) {
-            this.autoborder_context.auto_border_polygon_p2 = point;
-            this.autoborder_context.auto_border_polygon_p2_index = point_index;
-            this.autoborder_context.auto_border_polygon_p2_figure = point.figure_id;
+            this.auto_border_context.auto_border_polygon_p2 = point;
+            this.auto_border_context.auto_border_polygon_p2_index = point_index;
+            this.auto_border_context.auto_border_polygon_p2_figure = point.figure_id;
             point.point_set_as_auto_border = true;
-            this.autoborder_context.auto_border_polygon_p2_instance_index = instance_index;
+            this.auto_border_context.auto_border_polygon_p2_instance_index = instance_index;
             this.show_snackbar_auto_border = false;
             found_point = true;
             break;
@@ -6821,7 +6826,7 @@ export default Vue.extend({
       if (!this.is_actively_drawing) {
         return;
       }
-      if (!this.autoborder_context.auto_border_polygon_p1 && this.autoborder_context.auto_border_polygon_p2) {
+      if (!this.auto_border_context.auto_border_polygon_p1 && this.auto_border_context.auto_border_polygon_p2) {
         return;
       }
       let found_point = false;
@@ -7051,14 +7056,14 @@ export default Vue.extend({
     },
     build_ann_event_ctx: function (): ImageAnnotationEventCtx {
       let ann_ctx: ImageAnnotationEventCtx = {
+        polygon_point_hover_index: this.polygon_point_hover_index,
         label_file: this.current_label_file as LabelFile,
         instance_type: this.instance_type,
         instance_list: this.instance_list as Instance[],
         draw_mode: this.draw_mode,
         shift_key: this.shift_key,
         polygon_point_click_index: this.polygon_point_click_index,
-        auto_border_polygon_p1: this.autoborder_context.auto_border_polygon_p1,
-        auto_border_polygon_p1_index: this.autoborder_context.auto_border_polygon_p1_index,
+        auto_border_context: this.auto_border_context,
         is_actively_drawing: this.is_actively_drawing,
         hovered_instance: this.hovered_instance,
         current_drawing_instance: this.current_instance,
@@ -7079,7 +7084,7 @@ export default Vue.extend({
         locked_editing_instance: this.locked_editing_instance,
         lock_point_hover_change: this.lock_point_hover_change,
         video_mode: this.video_mode,
-        current_sequence_from_sequence_component: this.current_sequence_from_sequence_component,
+        current_sequence_from_sequence_component: this.current_sequence_from_sequence_component
       }
       return ann_ctx
     },
@@ -7093,6 +7098,10 @@ export default Vue.extend({
           this.has_changed = true;
         }
         this.polygon_point_hover_index = result.polygon_point_hover_index
+        if(result.auto_border_context){
+          this.auto_border_context = result.auto_border_context
+        }
+
         this.original_edit_instance = result.original_edit_instance
         this.locked_editing_instance = result.locked_editing_instance
       }
@@ -7133,6 +7142,10 @@ export default Vue.extend({
           this.new_instance_refresh(result.new_instance_index)
         }
         this.original_edit_instance = result.original_edit_instance
+        if(result.auto_border_context){
+          this.auto_border_context = result.auto_border_context
+        }
+
         this.locked_editing_instance = result.locked_editing_instance
         this.lock_point_hover_change = result.lock_point_hover_change
         this.polygon_point_click_index = result.polygon_point_click_index
@@ -8159,39 +8172,12 @@ export default Vue.extend({
       }
       this.lock_point_hover_change = false; // reset
       this.ellipse_current_drawing_face = false; // reset
-      this.autoborder_context.show_polygon_border_context_menu = false;
-      if (this.autoborder_context.auto_border_polygon_p2_index != undefined) {
-        const instance =
-          this.instance_list[this.autoborder_context.auto_border_polygon_p2_instance_index];
-        instance.points[
-          this.autoborder_context.auto_border_polygon_p2_index
-          ].point_set_as_auto_border = false;
-        instance.points[
-          this.autoborder_context.auto_border_polygon_p2_index
-          ].hovered_while_drawing = false;
-      }
-      if (this.autoborder_context.auto_border_polygon_p1_index != undefined) {
-        const instance =
-          this.instance_list[this.autoborder_context.auto_border_polygon_p1_instance_index];
-        instance.points[
-          this.autoborder_context.auto_border_polygon_p1_index
-          ].point_set_as_auto_border = false;
-        instance.points[
-          this.autoborder_context.auto_border_polygon_p1_index
-          ].hovered_while_drawing = false;
-      }
+      const auto_border_tool = new PolygonAutoBorderTool(this.auto_border_context)
+      auto_border_tool.reset_instance_points(this.instance_list)
+      auto_border_tool.reset_auto_border_context()
       this.hide_context_menu();
-
       this.$store.commit('finish_draw')
       this.current_polygon_point_list = []
-      this.autoborder_context.auto_border_polygon_p1 = undefined;
-      this.autoborder_context.auto_border_polygon_p1_index = undefined;
-      this.autoborder_context.auto_border_polygon_p1_figure = undefined;
-      this.autoborder_context.auto_border_polygon_p1_instance_index = undefined;
-      this.autoborder_context.auto_border_polygon_p2 = undefined;
-      this.autoborder_context.auto_border_polygon_p2_index = undefined;
-      this.autoborder_context.auto_border_polygon_p2_figure = undefined;
-      this.autoborder_context.auto_border_polygon_p2_instance_index = undefined;
       this.instance_template_draw_started = false;
       this.is_actively_drawing = false;
       this.instance_template_start_point = undefined;
