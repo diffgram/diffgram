@@ -982,6 +982,7 @@ import {ImageCanvasTransform} from "../../types/CanvasTransform";
 import {LabelFile} from "../../types/label";
 import {InstanceImage2D} from "../vue_canvas/instances/InstanceImage2D";
 import { regenerate_cache } from "../../services/fileServices"
+import { get_model_run_list } from "../../services/modelServices"
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -3708,32 +3709,19 @@ export default Vue.extend({
       }
     },
     fetch_model_run_list: async function () {
-      if (!this.model_run_id_list) {
-        return;
-      }
-      if (this.model_run_id_list.length === 0) {
-        return;
-      }
+      if (!this.model_run_id_list || this.model_run_id_list.length === 0) return
 
       this.loading = true;
-      try {
-        const response = await axios.post(
-          `/api/v1/project/${this.project_string_id}/model-runs/list`,
-          {
-            id_list: this.model_run_id_list.map((x) => parseInt(x, 10)),
-          }
-        );
-        if (response.data["model_run_list"] != undefined) {
-          this.model_run_list = response.data.model_run_list;
-          for (let i = 0; i < this.model_run_list.length; i++) {
-            this.model_run_list[i].color = this.model_run_color_list[i];
-          }
+      const [response] = await get_model_run_list(this.project_string_id, this.model_run_id_list)
+
+      if (response && response.data.model_run_list !== undefined) {
+        this.model_run_list = response.data.model_run_list;
+        for (let i = 0; i < this.model_run_list.length; i++) {
+          this.model_run_list[i].color = this.model_run_color_list[i];
         }
-      } catch (error) {
-        console.error(error);
-      } finally {
-        this.loading = false;
       }
+      
+      this.loading = false;
     },
     task_mode_mounted: function () {
       // Default because can be timing issues with how it loads new value
