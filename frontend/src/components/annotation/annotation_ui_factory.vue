@@ -54,6 +54,9 @@
           @set_file_list="set_file_list"
           @request_new_task="change_task"
           @replace_file="current_file = $event"
+
+          @get_userscript="get_userscript"
+          
           ref="annotation_core"
         >
         </v_annotation_core>
@@ -501,6 +504,15 @@ export default Vue.extend({
     },
   },
   methods: {
+    get_userscript: function (ref) {
+      if (this.task && this.task.default_userscript) {
+        return this.task.default_userscript;
+      }
+      if (ref.userscript && ref.userscript.userscript_literal) {
+        return ref.userscript.userscript_literal;
+      }
+      return undefined;
+    },
     get_url_instance_buffer: function() {
       if (this.task && this.task.id) return `/api/v1/task/${this.task.id}/video/file_from_task`
 

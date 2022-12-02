@@ -332,7 +332,7 @@
                 <userscript
                   :project_string_id_prop="project_string_id"
                   :create_instance="event_create_instance"
-                  :current_userscript_prop="get_userscript()"
+                  :current_userscript_prop="$emit('get_userscript', $refs.userscript)"
                   :userscript_select_disabled="userscript_select_disabled"
                   :show_code_editor="!task || !task.id"
                   :show_external_scripts="!task || !task.id"
@@ -2581,7 +2581,7 @@ export default Vue.extend({
     get_userscript_id_string: function (userscript_id) {
 
       if (!userscript_id) {
-        this.userscript = this.get_userscript()
+        this.userscript = this.$emit('get_userscript', this.$refs.userscript)
         if (this.userscript.id) {
           userscript_id = this.userscript.id.toString()
         }
