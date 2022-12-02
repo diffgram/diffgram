@@ -1624,24 +1624,7 @@ export default Vue.extend({
       return this.unsaved_frames.length > 0;
     },
     filtered_instance_type_list: function () {
-      if (!this.task || !this.task.job) {
-        return this.instance_type_list;
-      }
-      if (!this.task.job.ui_schema) {
-        return this.instance_type_list;
-      }
-      let ui_schema = this.task.job.ui_schema;
-      let allowed_types = undefined;
-
-      if (ui_schema && ui_schema.instance_selector) {
-        allowed_types = ui_schema.instance_selector.allowed_instance_types.map(elm => elm.name);
-      }
-      if (!allowed_types) {
-        return this.instance_type_list;
-      } else {
-        return this.instance_type_list.filter((elm) => allowed_types.includes(elm.name));
-
-      }
+      return this.$emit('filtered_instance_type_list', this.instance_type_list)
     },
     clipboard: function () {
       return this.$store.getters.get_clipboard;
