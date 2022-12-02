@@ -15,7 +15,7 @@ export type CoordinatorProcessResult = {
   instance_hover_index?: number
   instance_hover_type?: string
   locked_editing_instance?: Instance
-  autoborder_context: AutoBorderContext
+  auto_border_context?: AutoBorderContext
 
 }
 

@@ -15,7 +15,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   public midpoints_polygon: { [p: number]: PolygonPoint[] } | PolygonPoint[] = null;
   public mouse_down_delta_event: any = undefined;
   public polygon_point_hover_index: number = undefined;
-  public hovered_figure_id: number = undefined;
+  public hovered_figure_id: string = undefined;
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
   public midpoint_hover: number = undefined
@@ -48,7 +48,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     this.on_instance_unhovered = this.set_default_hover_out_style
     this.ctx = ctx;
   }
-  public get_polygon_figures(): number[]{
+  public get_polygon_figures(): string[]{
     let figure_list = [];
     for (const p of this.points) {
       if (!p.figure_id) {
@@ -110,7 +110,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       this.find_midpoint_index(midpoints_polygon);
     }
   }
-  public move_polygon_points(x_move: number, y_move: number, figure_id: number = undefined){
+  public move_polygon_points(x_move: number, y_move: number, figure_id: string = undefined){
     let points = this.points;
     if (this.hovered_figure_id) {
       points = this.points.filter(
@@ -322,8 +322,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     this.points.splice(p_index, 1);
   }
 
-  private check_poly_hovered(ctx, figure_id: number = undefined) {
-
+  private check_poly_hovered(ctx, figure_id: string = undefined) {
 
     if (this.is_mouse_in_path(ctx)) {
       this.check_polygon_intersection_on_points()
@@ -336,7 +335,9 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       }
     }else{
       this.check_polygon_intersection_on_points()
-      if(this.is_hovered && this.polygon_point_hover_index == undefined && this.midpoint_hover == undefined){
+      if(this.is_hovered && this.polygon_point_hover_index == undefined
+        && this.midpoint_hover == undefined
+        && (!figure_id || this.hovered_figure_id === figure_id)){
         this.set_mouse_cursor_from_hovered_point()
         this.is_hovered = false
         this.hovered_figure_id = null
@@ -378,13 +379,6 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       ctx.lineWidth = spatial_line_size
       ctx.stroke()
     }
-    // if (this.selected == true && this.image_label_settings.default_instance_opacity != 1) {
-    //   ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ", .1)";
-    // }
-    //
-    // if (this.is_hovered && this.image_label_settings.default_instance_opacity != 1) {
-    //   ctx.fillStyle = "rgba(" + r + "," + g + "," + b + ",.1)";
-    // }
 
     ctx.fill()
   }
@@ -400,11 +394,13 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       }
     }
     if (figure_id_list.length === 0) {
+      ctx.beginPath()
       let points = this.points;
       this.draw_polygon_figure(ctx, points)
       this.check_poly_hovered(ctx)
     } else {
       for (const figure_id of figure_id_list) {
+        ctx.beginPath()
         let points = this.points.filter(p => p.figure_id === figure_id);
         this.draw_polygon_figure(ctx, points, figure_id)
         this.check_poly_hovered(ctx, figure_id)
@@ -539,10 +535,11 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   public draw(ctx: CanvasRenderingContext2D): void {
+
     this.zoom_value = this.ctx.getTransform().a
     this.circle_size = 6 / this.zoom_value
     ctx.setLineDash([0])
-    ctx.beginPath()
+
     if (this.sequence_id) {
       ctx.fillStyle = get_sequence_color(this.sequence_id)
     }
@@ -551,7 +548,9 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     this.draw_label(ctx, this.x_min, this.y_min)
     this.grab_color_from_instance(ctx)
     if (this.is_actively_drawing) {
+      ctx.beginPath()
       this.draw_actively_drawing_polygon(ctx)
+
     } else {
       this.draw_polygon_main_section(ctx)
       this.draw_polygon_control_points(ctx)
@@ -565,8 +564,8 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     // if(this.image_label_settings){
     //   ctx.lineWidth = this.image_label_settings.spatial_line_size
     // }
-
     ctx.stroke()
+
   }
 
   public get_instance_data(): any {
@@ -585,5 +584,6 @@ export interface PolygonPoint extends Point {
   hovered_while_drawing: boolean
   point_set_as_auto_border: boolean
   selected?: boolean
+  figure_id?: string
 }
 

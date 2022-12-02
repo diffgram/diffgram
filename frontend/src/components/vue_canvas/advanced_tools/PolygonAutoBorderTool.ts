@@ -13,8 +13,8 @@ export type AutoBorderContext = {
   auto_border_polygon_p1_instance_index: number
   auto_border_polygon_p2_instance_index: number
 
-  auto_border_polygon_p1_figure: number
-  auto_border_polygon_p2_figure: number
+  auto_border_polygon_p1_figure: string
+  auto_border_polygon_p2_figure: string
 
   show_snackbar_auto_border: boolean
   show_polygon_border_context_menu: boolean

@@ -10,6 +10,8 @@ import CommandManager from "../../../../helpers/command/command_manager";
 import {PolygonInstance, PolygonPoint} from "../../instances/PolygonInstance";
 import {BoxInstance} from "../../instances/BoxInstance";
 import {PolygonAutoBorderTool} from "../../advanced_tools/PolygonAutoBorderTool";
+import {GLOBAL_SELECTED_COLOR} from "../../instances/Instance";
+import {InstanceImage2D} from "../../instances/InstanceImage2D";
 
 export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
   /**
@@ -41,10 +43,10 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
 
   private polygon_auto_border_set_indexes(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
     const auto_border_tool = new PolygonAutoBorderTool(annotation_event.annotation_ctx.auto_border_context);
-    const current_poly = annotation_event.annotation_ctx.current_drawing_instance;
+    const current_poly = annotation_event.annotation_ctx.current_drawing_instance as PolygonInstance;
     let instance_list = annotation_event.annotation_ctx.instance_list
     auto_border_tool.polygon_auto_border_set_indexes(instance_list, current_poly)
-    result.autoborder_context = auto_border_tool.context
+    result.auto_border_context = auto_border_tool.context
   }
   private should_move_polygon_points(annotation_event: ImageInteractionEvent): boolean {
     return this.is_mouse_move_event(annotation_event) &&
@@ -417,6 +419,44 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     }
     polygon.add_point(corrected_point)
   }
+
+  public deselect(annotation_event: ImageInteractionEvent): void {
+    let instance = this.instance
+    if(annotation_event && annotation_event.annotation_ctx && annotation_event.annotation_ctx.polygon_merge_tool){
+      let hover_index = annotation_event.annotation_ctx.instance_hover_index
+      let hovered_instance = annotation_event.annotation_ctx.instance_list[hover_index] as PolygonInstance
+      if(hovered_instance){
+        instance = hovered_instance
+      }
+      if (instance) {
+        // Allow only selection of polygon with the same label file ID.
+        annotation_event.annotation_ctx.polygon_merge_tool.update_instances_to_merge(instance);
+      }
+    }
+    instance.set_color_from_label();
+    instance.unselect()
+
+  }
+  public select(annotation_event: ImageInteractionEvent): void {
+    let instance = this.instance as PolygonInstance
+    if(annotation_event.annotation_ctx.polygon_merge_tool){
+      let hover_index = annotation_event.annotation_ctx.instance_hover_index
+      let hovered_instance = annotation_event.annotation_ctx.instance_list[hover_index] as PolygonInstance
+      if(hovered_instance){
+        instance = hovered_instance
+      }
+      if (instance) {
+        // Allow only selection of polygon with the same label file ID.
+        annotation_event.annotation_ctx.polygon_merge_tool.update_instances_to_merge(instance);
+      }
+    }
+
+    let select_color_stroke = GLOBAL_SELECTED_COLOR;
+    instance.set_border_color(select_color_stroke);
+    instance.set_fill_color(255, 255, 255, 0.1);
+    instance.select()
+
+  }
   public perform_action_from_event(annotation_event: ImageInteractionEvent): CoordinatorProcessResult {
     let instance = this.instance as PolygonInstance
     let result: CoordinatorProcessResult = {
@@ -432,9 +472,10 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     }
     // Polygon Select
     if (this.should_select_instance(annotation_event)) {
-      this.select()
+      this.select(annotation_event)
     } else if (this.should_deselect_instance(annotation_event)) {
-      this.deselect()
+
+      this.deselect(annotation_event)
     }
 
     // Polygon Move

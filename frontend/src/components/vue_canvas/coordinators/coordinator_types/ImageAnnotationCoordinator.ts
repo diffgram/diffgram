@@ -6,6 +6,7 @@ import {GLOBAL_SELECTED_COLOR, Instance} from "../../instances/Instance";
 import {InstanceImage2D} from "../../instances/InstanceImage2D";
 import {CreateInstanceCommand} from "../../../annotation/commands/create_instance_command";
 import {UpdateInstanceCommand} from "../../../annotation/commands/update_instance_command";
+import {PolygonInstance} from "../../instances/PolygonInstance";
 
 export abstract class ImageAnnotationCoordinator extends Coordinator {
   /*
@@ -25,6 +26,7 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
     }
     return false
   }
+
   protected is_mouse_down_event(event: ImageInteractionEvent): boolean {
     if (event.dom_event.type === 'mousedown') {
       return true
@@ -45,6 +47,7 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
     }
     return false
   }
+
   public initialize_instance_drawing(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
     let currently_drawing_instance: InstanceImage2D = annotation_event.annotation_ctx.current_drawing_instance as InstanceImage2D
     if (annotation_event.annotation_ctx.video_mode == true) {
@@ -82,28 +85,53 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
   }
 
   protected should_select_instance(annotation_event: ImageInteractionEvent): boolean {
+    let allow_select_in_merge = true;
+    let instance = this.instance as InstanceImage2D
+
+    if (annotation_event.annotation_ctx.polygon_merge_tool) {
+      let hover_index = annotation_event.annotation_ctx.instance_hover_index
+      let hovered_instance = annotation_event.annotation_ctx.instance_list[hover_index] as PolygonInstance
+      allow_select_in_merge = annotation_event.annotation_ctx.polygon_merge_tool.is_allowed_instance_to_merge(hovered_instance)
+      if(allow_select_in_merge){
+        instance = hovered_instance
+      }
+    }
     return this.is_mouse_down_event(annotation_event) &&
-      this.instance &&
-      !this.instance.selected &&
-      this.instance.is_hovered &&
+      instance &&
+      !instance.selected &&
+      instance.is_hovered &&
       !annotation_event.annotation_ctx.draw_mode &&
       !annotation_event.annotation_ctx.view_issue_mode &&
       !annotation_event.annotation_ctx.instance_select_for_issue &&
-      !annotation_event.annotation_ctx.view_only_mode
+      !annotation_event.annotation_ctx.view_only_mode &&
+      allow_select_in_merge
   }
 
   protected should_deselect_instance(annotation_event: ImageInteractionEvent): boolean {
+    let allow_select_in_merge = true;
+    let instance = this.instance as PolygonInstance
+    let polygon_merge_tool = annotation_event.annotation_ctx.polygon_merge_tool
+    if (polygon_merge_tool) {
+      let hover_index = annotation_event.annotation_ctx.instance_hover_index
+      let hovered_instance = annotation_event.annotation_ctx.instance_list[hover_index] as PolygonInstance
+      allow_select_in_merge = annotation_event.annotation_ctx.polygon_merge_tool.is_allowed_instance_to_merge(hovered_instance)
+      if (allow_select_in_merge) {
+        instance = hovered_instance
+      }
+    }
     return this.is_mouse_down_event(annotation_event) &&
-      this.instance &&
-      this.instance.selected &&
-      !this.instance.is_hovered &&
+      instance &&
+      instance.selected &&
+      (annotation_event.annotation_ctx.polygon_merge_tool &&
+        annotation_event.annotation_ctx.polygon_merge_tool.parent_merge_instance !== this.instance) &&
+      (!instance.is_hovered || (allow_select_in_merge && polygon_merge_tool)) &&
       !annotation_event.annotation_ctx.draw_mode &&
       !annotation_event.annotation_ctx.view_issue_mode &&
       !annotation_event.annotation_ctx.instance_select_for_issue &&
       !annotation_event.annotation_ctx.view_only_mode
   }
 
-  public select(): void {
+  public select(annotation_event: ImageInteractionEvent): void {
     let select_color_stroke = GLOBAL_SELECTED_COLOR;
     this.instance.set_border_color(select_color_stroke);
     this.instance.set_fill_color(255, 255, 255, 0.1);
@@ -111,13 +139,13 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
 
   }
 
-  public deselect(): void {
+  public deselect(annotation_event: ImageInteractionEvent): void {
     this.instance.set_color_from_label();
     this.instance.unselect()
 
   }
 
-  protected edit_instance_command_creation(annotation_event: ImageInteractionEvent, result: CoordinatorProcessResult){
+  protected edit_instance_command_creation(annotation_event: ImageInteractionEvent, result: CoordinatorProcessResult) {
     const new_instance = this.instance;
     const command = new UpdateInstanceCommand(
       new_instance,

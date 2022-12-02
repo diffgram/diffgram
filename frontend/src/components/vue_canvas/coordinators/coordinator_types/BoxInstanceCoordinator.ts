@@ -27,15 +27,15 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
   }
 
 
-  public select() {
+  public select(annotation_event) {
 
-    super.select();
+    super.select(annotation_event);
     let box = this.instance as BoxInstance
     box.show_box_corners()
   }
 
-  public deselect() {
-    super.deselect();
+  public deselect(annotation_event: ImageInteractionEvent) {
+    super.deselect(annotation_event)
     let box = this.instance as BoxInstance
     box.hide_box_corners()
   }
@@ -255,10 +255,10 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
 
     // Box Select
     if (this.should_select_instance(annotation_event)) {
-      this.select()
+      this.select(annotation_event)
     }
     else if (this.should_deselect_instance(annotation_event)) {
-      this.deselect()
+      this.deselect(annotation_event)
     }
 
     // Box Drag

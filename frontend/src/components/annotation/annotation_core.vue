@@ -124,11 +124,11 @@
           Cancel
         </v-btn>
         <v-btn
-          :disabled="instances_to_merge.length === 0"
+          :disabled="polygon_merge_tool && polygon_merge_tool.instances_to_merge.length === 0"
           color="success"
           text
           v-bind="attrs"
-          @click="merge_polygons"
+          @click="merge_polygons_v2"
         >
           Merge Polygons
         </v-btn>
@@ -982,6 +982,8 @@ import {InstanceImage2D} from "../vue_canvas/instances/InstanceImage2D";
 import {PolygonInstance} from "../vue_canvas/instances/PolygonInstance";
 import {AutoBorderContext, PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBorderTool";
 import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
+import {PolygonMergeTool} from "../vue_canvas/advanced_tools/PolygonMergeTool";
+import {store} from "../../store";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -1201,6 +1203,7 @@ export default Vue.extend({
       n_key: false,
       mouse_wheel_button: false,
       submitted_to_review: false,
+      polygon_merge_tool: null as PolygonMergeTool,
 
       locked_editing_instance: null as Instance,
       current_instance_v2: null as Instance,
@@ -2195,6 +2198,9 @@ export default Vue.extend({
   },
   // TODO 312 Methods!! refactor in multiple files and classes.
   methods: {
+    cancel_polygon_merge: function(){
+      this.polygon_merge_tool = null
+    },
     change_keyframe: function(keyframe){
       if (this.video_mode) {
         if (this.current_frame !== keyframe && this.$refs.video_controllers) {
@@ -2357,6 +2363,11 @@ export default Vue.extend({
     },
     cancel_merge: function () {
       this.$store.commit("set_instance_select_for_merge", false);
+      this.polygon_merge_tool = null
+      let polygons = this.instance_list.filter(inst => inst.type === 'polygon')
+      for(let poly of polygons){
+        this.deselect_instance(poly)
+      }
     },
     delete_instances_and_add_to_merged_instance: function (
       parent_instance,
@@ -2384,34 +2395,14 @@ export default Vue.extend({
         parent_instance.points = new_points;
       }
     },
-    merge_polygons: function () {
-      let parent_instance = this.parent_merge_instance;
-      let instances_to_merge = this.instances_to_merge;
-      let has_multiple_figures =
-        parent_instance.points.filter((p) => p.figure_id != undefined).length >
-        0;
-      if (has_multiple_figures) {
-        // For each instance to merge, delete it and add al points to parent instance with a new figure ID.
-        this.delete_instances_and_add_to_merged_instance(
-          parent_instance,
-          instances_to_merge
-        );
-      } else {
-        // Add a figure ID for parent instance points
-        let figure_id = uuidv4();
-        parent_instance.points = parent_instance.points.map((p) => {
-          return {
-            ...p,
-            figure_id: figure_id,
-          };
-        });
-        // For each instance to merge, delete it and add al points to parent instance with a new figure ID.
-        this.delete_instances_and_add_to_merged_instance(
-          parent_instance,
-          instances_to_merge
-        );
-      }
+    merge_polygons_v2: function(){
+      let deleted_instance_indexes = this.polygon_merge_tool.merge_polygons(this.instance_list)
       this.$store.commit("set_instance_select_for_merge", false);
+      for (let index of deleted_instance_indexes){
+        this.delete_single_instance(this.instance_list[index])
+      }
+      this.polygon_merge_tool = null
+      this.has_changed = true
     },
 
     get_save_loading: function (frame_number) {
@@ -2892,10 +2883,11 @@ export default Vue.extend({
       this.has_changed = true;
     },
     deselect_instance: function(instance){
+
       if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance.type)) {
         let coord_router: ImageAnnotationCoordinatorRouter = this.create_coordinator_router()
         let instance_coordinator: ImageAnnotationCoordinator = coord_router.generate_from_instance(instance, instance.type)
-        instance_coordinator.deselect()
+        instance_coordinator.deselect({} as ImageInteractionEvent)
       } else {
         instance.selected = false
       }
@@ -2906,9 +2898,29 @@ export default Vue.extend({
       // Callback for when an instance is selected
       // This is a WIP that will be used for all the class Instance Types
       // For now we only have Kepoints instance using this.
+      let instances_to_merge_creation_refs = []
+      if(this.polygon_merge_tool){
+        instances_to_merge_creation_refs = this.polygon_merge_tool.instances_to_merge.map(inst => inst.creation_ref_id)
+      }
+
       for (let elm of this.instance_list) {
         if (elm.creation_ref_id != instance.creation_ref_id) {
-          this.deselect_instance(elm)
+
+          if(this.polygon_merge_tool && this.polygon_merge_tool.parent_merge_instance
+            && elm.creation_ref_id != this.polygon_merge_tool.parent_merge_instance.creation_ref_id){
+            if(instances_to_merge_creation_refs.includes(elm.creation_ref_id)){
+              continue
+            }
+            if (this.polygon_merge_tool && this.polygon_merge_tool.is_allowed_instance_to_merge(elm)) {
+              continue
+            }
+            this.deselect_instance(elm)
+          } else if (!this.polygon_merge_tool ||
+            !this.polygon_merge_tool.parent_merge_instance ||
+            this.polygon_merge_tool.parent_merge_instance.length === 0){
+            this.deselect_instance(elm)
+          }
+
         }
       }
 
@@ -3173,8 +3185,7 @@ export default Vue.extend({
       if (merge_instance_index == undefined) {
         return;
       }
-      this.parent_merge_instance = this.instance_list[merge_instance_index];
-      this.parent_merge_instance_index = merge_instance_index;
+      this.polygon_merge_tool = new PolygonMergeTool(this.instance_list[merge_instance_index])
       this.show_context_menu = false;
       this.$store.commit("set_instance_select_for_merge", true);
     },
@@ -3230,6 +3241,9 @@ export default Vue.extend({
 
       for (let i in this.instance_list) {
         let elm = this.instance_list[i]
+        if(i == this.parent_merge_instance_index){
+          continue
+        }
         if (except_instance && (elm.creation_ref_id === except_instance.creation_ref_id)) {
           continue
         }
@@ -3241,7 +3255,7 @@ export default Vue.extend({
           }
           let coord_router: ImageAnnotationCoordinatorRouter = this.create_coordinator_router()
           let coordinator: ImageAnnotationCoordinator = coord_router.generate_from_instance(elm, elm.type)
-          coordinator.deselect()
+          coordinator.deselect({} as ImageInteractionEvent)
           this.trigger_refresh_current_instance = new Date()
 
         } else {
@@ -3381,7 +3395,7 @@ export default Vue.extend({
       }
 
       if (!instance) {
-        console.debug("Invalid index");initialized
+        console.debug("Invalid index");
         return;
       }
 
@@ -4909,32 +4923,6 @@ export default Vue.extend({
       this.open_view_edit_panel(issue);
     },
 
-    update_instances_to_merge: function (instance_to_select) {
-      if (instance_to_select.selected) {
-        this.instances_to_merge.push(instance_to_select);
-      } else {
-        let index = this.instances_to_merge.indexOf(instance_to_select);
-        if (index > -1) {
-          this.instances_to_merge.splice(index, 1);
-        }
-      }
-    },
-    is_allowed_instance_to_merge: function (instance_to_select) {
-      if (this.parent_merge_instance.id === instance_to_select.id) {
-        return false;
-      }
-      if (
-        this.parent_merge_instance.label_file_id !==
-        instance_to_select.label_file_id
-      ) {
-        return false;
-      }
-
-      if (this.parent_merge_instance.type !== instance_to_select.type) {
-        return false;
-      }
-      return true;
-    },
 
     select_something: function () {
       if (this.view_only_mode == true) {
@@ -4979,9 +4967,9 @@ export default Vue.extend({
         }
       }
 
-      if (this.instance_select_for_merge) {
+      if (this.instance_select_for_merge && this.polygon_merge_tool) {
         // Allow only selection of polygon with the same label file ID.
-        if (!this.is_allowed_instance_to_merge(instance_to_select)) {
+        if (!this.polygon_merge_tool.is_allowed_instance_to_merge(instance_to_select)) {
           return;
         }
       }
@@ -5000,10 +4988,7 @@ export default Vue.extend({
           instance_to_select.box_edit_point_hover = this.box_edit_point_hover;
         }
       }
-      if (this.instance_select_for_merge) {
-        // Allow only selection of polygon with the same label file ID.
-        this.update_instances_to_merge(instance_to_select);
-      }
+
     },
     box_update_position: function (instance, i) {
       instance.width = instance.x_max - instance.x_min;
@@ -7063,6 +7048,7 @@ export default Vue.extend({
         draw_mode: this.draw_mode,
         shift_key: this.shift_key,
         polygon_point_click_index: this.polygon_point_click_index,
+        instance_hover_index: this.instance_hover_index,
         auto_border_context: this.auto_border_context,
         is_actively_drawing: this.is_actively_drawing,
         hovered_instance: this.hovered_instance,
@@ -7083,6 +7069,7 @@ export default Vue.extend({
         original_edit_instance: this.original_edit_instance,
         locked_editing_instance: this.locked_editing_instance,
         lock_point_hover_change: this.lock_point_hover_change,
+        polygon_merge_tool: this.polygon_merge_tool,
         video_mode: this.video_mode,
         current_sequence_from_sequence_component: this.current_sequence_from_sequence_component
       }
