@@ -70,7 +70,7 @@
             @refresh_all_instances="refresh_all_instances"
             @task_update_toggle_deferred="task_update('toggle_deferred')"
             @task_update_toggle_incomplete="task_update('incomplete')"
-            @complete_task="complete_task()"
+            @complete_task="$emit('complete_task')"
             @clear__new_and_no_ids="clear__new_and_no_ids()"
             @new_tag_instance="insert_tag_type()"
             @replace_file="$emit('replace_file', $event)"
@@ -8707,12 +8707,6 @@ export default Vue.extend({
           frame_number
         );
       }
-    },
-    complete_task() {
-      if (!this.task) {
-        return;
-      }
-      this.task.status = "complete";
     },
     request_next_instance: function (label_file_id) {
       this.$refs.video_controllers.next_instance(label_file_id);

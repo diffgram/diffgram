@@ -56,6 +56,7 @@
           @replace_file="current_file = $event"
 
           @get_userscript="get_userscript"
+          @complete_task="complete_task"
           
           ref="annotation_core"
         >
@@ -504,6 +505,11 @@ export default Vue.extend({
     },
   },
   methods: {
+    complete_task() {
+      if (!this.task) return
+
+      this.task.status = "complete"
+    },
     get_userscript: function (ref) {
       if (this.task && this.task.default_userscript) {
         return this.task.default_userscript;
