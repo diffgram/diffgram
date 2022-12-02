@@ -981,6 +981,7 @@ import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
 import {ImageCanvasTransform} from "../../types/CanvasTransform";
 import {LabelFile} from "../../types/label";
 import {InstanceImage2D} from "../vue_canvas/instances/InstanceImage2D";
+import { regenerate_cache } from "../../services/fileServices"
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -2460,23 +2461,15 @@ export default Vue.extend({
     regenerate_file_cache: async function () {
       this.regenerate_file_cache_loading = true;
       let frame_number = this.current_frame;
-      let file_id = undefined;
-      if (this.task) {
-        file_id = this.task.file.id;
-      } else {
-        file_id = this.file.id;
-      }
+      const file_id = this.working_file.id;
       let project_string = this.project_string_id;
       if (!project_string) {
         project_string = this.$store.state.project.current.project_string_id;
       }
-      const response = await axios.post(
-        `/api/v1/project/${project_string}/file/${file_id}/regenerate-cache`,
-        {
-          frame_number: frame_number,
-        }
-      );
-      if (response.status === 200) {
+
+      const [result] = await regenerate_cache(project_string, file_id, frame_number)
+
+      if (result) {
         this.has_changed = false;
         location.reload();
       }
