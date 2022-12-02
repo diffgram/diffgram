@@ -5795,32 +5795,13 @@ export default Vue.extend({
         console.error(error);
       }
     },
-
-    get_colour_map: function () {
-      axios
-        .get("/api/project/" + this.project_string_id + "/labels/colour_map")
-        .then((response) => {
-          if (response.data.success === true) {
-            this.label_file_colour_map = response.data.label_file_colour_map;
-          }
-          this.loading = false;
-        })
-        .catch((error) => {
-          console.debug(error);
-        });
-    },
-
     toInt: function (n) {
       return Math.round(Number(n));
     },
-
-    onRendered: function (ctx) {
-    },
-
+    onRendered: function (ctx) {},
     test: function () {
       console.debug(Date.now());
     },
-
     mouse_transform: function (event, mouse_position) {
       this.populate_canvas_element();
       return this.canvas_mouse_tools.mouse_transform(
