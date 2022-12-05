@@ -3090,16 +3090,12 @@ export default Vue.extend({
       this.loading_sequences = loading_sequences;
     },
     set_canvas_dimensions: function () {
-      let file = null;
-      if (this.file) {
-        file = this.file;
-      } else if (this.task) {
-        file = this.task.file;
-      } else {
+      if (!this.working_file) {
         throw new Error("Must provide task or file in props.");
       }
-      this.canvas_width = file.video.width;
-      this.canvas_height = file.video.height;
+
+      this.canvas_width = this.working_file.video.width;
+      this.canvas_height = this.working_file.video.height;
     },
     issues_fetched: function (issues_list) {
       this.issues_list = issues_list;
@@ -7599,7 +7595,7 @@ export default Vue.extend({
         this.label_settings.canvas_scale_global_setting
       );
       this.canvas_mouse_tools.reset_transform_with_global_scale();
-      this.#emit('set_ui_schema');
+      this.$emit('set_ui_schema');
 
       if (this.task_image) {
         this.html_image = this.task_image
