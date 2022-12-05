@@ -1,6 +1,5 @@
 import {Instance} from "../instances/Instance";
 import {v4 as uuidv4} from "uuid";
-import { store } from '../../../../src/store.js'
 
 export class PolygonMergeTool {
   parent_merge_instance: Instance
