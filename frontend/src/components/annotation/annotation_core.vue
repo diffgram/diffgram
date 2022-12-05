@@ -2770,10 +2770,8 @@ export default Vue.extend({
       /*
       * Used in context of userscripts
       * */
-      let new_instance = {
-        ...this.current_instance,
-        points: [...this.current_instance.points.map((p) => ({...p}))],
-      };
+      let new_instance = duplicate_instance(this.current_drawing_polygon_instance, this)
+      new_instance = this.initialize_instance(new_instance)
       new_instance.type = "polygon";
       new_instance.points = points_list;
       new_instance.change_source =
@@ -2787,6 +2785,7 @@ export default Vue.extend({
         console.warn("Instance not reasonable: ", reasonable);
         return;
       }
+      console.log('INSTANCE', new_instance)
 
       const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);
@@ -3187,7 +3186,7 @@ export default Vue.extend({
       }
       this.polygon_merge_tool = new PolygonMergeTool(this.instance_list[merge_instance_index])
       this.show_context_menu = false;
-      this.$store.commit("set_instance_select_for_merge", true);
+      this.$store.commit("set_instance_select_for_merge", true);mouse_move:
     },
     open_issue_panel(mouse_position) {
       // This boolean controls if issues create/edit panel is shown or hidden.
@@ -5927,34 +5926,6 @@ export default Vue.extend({
       this.move_something(event);
 
       this.update_mouse_style();
-
-      if (this.draw_mode == true && this.instance_type == "polygon") {
-        this.detect_other_polygon_points();
-        if (this.current_polygon_point_list.length >= 1) {
-
-          if (this.shift_key == true) {
-            let x_diff = this.helper_difference_absolute(
-              this.mouse_position.x,
-              this.current_polygon_point_list[
-              this.current_polygon_point_list.length - 1
-                ].x
-            );
-            let y_diff = this.helper_difference_absolute(
-              this.mouse_position.y,
-              this.current_polygon_point_list[
-              this.current_polygon_point_list.length - 1
-                ].y
-            );
-
-            if (x_diff > 10 || y_diff > 10) {
-              //TODO this is a hacky way to do it!!!
-              this.mouse_down_position.x = this.mouse_position.x;
-              this.mouse_down_position.y = this.mouse_position.y;
-              this.instance_insert_point();
-            }
-          }
-        }
-      }
 
       // For refactored instance types (eventually all should be here)
       this.mouse_move_v2_handler(event)
