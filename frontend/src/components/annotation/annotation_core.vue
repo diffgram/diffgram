@@ -65,7 +65,7 @@
             @keypoints_mode_set="on_keypoints_mode_set"
             @show_duration_change="set_annotation_show_duration"
             @canvas_scale_global_changed="on_canvas_scale_global_changed"
-            @change_task="trigger_task_change($event, task, false)"
+            @change_task="$emit('trigger_task_change', $event, task, false)"
             @next_issue_task="next_issue_task(task)"
             @refresh_all_instances="refresh_all_instances"
             @task_update_toggle_deferred="task_update('toggle_deferred')"
@@ -76,7 +76,7 @@
             @replace_file="$emit('replace_file', $event)"
             @open_instance_template_dialog="open_instance_template_dialog()"
             @copy_all_instances="copy_all_instances"
-            @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
+            @on_task_annotation_complete_and_save="$emit('on_task_annotation_complete_and_save')"
             @smooth_canvas_changed="update_smooth_canvas($event)"
           >
           </toolbar>
@@ -1029,6 +1029,26 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    save_loading_image: {
+      type: Boolean,
+      default: false
+    },
+    loading: {
+      type: Boolean,
+      default: true
+    },
+    has_changed: {
+      type: Boolean,
+      default: false
+    },
+    annotations_loading: {
+      type: Boolean,
+      default: false
+    },
+    submitted_to_review: {
+      type: Boolean,
+      default: false
+    },
     url_instance_buffer: {
       required: true,
       type: String
@@ -1218,7 +1238,6 @@ export default Vue.extend({
       degrees: 0,
       n_key: false,
       mouse_wheel_button: false,
-      submitted_to_review: false,
 
       locked_editing_instance: null as Instance,
       current_instance_v2: null as Instance,
@@ -1388,8 +1407,6 @@ export default Vue.extend({
 
       current_version: null,
 
-      loading: false,
-
       label_settings: {
         font_background_opacity: 0.75,
         enable_snap_to_instance: true,
@@ -1418,9 +1435,6 @@ export default Vue.extend({
         ghost_instances_closed_by_open_view_edit_panel: false,
         smooth_canvas: true
       },
-
-      annotations_loading: false,
-      save_loading_image: false,
 
       issues_expansion_panel: true,
 
@@ -1570,7 +1584,6 @@ export default Vue.extend({
       auto_border_polygon_p2_figure: undefined,
       auto_border_polygon_p2_instance_index: undefined,
       show_polygon_border_context_menu: false,
-      has_changed: false,
       interval_autosave: null,
       full_file_loading: false, // For controlling the loading of the entire file + instances when changing a file.
 
@@ -2282,19 +2295,6 @@ export default Vue.extend({
       }
       this.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
-    },
-    on_task_annotation_complete_and_save: async function () {
-      await this.save(false);
-      const response = await finishTaskAnnotation(this.task.id);
-      const new_status = response.data.task.status;
-      this.task.status = new_status;
-      if (new_status !== "complete") {
-        this.submitted_to_review = true;
-      }
-      if (this.task && this.task.id) {
-        this.save_loading_image = false;
-        this.trigger_task_change("next", this.task, true);
-      }
     },
     on_canvas_scale_global_changed: async function (new_scale) {
       if (!new_scale) {
@@ -7484,26 +7484,7 @@ export default Vue.extend({
         this.loading = false;
       }
     },
-    trigger_task_change: async function (
-      direction,
-      task,
-      assign_to_user = False
-    ) {
-      // Keyboard shortcuts case
-      if (this.loading == true || this.annotations_loading == true) {
-        return;
-      }
-
-      if (this.has_changed) {
-        await this.save();
-      }
-
-
-      // Ask parent for a new task
-      this.$emit("request_new_task", direction, task, assign_to_user);
-    },
-
-      reset_for_file_change_context: function (){
+    reset_for_file_change_context: function (){
         this.current_sequence_annotation_core_prop = {
           id: null,
           number: null
@@ -7571,7 +7552,7 @@ export default Vue.extend({
 
       if (do_change_item == true) {
         if (this.annotation_show_type === "task") {
-          return this.trigger_task_change(direction, this.task, false);
+          return this.$emit('trigger_task_change', direction, this.task, false);
         }
         this.change_file(direction);
       }
@@ -7759,7 +7740,7 @@ export default Vue.extend({
             this.snackbar_success = true;
             this.snackbar_success_text = "Deferred for review. Moved to next.";
 
-            this.trigger_task_change("next", this.task, true);
+            this.$emit('trigger_task_change', "next", this.task, true);
           }
           if (mode === 'incomplete') {
             this.task.status = 'in_progress'
@@ -8581,9 +8562,9 @@ export default Vue.extend({
           this.snackbar_success = true;
           this.snackbar_success_text = "Saved and completed. Moved to next.";
           if (this.task && this.task.id) {
-            this.trigger_task_change("next", this.task, true);
+            this.$emit('trigger_task_change', "next", this.task, true);
           } else {
-            this.trigger_task_change("next", "none", true); // important
+            this.$emit('trigger_task_change', "next", "none", true); // important
           }
         }
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)

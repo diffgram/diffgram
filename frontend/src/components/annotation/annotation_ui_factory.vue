@@ -26,6 +26,10 @@
           :userscript_select_disabled="userscript_select_disabled()"
           :working_file="working_file"
           :url_instance_buffer="get_url_instance_buffer()"
+          :save_loading_image="save_loading_image"
+          :submitted_to_review="submitted_to_review"
+          :annotations_loading="annotations_loading"
+          :loading="loading"
           
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
@@ -58,6 +62,7 @@
           @get_userscript="get_userscript"
           @complete_task="complete_task"
           @save_time_tracking="save_time_tracking"
+          @trigger_task_change="trigger_task_change"
           
           ref="annotation_core"
         >
@@ -225,7 +230,7 @@ import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import {user_has_credentials} from '../../services/userServices'
 import {get_labels} from '../../services/labelServices';
 import {get_schemas} from "../../services/labelServices";
-import { trackTimeTask } from "../../services/tasksServices";
+import { trackTimeTask, finishTaskAnnotation } from "../../services/tasksServices";
 
 import text_annotation_core from "../text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
@@ -281,7 +286,7 @@ export default Vue.extend({
       credentials_granted: true,
       initializing: true,
       snackbar_message: "",
-      loading: false,
+      loading: true,
       loading_project: true,
       task: null,
       context: null,
@@ -300,6 +305,10 @@ export default Vue.extend({
       labels_list_from_project: null,
       model_run_color_list: null,
       label_file_colour_map_from_project: null,
+      save_loading_image: false,
+      submitted_to_review: false,
+      annotations_loading: false,
+      has_changed: false,
 
       global_attribute_groups_list: []
 
@@ -507,6 +516,43 @@ export default Vue.extend({
     },
   },
   methods: {
+    save: async function(
+      and_complete = false,
+      frame_number_param = undefined,
+      instance_list_param = undefined
+    ) {},
+    trigger_task_change: async function (
+      direction,
+      task,
+      assign_to_user = false
+    ) {
+      console.log("here")
+      console.log("this.loading", this.loading)
+      console.log("this.annotations_loading", this.annotations_loading)
+      if (
+        this.loading === true || 
+        this.annotations_loading === true
+      ) return
+      
+
+      if (this.has_changed) await this.save();
+
+      this.change_task(direction, task, assign_to_user);
+    },
+    on_task_annotation_complete_and_save: async function() {
+      await this.save(false);
+      const response = await finishTaskAnnotation(this.task.id);
+      
+      const new_status = response.data.task.status;
+      this.task.status = new_status;
+
+      if (new_status !== "complete") this.submitted_to_review = true;
+
+      if (this.task && this.task.id) {
+        this.save_loading_image = false;
+        this.trigger_task_change("next", this.task, true);
+      }
+    },
     save_time_tracking: async function () {
       if (!this.task) return
 
