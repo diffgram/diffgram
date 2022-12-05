@@ -953,7 +953,6 @@ import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
 import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
-import {finishTaskAnnotation, trackTimeTask} from "../../services/tasksServices";
 import {getInstanceTemplatesFromProject} from "../../services/instanceTemplateService";
 import {File} from "../../types/files";
 import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
@@ -8422,29 +8421,6 @@ export default Vue.extend({
         }
       }
     },
-    save_time_tracking: async function () {
-      if (!this.task) {
-        return
-      }
-      let current_user_id = this.$store.state.user.current.id;
-      let record = this.task.time_tracking.find(elm => elm.user_id === current_user_id)
-      let [result, error] = await trackTimeTask(
-        record.time_spent,
-        this.task.id,
-        this.task.status,
-        this.task.job.id,
-        this.working_file.id,
-        null
-      )
-      if (error) {
-        this.error = this.$route_api_errors(error);
-      }
-      if (result) {
-        record.id = result.id;
-        record.task_id = result.task_id;
-        record.job_id = result.job_id;
-      }
-    },
     save: async function (
       and_complete = false,
       frame_number_param = undefined,
@@ -8620,11 +8596,10 @@ export default Vue.extend({
         this.ghost_refresh_instances();
         if (this.task) {
           // Track time (nonblocking)
-          this.save_time_tracking();
+          this.$emit("save_time_tracking");
         }
         return true;
       } catch (error) {
-        console.error(error);
         this.set_save_loading(false, frame_number);
         if (
           error.response &&
@@ -8637,7 +8612,6 @@ export default Vue.extend({
           clearInterval(this.interval_autosave);
         }
         this.save_error = this.$route_api_errors(error);
-        console.debug(error);
 
         return false;
       }

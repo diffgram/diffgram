@@ -57,6 +57,7 @@
 
           @get_userscript="get_userscript"
           @complete_task="complete_task"
+          @save_time_tracking="save_time_tracking"
           
           ref="annotation_core"
         >
@@ -224,6 +225,7 @@ import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
 import {user_has_credentials} from '../../services/userServices'
 import {get_labels} from '../../services/labelServices';
 import {get_schemas} from "../../services/labelServices";
+import { trackTimeTask } from "../../services/tasksServices";
 
 import text_annotation_core from "../text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
@@ -505,6 +507,30 @@ export default Vue.extend({
     },
   },
   methods: {
+    save_time_tracking: async function () {
+      if (!this.task) return
+
+      const current_user_id = this.$store.state.user.current.id;
+      const record = this.task.time_tracking.find(elm => elm.user_id === current_user_id)
+      const [result, error] = await trackTimeTask(
+        record.time_spent,
+        this.task.id,
+        this.task.status,
+        this.task.job.id,
+        this.working_file.id,
+        null
+      )
+
+      if (error) {
+        this.error = this.$route_api_errors(error);
+      }
+
+      if (result) {
+        record.id = result.id;
+        record.task_id = result.task_id;
+        record.job_id = result.job_id;
+      }
+    },
     complete_task() {
       if (!this.task) return
 
