@@ -7565,17 +7565,6 @@ export default Vue.extend({
         this.$emit("request_file_change", direction, file);
       }
     },
-    set_ui_schema() {
-      if (
-        this.task &&
-        this.task.job &&
-        this.task.job.ui_schema
-      ) {
-        this.$store.commit("set_ui_schema", this.task.job.ui_schema);
-      } else {
-        this.$store.commit("clear_ui_schema");
-      }
-    },
     on_change_current_task: async function () {
       if (!this.task) {
         return;
@@ -7610,7 +7599,7 @@ export default Vue.extend({
         this.label_settings.canvas_scale_global_setting
       );
       this.canvas_mouse_tools.reset_transform_with_global_scale();
-      this.set_ui_schema();
+      this.#emit('set_ui_schema');
 
       if (this.task_image) {
         this.html_image = this.task_image
@@ -7654,7 +7643,7 @@ export default Vue.extend({
         this.label_settings.canvas_scale_global_setting
       );
       this.canvas_mouse_tools.reset_transform_with_global_scale();
-      this.set_ui_schema();
+      this.$emit('set_ui_schema');
     },
 
     refresh_attributes_from_current_file: async function (file) {

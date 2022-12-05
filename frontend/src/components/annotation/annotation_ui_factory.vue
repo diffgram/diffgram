@@ -63,6 +63,7 @@
           @complete_task="complete_task"
           @save_time_tracking="save_time_tracking"
           @trigger_task_change="trigger_task_change"
+          @set_ui_schema="set_ui_schema"
           
           ref="annotation_core"
         >
@@ -521,14 +522,22 @@ export default Vue.extend({
       frame_number_param = undefined,
       instance_list_param = undefined
     ) {},
+    set_ui_schema() {
+      if (
+        this.task &&
+        this.task.job &&
+        this.task.job.ui_schema
+      ) {
+        this.$store.commit("set_ui_schema", this.task.job.ui_schema);
+      } else {
+        this.$store.commit("clear_ui_schema");
+      }
+    },
     trigger_task_change: async function (
       direction,
       task,
       assign_to_user = false
     ) {
-      console.log("here")
-      console.log("this.loading", this.loading)
-      console.log("this.annotations_loading", this.annotations_loading)
       if (
         this.loading === true || 
         this.annotations_loading === true
