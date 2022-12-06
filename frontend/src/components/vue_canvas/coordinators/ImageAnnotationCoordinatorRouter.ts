@@ -13,6 +13,7 @@ import {
 import {CanvasMouseCtx} from "../../../types/mouse_position";
 import CommandManager from "../../../helpers/command/command_manager";
 import {ImageAnnotationCoordinator} from "./coordinator_types/ImageAnnotationCoordinator";
+import {PolygonInstanceCoordinator} from "./coordinator_types/PolygonInstanceCoordinator";
 
 type InstanceTypes2D = 'box' | 'polygon' | 'tag' | 'point' | 'line' | 'cuboid' | 'ellipse' | 'curve'
 
@@ -53,7 +54,6 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
     }
     let result = []
     if(this.instance_hover_index != undefined){
-      console.log('RESULE GET HOVERED', this.instance_hover_index, this.instance_list)
       result.push(this.instance_list[this.instance_hover_index])
     }
     for (let i = 0; i < this.instance_list.length; i++) {
@@ -61,7 +61,6 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
         result.push(this.instance_list[i])
       }
     }
-    console.log('RESULE GET HOVERED', result)
     // Sort by selected instances first
     result = result.sort((a,b) => b.selected - a.selected)
     return result
@@ -81,10 +80,14 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
       return new KeypointInstanceCoordinator(instance as KeypointInstance, this.draw_mode, this.command_manager) as ImageAnnotationCoordinator
     }
 
-    if (type === 'box') {
+    else if (type === 'box') {
       return new BoxInstanceCoordinator(instance as BoxInstance, this.canvas_mouse_ctx, this.command_manager)
     }
+    else if (type === 'polygon') {
+      return new PolygonInstanceCoordinator(instance as BoxInstance, this.canvas_mouse_ctx, this.command_manager)
+    }
   }
+
   private get_hovered_priority(): Instance{
     if(this.annotation_event.annotation_ctx.draw_mode && this.annotation_event.annotation_ctx.current_drawing_instance){
       return this.annotation_event.annotation_ctx.current_drawing_instance

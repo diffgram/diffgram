@@ -1,17 +1,21 @@
 import {InteractionEvent} from "../../../types/InteractionEvent";
 import CommandManager from "../../../helpers/command/command_manager";
 import {Instance} from "../instances/Instance";
+import {AutoBorderContext} from "../advanced_tools/PolygonAutoBorderTool";
 
 export type CoordinatorProcessResult = {
   instance_moved?: boolean
   is_actively_drawing?: boolean
   lock_point_hover_change?: boolean
   new_instance_index?: number
+  polygon_point_click_index?: number
+  polygon_point_hover_index?: number
   new_instance?: Instance
   original_edit_instance?: Instance
   instance_hover_index?: number
   instance_hover_type?: string
   locked_editing_instance?: Instance
+  auto_border_context?: AutoBorderContext
 
 }
 

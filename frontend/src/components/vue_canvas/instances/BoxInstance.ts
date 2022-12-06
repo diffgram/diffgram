@@ -9,6 +9,7 @@ import {LabelColourMap} from "../../../types/label_colour_map";
 import {ImageCanvasTransform} from "../../../types/CanvasTransform";
 import {InstanceImage2D} from "./InstanceImage2D";
 import {ImageLabelSettings} from "../../../types/image_label_settings";
+import {CanvasMouseTools} from "../CanvasMouseTools";
 
 type BoxHoverPoints =
   'x_min_y_min'
@@ -19,21 +20,17 @@ type BoxHoverPoints =
   | 'blocked'
 
 export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D {
-  public mouse_position: MousePosition;
   public ctx: CanvasRenderingContext2D;
-  public canvas_mouse_tools: ImageCanvasTransform;
+  public canvas_mouse_tools: CanvasMouseTools;
   public colour: InstanceColor;
   public is_dragging_instance: boolean = false;
   public draw_corners: boolean = false;
-  private is_actively_drawing: boolean = false;
+
   public is_moving: boolean = false;
   public mouse_down_delta_event: any = undefined;
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
   public box_edit_point_hover: BoxHoverPoints = undefined
-  private nearest_points_dict: any = undefined
-  private zoom_value: number = 1
-  private font_size: number = 10
 
 
   public get_instance_data(): object {
@@ -41,8 +38,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     return result;
   }
 
-  constructor(mouse_position: MousePosition = undefined,
-              ctx: CanvasRenderingContext2D = undefined,
+  constructor(ctx: CanvasRenderingContext2D = undefined,
               on_instance_updated: Function = undefined,
               on_instance_selected: Function = undefined,
               on_instance_deselected: Function = undefined,
@@ -60,7 +56,6 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     this.canvas_transform = canvas_transform;
     this.image_label_settings = image_label_settings;
     this.type = 'box'
-    this.mouse_position = mouse_position;
     this.initialized = true;
     this.on_instance_hovered = this.set_default_hover_in_style
     this.on_instance_unhovered = this.set_default_hover_out_style
@@ -69,7 +64,6 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
 
   public duplicate_for_undo() {
     let duplicate_instance = new BoxInstance(
-      this.mouse_position,
       this.ctx,
       this.on_instance_updated,
       this.on_instance_selected,
@@ -85,30 +79,8 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     return duplicate_instance
   }
 
-  public remove_listener(event_type: string, callback: Function) {
-    if(event_type === 'hover_in'){
-      this.on_instance_hovered = null
-    }
-    if(event_type === 'hover_out'){
-      this.on_instance_unhovered = null
-    }
-  }
-  public set_is_resizing(val: boolean){
-    this.is_resizing = val
-  }
-  public set_is_moving(val: boolean){
-    this.is_moving = val
-  }
   public get_canvas_transform(): ImageCanvasTransform {
     return this.canvas_transform
-  }
-
-  public set_actively_drawing(val: boolean): void {
-    this.is_actively_drawing = val
-  }
-
-  public get_is_actively_drawing(): boolean {
-    return this.is_actively_drawing;
   }
 
 
@@ -137,7 +109,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
 
     for (let point of point_list) {
       let intersection = point_is_intersecting_circle(
-        this.mouse_position,
+        this.canvas_mouse_tools.mouse_position,
         {
           x: point[0] as number,
           y: point[1] as number
@@ -187,15 +159,6 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     if (this.y_min < 0) {
       this.y_min = 0;
     }
-  }
-
-  private update_width_and_height() {
-    this.width = this.x_max - this.x_min;
-    this.height = this.y_max - this.y_min;
-
-    this.width = Math.ceil(this.width)
-    this.height = Math.ceil(this.height)
-    this.status = "updated";
   }
 
   private check_canvas_overflow() {
