@@ -1,7 +1,7 @@
-import {KeypointInstance} from "../instances/KeypointInstance";
+import {Edge, KeypointInstance} from "../instances/KeypointInstance";
 import Cuboid3DInstance from "../instances/Cuboid3DInstance";
 import CuboidDrawerTool from "../../../../src/components/3d_annotation/CuboidDrawerTool";
-import {CanvasMouseCtx} from "../annotation/image/MousePosition"
+import {CanvasMouseCtx, Point} from "../annotation/image/MousePosition"
 import {BoxInstance} from "../instances/BoxInstance";
 import {TextAnnotationInstance, TextRelationInstance} from "../instances/TextInstance";
 import {Instance, SUPPORTED_CLASS_INSTANCE_TYPES} from "../instances/Instance";
@@ -11,13 +11,14 @@ import {InstanceImage2D} from "../instances/InstanceImage2D";
 import {ImageCanvasTransform} from "../annotation/image/CanvasTransform";
 import {LabelFileMap} from "../labels/Label";
 import {v4 as uuidv4} from 'uuid';
+import {PolygonPoint} from "../../../../src/components/vue_canvas/instances/PolygonInstance";
 export const duplicate_instance = function (instance_to_copy: Instance, component_ctx: CanvasMouseCtx, with_ids: boolean = false) {
-  let points = [];
-  let nodes = [];
-  let edges = [];
+  let points: PolygonPoint[] = [];
+  let nodes: Point[] = [];
+  let edges: Edge[] = [];
   let result;
   if (instance_to_copy.points) {
-    points = [...instance_to_copy.points.map((p) => ({...p}))];
+    points = [...instance_to_copy.points.map((p) => ({...p} as PolygonPoint))];
   }
   if (instance_to_copy.nodes) {
     nodes = [...instance_to_copy.nodes.map((node) => ({...node}))];
@@ -29,20 +30,20 @@ export const duplicate_instance = function (instance_to_copy: Instance, componen
   if (!with_ids) {
     result = {
       ...instance_to_copy,
-      id: undefined,
-      initialized: false,
-      points: points,
-      nodes: nodes,
-      edges: edges,
-      version: undefined,
-      root_id: undefined,
-      previous_id: undefined,
       action_type: undefined,
-      next_id: undefined,
-      creation_ref_id: undefined,
       attribute_groups: instance_to_copy.attribute_groups
         ? {...instance_to_copy.attribute_groups}
-        : null,
+        : undefined,
+      creation_ref_id: undefined,
+      edges: edges,
+      id: undefined,
+      initialized: false,
+      next_id: undefined,
+      nodes: nodes,
+      points: points,
+      previous_id: undefined,
+      root_id: undefined,
+      version: undefined,
     };
   } else {
     result = {
@@ -53,7 +54,7 @@ export const duplicate_instance = function (instance_to_copy: Instance, componen
       edges: edges,
       attribute_groups: instance_to_copy.attribute_groups
         ? {...instance_to_copy.attribute_groups}
-        : null,
+        : undefined,
     };
   }
 
@@ -105,11 +106,11 @@ export const duplicate_instance = function (instance_to_copy: Instance, componen
     return newInstance
   }
 
-  result = initialize_instance_object(result, component_ctx);
+  result = initialize_instance_object(result as Instance, component_ctx);
   return result;
 }
 
-export const initialize_instance_object = function (instance, component_ctx: CanvasMouseCtx, scene_controller_3d = undefined): Instance {
+export const initialize_instance_object = function (instance: Instance, component_ctx: CanvasMouseCtx, scene_controller_3d = undefined): Instance {
   let initialized_instance;
   if (instance.type === 'keypoints' && !instance.initialized) {
     initialized_instance = new KeypointInstance(

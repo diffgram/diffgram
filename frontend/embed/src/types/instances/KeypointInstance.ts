@@ -4,7 +4,12 @@ import {v4 as uuidv4} from 'uuid';
 import {getContrastColor} from '../utils/colorUtils'
 import {InstanceImage2D} from "./InstanceImage2D";
 import {ImageLabelSettings} from "../annotation/image/ImageLabelSettings";
+import {MousePosition, Point} from "../annotation/image/MousePosition";
 
+export type Edge = {
+  from: string
+  to: string
+}
 export class KeypointInstance extends InstanceImage2D implements InstanceBehaviour2D {
   public mouse_position: any;
   private CONTROL_POINTS_DISPLACEMENT: number = 3
@@ -32,12 +37,12 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   public is_drawing_edge: boolean = false;
   public is_moving: boolean = false;
   public is_rotating: boolean = false;
-  public scale_width: number;
-  public scale_height: number;
-  public translate_x: number;
-  public translate_y: number;
-  public reference_width: number;
-  public reference_height: number;
+  public scale_width?: number;
+  public scale_height?: number;
+  public translate_x?: number;
+  public translate_y?: number;
+  public reference_width?: number;
+  public reference_height?: number;
   public mouse_down_delta_event: any = undefined;
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
@@ -56,15 +61,15 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     return result;
   }
 
-  constructor(mouse_position = undefined,
+  constructor(mouse_position: MousePosition | undefined = undefined,
               ctx: CanvasRenderingContext2D | undefined = undefined,
               instance_context: InstanceContext | undefined = undefined,
-              on_instance_updated = undefined,
-              on_instance_selected = undefined,
-              on_instance_deselected = undefined,
-              mouse_down_delta_event = undefined,
-              mouse_down_position = undefined,
-              label_settings: ImageLabelSettings) {
+              on_instance_updated: Function | undefined = undefined,
+              on_instance_selected: Function | undefined = undefined,
+              on_instance_deselected: Function | undefined = undefined,
+              mouse_down_delta_event: Point | undefined = undefined,
+              mouse_down_position: MousePosition | undefined = undefined,
+              label_settings: ImageLabelSettings | undefined = undefined) {
 
     super();
     this.nodes = [];
@@ -85,8 +90,10 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     if (ctx) {
       this.ctx = ctx;
     }
+    if(label_settings){
+      this.label_settings = label_settings;
+    }
 
-    this.label_settings = label_settings;
   }
 
   public duplicate_for_undo() {
@@ -115,7 +122,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     return duplicate_instance
   }
 
-  public toggle_occluded(node_index) {
+  public toggle_occluded(node_index: number) {
     // The intial state may be null that's why not using !value
     if (this.nodes[node_index].occluded == true) {
       this.nodes[node_index].occluded = false
@@ -124,7 +131,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     }
   }
 
-  public occlude_all_children(node_index) {
+  public occlude_all_children(node_index: number) {
     let node = this.nodes[node_index];
     let edges_from = this.edges.filter(edge => edge.from === node.id);
     let edges_to = this.edges.filter(edge => edge.to === node.id);
@@ -166,10 +173,10 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     this.reference_height = undefined;
   }
 
-  public contextmenu(event): void {
+  public contextmenu(event: MouseEvent): void {
   }
 
-  public double_click(event): void {
+  public double_click(event: MouseEvent): void {
     if (!this.is_hovered) {
       return
     }

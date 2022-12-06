@@ -43,8 +43,8 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
               on_instance_updated: Function | undefined = undefined,
               on_instance_selected: Function | undefined = undefined,
               on_instance_deselected: Function | undefined = undefined,
-              mouse_down_delta_event = undefined,
-              mouse_down_position = undefined,
+              mouse_down_delta_event: MousePosition | undefined = undefined,
+              mouse_down_position: MousePosition | undefined = undefined,
               canvas_transform: ImageCanvasTransform | undefined = undefined,
               image_label_settings: ImageLabelSettings | undefined = undefined) {
 

@@ -979,7 +979,6 @@ import {LabelColourMap} from "../../../embed/src/types/labels/LabelColourMap";
 import {CanvasMouseCtx, MousePosition} from "../../../embed/src/types/annotation/image/MousePosition";
 import {ImageCanvasTransform} from "../../../embed/src/types/annotation/image/CanvasTransform";
 import {LabelFile} from "../../../embed/src/types/labels/Label";
-import {InstanceImage2D} from "../../../embed/src/types/instances/InstanceImage2D";
 import {PolygonInstance} from "../vue_canvas/instances/PolygonInstance";
 import {AutoBorderContext, PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBorderTool";
 import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
@@ -1564,7 +1563,7 @@ export default Vue.extend({
         auto_border_polygon_p2_instance_index: undefined,
         show_polygon_border_context_menu: false,
         show_snackbar_auto_border: false,
-      } as AutoborderContext,
+      } as AutoBorderContext,
 
       has_changed: false,
       interval_autosave: null,

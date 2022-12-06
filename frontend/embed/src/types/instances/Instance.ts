@@ -6,6 +6,7 @@ import {LabelFile} from "../labels/Label";
 import {MousePosition} from "../annotation/image/MousePosition";
 import {ImageCanvasTransform} from "../annotation/image/CanvasTransform";
 import {AttributeGroup, AttributeGroupMap} from "../attributes/AttributeGroup";
+import {CuboidFace} from "./CuboidInstance";
 
 export const SUPPORTED_CLASS_INSTANCE_TYPES: Array<string> = ['box', 'keypoints'];
 export const GLOBAL_SELECTED_COLOR = '#0000ff'
@@ -18,10 +19,17 @@ export interface InstanceBehaviour2D {
 
 
 export class Instance {
-  public id: number;
-  public creation_ref_id: string;
+  public id?: number;
+
+  public initialized: boolean
+  public creation_ref_id?: string;
+  public action_type?: string;
   public x_min: number;
   public y_min: number;
+  public next_id?: number;
+  public previous_id?: number;
+  public root_id?: number;
+  public version?: number;
   public center_x: number;
   public center_y: number;
   public x_max: number;
@@ -36,10 +44,10 @@ export class Instance {
   public label_file_colour_map: LabelColourMap;
   public nodes: any[] = [];
   public edges: any[] = [];
-  public front_face: object;
+  public front_face: CuboidFace;
   public angle: number = 0;
-  public attribute_groups: AttributeGroupMap;
-  public rear_face: number;
+  public attribute_groups?: AttributeGroupMap;
+  public rear_face: CuboidFace;
   public override_color: string;
   public model_run_id: number;
   public width: number;
