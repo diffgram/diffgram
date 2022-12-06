@@ -1,5 +1,5 @@
-import {InteractionEvent} from "../../../../embed/src/types/InteractionEvent";
-import CommandManager from "../../../helpers/command/command_manager";
+import {InteractionEvent} from "../annotation/InteractionEvent";
+import CommandManager from "../../../../src/helpers/command/command_manager";
 import {Instance} from "../instances/Instance";
 
 export type CoordinatorProcessResult = {

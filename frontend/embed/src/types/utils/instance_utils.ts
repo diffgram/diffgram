@@ -1,15 +1,15 @@
-import {KeypointInstance} from "../components/vue_canvas/instances/KeypointInstance";
-import Cuboid3DInstance from "../components/vue_canvas/instances/Cuboid3DInstance";
-import CuboidDrawerTool from "../components/3d_annotation/CuboidDrawerTool";
-import {CanvasMouseCtx} from "../../embed/src/types/mouse_position"
-import {BoxInstance} from "../components/vue_canvas/instances/BoxInstance";
-import {TextAnnotationInstance, TextRelationInstance} from "../components/vue_canvas/instances/TextInstance";
-import {Instance, SUPPORTED_CLASS_INSTANCE_TYPES} from "../components/vue_canvas/instances/Instance";
-import {LabelColourMap} from "../../embed/src/types/label_colour_map";
-import {ImageLabelSettings} from "../../embed/src/types/image_label_settings";
-import {InstanceImage2D} from "../components/vue_canvas/instances/InstanceImage2D";
-import {ImageCanvasTransform} from "../../embed/src/types/CanvasTransform";
-import {LabelFileMap} from "../../embed/src/types/label";
+import {KeypointInstance} from "../instances/KeypointInstance";
+import Cuboid3DInstance from "../instances/Cuboid3DInstance";
+import CuboidDrawerTool from "../../../../src/components/3d_annotation/CuboidDrawerTool";
+import {CanvasMouseCtx} from "../annotation/image/MousePosition"
+import {BoxInstance} from "../instances/BoxInstance";
+import {TextAnnotationInstance, TextRelationInstance} from "../instances/TextInstance";
+import {Instance, SUPPORTED_CLASS_INSTANCE_TYPES} from "../instances/Instance";
+import {LabelColourMap} from "../labels/LabelColourMap";
+import {ImageLabelSettings} from "../annotation/image/ImageLabelSettings";
+import {InstanceImage2D} from "../instances/InstanceImage2D";
+import {ImageCanvasTransform} from "../annotation/image/CanvasTransform";
+import {LabelFileMap} from "../labels/Label";
 import {v4 as uuidv4} from 'uuid';
 export const duplicate_instance = function (instance_to_copy, component_ctx: CanvasMouseCtx, with_ids = false) {
   let points = [];

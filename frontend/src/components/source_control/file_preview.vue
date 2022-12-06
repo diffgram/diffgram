@@ -138,20 +138,17 @@ import Vue from "vue";
 import instance_list from "../vue_canvas/instance_list";
 import drawable_canvas from "../vue_canvas/drawable_canvas";
 import video_drawable_canvas from "../vue_canvas/video_drawable_canvas";
-import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
-import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
+import {InstanceContext} from "../../../embed/src/types/instances/InstanceContext";
 import Compound_file_preview from "@/components/source_control/compound_file_preview";
 import file_preview_details_card from "@/components/source_control/file_preview_details_card";
 import {
-  filter_from_model_id,
-  filter_from_model_runs,
   filter_global_instance_list
 } from "./dataset_explorer_instance_filtering";
 import {initialize_instance_object} from "@/utils/instance_utils";
 import {SUPPORTED_CLASS_INSTANCE_TYPES} from "@/components/vue_canvas/instances/Instance";
 import {InstanceImage2D} from "@/components/vue_canvas/instances/InstanceImage2D";
-import {newEmptyCanvasMouseCtx} from "../../../embed/src/types/mouse_position";
-import {post_init_instance} from "../../utils/instance_utils";
+import {newEmptyCanvasMouseCtx} from "../../../embed/src/types/annotation/image/MousePosition";
+import {post_init_instance} from "../../../embed/src/types/utils/instance_utils";
 
 export default Vue.extend({
   name: "file_preview",

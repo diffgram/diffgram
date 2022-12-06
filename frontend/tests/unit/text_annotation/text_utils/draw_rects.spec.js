@@ -1,6 +1,6 @@
 import DrawRects from "../../../../src/components/text_annotation/text_utils/draw_rects"
 import InstanceList from "../../../../src/helpers/instance_list";
-import { TextAnnotationInstance, TextRelationInstance } from "../../../../src/components/vue_canvas/instances/TextInstance";
+import { TextAnnotationInstance, TextRelationInstance } from "../../../../embed/src/types/instances/TextInstance";
 import { tokens, lines, instance_list } from "../text_test_data"
 
 describe("Test DrawRects class's generate_rects function (draw_rects.ts)", () => {
@@ -135,7 +135,7 @@ describe("Test DrawRects class's generate_rects_from_instance function (draw_rec
 
     it("Should return array of rects with added instance_id, instance_type and color in the array elements for text_token instance type", () => {
         const rects = draw_rects.generate_rects_from_instance(first_text_token_instance)
-        
+
         expect(rects[0]).toMatchObject({
             instance_id: expect.any(Number),
             instance_type: expect.any(String),
@@ -145,7 +145,7 @@ describe("Test DrawRects class's generate_rects_from_instance function (draw_rec
 
     it("Should return array of rects with added instance_id, instance_type and color in the array elements for text_token instance type", () => {
         const rects = draw_rects.generate_rects_from_instance(first_text_token_instance)
-        
+
         expect(rects[0]).toMatchObject({
             instance_id: expect.any(Number),
             instance_type: expect.any(String),
@@ -164,7 +164,7 @@ describe("Test DrawRects class's generate_rects_from_instance function (draw_rec
         instance_list.push([first_instance_relation])
 
         const rects = draw_rects.generate_rects_from_instance(first_instance_relation)
-        
+
         expect(rects[0]).toMatchObject({
             instance_id: expect.any(String),
             instance_type: expect.any(String),

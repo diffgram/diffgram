@@ -1,9 +1,9 @@
 import {InstanceBehaviour2D, Instance} from './Instance'
 import {InstanceContext} from './InstanceContext';
 import {v4 as uuidv4} from 'uuid';
-import {getContrastColor} from '../../../utils/colorUtils'
+import {getContrastColor} from '../utils/colorUtils'
 import {InstanceImage2D} from "./InstanceImage2D";
-import {ImageLabelSettings} from "../../../../embed/src/types/image_label_settings";
+import {ImageLabelSettings} from "../annotation/image/ImageLabelSettings";
 
 export class KeypointInstance extends InstanceImage2D implements InstanceBehaviour2D {
   public mouse_position: any;
@@ -11,16 +11,16 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   private MINIMUM_CONTROL_POINTS_DISTANCE: number = 20
 
   private line_width: number = 2;
-  public instance_context: InstanceContext = undefined;
+  public instance_context: InstanceContext;
   public is_node_hovered: boolean = false;
   public is_edge_hovered: boolean = false;
   public hovered_scale_control_points: boolean = false;
   public original_nodes: any = [];
-  public hovered_control_point_key: string = undefined;
-  public current_hovered_control_point_key: string = undefined;
-  public current_fixed_point: { x: number, y: number } = undefined;
-  public current_control_point: { x: number, y: number } = undefined;
-  public start_index_occlusion: number = undefined;
+  public hovered_control_point_key: string;
+  public current_hovered_control_point_key: string;
+  public current_fixed_point: { x: number, y: number };
+  public current_control_point: { x: number, y: number };
+  public start_index_occlusion: number;
   public occluded: boolean = false;
   public is_rescaling: boolean = false;
   public is_bounding_box_hovered: boolean = false;
@@ -32,21 +32,21 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   public is_drawing_edge: boolean = false;
   public is_moving: boolean = false;
   public is_rotating: boolean = false;
-  public scale_width: number = undefined;
-  public scale_height: number = undefined;
-  public translate_x: number = undefined;
-  public translate_y: number = undefined;
-  public reference_width: number = undefined;
-  public reference_height: number = undefined;
+  public scale_width: number;
+  public scale_height: number;
+  public translate_x: number;
+  public translate_y: number;
+  public reference_width: number;
+  public reference_height: number;
   public mouse_down_delta_event: any = undefined;
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
   public current_node_connection: any = [];
   public guided_mode_nodes: any = [];
   public guided_mode_active: boolean = false;
-  public instance_rotate_control_mouse_hover: boolean = undefined
+  public instance_rotate_control_mouse_hover: boolean;
   public angle: number = 0
-  public label_settings: ImageLabelSettings = undefined
+  public label_settings: ImageLabelSettings;
   private nearest_points_dict: any = undefined
   private zoom_value: number = 1
 
@@ -57,14 +57,14 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   }
 
   constructor(mouse_position = undefined,
-              ctx = undefined,
-              instance_context = undefined,
+              ctx: CanvasRenderingContext2D | undefined = undefined,
+              instance_context: InstanceContext | undefined = undefined,
               on_instance_updated = undefined,
               on_instance_selected = undefined,
               on_instance_deselected = undefined,
               mouse_down_delta_event = undefined,
               mouse_down_position = undefined,
-              label_settings: ImageLabelSettings = undefined) {
+              label_settings: ImageLabelSettings) {
 
     super();
     this.nodes = [];
@@ -74,12 +74,18 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     this.on_instance_deselected = on_instance_deselected;
     this.mouse_down_delta_event = mouse_down_delta_event;
     this.mouse_down_position = mouse_down_position;
-    this.instance_context = instance_context;
+    if (instance_context) {
+      this.instance_context = instance_context;
+    }
+
     this.type = 'keypoints'
     this.mouse_position = mouse_position;
     this.initialized = true;
     this.occluded = false;
-    this.ctx = ctx;
+    if (ctx) {
+      this.ctx = ctx;
+    }
+
     this.label_settings = label_settings;
   }
 
@@ -185,7 +191,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   }
 
   public save_original_nodes(): void {
-    if(this.original_nodes.length > 0){
+    if (this.original_nodes.length > 0) {
       return
     }
     this.original_nodes = [];
@@ -219,7 +225,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   }
 
   public color_edge() {
-    if(this.is_node_hovered || this.node_hover_index != undefined){
+    if (this.is_node_hovered || this.node_hover_index != undefined) {
       return
     }
     let edge_to_color = this.edges.find(e => e.is_hovered === true);
@@ -228,9 +234,10 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     }
     edge_to_color.color = this.instance_context.color;
   }
-  public add_guided_mode_node(ordinal, occlude = false){
+
+  public add_guided_mode_node(ordinal, occlude = false) {
     let node = this.nodes.find(n => n.ordinal === ordinal);
-    if(!node){
+    if (!node) {
       return
     }
     node.x = this.mouse_position.x;
@@ -239,17 +246,20 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     node.occluded = occlude
     node.ordinal = this.guided_mode_nodes.length;
   }
-  public reset_guided_nodes(){
+
+  public reset_guided_nodes() {
     this.guided_mode_nodes = [];
   }
-  public finish_guided_nodes_drawing(){
+
+  public finish_guided_nodes_drawing() {
     this.nodes = [];
-    for(let n of this.guided_mode_nodes){
+    for (let n of this.guided_mode_nodes) {
       this.nodes.push(n)
     }
     this.update_min_max_points()
     this.calculate_center()
   }
+
   public color_node() {
     let node_to_color = this.nodes[this.node_hover_index]
     if (!node_to_color) {
@@ -266,8 +276,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
       } else {
         if (!this.instance_context.color_tool_active) {
           this.add_node_to_instance();
-        }
-        else if (this.instance_context.color_tool_active) {
+        } else if (this.instance_context.color_tool_active) {
           if (this.is_node_hovered) {
             this.color_node();
           }
@@ -342,7 +351,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   }
 
   private drag_instance(event): void {
-    if(this.template_creation_mode){
+    if (this.template_creation_mode) {
       return
     }
     for (let node of this.nodes) {
@@ -362,7 +371,8 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   public stop_moving() {
     this.is_moving = false;
   }
-  private get_opposite_control_key(key){
+
+  private get_opposite_control_key(key) {
     let result = undefined;
     if (key === 'right') {
       result = 'left';
@@ -383,6 +393,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     }
     return result;
   }
+
   private get_fixed_point(key: string) {
     let control_points = this.get_scale_control_points();
     let result;
@@ -811,8 +822,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
 
     if (node.color && node.color.rgba) {
       ctx.fillStyle = `rgba(${node.color.rgba.r},${node.color.rgba.g},${node.color.rgba.b},${this.label_settings.font_background_opacity})`;
-    }
-    else{
+    } else {
       ctx.fillStyle = "rgba(" + '255, 255, 255,' + this.label_settings.font_background_opacity + ")";
     }
 
@@ -877,7 +887,8 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     this.width = this.x_max - this.x_min
     this.height = this.y_max - this.y_min
   }
-  private set_node_color(node, ctx){
+
+  private set_node_color(node, ctx) {
     if (node.color) {
       ctx.strokeStyle = node.color.hex;
       ctx.fillStyle = node.color.hex;
@@ -887,6 +898,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
       ctx.globalAlpha = 1;
     }
   }
+
   private draw_node(node, ctx, i) {
     if (this.label_settings &&
       this.label_settings.show_occluded_keypoints == false &&
@@ -930,9 +942,9 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
       left: {x: points.min_x, y: (points.max_y + points.min_y) / 2},
       right: {x: points.max_x + this.label_settings.vertex_size, y: (points.max_y + points.min_y) / 2},
     }
-    if(this.current_hovered_control_point_key){
+    if (this.current_hovered_control_point_key) {
       let fixed_key = this.get_opposite_control_key(this.current_hovered_control_point_key)
-      if(fixed_key){
+      if (fixed_key) {
         result[fixed_key] = this.current_fixed_point;
       }
 
@@ -945,7 +957,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     if (!this.selected) {
       return
     }
-    if(this.template_creation_mode){
+    if (this.template_creation_mode) {
       return
     }
     let control_points = this.get_scale_control_points();
@@ -981,12 +993,13 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
 
     }
   }
-  public draw_guided_nodes(ctx){
+
+  public draw_guided_nodes(ctx) {
     let i = 0;
-    if(this.instance_context.keypoints_draw_mode != 'guided'){
+    if (this.instance_context.keypoints_draw_mode != 'guided') {
       return
     }
-    if(!this.guided_mode_active){
+    if (!this.guided_mode_active) {
       return
     }
     for (let node of this.guided_mode_nodes) {
@@ -995,6 +1008,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
       i += 1
     }
   }
+
   public draw(ctx): void {
     this.ctx = ctx;
 
@@ -1018,7 +1032,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
 
     this.nearest_points_dict = {}
 
-    if(!this.guided_mode_active){
+    if (!this.guided_mode_active) {
       for (let node of this.nodes) {
         // order of operations
         this.draw_node(node, ctx, i);
@@ -1129,7 +1143,8 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
       this.is_drawing_edge = true;
     }
   }
-  public create_node_from_mouse_point(){
+
+  public create_node_from_mouse_point() {
     let node = {
       x: this.mouse_position.x,
       y: this.mouse_position.y,
@@ -1141,6 +1156,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
     };
     return node
   }
+
   public add_node_to_instance() {
     if (this.is_drawing_edge) {
       return
@@ -1211,9 +1227,8 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   }
 
 
-
   private draw_instance_bounding_box(ctx) {
-    if(this.template_creation_mode){
+    if (this.template_creation_mode) {
       return
     }
     let min_max_obj = this.get_rotated_min_max();
@@ -1267,19 +1282,17 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   private draw_point_and_set_node_hover_index(node, x, y, i, ctx): void {
     ctx.beginPath();
     if (this.node_hover_index === i) {
-      if(!this.instance_context.color_tool_active){
-        if(node.color){
+      if (!this.instance_context.color_tool_active) {
+        if (node.color) {
           let hovercolor = getContrastColor(node.color.hex);
           ctx.fillStyle = hovercolor
           ctx.strokeStyle = hovercolor
-        }
-        else{
-          if(node.color){
+        } else {
+          if (node.color) {
             let hovercolor = getContrastColor(node.color.hex);
             ctx.strokeStyle = hovercolor
             ctx.fillStyle = hovercolor
-          }
-          else{
+          } else {
             ctx.strokeStyle = 'green'
             ctx.fillStyle = 'green'
           }
@@ -1288,8 +1301,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
       }
 
 
-    }
-    else{
+    } else {
       this.set_node_color(node, ctx)
     }
     ctx.lineWidth = 2 / this.zoom_value
@@ -1369,7 +1381,7 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   }
 
   private draw_edges(ctx) {
-    if(this.guided_mode_active){
+    if (this.guided_mode_active) {
       return
     }
     ctx.lineWidth = this.label_settings.spatial_line_size / this.zoom_value;

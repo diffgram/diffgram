@@ -125,30 +125,30 @@
 
 <script lang="ts">
   import Vue from "vue";
-  import {KeypointInstance} from '../vue_canvas/instances/KeypointInstance';
+  import {KeypointInstance} from '../../../embed/src/types/instances/KeypointInstance';
   import context_menu_instance_template from '../context_menu/context_menu_instance_template';
   import drawable_canvas from '../vue_canvas/drawable_canvas';
   import axios from '../../services/customInstance';
   import instance_drawer from '../vue_canvas/instance_drawer';
   import instance_template_creation_toolbar from './instance_template_creation_toolbar'
-  import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
-  import {iconFillPaint} from "../../utils/custom_icons.js";
-  import {CanvasMouseCtx, MousePosition} from "../../../embed/src/types/mouse_position";
-  import {Instance} from "../vue_canvas/instances/Instance";
+  import {InstanceContext} from "../../../embed/src/types/instances/InstanceContext";
+  import {iconFillPaint} from "../../../embed/src/types/utils/custom_icons";
+  import {CanvasMouseCtx, MousePosition} from "../../../embed/src/types/annotation/image/MousePosition";
+  import {Instance} from "../../../embed/src/types/instances/Instance";
   import {
     ImageAnnotationCoordinatorRouter
-  } from "../vue_canvas/coordinators/ImageAnnotationCoordinatorRouter";
+  } from "../../../embed/src/types/coordinators/ImageAnnotationCoordinatorRouter";
   import {
     genImageAnnotationEvent,
     ImageAnnotationEventCtx,
     ImageInteractionEvent,
     InteractionEvent
-  } from "../../../embed/src/types/InteractionEvent";
-  import {LabelFile} from "../../../embed/src/types/label";
-  import {LabelColourMap} from "../../../embed/src/types/label_colour_map";
-  import {CoordinatorProcessResult} from "../vue_canvas/coordinators/Coordinator";
-  import {ImageAnnotationCoordinator} from "../vue_canvas/coordinators/coordinator_types/ImageAnnotationCoordinator";
-  import {createDefaultLabelSettings} from "../../../embed/src/types/image_label_settings";
+  } from "../../../embed/src/types/annotation/InteractionEvent";
+  import {LabelFile} from "../../../embed/src/types/labels/Label";
+  import {LabelColourMap} from "../../../embed/src/types/labels/LabelColourMap";
+  import {CoordinatorProcessResult} from "../../../embed/src/types/coordinators/Coordinator";
+  import {ImageAnnotationCoordinator} from "../../../embed/src/types/coordinators/coordinator_types/ImageAnnotationCoordinator";
+  import {createDefaultLabelSettings} from "../../../embed/src/types/annotation/image/ImageLabelSettings";
 
   export default Vue.extend({
   name: "instance_template_creation_dialog",

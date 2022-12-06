@@ -1,8 +1,8 @@
 import {Instance} from "./Instance";
-import {MousePosition} from "../../../../embed/src/types/mouse_position";
-import {ImageCanvasTransform} from "../../../../embed/src/types/CanvasTransform";
-import {ImageLabelSettings} from "../../../../embed/src/types/image_label_settings";
-import {get_sequence_color} from '../../regular/regular_annotation'
+import {MousePosition} from "../annotation/image/MousePosition";
+import {ImageCanvasTransform} from "../annotation/image/CanvasTransform";
+import {ImageLabelSettings} from "../annotation/image/ImageLabelSettings";
+import {get_sequence_color} from '../annotation/image/Sequence'
 
 export abstract class InstanceImage2D extends Instance {
   public ctx: CanvasRenderingContext2D;
@@ -16,8 +16,12 @@ export abstract class InstanceImage2D extends Instance {
   public set_color_from_label() {
     let colour = this.get_label_file_colour_map()[this.label_file_id]
     if (colour) {
-      this.set_border_color(colour.hex)
-      this.set_fill_color(colour.rgba.r, colour.rgba.g, colour.rgba.b, 0.1)
+      if (colour.hex) {
+        this.set_border_color(colour.hex)
+      }
+      if (colour.rgba) {
+        this.set_fill_color(colour.rgba.r, colour.rgba.g, colour.rgba.b, 0.1)
+      }
     }
   }
 
@@ -37,7 +41,11 @@ export abstract class InstanceImage2D extends Instance {
   public set_canvas(val: HTMLCanvasElement) {
     this.canvas_element = val
     if (this.canvas_element) {
-      this.ctx = this.canvas_element.getContext("2d");
+      let ctx = this.canvas_element.getContext("2d");
+      if (ctx) {
+        this.ctx = ctx
+      }
+
     }
   }
 
@@ -58,7 +66,13 @@ export abstract class InstanceImage2D extends Instance {
   }
 
 
-  public draw_text(ctx, message, x, y, font, background_color, background_opacity){
+  public draw_text(ctx: CanvasRenderingContext2D,
+                   message: string,
+                   x: number,
+                   y:number,
+                   font: string,
+                   background_color:string,
+                   background_opacity: number) {
     ctx.textBaseline = 'bottom'
     ctx.font = font
 
@@ -81,8 +95,8 @@ export abstract class InstanceImage2D extends Instance {
     ctx.fillText(message, x, y);
   }
 
-  public draw_label(ctx, x, y){
-    if ( this.image_label_settings == null
+  public draw_label(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    if (this.image_label_settings == null
       || this.image_label_settings.show_text == false) {
       return
     }
@@ -106,12 +120,12 @@ export abstract class InstanceImage2D extends Instance {
       }
     }
 
-    if (  this.soft_delete
+    if (this.soft_delete
       && this.soft_delete == true) {
       message += " Removed"
     }
 
-    if (  this.interpolated
+    if (this.interpolated
       && this.interpolated == true) {
       message += " Interpolated"
     }
@@ -123,7 +137,7 @@ export abstract class InstanceImage2D extends Instance {
       this.image_label_settings.font_background_opacity);
   }
 
-  protected is_mouse_in_path(ctx) {
+  protected is_mouse_in_path(ctx: CanvasRenderingContext2D) {
     if (!this.mouse_position || !this.mouse_position.raw) {
       return false
     }
@@ -137,7 +151,7 @@ export abstract class InstanceImage2D extends Instance {
 
   public get_instance_data(): any {
     let res = super.get_instance_data();
-    return  {
+    return {
       ...res,
       strokeColor: this.strokeColor,
       fillColor: this.fillColor,

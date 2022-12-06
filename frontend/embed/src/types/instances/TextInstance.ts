@@ -4,7 +4,7 @@ import {
   TextInstanceData,
   InstanceInterface,
   TextRelationInstanceData
-} from "../../../helpers/interfaces/InstanceData";
+} from "../../../../src/helpers/interfaces/InstanceData";
 
 
 export class TextAnnotationInstance extends Instance implements InstanceInterface {

@@ -9,8 +9,8 @@
   import Vue from 'vue'
   import { cuboid } from './cuboid.js'
   import { ellipse } from './ellipse.js'
-  import {BoxInstance} from "./instances/BoxInstance";
-  import {SUPPORTED_CLASS_INSTANCE_TYPES} from "./instances/Instance";
+  import {BoxInstance} from "../../../embed/src/types/instances/BoxInstance";
+  import {SUPPORTED_CLASS_INSTANCE_TYPES} from "../../../embed/src/types/instances/Instance";
   Vue.prototype.$cuboid = new cuboid()
   Vue.prototype.$ellipse = new ellipse()
 

@@ -67,7 +67,7 @@
   import Vue from "vue";
   import v_bg from '../vue_canvas/v_bg';
   import target_reticle from '../vue_canvas/target_reticle';
-  import {CanvasMouseTools} from '../vue_canvas/CanvasMouseTools';
+  import {CanvasMouseTools} from '../../../embed/src/types/annotation/image/CanvasMouseTools';
 
   export default Vue.extend({
     name: "drawable_canvas",

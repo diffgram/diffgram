@@ -2,7 +2,7 @@ import Vuex from "vuex";
 import Vuetify from "vuetify";
 import {shallowMount, createLocalVue} from "@vue/test-utils";
 import annotation_core from "@/components/annotation/annotation_core.vue";
-import * as InstanceUtils from "@/utils/instance_utils";
+import * as InstanceUtils from "@/../../../embed/src/types/utils/instance_utils";
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();

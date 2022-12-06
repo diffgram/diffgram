@@ -4,14 +4,14 @@ import {
   InteractionEvent,
   ImageAnnotationEventCtx,
   ImageInteractionEvent
-} from "../../../../../embed/src/types/InteractionEvent";
+} from "../../annotation/InteractionEvent";
 import {ImageAnnotationCoordinator} from "./ImageAnnotationCoordinator";
-import {duplicate_instance} from "../../../../utils/instance_utils";
-import {CanvasMouseCtx} from "../../../../../embed/src/types/mouse_position";
-import {CreateInstanceCommand} from "../../../annotation/commands/create_instance_command";
-import CommandManager from "../../../../helpers/command/command_manager";
-import {InstanceColor} from "../../../../../embed/src/types/instance_color";
-import {UpdateInstanceCommand} from "../../../annotation/commands/update_instance_command";
+import {duplicate_instance} from "../../utils/instance_utils";
+import {CanvasMouseCtx} from "../../annotation/image/MousePosition";
+import {CreateInstanceCommand} from "../../../../../src/components/annotation/commands/create_instance_command";
+import CommandManager from "../../../../../src/helpers/command/command_manager";
+import {InstanceColor} from "../../instances/InstanceColor";
+import {UpdateInstanceCommand} from "../../../../../src/components/annotation/commands/update_instance_command";
 
 export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
   /**

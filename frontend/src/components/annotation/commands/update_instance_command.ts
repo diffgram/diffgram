@@ -1,7 +1,7 @@
 import AnnotationScene3D from "../../3d_annotation/AnnotationScene3DOrtographicView";
-import {Instance} from "../../vue_canvas/instances/Instance";
-import {CanvasMouseCtx} from "../../../../embed/src/types/mouse_position";
-import {duplicate_instance} from "../../../utils/instance_utils";
+import {Instance} from "../../../../embed/src/types/instances/Instance";
+import {CanvasMouseCtx} from "../../../../embed/src/types/annotation/image/MousePosition";
+import {duplicate_instance} from "../../../../embed/src/types/utils/instance_utils";
 
 const CLASS_INSTANCE_TYPES = [
   'keypoints',

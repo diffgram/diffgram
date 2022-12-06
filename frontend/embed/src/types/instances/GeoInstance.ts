@@ -1,6 +1,6 @@
 import { Instance } from "./Instance";
 import { v4 as uuidv4 } from 'uuid'
-import { InstanceInterface } from "../../../helpers/interfaces/InstanceData";
+import { InstanceInterface } from "../../../../src/helpers/interfaces/InstanceData";
 
 export class GeoCircle extends Instance implements InstanceInterface {
     public type: string = "geo_circle";
@@ -16,10 +16,10 @@ export class GeoCircle extends Instance implements InstanceInterface {
     public create_instance(
         id: number,
         creation_ref_id: string,
-        lonlat: Array<number>, 
-        coords: Array<any>, 
-        radius: number, 
-        label_file: any, 
+        lonlat: Array<number>,
+        coords: Array<any>,
+        radius: number,
+        label_file: any,
         soft_delete: boolean = false
     ): void {
         this.id = id
@@ -33,10 +33,10 @@ export class GeoCircle extends Instance implements InstanceInterface {
     }
 
     public create_frontend_instance(
-            lonlat: Array<number>, 
-            coords: Array<any>, 
-            radius: number, 
-            label_file: any, 
+            lonlat: Array<number>,
+            coords: Array<any>,
+            radius: number,
+            label_file: any,
             ol_id: string,
             soft_delete: boolean = false
         ): void {
@@ -64,7 +64,7 @@ export class GeoCircle extends Instance implements InstanceInterface {
             radius: this.radius,
             ol_id: this.ol_id
         }
-        
+
         return payload
     }
 }
@@ -83,9 +83,9 @@ export class GeoPoly extends Instance implements InstanceInterface {
     public create_instance(
         id: number,
         creation_ref_id: string,
-        bounds: Array<number>, 
-        bounds_lonlat: Array<number>, 
-        label_file: any, 
+        bounds: Array<number>,
+        bounds_lonlat: Array<number>,
+        label_file: any,
         soft_delete: boolean = false
     ): void {
         this.id = id;
@@ -98,9 +98,9 @@ export class GeoPoly extends Instance implements InstanceInterface {
     }
 
     public create_frontend_instance(
-            bounds: Array<number>, 
-            bounds_lonlat: Array<number>, 
-            label_file: any, 
+            bounds: Array<number>,
+            bounds_lonlat: Array<number>,
+            label_file: any,
             ol_id: string,
             soft_delete: boolean = false
         ): void {
@@ -126,7 +126,7 @@ export class GeoPoly extends Instance implements InstanceInterface {
             bounds_lonlat: this.bounds_lonlat,
             ol_id: this.ol_id
         }
-        
+
         return payload
     }
 }
@@ -187,7 +187,7 @@ export class GeoPoint extends Instance implements InstanceInterface {
             coords: this.coords,
             ol_id: this.ol_id
         }
-        
+
         return payload
     }
 }

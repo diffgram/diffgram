@@ -1,4 +1,4 @@
-import {InstanceColor} from "./instance_color";
+import {InstanceColor} from "../instances/InstanceColor";
 
 export type Label = {
   id: number

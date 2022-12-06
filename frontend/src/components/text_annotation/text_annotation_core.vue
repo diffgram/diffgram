@@ -74,11 +74,11 @@
       <div style="width: 100%; display: flex; flex-direction: column">
         <v-progress-linear
           v-if="!fetching_error && (resizing || rendering)"
-          indeterminate 
+          indeterminate
         />
-        <v_error_multiple 
+        <v_error_multiple
           v-if="fetching_error"
-          :error="['Error occured while dowloading text file']" 
+          :error="['Error occured while dowloading text file']"
         />
         <svg
           ref="initial_svg_element"
@@ -266,7 +266,7 @@ import text_context_menu from "./render_elements/text_context_menu.vue"
 import relation_in_progress from "./render_elements/relation_in_progress.vue"
 import {CommandManagerAnnotationCore} from "../annotation/annotation_core_command_manager"
 import {CreateInstanceCommand as CreateInstanceCommandLegacy} from "../annotation/commands/create_instance_command.ts";
-import {TextAnnotationInstance, TextRelationInstance} from "../vue_canvas/instances/TextInstance"
+import {TextAnnotationInstance, TextRelationInstance} from "../../../embed/src/types/instances/TextInstance"
 import {postInstanceList, getInstanceList} from "../../services/instanceList"
 import getTextService from "../../services/getTextService"
 import {deferTask, finishTaskAnnotation} from "../../services/tasksServices"
@@ -283,7 +283,7 @@ import {
 } from "../../helpers/command/available_commands"
 import DrawRects from "./text_utils/draw_rects";
 import closest_token from "./text_utils/closest_token"
-import { Instance } from "../vue_canvas/instances/Instance";
+import { Instance } from "../../../embed/src/types/instances/Instance";
 import { v4 as uuidv4 } from 'uuid'
 
 export default Vue.extend({
@@ -786,12 +786,12 @@ export default Vue.extend({
           const {nltk: {words}} = await getTextService(this.file.text.tokens_url_signed)
           set_words = words
         }
-        
+
         this.command_manager = new CommandManagerAnnotationCore()
         // New command pattern
         this.new_history = new History()
         this.new_command_manager = new CommandManager(this.new_history)
-  
+
         this.initial_words_measures = set_words
         setTimeout(() => this.initialize_token_render(), 1000)
         this.initialize_instance_list()
@@ -802,7 +802,7 @@ export default Vue.extend({
     initialize_token_render: async function () {
       if (!this.$refs.initial_svg_element) return
 
-      
+
       const fixed_svg_width = this.$refs.initial_svg_element.clientWidth;
       const tokens = [];
       let token_x_position = 40;

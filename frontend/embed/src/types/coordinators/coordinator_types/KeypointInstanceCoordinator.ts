@@ -1,9 +1,9 @@
 import {Coordinator, CoordinatorProcessResult} from "../Coordinator";
 import {KeypointInstance} from "../../instances/KeypointInstance";
-import {iconFillPaint} from '../../../../utils/custom_icons'
-import CommandManager from "../../../../helpers/command/command_manager";
+import {iconFillPaint} from "../../../../../embed/src/types/utils/custom_icons"
+import CommandManager from "../../../../../src/helpers/command/command_manager";
 import {ImageAnnotationCoordinator} from "./ImageAnnotationCoordinator";
-import {ImageInteractionEvent, InteractionEvent} from "../../../../../embed/src/types/InteractionEvent";
+import {ImageInteractionEvent, InteractionEvent} from "../../annotation/InteractionEvent";
 
 export class KeypointInstanceCoordinator extends ImageAnnotationCoordinator{
   /**
@@ -117,7 +117,7 @@ export class KeypointInstanceCoordinator extends ImageAnnotationCoordinator{
       is_actively_drawing: annotation_event.annotation_ctx.is_actively_drawing,
       original_edit_instance: annotation_event.annotation_ctx.original_edit_instance,
       instance_hover_index: annotation_event.annotation_ctx.instance_list.indexOf(this.instance),
-      instance_hover_type: this.instance ? this.instance.type : null,
+      instance_hover_type: this.instance ? this.instance.type : undefined,
       locked_editing_instance: annotation_event.annotation_ctx.locked_editing_instance,
       lock_point_hover_change: annotation_event.annotation_ctx.lock_point_hover_change,
     }

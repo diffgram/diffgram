@@ -2,13 +2,13 @@ import {InstanceBehaviour2D, Instance} from './Instance'
 import {InstanceContext} from './InstanceContext';
 import {v4 as uuidv4} from 'uuid';
 import {getContrastColor} from '../../../utils/colorUtils'
-import {MousePosition, point_is_intersecting_circle} from "../../../../embed/src/types/mouse_position";
+import {MousePosition, point_is_intersecting_circle} from "../annotation/image/MousePosition";
 import {get_sequence_color} from '../../regular/regular_annotation'
-import {InstanceColor} from "../../../../embed/src/types/instance_color";
-import {LabelColourMap} from "../../../../embed/src/types/label_colour_map";
-import {ImageCanvasTransform} from "../../../../embed/src/types/CanvasTransform";
+import {InstanceColor} from "./InstanceColor";
+import {LabelColourMap} from "../labels/LabelColourMap";
+import {ImageCanvasTransform} from "../annotation/image/CanvasTransform";
 import {InstanceImage2D} from "./InstanceImage2D";
-import {ImageLabelSettings} from "../../../../embed/src/types/image_label_settings";
+import {ImageLabelSettings} from "../annotation/image/ImageLabelSettings";
 
 type BoxHoverPoints =
   'x_min_y_min'

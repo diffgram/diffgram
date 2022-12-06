@@ -1,6 +1,6 @@
 import * as THREE from "three";
-import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
-import {getCenterPoint} from "../../3d_annotation/utils_3d";
+import AnnotationScene3D from "../../../../src/components/3d_annotation/AnnotationScene3D";
+import {getCenterPoint} from "../../../../src/components/3d_annotation/utils_3d";
 import {Instance} from "./Instance";
 
 export abstract class Instance3D extends Instance {

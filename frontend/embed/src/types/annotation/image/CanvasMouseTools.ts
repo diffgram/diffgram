@@ -1,5 +1,5 @@
 import { size } from "lodash";
-import {MousePosition} from "../../../embed/src/types/mouse_position";
+import {MousePosition} from "./MousePosition";
 
 export class CanvasMouseTools {
   private mouse_position: MousePosition;

@@ -929,28 +929,28 @@ import current_instance_template from "../vue_canvas/current_instance_template.v
 import instance_template_creation_dialog from "../instance_templates/instance_template_creation_dialog";
 import create_issue_panel from "../discussions/create_issue_panel.vue";
 import view_edit_issue_panel from "../discussions/view_edit_issue_panel.vue";
-import {getContrastColor} from '../../utils/colorUtils'
+import {getContrastColor} from '../../../embed/src/types/utils/colorUtils'
 import {ellipse} from "../vue_canvas/ellipse.js";
 import {CommandManagerAnnotationCore} from "./annotation_core_command_manager.js";
 import {CreateInstanceCommand} from "./commands/create_instance_command";
 import {UpdateInstanceCommand} from "./commands/update_instance_command.ts";
 import {
   ImageAnnotationCoordinatorRouter,
-} from "../vue_canvas/coordinators/ImageAnnotationCoordinatorRouter";
-import {ImageAnnotationCoordinator} from "../vue_canvas/coordinators/coordinator_types/ImageAnnotationCoordinator";
+} from "../../../embed/src/types/coordinators/ImageAnnotationCoordinatorRouter";
+import {ImageAnnotationCoordinator} from "../../../embed/src/types/coordinators/coordinator_types/ImageAnnotationCoordinator";
 import {polygon} from "../vue_canvas/polygon.js";
 import {v4 as uuidv4} from "uuid";
 import {cloneDeep} from "lodash";
-import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
-import {Instance, SUPPORTED_CLASS_INSTANCE_TYPES} from "../vue_canvas/instances/Instance";
+import {KeypointInstance} from "../../../embed/src/types/instances/KeypointInstance";
+import {Instance, SUPPORTED_CLASS_INSTANCE_TYPES} from "../../../embed/src/types/instances/Instance";
 import userscript from "./userscript/userscript.vue";
 import toolbar from "./toolbar.vue";
 import {sha256} from "js-sha256";
 import stringify from "json-stable-stringify";
 import PropType from "vue";
 import _ from "lodash";
-import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
-import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
+import {InstanceContext} from "../../../embed/src/types/instances/InstanceContext";
+import {CanvasMouseTools} from "../../../embed/src/types/annotation/image/CanvasMouseTools";
 import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
 import {finishTaskAnnotation, trackTimeTask} from "../../services/tasksServices";
@@ -966,21 +966,21 @@ import {
   initialize_instance_object,
   duplicate_instance,
   duplicate_instance_template, post_init_instance
-} from '../../utils/instance_utils.ts';
+} from '../../../embed/src/types/utils/instance_utils.ts';
 import {
   InteractionEvent,
   genImageAnnotationEvent,
   AnnotationEventCtx,
   ImageAnnotationEventCtx, ImageInteractionEvent
-} from "../../../embed/src/types/InteractionEvent";
-import {Coordinator, CoordinatorProcessResult} from "../vue_canvas/coordinators/Coordinator";
-import {Interaction} from "../../../embed/src/types/Interaction";
-import {BoxInstance} from "../vue_canvas/instances/BoxInstance";
-import {LabelColourMap} from "../../../embed/src/types/label_colour_map";
-import {CanvasMouseCtx, MousePosition} from "../../../embed/src/types/mouse_position";
-import {ImageCanvasTransform} from "../../../embed/src/types/CanvasTransform";
-import {LabelFile} from "../../../embed/src/types/label";
-import {InstanceImage2D} from "../vue_canvas/instances/InstanceImage2D";
+} from "../../../embed/src/types/annotation/InteractionEvent";
+import {Coordinator, CoordinatorProcessResult} from "../../../embed/src/types/coordinators/Coordinator";
+import {Interaction} from "../../../embed/src/types/annotation/Interaction";
+import {BoxInstance} from "../../../embed/src/types/instances/BoxInstance";
+import {LabelColourMap} from "../../../embed/src/types/labels/LabelColourMap";
+import {CanvasMouseCtx, MousePosition} from "../../../embed/src/types/annotation/image/MousePosition";
+import {ImageCanvasTransform} from "../../../embed/src/types/annotation/image/CanvasTransform";
+import {LabelFile} from "../../../embed/src/types/labels/Label";
+import {InstanceImage2D} from "../../../embed/src/types/instances/InstanceImage2D";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();

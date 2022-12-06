@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { TransformControls } from 'three/examples/jsm/controls/TransformControls';
 import AnnotationScene3D from "./AnnotationScene3D";
-import {Instance3D} from "../vue_canvas/instances/Instance3D";
+import {Instance3D} from "../../../embed/src/types/instances/Instance3D";
 
 export default class CuboidDrawerTool {
   public scene_controller: AnnotationScene3D;

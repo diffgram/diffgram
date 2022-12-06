@@ -49,12 +49,12 @@
         @delete_instance="delete_instance"
         @on_update_attribute="update_attribute"
       />
-      <waveform_selector 
-        v-if="instance_list" 
+      <waveform_selector
+        v-if="instance_list"
         :force_watch_trigger="force_watch_trigger"
         :instance_list="instance_list.get()"
-        :current_label="current_label" 
-        :audio_file="task ? task.file : file" 
+        :current_label="current_label"
+        :audio_file="task ? task.file : file"
         :invisible_labels="invisible_labels"
         @asign_wavesurfer_id="asign_wavesurfer_id"
         @instance_create_update="instance_create_update"
@@ -79,7 +79,7 @@ import {
   UpdateInstanceAttributeCommand,
   UpdateInstanceAudioCoordinatesCommand
 } from "../../helpers/command/available_commands"
-import { AudioAnnotationInstance } from "../vue_canvas/instances/AudioInstance"
+import { AudioAnnotationInstance } from "../../../embed/src/types/instances/AudioInstance"
 import { deferTask, finishTaskAnnotation } from "../../services/tasksServices"
 import { getInstanceList, postInstanceList } from "../../services/instanceList";
 

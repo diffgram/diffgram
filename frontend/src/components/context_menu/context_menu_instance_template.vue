@@ -101,7 +101,7 @@
   import share_instance_dialog from '../share/share_instance_dialog.vue';
   import node_name_editor_keypoint_instance from '../annotation/node_name_editor_keypoint_instance';
   import sequence_select from '../video/sequence_select.vue'
-  import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
+  import {KeypointInstance} from "../../../embed/src/types/instances/KeypointInstance";
 
   export default Vue.extend({
     name: 'context_menu_instance_template',

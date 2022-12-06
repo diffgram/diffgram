@@ -1,7 +1,7 @@
-import {Instance} from '../vue_canvas/instances/Instance'
-import {initialize_instance_object} from '../../utils/instance_utils'
-import {CanvasMouseCtx, MousePosition} from "../../../embed/src/types/mouse_position";
-import {ModelRun} from "../../../embed/src/types/models";
+import {Instance} from '../../../embed/src/types/instances/Instance'
+import {initialize_instance_object} from '../../../embed/src/types/utils/instance_utils'
+import {CanvasMouseCtx, MousePosition} from "../../../embed/src/types/annotation/image/MousePosition";
+import {ModelRun} from "../../../embed/src/types/models/Models";
 
 const create_empty_mouse_ctx = (): CanvasMouseCtx => {
   // We initialize empty ctx, since there is no drawing logic for dataset explorer.

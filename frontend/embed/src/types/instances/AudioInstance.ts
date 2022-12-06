@@ -1,6 +1,6 @@
 import { Instance } from "./Instance";
 import { v4 as uuidv4 } from 'uuid'
-import { InstanceInterface } from "../../../helpers/interfaces/InstanceData";
+import { InstanceInterface } from "../../../../src/helpers/interfaces/InstanceData";
 
 
 export class AudioAnnotationInstance extends Instance implements InstanceInterface {

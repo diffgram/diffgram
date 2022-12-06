@@ -5,7 +5,7 @@ import InstanceList from "../../../src/helpers/instance_list"
 import * as taskServices from "../../../src/services/tasksServices"
 import { shallowMount, createLocalVue } from "@vue/test-utils";
 import Vuex from "vuex";
-import { TextAnnotationInstance } from "../../../src/components/vue_canvas/instances/TextInstance";
+import { TextAnnotationInstance } from "../../../embed/src/types/instances/TextInstance";
 
 const localVue = createLocalVue();
 localVue.use(Vuex);
@@ -32,8 +32,8 @@ describe("text_annotation_core.vue", () => {
         wrapper = shallowMount(text_annotation_core, props, localVue)
 
         wrapper.setData({
-            tokens, 
-            lines, 
+            tokens,
+            lines,
             new_instance_list: instance_list,
             new_command_manager: {
                 executeCommand: jest.fn()
@@ -193,7 +193,7 @@ describe("text_annotation_core.vue", () => {
 
     it("Should not fire bulk_labeling or on_draw_relation if control + click event", () => {
         const event = {
-            ctrlKey: true, 
+            ctrlKey: true,
             button: 0
         }
 

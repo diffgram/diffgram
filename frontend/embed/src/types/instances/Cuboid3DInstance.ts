@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import {Instance3D} from './Instance3D'
-import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
+import AnnotationScene3D from "../../../../src/components/3d_annotation/AnnotationScene3D";
 import {v4 as uuidv4 } from 'uuid'
 
 export default class Cuboid3DInstance extends Instance3D {

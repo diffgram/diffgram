@@ -1,65 +1,67 @@
 import * as THREE from 'three';
-import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
-import {getCenterPoint} from "../../3d_annotation/utils_3d";
-import {LabelColourMap} from "../../../../embed/src/types/label_colour_map";
-import {LabelFile} from "../../../../embed/src/types/label";
-import {MousePosition} from "../../../../embed/src/types/mouse_position";
-import {ImageCanvasTransform} from "../../../../embed/src/types/CanvasTransform";
+import AnnotationScene3D from "../../../../src/components/3d_annotation/AnnotationScene3D";
+import {getCenterPoint} from "../../../../src/components/3d_annotation/utils_3d";
+import {LabelColourMap} from "../labels/LabelColourMap";
+import {LabelFile} from "../labels/Label";
+import {MousePosition} from "../annotation/image/MousePosition";
+import {ImageCanvasTransform} from "../annotation/image/CanvasTransform";
+import {AttributeGroup, AttributeGroupMap} from "../attributes/AttributeGroup";
 
 export const SUPPORTED_CLASS_INSTANCE_TYPES: Array<string> = ['box', 'keypoints'];
 export const GLOBAL_SELECTED_COLOR = '#0000ff'
+
 export interface InstanceBehaviour2D {
   update_min_max_points(): void
 
-  draw(ctx): void
+  draw(ctx: CanvasRenderingContext2D): void
 }
 
 
 export class Instance {
-  public id: number = null;
-  public creation_ref_id: string = null;
-  public x_min: number = null;
-  public y_min: number = null;
-  public center_x: number = null;
-  public center_y: number = null;
-  public x_max: number = null;
-  public y_max: number = null;
-  public p1: object = null;
-  public cp: object = null;
-  public p2: object = null;
+  public id: number;
+  public creation_ref_id: string;
+  public x_min: number;
+  public y_min: number;
+  public center_x: number;
+  public center_y: number;
+  public x_max: number;
+  public y_max: number;
+  public p1: object;
+  public cp: object;
+  public p2: object;
 
-  public auto_border_polygon_p1: object = null;
-  public auto_border_polygon_p2: object = null;
-  public cuboid_current_drawing_face: object = null;
-  public label_file_colour_map: LabelColourMap = null;
+  public auto_border_polygon_p1: object;
+  public auto_border_polygon_p2: object;
+  public cuboid_current_drawing_face: object;
+  public label_file_colour_map: LabelColourMap;
   public nodes: any[] = [];
   public edges: any[] = [];
-  public front_face: object = null;
+  public front_face: object;
   public angle: number = 0;
-  public attribute_groups: any = null;
-  public rear_face: number = null;
-  public override_color: string = null;
-  public model_run_id: number = null;
-  public width: number = null;
-  public height: number = null;
+  public attribute_groups: AttributeGroupMap;
+  public rear_face: number;
+  public override_color: string;
+  public model_run_id: number;
+  public width: number;
+  public height: number;
   public label_file: LabelFile;
-  public label_file_id: number = null;
+  public label_file_id: number;
   public selected: boolean = false;
-  public number: number = null;
-  public type: string = null;
+  public number: number;
+  public type: string;
   public points: object[] = [];
-  public sequence_id: number = null;
+  public sequence_id: number;
   public soft_delete: boolean = false;
   public is_hovered: boolean = false;
   public is_resizing: boolean = false;
   public interpolated: boolean = false;
   public status: string = '';
 
-  public on_instance_updated: Function = undefined;
-  public on_instance_selected: Function = undefined;
-  public on_instance_hovered: Function = undefined;
-  public on_instance_unhovered: Function = undefined;
-  public on_instance_deselected: Function = undefined;
+  public on_instance_updated?: Function;
+  public on_instance_selected?: Function;
+  public on_instance_hovered?: Function;
+  public on_instance_unhovered?: Function;
+  public on_instance_deselected?: Function;
   public pause_object: false
 
 
@@ -114,21 +116,28 @@ export class Instance {
 
   public select() {
     this.selected = true
-    this.on_instance_selected(this)
+    if (this.on_instance_selected) {
+      this.on_instance_selected(this)
+    }
+
   }
 
   public unselect() {
     this.selected = false
-    this.on_instance_deselected(this)
+    if (this.on_instance_deselected) {
+      this.on_instance_deselected(this)
+    }
+
   }
 
-  public populate_from_instance_obj(inst) {
+  public populate_from_instance_obj(inst: Instance) {
     for (let key in inst) {
+      // @ts-ignore
       this[key] = inst[key]
     }
   }
 
-  public instance_updated_callback(instance) {
+  public instance_updated_callback(instance: Instance) {
     if (this.on_instance_updated) {
       this.on_instance_updated(instance);
     }
@@ -144,13 +153,13 @@ export class Instance {
   }
 
 
-  public instance_selected_callback(instance) {
+  public instance_selected_callback(instance: Instance) {
     if (this.on_instance_selected) {
       this.on_instance_selected(instance);
     }
   }
 
-  public instance_deselected_callback(instance) {
+  public instance_deselected_callback(instance: Instance) {
     if (this.on_instance_deselected) {
       this.on_instance_deselected(instance);
     }
@@ -158,19 +167,20 @@ export class Instance {
 
 
   public on(event_type: string, callback: Function) {
-    if(event_type === 'hover_in'){
+    if (event_type === 'hover_in') {
       this.on_instance_hovered = callback
     }
-    if(event_type === 'hover_out'){
+    if (event_type === 'hover_out') {
       this.on_instance_unhovered = callback
     }
   }
+
   public remove_listener(event_type: string, callback: Function) {
-    if(event_type === 'hover_in'){
-      this.on_instance_hovered = null
+    if (event_type === 'hover_in') {
+      this.on_instance_hovered = undefined
     }
-    if(event_type === 'hover_out'){
-      this.on_instance_unhovered = null
+    if (event_type === 'hover_out') {
+      this.on_instance_unhovered = undefined
     }
   }
 }

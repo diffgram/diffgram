@@ -5,9 +5,9 @@ import * as THREE from "three";
 import {WEBGL} from "../../../src/components/3d_annotation/WebGL";
 import mock = jest.mock;
 import AnnotationScene3D from "../../../src/components/3d_annotation/AnnotationScene3D";
-import Cuboid3DInstance from "../../../src/components/vue_canvas/instances/Cuboid3DInstance"
+import Cuboid3DInstance from "../../../embed/src/types/instances/Cuboid3DInstance"
 import {mocked} from 'ts-jest/utils'
-import {LabelFile} from "../../../embed/src/types/label";
+import {LabelFile} from "../../../embed/src/types/labels/Label";
 
 jest.mock("three/src/renderers/WebGLRenderer"); // this happens automatically with automocking
 const localVue = createLocalVue();

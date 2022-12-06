@@ -1,6 +1,6 @@
-import {TextAnnotationInstance, TextRelationInstance} from "../../vue_canvas/instances/TextInstance";
-import {Instance} from "../../vue_canvas/instances/Instance";
-import {initialize_instance_object} from "../../../utils/instance_utils";
+import {TextAnnotationInstance, TextRelationInstance} from "../../../../embed/src/types/instances/TextInstance";
+import {Instance} from "../../../../embed/src/types/instances/Instance";
+import {initialize_instance_object} from "../../../../embed/src/types/utils/instance_utils";
 
 export class CreateInstanceCommand {
   ann_core_ctx: any

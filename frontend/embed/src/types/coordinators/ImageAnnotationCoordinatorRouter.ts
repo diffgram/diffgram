@@ -9,9 +9,9 @@ import {
   InteractionEvent,
   ImageAnnotationEventCtx,
   ImageInteractionEvent
-} from "../../../../embed/src/types/InteractionEvent";
-import {CanvasMouseCtx} from "../../../../embed/src/types/mouse_position";
-import CommandManager from "../../../helpers/command/command_manager";
+} from "../annotation/InteractionEvent";
+import {CanvasMouseCtx} from "../annotation/image/MousePosition";
+import CommandManager from "../../../../src/helpers/command/command_manager";
 import {ImageAnnotationCoordinator} from "./coordinator_types/ImageAnnotationCoordinator";
 
 type InstanceTypes2D = 'box' | 'polygon' | 'tag' | 'point' | 'line' | 'cuboid' | 'ellipse' | 'curve'

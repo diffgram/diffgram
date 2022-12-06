@@ -5,8 +5,8 @@
             :show_default_navigation="!task"
         >
             <template slot="second_row">
-                <geo_toolbar 
-                    :instance_type_list="instance_type_list" 
+                <geo_toolbar
+                    :instance_type_list="instance_type_list"
                     :draw_mode="draw_mode"
                     :undo_disabled="undo_disabled"
                     :redo_disabled="redo_disabled"
@@ -19,7 +19,7 @@
                     :label_schema="label_schema"
                     :loading="rendering"
                     @change_label_schema="on_change_label_schema"
-                    @edit_mode_toggle="change_mode" 
+                    @edit_mode_toggle="change_mode"
                     @change_instance_type="change_instance_type"
                     @change_label_file="change_label_file"
                     @change_label_visibility="change_label_visibility"
@@ -40,11 +40,11 @@
                 @delete_instance="delete_instance"
                 @change_instance_label="change_instance_label"
             />
-            <div 
-                id="map" 
-                ref="map" 
+            <div
+                id="map"
+                ref="map"
                 v-if="!rendering"
-                @click="draw_instance" 
+                @click="draw_instance"
                 :style="`height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%;`"
             />
         </div>
@@ -58,13 +58,13 @@ import geo_sidebar from "./geo_sidebar.vue"
 import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
 import History from "../../helpers/history"
-import { 
-    CreateInstanceCommand, 
+import {
+    CreateInstanceCommand,
     DeleteInstanceCommand,
     UpdateInstanceLabelCommand,
     UpdateInstanceGeoCoordinatesCommand
 } from "../../helpers/command/available_commands"
-import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
+import { GeoCircle, GeoPoint, GeoPoly } from "../../../embed/src/types/instances/GeoInstance"
 import { getInstanceList, postInstanceList } from "../../services/instanceList";
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
@@ -300,7 +300,7 @@ export default Vue.extend({
             if (this.current_instance_type === 'geo_circle') {
                 this.annotation_source.removeFeature(this.drawing_feature)
                 const line = new LineString([this.draw_init, this.mouse_coords]);
-                const radius = getLength(line); 
+                const radius = getLength(line);
                 const circleFeature = new Feature(new Circle(this.draw_init, radius));
                 circleFeature.setStyle(this.current_style)
                 this.annotation_source.addFeature(circleFeature)
@@ -365,7 +365,7 @@ export default Vue.extend({
                 if (type === 'geo_circle') {
                     instance = new GeoCircle();
                     instance.create_instance(id, creation_ref_id, lonlat, coords, radius, label_file)
-                } 
+                }
 
                 if (type === 'geo_point') {
                     instance = new GeoPoint();
@@ -397,7 +397,7 @@ export default Vue.extend({
                 ],
             });
 
-            
+
             this.annotation_source = new VectorSource({})
 
             const draw_layer = new VectorLayer({
@@ -472,7 +472,7 @@ export default Vue.extend({
         },
         draw_instance: function() {
             if (!this.draw_mode) return;
-            
+
             if (this.current_instance_type === 'geo_point') {
                 const lonlat = transform(this.mouse_coords, 'EPSG:3857', 'EPSG:4326');
                 const pointFeature = new Feature(new Point(this.mouse_coords));
@@ -480,11 +480,11 @@ export default Vue.extend({
 
                 this.annotation_source.addFeature(pointFeature)
                 this.feature_list.push(pointFeature)
-                
+
                 const newPoint = new GeoPoint()
                 newPoint.create_frontend_instance(
                     lonlat,
-                    this.mouse_coords, 
+                    this.mouse_coords,
                     { ...this.current_label },
                     pointFeature.ol_uid
                 )
@@ -502,7 +502,7 @@ export default Vue.extend({
 
                 this.annotation_source.addFeature(pointFeature)
                 this.drawing_feature = pointFeature
-                
+
                 this.drawing_instance = true
                 this.draw_init = this.mouse_coords
                 this.drawing_coords = this.mouse_coords
@@ -512,7 +512,7 @@ export default Vue.extend({
             if (this.current_instance_type === 'geo_circle') {
                 const lonlat = transform(this.draw_init, 'EPSG:3857', 'EPSG:4326');
                 const line = new LineString([this.draw_init, this.mouse_coords]);
-                const radius = getLength(line); 
+                const radius = getLength(line);
 
                 const newCircle = new GeoCircle()
                 newCircle.create_frontend_instance(
@@ -601,7 +601,7 @@ export default Vue.extend({
         redo: function () {
             if (!this.history.redo_posible) return;
             let redone = this.command_manager.redo();
-            
+
             if (redone) this.has_changed = true;
             this.draw_instances
         },
@@ -680,7 +680,7 @@ export default Vue.extend({
                     ...styleSet
                 })
             })
-            
+
             return style
         },
         trigger_task_change: async function (direction, assign_to_user = false) {
@@ -692,7 +692,7 @@ export default Vue.extend({
         create_poly_instance: function() {
             this.annotation_source.removeFeature(this.drawing_feature)
             let polyFeature;
-            
+
             if (this.current_instance_type === 'geo_polyline') {
                 polyFeature = new Feature(new LineString([this.draw_init, ...this.drawing_poly]))
             } else if (this.current_instance_type === 'geo_polygon') {

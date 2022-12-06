@@ -1,6 +1,6 @@
-import {Instance} from "../../../src/components/vue_canvas/instances/Instance";
+import {Instance} from "../../instances/Instance";
 import {ImageCanvasTransform} from "./CanvasTransform";
-import {createDefaultLabelSettings, ImageLabelSettings} from "./image_label_settings";
+import {createDefaultLabelSettings, ImageLabelSettings} from "./ImageLabelSettings";
 
 export type Raw = {
   x: number
@@ -39,7 +39,7 @@ export type CanvasMouseCtx ={
   mouse_down_delta_event: MousePosition,
   mouse_down_position: MousePosition,
   label_settings: ImageLabelSettings
-  canvas_transform: ImageCanvasTransform
+  canvas_transform?: ImageCanvasTransform
 }
 export function newEmptyCanvasMouseCtx(): CanvasMouseCtx {
   let result: CanvasMouseCtx = {
@@ -62,7 +62,6 @@ export function newEmptyCanvasMouseCtx(): CanvasMouseCtx {
       y: 0
     },
     label_settings: createDefaultLabelSettings(),
-    canvas_transform: null
 
   }
   return result

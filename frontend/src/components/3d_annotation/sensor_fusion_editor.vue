@@ -250,7 +250,7 @@
   import axios from "../../services/customInstance";
   import * as instanceServices from '../../services/instanceServices';
   import FileLoader3DPointClouds from "./FileLoader3DPointClouds";
-  import * as instance_utils from "../../utils/instance_utils.ts"
+  import * as instance_utils from "../../../embed/src/types/utils/instance_utils.ts"
   import * as THREE from "three";
   import {UpdateInstanceCommand} from "../annotation/commands/update_instance_command.ts";
   import {CommandManagerAnnotationCore} from "../annotation/annotation_core_command_manager";

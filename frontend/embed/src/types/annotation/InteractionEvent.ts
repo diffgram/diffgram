@@ -1,10 +1,10 @@
-import {Instance} from "../../../src/components/vue_canvas/instances/Instance";
-import {LabelColourMap} from "./label_colour_map";
-import {MousePosition} from "./mouse_position";
-import {ImageCanvasTransform} from "./CanvasTransform";
-import {LabelFile} from "./label";
-import {ImageLabelSettings} from "./image_label_settings";
-import {Sequence} from "./Sequence";
+import {Instance} from "../instances/Instance";
+import {LabelColourMap} from "../labels/LabelColourMap";
+import {MousePosition} from "./image/MousePosition";
+import {ImageCanvasTransform} from "./image/CanvasTransform";
+import {LabelFile} from "../labels/Label";
+import {ImageLabelSettings} from "./image/ImageLabelSettings";
+import {Sequence} from "./image/Sequence";
 
 export type InteractionEvent = {
   dom_event: MouseEvent

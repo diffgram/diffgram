@@ -51,7 +51,7 @@
 
   import instance_list from "../vue_canvas/instance_list";
   import drawable_canvas from "../vue_canvas/drawable_canvas";
-  import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
+  import {InstanceContext} from "../../../embed/src/types/instances/InstanceContext";
   import {get_child_files} from "@/services/fileServices";
   import {filter_global_instance_list} from "@/components/source_control/dataset_explorer_instance_filtering";
   import file_preview_details_card from "./file_preview_details_card";

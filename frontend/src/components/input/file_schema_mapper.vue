@@ -349,7 +349,7 @@
   import axios from '../../services/customInstance';
   import Vue from "vue";
   import _ from "lodash";
-  import {HexToHSVA, HexToRGBA, HSVAtoHSLA, get_random_color} from '../../utils/colorUtils'
+  import {HexToHSVA, HexToRGBA, HSVAtoHSLA, get_random_color} from '../../../embed/src/types/utils/colorUtils'
   import {get_labels} from '../../services/labelServices';
 
   export default Vue.extend({

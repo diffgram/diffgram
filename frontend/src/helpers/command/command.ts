@@ -1,13 +1,13 @@
-import { GeoCircle, GeoPoint, GeoPoly } from "../../components/vue_canvas/instances/GeoInstance";
-import { TextAnnotationInstance, TextRelationInstance } from "../../components/vue_canvas/instances/TextInstance";
-import { AudioAnnotationInstance } from "../../components/vue_canvas/instances/AudioInstance";
+import { GeoCircle, GeoPoint, GeoPoly } from "../../../embed/src/types/instances/GeoInstance";
+import { TextAnnotationInstance, TextRelationInstance } from "../../../embed/src/types/instances/TextInstance";
+import { AudioAnnotationInstance } from "../../../embed/src/types/instances/AudioInstance";
 import InstanceList from "../instance_list";
 import { CommandInterface } from "../interfaces/Command";
 import { InstanceInterface } from "../interfaces/InstanceData";
-import { Instance } from "../../components/vue_canvas/instances/Instance";
-import { GlobalAnnotationInstance } from "../../components/vue_canvas/instances/GlobalInstance";
+import { Instance } from "../../../embed/src/types/instances/Instance";
+import { GlobalAnnotationInstance } from "../../../embed/src/types/instances/GlobalInstance";
 
-export abstract class Command implements CommandInterface {   
+export abstract class Command implements CommandInterface {
     protected instances: Array<InstanceInterface>;
     protected instance_list: InstanceList;
     protected replacement_indexes: Array<number> = [];
@@ -52,8 +52,8 @@ export abstract class Command implements CommandInterface {
             initializedInstance = new GeoCircle()
         }
 
-        if (instance.type === "geo_polyline" || 
-            instance.type === "geo_polygon" || 
+        if (instance.type === "geo_polyline" ||
+            instance.type === "geo_polygon" ||
             instance.type === "geo_box"
         ) {
             initializedInstance = new GeoPoly(instance.type)
