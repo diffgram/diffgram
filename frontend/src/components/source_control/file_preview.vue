@@ -144,7 +144,7 @@ import file_preview_details_card from "@/components/source_control/file_preview_
 import {
   filter_global_instance_list
 } from "./dataset_explorer_instance_filtering";
-import {initialize_instance_object} from "@/utils/instance_utils";
+import {initialize_instance_object} from "../../../embed/src/types/utils/instance_utils";
 import {SUPPORTED_CLASS_INSTANCE_TYPES} from "@/components/vue_canvas/instances/Instance";
 import {InstanceImage2D} from "@/components/vue_canvas/instances/InstanceImage2D";
 import {newEmptyCanvasMouseCtx} from "../../../embed/src/types/annotation/image/MousePosition";

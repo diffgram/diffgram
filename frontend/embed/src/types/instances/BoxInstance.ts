@@ -1,9 +1,8 @@
 import {InstanceBehaviour2D, Instance} from './Instance'
 import {InstanceContext} from './InstanceContext';
 import {v4 as uuidv4} from 'uuid';
-import {getContrastColor} from '../../../utils/colorUtils'
 import {MousePosition, point_is_intersecting_circle} from "../annotation/image/MousePosition";
-import {get_sequence_color} from '../../regular/regular_annotation'
+import {get_sequence_color} from '../annotation/image/Sequence'
 import {InstanceColor} from "./InstanceColor";
 import {LabelColourMap} from "../labels/LabelColourMap";
 import {ImageCanvasTransform} from "../annotation/image/CanvasTransform";
@@ -19,8 +18,6 @@ type BoxHoverPoints =
   | 'blocked'
 
 export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D {
-  public mouse_position: MousePosition;
-  public ctx: CanvasRenderingContext2D;
   public canvas_mouse_tools: ImageCanvasTransform;
   public colour: InstanceColor;
   public is_dragging_instance: boolean = false;
@@ -30,7 +27,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
   public mouse_down_delta_event: any = undefined;
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
-  public box_edit_point_hover: BoxHoverPoints = undefined
+  public box_edit_point_hover: BoxHoverPoints
   private nearest_points_dict: any = undefined
   private zoom_value: number = 1
   private font_size: number = 10
@@ -41,15 +38,15 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     return result;
   }
 
-  constructor(mouse_position: MousePosition = undefined,
-              ctx: CanvasRenderingContext2D = undefined,
-              on_instance_updated: Function = undefined,
-              on_instance_selected: Function = undefined,
-              on_instance_deselected: Function = undefined,
+  constructor(mouse_position: MousePosition | undefined = undefined,
+              ctx: CanvasRenderingContext2D | undefined = undefined,
+              on_instance_updated: Function | undefined = undefined,
+              on_instance_selected: Function | undefined = undefined,
+              on_instance_deselected: Function | undefined = undefined,
               mouse_down_delta_event = undefined,
               mouse_down_position = undefined,
-              canvas_transform = undefined,
-              image_label_settings: ImageLabelSettings = undefined) {
+              canvas_transform: ImageCanvasTransform | undefined = undefined,
+              image_label_settings: ImageLabelSettings | undefined = undefined) {
 
     super();
     this.on_instance_updated = on_instance_updated;
@@ -57,14 +54,25 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     this.on_instance_deselected = on_instance_deselected;
     this.mouse_down_delta_event = mouse_down_delta_event;
     this.mouse_down_position = mouse_down_position;
-    this.canvas_transform = canvas_transform;
-    this.image_label_settings = image_label_settings;
+    if(canvas_transform){
+      this.canvas_transform = canvas_transform;
+    }
+    if(image_label_settings){
+      this.image_label_settings = image_label_settings;
+    }
+
     this.type = 'box'
-    this.mouse_position = mouse_position;
+    if(mouse_position){
+      this.mouse_position = mouse_position;
+    }
+
     this.initialized = true;
     this.on_instance_hovered = this.set_default_hover_in_style
     this.on_instance_unhovered = this.set_default_hover_out_style
-    this.ctx = ctx;
+    if(ctx){
+      this.ctx = ctx;
+    }
+
   }
 
   public duplicate_for_undo() {
@@ -76,6 +84,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
       this.on_instance_deselected,
       this.mouse_down_delta_event,
       this.mouse_down_position,
+      this.canvas_transform,
       this.image_label_settings,
     );
     let instance_data_to_keep = {
@@ -87,10 +96,10 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
 
   public remove_listener(event_type: string, callback: Function) {
     if(event_type === 'hover_in'){
-      this.on_instance_hovered = null
+      this.on_instance_hovered = undefined
     }
     if(event_type === 'hover_out'){
-      this.on_instance_unhovered = null
+      this.on_instance_unhovered = undefined
     }
   }
   public set_is_resizing(val: boolean){
@@ -291,7 +300,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
 
   }
 
-  private draw_circle(x, y, ctx) {
+  private draw_circle(x: number, y: number, ctx: CanvasRenderingContext2D) {
     ctx.arc(x, y, this.image_label_settings.vertex_size, 0, 2 * Math.PI);
     ctx.moveTo(x, y) // reset
   }
@@ -304,7 +313,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     this.draw_corners = false
   }
 
-  private draw_box_edit_corners(ctx) {
+  private draw_box_edit_corners(ctx: CanvasRenderingContext2D) {
     this.draw_circle(this.x_min, this.y_min, ctx)
     ctx.moveTo(this.x_max, this.y_min);
     this.draw_circle(this.x_max, this.y_min, ctx)
@@ -315,17 +324,22 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     ctx.fill()
   }
 
-  private check_box_hovered(ctx) {
+  private check_box_hovered(ctx: CanvasRenderingContext2D) {
     const prev_hover_point = this.box_edit_point_hover
     let box_hover_point = this.determine_movement_point_for_box()
     if (this.is_mouse_in_path(ctx) || box_hover_point != prev_hover_point) {
       if(!this.is_hovered){
-        this.on_instance_hovered(this)
+        if(this.on_instance_hovered){
+          this.on_instance_hovered(this)
+        }
+
         this.is_hovered = true
         this.set_mouse_cursor_from_hovered_point(this.box_edit_point_hover)
       }
       if(prev_hover_point != box_hover_point){
-        this.on_instance_hovered(this)
+        if(this.on_instance_hovered){
+          this.on_instance_hovered(this)
+        }
         this.is_hovered = true
         this.set_mouse_cursor_from_hovered_point(this.box_edit_point_hover)
       }

@@ -11,7 +11,7 @@ import {InstanceImage2D} from "../instances/InstanceImage2D";
 import {ImageCanvasTransform} from "../annotation/image/CanvasTransform";
 import {LabelFileMap} from "../labels/Label";
 import {v4 as uuidv4} from 'uuid';
-export const duplicate_instance = function (instance_to_copy, component_ctx: CanvasMouseCtx, with_ids = false) {
+export const duplicate_instance = function (instance_to_copy: Instance, component_ctx: CanvasMouseCtx, with_ids: boolean = false) {
   let points = [];
   let nodes = [];
   let edges = [];

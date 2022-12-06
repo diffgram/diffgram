@@ -929,7 +929,7 @@ import current_instance_template from "../vue_canvas/current_instance_template.v
 import instance_template_creation_dialog from "../instance_templates/instance_template_creation_dialog";
 import create_issue_panel from "../discussions/create_issue_panel.vue";
 import view_edit_issue_panel from "../discussions/view_edit_issue_panel.vue";
-import {getContrastColor} from '../../../embed/src/types/utils/colorUtils'
+import {getContrastColor} from '../../../embed/src/types/utils/colorUtils.ts'
 import {ellipse} from "../vue_canvas/ellipse.js";
 import {CommandManagerAnnotationCore} from "./annotation_core_command_manager.js";
 import {CreateInstanceCommand} from "./commands/create_instance_command";
