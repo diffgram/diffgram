@@ -276,8 +276,9 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     if (instance && instance.points && instance.points[polygon_point_click_index]) {
       let x_new = annotation_event.annotation_ctx.mouse_position.x;
       let y_new = annotation_event.annotation_ctx.mouse_position.y;
-      instance.points[polygon_point_click_index].x = x_new;
-      instance.points[polygon_point_click_index].y = y_new;
+      instance.points[polygon_point_click_index].x = Math.ceil(x_new);
+      instance.points[polygon_point_click_index].y = Math.ceil(y_new);
+
       coordinator_result.instance_moved = true
     }
   }

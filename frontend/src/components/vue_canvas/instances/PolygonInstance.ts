@@ -120,6 +120,8 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     for (const point of points) {
       point.x += x_move;
       point.y += y_move;
+      point.x = Math.ceil(point.x)
+      point.y = Math.ceil(point.y)
     }
   }
   public duplicate_for_undo() {
