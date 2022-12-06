@@ -133,7 +133,7 @@
   import instance_template_creation_toolbar from './instance_template_creation_toolbar'
   import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
   import {iconFillPaint} from "../../utils/custom_icons.js";
-  import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
+  import {CanvasMouseCtx, MousePosition} from "../../../embed/src/types/mouse_position";
   import {Instance} from "../vue_canvas/instances/Instance";
   import {
     ImageAnnotationCoordinatorRouter
@@ -143,12 +143,12 @@
     ImageAnnotationEventCtx,
     ImageInteractionEvent,
     InteractionEvent
-  } from "../../types/InteractionEvent";
-  import {LabelFile} from "../../types/label";
-  import {LabelColourMap} from "../../types/label_colour_map";
+  } from "../../../embed/src/types/InteractionEvent";
+  import {LabelFile} from "../../../embed/src/types/label";
+  import {LabelColourMap} from "../../../embed/src/types/label_colour_map";
   import {CoordinatorProcessResult} from "../vue_canvas/coordinators/Coordinator";
   import {ImageAnnotationCoordinator} from "../vue_canvas/coordinators/coordinator_types/ImageAnnotationCoordinator";
-  import {createDefaultLabelSettings} from "../../types/image_label_settings";
+  import {createDefaultLabelSettings} from "../../../embed/src/types/image_label_settings";
 
   export default Vue.extend({
   name: "instance_template_creation_dialog",

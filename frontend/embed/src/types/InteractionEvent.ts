@@ -1,4 +1,4 @@
-import {Instance} from "../components/vue_canvas/instances/Instance";
+import {Instance} from "../../../src/components/vue_canvas/instances/Instance";
 import {LabelColourMap} from "./label_colour_map";
 import {MousePosition} from "./mouse_position";
 import {ImageCanvasTransform} from "./CanvasTransform";

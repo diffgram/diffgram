@@ -1,4 +1,4 @@
-import {InteractionEvent} from "../../../types/InteractionEvent";
+import {InteractionEvent} from "../../../../embed/src/types/InteractionEvent";
 import CommandManager from "../../../helpers/command/command_manager";
 import {Instance} from "../instances/Instance";
 

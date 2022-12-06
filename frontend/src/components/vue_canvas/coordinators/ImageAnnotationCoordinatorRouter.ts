@@ -9,8 +9,8 @@ import {
   InteractionEvent,
   ImageAnnotationEventCtx,
   ImageInteractionEvent
-} from "../../../types/InteractionEvent";
-import {CanvasMouseCtx} from "../../../types/mouse_position";
+} from "../../../../embed/src/types/InteractionEvent";
+import {CanvasMouseCtx} from "../../../../embed/src/types/mouse_position";
 import CommandManager from "../../../helpers/command/command_manager";
 import {ImageAnnotationCoordinator} from "./coordinator_types/ImageAnnotationCoordinator";
 

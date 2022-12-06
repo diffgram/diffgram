@@ -955,11 +955,11 @@ import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
 import {finishTaskAnnotation, trackTimeTask} from "../../services/tasksServices";
 import {getInstanceTemplatesFromProject} from "../../services/instanceTemplateService";
-import {File} from "../../types/files";
+import {File} from "../../../embed/src/types/files";
 import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
 import { update_file_metadata } from "../../services/fileServices";
 import { getInstanceTemplatesFromProject } from "../../services/instanceTemplateService";
-import { File } from "../../types/files";
+import { File } from "../../../embed/src/types/files";
 import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
 import {
@@ -972,14 +972,14 @@ import {
   genImageAnnotationEvent,
   AnnotationEventCtx,
   ImageAnnotationEventCtx, ImageInteractionEvent
-} from "../../types/InteractionEvent";
+} from "../../../embed/src/types/InteractionEvent";
 import {Coordinator, CoordinatorProcessResult} from "../vue_canvas/coordinators/Coordinator";
-import {Interaction} from "../../types/Interaction";
+import {Interaction} from "../../../embed/src/types/Interaction";
 import {BoxInstance} from "../vue_canvas/instances/BoxInstance";
-import {LabelColourMap} from "../../types/label_colour_map";
-import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
-import {ImageCanvasTransform} from "../../types/CanvasTransform";
-import {LabelFile} from "../../types/label";
+import {LabelColourMap} from "../../../embed/src/types/label_colour_map";
+import {CanvasMouseCtx, MousePosition} from "../../../embed/src/types/mouse_position";
+import {ImageCanvasTransform} from "../../../embed/src/types/CanvasTransform";
+import {LabelFile} from "../../../embed/src/types/label";
 import {InstanceImage2D} from "../vue_canvas/instances/InstanceImage2D";
 
 Vue.prototype.$ellipse = new ellipse();

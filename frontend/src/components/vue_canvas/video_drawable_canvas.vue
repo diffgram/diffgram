@@ -78,7 +78,7 @@ import instance_list from "./instance_list";
 import axios from "../../services/customInstance";
 import {initialize_instance_object} from "@/utils/instance_utils";
 import {KeypointInstance} from "./instances/KeypointInstance";
-import {newEmptyCanvasMouseCtx} from "@/types/mouse_position";
+import {newEmptyCanvasMouseCtx} from "../../../embed/src/types/mouse_position";
 import {InstanceImage2D} from "@/components/vue_canvas/instances/InstanceImage2D";
 import {post_init_instance} from "../../utils/instance_utils";
 

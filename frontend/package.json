@@ -198,6 +198,10 @@
     "webpack-merge": "^4.2.2",
     "webpack-node-externals": "^1.7.2"
   },
+  "extends": [
+    "plugin:vue/vue3-essential",
+    "eslint:recommended"
+  ],
   "browserslist": [
     "> 1%",
     "last 2 versions",

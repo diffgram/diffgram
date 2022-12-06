@@ -1,4 +1,4 @@
-import {Instance} from "../components/vue_canvas/instances/Instance";
+import {Instance} from "../../../src/components/vue_canvas/instances/Instance";
 import {ImageCanvasTransform} from "./CanvasTransform";
 import {createDefaultLabelSettings, ImageLabelSettings} from "./image_label_settings";
 

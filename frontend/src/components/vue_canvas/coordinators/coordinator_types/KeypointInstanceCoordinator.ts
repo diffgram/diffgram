@@ -3,7 +3,7 @@ import {KeypointInstance} from "../../instances/KeypointInstance";
 import {iconFillPaint} from '../../../../utils/custom_icons'
 import CommandManager from "../../../../helpers/command/command_manager";
 import {ImageAnnotationCoordinator} from "./ImageAnnotationCoordinator";
-import {ImageInteractionEvent, InteractionEvent} from "../../../../types/InteractionEvent";
+import {ImageInteractionEvent, InteractionEvent} from "../../../../../embed/src/types/InteractionEvent";
 
 export class KeypointInstanceCoordinator extends ImageAnnotationCoordinator{
   /**

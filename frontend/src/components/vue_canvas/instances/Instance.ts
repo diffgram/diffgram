@@ -1,10 +1,10 @@
 import * as THREE from 'three';
 import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
 import {getCenterPoint} from "../../3d_annotation/utils_3d";
-import {LabelColourMap} from "../../../types/label_colour_map";
-import {LabelFile} from "../../../types/label";
-import {MousePosition} from "../../../types/mouse_position";
-import {ImageCanvasTransform} from "../../../types/CanvasTransform";
+import {LabelColourMap} from "../../../../embed/src/types/label_colour_map";
+import {LabelFile} from "../../../../embed/src/types/label";
+import {MousePosition} from "../../../../embed/src/types/mouse_position";
+import {ImageCanvasTransform} from "../../../../embed/src/types/CanvasTransform";
 
 export const SUPPORTED_CLASS_INSTANCE_TYPES: Array<string> = ['box', 'keypoints'];
 export const GLOBAL_SELECTED_COLOR = '#0000ff'

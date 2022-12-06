@@ -1,7 +1,7 @@
 import {Instance} from "./Instance";
-import {MousePosition} from "../../../types/mouse_position";
-import {ImageCanvasTransform} from "../../../types/CanvasTransform";
-import {ImageLabelSettings} from "../../../types/image_label_settings";
+import {MousePosition} from "../../../../embed/src/types/mouse_position";
+import {ImageCanvasTransform} from "../../../../embed/src/types/CanvasTransform";
+import {ImageLabelSettings} from "../../../../embed/src/types/image_label_settings";
 import {get_sequence_color} from '../../regular/regular_annotation'
 
 export abstract class InstanceImage2D extends Instance {

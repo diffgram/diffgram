@@ -150,7 +150,7 @@ import {
 import {initialize_instance_object} from "@/utils/instance_utils";
 import {SUPPORTED_CLASS_INSTANCE_TYPES} from "@/components/vue_canvas/instances/Instance";
 import {InstanceImage2D} from "@/components/vue_canvas/instances/InstanceImage2D";
-import {newEmptyCanvasMouseCtx} from "../../types/mouse_position";
+import {newEmptyCanvasMouseCtx} from "../../../embed/src/types/mouse_position";
 import {post_init_instance} from "../../utils/instance_utils";
 
 export default Vue.extend({

@@ -1,5 +1,5 @@
 import axios from './customInstance'
-import {File} from '../types/files'
+import {File} from '../../embed/src/types/files'
 export const get_file_list = async (project_string_id, user_name, metadata) => {
   let url = `/api/project/${project_string_id}/user/${user_name}/file/list`
   try {

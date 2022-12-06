@@ -3,7 +3,7 @@ import {InstanceContext} from './InstanceContext';
 import {v4 as uuidv4} from 'uuid';
 import {getContrastColor} from '../../../utils/colorUtils'
 import {InstanceImage2D} from "./InstanceImage2D";
-import {ImageLabelSettings} from "../../../types/image_label_settings";
+import {ImageLabelSettings} from "../../../../embed/src/types/image_label_settings";
 
 export class KeypointInstance extends InstanceImage2D implements InstanceBehaviour2D {
   public mouse_position: any;

@@ -1,6 +1,6 @@
-import {ImageAnnotationEventCtx, ImageInteractionEvent} from "../../../../types/InteractionEvent";
+import {ImageAnnotationEventCtx, ImageInteractionEvent} from "../../../../../embed/src/types/InteractionEvent";
 import {Coordinator, CoordinatorProcessResult} from "../Coordinator";
-import {CanvasMouseCtx} from "../../../../types/mouse_position";
+import {CanvasMouseCtx} from "../../../../../embed/src/types/mouse_position";
 import {BoxInstance} from "../../instances/BoxInstance";
 import {GLOBAL_SELECTED_COLOR, Instance} from "../../instances/Instance";
 import {InstanceImage2D} from "../../instances/InstanceImage2D";

@@ -7,7 +7,7 @@ import {Instance} from '../vue_canvas/instances/Instance';
 import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
 import {getCenterPoint} from "./utils_3d";
 import Vue from 'vue';
-import {LabelFile} from "../../types/label";
+import {LabelFile} from "../../../embed/src/types/label";
 
 export default class AnnotationScene3D {
   public scene: THREE.Scene;
