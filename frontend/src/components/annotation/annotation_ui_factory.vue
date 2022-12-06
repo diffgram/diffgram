@@ -31,6 +31,7 @@
           :annotations_loading="annotations_loading"
           :loading="loading"
           :filtered_instance_type_list_function="filtered_instance_type_list"
+          :get_userscript="get_userscript"
           
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
