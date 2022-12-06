@@ -242,6 +242,8 @@ import Vue from "vue";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import InstanceStore from "../../helpers/InstanceStore"
 
+import { saveTaskAnnotations, saveFileAnnotations } from "../../services/saveServices"
+
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -435,6 +437,11 @@ export default Vue.extend({
     this.initializing = false
   },
   computed: {
+    save_request: function(): Function {
+      if (this.task) return saveTaskAnnotations
+
+      return saveFileAnnotations
+    },
     any_loading: function () {
       return this.loading || this.loading_project || this.initializing
     },
