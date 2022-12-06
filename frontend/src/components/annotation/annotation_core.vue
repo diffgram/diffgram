@@ -3186,7 +3186,7 @@ export default Vue.extend({
       }
       this.polygon_merge_tool = new PolygonMergeTool(this.instance_list[merge_instance_index])
       this.show_context_menu = false;
-      this.$store.commit("set_instance_select_for_merge", true);mouse_move:
+      this.$store.commit("set_instance_select_for_merge", true);
     },
     open_issue_panel(mouse_position) {
       // This boolean controls if issues create/edit panel is shown or hidden.
