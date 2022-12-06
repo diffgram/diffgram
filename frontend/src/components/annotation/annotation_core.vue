@@ -1029,6 +1029,10 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    filtered_instance_type_list_function: {
+      type: Function,
+      default: () => []
+    },
     save_loading_image: {
       type: Boolean,
       default: false
@@ -1612,6 +1616,10 @@ export default Vue.extend({
     };
   },
   computed: {
+    filtered_instance_type_list: function() {
+      const filtered_instance_type_list = this.filtered_instance_type_list_function(this.instance_type_list)
+      return filtered_instance_type_list
+    },
     label_file_map: function () {
       let result = {}
       for (let elm of this.label_list) {
@@ -1636,9 +1644,6 @@ export default Vue.extend({
     },
     has_pending_frames: function () {
       return this.unsaved_frames.length > 0;
-    },
-    filtered_instance_type_list: function () {
-      return this.$emit('filtered_instance_type_list', this.instance_type_list)
     },
     clipboard: function () {
       return this.$store.getters.get_clipboard;

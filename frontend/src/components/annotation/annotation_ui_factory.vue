@@ -30,6 +30,7 @@
           :submitted_to_review="submitted_to_review"
           :annotations_loading="annotations_loading"
           :loading="loading"
+          :filtered_instance_type_list_function="filtered_instance_type_list"
           
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
@@ -522,6 +523,29 @@ export default Vue.extend({
       frame_number_param = undefined,
       instance_list_param = undefined
     ) {},
+    filtered_instance_type_list: function (instance_type_list) {
+      const schema_allowed_types = (): any[] | null => {
+        if (
+          !this.task || 
+          !this.task.job || 
+          !this.task.job.ui_schema || 
+          !this.task.job.ui_schema.instance_selector
+        ) return null
+
+
+        const allowed_types = this.task.job.ui_schema.instance_selector.allowed_instance_types.map(elm => elm.name)
+
+        if (allowed_types.length === 0) return null
+
+        return null
+      }
+
+      const allowed_types = schema_allowed_types()
+
+      if (!allowed_types) return instance_type_list
+
+      return instance_type_list.filter((elm) => allowed_types.includes(elm.name))
+    },
     set_ui_schema() {
       if (
         this.task &&
