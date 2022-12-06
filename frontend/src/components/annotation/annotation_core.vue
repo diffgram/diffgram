@@ -332,7 +332,7 @@
                 <userscript
                   :project_string_id_prop="project_string_id"
                   :create_instance="event_create_instance"
-                  :current_userscript_prop="$emit('get_userscript', $refs.userscript)"
+                  :current_userscript_prop="() => get_userscript($refs.userscript)"
                   :userscript_select_disabled="userscript_select_disabled"
                   :show_code_editor="!task || !task.id"
                   :show_external_scripts="!task || !task.id"
@@ -1028,6 +1028,10 @@ export default Vue.extend({
     project_string_id: {
       default: null,
       type: String,
+    },
+    get_userscript: {
+      type: Function,
+      required: true
     },
     filtered_instance_type_list_function: {
       type: Function,
@@ -2502,18 +2506,6 @@ export default Vue.extend({
       }
       return metadata;
     },
-    get_userscript: function () {
-      if (this.job && this.job.default_userscript) {
-        return this.job.default_userscript;
-      }
-      if (this.task && this.task.default_userscript) {
-        return this.task.default_userscript;
-      }
-      if (this.$refs.userscript && this.$refs.userscript.userscript_literal) {
-        return this.$refs.userscript.userscript_literal;
-      }
-      return undefined;
-    },
     go_to_key_frame_handler: function () {
       this.close_instance_history_panel();
       this.detect_is_ok_to_save();
@@ -2562,7 +2554,7 @@ export default Vue.extend({
     get_userscript_id_string: function (userscript_id) {
 
       if (!userscript_id) {
-        this.userscript = this.$emit('get_userscript', this.$refs.userscript)
+        this.userscript = this.get_userscript(this.$refs.userscript)
         if (this.userscript.id) {
           userscript_id = this.userscript.id.toString()
         }

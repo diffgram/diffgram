@@ -616,12 +616,15 @@ export default Vue.extend({
 
       this.task.status = "complete"
     },
-    get_userscript: function (ref) {
+    get_userscript: function (userscript_ref) {
+      if (this.job && this.job.default_userscript) {
+        return this.job.default_userscript;
+      }
       if (this.task && this.task.default_userscript) {
         return this.task.default_userscript;
       }
-      if (ref.userscript && ref.userscript.userscript_literal) {
-        return ref.userscript.userscript_literal;
+      if (userscript_ref && userscript_ref.userscript_literal) {
+        return userscript_ref.userscript_literal;
       }
       return undefined;
     },
