@@ -7,7 +7,7 @@ import HelloDiffgramEmbed from "./components/HelloDiffgramEmbed.vue";
 <template>
   <div>
     <img
-      src="assets/download.png"
+      src="./assets/download.png"
       class="logo diffgram"
       alt="Diffgram logo"
     >
