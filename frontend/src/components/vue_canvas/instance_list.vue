@@ -9,8 +9,8 @@
   import Vue from 'vue'
   import { cuboid } from './cuboid.js'
   import { ellipse } from './ellipse.js'
-  import {BoxInstance} from "../../../embed/src/types/instances/BoxInstance";
-  import {SUPPORTED_CLASS_INSTANCE_TYPES} from "../../../embed/src/types/instances/Instance";
+  import {BoxInstance} from "./instances/BoxInstance";
+  import {SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "./instances/Instance";
   Vue.prototype.$cuboid = new cuboid()
   Vue.prototype.$ellipse = new ellipse()
 
@@ -248,16 +248,8 @@
           let y = points[index].y
 
           this.draw_circle(x, y, ctx)
-
-
-          if(points[index].hovered_while_drawing || instance.type === 'line'){
-            ctx.fill();
-            ctx.stroke();
-          }
-          else{
-            ctx.fill();
-            ctx.stroke();
-          }
+          ctx.fill();
+          ctx.stroke();
 
 
         },
@@ -357,7 +349,7 @@
 
         color_instance: function (instance, ctx) {
           // Ignoring instances that are already refactored as classes.
-          if(SUPPORTED_CLASS_INSTANCE_TYPES.includes(instance.type) ){
+          if(SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance.type) ){
             return
           }
           let strokeColor = undefined;
@@ -512,18 +504,18 @@
             }
           }
           if (instance.type == "box") {
-            // ctx.beginPath()
-            //
-            // this.draw_box(instance, ctx, i)
-            // ctx.lineWidth = this.get_spatial_line_size()
-            // ctx.stroke()
-
             let box: BoxInstance = instance as BoxInstance
-
             box.draw(ctx)
           }
 
-          else if (["polygon", "line"].includes(instance.type)) {
+          else if (["polygon"].includes(instance.type)) {
+            let polygon = instance as PolygonInstance
+            polygon.draw(ctx)
+            // ctx.beginPath()
+            // this.draw_polygon(instance, ctx, i)
+          }
+
+          else if (["line"].includes(instance.type)) {
             ctx.beginPath()
             this.draw_polygon(instance, ctx, i)
           }
@@ -604,7 +596,7 @@
         },
 
         get_spatial_line_size: function (){
-          let size = this.$props.label_settings.spatial_line_size / this.$props.zoom_value
+          let size = this.$props.label_settings.spatial_line_sizedraw_many / this.$props.zoom_value
 
           return size
         },

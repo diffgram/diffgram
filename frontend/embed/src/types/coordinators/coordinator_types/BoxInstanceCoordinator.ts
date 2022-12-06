@@ -27,15 +27,15 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
   }
 
 
-  public select() {
+  public select(annotation_event) {
 
-    super.select();
+    super.select(annotation_event);
     let box = this.instance as BoxInstance
     box.show_box_corners()
   }
 
-  public deselect() {
-    super.deselect();
+  public deselect(annotation_event: ImageInteractionEvent) {
+    super.deselect(annotation_event)
     let box = this.instance as BoxInstance
     box.hide_box_corners()
   }
@@ -62,25 +62,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
   }
 
   private start_drawing_box(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent): void {
-    let number = null;
-    let sequence_id = null;
-
-    let currently_drawing_box: BoxInstance = annotation_event.annotation_ctx.current_drawing_instance as BoxInstance
-    if (annotation_event.annotation_ctx.video_mode == true) {
-      number = annotation_event.annotation_ctx.current_sequence_from_sequence_component.number;
-      sequence_id = annotation_event.annotation_ctx.current_sequence_from_sequence_component.id;
-      currently_drawing_box.set_sequence_id(sequence_id)
-      currently_drawing_box.set_sequence_number(number)
-    }
-    currently_drawing_box.set_actively_drawing(true)
-    currently_drawing_box.set_canvas(annotation_event.annotation_ctx.canvas_element)
-    currently_drawing_box.set_label_file(annotation_event.annotation_ctx.label_file)
-    currently_drawing_box.set_canvas_transform(annotation_event.annotation_ctx.canvas_transform)
-    currently_drawing_box.set_label_file_colour_map(annotation_event.annotation_ctx.label_file_colour_map)
-    currently_drawing_box.set_image_label_settings(annotation_event.annotation_ctx.image_label_settings)
-    currently_drawing_box.set_color_from_label()
-
-    coordinator_result.is_actively_drawing = true
+    this.initialize_instance_drawing(coordinator_result, annotation_event)
   }
 
   private do_new_box_resize(annotation_event: ImageInteractionEvent) {
@@ -107,40 +89,9 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
       annotation_event.annotation_ctx.is_actively_drawing
   }
 
-  private should_select_instance(annotation_event: ImageInteractionEvent): boolean {
-    return this.is_mouse_down_event(annotation_event) &&
-      this.instance &&
-      !this.instance.selected &&
-      this.instance.is_hovered &&
-      !annotation_event.annotation_ctx.draw_mode &&
-      !annotation_event.annotation_ctx.view_issue_mode &&
-      !annotation_event.annotation_ctx.instance_select_for_issue &&
-      !annotation_event.annotation_ctx.view_only_mode
-  }
-
-  private should_deselect_instance(annotation_event: ImageInteractionEvent): boolean {
-    return this.is_mouse_down_event(annotation_event) &&
-      this.instance &&
-      this.instance.selected &&
-      !this.instance.is_hovered &&
-      !annotation_event.annotation_ctx.draw_mode &&
-      !annotation_event.annotation_ctx.view_issue_mode &&
-      !annotation_event.annotation_ctx.instance_select_for_issue &&
-      !annotation_event.annotation_ctx.view_only_mode
-  }
-
   private finish_box_drawing(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent): void {
     let box = annotation_event.annotation_ctx.current_drawing_instance as BoxInstance
-    box.set_color_from_label()
-    box.set_actively_drawing(false)
-    result.is_actively_drawing = false
-    const create_box_command = new CreateInstanceCommand(
-      box,
-      annotation_event.annotation_ctx.ann_core_ctx,
-      annotation_event.annotation_ctx.frame_number
-    );
-    this.command_manager.executeCommand(create_box_command);
-    result.new_instance_index = annotation_event.annotation_ctx.instance_list.length - 1
+    this.finish_drawing_instance(box, result, annotation_event)
 
   }
   private should_start_moving_box(annotation_event: ImageInteractionEvent): boolean {
@@ -149,6 +100,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     return this.is_mouse_down_event(annotation_event) &&
       box &&
       box.is_hovered &&
+      !box.soft_delete &&
       box.box_edit_point_hover == 'not_intersecting_special_points' &&
       !annotation_event.annotation_ctx.draw_mode &&
       !annotation_event.annotation_ctx.view_issue_mode &&
@@ -174,6 +126,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     return this.is_mouse_move_event(annotation_event) &&
       box &&
       box.selected &&
+      !box.soft_delete &&
       box.is_moving &&
       !box.is_resizing &&
       box.box_edit_point_hover == 'not_intersecting_special_points' &&
@@ -188,6 +141,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     return this.is_mouse_down_event(annotation_event) &&
       box &&
       box.selected &&
+      !box.soft_delete &&
       (box.box_edit_point_hover == 'x_min_y_min' ||
         box.box_edit_point_hover == 'x_max_y_min' ||
         box.box_edit_point_hover == 'x_min_y_max' ||
@@ -273,17 +227,6 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
 
   }
 
-  private edit_instance_command_creation(annotation_event: ImageInteractionEvent, result: CoordinatorProcessResult){
-    const new_instance = this.instance;
-    const command = new UpdateInstanceCommand(
-      new_instance,
-      annotation_event.annotation_ctx.instance_list.indexOf(new_instance),
-      annotation_event.annotation_ctx.original_edit_instance,
-      annotation_event.annotation_ctx.ann_core_ctx
-    );
-    this.command_manager.executeCommand(command);
-    result.original_edit_instance = undefined;
-  }
   public route_event_to_box_drawing(annotation_event: ImageInteractionEvent, result: CoordinatorProcessResult){
     // Box Drawing
     if (this.should_start_drawing_box(annotation_event)) {
@@ -312,10 +255,10 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
 
     // Box Select
     if (this.should_select_instance(annotation_event)) {
-      this.select()
+      this.select(annotation_event)
     }
     else if (this.should_deselect_instance(annotation_event)) {
-      this.deselect()
+      this.deselect(annotation_event)
     }
 
     // Box Drag
@@ -328,6 +271,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     else if (this.should_stop_moving_box(annotation_event)) {
       this.stop_box_move(annotation_event, result)
     }
+
     // Box Resize
     else if (this.should_start_resizing_box(annotation_event)) {
       this.start_box_resize(result)

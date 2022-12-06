@@ -84,10 +84,14 @@ export default Vue.extend({
           else if (instance.type == "box") {
             let box_instance = instance as BoxInstance
             box_instance.draw(ctx)
-            // this.draw_box(instance, ctx)
           }
 
-          else if (["polygon", "line"].includes(instance.type)) {
+          else if (instance.type == "polygon") {
+            let poly_instance = instance as PolygonInstance
+            poly_instance.draw(ctx)
+          }
+
+          else if (["line"].includes(instance.type)) {
             this.draw_polygon(instance, ctx)
           }
 
