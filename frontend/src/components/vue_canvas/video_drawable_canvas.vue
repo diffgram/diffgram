@@ -81,6 +81,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
 import {newEmptyCanvasMouseCtx} from "@/types/mouse_position";
 import {InstanceImage2D} from "@/components/vue_canvas/instances/InstanceImage2D";
 import {post_init_instance} from "../../utils/instance_utils";
+import {CanvasMouseTools} from "./CanvasMouseTools";
 
 export default Vue.extend( {
     name: "video_drawable_canvas",
@@ -175,6 +176,7 @@ export default Vue.extend( {
         seeking: false,
         instance_frame_start: 0,
         instance_buffer_size: 60,
+        canvas_mouse_tools: null,
         instance_buffer_dict: {},
         instance_buffer_error: {},
         instance_buffer_metadata: {},
@@ -216,7 +218,6 @@ export default Vue.extend( {
       this.is_mounted = true;
       await this.$nextTick();
       await this.initialize_video();
-
     },
     methods:{
       set_keyframe_loading: function(value){
@@ -381,13 +382,15 @@ export default Vue.extend( {
       initialize_instance: function(instance){
 
         let inst = initialize_instance_object(instance, this.canvas_mouse_ctx)
+        let canvas_mouse_tool = undefined
         inst = post_init_instance(inst,
           this.label_file_map,
           this.$refs.drawable_canvas ? this.$refs.drawable_canvas.canvas_element : null,
           this.canvas_mouse_ctx.label_settings,
           this.canvas_mouse_ctx.canvas_transform,
           this.instance_hovered,
-          this.instance_unhovered)
+          this.instance_unhovered,
+          this.$refs.drawable_canvas.canvas_mouse_tools)
         return inst
       },
       initialize_instance_buffer_dict_frame: function(frame_number){

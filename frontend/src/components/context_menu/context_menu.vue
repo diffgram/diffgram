@@ -369,6 +369,7 @@
       },
       on_click_delete_polygon_point() {
         this.$emit('delete_polygon_point', this.polygon_point_hover_locked);
+        this.$emit('hide_context_menu');
       },
       emit_update_and_hide_instance(instance_update: Object) {
 

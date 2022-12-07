@@ -1065,7 +1065,7 @@ export default Vue.extend({
         }
         // assumes project scope
 
-        if (this.report_template.group_by == 'user') {
+        if (this.report_template.group_by == 'user' || this.report_template.item_of_interest === 'annotator_performance') {
           for (const [i, member_id] of this.stats.labels.entries()) {
             let member = this.$store.state.project.current.member_list.find(x => {
               return x.member_id == member_id

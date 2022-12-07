@@ -3,17 +3,50 @@ import {MousePosition} from "../../../types/mouse_position";
 import {ImageCanvasTransform} from "../../../types/CanvasTransform";
 import {ImageLabelSettings} from "../../../types/image_label_settings";
 import {get_sequence_color} from '../../regular/regular_annotation'
+import {CanvasMouseTools} from "../CanvasMouseTools";
 
 export abstract class InstanceImage2D extends Instance {
   public ctx: CanvasRenderingContext2D;
-  public mouse_position: MousePosition;
   public canvas_transform: ImageCanvasTransform;
   public canvas_element: HTMLCanvasElement
   public strokeColor: string = 'black';
   public fillColor: string = 'white';
   public image_label_settings: ImageLabelSettings
+  public is_moving: boolean = false;
+  protected is_actively_drawing: boolean = false;
+  public canvas_mouse_tools: CanvasMouseTools;
+
+  public get_canvas_transform(): ImageCanvasTransform {
+    return this.canvas_transform
+  }
+
+  public set_actively_drawing(val: boolean): void {
+    this.is_actively_drawing = val
+  }
+
+  public get_is_actively_drawing(): boolean {
+    return this.is_actively_drawing;
+  }
+
+  public set_is_resizing(val: boolean) {
+    this.is_resizing = val
+  }
+
+  public set_is_moving(val: boolean) {
+    this.is_moving = val
+  }
+
+  public remove_listener(event_type: string, callback: Function) {
+    if (event_type === 'hover_in') {
+      this.on_instance_hovered = null
+    }
+    if (event_type === 'hover_out') {
+      this.on_instance_unhovered = null
+    }
+  }
 
   public set_color_from_label() {
+
     let colour = this.get_label_file_colour_map()[this.label_file_id]
     if (colour) {
       this.set_border_color(colour.hex)
@@ -32,6 +65,7 @@ export abstract class InstanceImage2D extends Instance {
   protected grab_color_from_instance(ctx: CanvasRenderingContext2D) {
     ctx.fillStyle = this.fillColor
     ctx.strokeStyle = this.strokeColor
+
   }
 
   public set_canvas(val: HTMLCanvasElement) {
@@ -52,13 +86,16 @@ export abstract class InstanceImage2D extends Instance {
   public set_canvas_transform(val: ImageCanvasTransform) {
     this.canvas_transform = val
   }
+  public set_canvas_mouse_tools(val: CanvasMouseTools) {
+    this.canvas_mouse_tools = val
+  }
 
   public set_image_label_settings(val: ImageLabelSettings) {
     this.image_label_settings = val
   }
 
 
-  public draw_text(ctx, message, x, y, font, background_color, background_opacity){
+  public draw_text(ctx, message, x, y, font, background_color, background_opacity) {
     ctx.textBaseline = 'bottom'
     ctx.font = font
 
@@ -81,8 +118,8 @@ export abstract class InstanceImage2D extends Instance {
     ctx.fillText(message, x, y);
   }
 
-  public draw_label(ctx, x, y){
-    if ( this.image_label_settings == null
+  public draw_label(ctx, x, y) {
+    if (this.image_label_settings == null
       || this.image_label_settings.show_text == false) {
       return
     }
@@ -106,12 +143,12 @@ export abstract class InstanceImage2D extends Instance {
       }
     }
 
-    if (  this.soft_delete
+    if (this.soft_delete
       && this.soft_delete == true) {
       message += " Removed"
     }
 
-    if (  this.interpolated
+    if (this.interpolated
       && this.interpolated == true) {
       message += " Interpolated"
     }
@@ -124,20 +161,35 @@ export abstract class InstanceImage2D extends Instance {
   }
 
   protected is_mouse_in_path(ctx) {
-    if (!this.mouse_position || !this.mouse_position.raw) {
+    let mouse_position = this.canvas_mouse_tools.mouse_position;
+    if (!mouse_position || !mouse_position.raw) {
       return false
     }
     if (ctx.isPointInPath(
-      this.mouse_position.raw.x,
-      this.mouse_position.raw.y)) {
+      mouse_position.raw.x,
+      mouse_position.raw.y)) {
       return true;
     }
     return false
   }
 
+  protected update_width_and_height() {
+    this.width = this.x_max - this.x_min;
+    this.height = this.y_max - this.y_min;
+
+    this.width = Math.ceil(this.width)
+    this.height = Math.ceil(this.height)
+    this.status = "updated";
+  }
+
+  protected get_spatial_line_size(){
+    let size = this.image_label_settings.spatial_line_size
+
+    return size
+  }
   public get_instance_data(): any {
     let res = super.get_instance_data();
-    return  {
+    return {
       ...res,
       strokeColor: this.strokeColor,
       fillColor: this.fillColor,
