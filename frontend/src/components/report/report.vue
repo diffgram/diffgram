@@ -257,12 +257,12 @@
         >
           <v-toolbar-items>
 
-            <v-row>
-              <v-col cols="3">
+            <v-row class="d-flex justify-start align-center">
+              <v-col cols="3"   v-if="['file', 'task', 'instance'].includes(report_template.item_of_interest)">
                 <div style="min-width: 200px" class="pa-4">
                   <job_select v-model="job"
-                              :disabled="loading ||
-                            !['file', 'task', 'instance'].includes(report_template.item_of_interest)"
+
+                              :disabled="loading || !['file', 'task', 'instance'].includes(report_template.item_of_interest)"
                               @change="set_job"
                               :select_this_id="job_select_this_id"
                   >
@@ -270,9 +270,24 @@
                   </job_select>
                 </div>
               </v-col>
-              <v-col cols="3">
+              <v-col cols="3" v-if="['task'].includes(report_template.item_of_interest)">
+                <div style="min-width: 200px; max-width: 300px" class="pa-4">
+                  <diffgram_select
+                    v-if="['task'].includes(report_template.item_of_interest)"
+                    class="pa-4"
+                    :item_list="task_status_filter"
+                    v-model="report_template.task_status_filter"
+                    label="Task Status"
+                    :disabled="loading"
+                    @change="has_changes = true"
+                  >
+                  </diffgram_select>
+                </div>
+              </v-col>
+              <v-col cols="3"   v-if="['instance'].includes(report_template.item_of_interest)">
                 <div style="min-width: 200px" class="pa-4">
                   <v-text-field
+
                     type="number"
                     clearable
                     @change="has_changes = true"
@@ -461,6 +476,7 @@
 
 import axios from '../../services/customInstance';
 import label_select_only from '../label/label_select_only.vue'
+import {ReportTemplate} from '../../types/ReportTemplate'
 import {CSVReportFormatter} from './CSVReportFormatter';
 import Vue from "vue";
 
@@ -513,9 +529,10 @@ export default Vue.extend({
           'view_type': 'chart',
           'diffgram_wide_default': false,
           'group_by_labels': false,
+          'task_status_filter': 'task_created',
           'id': null,
           'view_sub_type': 'line'
-        },
+        } as ReportTemplate,
 
         item_of_interest_list: [
           {
@@ -738,6 +755,38 @@ export default Vue.extend({
           }
         ],
 
+        task_status_filter: [
+          {
+            'display_name': 'Tasks Created',
+            'name': 'task_created',
+            'icon': 'mdi-checkbox-marked-circle-plus-outline',
+            'color': 'primary'
+          },
+          {
+            'display_name': 'Tasks Completed',
+            'name': 'task_completed',
+            'icon': 'mdi-check-circle',
+            'color': 'green'
+          },
+          {
+            'display_name': 'Tasks Reviewed',
+            'name': 'task_reviewed',
+            'icon': 'mdi-account-multiple-check-outline',
+            'color': 'orange'
+          },
+          {
+            'display_name': 'Tasks Rejected',
+            'name': 'task_rejected',
+            'icon': 'mdi-alert-circle',
+            'color': 'red'
+          },
+          {
+            'display_name': 'Tasks Approved',
+            'name': 'task_approved',
+            'icon': 'mdi-tag-check',
+            'color': 'cyan'
+          }
+        ],
         view_sub_type_list: [
           {
             'display_name': 'Bar',
@@ -1213,7 +1262,10 @@ export default Vue.extend({
         this.job_select_this_id = report_template.job_id
         // avoid circular updates, since we expect job component to reupdate
         // report template from this id
-        this.report_template = report_template
+        this.report_template = {
+          ...this.report_template,
+          ...report_template
+        }
 
       },
 

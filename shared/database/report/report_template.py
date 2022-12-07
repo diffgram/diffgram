@@ -96,6 +96,8 @@ class ReportTemplate(Base):
 
     group_by_labels = Column(Boolean, default = False)
 
+    task_event_type = Column(String())  # [task_completed, task_created, etc]...
+
     @staticmethod
     def get_by_id(session,
                   id: int):

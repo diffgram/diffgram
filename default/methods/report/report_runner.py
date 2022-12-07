@@ -13,6 +13,7 @@ from methods.report.custom_reports.AnnotatorPerformanceReport import AnnotatorPe
 from methods.report.custom_reports.TaskReportRejectRatioReport import TaskReportRejectRatioReport
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
+from shared.database.task.task_event import TaskEvent
 
 from shared.permissions.super_admin_only import Super_Admin
 from shared.database.report.report_template import ReportTemplate
@@ -258,6 +259,7 @@ class Report_Runner():
             'user': User,
             'file': File,
             'task': Task,
+            'task_event': TaskEvent,
             'event': Event,
             'time_spent_task': 'custom_report',
             'annotator_performance': 'custom_report',
@@ -1031,6 +1033,9 @@ class Report_Runner():
         self.member_id_normalized = None
 
         if self.item_of_interest in ["instance", "file"]:
+            self.member_id_normalized = self.base_class.member_created_id
+        if self.item_of_interest in ["task"]:
+            self.base_class = self.string_to_class("task_event")
             self.member_id_normalized = self.base_class.member_created_id
         elif self.item_of_interest == "event":
             self.member_id_normalized = self.base_class.member_id
