@@ -817,13 +817,12 @@
           if(!['radio', 'select'].includes(this.group.kind)){
             return
           }
-          console.log('SELECTT HOTKEYYY', this.select_format)
-          console.log('SELECTT internal_selected', this.internal_selected)
           let index = this.hotkey_dict[event.keyCode]
           if(index != undefined){
             let item_to_select = this.select_format[index]
-            if(item_to_select){
+            if(item_to_select && item_to_select != this.internal_selected){
               this.internal_selected = item_to_select
+              this.attribute_change()
             }
           }
         },
