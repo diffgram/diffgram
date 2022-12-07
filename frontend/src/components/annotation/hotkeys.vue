@@ -15,7 +15,8 @@
   <p> <kbd>Shift + T</kbd>Remove/Add Instance Transparency </p>
   <p> <kbd>Shift + R</kbd>Start Review Carrousel </p>
   <p> <kbd>G</kbd> Toggle Ghost Instances </p>
-  <p> <kbd>1 - 9</kbd> Change label </p>
+  <p> <kbd>SHIFT + 1 - 9</kbd> Change label </p>
+  <p> <kbd>1 - 9</kbd> Change Attribute Option of Active Attribute (radio and select only) </p>
 
   <p> <kbd>Shift</kbd> + <kbd>←</kbd>,<kbd>→</kbd> Previous or Next File </p>
 

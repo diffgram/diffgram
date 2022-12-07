@@ -808,13 +808,13 @@
           window.removeEventListener('keydown', this.attribute_keydown_handler);
         },
         attribute_keyup_handler: function(){
-          if(this.group.kind !== 'radio'){
+          if(!['radio', 'select'].includes(this.group.kind)){
             return
           }
 
         },
         attribute_keydown_handler: function(event){
-          if(this.group.kind !== 'radio'){
+          if(!['radio', 'select'].includes(this.group.kind)){
             return
           }
           console.log('SELECTT HOTKEYYY', this.select_format)
