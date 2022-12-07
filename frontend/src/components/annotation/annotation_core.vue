@@ -1033,9 +1033,17 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    video_mode: {
+      type: Boolean,
+      default: false
+    },
     get_userscript: {
       type: Function,
       required: true
+    },
+    save_loading_frames_list: {
+      type: Array,
+      default: []
     },
     filtered_instance_type_list_function: {
       type: Function,
@@ -1394,7 +1402,6 @@ export default Vue.extend({
       instance_buffer_dict: {},
       instance_buffer_metadata: {},
       unsaved_frames: [],
-      save_loading_frames_list: [],
 
       is_editing_ui_schema: true,
 
@@ -1523,7 +1530,6 @@ export default Vue.extend({
       },
 
       cuboid_current_rear_face: undefined,
-      video_mode: false,
       draw_mode: true,
       cuboid_face_hover: undefined,
       alert_info_drawing: true,
@@ -2431,28 +2437,6 @@ export default Vue.extend({
       }
       this.polygon_merge_tool = null
       this.has_changed = true
-    },
-
-    get_save_loading: function (frame_number) {
-      if (this.video_mode) {
-        return this.save_loading_frames_list.includes(frame_number)
-      } else {
-        return this.save_loading_image;
-      }
-    },
-    set_save_loading: function (value, frame) {
-      if (this.video_mode) {
-        if (value) {
-          this.save_loading_frames_list.push(frame)
-        } else {
-          this.save_loading_frames_list = this.save_loading_frames_list.filter(elm => elm != frame)
-        }
-
-      } else {
-        this.save_loading_image = value;
-      }
-
-      this.$forceUpdate();
     },
     // userscript (to be placed in class once context figured)
     set_instance_human_edited: function (instance) {
@@ -7736,7 +7720,7 @@ export default Vue.extend({
         current_frame = parseInt(this.current_frame, 10);
       }
 
-      this.set_save_loading(true, current_frame);
+      this.$emit('set_save_loading', true, current_frame)
 
       axios
         .post("/api/v1/task/update", {
@@ -7744,7 +7728,7 @@ export default Vue.extend({
           mode: mode,
         })
         .then((response) => {
-          this.set_save_loading(false, current_frame);
+          this.$emit('set_save_loading', false, current_frame);
           if (mode == "toggle_deferred") {
             this.snackbar_success = true;
             this.snackbar_success_text = "Deferred for review. Moved to next.";
@@ -7760,7 +7744,7 @@ export default Vue.extend({
           }
         })
         .catch((error) => {
-          this.set_save_loading(false, current_frame);
+          this.$emit('set_save_loading', false, current_frame);
           if (error.response.status == 400) {
             this.save_error = error.response.data.log.error;
           }
@@ -8430,7 +8414,7 @@ export default Vue.extend({
         return
       }
 
-      this.set_save_loading(true, frame_number);
+      this.$emit('set_save_loading', true, frame_number);
       let [has_duplicate_instances, dup_ids, dup_indexes] =
         AnnotationSavePrechecks.has_duplicate_instances(instance_list);
       let dup_instance_list = dup_indexes.map((i) => ({
@@ -8455,7 +8439,7 @@ export default Vue.extend({
           undefined
         );
 
-        this.set_save_loading(false, frame_number);
+        this.$emit('set_save_loading', false, frame_number);
 
         return;
       }
@@ -8536,7 +8520,7 @@ export default Vue.extend({
           this.update_sequence_data(instance_list, frame_number, response);
         }
 
-        this.set_save_loading(false, frame_number);
+        this.$emit('set_save_loading', false, frame_number);
         this.set_frame_pending_save(false, frame_number)
         this.has_changed = false;
         if (and_complete == true) {
@@ -8563,7 +8547,7 @@ export default Vue.extend({
         }
         return true;
       } catch (error) {
-        this.set_save_loading(false, frame_number);
+        this.$emit('set_save_loading', false, frame_number);
         if (
           error.response &&
           error.response.data &&

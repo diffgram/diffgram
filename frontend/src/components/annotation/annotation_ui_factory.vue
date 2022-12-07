@@ -32,6 +32,8 @@
           :loading="loading"
           :filtered_instance_type_list_function="filtered_instance_type_list"
           :get_userscript="get_userscript"
+          :save_loading_frames_list="save_loading_frames_list"
+          :video_mode="video_mode"
           
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
@@ -66,6 +68,7 @@
           @save_time_tracking="save_time_tracking"
           @trigger_task_change="trigger_task_change"
           @set_ui_schema="set_ui_schema"
+          @set_save_loading="set_save_loading"
           
           ref="annotation_core"
         >
@@ -314,6 +317,8 @@ export default Vue.extend({
       submitted_to_review: false,
       annotations_loading: false,
       has_changed: false,
+      save_loading_frames_list: [],
+      video_mode: false,
 
       global_attribute_groups_list: []
 
@@ -344,7 +349,6 @@ export default Vue.extend({
         }
       },
     },
-
     task(newVal) {
       this.update_working_file()
       if (newVal && this.task_prefetcher && newVal.file.type === 'image') {
@@ -534,6 +538,25 @@ export default Vue.extend({
       frame_number_param = undefined,
       instance_list_param = undefined
     ) {},
+    get_save_loading: function (frame_number: number) {
+      if (this.video_mode) return this.save_loading_frames_list.includes(frame_number)
+      else return this.save_loading_image
+    },
+    set_save_loading: function (value, frame) {
+      console.log("here")
+      if (this.video_mode) {
+        if (value) {
+          this.save_loading_frames_list.push(frame)
+        } else {
+          this.save_loading_frames_list = this.save_loading_frames_list.filter(elm => elm != frame)
+        }
+
+      } else {
+        this.save_loading_image = value;
+      }
+
+      this.$forceUpdate();
+    },
     filtered_instance_type_list: function (instance_type_list) {
       const schema_allowed_types = (): any[] | null => {
         if (
@@ -646,6 +669,8 @@ export default Vue.extend({
     update_working_file: function() {
       if (this.task && this.task.id) this.working_file = this.task.file
       else this.working_file = this.current_file
+
+      this.video_mode = this.working_file.type === 'video'
     },
     userscript_select_disabled: function () {
       return this.task && this.task.id
