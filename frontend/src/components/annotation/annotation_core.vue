@@ -1111,7 +1111,7 @@ export default Vue.extend({
           this.instance_store.set_file_type(this.file_id, this.file.type)
         }
       },
-    }, 
+    },
     finish_annotation_show: function (val) {
       if (val) this.annotation_show_on = false;
     },
@@ -2925,9 +2925,11 @@ export default Vue.extend({
         instances_to_merge_creation_refs = this.polygon_merge_tool.instances_to_merge.map(inst => inst.creation_ref_id)
       }
 
+
+
       for (let elm of this.instance_list) {
         if (elm.creation_ref_id != instance.creation_ref_id) {
-
+          // Case when polygon merge tool is active.
           if(this.polygon_merge_tool && this.polygon_merge_tool.parent_merge_instance
             && elm.creation_ref_id != this.polygon_merge_tool.parent_merge_instance.creation_ref_id){
             if(instances_to_merge_creation_refs.includes(elm.creation_ref_id)){
