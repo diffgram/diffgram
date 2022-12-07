@@ -979,16 +979,13 @@ import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
 import {ImageCanvasTransform} from "../../types/CanvasTransform";
 import {LabelFile} from "../../types/label";
 import {InstanceImage2D} from "../vue_canvas/instances/InstanceImage2D";
-<<<<<<< HEAD
 import { regenerate_cache } from "../../services/fileServices"
 import { get_model_run_list } from "../../services/modelServices"
-=======
 import {PolygonInstance} from "../vue_canvas/instances/PolygonInstance";
 import {AutoBorderContext, PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBorderTool";
 import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
 import {PolygonMergeTool} from "../vue_canvas/advanced_tools/PolygonMergeTool";
 import {store} from "../../store";
->>>>>>> 41bcaa406f4db18fe40204ba50d6b7d04f4eaeaa
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -1142,14 +1139,10 @@ export default Vue.extend({
   },
   watch: {
     instance_list: function(newVal) {
-<<<<<<< HEAD
-      this.instance_store.set_instance_list(this.working_file.id, newVal)
-=======
       if (this.task && this.task.file.type === "image" || this.file.type === "image") {
         this.instance_store.set_instance_list(this.file_id, newVal)
         this.instance_store.set_file_type(this.file_id, this.file.type)
       }
->>>>>>> 41bcaa406f4db18fe40204ba50d6b7d04f4eaeaa
     },
     instance_buffer_dict: {
       deep: true,
@@ -1269,11 +1262,7 @@ export default Vue.extend({
       degrees: 0,
       n_key: false,
       mouse_wheel_button: false,
-<<<<<<< HEAD
-=======
       submitted_to_review: false,
-      polygon_merge_tool: null as PolygonMergeTool,
->>>>>>> 41bcaa406f4db18fe40204ba50d6b7d04f4eaeaa
 
       locked_editing_instance: null as Instance,
       current_instance_v2: null as Instance,
@@ -1612,17 +1601,6 @@ export default Vue.extend({
       canvas_rectangle: null,
       loading_instance_templates: false,
       instance_template_list: [],
-<<<<<<< HEAD
-      auto_border_polygon_p1: undefined,
-      auto_border_polygon_p1_index: undefined,
-      auto_border_polygon_p1_figure: undefined,
-      auto_border_polygon_p1_instance_index: undefined,
-      auto_border_polygon_p2: undefined,
-      auto_border_polygon_p2_index: undefined,
-      auto_border_polygon_p2_figure: undefined,
-      auto_border_polygon_p2_instance_index: undefined,
-      show_polygon_border_context_menu: false,
-=======
       auto_border_context: {
         auto_border_polygon_p1: undefined,
         auto_border_polygon_p1_index: undefined,
@@ -1637,7 +1615,6 @@ export default Vue.extend({
       } as AutoborderContext,
 
       has_changed: false,
->>>>>>> 41bcaa406f4db18fe40204ba50d6b7d04f4eaeaa
       interval_autosave: null,
       full_file_loading: false, // For controlling the loading of the entire file + instances when changing a file.
 
@@ -2444,6 +2421,10 @@ export default Vue.extend({
     },
     merge_polygons_v2: function(){
       let deleted_instance_indexes = this.polygon_merge_tool.merge_polygons(this.instance_list)
+      this.$store.commit("set_instance_select_for_merge", false);
+      for (let index of deleted_instance_indexes){
+        this.delete_single_instance(this.instance_list[index])
+      }
       this.$store.commit("set_instance_select_for_merge", false);
       for (let index of deleted_instance_indexes){
         this.delete_single_instance(this.instance_list[index])
@@ -6272,6 +6253,26 @@ export default Vue.extend({
       if(!this.selected_instance){
         return
       }
+      if (!this.selected_instance) {
+        return;
+      }
+      if (this.selected_instance.type !== "polygon") {
+        return;
+      }
+      let i = 0;
+      if (polygon_point_index != undefined) {
+        this.selected_instance.points.splice(polygon_point_index, 1);
+      } else {
+        for (const point of this.selected_instance.points) {
+          if (
+            this.point_is_intersecting_circle(this.mouse_position, point, 8)
+          ) {
+            this.selected_instance.points.splice(i, 1);
+            break;
+          }
+          i += 1;
+        }
+      }
       let ann_ctx = this.build_ann_event_ctx()
       let ann_tool_event: InteractionEvent = genImageAnnotationEvent(null, ann_ctx)
       const coordinator = this.generate_interaction_coordinator(ann_tool_event) as PolygonInstanceCoordinator;
@@ -7503,7 +7504,6 @@ export default Vue.extend({
         this.loading = false;
       }
     },
-<<<<<<< HEAD
     reset_for_file_change_context: function (){
         this.current_sequence_annotation_core_prop = {
           id: null,
@@ -7522,45 +7522,6 @@ export default Vue.extend({
           this.$refs.qa_carrousel.annotation_show_progress = 0
           this.annotation_show_current_instance = 0
         }
-=======
-    trigger_task_change: async function (
-      direction,
-      task,
-      assign_to_user = False
-    ) {
-      // Keyboard shortcuts case
-      if (this.loading == true || this.annotations_loading == true) {
-        return;
-      }
-
-      if (this.has_changed) {
-        await this.save();
-      }
-
-
-      // Ask parent for a new task
-      this.$emit("request_new_task", direction, task, assign_to_user);
-    },
-
-    reset_for_file_change_context: function (){
-      this.current_sequence_annotation_core_prop = {
-        id: null,
-        number: null
-      }
-      this.video_mode = false   // if we don't have this can be issues switching to say an image
-      this.degrees = 0
-      this.instance_buffer_dict = {}
-      this.instance_buffer_metadata = {}
-      this.instance_list = []
-      if(this.video_mode){
-        this.$refs.video_controllers.reset_cache();
-      }
-      if(this.$refs.qa_carrousel){
-        this.$refs.qa_carrousel.annotation_show_previous_instance = 0
-        this.$refs.qa_carrousel.annotation_show_progress = 0
-        this.annotation_show_current_instance = 0
-      }
->>>>>>> 41bcaa406f4db18fe40204ba50d6b7d04f4eaeaa
 
     },
     annotation_show_activate(show_type) {
