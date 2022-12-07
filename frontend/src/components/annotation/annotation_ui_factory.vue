@@ -34,6 +34,7 @@
           :get_userscript="get_userscript"
           :save_loading_frames_list="save_loading_frames_list"
           :video_mode="video_mode"
+          :go_to_keyframe_loading="go_to_keyframe_loading"
           
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
@@ -69,6 +70,7 @@
           @trigger_task_change="trigger_task_change"
           @set_ui_schema="set_ui_schema"
           @set_save_loading="set_save_loading"
+          @save="save"
           
           ref="annotation_core"
         >
@@ -225,6 +227,7 @@
 
 
 <script lang="ts">
+import moment from "moment";
 import axios from "../../services/customInstance";
 import {create_event} from "../event/create_event";
 import {UI_SCHEMA_TASK_MOCK} from "../ui_schema/ui_schema_task_mock";
@@ -244,6 +247,7 @@ import Vue from "vue";
 
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import InstanceStore from "../../helpers/InstanceStore"
+import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
 
 import { saveTaskAnnotations, saveFileAnnotations } from "../../services/saveServices"
 
@@ -319,6 +323,7 @@ export default Vue.extend({
       has_changed: false,
       save_loading_frames_list: [],
       video_mode: false,
+      go_to_keyframe_loading: false,
 
       global_attribute_groups_list: []
 
@@ -533,17 +538,199 @@ export default Vue.extend({
     },
   },
   methods: {
-    save: async function(
+    save: async function (
       and_complete = false,
       frame_number_param = undefined,
       instance_list_param = undefined
-    ) {},
+    ) {
+      this.save_error = {}
+      this.save_warning = {}
+
+      if (this.go_to_keyframe_loading) return
+      if (this.view_only_mode == true) return
+
+      let frame_number = undefined;      
+      let instance_list = this.instance_store.get_instance_list(this.working_file.id).map(elm => {
+        if (elm.type === 'keypoints')return elm.get_instance_data()
+        else return elm
+      });
+
+      if (this.video_mode) {
+        if (frame_number_param == undefined) {
+          frame_number = parseInt(this.current_frame, 10);
+        } else {
+          frame_number = parseInt(frame_number_param, 10);
+        }
+        if (instance_list_param != undefined) {
+          instance_list = instance_list_param;
+        } else {
+          instance_list = this.instance_store.get_instance_list(this.working_file.id, frame_number)
+        }
+      }
+      
+      if (this.get_save_loading(frame_number)) return
+      if (this.any_loading) return
+
+      if (
+        this.video_mode && 
+        (
+          !this.instance_store.get_instance_list(this.working_file.id, frame_number) || 
+          this.annotations_loading
+        )
+      ) return
+
+      this.set_save_loading(true, frame_number);
+      let [has_duplicate_instances, dup_ids, dup_indexes] =
+        AnnotationSavePrechecks.has_duplicate_instances(instance_list);
+      let dup_instance_list = dup_indexes.map((i) => ({
+        ...instance_list[i],
+        original_index: i,
+      }));
+
+      dup_instance_list.sort(function (a, b) {
+        return (
+          moment(b.client_created_time, "YYYY-MM-DD HH:mm") -
+          moment(a.client_created_time, "YYYY-MM-DD HH:mm")
+        );
+      });
+
+      if (has_duplicate_instances) {
+        this.save_warning = {
+          duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`,
+        };
+        // We want to focus the most recent instance, if we focus the older one we can produce an error.
+        this.$refs.instance_detail_list.toggle_instance_focus(
+          dup_instance_list[0].original_index,
+          undefined
+        );
+
+        this.set_save_loading(false, frame_number);
+
+        return
+      }
+      // a video file can now be
+      // saved from file id + frame, so the current file
+      let current_file_id = null;
+      if (this.file) {
+        current_file_id = this.file.id;
+      } else if (this.task) {
+        current_file_id = this.task.file.id;
+      } else {
+        throw new Error(
+          "You must provide either a file or a task in props in order to save."
+        );
+      }
+      var url = null;
+      if (this.task && this.task.id) {
+        url = "/api/v1/task/" + this.task.id + "/annotation/update";
+      } else {
+        if (this.$store.state.builder_or_trainer.mode == "builder") {
+          url =
+            "/api/project/" +
+            this.project_string_id +
+            "/file/" +
+            current_file_id +
+            "/annotation/update";
+        }
+      }
+      video_data = null;
+      if (this.video_mode) {
+        var video_data = {
+          video_mode: this.video_mode,
+          video_file_id: this.working_file.id,
+          current_frame: frame_number,
+          set_parent_instance_list: false
+        };
+      }
+      try {
+        const response = await axios.post(url, {
+          instance_list: instance_list,
+          and_complete: and_complete,
+          directory_id:
+          this.$store.state.project.current_directory.directory_id,
+          gold_standard_file: this.gold_standard_file, // .instance_list gets updated ie missing
+          video_data: video_data,
+        });
+        if (this.video_mode && this.video_parent_file_instance_list.length > 0 && this.video_global_attribute_changed) {
+          video_data.set_parent_instance_list = true
+          const response_parent = await axios.post(url, {
+            instance_list: this.video_parent_file_instance_list,
+            and_complete: and_complete,
+            directory_id:
+            this.$store.state.project.current_directory.directory_id,
+            gold_standard_file: this.gold_standard_file, // .instance_list gets updated ie missing
+            video_data: video_data,
+          });
+          if (response_parent.status === 200) {
+            this.video_global_attribute_changed = false;
+          }
+        }
+        this.save_loading_image = false
+        this.has_changed = false
+        this.save_count += 1;
+        AnnotationSavePrechecks.add_ids_to_new_instances_and_delete_old(
+          response,
+          video_data,
+          this.instance_list,
+          this.instance_buffer_dict,
+          this.video_mode
+        )
+        this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
+        this.$emit("save_response_callback", true);
+
+        // Update Sequence ID's and Keyframes.
+        if ((response.data.sequence || response.data.new_sequence_list) && this.video_mode) {
+          this.update_sequence_data(instance_list, frame_number, response);
+        }
+
+        this.set_save_loading(false, frame_number);
+        this.set_frame_pending_save(false, frame_number)
+        this.has_changed = false;
+        if (and_complete == true) {
+          // now that complete completes whole video, we can move to next as expected.
+          this.snackbar_success = true;
+          this.snackbar_success_text = "Saved and completed. Moved to next.";
+          if (this.task && this.task.id) {
+            this.trigger_task_change("next", this.task, true);
+          } else {
+            this.trigger_task_change("next", "none", true); // important
+          }
+        }
+        this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
+        if (this.video_mode) {
+          let pending_frames = this.get_pending_save_frames();
+          if (pending_frames.length > 0) {
+            await this.save_multiple_frames(pending_frames)
+          }
+        }
+        this.ghost_refresh_instances();
+        if (this.task) {
+          // Track time (nonblocking)
+          this.save_time_tracking()
+        }
+        return true;
+      } catch (error) {
+        this.set_save_loading(false, frame_number);
+        if (
+          error.response &&
+          error.response.data &&
+          error.response.data.log &&
+          error.response.data.log.error &&
+          error.response.data.log.error.missing_ids
+        ) {
+          this.display_refresh_cache_button = true;
+          clearInterval(this.interval_autosave);
+        }
+        this.save_error = this.$route_api_errors(error);
+
+        return false;
+      }
+    },
     get_save_loading: function (frame_number: number) {
       if (this.video_mode) return this.save_loading_frames_list.includes(frame_number)
       else return this.save_loading_image
     },
     set_save_loading: function (value, frame) {
-      console.log("here")
       if (this.video_mode) {
         if (value) {
           this.save_loading_frames_list.push(frame)
