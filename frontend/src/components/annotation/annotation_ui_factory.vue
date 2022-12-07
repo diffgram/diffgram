@@ -450,9 +450,9 @@ export default Vue.extend({
   },
   computed: {
     save_request: function(): Function {
-      if (this.task) return saveTaskAnnotations
+      if (this.task) return (payload) => saveTaskAnnotations(this.task.id, payload)
 
-      return saveFileAnnotations
+      return (payload) => saveFileAnnotations(this.project_string_id, this.working_file.id, payload)
     },
     any_loading: function () {
       return this.loading || this.loading_project || this.initializing
@@ -549,12 +549,13 @@ export default Vue.extend({
       if (this.go_to_keyframe_loading) return
       if (this.view_only_mode == true) return
 
+
       let frame_number = undefined;      
       let instance_list = this.instance_store.get_instance_list(this.working_file.id).map(elm => {
-        if (elm.type === 'keypoints')return elm.get_instance_data()
+        if (elm.type === 'keypoints') return elm.get_instance_data()
         else return elm
       });
-
+      
       if (this.video_mode) {
         if (frame_number_param == undefined) {
           frame_number = parseInt(this.current_frame, 10);
@@ -608,34 +609,11 @@ export default Vue.extend({
 
         return
       }
-      // a video file can now be
-      // saved from file id + frame, so the current file
-      let current_file_id = null;
-      if (this.file) {
-        current_file_id = this.file.id;
-      } else if (this.task) {
-        current_file_id = this.task.file.id;
-      } else {
-        throw new Error(
-          "You must provide either a file or a task in props in order to save."
-        );
-      }
-      var url = null;
-      if (this.task && this.task.id) {
-        url = "/api/v1/task/" + this.task.id + "/annotation/update";
-      } else {
-        if (this.$store.state.builder_or_trainer.mode == "builder") {
-          url =
-            "/api/project/" +
-            this.project_string_id +
-            "/file/" +
-            current_file_id +
-            "/annotation/update";
-        }
-      }
-      video_data = null;
+
+      let video_data = null;
+
       if (this.video_mode) {
-        var video_data = {
+        video_data = {
           video_mode: this.video_mode,
           video_file_id: this.working_file.id,
           current_frame: frame_number,
@@ -643,44 +621,45 @@ export default Vue.extend({
         };
       }
       try {
-        const response = await axios.post(url, {
-          instance_list: instance_list,
-          and_complete: and_complete,
-          directory_id:
-          this.$store.state.project.current_directory.directory_id,
-          gold_standard_file: this.gold_standard_file, // .instance_list gets updated ie missing
-          video_data: video_data,
-        });
+        const payload = {
+          instance_list,
+          and_complete,
+          directory_id: this.$store.state.project.current_directory.directory_id,
+          gold_standard_file: this.gold_standard_file,
+          video_data,
+        }
+
+        const [result, error] = await this.save_request(payload)
+
         if (this.video_mode && this.video_parent_file_instance_list.length > 0 && this.video_global_attribute_changed) {
           video_data.set_parent_instance_list = true
-          const response_parent = await axios.post(url, {
-            instance_list: this.video_parent_file_instance_list,
-            and_complete: and_complete,
-            directory_id:
-            this.$store.state.project.current_directory.directory_id,
-            gold_standard_file: this.gold_standard_file, // .instance_list gets updated ie missing
-            video_data: video_data,
-          });
-          if (response_parent.status === 200) {
+          
+          const video_payload = {...payload, instance_list: this.video_parent_file_instance_list }
+          const [parent_result, parent_error] = await this.save_request(video_payload);
+
+          if (parent_result) {
             this.video_global_attribute_changed = false;
           }
         }
+
         this.save_loading_image = false
         this.has_changed = false
         this.save_count += 1;
+
         AnnotationSavePrechecks.add_ids_to_new_instances_and_delete_old(
-          response,
+          result,
           video_data,
           this.instance_list,
           this.instance_buffer_dict,
           this.video_mode
         )
+
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
-        this.$emit("save_response_callback", true);
+        this.save_response_callback(true);
 
         // Update Sequence ID's and Keyframes.
-        if ((response.data.sequence || response.data.new_sequence_list) && this.video_mode) {
-          this.update_sequence_data(instance_list, frame_number, response);
+        if ((result.data.sequence || result.data.new_sequence_list) && this.video_mode) {
+          this.update_sequence_data(instance_list, frame_number, result);
         }
 
         this.set_save_loading(false, frame_number);
@@ -690,6 +669,7 @@ export default Vue.extend({
           // now that complete completes whole video, we can move to next as expected.
           this.snackbar_success = true;
           this.snackbar_success_text = "Saved and completed. Moved to next.";
+          
           if (this.task && this.task.id) {
             this.trigger_task_change("next", this.task, true);
           } else {
@@ -697,17 +677,17 @@ export default Vue.extend({
           }
         }
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
+        
         if (this.video_mode) {
-          let pending_frames = this.get_pending_save_frames();
+          const pending_frames = this.get_pending_save_frames();
           if (pending_frames.length > 0) {
             await this.save_multiple_frames(pending_frames)
           }
         }
         this.ghost_refresh_instances();
-        if (this.task) {
-          // Track time (nonblocking)
-          this.save_time_tracking()
-        }
+
+        if (this.task) this.save_time_tracking()
+        
         return true;
       } catch (error) {
         this.set_save_loading(false, frame_number);

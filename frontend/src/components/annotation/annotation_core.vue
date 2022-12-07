@@ -1152,16 +1152,16 @@ export default Vue.extend({
   watch: {
     instance_list: function(newVal) {
       if (this.working_file.type === "image") {
-        this.instance_store.set_instance_list(this.file_id, newVal)
-        this.instance_store.set_file_type(this.file_id, this.file.type)
+        this.instance_store.set_instance_list(this.working_file.id, newVal)
+        this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
       }
     },
     instance_buffer_dict: {
       deep: true,
       handler: function(newVal) {
         if (this.working_file.type === "video") {
-          this.instance_store.set_instance_list(this.file_id, newVal)
-          this.instance_store.set_file_type(this.file_id, this.file.type)
+          this.instance_store.set_instance_list(this.working_file.id, newVal)
+          this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
         }
       },
     }, 
