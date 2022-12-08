@@ -648,12 +648,12 @@ export default Vue.extend({
         AnnotationSavePrechecks.add_ids_to_new_instances_and_delete_old(
           result,
           video_data,
-          this.instance_list,
+          instance_list,
           this.instance_buffer_dict,
           this.video_mode
         )
 
-        this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
+        this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(instance_list)
         this.save_response_callback(true);
 
         // Update Sequence ID's and Keyframes.
