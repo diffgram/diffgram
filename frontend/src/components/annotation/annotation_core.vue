@@ -1111,7 +1111,7 @@ export default Vue.extend({
           this.instance_store.set_file_type(this.file_id, this.file.type)
         }
       },
-    }, 
+    },
     finish_annotation_show: function (val) {
       if (val) this.annotation_show_on = false;
     },
@@ -7160,7 +7160,7 @@ export default Vue.extend({
             this.canvas_mouse_tools
           )
           this.new_instance_refresh(result.new_instance_index)
-
+          this.is_actively_drawing = result.is_actively_drawing
         }
         if (result.instance_moved && this.show_snackbar_occlude_direction) {
           this.show_snackbar_occlude_direction = false;
