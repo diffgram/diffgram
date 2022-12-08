@@ -36,6 +36,7 @@
           :video_mode="video_mode"
           :go_to_keyframe_loading="go_to_keyframe_loading"
           :has_changed="has_changed"
+          :instance_buffer_metadata="instance_buffer_metadata"
           
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
@@ -72,6 +73,7 @@
           @set_ui_schema="set_ui_schema"
           @set_save_loading="set_save_loading"
           @save="save"
+          @set_frame_pending_save="set_frame_pending_save"
           
           ref="annotation_core"
         >
@@ -325,6 +327,7 @@ export default Vue.extend({
       save_loading_frames_list: [],
       video_mode: false,
       go_to_keyframe_loading: false,
+      instance_buffer_metadata: {},
 
       global_attribute_groups_list: []
 
@@ -675,7 +678,7 @@ export default Vue.extend({
             this.trigger_task_change("next", "none", true); // important
           }
         }
-        this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(this.instance_list)
+        this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(instance_list)
         
         if (this.video_mode) {
           const pending_frames = this.get_pending_save_frames();
@@ -707,6 +710,25 @@ export default Vue.extend({
 
         return false;
       }
+    },
+    set_frame_pending_save: function (value, frame_number) {
+      if (!frame_number) return
+
+      if (this.instance_buffer_metadata[frame_number]) {
+        // We need to recreate object so that computed props get triggered
+        this.instance_buffer_metadata[frame_number].pending_save = value;
+      } else {
+        this.instance_buffer_metadata[frame_number] = {
+          pending_save: value
+        }
+      }
+      // Keep unsaved_frames list to enable/disable save button
+      if (value) {
+        this.unsaved_frames.push(frame_number)
+      } else {
+        this.unsaved_frames = this.unsaved_frames.filter(elm => elm != frame_number)
+      }
+
     },
     get_save_loading: function (frame_number: number) {
       if (this.video_mode) return this.save_loading_frames_list.includes(frame_number)

@@ -1033,6 +1033,10 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    instance_buffer_metadata: {
+      type: Object,
+      default: {}
+    },
     go_to_keyframe_loading: {
       type: Boolean,
       default: false
@@ -1403,7 +1407,6 @@ export default Vue.extend({
       highest_sequence_number: 0,
 
       instance_buffer_dict: {},
-      instance_buffer_metadata: {},
       unsaved_frames: [],
 
       is_editing_ui_schema: true,
@@ -4355,27 +4358,6 @@ export default Vue.extend({
         this.current_frame
       );
     },
-    set_frame_pending_save: function (value, frame_number) {
-      if (frame_number == undefined) {
-        return
-      }
-      if (this.instance_buffer_metadata[frame_number]) {
-        // We need to recreate object so that computed props get triggered
-        this.instance_buffer_metadata[frame_number].pending_save = value;
-
-      } else {
-        this.instance_buffer_metadata[frame_number] = {
-          pending_save: value
-        }
-      }
-      // Keep unsaved_frames list to enable/disable save button
-      if (value) {
-        this.unsaved_frames.push(frame_number)
-      } else {
-        this.unsaved_frames = this.unsaved_frames.filter(elm => elm != frame_number)
-      }
-
-    },
     add_instance_to_frame_buffer: async function (instance, frame_number) {
       if (!this.video_mode) {
         return;
@@ -4405,7 +4387,7 @@ export default Vue.extend({
       }
       this.ghost_refresh_instances();
       // Set Metadata to manage saving frames
-      this.set_frame_pending_save(true, frame_number)
+      this.$emit('set_frame_pending_save', true, frame_number)
     },
 
     // TODO rename? / refactor? in contect of more awareness of ref/by value for buffer
