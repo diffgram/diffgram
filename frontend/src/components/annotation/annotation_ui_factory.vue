@@ -37,6 +37,7 @@
           :go_to_keyframe_loading="go_to_keyframe_loading"
           :has_changed="has_changed"
           :instance_buffer_metadata="instance_buffer_metadata"
+          :create_instance_template_url="create_instance_template_url"
           
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
@@ -456,6 +457,10 @@ export default Vue.extend({
       if (this.task) return (payload) => saveTaskAnnotations(this.task.id, payload)
 
       return (payload) => saveFileAnnotations(this.project_string_id, this.working_file.id, payload)
+    },
+    create_instance_template_url: function(): string {
+      if (this.task && this.task.id) return `/api/v1/task/${this.task.id}/instance-template/new`
+      else `/api/v1/project/${this.project_string_id}/instance-template/new`
     },
     any_loading: function () {
       return this.loading || this.loading_project || this.initializing

@@ -1033,6 +1033,10 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    create_instance_template_url: {
+      type: string,
+      required:  true
+    },
     instance_buffer_metadata: {
       type: Object,
       default: {}
@@ -2538,14 +2542,6 @@ export default Vue.extend({
         e.returnValue = "";
       }
     },
-    get_create_instance_template_url: function () {
-      if (this.project_string_id) {
-        return `/api/v1/project/${this.project_string_id}/instance-template/new`;
-      } else {
-        return `/api/v1/task/${this.task.id}/instance-template/new`;
-      }
-    },
-
     clear__new_and_no_ids: function () {
       // careful we start from top since we splice as we go
       for (var i = this.instance_list.length - 1; i >= 0; i--) {
@@ -2813,8 +2809,7 @@ export default Vue.extend({
           };
           return;
         }
-        const url = this.get_create_instance_template_url();
-        const response = await axios.post(url, {
+        const response = await axios.post(this.create_instance_template_url, {
           name: name,
           reference_height: this.canvas_height,
           schema_id: this.label_schema.id,
