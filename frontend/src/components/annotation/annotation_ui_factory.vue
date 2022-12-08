@@ -711,6 +711,16 @@ export default Vue.extend({
         return false;
       }
     },
+    get_pending_save_frames: function () {
+      let result = [];
+      for (let frame_num of Object.keys(this.instance_buffer_metadata)) {
+        let frame_metadata = this.instance_buffer_metadata[frame_num]
+        if (frame_metadata.pending_save) {
+          result.push(parseInt(frame_num, 10))
+        }
+      }
+      return result;
+    },
     set_frame_pending_save: function (value, frame_number) {
       if (!frame_number) return
 

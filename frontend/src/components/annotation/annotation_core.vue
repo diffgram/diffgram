@@ -8235,16 +8235,6 @@ export default Vue.extend({
 
       this.set_clipboard(new_clipboard_instance_list);
     },
-    get_pending_save_frames: function () {
-      let result = [];
-      for (let frame_num of Object.keys(this.instance_buffer_metadata)) {
-        let frame_metadata = this.instance_buffer_metadata[frame_num]
-        if (frame_metadata.pending_save) {
-          result.push(parseInt(frame_num, 10))
-        }
-      }
-      return result;
-    },
     set_clipboard: function (instance_list) {
       let file_id = undefined;
       if (this.file && this.file.id) {
