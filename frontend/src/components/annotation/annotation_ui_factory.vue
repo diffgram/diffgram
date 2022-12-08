@@ -59,7 +59,6 @@
           :task_image="task_image"
           :task_instances="task_instances"
           :task_loading="task_loading"
-          @save_response_callback="save_response_callback()"
           @request_file_change="request_file_change"
           @change_label_schema="on_change_label_schema"
           @set_file_list="set_file_list"
@@ -657,7 +656,6 @@ export default Vue.extend({
         )
 
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(instance_list)
-        this.save_response_callback(true);
 
         // Update Sequence ID's and Keyframes.
         if ((result.data.sequence || result.data.new_sequence_list) && this.video_mode) {
@@ -1322,9 +1320,6 @@ export default Vue.extend({
         object_type: object_type,
         user_visit: "user_visit",
       });
-    },
-
-    save_response_callback: function (result) {
     },
   },
 });
