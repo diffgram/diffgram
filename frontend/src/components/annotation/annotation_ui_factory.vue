@@ -460,7 +460,7 @@ export default Vue.extend({
     },
     create_instance_template_url: function(): string {
       if (this.task && this.task.id) return `/api/v1/task/${this.task.id}/instance-template/new`
-      else `/api/v1/project/${this.project_string_id}/instance-template/new`
+      else return `/api/v1/project/${this.computed_project_string_id}/instance-template/new`
     },
     any_loading: function () {
       return this.loading || this.loading_project || this.initializing

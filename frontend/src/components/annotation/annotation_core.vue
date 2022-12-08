@@ -1034,7 +1034,7 @@ export default Vue.extend({
       type: String,
     },
     create_instance_template_url: {
-      type: string,
+      type: String,
       required:  true
     },
     instance_buffer_metadata: {
@@ -7492,7 +7492,6 @@ export default Vue.extend({
       ) {
         // Don't change file while loading
         // The button based method catches this but keyboard short cut doesn't
-        console.debug("Loading");
         return;
       }
       this.full_file_loading = true;
