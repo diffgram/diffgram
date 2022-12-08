@@ -3911,21 +3911,6 @@ export default Vue.extend({
     seeking_update: function (seeking) {
       this.seeking = seeking;
     },
-
-    ghost_refresh_instances: function () {
-      this.ghost_instance_list = [];
-      if (!this.sequence_list_local_copy) {
-        return;
-      }
-
-      let keyframes_to_sequences = this.build_keyframes_to_sequences_dict();
-      this.populate_ghost_list_with_most_recent_instances_from_keyframes(
-        keyframes_to_sequences
-      );
-
-      this.may_fire_user_ghost_canvas_available_alert();
-    },
-
     may_fire_user_ghost_canvas_available_alert: function () {
       if (
         this.$store.state.user.settings.hide_ghost_canvas_available_alert ==
@@ -3941,102 +3926,6 @@ export default Vue.extend({
         this.canvas_alert_y = this.mouse_position.y;
         this.$refs.ghost_canvas_available_alert.show_alert();
       }
-    },
-    build_keyframes_to_sequences_dict: function () {
-      /*
-       * build dict of keyframes with sequences
-       * context that searching each instance_list might as well do all at once.
-       * returns example like
-       * frame: [list of sequence ids]
-       * 351: [3619]
-         355: [3620, 3621]
-       *
-       */
-      let keyframes_to_sequences = {};
-      for (let sequence of this.sequence_list_local_copy) {
-        if (!sequence.keyframe_list) {
-          continue;
-        }
-        if (!sequence.keyframe_list.frame_number_list) {
-          continue;
-        }
-
-        let frame_number_list = sequence.keyframe_list.frame_number_list;
-        let last_keyframe = frame_number_list[frame_number_list.length - 1];
-        if (last_keyframe == undefined) {
-          continue;
-        } // careful, 0th frame is ok
-
-        if (!keyframes_to_sequences[last_keyframe]) {
-          keyframes_to_sequences[last_keyframe] = [sequence.number];
-        } else {
-          keyframes_to_sequences[last_keyframe].push(sequence.number);
-        }
-      }
-      return keyframes_to_sequences;
-    },
-
-    ghost_determine_if_no_conflicts_with_existing: function (ghost_instance) {
-      if(this.instance_list == undefined){
-        return
-      }
-      for (let existing_instance of this.instance_list) {
-        if (existing_instance.sequence_id == ghost_instance.sequence_id) {
-          return false;
-        }
-        if (
-          existing_instance.label_file_id == ghost_instance.label_file_id &&
-          existing_instance.number == ghost_instance.number
-        ) {
-          return false;
-        }
-      }
-      return true;
-    },
-
-    populate_ghost_list_with_most_recent_instances_from_keyframes: function (
-      keyframes_to_sequences
-    ) {
-      if (!keyframes_to_sequences) {
-        return;
-      }
-      for (const [keyframe, sequence_numbers] of Object.entries(
-        keyframes_to_sequences
-      )) {
-        let instance_list = this.instance_buffer_dict[keyframe];
-        if (!instance_list) {
-          continue;
-        }
-
-        for (let instance of instance_list) {
-          if (sequence_numbers.includes(instance.number)) {
-            // if it's the last object then we don't show ghost
-            if (instance.pause_object == true) {
-              continue;
-            }
-
-            if (
-              this.ghost_determine_if_no_conflicts_with_existing(instance) ==
-              false
-            ) {
-              continue;
-            }
-
-            this.duplicate_instance_into_ghost_list(instance);
-          }
-        }
-      }
-    },
-
-    duplicate_instance_into_ghost_list: function (instance) {
-      if (!instance) {
-        return;
-      }
-      let instance_clipboard = duplicate_instance(instance, this);
-      instance_clipboard.id = null;
-      instance_clipboard.created_time = null; //
-      instance_clipboard.creation_ref_id = null; // we expect this will be set once user accepts it
-      this.ghost_instance_list.push(instance_clipboard);
     },
     set_keyframe_loading: function (value) {
       this.go_to_keyframe_loading = value
@@ -4063,7 +3952,7 @@ export default Vue.extend({
        * this method supercedes the old video_file_update()
        */
       await this.get_instances();
-      await this.ghost_refresh_instances();
+      this.$emit('ghost_refresh_instances');
 
     },
     set_new_image_on_canvas: function (image) {
@@ -4385,7 +4274,7 @@ export default Vue.extend({
           this.$refs.sequence_list.may_auto_advance_sequence()
         }
       }
-      this.ghost_refresh_instances();
+      this.$emit('ghost_refresh_instances');
       // Set Metadata to manage saving frames
       this.$emit('set_frame_pending_save', true, frame_number)
     },
