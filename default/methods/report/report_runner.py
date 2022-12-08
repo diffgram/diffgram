@@ -1023,6 +1023,16 @@ class Report_Runner():
         query = self.session.query(self.base_class.task_id, func.count(self.base_class.id))
         return query
 
+    def set_member_column_from_task_event_type(self):
+        print("TASK EVENT TYPE", self.report_template.task_event_type)
+        if self.report_template.task_event_type == ['task_created', 'task_review_start']:
+            self.member_id_normalized = self.base_class.member_created_id
+        elif self.report_template.task_event_type == ['task_completed']:
+            self.member_id_normalized = self.base_class.user_assignee_id
+        elif self.report_template.task_event_type == ['task_request_changes']:
+            self.member_id_normalized = self.base_class.user_reviewer_id
+        else:
+            self.member_id_normalized = self.base_class.member_created_id
     def group_by_user(self):
         """
         Do we want to call this member or user...
@@ -1036,7 +1046,7 @@ class Report_Runner():
             self.member_id_normalized = self.base_class.member_created_id
         if self.item_of_interest in ["task"]:
             self.base_class = self.string_to_class("task_event")
-            self.member_id_normalized = self.base_class.member_created_id
+            self.set_member_column_from_task_event_type()
         elif self.item_of_interest == "event":
             self.member_id_normalized = self.base_class.member_id
 

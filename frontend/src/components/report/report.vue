@@ -15,7 +15,8 @@
         >
           <v-toolbar-items>
             <standard_chip
-              :message=report_template.id
+              v-if="report_template && report_template.id != null"
+              :message="`${report_template.id}`"
               tooltip_message="ID"
               color="grey"
               tooltip_direction="bottom"
@@ -105,7 +106,7 @@
 
             <div class="pa-2 pl-4 pr-4">
               <standard_chip
-                :message=count
+                :message="`${count}`"
                 tooltip_message="Sum"
                 color="primary"
                 tooltip_direction="bottom">
@@ -477,6 +478,7 @@
 import axios from '../../services/customInstance';
 import label_select_only from '../label/label_select_only.vue'
 import {ReportTemplate} from '../../types/ReportTemplate'
+import {getReportTemplate} from '../../services/reportServices'
 import {CSVReportFormatter} from './CSVReportFormatter';
 import Vue from "vue";
 
@@ -770,22 +772,16 @@ export default Vue.extend({
           },
           {
             'display_name': 'Tasks Reviewed',
-            'name': 'task_reviewed',
+            'name': 'generate_task_review_start_event',
             'icon': 'mdi-account-multiple-check-outline',
             'color': 'orange'
           },
           {
             'display_name': 'Tasks Rejected',
-            'name': 'task_rejected',
+            'name': 'task_request_changes',
             'icon': 'mdi-alert-circle',
             'color': 'red'
           },
-          {
-            'display_name': 'Tasks Approved',
-            'name': 'task_approved',
-            'icon': 'mdi-tag-check',
-            'color': 'cyan'
-          }
         ],
         view_sub_type_list: [
           {
@@ -1151,7 +1147,14 @@ export default Vue.extend({
         }
 
       },
-
+      fetch_report_template: async function(){
+        let [report_template, err] = await getReportTemplate(this.project_string_id, this.report_template_id)
+        if (err != null){
+          console.error(err)
+          return
+        }
+        
+      },
       run_report: function (report_template_id) {
 
         if (!report_template_id) {

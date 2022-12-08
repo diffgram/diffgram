@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    pass
+    op.add_column('report_template', sa.Column('task_event_type', sa.String()))
 
 
 def downgrade():
-    pass
+    op.drop_column('report_template', 'task_event_type')
