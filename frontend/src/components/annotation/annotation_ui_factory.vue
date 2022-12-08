@@ -547,26 +547,23 @@ export default Vue.extend({
       this.save_warning = {}
 
       if (this.go_to_keyframe_loading) return
-      if (this.view_only_mode == true) return
+      if (this.view_only_mode) return
 
 
-      let frame_number = undefined;      
-      let instance_list = this.instance_store.get_instance_list(this.working_file.id).map(elm => {
-        if (elm.type === 'keypoints') return elm.get_instance_data()
-        else return elm
-      });
+      let frame_number;   
+      let instance_list;
       
       if (this.video_mode) {
-        if (frame_number_param == undefined) {
-          frame_number = parseInt(this.current_frame, 10);
-        } else {
-          frame_number = parseInt(frame_number_param, 10);
-        }
-        if (instance_list_param != undefined) {
-          instance_list = instance_list_param;
-        } else {
-          instance_list = this.instance_store.get_instance_list(this.working_file.id, frame_number)
-        }
+        if (!frame_number_param) frame_number = parseInt(this.current_frame, 10);
+        else frame_number = parseInt(frame_number_param, 10);
+
+        if (!instance_list_param) instance_list = instance_list_param;
+        else instance_list = this.instance_store.get_instance_list(this.working_file.id, frame_number)
+      } else {
+        instance_list = this.instance_store.get_instance_list(this.working_file.id).map(elm => {
+          if (elm.type === 'keypoints') return elm.get_instance_data()
+          else return elm
+        });
       }
       
       if (this.get_save_loading(frame_number)) return
@@ -684,6 +681,7 @@ export default Vue.extend({
             await this.save_multiple_frames(pending_frames)
           }
         }
+
         this.ghost_refresh_instances();
 
         if (this.task) this.save_time_tracking()
