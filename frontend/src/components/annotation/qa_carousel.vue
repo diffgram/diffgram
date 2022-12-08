@@ -79,7 +79,6 @@
               this.annotation_show()
             },
             pause: function(){
-              console.log('PAUSE')
               this.is_paused = true;
               clearTimeout(this.annotation_show_timer)
             },

@@ -76,7 +76,6 @@ export default {
   },
   methods: {
     on_task_template_changed: function(tt){
-      console.log('change',tt)
       this.action.config_data.task_template_id = tt.id
     },
     on_change_directory: function(dir){

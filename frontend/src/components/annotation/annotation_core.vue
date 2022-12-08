@@ -2808,7 +2808,6 @@ export default Vue.extend({
         console.warn("Instance not reasonable: ", reasonable);
         return;
       }
-      console.log('INSTANCE', new_instance)
 
       const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);

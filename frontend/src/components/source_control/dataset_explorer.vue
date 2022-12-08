@@ -328,11 +328,9 @@ export default Vue.extend({
   },
   methods: {
     key_down: function (event) {
-      console.log('key down')
       this.set_control_key(event)
     },
     key_up: function (event) {
-      console.log('key uppp')
       this.set_control_key(event)
     },
     set_control_key: function (event) {

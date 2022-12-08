@@ -99,8 +99,6 @@ export class PolygonAutoBorderTool {
         break;
       }
     }
-    console.log('auto_border_polygon_p1_index', this.context.auto_border_polygon_p1_index)
-    console.log('auto_border_polygon_p2_index', this.context.auto_border_polygon_p2_index)
     if (this.context.auto_border_polygon_p1_index != undefined && this.context.auto_border_polygon_p2_index != undefined) {
       this.context.show_polygon_border_context_menu = true;
       current_poly.show_active_drawing_mouse_point = false

@@ -13,11 +13,11 @@
 
         </slot>
         <slot :name="keyStep" v-if="keyStep === 'triggers'" :action_template="action_template">
-          <trigger_config 
+          <trigger_config
             :project_string_id="project_string_id"
             :actions_list=actions_list
             :action_template="action_template"
-            :action="action" 
+            :action="action"
             :select_dataset="select_dataset"
           />
         </slot>
@@ -34,7 +34,7 @@
             :project_string_id="project_string_id"
             :action_template="action_template"
             :actions_list=actions_list
-            :action="action" 
+            :action="action"
           />
         </slot>
         <wizard_navigation
@@ -99,10 +99,10 @@ export default Vue.extend({
       Trigger_config
     },
     props: [
-      'action', 
-      'project_string_id', 
-      'actions_list', 
-      'steps_config', 
+      'action',
+      'project_string_id',
+      'actions_list',
+      'steps_config',
       'action_template',
       'select_dataset'
     ],
@@ -127,7 +127,6 @@ export default Vue.extend({
         this.$emit('next_step')
       },
       on_prev_button_click: function(){
-        console.log('Object.keys(this.steps_config).length', Object.keys(this.steps_config).length, this.step)
         if(this.step <= 1){
           return
         }

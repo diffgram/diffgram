@@ -19,7 +19,7 @@
                outlined
                small
                v-if="!show_task_template_wizard"
-               color="success" 
+               color="success"
                @click="show_wizard"
                >
           <v-icon>mdi-plus</v-icon>
@@ -86,7 +86,6 @@ export default {
   },
   methods: {
     on_launch: function(job){
-      console.log('task_template_launched', job)
       this.job_selected = job;
       this.$refs.job_select.add_job_to_list(job)
       this.$refs.job_select.select_job(job)

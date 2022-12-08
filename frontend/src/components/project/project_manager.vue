@@ -296,7 +296,6 @@ export default Vue.extend( {
         })
         return
       }
-      console.log('aaaa', dataset_list)
       item.directory_list = dataset_list
       if(item.is_public){
         this.$store.commit('set_current_public_project', item);
