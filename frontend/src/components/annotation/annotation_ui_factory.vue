@@ -74,6 +74,7 @@
           @set_save_loading="set_save_loading"
           @save="save"
           @set_frame_pending_save="set_frame_pending_save"
+          @task_update="task_update"
           
           ref="annotation_core"
         >
@@ -713,6 +714,51 @@ export default Vue.extend({
 
         return false;
       }
+    },
+    task_update: function (mode) {
+      /*
+       *
+       *
+       *  Hijacks save_error for now so we trigger other loading stuff?
+       *
+       */
+
+      this.save_error = {};
+
+      let current_frame = undefined;
+      if (this.video_mode) {
+        current_frame = parseInt(this.current_frame, 10);
+      }
+
+      this.set_save_loading(true, current_frame)
+
+      axios
+        .post("/api/v1/task/update", {
+          task_id: this.task.id,
+          mode: mode,
+        })
+        .then((response) => {
+          this.set_save_loading(false, current_frame);
+          if (mode == "toggle_deferred") {
+            this.snackbar_success = true;
+            this.snackbar_success_text = "Deferred for review. Moved to next.";
+
+            this.$emit('trigger_task_change', "next", this.task, true);
+          }
+          if (mode === 'incomplete') {
+            this.task.status = 'in_progress'
+            this.$store.commit('display_snackbar', {
+              text: 'Task marked as incomplete.',
+              color: 'primary'
+            })
+          }
+        })
+        .catch((error) => {
+          this.set_save_loading(false, current_frame);
+          if (error.response.status == 400) {
+            this.save_error = error.response.data.log.error;
+          }
+        });
     },
     ghost_refresh_instances: function () {
       this.ghost_instance_list = [];

@@ -68,8 +68,8 @@
             @change_task="$emit('trigger_task_change', $event, task, false)"
             @next_issue_task="next_issue_task(task)"
             @refresh_all_instances="refresh_all_instances"
-            @task_update_toggle_deferred="task_update('toggle_deferred')"
-            @task_update_toggle_incomplete="task_update('incomplete')"
+            @task_update_toggle_deferred="$emit('task_update', 'toggle_deferred')"
+            @task_update_toggle_incomplete="$emit('task_update', 'incomplete')"
             @complete_task="$emit('complete_task')"
             @clear__new_and_no_ids="clear__new_and_no_ids()"
             @new_tag_instance="insert_tag_type()"
@@ -7570,52 +7570,6 @@ export default Vue.extend({
         const new_sequence_list = this.$refs.sequence_list.sequence_list;
         this.$refs.sequence_list.change_current_sequence(new_sequence_list[0]);
       }
-    },
-
-    task_update: function (mode) {
-      /*
-       *
-       *
-       *  Hijacks save_error for now so we trigger other loading stuff?
-       *
-       */
-
-      this.save_error = {};
-
-      let current_frame = undefined;
-      if (this.video_mode) {
-        current_frame = parseInt(this.current_frame, 10);
-      }
-
-      this.$emit('set_save_loading', true, current_frame)
-
-      axios
-        .post("/api/v1/task/update", {
-          task_id: this.task.id,
-          mode: mode,
-        })
-        .then((response) => {
-          this.$emit('set_save_loading', false, current_frame);
-          if (mode == "toggle_deferred") {
-            this.snackbar_success = true;
-            this.snackbar_success_text = "Deferred for review. Moved to next.";
-
-            this.$emit('trigger_task_change', "next", this.task, true);
-          }
-          if (mode === 'incomplete') {
-            this.task.status = 'in_progress'
-            this.$store.commit('display_snackbar', {
-              text: 'Task marked as incomplete.',
-              color: 'primary'
-            })
-          }
-        })
-        .catch((error) => {
-          this.$emit('set_save_loading', false, current_frame);
-          if (error.response.status == 400) {
-            this.save_error = error.response.data.log.error;
-          }
-        });
     },
 
     keyboard_events_local_up: function (event) {
