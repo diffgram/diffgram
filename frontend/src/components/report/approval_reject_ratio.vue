@@ -27,9 +27,9 @@
 
 </template>
 
-<script>
-import {runReport} from '../../services/reportServices'
-import bar_stacked_horizontal_chart from "@/components/report/charts/bar_stacked_horizontal_chart";
+<script lang="ts">
+import {runReport} from '../../services/reportServices.ts'
+import bar_stacked_horizontal_chart from "../report/charts/bar_stacked_horizontal_chart";
 export default {
   name: "annotator_performance",
   components: {bar_stacked_horizontal_chart},

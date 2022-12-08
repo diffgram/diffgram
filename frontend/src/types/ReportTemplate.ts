@@ -15,5 +15,5 @@ export type ReportTemplate = {
   group_by_labels: boolean,
   id: number,
   view_sub_type: string
-  task_status_filter: string
+  task_event_type: string
 }

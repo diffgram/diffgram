@@ -277,7 +277,7 @@
                     v-if="['task'].includes(report_template.item_of_interest)"
                     class="pa-4"
                     :item_list="task_status_filter"
-                    v-model="report_template.task_status_filter"
+                    v-model="report_template.task_event_type"
                     label="Task Status"
                     :disabled="loading"
                     @change="has_changes = true"
@@ -478,7 +478,7 @@
 import axios from '../../services/customInstance';
 import label_select_only from '../label/label_select_only.vue'
 import {ReportTemplate} from '../../types/ReportTemplate'
-import {getReportTemplate} from '../../services/reportServices'
+import {getReportTemplate} from '../../services/reportServices.ts'
 import {CSVReportFormatter} from './CSVReportFormatter';
 import Vue from "vue";
 
@@ -531,7 +531,7 @@ export default Vue.extend({
           'view_type': 'chart',
           'diffgram_wide_default': false,
           'group_by_labels': false,
-          'task_status_filter': 'task_created',
+          'task_event_type': 'task_created',
           'id': null,
           'view_sub_type': 'line'
         } as ReportTemplate,
@@ -772,7 +772,7 @@ export default Vue.extend({
           },
           {
             'display_name': 'Tasks Reviewed',
-            'name': 'generate_task_review_start_event',
+            'name': 'task_review_start',
             'icon': 'mdi-account-multiple-check-outline',
             'color': 'orange'
           },
@@ -903,27 +903,6 @@ export default Vue.extend({
     },
 
     computed: {
-
-      /*  Is it worth it to have this as a computed function
-       *  instead of editing it directly?
-       *
-       *  I vaguelly recall somewhere that creating the raw object
-       *  from JSON serialized thing sometimes had issues
-       *  but perhaps is still cleaner.
-       *
-       *  Update:
-       *    One reason to do it this way, is that
-       *    'date' object is a dict, and that makes it difficult
-       *    to update from a regular dict.
-       *
-       *   How we set things here could get dicey very quickly
-       *
-       *   What if we just had date seperate then added in the keys
-       *   Seems like that's a reasonably way to do it
-       *   then we can at least set some of the stuff easier from existing
-       *
-       */
-
       // context of having a "preview" for the report
       // along with a way to save it?
       member_list_label: function () {
@@ -968,7 +947,10 @@ export default Vue.extend({
 
         }
         // merge properties
-        return {...dynamic_properties, ...this.report_template}
+
+        let result =  {...dynamic_properties, ...this.report_template}
+
+        return result
       },
 
       // default, maybe in future user can customize
@@ -986,7 +968,7 @@ export default Vue.extend({
 
     },
 
-    created() {
+    async created() {
       // Defaults
       this.project_string_id = this.$store.state.project.current.project_string_id
       this.org_id = this.$store.state.org.current.id
@@ -1002,7 +984,7 @@ export default Vue.extend({
        * and in new case it's blank anyway
        */
       // this.get_report(this.report_template_id)
-
+      this.report_template = await this.fetch_report_template()
       if (this.report_template_id != "new") {
         this.run_report(this.report_template_id);
 
@@ -1153,7 +1135,8 @@ export default Vue.extend({
           console.error(err)
           return
         }
-        
+        return report_template
+
       },
       run_report: function (report_template_id) {
 

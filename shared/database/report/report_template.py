@@ -127,6 +127,7 @@ class ReportTemplate(Base):
             'name': self.name,
             'scope': self.scope,
             'project_id': self.project_id,
+            'task_event_type': self.task_event_type,
             'project_string_id': project_string_id,  # note no self
             'member_created_id': self.member_created_id,
             'member_updated': self.member_updated,

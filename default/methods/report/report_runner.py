@@ -128,6 +128,13 @@ report_spec_list = [
         'valid_values_list': ['date', 'label', 'user', 'task', None, 'file', 'task_status'],
     }
     },
+    {"task_event_type": {
+        'default': 'date',
+        'kind': str,
+        'required': False,
+        'valid_values_list': ['task_created', 'task_completed', 'task_request_changes', 'task_review_start'],
+    }
+    },
     {"directory_id_list": {
         'default': None,
         'kind': list,
@@ -424,6 +431,7 @@ class Report_Runner():
                       view_type: str = None):
 
         q = self.query
+        print('AAA', q)
         # Uncomment for performance debugging
         # from shared.helpers.performance import explain
         # print(q)
@@ -662,6 +670,10 @@ class Report_Runner():
 
         self.query = self.query.filter(self.base_class.soft_delete == False)
 
+    def filter_by_task_event_type(self, task_event_type: str):
+        if self.report_template.item_of_interest != 'task':
+            return
+        self.query = self.query.filter(self.base_class.event_type == task_event_type)
     def apply_concrete_filters(self):
 
         if self.base_class == Instance:
@@ -674,6 +686,9 @@ class Report_Runner():
 
         if self.report_template.job_id:
             self.filter_by_job(job_id = self.report_template.job_id)
+
+        if self.report_template.task_event_type:
+            self.filter_by_task_event_type(task_event_type = self.report_template.task_event_type)
 
         if self.report_template.member_list:
             self.filter_by_member_list(member_list = self.report_template.member_list)
@@ -770,6 +785,7 @@ class Report_Runner():
         self.report_template.task_id = metadata.get('task_id')
         self.report_template.member_list = metadata.get('member_list')
         self.report_template.group_by_labels = metadata.get('group_by_labels', False)
+        self.report_template.task_event_type = metadata.get('task_event_type')
 
         self.report_template.diffgram_wide_default = metadata.get('diffgram_wide_default')
 
@@ -1048,12 +1064,16 @@ class Report_Runner():
             self.base_class = self.string_to_class("task_event")
             self.set_member_column_from_task_event_type()
         elif self.item_of_interest == "event":
-            self.member_id_normalized = self.base_class.member_id
+            self.member_idtas_normalized = self.base_class.member_id
 
         # Task has assignee_user_id instead of member id...
 
         query = self.session.query(self.member_id_normalized,
                                    func.count(self.base_class.id))
+        if self.item_of_interest in ['task']:
+            query = self.session.query(self.member_id_normalized,
+                                       func.count(self.base_class.task_id))
+            query = query.distinct()
         return query
 
     def format_for_external(
