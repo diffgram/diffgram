@@ -1623,7 +1623,6 @@ export default Vue.extend({
         show_snackbar_auto_border: false,
       } as AutoborderContext,
 
-      has_changed: false,
       interval_autosave: null,
       full_file_loading: false, // For controlling the loading of the entire file + instances when changing a file.
 

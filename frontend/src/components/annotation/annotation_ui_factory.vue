@@ -35,6 +35,7 @@
           :save_loading_frames_list="save_loading_frames_list"
           :video_mode="video_mode"
           :go_to_keyframe_loading="go_to_keyframe_loading"
+          :has_changed="has_changed"
           
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
