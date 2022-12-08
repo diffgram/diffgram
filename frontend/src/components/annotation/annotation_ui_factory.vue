@@ -617,17 +617,18 @@ export default Vue.extend({
           set_parent_instance_list: false
         };
       }
-      try {
-        const payload = {
-          instance_list,
-          and_complete,
-          directory_id: this.$store.state.project.current_directory.directory_id,
-          gold_standard_file: this.gold_standard_file,
-          video_data,
-        }
+      
+      const payload = {
+        instance_list,
+        and_complete,
+        directory_id: this.$store.state.project.current_directory.directory_id,
+        gold_standard_file: this.gold_standard_file,
+        video_data,
+      }
 
-        const [result, error] = await this.save_request(payload)
+      const [result, error] = await this.save_request(payload)
 
+      if (result) {
         if (this.video_mode && this.video_parent_file_instance_list.length > 0 && this.video_global_attribute_changed) {
           video_data.set_parent_instance_list = true
           
@@ -687,7 +688,9 @@ export default Vue.extend({
         if (this.task) this.save_time_tracking()
         
         return true;
-      } catch (error) {
+      }
+
+      if (error) {
         this.set_save_loading(false, frame_number);
         if (
           error.response &&
