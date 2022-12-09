@@ -327,6 +327,20 @@ class User(Base):
         return session.query(User).filter(
             User.id == user_id).first()
 
+    @staticmethod
+    def get_by_user_id_list(session,
+                  user_id_list: list):
+
+        return session.query(User).filter(
+            User.id.in_(user_id_list)).all()
+
+    @staticmethod
+    def get_by_id_member_list(session,
+                  user_id_list: list):
+
+        return session.query(User).filter(
+            User.member_id.in_(user_id_list)).all()
+
     def get_by_email(session,
                      email):
 

@@ -49,10 +49,13 @@ class AnnotatorPerformanceReport:
         user_dict = {}
         for u in users:
             user_dict[u.id] = u
+
         for elm in data:
             result['values_metadata'].append({'email': user_dict[elm[0]].email,
                                               'first_name': user_dict[elm[0]].first_name,
-                                              'last_name': user_dict[elm[0]].last_name
+                                              'last_name': user_dict[elm[0]].last_name,
+                                              'member_id': user_dict[elm[0]].member_id,
+                                              'user_id': user_dict[elm[0]].id
                                               })
-
+        print('result result', result)
         return result

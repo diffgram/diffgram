@@ -513,6 +513,7 @@ export default Vue.extend({
         stats: {},
         labels: [],
         member_list: [],
+        values_metadata: [],
         values: [],
 
         /*
@@ -771,10 +772,16 @@ export default Vue.extend({
             'color': 'green'
           },
           {
-            'display_name': 'Tasks Reviewed',
+            'display_name': 'Tasks Reviewed Requested',
             'name': 'task_review_start',
             'icon': 'mdi-account-multiple-check-outline',
             'color': 'orange'
+          },
+          {
+            'display_name': 'Tasks Reviewed Approved',
+            'name': 'task_review_complete',
+            'icon': 'mdi-account-multiple-check-outline',
+            'color': 'cyan'
           },
           {
             'display_name': 'Tasks Rejected',
@@ -812,7 +819,7 @@ export default Vue.extend({
               type: 'time',
               distribution: 'series',
               time: {
-                unit: 'day',
+                unit: 'values_metadataday',
                 unitStepSize: 1,
                 displayFormats: {
                   'day': 'MMM DD'
@@ -1088,7 +1095,6 @@ export default Vue.extend({
 
 
       load_stats: function (stats) {
-
         this.stats = stats
         if(!this.stats){
           return
@@ -1097,8 +1103,8 @@ export default Vue.extend({
 
         if (this.report_template.group_by == 'user' || this.report_template.item_of_interest === 'annotator_performance') {
           for (const [i, member_id] of this.stats.labels.entries()) {
-            let member = this.$store.state.project.current.member_list.find(x => {
-              return x.member_id == member_id
+            let member = stats.values_metadata.find(x => {
+              return x.user_id == member_id
             })
 
             if (member) {
@@ -1121,11 +1127,11 @@ export default Vue.extend({
           }
           this.labels = stats.labels
           this.values = stats.values
+          this.values_metadata = stats.values_metadata
           this.second_grouping = stats.second_grouping
           this.label_names_map = stats.label_names_map
           this.label_colour_map = stats.label_colour_map
           this.count = stats.count
-
           this.fillData(stats)
         } else if (this.report_template.view_type == "count") {
           this.count = stats
@@ -1165,6 +1171,7 @@ export default Vue.extend({
           this.update_local_data_from_remote_report_template(
             response.data.report_template)
           this.reset_chart_data()
+
           this.load_stats(response.data.stats)
 
           this.success_run = true
@@ -1231,7 +1238,8 @@ export default Vue.extend({
           this.values,
           this.second_grouping,
           this.label_names_map,
-          this.report_template
+          this.report_template,
+          this.values_metadata
         )
         let csvContent = csv_formatter.get_csv_data()
         // Inspiration https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
