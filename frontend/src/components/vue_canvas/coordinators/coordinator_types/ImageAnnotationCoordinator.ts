@@ -41,6 +41,13 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
     return false
   }
 
+  protected is_keyup_enter_event(event: ImageInteractionEvent): boolean {
+    if (event.dom_event.type === 'keyup' && event.dom_event.keyCode === 13) {
+      return true
+    }
+    return false
+  }
+
   protected is_mouse_move_event(event: ImageInteractionEvent): boolean {
     if (event.dom_event.type === 'mousemove') {
       return true

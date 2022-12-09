@@ -246,7 +246,6 @@
             graph.autoSizeCellsOnAdd = true;
             // Adds cells to the model in a single step
             model.beginUpdate();
-            //console.log(this.jobs, 'aaaaaa')
             try {
               // TODO: move this to a per component style function.
               const style = this.get_cell_style_data();

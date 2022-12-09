@@ -300,6 +300,14 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
 
   }
 
+  private should_finish_polygon_draw_hotkey(annotation_event: ImageInteractionEvent){
+    return this.is_keyup_enter_event(annotation_event) &&
+      annotation_event.annotation_ctx.is_actively_drawing
+      && annotation_event.annotation_ctx.draw_mode
+      && annotation_event.annotation_ctx.current_drawing_instance.points.length > 2
+  }
+
+
   private polygon_point_limits(annotation_event: ImageInteractionEvent, current_point: PolygonPoint) {
     let is_actively_drawing = annotation_event.annotation_ctx.is_actively_drawing
     let autoborder_context = annotation_event.annotation_ctx.auto_border_context
@@ -402,7 +410,7 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
   }
 
   public finish_drawing_polygon(instance: PolygonInstance, coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
-    let polygon = annotation_event.annotation_ctx.current_drawing_instance as BoxInstance
+    let polygon = annotation_event.annotation_ctx.current_drawing_instance as PolygonInstance
     this.finish_drawing_instance(polygon, coordinator_result, annotation_event)
 
   }
@@ -533,6 +541,10 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     }
     if (this.should_add_polygon_point(annotation_event)) {
       this.add_polygon_point(result, annotation_event)
+    }
+    if (this.should_finish_polygon_draw_hotkey(annotation_event)) {
+      let polygon = annotation_event.annotation_ctx.current_drawing_instance as PolygonInstance
+      this.finish_drawing_polygon(polygon, result, annotation_event)
     }
 
 

@@ -141,7 +141,6 @@ import Vue from "vue"; export default Vue.extend( {
       this.default_success = undefined
       this.default_error = undefined
       let result = await this.check_generic(get_default_status)
-      console.log('AAAA', result)
       this.default_success = result[0]
       this.default_error =  result[1]
       this.default_loading = false
