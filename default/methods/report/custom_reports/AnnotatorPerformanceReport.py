@@ -57,5 +57,4 @@ class AnnotatorPerformanceReport:
                                               'member_id': user_dict[elm[0]].member_id,
                                               'user_id': user_dict[elm[0]].id
                                               })
-        print('result result', result)
         return result

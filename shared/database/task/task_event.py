@@ -173,7 +173,6 @@ class TaskEvent(Base, SerializerMixin):
             add_to_session: bool = True,
             flush_session: bool = True
             ) -> 'TaskEvent':
-        print('NEW EVENT', job_id, task_id, event_type, project_id)
         task_event = TaskEvent(
             project_id = project_id,
             job_id = job_id,
