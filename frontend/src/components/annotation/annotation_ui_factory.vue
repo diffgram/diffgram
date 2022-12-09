@@ -38,6 +38,7 @@
           :has_changed="has_changed"
           :instance_buffer_metadata="instance_buffer_metadata"
           :create_instance_template_url="create_instance_template_url"
+          :video_parent_file_instance_list="video_parent_file_instance_list"
           
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
@@ -329,6 +330,8 @@ export default Vue.extend({
       video_mode: false,
       go_to_keyframe_loading: false,
       instance_buffer_metadata: {},
+      current_frame: 0,
+      video_parent_file_instance_list: [],
 
       global_attribute_groups_list: []
 

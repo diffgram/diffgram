@@ -13,7 +13,7 @@ export default class InstanceStore {
   get_instance_list(file_id: number, frame: number | undefined = undefined): any[] | undefined {
     const file_type = this.get_file_type(file_id)
 
-    if (file_type === "video" && frame) return this._instance_store[file_id][frame]
+    if (file_type === "video" && frame !== undefined) return this._instance_store[file_id][frame]
 
     return this._instance_store[file_id]
   }

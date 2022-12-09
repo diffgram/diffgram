@@ -24,7 +24,7 @@
             :command_manager="command_manager"
             :save_loading="
               video_mode
-                ? save_loading_frames_list.length > 0
+                ? any_frame_saving
                 : save_loading_image
             "
             :annotations_loading="annotations_loading"
@@ -1033,6 +1033,14 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    video_parent_file_instance_list: {
+      type: Array,
+      default: []
+    },
+    current_frame: {
+      type: Number,
+      default: 0
+    },
     create_instance_template_url: {
       type: String,
       required:  true
@@ -1293,7 +1301,6 @@ export default Vue.extend({
       guided_nodes_ordinal: 1,
       instance_rotate_control_mouse_hover: null,
       actively_drawing_instance_template: null,
-      video_parent_file_instance_list: [],
       video_global_attribute_changed: false,
       z_key: false,
       snapped_to_instance: undefined,
@@ -1562,8 +1569,6 @@ export default Vue.extend({
 
       polygon_point_click_index: null,
       polygon_click_index: null,
-
-      current_frame: 0,
 
       message: "",
       refresh: null,
