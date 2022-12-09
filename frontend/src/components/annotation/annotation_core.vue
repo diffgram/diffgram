@@ -1098,8 +1098,8 @@ export default Vue.extend({
       type: Object
     },
     userscript_select_disabled: {
-      default: false,
-      type: Boolean
+      default: null,
+      type: Number
     },
     instance_store: {
       required:  true
@@ -1290,7 +1290,6 @@ export default Vue.extend({
       degrees: 0,
       n_key: false,
       mouse_wheel_button: false,
-      submitted_to_review: false,
       current_frame: 0,
 
       locked_editing_instance: null as Instance,

@@ -668,9 +668,7 @@ export default Vue.extend({
           this.instance_store.get_instance_list(this.working_file.id),
           this.video_mode
         )
-
-        console.log(instance_list)
-
+        
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(instance_list)
 
         // Update Sequence ID's and Keyframes.
