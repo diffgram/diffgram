@@ -675,7 +675,7 @@ export default Vue.extend({
 
         // Update Sequence ID's and Keyframes.
         if ((result.data.sequence || result.data.new_sequence_list) && this.video_mode) {
-          this.update_sequence_data(instance_list, frame_number, result);
+          this.$refs.annotation_core.update_sequence_data(instance_list, frame_number, result);
         }
 
         this.set_save_loading(false, frame_number);
