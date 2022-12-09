@@ -58,7 +58,7 @@
             @edit_mode_toggle="edit_mode_toggle($event)"
             @undo="undo()"
             @redo="redo(), (refresh = Date.now())"
-            @save="save()"
+            @save="$emit('save')"
             @change_file="change_file($event)"
             @annotation_show="annotation_show_activate"
             @rotate_image="on_image_rotation"
@@ -1033,6 +1033,10 @@ export default Vue.extend({
       default: null,
       type: String,
     },
+    has_pending_frames: {
+      type: Boolean,
+      default: false
+    },
     video_parent_file_instance_list: {
       type: Array,
       default: []
@@ -1418,7 +1422,6 @@ export default Vue.extend({
       highest_sequence_number: 0,
 
       instance_buffer_dict: {},
-      unsaved_frames: [],
 
       is_editing_ui_schema: true,
 
@@ -1688,9 +1691,6 @@ export default Vue.extend({
     },
     any_frame_saving: function () {
       return this.save_loading_frames_list.length > 0;
-    },
-    has_pending_frames: function () {
-      return this.unsaved_frames.length > 0;
     },
     clipboard: function () {
       return this.$store.getters.get_clipboard;

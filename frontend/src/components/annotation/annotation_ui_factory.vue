@@ -39,6 +39,7 @@
           :instance_buffer_metadata="instance_buffer_metadata"
           :create_instance_template_url="create_instance_template_url"
           :video_parent_file_instance_list="video_parent_file_instance_list"
+          :has_pending_frames="has_pending_frames"
           
           :instance_store="instance_store"
           :project_string_id="computed_project_string_id"
@@ -332,6 +333,7 @@ export default Vue.extend({
       instance_buffer_metadata: {},
       current_frame: 0,
       video_parent_file_instance_list: [],
+      unsaved_frames: [],
 
       global_attribute_groups_list: []
 
@@ -457,6 +459,9 @@ export default Vue.extend({
     this.initializing = false
   },
   computed: {
+    has_pending_frames: function() {
+      return this.unsaved_frames.length > 0
+    },
     save_request: function(): Function {
       if (this.task) return (payload) => saveTaskAnnotations(this.task.id, payload)
 
@@ -581,6 +586,8 @@ export default Vue.extend({
       if (this.get_save_loading(frame_number)) return
       if (this.any_loading) return
 
+      console.log("here", this.instance_store.get_instance_list(this.working_file.id, frame_number),frame_number, this.annotations_loading)
+
       if (
         this.video_mode && 
         (
@@ -588,6 +595,8 @@ export default Vue.extend({
           this.annotations_loading
         )
       ) return
+
+      console.log("here 1")
 
       this.set_save_loading(true, frame_number);
       let [has_duplicate_instances, dup_ids, dup_indexes] =
