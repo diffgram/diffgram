@@ -571,10 +571,10 @@ export default Vue.extend({
       let instance_list;
       
       if (this.video_mode) {
-        if (!frame_number_param) frame_number = parseInt(this.current_frame, 10);
+        if (!frame_number_param) frame_number = parseInt(this.$refs.annotation_core.current_frame, 10);
         else frame_number = parseInt(frame_number_param, 10);
 
-        if (!instance_list_param) instance_list = instance_list_param;
+        if (instance_list_param) instance_list = instance_list_param;
         else instance_list = this.instance_store.get_instance_list(this.working_file.id, frame_number)
       } else {
         instance_list = this.instance_store.get_instance_list(this.working_file.id).map(elm => {
@@ -586,8 +586,6 @@ export default Vue.extend({
       if (this.get_save_loading(frame_number)) return
       if (this.any_loading) return
 
-      console.log("here", this.instance_store.get_instance_list(this.working_file.id, frame_number),frame_number, this.annotations_loading)
-
       if (
         this.video_mode && 
         (
@@ -595,8 +593,6 @@ export default Vue.extend({
           this.annotations_loading
         )
       ) return
-
-      console.log("here 1")
 
       this.set_save_loading(true, frame_number);
       let [has_duplicate_instances, dup_ids, dup_indexes] =
@@ -669,9 +665,11 @@ export default Vue.extend({
           result,
           video_data,
           instance_list,
-          this.instance_buffer_dict,
+          this.instance_store.get_instance_list(this.working_file.id),
           this.video_mode
         )
+
+        console.log(instance_list)
 
         this.has_changed = AnnotationSavePrechecks.check_if_pending_created_instance(instance_list)
 

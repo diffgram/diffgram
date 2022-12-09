@@ -1041,10 +1041,6 @@ export default Vue.extend({
       type: Array,
       default: []
     },
-    current_frame: {
-      type: Number,
-      default: 0
-    },
     create_instance_template_url: {
       type: String,
       required:  true
@@ -1295,6 +1291,7 @@ export default Vue.extend({
       n_key: false,
       mouse_wheel_button: false,
       submitted_to_review: false,
+      current_frame: 0,
 
       locked_editing_instance: null as Instance,
       current_instance_v2: null as Instance,
