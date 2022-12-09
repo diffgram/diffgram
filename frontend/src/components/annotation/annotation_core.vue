@@ -1098,17 +1098,26 @@ export default Vue.extend({
   },
   watch: {
     instance_list: function(newVal) {
-      if (this.task && this.task.file.type === "image" || this.file.type === "image") {
+      if ((this.task && this.task.file && this.task.file.type === "image" )|| (this.file && this.file.type === "image")) {
         this.instance_store.set_instance_list(this.file_id, newVal)
-        this.instance_store.set_file_type(this.file_id, this.file.type)
+        if(this.task){
+          this.instance_store.set_file_type(this.file_id, this.task.file.type)
+        } else{
+          this.instance_store.set_file_type(this.file_id, this.file.type)
+        }
+
       }
     },
     instance_buffer_dict: {
       deep: true,
       handler: function(newVal) {
-        if (this.task && this.task.file.type === "video" || this.file.type === "video") {
+        if ((this.task && this.task.file && this.task.file.type === "video") || (this.file &&this.file.type === "video")) {
           this.instance_store.set_instance_list(this.file_id, newVal)
-          this.instance_store.set_file_type(this.file_id, this.file.type)
+          if(this.task){
+            this.instance_store.set_file_type(this.file_id, this.task.file.type)
+          } else{
+            this.instance_store.set_file_type(this.file_id, this.file.type)
+          }
         }
       },
     },
@@ -2924,9 +2933,11 @@ export default Vue.extend({
         instances_to_merge_creation_refs = this.polygon_merge_tool.instances_to_merge.map(inst => inst.creation_ref_id)
       }
 
+
+
       for (let elm of this.instance_list) {
         if (elm.creation_ref_id != instance.creation_ref_id) {
-
+          // Case when polygon merge tool is active.
           if(this.polygon_merge_tool && this.polygon_merge_tool.parent_merge_instance
             && elm.creation_ref_id != this.polygon_merge_tool.parent_merge_instance.creation_ref_id){
             if(instances_to_merge_creation_refs.includes(elm.creation_ref_id)){
@@ -7936,7 +7947,11 @@ export default Vue.extend({
       if (event.keyCode === 37 || event.key === "a") {
         // left arrow or A
         if (this.shift_key) {
-          this.change_file("previous");
+          if(!this.task){
+            this.change_file("previous");
+          } else{
+            this.trigger_task_change("previous", this.task, false)
+          }
         } else {
           if (this.annotation_show_on) {
             return
@@ -7962,7 +7977,12 @@ export default Vue.extend({
       if (event.keyCode === 39 || event.key === "d") {
         // right arrow
         if (this.shift_key) {
-          this.change_file("next");
+          if(!this.task){
+            this.change_file("next");
+          } else{
+            this.trigger_task_change("next", this.task, false)
+          }
+
         } else {
           if (this.annotation_show_on) {
             return
