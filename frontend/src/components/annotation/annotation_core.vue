@@ -1172,7 +1172,7 @@ export default Vue.extend({
           this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
         }
       },
-    }, 
+    },
     finish_annotation_show: function (val) {
       if (val) this.annotation_show_on = false;
     },
@@ -2772,7 +2772,6 @@ export default Vue.extend({
         console.warn("Instance not reasonable: ", reasonable);
         return;
       }
-      console.log('INSTANCE', new_instance)
 
       const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);
@@ -6975,7 +6974,7 @@ export default Vue.extend({
             this.canvas_mouse_tools
           )
           this.new_instance_refresh(result.new_instance_index)
-
+          this.is_actively_drawing = result.is_actively_drawing
         }
         if (result.instance_moved && this.show_snackbar_occlude_direction) {
           this.show_snackbar_occlude_direction = false;

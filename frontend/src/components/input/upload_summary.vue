@@ -175,7 +175,6 @@
           }
           else if(this.$props.upload_mode === 'from_diffgram_export'){
             let value =  await this.$props.diffgram_export_ingestor.get_instance_count_per_file();
-            console.log('valllll', value)
             return value
           }
         },
@@ -370,7 +369,6 @@
             }
           }
           const result = {};
-          console.log('AAAA', file_list)
           for (const file of file_list) {
             const uuid = uuidv4();
             let file_instances = [];

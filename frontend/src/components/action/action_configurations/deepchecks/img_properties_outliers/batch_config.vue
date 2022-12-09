@@ -33,7 +33,6 @@ export default {
   },
 
   mounted() {
-    console.log('qweqweqwe', this.action)
     if(!this.action.config_data.batch_size){
       this.action.config_data.batch_size = 1000
     }

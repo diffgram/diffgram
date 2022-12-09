@@ -107,7 +107,6 @@ export default Vue.extend({
         }
         let labelbox_project_id = this.project_migration_data.labelbox_project_id;
         let [result, error] = await fetch_project_stats_labelbox(this.project_migration_data.connection.id, labelbox_project_id);
-        console.log('stats', result)
         this.loading = false;
         if(error){
           this.error = this.$route_api_errors(error);
