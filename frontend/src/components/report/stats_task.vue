@@ -30,7 +30,7 @@
       <v-row>
         <v-col cols="12">
           <v-card class="pa-6">
-            <v-card-title>Tasks Count</v-card-title>
+            <v-card-title>Tasks Created Per Day: </v-card-title>
             <v-alert type="error" :value="errors">
               {{ errors }}
             </v-alert>

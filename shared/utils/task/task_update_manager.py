@@ -31,6 +31,7 @@ class Task_Update():
         self.log = regular_log.default()
 
     def main(self):
+        print('AAA', self.mode)
         old_status = self.task.status
         if self.mode == 'toggle_deferred':
             self.defer()
@@ -50,6 +51,8 @@ class Task_Update():
                 assignees = task.get_assignees(session = self.session)
                 for user in assignees:
                     TaskEvent.generate_task_completion_event(self.session, task, self.member, task_assignee = user)
+                if not assignees:
+                    TaskEvent.generate_task_completion_event(self.session, task, self.member, task_assignee = self.member.user)
 
         if task.status == 'in_progress':
             if old_status != 'in_progress':

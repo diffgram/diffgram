@@ -409,7 +409,7 @@ class Report_Runner():
         if self.item_of_interest in ['user', 'instance', 'file']:
             self.time_created = self.base_class.created_time
 
-        if self.item_of_interest in ['task', 'event']:
+        if self.item_of_interest in ['task', 'event', 'task_event']:
             self.time_created = self.base_class.time_created
 
         if self.item_of_interest in ['file']:
@@ -420,7 +420,7 @@ class Report_Runner():
 
         # Task ID
         if self.item_of_interest in ['task']:
-            self.base_class.task_id = self.base_class.id
+            self.task_id = self.base_class.id
         # Member Created
         if self.item_of_interest in ['instance', 'file']:
             self.member_created = self.base_class.member_created
@@ -477,7 +477,7 @@ class Report_Runner():
             and may still be needed for how we format the data for external view
             even if internal sql filtering doesn't need it.
             """
-
+            print('PERRIOR', self.query)
             self.date_from, self.date_to = self.determine_dates_from_dynamic_period(
                 dynamic_period = self.report_template.period
             )
@@ -487,7 +487,8 @@ class Report_Runner():
                     date_from = self.date_from,
                     date_to = self.date_to,
                     date_period_unit = self.report_template.date_period_unit)
-
+            print('PERRIOR ADGTEEER', self.query)
+        print('N2222', self.query)
         self.apply_concrete_filters()
 
         if self.report_template.group_by == 'date':
@@ -1040,7 +1041,6 @@ class Report_Runner():
         return query
 
     def set_member_column_from_task_event_type(self):
-        print("TASK EVENT TYPE", self.report_template.task_event_type)
         if self.report_template.task_event_type == ['task_created', 'task_review_start']:
             self.member_id_normalized = self.base_class.member_created_id
         elif self.report_template.task_event_type == ['task_completed']:
@@ -1063,17 +1063,20 @@ class Report_Runner():
         if self.item_of_interest in ["task"]:
             self.base_class = self.string_to_class("task_event")
             self.set_member_column_from_task_event_type()
+            self.normalize_class_defintions()
         elif self.item_of_interest == "event":
-            self.member_idtas_normalized = self.base_class.member_id
+            self.member_id_normalized = self.base_class.member_id
 
         # Task has assignee_user_id instead of member id...
 
         query = self.session.query(self.member_id_normalized,
                                    func.count(self.base_class.id))
         if self.item_of_interest in ['task']:
-            query = self.session.query(self.member_id_normalized,
-                                       func.count(self.base_class.task_id))
+            print('AAA', self.member_id_normalized)
+            print('AAA', self.base_class)
+            query = self.session.query(self.member_id_normalized, func.count(self.base_class.task_id))
             query = query.distinct()
+            print('query before', query)
         return query
 
     def format_for_external(

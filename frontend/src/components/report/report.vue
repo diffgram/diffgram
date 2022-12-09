@@ -984,7 +984,10 @@ export default Vue.extend({
        * and in new case it's blank anyway
        */
       // this.get_report(this.report_template_id)
-      this.report_template = await this.fetch_report_template()
+      let result = await this.fetch_report_template()
+      if(result){
+        this.report_template = result
+      }
       if (this.report_template_id != "new") {
         this.run_report(this.report_template_id);
 
