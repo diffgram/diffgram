@@ -161,6 +161,12 @@ export abstract class InstanceImage2D extends Instance {
   }
 
   protected is_mouse_in_path(ctx) {
+    if(!this.canvas_mouse_tools){
+      return false
+    }
+    if(!this.canvas_mouse_tools.mouse_position){
+      return false
+    }
     let mouse_position = this.canvas_mouse_tools.mouse_position;
     if (!mouse_position || !mouse_position.raw) {
       return false

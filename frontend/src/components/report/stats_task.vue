@@ -28,9 +28,26 @@
         </v-col>
       </v-row>
       <v-row>
+        <v-col cols="6">
+          <tasks_percentage_user
+            class="mb-2"
+            :job_id="job_id"
+            :project_string_id="project_string_id"
+          ></tasks_percentage_user>
+        </v-col>
+        <v-col cols="6" class="d-flex flex-column" >
+
+          <tasks_count_per_user
+
+            :job_id="job_id"
+            :project_string_id="project_string_id"
+          ></tasks_count_per_user>
+        </v-col>
+      </v-row>
+      <v-row>
         <v-col cols="12">
           <v-card class="pa-6">
-            <v-card-title>Tasks Count</v-card-title>
+            <v-card-title>Tasks Created Per Day: </v-card-title>
             <v-alert type="error" :value="errors">
               {{ errors }}
             </v-alert>
@@ -67,17 +84,21 @@
 
 <script lang="ts">
 
-
+import pieChart from "../report/charts/pieChart";
 import axios from '../../services/customInstance';
 import Vue from "vue";
 import task_time_spent from "./task_time_spent.vue";
 import annotator_performance from "./annotator_performance.vue";
+import tasks_count_per_user from "./tasks_count_per_user.vue";
+import tasks_percentage_user from "./tasks_percentage_user.vue";
 import approval_reject_ratio from "./approval_reject_ratio.vue";
 
 export default Vue.extend({
     name: 'stats_task',
     components: {
       annotator_performance,
+      tasks_count_per_user,
+      tasks_percentage_user,
       task_time_spent,
       approval_reject_ratio,
     },
@@ -96,9 +117,6 @@ export default Vue.extend({
 
         labels: [],
         values: [],
-
-        date: {},
-
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -123,6 +141,9 @@ export default Vue.extend({
             }]
           }
         },
+
+        date: {},
+
 
         // TODO add more
         status_list: ['all', 'created', 'available', 'in_review', 'complete'],

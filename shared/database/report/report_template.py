@@ -96,6 +96,8 @@ class ReportTemplate(Base):
 
     group_by_labels = Column(Boolean, default = False)
 
+    task_event_type = Column(String())  # [task_completed, task_created, etc]...
+
     @staticmethod
     def get_by_id(session,
                   id: int):
@@ -125,6 +127,7 @@ class ReportTemplate(Base):
             'name': self.name,
             'scope': self.scope,
             'project_id': self.project_id,
+            'task_event_type': self.task_event_type,
             'project_string_id': project_string_id,  # note no self
             'member_created_id': self.member_created_id,
             'member_updated': self.member_updated,
