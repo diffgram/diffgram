@@ -1075,7 +1075,7 @@ export default Vue.extend({
     },
     loading: {
       type: Boolean,
-      default: true
+      default: false
     },
     has_changed: {
       type: Boolean,

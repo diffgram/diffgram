@@ -1218,9 +1218,9 @@ export default Vue.extend({
       } catch (error) {
         console.error(error);
         this.error = this.$route_api_errors(error);
-        this.loading = false;
         // this.logout()
       }
+      this.loading = false;
     },
 
     change_task: async function (direction, task, assign_to_user = false) {
