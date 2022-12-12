@@ -1879,7 +1879,7 @@ export default Vue.extend({
         return this.label_settings.canvas_scale_global_setting;
       }
 
-      if (this.file && this.file.type == "text") {
+      if (this.working_file && this.working_file.type == "text") {
         // Temp until more text functions. eg so canvas doesn't 'explode' to large size.
         return 100;
       }
@@ -2509,10 +2509,10 @@ export default Vue.extend({
 
     get_metadata: function () {
       let metadata;
-      if (this.file.type == "video") {
-        metadata = {...this.file.video};
+      if (this.working_file.type == "video") {
+        metadata = {...this.working_file.video};
       } else {
-        metadata = {...this.file.image};
+        metadata = {...this.working_file.image};
       }
       return metadata;
     },
@@ -3543,7 +3543,7 @@ export default Vue.extend({
       this.update_user_settings_from_store();
       this.command_manager = new CommandManagerAnnotationCore();
       // Initial File Set
-      if (this.file) {
+      if (this.working_file) {
         this.on_change_current_file();
       } else if (this.task) {
         this.on_change_current_task();
@@ -4195,8 +4195,8 @@ export default Vue.extend({
             this.File_list.splice(i, 1);
 
             if (this.File_list.length > 0) {
-              if (this.File_list[i].id == this.file.id) {
-                this.file = this.File_list[0];
+              if (this.File_list[i].id == this.working_file.id) {
+                this.working_file = this.File_list[0];
                 this.change_file("none", this.File_list[0]);
               }
             }
@@ -7036,7 +7036,7 @@ export default Vue.extend({
     },
     get_instance_list_for_image: async function () {
       let url = undefined;
-      let file = this.file;
+      let file = this.working_file;
 
       if (this.task_instances) {
         this.get_instances_core({ data: this.task_instances })
@@ -7045,7 +7045,7 @@ export default Vue.extend({
 
       if (this.$store.getters.is_on_public_project) {
         url = `/api/project/${this.project_string_id}/file/${String(
-          this.file.id
+          this.working_file.id
         )}/annotation/list`;
 
         const response = await axios.post(url, {
@@ -7063,10 +7063,10 @@ export default Vue.extend({
           }
           // If a task is present, prefer this route to handle permissions
           url = "/api/v1/task/" + this.task.id + "/annotation/list";
-          file = this.task.file;
+          file = this.working_file;
         } else {
           url = `/api/project/${this.project_string_id}/file/${String(
-            this.file.id
+            this.working_file.id
           )}/annotation/list`;
         }
         try {
@@ -7419,10 +7419,10 @@ export default Vue.extend({
         await this.$emit('save');
       }
       this.reset_for_file_change_context();
-      await this.refresh_attributes_from_current_file(this.task.file);
+      await this.refresh_attributes_from_current_file(this.working_file);
 
-      this.current_file_updates(this.task.file);
-      await this.prepare_canvas_for_new_file(this.task.file);
+      this.current_file_updates(this.working_file);
+      await this.prepare_canvas_for_new_file(this.working_file);
 
       this.full_file_loading = false;
       this.annotation_show_progress = 0;
@@ -7438,10 +7438,10 @@ export default Vue.extend({
       }
     },
     on_change_current_file: async function () {
-      if (!this.file) {
+      if (!this.working_file) {
         return;
       }
-      if (!this.file.id) {
+      if (!this.working_file.id) {
         return;
       }
 
@@ -7461,12 +7461,12 @@ export default Vue.extend({
       }
       this.reset_for_file_change_context();
 
-      this.$addQueriesToLocation({file: this.file.id});
+      this.$addQueriesToLocation({file: this.working_file.id});
 
-      await this.refresh_attributes_from_current_file(this.file);
+      await this.refresh_attributes_from_current_file(this.working_file);
 
-      this.current_file_updates(this.file);
-      await this.prepare_canvas_for_new_file(this.file);
+      this.current_file_updates(this.working_file);
+      await this.prepare_canvas_for_new_file(this.working_file);
 
       this.full_file_loading = false;
       this.ghost_clear_for_file_change_context();
@@ -7490,8 +7490,8 @@ export default Vue.extend({
           frame_count: 0,
           current_frame: 0,
         };
-        this.file_cant_be_accessed = null
-        this.file_cant_be_accessed_error = null
+        this.working_file_cant_be_accessed = null
+        this.working_file_cant_be_accessed_error = null
         // maybe this.current_file should store width/height? ...
         try {
           const new_image = await this.addImageProcess(file.image.url_signed);
@@ -7507,10 +7507,10 @@ export default Vue.extend({
 
 
         } catch (error) {
-          this.file_cant_be_accessed = true
+          this.working_file_cant_be_accessed = true
           console.error(error);
-          this.file_cant_be_accessed_error = this.$route_api_errors(error)
-          this.file_cant_be_accessed_error['Blob Storage error'] = 'You may not have permissions. If you are an Admin, check storage config and signed URL settings.'
+          this.working_file_cant_be_accessed_error = this.$route_api_errors(error)
+          this.working_file_cant_be_accessed_error['Blob Storage error'] = 'You may not have permissions. If you are an Admin, check storage config and signed URL settings.'
         }
       }
       if (file.type === "video") {
@@ -7791,15 +7791,15 @@ export default Vue.extend({
         // c
 
         if (
-          this.file &&
-          this.file.ann_is_complete == true ||
+          this.working_file &&
+          this.working_file.ann_is_complete == true ||
           this.view_only_mode == true
         ) {
           return;
         }
         if (
-          this.task.file &&
-          this.task.file.ann_is_complete == true ||
+          this.working_file &&
+          this.working_file.ann_is_complete == true ||
           this.view_only_mode == true
         ) {
           return;
@@ -7826,7 +7826,7 @@ export default Vue.extend({
         this.paste_instance(undefined, undefined, frame_number_locked);
       }
       if (this.shift_key && event.keyCode === 82) { // CTRL + r
-        this.annotation_show_activate(!this.task && this.file && this.file.id ? 'file' : 'task')
+        this.annotation_show_activate(!this.task && this.working_file && this.working_file.id ? 'file' : 'task')
 
       }
       if (event.keyCode === 90 && this.ctrl_key) {
@@ -7946,10 +7946,10 @@ export default Vue.extend({
       ) {
         on_new_frame_or_file = true;
       }
-      if (this.file && this.file.id != original_file_id) {
+      if (this.working_file && this.working_file.id != original_file_id) {
         on_new_frame_or_file = true;
       }
-      if (this.task && this.task.file.id != original_file_id) {
+      if (this.task && this.working_file.id != original_file_id) {
         on_new_frame_or_file = true;
       }
       if (!on_new_frame_or_file) {
@@ -8043,15 +8043,15 @@ export default Vue.extend({
     },
     set_clipboard: function (instance_list) {
       let file_id = undefined;
-      if (this.file && this.file.id) {
-        file_id = this.file.id;
+      if (this.working_file && this.working_file.id) {
+        file_id = this.working_file.id;
       }
       if (
         this.task &&
-        this.task.file &&
-        this.task.file.id
+        this.working_file &&
+        this.working_file.id
       ) {
-        file_id = this.task.file.id;
+        file_id = this.working_file.id;
       }
       this.$store.commit("set_clipboard", {
         instance_list: instance_list,
