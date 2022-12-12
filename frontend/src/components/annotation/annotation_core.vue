@@ -1167,38 +1167,17 @@ export default Vue.extend({
   },
   watch: {
     instance_list: function(newVal) {
-<<<<<<< HEAD
       if (this.working_file.type === "image") {
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
-=======
-      if ((this.task && this.task.file && this.task.file.type === "image" )|| (this.file && this.file.type === "image")) {
-        this.instance_store.set_instance_list(this.file_id, newVal)
-        if(this.task){
-          this.instance_store.set_file_type(this.file_id, this.task.file.type)
-        } else{
-          this.instance_store.set_file_type(this.file_id, this.file.type)
-        }
-
->>>>>>> 6b3a94201e2d048d32b4dfba41a2f7416f84d8fe
       }
     },
     instance_buffer_dict: {
       deep: true,
       handler: function(newVal) {
-<<<<<<< HEAD
         if (this.working_file.type === "video") {
           this.instance_store.set_instance_list(this.working_file.id, newVal)
           this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
-=======
-        if ((this.task && this.task.file && this.task.file.type === "video") || (this.file &&this.file.type === "video")) {
-          this.instance_store.set_instance_list(this.file_id, newVal)
-          if(this.task){
-            this.instance_store.set_file_type(this.file_id, this.task.file.type)
-          } else{
-            this.instance_store.set_file_type(this.file_id, this.file.type)
-          }
->>>>>>> 6b3a94201e2d048d32b4dfba41a2f7416f84d8fe
         }
       },
     },
