@@ -571,6 +571,9 @@
         },
         'schema_id':{
           default: undefined
+        },
+        'active_hotkeys': {
+          default: false
         }
 
       },
@@ -656,7 +659,18 @@
             */
 
           ],
-
+          hotkey_dict: {
+            49: 0,
+            50: 1,
+            51: 2,
+            52: 3,
+            53: 4,
+            54: 5,
+            55: 6,
+            56: 7,
+            57: 8,
+            58: 9
+          },
           name: null,
 
           label_file_list: [],
@@ -667,8 +681,17 @@
 
         }
       },
-
+      beforeDestroy() {
+       this.remove_hotkey_listeners()
+      },
       watch: {
+        active_hotkeys: function(newValue){
+          if(newValue){
+            this.add_hotkey_listeners()
+          } else{
+            this.remove_hotkey_listeners()
+          }
+        },
         search: function(newValue) {
           clearTimeout(this.tree_rerender_timeout)
           this.tree_force_rerender = true
@@ -710,6 +733,9 @@
           })
 
           this.tree_items = construct_tree(this.tree_items_list)
+        }
+        if(this.active_hotkeys){
+          this.add_hotkey_listeners()
         }
       },
       computed: {
@@ -773,6 +799,33 @@
         }
       },
       methods: {
+        add_hotkey_listeners: function(){
+          window.addEventListener('keyup', this.attribute_keyup_handler);
+          window.addEventListener('keydown', this.attribute_keydown_handler);
+        },
+        remove_hotkey_listeners: function(){
+          window.removeEventListener('keyup', this.attribute_keyup_handler);
+          window.removeEventListener('keydown', this.attribute_keydown_handler);
+        },
+        attribute_keyup_handler: function(){
+          if(!['radio', 'select'].includes(this.group.kind)){
+            return
+          }
+
+        },
+        attribute_keydown_handler: function(event){
+          if(!['radio', 'select'].includes(this.group.kind)){
+            return
+          }
+          let index = this.hotkey_dict[event.keyCode]
+          if(index != undefined){
+            let item_to_select = this.select_format[index]
+            if(item_to_select && item_to_select != this.internal_selected){
+              this.internal_selected = item_to_select
+              this.attribute_change()
+            }
+          }
+        },
         tree_input: function(e) {
           const already_selected = this.internal_selected.includes(e.id)
 
