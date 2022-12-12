@@ -8042,17 +8042,7 @@ export default Vue.extend({
       this.set_clipboard(new_clipboard_instance_list);
     },
     set_clipboard: function (instance_list) {
-      let file_id = undefined;
-      if (this.working_file && this.working_file.id) {
-        file_id = this.working_file.id;
-      }
-      if (
-        this.task &&
-        this.working_file &&
-        this.working_file.id
-      ) {
-        file_id = this.working_file.id;
-      }
+      let file_id = this.working_file.id;
       this.$store.commit("set_clipboard", {
         instance_list: instance_list,
         file_id: file_id,
