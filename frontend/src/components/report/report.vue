@@ -15,7 +15,8 @@
         >
           <v-toolbar-items>
             <standard_chip
-              :message=report_template.id
+              v-if="report_template && report_template.id != null"
+              :message="`${report_template.id}`"
               tooltip_message="ID"
               color="grey"
               tooltip_direction="bottom"
@@ -105,7 +106,7 @@
 
             <div class="pa-2 pl-4 pr-4">
               <standard_chip
-                :message=count
+                :message="`${count}`"
                 tooltip_message="Sum"
                 color="primary"
                 tooltip_direction="bottom">
@@ -257,12 +258,12 @@
         >
           <v-toolbar-items>
 
-            <v-row>
-              <v-col cols="3">
+            <v-row class="d-flex justify-start align-center">
+              <v-col cols="3"   v-if="['file', 'task', 'instance'].includes(report_template.item_of_interest)">
                 <div style="min-width: 200px" class="pa-4">
                   <job_select v-model="job"
-                              :disabled="loading ||
-                            !['file', 'task', 'instance'].includes(report_template.item_of_interest)"
+
+                              :disabled="loading || !['file', 'task', 'instance'].includes(report_template.item_of_interest)"
                               @change="set_job"
                               :select_this_id="job_select_this_id"
                   >
@@ -270,9 +271,24 @@
                   </job_select>
                 </div>
               </v-col>
-              <v-col cols="3">
+              <v-col cols="3" v-if="['task'].includes(report_template.item_of_interest)">
+                <div style="min-width: 200px; max-width: 300px" class="pa-4">
+                  <diffgram_select
+                    v-if="['task'].includes(report_template.item_of_interest)"
+                    class="pa-4"
+                    :item_list="task_status_filter"
+                    v-model="report_template.task_event_type"
+                    label="Task Status"
+                    :disabled="loading"
+                    @change="has_changes = true"
+                  >
+                  </diffgram_select>
+                </div>
+              </v-col>
+              <v-col cols="3"   v-if="['instance'].includes(report_template.item_of_interest)">
                 <div style="min-width: 200px" class="pa-4">
                   <v-text-field
+
                     type="number"
                     clearable
                     @change="has_changes = true"
@@ -461,6 +477,8 @@
 
 import axios from '../../services/customInstance';
 import label_select_only from '../label/label_select_only.vue'
+import {ReportTemplate} from '../../types/ReportTemplate'
+import {getReportTemplate} from '../../services/reportServices.ts'
 import {CSVReportFormatter} from './CSVReportFormatter';
 import Vue from "vue";
 
@@ -495,6 +513,7 @@ export default Vue.extend({
         stats: {},
         labels: [],
         member_list: [],
+        values_metadata: [],
         values: [],
 
         /*
@@ -513,9 +532,10 @@ export default Vue.extend({
           'view_type': 'chart',
           'diffgram_wide_default': false,
           'group_by_labels': false,
+          'task_event_type': 'task_created',
           'id': null,
           'view_sub_type': 'line'
-        },
+        } as ReportTemplate,
 
         item_of_interest_list: [
           {
@@ -738,6 +758,38 @@ export default Vue.extend({
           }
         ],
 
+        task_status_filter: [
+          {
+            'display_name': 'Tasks Created',
+            'name': 'task_created',
+            'icon': 'mdi-checkbox-marked-circle-plus-outline',
+            'color': 'primary'
+          },
+          {
+            'display_name': 'Tasks Completed',
+            'name': 'task_completed',
+            'icon': 'mdi-check-circle',
+            'color': 'green'
+          },
+          {
+            'display_name': 'Tasks Reviewed Requested',
+            'name': 'task_review_start',
+            'icon': 'mdi-account-multiple-check-outline',
+            'color': 'orange'
+          },
+          {
+            'display_name': 'Tasks Reviewed Approved',
+            'name': 'task_review_complete',
+            'icon': 'mdi-account-multiple-check-outline',
+            'color': 'cyan'
+          },
+          {
+            'display_name': 'Tasks Rejected',
+            'name': 'task_request_changes',
+            'icon': 'mdi-alert-circle',
+            'color': 'red'
+          },
+        ],
         view_sub_type_list: [
           {
             'display_name': 'Bar',
@@ -767,7 +819,7 @@ export default Vue.extend({
               type: 'time',
               distribution: 'series',
               time: {
-                unit: 'day',
+                unit: 'values_metadataday',
                 unitStepSize: 1,
                 displayFormats: {
                   'day': 'MMM DD'
@@ -858,27 +910,6 @@ export default Vue.extend({
     },
 
     computed: {
-
-      /*  Is it worth it to have this as a computed function
-       *  instead of editing it directly?
-       *
-       *  I vaguelly recall somewhere that creating the raw object
-       *  from JSON serialized thing sometimes had issues
-       *  but perhaps is still cleaner.
-       *
-       *  Update:
-       *    One reason to do it this way, is that
-       *    'date' object is a dict, and that makes it difficult
-       *    to update from a regular dict.
-       *
-       *   How we set things here could get dicey very quickly
-       *
-       *   What if we just had date seperate then added in the keys
-       *   Seems like that's a reasonably way to do it
-       *   then we can at least set some of the stuff easier from existing
-       *
-       */
-
       // context of having a "preview" for the report
       // along with a way to save it?
       member_list_label: function () {
@@ -923,7 +954,10 @@ export default Vue.extend({
 
         }
         // merge properties
-        return {...dynamic_properties, ...this.report_template}
+
+        let result =  {...dynamic_properties, ...this.report_template}
+
+        return result
       },
 
       // default, maybe in future user can customize
@@ -941,7 +975,7 @@ export default Vue.extend({
 
     },
 
-    created() {
+    async created() {
       // Defaults
       this.project_string_id = this.$store.state.project.current.project_string_id
       this.org_id = this.$store.state.org.current.id
@@ -957,7 +991,10 @@ export default Vue.extend({
        * and in new case it's blank anyway
        */
       // this.get_report(this.report_template_id)
-
+      let result = await this.fetch_report_template()
+      if(result){
+        this.report_template = result
+      }
       if (this.report_template_id != "new") {
         this.run_report(this.report_template_id);
 
@@ -1058,7 +1095,6 @@ export default Vue.extend({
 
 
       load_stats: function (stats) {
-
         this.stats = stats
         if(!this.stats){
           return
@@ -1067,8 +1103,8 @@ export default Vue.extend({
 
         if (this.report_template.group_by == 'user' || this.report_template.item_of_interest === 'annotator_performance') {
           for (const [i, member_id] of this.stats.labels.entries()) {
-            let member = this.$store.state.project.current.member_list.find(x => {
-              return x.member_id == member_id
+            let member = stats.values_metadata.find(x => {
+              return x.user_id == member_id
             })
 
             if (member) {
@@ -1091,18 +1127,26 @@ export default Vue.extend({
           }
           this.labels = stats.labels
           this.values = stats.values
+          this.values_metadata = stats.values_metadata
           this.second_grouping = stats.second_grouping
           this.label_names_map = stats.label_names_map
           this.label_colour_map = stats.label_colour_map
           this.count = stats.count
-
           this.fillData(stats)
         } else if (this.report_template.view_type == "count") {
           this.count = stats
         }
 
       },
+      fetch_report_template: async function(){
+        let [report_template, err] = await getReportTemplate(this.project_string_id, this.report_template_id)
+        if (err != null){
+          console.error(err)
+          return
+        }
+        return report_template
 
+      },
       run_report: function (report_template_id) {
 
         if (!report_template_id) {
@@ -1127,6 +1171,7 @@ export default Vue.extend({
           this.update_local_data_from_remote_report_template(
             response.data.report_template)
           this.reset_chart_data()
+
           this.load_stats(response.data.stats)
 
           this.success_run = true
@@ -1193,7 +1238,8 @@ export default Vue.extend({
           this.values,
           this.second_grouping,
           this.label_names_map,
-          this.report_template
+          this.report_template,
+          this.values_metadata
         )
         let csvContent = csv_formatter.get_csv_data()
         // Inspiration https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
@@ -1213,7 +1259,10 @@ export default Vue.extend({
         this.job_select_this_id = report_template.job_id
         // avoid circular updates, since we expect job component to reupdate
         // report template from this id
-        this.report_template = report_template
+        this.report_template = {
+          ...this.report_template,
+          ...report_template
+        }
 
       },
 

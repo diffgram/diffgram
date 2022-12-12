@@ -311,12 +311,15 @@ export default Vue.extend({
     current_file: {
       handler(newVal, oldVal) {
         if (newVal && newVal != oldVal) {
+          this.instance_store = new InstanceStore()
           this.$addQueriesToLocation({file: newVal.id});
         }
       },
     },
+
     task(newVal) {
       if (newVal && this.task_prefetcher && newVal.file.type === 'image') {
+        this.instance_store = new InstanceStore()
         this.task_prefetcher.update_tasks(newVal)
       }
     }

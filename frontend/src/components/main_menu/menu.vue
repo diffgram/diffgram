@@ -394,7 +394,6 @@
         (this.$store.state.project_list && !this.$store.state.project_list.user_projects_list) ||
         (this.$store.state.project_list && this.$store.state.project_list.user_projects_list && this.$store.state.project_list.user_projects_list.length === 0)
       ) {
-        console.log('GET AVAILABLE PROJECTS', this.$store.state.project_list, this.$store.state.project_list.user_projects_list.length)
         this.get_avalible_projects()
       }
     },

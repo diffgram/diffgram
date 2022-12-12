@@ -49,7 +49,7 @@
 
     >
       <v-expansion-panel
-        v-for="group in attribute_group_list_computed"
+        v-for="(group, index) in attribute_group_list_computed"
         :key="group.id"
       >
         <v-expansion-panel-header
@@ -103,6 +103,7 @@
 
         <v-expansion-panel-content>
           <attribute_group
+            :active_hotkeys="openedPanel === index"
             :schema_id="schema_id"
             :project_string_id="project_string_id"
             :mode="mode"

@@ -107,7 +107,6 @@ export default Vue.extend({
       api_action_template_list: async function(){
 
         let [result, err] = await action_template_list(this.project_string_id)
-        console.log("HERE", [...result.action_template_list])
         if(err){
           this.error = this.$route_api_errors(err);
           return

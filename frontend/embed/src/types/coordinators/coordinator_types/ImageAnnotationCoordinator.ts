@@ -41,6 +41,13 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
     return false
   }
 
+  protected is_keyup_enter_event(event: ImageInteractionEvent): boolean {
+    if (event.dom_event.type === 'keyup' && event.dom_event.keyCode === 13) {
+      return true
+    }
+    return false
+  }
+
   protected is_mouse_move_event(event: ImageInteractionEvent): boolean {
     if (event.dom_event.type === 'mousemove') {
       return true
@@ -87,11 +94,11 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
   protected should_select_instance(annotation_event: ImageInteractionEvent): boolean {
     let allow_select_in_merge = true;
     let instance = this.instance as InstanceImage2D
-
-    if (annotation_event.annotation_ctx.polygon_merge_tool) {
+    let polygon_merge_tool = annotation_event.annotation_ctx.polygon_merge_tool
+    if (polygon_merge_tool) {
       let hover_index = annotation_event.annotation_ctx.instance_hover_index
       let hovered_instance = annotation_event.annotation_ctx.instance_list[hover_index] as PolygonInstance
-      allow_select_in_merge = annotation_event.annotation_ctx.polygon_merge_tool.is_allowed_instance_to_merge(hovered_instance)
+      allow_select_in_merge = polygon_merge_tool.is_allowed_instance_to_merge(hovered_instance)
       if(allow_select_in_merge){
         instance = hovered_instance
       }
@@ -109,9 +116,10 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
 
   protected should_deselect_instance(annotation_event: ImageInteractionEvent): boolean {
     let allow_select_in_merge = true;
-    let instance = this.instance as PolygonInstance
     let polygon_merge_tool = annotation_event.annotation_ctx.polygon_merge_tool
+    let instance = this.instance
     if (polygon_merge_tool) {
+      instance = instance as PolygonInstance
       let hover_index = annotation_event.annotation_ctx.instance_hover_index
       let hovered_instance = annotation_event.annotation_ctx.instance_list[hover_index] as PolygonInstance
       allow_select_in_merge = annotation_event.annotation_ctx.polygon_merge_tool.is_allowed_instance_to_merge(hovered_instance)
@@ -124,7 +132,7 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
       instance.selected &&
       (annotation_event.annotation_ctx.polygon_merge_tool &&
         annotation_event.annotation_ctx.polygon_merge_tool.parent_merge_instance !== this.instance) &&
-      (!instance.is_hovered || (allow_select_in_merge && polygon_merge_tool)) &&
+      (!instance.is_hovered || (polygon_merge_tool && allow_select_in_merge )) &&
       !annotation_event.annotation_ctx.draw_mode &&
       !annotation_event.annotation_ctx.view_issue_mode &&
       !annotation_event.annotation_ctx.instance_select_for_issue &&

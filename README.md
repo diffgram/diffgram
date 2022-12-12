@@ -50,7 +50,7 @@ or [book a discovery call](https://diffgram.com/main/contact).
 * [Contribute](https://diffgram.readme.io/docs/contribute)
 
 ## Development System
-[Development System](https://medium.com/p/8e333dd44052)
+[Development System](https://diffgram.readme.io/docs/development-system)
 ## Develop For Your Business
 [Develop](https://diffgram.readme.io/docs/customization) Diffgram for your business needs.
 

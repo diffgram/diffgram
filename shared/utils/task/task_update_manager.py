@@ -45,11 +45,16 @@ class Task_Update():
         return
 
     def emit_task_event_based_on_status(self, old_status, task):
+        print('TESTT', task.status, old_status)
         if task.status == 'complete':
             if old_status != 'completed':
                 assignees = task.get_assignees(session = self.session)
+                if old_status == 'in_review':
+                    TaskEvent.generate_task_review_complete_event(self.session, task, self.member)
                 for user in assignees:
                     TaskEvent.generate_task_completion_event(self.session, task, self.member, task_assignee = user)
+                if not assignees:
+                    TaskEvent.generate_task_completion_event(self.session, task, self.member, task_assignee = self.member.user)
 
         if task.status == 'in_progress':
             if old_status != 'in_progress':
@@ -62,7 +67,8 @@ class Task_Update():
                 assignees = task.get_assignees(session = self.session)
                 for user in assignees:
                     TaskEvent.generate_task_request_change_event(self.session, task, self.member, task_assignee = user)
-
+                if not assignees:
+                    TaskEvent.generate_task_request_change_event(self.session, task, self.member)
     def update_files_count(self):
         result, log = WorkingDirFileLink.file_link_update(
             session = self.session,

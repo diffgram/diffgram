@@ -18,7 +18,7 @@ export type AnnotationEventCtx = {
 }
 
 export type ImageInteractionEvent = {
-  dom_event: MouseEvent
+  dom_event: Event
   annotation_ctx: ImageAnnotationEventCtx
 }
 
@@ -57,7 +57,7 @@ export const genAnnotationEvent = (dom_event: MouseEvent, annotation_ctx: Annota
   return result
 }
 
-export const genImageAnnotationEvent = (dom_event: MouseEvent, annotation_ctx: ImageAnnotationEventCtx): ImageInteractionEvent => {
+export const genImageAnnotationEvent = (dom_event: Event, annotation_ctx: ImageAnnotationEventCtx): ImageInteractionEvent => {
   let result: ImageInteractionEvent = {
     dom_event: dom_event,
     annotation_ctx: annotation_ctx

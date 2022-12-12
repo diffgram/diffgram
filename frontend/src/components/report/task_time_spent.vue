@@ -17,9 +17,9 @@
 
 </template>
 
-<script>
-import {runReport} from '../../services/reportServices'
-import Bar_horizontal_chart from "@/components/report/charts/bar_horizontal_chart";
+<script lang="ts">
+import {runReport} from '../../services/reportServices.ts'
+import Bar_horizontal_chart from "./../report/charts/bar_horizontal_chart";
 
 export default {
   name: "annotator_performance",
@@ -41,7 +41,7 @@ export default {
       bar_chart_options_time_series: {
         onClick: this.handleClick,
         onHover: (event, activeElements) => {
-          if (activeElements?.length > 0) {
+          if (activeElements && activeElements.length > 0) {
             event.target.style.cursor = 'pointer';
           } else {
             event.target.style.cursor = 'auto';

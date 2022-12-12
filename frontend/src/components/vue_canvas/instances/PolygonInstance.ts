@@ -142,7 +142,9 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   private check_polygon_intersection_on_points(): boolean {
-
+    if(!this.canvas_mouse_tools){
+      return false
+    }
     for (let i = 0; i < this.points.length; i++) {
       let result = point_is_intersecting_circle(
         this.canvas_mouse_tools.mouse_position,
