@@ -379,7 +379,8 @@ export default Vue.extend({
           this.canvas_mouse_ctx.label_settings,
           this.canvas_mouse_ctx.canvas_transform,
           this.instance_hovered,
-          this.instance_unhovered)
+          this.instance_unhovered,
+          this.$refs.drawable_canvas.canvas_mouse_tools)
         return newInst
       })
     },
