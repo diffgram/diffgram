@@ -11,7 +11,7 @@ import {AutoBorderContext} from "../components/vue_canvas/advanced_tools/Polygon
 import {PolygonMergeTool} from "../components/vue_canvas/advanced_tools/PolygonMergeTool";
 
 export interface InteractionEvent {
-  dom_event: MouseEvent
+  dom_event: Event
   annotation_ctx: AnnotationEventCtx
 }
 
@@ -22,6 +22,7 @@ export type AnnotationEventCtx = {
 }
 
 export interface ImageInteractionEvent extends InteractionEvent {
+  dom_event: MouseEvent | KeyboardEvent
   annotation_ctx: ImageAnnotationEventCtx
 }
 
@@ -60,7 +61,7 @@ export interface AudioAnnotationEvent extends AnnotationEventCtx{
 
 }
 
-export const genAnnotationEvent = (dom_event: MouseEvent, annotation_ctx: AnnotationEventCtx): InteractionEvent => {
+export const genAnnotationEvent = (dom_event: Event, annotation_ctx: AnnotationEventCtx): InteractionEvent => {
   let result: InteractionEvent = {
     dom_event: dom_event,
     annotation_ctx: annotation_ctx
@@ -68,7 +69,7 @@ export const genAnnotationEvent = (dom_event: MouseEvent, annotation_ctx: Annota
   return result
 }
 
-export const genImageAnnotationEvent = (dom_event: MouseEvent, annotation_ctx: ImageAnnotationEventCtx): ImageInteractionEvent => {
+export const genImageAnnotationEvent = (dom_event: MouseEvent | KeyboardEvent, annotation_ctx: ImageAnnotationEventCtx): ImageInteractionEvent => {
   let result: ImageInteractionEvent = {
     dom_event: dom_event,
     annotation_ctx: annotation_ctx
