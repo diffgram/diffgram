@@ -10,19 +10,18 @@ import {PolygonPoint} from "../components/vue_canvas/instances/PolygonInstance";
 import {AutoBorderContext} from "../components/vue_canvas/advanced_tools/PolygonAutoBorderTool";
 import {PolygonMergeTool} from "../components/vue_canvas/advanced_tools/PolygonMergeTool";
 
-export type InteractionEvent = {
-  dom_event: MouseEvent
+export interface InteractionEvent {
+  dom_event: Event
   annotation_ctx: AnnotationEventCtx
 }
+
 export type AnnotationEventCtx = {
   label_file: LabelFile
   instance_type: string
   instance_list: Instance[]
-
 }
 
-export type ImageInteractionEvent = {
-  dom_event: Event
+export interface ImageInteractionEvent extends InteractionEvent {
   annotation_ctx: ImageAnnotationEventCtx
 }
 
