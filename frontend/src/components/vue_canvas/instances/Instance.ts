@@ -136,6 +136,9 @@ export class Instance {
   }
 
   public set_label_file(value: LabelFile) {
+    if(!value){
+      return
+    }
     this.label_file = value
     this.label_file_id = value.id
   }

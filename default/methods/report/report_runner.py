@@ -13,6 +13,7 @@ from methods.report.custom_reports.AnnotatorPerformanceReport import AnnotatorPe
 from methods.report.custom_reports.TaskReportRejectRatioReport import TaskReportRejectRatioReport
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
+from shared.database.task.task_event import TaskEvent
 
 from shared.permissions.super_admin_only import Super_Admin
 from shared.database.report.report_template import ReportTemplate
@@ -125,6 +126,13 @@ report_spec_list = [
         'kind': str,
         'required': False,
         'valid_values_list': ['date', 'label', 'user', 'task', None, 'file', 'task_status'],
+    }
+    },
+    {"task_event_type": {
+        'default': 'date',
+        'kind': str,
+        'required': False,
+        'valid_values_list': ['task_created', 'task_completed', 'task_request_changes', 'task_review_start', 'task_review_complete'],
     }
     },
     {"directory_id_list": {
@@ -258,6 +266,7 @@ class Report_Runner():
             'user': User,
             'file': File,
             'task': Task,
+            'task_event': TaskEvent,
             'event': Event,
             'time_spent_task': 'custom_report',
             'annotator_performance': 'custom_report',
@@ -400,7 +409,7 @@ class Report_Runner():
         if self.item_of_interest in ['user', 'instance', 'file']:
             self.time_created = self.base_class.created_time
 
-        if self.item_of_interest in ['task', 'event']:
+        if self.item_of_interest in ['task', 'event', 'task_event']:
             self.time_created = self.base_class.time_created
 
         if self.item_of_interest in ['file']:
@@ -411,7 +420,7 @@ class Report_Runner():
 
         # Task ID
         if self.item_of_interest in ['task']:
-            self.base_class.task_id = self.base_class.id
+            self.task_id = self.base_class.id
         # Member Created
         if self.item_of_interest in ['instance', 'file']:
             self.member_created = self.base_class.member_created
@@ -422,12 +431,6 @@ class Report_Runner():
                       view_type: str = None):
 
         q = self.query
-        # Uncomment for performance debugging
-        # from shared.helpers.performance import explain
-        # print(q)
-        # explain_result = self.session.execute(explain(q)).fetchall()
-        # for x in explain_result:
-        #     print(x)
         result = q.all()
         return result
 
@@ -467,7 +470,6 @@ class Report_Runner():
             and may still be needed for how we format the data for external view
             even if internal sql filtering doesn't need it.
             """
-
             self.date_from, self.date_to = self.determine_dates_from_dynamic_period(
                 dynamic_period = self.report_template.period
             )
@@ -536,14 +538,9 @@ class Report_Runner():
 
     def build_dummy_report_template_from_data(self):
         self.report_template = ReportTemplate(
-            item_of_interest = self.report_template_data['item_of_interest'],
-            group_by = self.report_template_data['group_by'],
-            job_id = self.report_template_data['job_id'],
-            project_id = self.project.id,
-            period = self.report_template_data['period'],
-            view_type = self.report_template_data['view_type'],
-            view_sub_type = self.report_template_data['view_sub_type'],
+            **self.report_template_data
         )
+        self.scope = self.report_template_data.get('scope')
 
     def run(self):
         """
@@ -660,6 +657,10 @@ class Report_Runner():
 
         self.query = self.query.filter(self.base_class.soft_delete == False)
 
+    def filter_by_task_event_type(self, task_event_type: str):
+        if self.report_template.item_of_interest != 'task':
+            return
+        self.query = self.query.filter(self.base_class.event_type == task_event_type)
     def apply_concrete_filters(self):
 
         if self.base_class == Instance:
@@ -672,6 +673,9 @@ class Report_Runner():
 
         if self.report_template.job_id:
             self.filter_by_job(job_id = self.report_template.job_id)
+
+        if self.report_template.task_event_type:
+            self.filter_by_task_event_type(task_event_type = self.report_template.task_event_type)
 
         if self.report_template.member_list:
             self.filter_by_member_list(member_list = self.report_template.member_list)
@@ -768,6 +772,7 @@ class Report_Runner():
         self.report_template.task_id = metadata.get('task_id')
         self.report_template.member_list = metadata.get('member_list')
         self.report_template.group_by_labels = metadata.get('group_by_labels', False)
+        self.report_template.task_event_type = metadata.get('task_event_type')
 
         self.report_template.diffgram_wide_default = metadata.get('diffgram_wide_default')
 
@@ -1021,6 +1026,24 @@ class Report_Runner():
         query = self.session.query(self.base_class.task_id, func.count(self.base_class.id))
         return query
 
+    def set_member_column_from_task_event_type(self):
+        if self.report_template.task_event_type == ['task_created', 'task_review_start']:
+            self.member_id_normalized = self.base_class.member_created_id
+        elif self.report_template.task_event_type == ['task_completed']:
+            self.member_id_normalized = self.base_class.user_assignee_id
+        elif self.report_template.task_event_type == ['task_request_changes']:
+            self.member_id_normalized = self.base_class.user_reviewer_id
+        else:
+            self.member_id_normalized = self.base_class.member_created_id
+    def get_class_type_str_from_task_type_column(self):
+        result = 'member'
+        if self.report_template.task_event_type == ['task_created', 'task_review_start']:
+            result = 'member'
+        elif self.report_template.task_event_type == ['task_completed']:
+            result = 'user'
+        elif self.report_template.task_event_type == ['task_request_changes']:
+            result = 'user'
+        return result
     def group_by_user(self):
         """
         Do we want to call this member or user...
@@ -1032,6 +1055,10 @@ class Report_Runner():
 
         if self.item_of_interest in ["instance", "file"]:
             self.member_id_normalized = self.base_class.member_created_id
+        if self.item_of_interest in ["task"]:
+            self.base_class = self.string_to_class("task_event")
+            self.set_member_column_from_task_event_type()
+            self.normalize_class_defintions()
         elif self.item_of_interest == "event":
             self.member_id_normalized = self.base_class.member_id
 
@@ -1039,6 +1066,9 @@ class Report_Runner():
 
         query = self.session.query(self.member_id_normalized,
                                    func.count(self.base_class.id))
+        if self.item_of_interest in ['task']:
+            query = self.session.query(self.member_id_normalized, func.count(self.base_class.task_id))
+            query = query.distinct()
         return query
 
     def format_for_external(
@@ -1125,9 +1155,16 @@ class Report_Runner():
                         label_names_map[label_file.id] = label_file.label.name
                 else:
                     labels, values = zip(*stats_list_by_period)
-
+            ids_labels = labels
             # Front end now handles for user case
             if report_template.group_by in ['label']:
+                labels, values = zip(*stats_list_by_period)
+
+                labels = self.ids_to_human_readable_labels(
+                    ids_list = labels,
+                    group_by = report_template.group_by)
+
+            if report_template.group_by in ['user'] and self.item_of_interest == 'task':
                 labels, values = zip(*stats_list_by_period)
 
                 labels = self.ids_to_human_readable_labels(
@@ -1139,14 +1176,30 @@ class Report_Runner():
             count = sum(values)
 
             # stats_list_by_period = date_convert_to_string(stats_list_by_period)
-
+            values_metadata = self.build_values_metadata(ids_labels)
             return {'labels': labels,
                     'values': values,
                     'count': count,
+                    'values_metadata': values_metadata,
                     'label_colour_map': label_colour_map,
                     'label_names_map': label_names_map,
                     'second_grouping': second_grouping}
 
+    def build_values_metadata(self, labels):
+        result = []
+        print('labels', labels)
+        if self.report_template.group_by == 'user':
+            users = self.session.query(User).filter(
+                User.id.in_(labels)
+            ).all()
+            for user in users:
+                result.append({
+                    'name': f'{user.first_name} {user.last_name}',
+                    'user_id': user.id,
+                    'member_id': user.member_id,
+                    'email': user.email,
+                })
+        return result
     def report_template_list(
         self,
         report_dashboard_id = None,
@@ -1221,9 +1274,16 @@ class Report_Runner():
         # note we are handling this on the front end
         # Probably can delete this block
         if group_by == 'user':
-            # TODO get member list...
-            # Then return relevant info....
-            pass
+            if self.report_template.task_event_type is not None:
+                class_type = self.get_class_type_str_from_task_type_column()
+                users = None
+                if class_type == 'user':
+                    users = User.get_by_user_id_list(self.session,ids_list)
+                elif class_type == 'member':
+                    users = User.get_by_id_member_list(self.session, ids_list)
+                if users:
+                    for user in users:
+                        human_readable.append(f'{user.first_name} {user.last_name}')
 
         return human_readable
 
