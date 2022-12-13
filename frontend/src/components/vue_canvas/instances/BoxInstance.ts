@@ -222,7 +222,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     this.x_max = Math.ceil(this.x_max)
     this.y_max = Math.ceil(this.y_max)
   }
-  public resize_from_mouse_position(event: MouseEvent, mouse_position: MousePosition, mouse_down_position: MousePosition) {
+  public resize_from_mouse_position(event: MouseEvent | KeyboardEvent, mouse_position: MousePosition, mouse_down_position: MousePosition) {
     this.x_min = Math.ceil(mouse_down_position.x);
     this.y_min = Math.ceil(mouse_down_position.y);
     this.x_max = Math.ceil(mouse_position.x);
