@@ -327,23 +327,23 @@ describe("Test annotation_core", () => {
 
   });
 
-  it("correctly calls finish_polygon_drawing()", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
-    wrapper.vm.command_manager.executeCommand = () => {
-    }
-    wrapper.setData({
-      video_mode: true,
-      instance_buffer_dict: {}
-    })
-    let test_instance = {};
-    let frame_num = 6;
-    const spy = jest.spyOn(wrapper.vm.command_manager, 'executeCommand');
-    wrapper.vm.finish_polygon_drawing(test_instance, frame_num);
-    expect(wrapper.vm.is_actively_drawing).toEqual(false);
-    expect(wrapper.vm.current_polygon_point_list).toEqual([]);
-    expect(spy).toHaveBeenCalled();
+  // it("correctly calls finish_polygon_drawing()", async () => {
+  //   const wrapper = shallowMount(annotation_core, props, localVue);
+  //   wrapper.vm.command_manager.executeCommand = () => {
+  //   }
+  //   wrapper.setData({
+  //     video_mode: true,
+  //     instance_buffer_dict: {}
+  //   })
+  //   let test_instance = {};
+  //   let frame_num = 6;
+  //   const spy = jest.spyOn(wrapper.vm.command_manager, 'executeCommand');
+  //   wrapper.vm.finish_polygon_drawing(test_instance, frame_num);
+  //   expect(wrapper.vm.is_actively_drawing).toEqual(false);
+  //   expect(wrapper.vm.current_polygon_point_list).toEqual([]);
+  //   expect(spy).toHaveBeenCalled();
 
-  });
+  // });
 
 
   it("correctly calls paste_instance()", async () => {
