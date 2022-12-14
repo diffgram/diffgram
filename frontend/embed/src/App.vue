@@ -15,6 +15,7 @@ import HelloDiffgramEmbed from "./examples/HelloDiffgramEmbed.vue";
     </div>
     <h1 style="text-align: left; margin-bottom: 4rem">
       Example #1: Embedded Image Annotation
+      <v-btn>test outside iframe</v-btn>
     </h1>
     <HelloDiffgramEmbed msg="Diffgram Embed"></HelloDiffgramEmbed>
   </div>

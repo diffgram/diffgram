@@ -10,7 +10,6 @@ import * as directives from 'vuetify/directives'
 const vuetify = createVuetify({
   components,
   directives,
-  ssr: true
 })
 createApp(App).use(vuetify).mount('#app')
 // createApp(App).mount('#app')

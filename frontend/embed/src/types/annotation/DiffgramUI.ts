@@ -3,17 +3,14 @@ import InstanceStore from "../../../../src/helpers/InstanceStore";
 import {File} from "../files/File";
 import Vue, {createApp} from "vue";
 import ImageAnnotation from "../../components/imageAnnotation/ImageAnnotation.vue";
-import App from "../../App.vue";
 import {UIConfig} from "./UIConfig";
+import '@mdi/font/css/materialdesignicons.css'
 import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
-import * as components from 'vuetify/components'
-import * as directives from 'vuetify/directives'
-
+import css from 'vuetify/dist/vuetify.min.css'
 export class DiffgramUIBase {
   private instanceStore: InstanceStore;
   private file: File
@@ -39,7 +36,17 @@ export class DiffgramUIBase {
   }
 
 }
-
+function injectStyleSheets(document: Document, iframe: HTMLIFrameElement){
+  for (let {href} of sheets) {
+    const link = document.createElement("link");
+    link.href = href;
+    link.rel = "stylesheet";
+    if(!iframe.contentDocument){
+      return
+    }
+    iframe.contentDocument.body.appendChild(link)
+  }
+}
 export const DiffgramUI = async (config: UIConfig): Promise<DiffgramUIBase> => {
   console.log('PROMISEE')
   return new Promise((resolve, reject) => {
@@ -63,11 +70,13 @@ export const DiffgramUI = async (config: UIConfig): Promise<DiffgramUIBase> => {
         return
       }
       const wrapperIframe = document.createElement("div")
+
       const vuetify = createVuetify({
         components,
         directives,
-        ssr: true
       })
+      const sheets = document.styleSheets;
+      injectStyleSheets(document, iframe)
       const iframeApp = createApp(ImageAnnotation).use(vuetify).mount(wrapperIframe)
 
       iframe.contentWindow.document.body.appendChild(wrapperIframe)

@@ -13,11 +13,12 @@
     "vuetify": "^3.0.3"
   },
   "devDependencies": {
-    "postcss": "8.4.20",
-    "autoprefixer": "^10.4.13",
     "@vitejs/plugin-vue": "^4.0.0",
+    "autoprefixer": "^10.4.13",
+    "postcss": "8.4.20",
     "typescript": "^4.6.4",
     "vite": "^4.0.0",
+    "vite-plugin-libcss": "^1.0.5",
     "vue-tsc": "^1.0.9"
   },
   "extends": [
