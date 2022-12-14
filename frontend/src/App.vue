@@ -2,7 +2,7 @@
   <div id="app">
     <v-app>
 
-      <main_menu v-if="get_meta($route).hide_default_menu != true">
+      <main_menu v-if="get_meta($route) && get_meta($route).name != null && get_meta($route).hide_default_menu != true">
       </main_menu>
 
       <v-main>
@@ -49,9 +49,11 @@ export default Vue.extend({
     },
     methods: {
       get_meta: function (route) {
+        console.log('GET META ', JSON.stringify(route))
         if (typeof(route.meta) === 'function') {
           return route.meta(route)
         } else {
+          console.log('asdasd', route)
           return route.meta
         }
       }
