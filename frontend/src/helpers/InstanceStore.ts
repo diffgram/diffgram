@@ -1,3 +1,4 @@
+import {Instance} from '../../embed/src/types/instances/Instance'
 export default class InstanceStore {
   private _file_type: any = {};
   private _instance_store: any = {};
@@ -10,7 +11,7 @@ export default class InstanceStore {
     this._file_type[file_id] = type
   }
 
-  get_instance_list(file_id: number, frame: number | undefined = undefined): any[] | undefined {
+  get_instance_list(file_id: number, frame: number | undefined = undefined): Instance[] | undefined {
     const file_type = this.get_file_type(file_id)
 
     if (file_type === "video" && frame) return this._instance_store[file_id][frame]

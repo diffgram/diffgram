@@ -25,11 +25,12 @@ a:hover {
 }
 
 body {
-  margin: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
+  flex-direction: column;
+  align-content: start;
+  justify-content: start;
   min-height: 100vh;
+  min-width: 100vh;
 }
 
 h1 {
@@ -61,8 +62,10 @@ button:focus-visible {
 }
 
 #app {
-  max-width: 1280px;
-  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-content: flex-start;
+  justify-content: flex-start;
   padding: 2rem;
   text-align: center;
 }

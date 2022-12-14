@@ -1,18 +1,23 @@
 <script setup lang="ts">
 // This starter template is using Vue 3 <script setup> SFCs
 // Check out https://vuejs.org/api/sfc-script-setup.html#script-setup
-import HelloDiffgramEmbed from "./components/HelloDiffgramEmbed.vue";
+import HelloDiffgramEmbed from "./examples/HelloDiffgramEmbed.vue";
 </script>
 
 <template>
   <div>
-    <img
-      src="./assets/download.png"
-      class="logo diffgram"
-      alt="Diffgram logo"
-    >
+    <div>
+      <img
+        src="./assets/download.png"
+        class="logo diffgram"
+        alt="Diffgram logo"
+      >
+    </div>
+    <h1 style="text-align: left; margin-bottom: 4rem">
+      Example #1: Embedded Image Annotation
+    </h1>
+    <HelloDiffgramEmbed msg="Diffgram Embed"></HelloDiffgramEmbed>
   </div>
-  <HelloDiffgramEmbed msg="Diffgram Embed"></HelloDiffgramEmbed>
 </template>
 
 <style scoped>
