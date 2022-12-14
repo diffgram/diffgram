@@ -85,7 +85,7 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
   }
 
   public finish_drawing_instance(instance: InstanceImage2D, coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
-    instance.set_color_from_label()
+    // instance.set_color_from_label()
     instance.set_actively_drawing(false)
     const create_box_command = new CreateInstanceCommand(
       instance,
