@@ -9,7 +9,10 @@ import 'vuetify/styles'
 import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
-
+import 'vuetify/styles'
+import { createVuetify } from 'vuetify'
+import * as components from 'vuetify/components'
+import * as directives from 'vuetify/directives'
 
 export class DiffgramUIBase {
   private instanceStore: InstanceStore;
@@ -60,8 +63,12 @@ export const DiffgramUI = async (config: UIConfig): Promise<DiffgramUIBase> => {
         return
       }
       const wrapperIframe = document.createElement("div")
-
-      const iframeApp = createApp(ImageAnnotation).mount(wrapperIframe)
+      const vuetify = createVuetify({
+        components,
+        directives,
+        ssr: true
+      })
+      const iframeApp = createApp(ImageAnnotation).use(vuetify).mount(wrapperIframe)
 
       iframe.contentWindow.document.body.appendChild(wrapperIframe)
       const uiBase = new DiffgramUIBase(iframeApp, iframe)
