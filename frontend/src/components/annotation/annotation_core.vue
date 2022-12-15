@@ -70,7 +70,6 @@
             @refresh_all_instances="refresh_all_instances"
             @task_update_toggle_deferred="$emit('task_update', 'toggle_deferred')"
             @task_update_toggle_incomplete="$emit('task_update', 'incomplete')"
-            @complete_task="$emit('complete_task')"
             @clear__new_and_no_ids="clear__new_and_no_ids()"
             @new_tag_instance="insert_tag_type()"
             @replace_file="$emit('replace_file', $event)"

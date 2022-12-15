@@ -111,7 +111,6 @@
         :project_string_id="project_string_id"
         :current_file="file ? file : task.file"
         :task="task"
-        @complete_task="$emit('complete_task')"
         @replace_file="$emit('replace_file', $event)"
         @on_next="$emit('change_task', 'next')"
         @on_task_annotation_complete_and_save="

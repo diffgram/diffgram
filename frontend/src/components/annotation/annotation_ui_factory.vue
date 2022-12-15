@@ -69,7 +69,6 @@
           @replace_file="current_file = $event"
 
           @get_userscript="get_userscript"
-          @complete_task="complete_task"
           @save_time_tracking="save_time_tracking"
           @trigger_task_change="trigger_task_change"
           @set_ui_schema="set_ui_schema"
@@ -1010,11 +1009,6 @@ export default Vue.extend({
         record.task_id = result.task_id;
         record.job_id = result.job_id;
       }
-    },
-    complete_task() {
-      if (!this.task) return
-
-      this.task.status = "complete"
     },
     get_userscript: function (userscript_ref) {
       if (this.job && this.job.default_userscript) {
