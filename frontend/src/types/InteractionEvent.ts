@@ -10,19 +10,19 @@ import {PolygonPoint} from "../components/vue_canvas/instances/PolygonInstance";
 import {AutoBorderContext} from "../components/vue_canvas/advanced_tools/PolygonAutoBorderTool";
 import {PolygonMergeTool} from "../components/vue_canvas/advanced_tools/PolygonMergeTool";
 
-export type InteractionEvent = {
-  dom_event: MouseEvent
+export interface InteractionEvent {
+  dom_event: Event
   annotation_ctx: AnnotationEventCtx
 }
+
 export type AnnotationEventCtx = {
   label_file: LabelFile
   instance_type: string
   instance_list: Instance[]
-
 }
 
-export type ImageInteractionEvent = {
-  dom_event: Event
+export interface ImageInteractionEvent extends InteractionEvent {
+  dom_event: MouseEvent | KeyboardEvent
   annotation_ctx: ImageAnnotationEventCtx
 }
 
@@ -61,7 +61,7 @@ export interface AudioAnnotationEvent extends AnnotationEventCtx{
 
 }
 
-export const genAnnotationEvent = (dom_event: MouseEvent, annotation_ctx: AnnotationEventCtx): InteractionEvent => {
+export const genAnnotationEvent = (dom_event: Event, annotation_ctx: AnnotationEventCtx): InteractionEvent => {
   let result: InteractionEvent = {
     dom_event: dom_event,
     annotation_ctx: annotation_ctx
@@ -69,7 +69,7 @@ export const genAnnotationEvent = (dom_event: MouseEvent, annotation_ctx: Annota
   return result
 }
 
-export const genImageAnnotationEvent = (dom_event: Event, annotation_ctx: ImageAnnotationEventCtx): ImageInteractionEvent => {
+export const genImageAnnotationEvent = (dom_event: MouseEvent | KeyboardEvent, annotation_ctx: ImageAnnotationEventCtx): ImageInteractionEvent => {
   let result: ImageInteractionEvent = {
     dom_event: dom_event,
     annotation_ctx: annotation_ctx

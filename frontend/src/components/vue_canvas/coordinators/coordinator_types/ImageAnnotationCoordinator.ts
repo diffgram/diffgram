@@ -20,6 +20,12 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
 
   }
 
+  private is_mouse_event(event: MouseEvent | KeyboardEvent): event is MouseEvent {
+    const mouse_events = ['dblclick', 'mousedown', 'mouseup', 'mousemove']
+
+    return mouse_events.includes(event.type)
+  }
+
   protected is_mouse_double_click_event(event: ImageInteractionEvent): boolean {
     if (event.dom_event.type === 'dblclick') {
       return true
@@ -42,7 +48,7 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
   }
 
   protected is_keyup_enter_event(event: ImageInteractionEvent): boolean {
-    if (event.dom_event.type === 'keyup' && event.dom_event.keyCode === 13) {
+    if (!this.is_mouse_event(event.dom_event) && event.dom_event.keyCode === 13) {
       return true
     }
     return false

@@ -207,7 +207,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     let box = result.locked_editing_instance as BoxInstance
     box.set_is_resizing(false)
     this.edit_instance_command_creation(annotation_event, result)
-    result.locked_editing_instance = null
+    result.locked_editing_instance = undefined
     result.lock_point_hover_change = false
 
   }
@@ -223,7 +223,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     let box = result.locked_editing_instance as BoxInstance
     box.set_is_moving(false)
     this.edit_instance_command_creation(annotation_event, result)
-    result.locked_editing_instance = null
+    result.locked_editing_instance = undefined
 
   }
 
@@ -246,7 +246,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
       is_actively_drawing: annotation_event.annotation_ctx.is_actively_drawing,
       original_edit_instance: annotation_event.annotation_ctx.original_edit_instance,
       instance_hover_index: annotation_event.annotation_ctx.instance_list.indexOf(this.instance),
-      instance_hover_type: this.instance ? this.instance.type : null,
+      instance_hover_type: this.instance ? this.instance.type : undefined,
       locked_editing_instance: annotation_event.annotation_ctx.locked_editing_instance,
       lock_point_hover_change: annotation_event.annotation_ctx.lock_point_hover_change,
     }

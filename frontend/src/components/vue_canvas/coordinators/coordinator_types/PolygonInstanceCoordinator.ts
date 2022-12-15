@@ -473,10 +473,10 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       is_actively_drawing: annotation_event.annotation_ctx.is_actively_drawing,
       original_edit_instance: annotation_event.annotation_ctx.original_edit_instance,
       instance_hover_index: annotation_event.annotation_ctx.instance_list.indexOf(this.instance),
-      instance_hover_type: this.instance ? this.instance.type : null,
+      instance_hover_type: this.instance ? this.instance.type : undefined,
       locked_editing_instance: annotation_event.annotation_ctx.locked_editing_instance,
       lock_point_hover_change: annotation_event.annotation_ctx.lock_point_hover_change,
-      polygon_point_hover_index: instance ? instance.polygon_point_hover_index : null,
+      polygon_point_hover_index: instance ? instance.polygon_point_hover_index : undefined,
       auto_border_context: annotation_event.annotation_ctx.auto_border_context
     }
     // Polygon Select

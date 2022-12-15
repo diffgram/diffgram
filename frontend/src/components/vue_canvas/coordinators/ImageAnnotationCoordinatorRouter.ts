@@ -21,7 +21,7 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
   instance_hover_index: number;
   instance_list: Instance[];
   draw_mode: boolean;
-  event: MouseEvent;
+  event: Event;
   annotation_event: ImageInteractionEvent;
   instance_type: InstanceTypes2D;
   canvas_mouse_ctx: CanvasMouseCtx;

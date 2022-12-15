@@ -497,7 +497,8 @@ const routerOptions = [
     props: false,
     meta: {
       requiresAuth: false,
-      title: "Signup Now"
+      title: "Signup Now",
+      hide_default_menu: true,
     }
   },
 
