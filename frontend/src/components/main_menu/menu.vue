@@ -390,7 +390,6 @@
     },
     mounted() {
       if (
-        this.$store.state.user && this.$store.state.user.logged_in &&
         !this.$store.state.project_list ||
         (this.$store.state.project_list && !this.$store.state.project_list.user_projects_list) ||
         (this.$store.state.project_list && this.$store.state.project_list.user_projects_list && this.$store.state.project_list.user_projects_list.length === 0)
@@ -444,6 +443,8 @@
         }
       },
       get_avalible_projects: async function () {
+        if (!this.$store.state.user || !this.$store.state.user.logged_in) return
+        
         this.loading = true
         const response = await getProjectList();
         const project_list = response.data.project_list;
