@@ -5965,7 +5965,49 @@ export default Vue.extend({
       //console.debug(this.mouse_position)
     },
 
-
+    line_and_curve_point_limits: function () {
+      // snap to edges
+      let current_point = this.current_polygon_point;
+      // Set Autoborder point if exists
+      if (
+        this.is_actively_drawing &&
+        this.auto_border_polygon_p1 &&
+        !this.auto_border_polygon_p2
+      ) {
+        current_point.x = this.auto_border_polygon_p1.x;
+        current_point.y = this.auto_border_polygon_p1.y;
+        current_point.point_set_as_auto_border = true;
+      }
+      if (
+        this.is_actively_drawing &&
+        this.auto_border_polygon_p1 &&
+        this.auto_border_polygon_p2
+      ) {
+        current_point.x = this.auto_border_polygon_p2.x;
+        current_point.y = this.auto_border_polygon_p2.y;
+        current_point.point_set_as_auto_border = true;
+      }
+      // TODO look at if this should be 0 or 1  and width or width -1
+      if (this.current_polygon_point.x <= this.snap_to_edges) {
+        current_point.x = 1;
+      }
+      if (this.current_polygon_point.y <= this.snap_to_edges) {
+        current_point.y = 1;
+      }
+      if (
+        this.current_polygon_point.x >=
+        this.canvas_width - this.snap_to_edges
+      ) {
+        current_point.x = this.canvas_width - 1;
+      }
+      if (
+        this.current_polygon_point.y >=
+        this.canvas_height - this.snap_to_edges
+      ) {
+        current_point.y = this.canvas_height - 1;
+      }
+      return current_point;
+    },
     perform_auto_bordering_v2: function(path_type: string){
       const auto_border_tool = new PolygonAutoBorderTool(this.auto_border_context)
       auto_border_tool.perform_auto_bordering(path_type, this.instance_list, this.current_drawing_polygon_instance)
@@ -6102,7 +6144,7 @@ export default Vue.extend({
 
     },
     instance_insert_point: function (frame_number = undefined) {
-      const current_point = this.polygon_point_limits();
+      const current_point = this.line_and_curve_point_limits();
 
       if (this.auto_border_context.auto_border_polygon_p1 && this.auto_border_context.auto_border_polygon_p2) {
         this.auto_border_context.show_polygon_border_context_menu = true;
