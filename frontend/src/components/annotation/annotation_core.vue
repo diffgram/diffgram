@@ -6160,6 +6160,10 @@ export default Vue.extend({
       ) {
         const command = new CreateInstanceCommand(this.current_instance, this, frame_number);
         this.command_manager.executeCommand(command);
+        this.original_edit_instance = undefined;
+        this.original_edit_instance_index = undefined;
+        this.is_actively_drawing = false;
+        this.current_polygon_point_list = [];
       }
     },
     polygon_mouse_up_edit: function () {
