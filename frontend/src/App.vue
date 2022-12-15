@@ -2,8 +2,7 @@
   <div id="app">
     <v-app>
 
-      <main_menu v-if="get_meta($route).hide_default_menu != true">
-      </main_menu>
+      <main_menu v-if="get_meta($route).hide_default_menu != true" />
 
       <v-main>
           <router-view></router-view>

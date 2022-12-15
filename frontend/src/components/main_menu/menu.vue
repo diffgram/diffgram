@@ -443,6 +443,8 @@
         }
       },
       get_avalible_projects: async function () {
+        if (!this.$store.state.user || !this.$store.state.user.logged_in) return
+        
         this.loading = true
         const response = await getProjectList();
         const project_list = response.data.project_list;
