@@ -78,6 +78,7 @@
           @set_frame_pending_save="set_frame_pending_save"
           @task_update="task_update"
           @set_has_changed="set_has_changed"
+          @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
           
           ref="annotation_core"
         >
@@ -972,6 +973,7 @@ export default Vue.extend({
       this.change_task(direction, task, assign_to_user);
     },
     on_task_annotation_complete_and_save: async function() {
+      console.log("here")
       await this.save(false);
       const response = await finishTaskAnnotation(this.task.id);
       
