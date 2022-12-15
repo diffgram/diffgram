@@ -77,6 +77,7 @@
           @save="save"
           @set_frame_pending_save="set_frame_pending_save"
           @task_update="task_update"
+          @set_has_changed="set_has_changed"
           
           ref="annotation_core"
         >
@@ -555,6 +556,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    set_has_changed: function(value) {
+      this.has_changed = value
+    },
     save: async function (
       and_complete = false,
       frame_number_param = undefined,

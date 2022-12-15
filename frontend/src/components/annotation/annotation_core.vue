@@ -2446,7 +2446,7 @@ export default Vue.extend({
         this.delete_single_instance(this.instance_list[index])
       }
       this.polygon_merge_tool = null
-      this.has_changed = true
+      this.$emit('set_has_changed', true)
     },
     // userscript (to be placed in class once context figured)
     set_instance_human_edited: function (instance) {
@@ -2865,7 +2865,7 @@ export default Vue.extend({
       // Callback for when an instance is changed
       // This is a WIP that will be used for all the class Instance Types
       // For now we only have Kepoints instance using this.
-      this.has_changed = true;
+      this.$emit('set_has_changed', true);
     },
     deselect_instance: function(instance){
 
@@ -3090,7 +3090,7 @@ export default Vue.extend({
       }
       let redone = this.command_manager.redo();
       if (redone) {
-        this.has_changed = true;
+        this.$emit('set_has_changed', true);
       }
       this.update_canvas();
     },
@@ -3100,7 +3100,7 @@ export default Vue.extend({
       }
       let undone = this.command_manager.undo();
       if (undone) {
-        this.has_changed = true;
+        this.$emit('set_has_changed', true);
       }
       this.update_canvas();
     },
@@ -3430,7 +3430,7 @@ export default Vue.extend({
         // sequence related, design https://docs.google.com/document/d/1HVY_Y3NsVQgHyQAH-NfsKnVL4XZyBssLz2fgssZWFYc/edit#heading=h.121li5q14mt2
         if (instance.label_file_id != this.current_lable_file_id) {
           // this.$emit('save')
-          this.has_changed = true;
+          this.$emit('set_has_changed', true);
           this.request_clear_sequence_list_cache = Date.now();
         }
       }
@@ -3508,7 +3508,7 @@ export default Vue.extend({
           update
         );
       }
-      this.has_changed = true;
+      this.$emit('set_has_changed', true);
       this.trigger_refresh_with_delay();
     },
 
@@ -4300,7 +4300,7 @@ export default Vue.extend({
 
       this.instance_list.push(instance);
 
-      this.has_changed = true;
+      this.$emit('set_has_changed', true);
 
       // Caution, this feeds into current instance, so it can look like it's dramatically not working
       // if this is set incorrectly.
@@ -5284,7 +5284,7 @@ export default Vue.extend({
     },
 
     ghost_promote_instance_to_actual: function (ghost_index) {
-      this.has_changed = true; // otherwise user click event won't trigger change detection
+      this.$emit('set_has_changed', true); // otherwise user click event won't trigger change detection
 
       let instance = this.ghost_instance_list[ghost_index];
       instance = this.initialize_instance(instance)
@@ -5477,7 +5477,7 @@ export default Vue.extend({
         this.set_instance_human_edited(
           this.instance_list[this.instance_hover_index]
         );
-        this.has_changed = true;
+        this.$emit('set_has_changed', true);
       }
     },
 
@@ -6131,7 +6131,7 @@ export default Vue.extend({
       if (coordinator) {
         let result: CoordinatorProcessResult = coordinator.perform_action_from_event(ann_tool_event);
         if (result.instance_moved === true) {
-          this.has_changed = true;
+          this.$emit('set_has_changed', true);
         }
         if (result.instance_moved && this.show_snackbar_occlude_direction) {
           this.show_snackbar_occlude_direction = false;
@@ -6851,7 +6851,7 @@ export default Vue.extend({
       if (coordinator) {
         let result: CoordinatorProcessResult = coordinator.perform_action_from_event(ann_tool_event);
         if (result.instance_moved) {
-          this.has_changed = true;
+          this.$emit('set_has_changed', true);
         }
         this.polygon_point_hover_index = result.polygon_point_hover_index
         if(result.auto_border_context){
@@ -6922,7 +6922,7 @@ export default Vue.extend({
       if (coordinator) {
         let result: CoordinatorProcessResult = coordinator.perform_action_from_event(ann_tool_event);
         if (result.instance_moved === true) {
-          this.has_changed = true;
+          this.$emit('set_has_changed', true);
         }
         if (result.new_instance_index != undefined) {
           post_init_instance(this.instance_list[result.new_instance_index],
@@ -7172,7 +7172,7 @@ export default Vue.extend({
           this.instance_buffer_metadata[this.current_frame] &&
           this.instance_buffer_metadata[this.current_frame].pending_save
         ) {
-          this.has_changed = true;
+          this.$emit('set_has_changed', true);
         }
       } else {
         // Save Any pending frames before refreshing buffer (This line might be removed when we stop
