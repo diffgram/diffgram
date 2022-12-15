@@ -49,10 +49,8 @@ export default Vue.extend({
     methods: {
       get_meta: function (route) {
         if (typeof(route.meta) === 'function') {
-          console.log(route.meta(route))
           return route.meta(route)
         } else {
-          console.log(route.meta)
           return route.meta
         }
       }
