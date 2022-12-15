@@ -755,7 +755,7 @@ export default Vue.extend({
             this.snackbar_success = true;
             this.snackbar_success_text = "Deferred for review. Moved to next.";
 
-            this.$emit('trigger_task_change', "next", this.task, true);
+            this.trigger_task_change("next", this.task, true);
           }
           if (mode === 'incomplete') {
             this.task.status = 'in_progress'
