@@ -861,16 +861,6 @@
         Close
       </v-btn>
     </v-snackbar>
-
-    <v-snackbar
-      v-model="snackbar_success"
-      v-if="snackbar_success"
-      top
-      :timeout="2000"
-      color="success"
-    >
-      {{ snackbar_success_text }}
-    </v-snackbar>
     <v-snackbar
       v-model="show_snackbar_occlude_direction"
       v-if="show_snackbar_occlude_direction"
@@ -1493,8 +1483,6 @@ export default Vue.extend({
       snackbar_warning: false,
       snackbar_warning_text: null, // "text" or "message" better name?
 
-      snackbar_success: false,
-      snackbar_success_text: null,
       gold_standard_file: {
         instance_list: [], // careful, need this to not be null for vue canvas to work as expected
         id: null,

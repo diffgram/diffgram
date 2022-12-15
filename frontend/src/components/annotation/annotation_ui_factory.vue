@@ -229,6 +229,15 @@
     </v-snackbar>
     <no_credentials_dialog ref="no_credentials_dialog"
                            :missing_credentials="missing_credentials"></no_credentials_dialog>
+    <v-snackbar
+      v-model="snackbar_success"
+      v-if="snackbar_success"
+      top
+      :timeout="2000"
+      color="success"
+    >
+      {{ snackbar_success_text }}
+    </v-snackbar>
   </div>
 </template>
 
@@ -335,6 +344,8 @@ export default Vue.extend({
       current_frame: 0,
       video_parent_file_instance_list: [],
       unsaved_frames: [],
+      snackbar_success: false,
+      snackbar_success_text: null,
 
       global_attribute_groups_list: []
 
@@ -972,8 +983,7 @@ export default Vue.extend({
       this.change_task(direction, task, assign_to_user);
     },
     on_task_annotation_complete_and_save: async function() {
-      console.log("here")
-      await this.save(false);
+      await this.save(true);
       const response = await finishTaskAnnotation(this.task.id);
       
       const new_status = response.data.task.status;
