@@ -11,6 +11,7 @@ import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import 'vuetify/styles'
 import css from 'vuetify/dist/vuetify.min.css'
+import {APICredentials} from "../credentials/APICredentials";
 export class DiffgramUIBase {
   private instanceStore: InstanceStore;
   private file: File
@@ -19,9 +20,12 @@ export class DiffgramUIBase {
 
   private rootComponent: Vue.Component
 
-  constructor(root: Vue.Component, iFrame: HTMLIFrameElement) {
+  private credentials: APICredentials
+
+  constructor(root: Vue.Component, iFrame: HTMLIFrameElement, credentials: APICredentials) {
     this.rootComponent = root
     this.iFrame = iFrame
+    this.credentials = credentials
   }
 
   public getInstanceList(): Instance[]{
@@ -44,17 +48,28 @@ function injectStyleSheets(document: Document, iframe: HTMLIFrameElement){
     return
   }
   const styleElm = iframe.contentWindow.document.createElement('style')
-  styleElm.type = 'text/css'
-  const head = iframe.contentWindow.document.getElementsByTagName('head')
+
+  const head = iframe.contentWindow.document.getElementsByTagName('head')[0]
   if(!head){
     return
   }
+  head.appendChild(styleElm)
+  styleElm.type = 'text/css'
+  styleElm.appendChild(iframe.contentWindow.document.createTextNode(css))
 }
-export const DiffgramUI = async (config: UIConfig): Promise<DiffgramUIBase> => {
-  console.log('PROMISEE')
+
+function setIframeRootStyles(iframeDocument: Document){
+  const html = iframeDocument.getElementsByTagName('html')[0];
+  html.style.border = 'none';
+  html.style.overflow = 'hidden';
+}
+function setIframeElmStyles(iframe: HTMLIFrameElement){
+  iframe.style.border = 'none';
+}
+export const DiffgramUI = async (credentials: APICredentials, config: UIConfig): Promise<DiffgramUIBase> => {
   return new Promise((resolve, reject) => {
-    console.log('creating iframe')
     const iframe = document.createElement('iframe');
+    setIframeElmStyles(iframe)
     if (iframe == null){
       reject(new Error("cannot create iframe"))
       return
@@ -78,12 +93,12 @@ export const DiffgramUI = async (config: UIConfig): Promise<DiffgramUIBase> => {
         components,
         directives,
       })
-      const sheets = document.styleSheets;
+
       injectStyleSheets(document, iframe)
       const iframeApp = createApp(ImageAnnotation).use(vuetify).mount(wrapperIframe)
-
+      setIframeRootStyles(iframe.contentWindow.document)
       iframe.contentWindow.document.body.appendChild(wrapperIframe)
-      const uiBase = new DiffgramUIBase(iframeApp, iframe)
+      const uiBase = new DiffgramUIBase(iframeApp, iframe, credentials)
       resolve(uiBase)
     }
   })
