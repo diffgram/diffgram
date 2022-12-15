@@ -37,14 +37,17 @@ export class DiffgramUIBase {
 
 }
 function injectStyleSheets(document: Document, iframe: HTMLIFrameElement){
-  for (let {href} of sheets) {
-    const link = document.createElement("link");
-    link.href = href;
-    link.rel = "stylesheet";
-    if(!iframe.contentDocument){
-      return
-    }
-    iframe.contentDocument.body.appendChild(link)
+  if(!iframe.contentWindow){
+    return
+  }
+  if(!iframe.contentWindow.document){
+    return
+  }
+  const styleElm = iframe.contentWindow.document.createElement('style')
+  styleElm.type = 'text/css'
+  const head = iframe.contentWindow.document.getElementsByTagName('head')
+  if(!head){
+    return
   }
 }
 export const DiffgramUI = async (config: UIConfig): Promise<DiffgramUIBase> => {
