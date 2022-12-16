@@ -4,8 +4,8 @@ import {CanvasMouseCtx} from "../../annotation/image/MousePosition";
 import {BoxInstance} from "../../instances/BoxInstance";
 import {GLOBAL_SELECTED_COLOR, Instance} from "../../instances/Instance";
 import {InstanceImage2D} from "../../instances/InstanceImage2D";
-import {CreateInstanceCommand} from "../../../annotation/commands/create_instance_command";
-import {UpdateInstanceCommand} from "../../../annotation/commands/update_instance_command";
+import {CreateInstanceCommand} from "../../helpers/command/available_commands/create_instance_command";
+import {UpdateInstanceCommand} from "../../helpers/command/available_commands/update_instance_command";
 import {PolygonInstance} from "../../instances/PolygonInstance";
 
 export abstract class ImageAnnotationCoordinator extends Coordinator {
