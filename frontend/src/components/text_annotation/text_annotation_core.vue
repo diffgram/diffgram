@@ -272,7 +272,7 @@ import getTextService from "../../services/getTextService"
 import {deferTask, finishTaskAnnotation} from "../../services/tasksServices"
 // New command pattern
 import CommandManager from "../../helpers/command/command_manager"
-import InstanceList from "../../helpers/instance_list"
+import InstanceList from "../../../embed/src/types/helpers/instance_list"
 import History from "../../helpers/history"
 import {
   CreateInstanceCommand,

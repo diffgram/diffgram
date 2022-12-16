@@ -97,8 +97,6 @@ export class Instance {
       p1: this.p1,
       cp: this.cp,
       p2: this.p2,
-      auto_border_polygon_p1: this.auto_border_polygon_p1,
-      auto_border_polygon_p2: this.auto_border_polygon_p2,
       cuboid_current_drawing_face: this.cuboid_current_drawing_face,
       nodes: this.nodes,
       edges: this.edges,

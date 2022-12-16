@@ -1,7 +1,7 @@
 import text_annotation_core from "@/components/text_annotation/text_annotation_core.vue"
 import { tokens, lines } from "./text_test_data"
 import DrawRects from "../../../src/components/text_annotation/text_utils/draw_rects"
-import InstanceList from "../../../src/helpers/instance_list"
+import InstanceList from "../../../embed/src/types/helpers/instance_list"
 import * as taskServices from "../../../src/services/tasksServices"
 import { shallowMount, createLocalVue } from "@vue/test-utils";
 import Vuex from "vuex";

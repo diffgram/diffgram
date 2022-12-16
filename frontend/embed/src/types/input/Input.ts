@@ -1,4 +1,4 @@
-import InstanceList from "../../../../src/helpers/instance_list";
+import InstanceList from "../helpers/instance_list";
 
 export type FramePacketMap ={
   [key: number]: InstanceList

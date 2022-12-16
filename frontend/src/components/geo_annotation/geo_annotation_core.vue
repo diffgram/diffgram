@@ -56,7 +56,7 @@ import Vue from "vue";
 import geo_toolbar from "./geo_toolbar.vue"
 import geo_sidebar from "./geo_sidebar.vue"
 import CommandManager from "../../helpers/command/command_manager"
-import InstanceList from "../../helpers/instance_list"
+import InstanceList from "../../../embed/src/types/helpers/instance_list"
 import History from "../../helpers/history"
 import {
     CreateInstanceCommand,

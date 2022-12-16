@@ -1,4 +1,4 @@
-import InstanceList from "../../../src/helpers/instance_list";
+import InstanceList from "../../../embed/src/types/helpers/instance_list";
 import TestInstance from "./TestClasses/TestInstances";
 
 describe("Testing InstanceList", () => {

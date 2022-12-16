@@ -1,5 +1,5 @@
 import { InstanceData } from "../../../helpers/interfaces/InstanceData";
-import InstanceList from "../../../helpers/instance_list"
+import InstanceList from "../../../../embed/src/types/helpers/instance_list"
 
 export default class DrawRects {
     private token_list: Array<any>;
@@ -7,7 +7,7 @@ export default class DrawRects {
     private instance_list: InstanceList;
 
     constructor(
-        token_list: Array<any>, 
+        token_list: Array<any>,
         line_list: Array<any>,
         instance_list: InstanceList
         ) {
@@ -15,7 +15,7 @@ export default class DrawRects {
     }
 
     update_render_data(
-        token_list: Array<any>, 
+        token_list: Array<any>,
         line_list: Array<any>,
         instance_list: InstanceList
         ) {
@@ -27,7 +27,7 @@ export default class DrawRects {
     generate_rects_from_instance(instance: InstanceData) {
         let start_token_id: number;
         let end_token_id: number;
-        
+
         const { id: instance_id, type: instance_type, start_token, end_token, from_instance_id, to_instance_id, label_file} = instance.get_instance_data()
         const { hex: color } = label_file.colour;
 
@@ -35,7 +35,7 @@ export default class DrawRects {
             const start_instance = this.instance_list.get().find(find_instance => find_instance.get_instance_data().id === from_instance_id)
             if (!start_instance) return []
             start_token_id = this.token_list.find(token => token.id === start_instance["start_token"]).id
-            
+
             const end_instance = this.instance_list.get().find(find_instance => find_instance.get_instance_data().id === to_instance_id)
             if (!end_instance) return []
             end_token_id = this.token_list.find(token => token.id === end_instance["end_token"]).id
@@ -43,7 +43,7 @@ export default class DrawRects {
             start_token_id = start_token;
             end_token_id = end_token;
         }
-        
+
         const base_rects = this.generate_rects(start_token_id, end_token_id).filter(rect => rect.x !== 0 && rect.y !== 0 && rect.width !== 0)
         const instance_rects = base_rects.map(rect => ({...rect, instance_id, instance_type, color }))
 
@@ -58,8 +58,8 @@ export default class DrawRects {
     }
 
     private generate_rects(
-        start_token_id: number, 
-        end_token_id: number, 
+        start_token_id: number,
+        end_token_id: number,
         ) {
         const rects = [];
         let x: number;
@@ -89,13 +89,13 @@ export default class DrawRects {
             for (let i = end_token.line; i <= start_token.line; ++i) {
                 if (i === start_token.line) {
                     const first_token_in_the_line = this.token_list.find(token => token.line == start_token.line)
-                    
+
                     x = first_token_in_the_line.start_x;
                     y = this.line_list[first_token_in_the_line.line].y + 3;
                     width = start_token.start_x + start_token.width - first_token_in_the_line.start_x;
                   } else if (i === end_token.line) {
                     const last_token_in_the_line = this.token_list.filter(token => token.line == end_token.line)
-                    
+
                     x = end_token.start_x;
                     y = this.line_list[end_token.line].y + 3;
                     width = last_token_in_the_line[last_token_in_the_line.length - 1].start_x + last_token_in_the_line[last_token_in_the_line.length - 1].width - end_token.start_x;
@@ -112,7 +112,7 @@ export default class DrawRects {
                         y = 0;
                         width = 0;
                     }
-                    
+
                 }
                 rects.push({ x, y, line: i, width })
             }

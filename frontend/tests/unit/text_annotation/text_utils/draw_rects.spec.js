@@ -1,5 +1,5 @@
 import DrawRects from "../../../../src/components/text_annotation/text_utils/draw_rects"
-import InstanceList from "../../../../src/helpers/instance_list";
+import InstanceList from "../../../../embed/src/types/helpers/instance_list";
 import { TextAnnotationInstance, TextRelationInstance } from "../../../../embed/src/types/instances/TextInstance";
 import { tokens, lines, instance_list } from "../text_test_data"
 

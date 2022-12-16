@@ -23,6 +23,6 @@ export const NewDiffgramAPI = (hostUrl: string, credentials: APICredentials) => 
     axios: axiosInstance,
     credentials: credentials,
     Project: ProjectServices,
-    Input: CreateInputServices(hostUrl, credentials)
   }
+  let inputAPI = new InputServicesAPIDefinition(result)
 }
