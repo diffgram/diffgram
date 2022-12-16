@@ -931,8 +931,8 @@ import view_edit_issue_panel from "../discussions/view_edit_issue_panel.vue";
 import {getContrastColor} from '../../../embed/src/types/utils/colorUtils.ts'
 import {ellipse} from "../vue_canvas/ellipse.js";
 import {CommandManagerAnnotationCore} from "./annotation_core_command_manager.js";
-import {CreateInstanceCommand} from "./commands/create_instance_command";
-import {UpdateInstanceCommand} from "./commands/update_instance_command.ts";
+import {CreateInstanceCommand} from "../../../embed/src/types/helpers/command/available_commands/create_instance_command";
+import {UpdateInstanceCommand} from "../../../embed/src/types/helpers/command/available_commands/update_instance_command.ts";
 import {
   ImageAnnotationCoordinatorRouter,
 } from "../../../embed/src/types/coordinators/ImageAnnotationCoordinatorRouter";

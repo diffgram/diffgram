@@ -8,10 +8,10 @@ import {
 import {ImageAnnotationCoordinator} from "./ImageAnnotationCoordinator";
 import {duplicate_instance} from "../../utils/instance_utils";
 import {CanvasMouseCtx} from "../../annotation/image/MousePosition";
-import {CreateInstanceCommand} from "../../../../../src/components/annotation/commands/create_instance_command";
+import {CreateInstanceCommand} from "../../helpers/command/available_commands/create_instance_command";
 import CommandManager from "../../../../../src/helpers/command/command_manager";
 import {InstanceColor} from "../../instances/InstanceColor";
-import {UpdateInstanceCommand} from "../../../../../src/components/annotation/commands/update_instance_command";
+import {UpdateInstanceCommand} from "../../helpers/command/available_commands/update_instance_command";
 
 export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
   /**

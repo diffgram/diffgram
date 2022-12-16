@@ -10,12 +10,12 @@ export type Media = {
 export type Input = {
   id?: number,
   media: Media,
-  frame_packet_map: FramePacketMap,
+  frame_packet_map?: FramePacketMap,
   type: string
   connection_id?: number,
   parent_file_id?: number,
   directory_id: number,
-  original_filename: number,
+  original_filename: string,
   bucket_name?: string
   raw_data_blob_path?: string
   instance_list?: InstanceList

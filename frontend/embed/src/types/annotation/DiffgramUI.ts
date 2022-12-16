@@ -1,6 +1,3 @@
-import {Instance} from "../instances/Instance";
-import InstanceStore from "../../../../src/helpers/InstanceStore";
-import {File} from "../files/File";
 import Vue, {createApp} from "vue";
 import ImageAnnotation from "../../components/imageAnnotation/ImageAnnotation.vue";
 import {UIConfig} from "./UIConfig";
@@ -12,61 +9,9 @@ import * as directives from 'vuetify/directives'
 import 'vuetify/styles'
 import css from 'vuetify/dist/vuetify.min.css'
 import {APICredentials} from "../credentials/APICredentials";
-export class DiffgramUIBase {
-  private instanceStore: InstanceStore;
-  private file: File
+import {DiffgramUIBase} from "./DiffgramUIBase";
 
-  private iFrame: HTMLIFrameElement
-
-  private rootComponent: Vue.Component
-
-  private credentials: APICredentials
-
-  constructor(root: Vue.Component, iFrame: HTMLIFrameElement, credentials: APICredentials) {
-    this.rootComponent = root
-    this.iFrame = iFrame
-    this.credentials = credentials
-  }
-
-  public getInstanceList(): Instance[]{
-    if(!this.file){
-      return []
-    }
-    let res = this.instanceStore.get_instance_list(this.file.id)
-    if (!res){
-      return []
-    }
-    return res
-  }
-
-}
-function injectStyleSheets(document: Document, iframe: HTMLIFrameElement){
-  if(!iframe.contentWindow){
-    return
-  }
-  if(!iframe.contentWindow.document){
-    return
-  }
-  const styleElm = iframe.contentWindow.document.createElement('style')
-
-  const head = iframe.contentWindow.document.getElementsByTagName('head')[0]
-  if(!head){
-    return
-  }
-  head.appendChild(styleElm)
-  styleElm.type = 'text/css'
-  styleElm.appendChild(iframe.contentWindow.document.createTextNode(css))
-}
-
-function setIframeRootStyles(iframeDocument: Document){
-  const html = iframeDocument.getElementsByTagName('html')[0];
-  html.style.border = 'none';
-  html.style.overflow = 'hidden';
-}
-function setIframeElmStyles(iframe: HTMLIFrameElement){
-  iframe.style.border = 'none';
-}
-export const DiffgramUI = async (credentials: APICredentials, config: UIConfig): Promise<DiffgramUIBase> => {
+export const DiffgramUI = async (hostURL: string, credentials: APICredentials, config: UIConfig): Promise<DiffgramUIBase> => {
   return new Promise((resolve, reject) => {
     const iframe = document.createElement('iframe');
     setIframeElmStyles(iframe)
@@ -98,8 +43,36 @@ export const DiffgramUI = async (credentials: APICredentials, config: UIConfig):
       const iframeApp = createApp(ImageAnnotation).use(vuetify).mount(wrapperIframe)
       setIframeRootStyles(iframe.contentWindow.document)
       iframe.contentWindow.document.body.appendChild(wrapperIframe)
-      const uiBase = new DiffgramUIBase(iframeApp, iframe, credentials)
+      const uiBase = new DiffgramUIBase(iframeApp, iframe, credentials, hostURL, config.schema_id, config.directory_id)
       resolve(uiBase)
     }
   })
+}
+
+
+function injectStyleSheets(document: Document, iframe: HTMLIFrameElement){
+  if(!iframe.contentWindow){
+    return
+  }
+  if(!iframe.contentWindow.document){
+    return
+  }
+  const styleElm = iframe.contentWindow.document.createElement('style')
+
+  const head = iframe.contentWindow.document.getElementsByTagName('head')[0]
+  if(!head){
+    return
+  }
+  head.appendChild(styleElm)
+  styleElm.type = 'text/css'
+  styleElm.appendChild(iframe.contentWindow.document.createTextNode(css))
+}
+
+function setIframeRootStyles(iframeDocument: Document){
+  const html = iframeDocument.getElementsByTagName('html')[0];
+  html.style.border = 'none';
+  html.style.overflow = 'hidden';
+}
+function setIframeElmStyles(iframe: HTMLIFrameElement){
+  iframe.style.border = 'none';
 }

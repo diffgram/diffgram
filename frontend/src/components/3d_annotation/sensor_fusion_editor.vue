@@ -252,7 +252,7 @@
   import FileLoader3DPointClouds from "./FileLoader3DPointClouds";
   import * as instance_utils from "../../../embed/src/types/utils/instance_utils.ts"
   import * as THREE from "three";
-  import {UpdateInstanceCommand} from "../annotation/commands/update_instance_command.ts";
+  import {UpdateInstanceCommand} from "../../../embed/src/types/helpers/command/available_commands/update_instance_command.ts";
   import {CommandManagerAnnotationCore} from "../annotation/annotation_core_command_manager";
   import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices";
 

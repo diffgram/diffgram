@@ -1,11 +1,12 @@
+import {APIConnection} from "./DiffgramAPI";
+import InstanceList from "../helpers/instance_list";
+import {Input} from "../input/Input";
 
 
-export type ProjectServicesAPIDefinition = {
+export class ProjectServicesAPIDefinition {
+  public baseAPI: APIConnection
 
-}
-
-export const CreateProjectServices = (): ProjectServicesAPIDefinition => {
-  return {
-
+  constructor(baseAPI: APIConnection) {
+    this.baseAPI = baseAPI
   }
 }
