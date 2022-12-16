@@ -979,7 +979,7 @@ import {LabelColourMap} from "../../../embed/src/types/labels/LabelColourMap";
 import {CanvasMouseCtx, MousePosition} from "../../../embed/src/types/annotation/image/MousePosition";
 import {ImageCanvasTransform} from "../../../embed/src/types/annotation/image/CanvasTransform";
 import {LabelFile} from "../../../embed/src/types/labels/Label";
-import {PolygonInstance} from "../vue_canvas/instances/PolygonInstance";
+import {PolygonInstance} from "../../../embed/src/types/instances/PolygonInstance";
 import {AutoBorderContext, PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBorderTool";
 import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
 import {PolygonMergeTool} from "../vue_canvas/advanced_tools/PolygonMergeTool";

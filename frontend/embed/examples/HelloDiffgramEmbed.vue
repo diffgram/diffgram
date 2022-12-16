@@ -1,5 +1,5 @@
 <script lang="ts">
-import {DiffgramUI, DiffgramUIBase} from "../types/annotation/DiffgramUI";
+import {DiffgramUI, DiffgramUIBase} from "../src/types/annotation/DiffgramUI";
 import {onMounted} from "vue";
 export default {
   data: function (){
@@ -9,7 +9,7 @@ export default {
     }
   },
   async mounted() {
-    this.diffgramUI = await DiffgramUI({
+    this.diffgramUI = await DiffgramUI({},{
       domIDSelector: '#myUI',
       width: 800,
       height: 800

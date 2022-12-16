@@ -1,4 +1,4 @@
-import {PolygonInstance, PolygonPoint} from "../instances/PolygonInstance";
+import {PolygonInstance, PolygonPoint} from "../../../../embed/src/types/instances/PolygonInstance";
 import {CoordinatorProcessResult} from "../coordinators/Coordinator";
 import {ImageInteractionEvent} from "../../../types/InteractionEvent";
 import {Instance} from "../instances/Instance";

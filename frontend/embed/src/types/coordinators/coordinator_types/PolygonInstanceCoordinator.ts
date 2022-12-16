@@ -1,17 +1,17 @@
-import {Coordinator, CoordinatorProcessResult} from "../../../../../embed/src/types/coordinators/Coordinator";
+import {Coordinator, CoordinatorProcessResult} from "../Coordinator";
 import {
   InteractionEvent,
   ImageAnnotationEventCtx,
   ImageInteractionEvent
-} from "../../../../../embed/src/types/annotation/InteractionEvent";
+} from "../../annotation/InteractionEvent";
 import {ImageAnnotationCoordinator} from "./ImageAnnotationCoordinator";
-import {CanvasMouseCtx, Point, point_is_intersecting_circle} from "../../../../types/mouse_position";
-import CommandManager from "../../../../helpers/command/command_manager";
-import {PolygonInstance, PolygonPoint} from "../../../../../embed/src/types/instances/PolygonInstance";
+import {CanvasMouseCtx, Point, point_is_intersecting_circle} from "../../annotation/image/MousePosition";
+import CommandManager from "../../helpers/command/command_manager";
+import {PolygonInstance, PolygonPoint} from "../../instances/PolygonInstance";
 import {BoxInstance} from "../../instances/BoxInstance";
 import {PolygonAutoBorderTool} from "../../advanced_tools/PolygonAutoBorderTool";
 import {GLOBAL_SELECTED_COLOR} from "../../instances/Instance";
-import {InstanceImage2D} from "../../../../../embed/src/types/instances/InstanceImage2D";
+import {InstanceImage2D} from "../../instances/InstanceImage2D";
 
 export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
   /**

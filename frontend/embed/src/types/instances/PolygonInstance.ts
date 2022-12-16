@@ -1,9 +1,9 @@
 import {InstanceBehaviour2D, Instance} from './Instance'
-import {MousePosition, Point, point_is_intersecting_circle} from "../../../types/mouse_position";
-import {get_sequence_color} from '../../regular/regular_annotation'
-import {InstanceColor} from "../../../types/instance_color";
+import {MousePosition, Point, point_is_intersecting_circle} from "../annotation/image/MousePosition";
+import {get_sequence_color} from '../annotation/image/Sequence'
+import {InstanceColor} from "./InstanceColor";
 import {InstanceImage2D} from "./InstanceImage2D";
-import {ImageLabelSettings} from "../../../types/image_label_settings";
+import {ImageLabelSettings} from "../annotation/image/ImageLabelSettings";
 
 export class PolygonInstance extends InstanceImage2D implements InstanceBehaviour2D {
   public ctx: CanvasRenderingContext2D;
@@ -12,18 +12,18 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   public is_dragging_instance: boolean = false;
   public show_active_drawing_mouse_point: boolean = true;
   public draw_corners: boolean = false;
-  public midpoints_polygon: { [p: number]: PolygonPoint[] } | PolygonPoint[] = null;
+  public midpoints_polygon?: { [p: number]: PolygonPoint[] } | PolygonPoint[] = undefined;
   public mouse_down_delta_event: any = undefined;
-  public polygon_point_hover_index: number = undefined;
-  public hovered_figure_id: string = undefined;
+  public polygon_point_hover_index?: number = undefined;
+  public hovered_figure_id?: string = undefined;
   public mouse_down_position: any = undefined;
   public initialized: boolean = false;
-  public midpoint_hover: number = undefined
+  public midpoint_hover?: number = undefined
   private nearest_points_dict: any = undefined
   private zoom_value: number = 1
-  private circle_size: number = null
-  private auto_border_polygon_p1: PolygonPoint = null
-  private auto_border_polygon_p2: PolygonPoint = null
+  private circle_size?: number = undefined
+  private auto_border_polygon_p1?: PolygonPoint = undefined
+  private auto_border_polygon_p2?: PolygonPoint = undefined
 
   constructor(ctx: CanvasRenderingContext2D = undefined,
               on_instance_updated: Function = undefined,

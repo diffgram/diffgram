@@ -37,9 +37,6 @@ export class Instance {
   public p1: object;
   public cp: object;
   public p2: object;
-
-  public auto_border_polygon_p1: object;
-  public auto_border_polygon_p2: object;
   public cuboid_current_drawing_face: object;
   public label_file_colour_map: LabelColourMap;
   public nodes: any[] = [];

@@ -8,6 +8,8 @@ export type DiffgramAPI = {
   hostUrl: string
   axios: AxiosInstance
   credentials: APICredentials
+
+  // API Services
   Project: ProjectServicesAPIDefinition
   Input: InputServicesAPIDefinition
 }
