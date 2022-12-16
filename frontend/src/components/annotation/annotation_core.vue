@@ -980,9 +980,9 @@ import {CanvasMouseCtx, MousePosition} from "../../../embed/src/types/annotation
 import {ImageCanvasTransform} from "../../../embed/src/types/annotation/image/CanvasTransform";
 import {LabelFile} from "../../../embed/src/types/labels/Label";
 import {PolygonInstance} from "../../../embed/src/types/instances/PolygonInstance";
-import {AutoBorderContext, PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBorderTool";
+import {AutoBorderContext, PolygonAutoBorderTool} from "../../../embed/src/types/annotation/image/advanced_tools/PolygonAutoBorderTool";
 import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
-import {PolygonMergeTool} from "../vue_canvas/advanced_tools/PolygonMergeTool";
+import {PolygonMergeTool} from "../../../embed/src/types/annotation/image/advanced_tools/PolygonMergeTool";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();

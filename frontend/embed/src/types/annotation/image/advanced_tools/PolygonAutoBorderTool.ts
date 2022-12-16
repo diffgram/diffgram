@@ -1,23 +1,21 @@
-import {PolygonInstance, PolygonPoint} from "../../../../embed/src/types/instances/PolygonInstance";
-import {CoordinatorProcessResult} from "../coordinators/Coordinator";
-import {ImageInteractionEvent} from "../../../types/InteractionEvent";
-import {Instance} from "../instances/Instance";
+import {PolygonInstance, PolygonPoint} from "../../../instances/PolygonInstance";
+import {Instance} from "../../../instances/Instance";
 
 
 export type AutoBorderContext = {
-  auto_border_polygon_p1: PolygonPoint
-  auto_border_polygon_p2: PolygonPoint
-  auto_border_polygon_p1_index: number
-  auto_border_polygon_p2_index: number
+  auto_border_polygon_p1?: PolygonPoint
+  auto_border_polygon_p2?: PolygonPoint
+  auto_border_polygon_p1_index?: number
+  auto_border_polygon_p2_index?: number
 
-  auto_border_polygon_p1_instance_index: number
-  auto_border_polygon_p2_instance_index: number
+  auto_border_polygon_p1_instance_index?: number
+  auto_border_polygon_p2_instance_index?: number
 
-  auto_border_polygon_p1_figure: string
-  auto_border_polygon_p2_figure: string
+  auto_border_polygon_p1_figure?: string
+  auto_border_polygon_p2_figure?: string
 
-  show_snackbar_auto_border: boolean
-  show_polygon_border_context_menu: boolean
+  show_snackbar_auto_border?: boolean
+  show_polygon_border_context_menu?: boolean
 }
 
 export class PolygonAutoBorderTool {
@@ -72,7 +70,7 @@ export class PolygonAutoBorderTool {
         continue;
       }
 
-      let points = polygon.points;
+      let points = polygon.points as PolygonPoint[];
       let figure_list = polygon.get_polygon_figures();
 
       if (figure_list.length === 0) {
@@ -85,7 +83,7 @@ export class PolygonAutoBorderTool {
         }
       } else {
         for (const figure_id of figure_list) {
-          points = polygon.points.filter((p) => p.figure_id === figure_id);
+          points = points.filter((p) => p.figure_id === figure_id);
           let autoborder_point_exists = this.find_auto_border_point(
             points,
             instance_index
@@ -118,20 +116,27 @@ export class PolygonAutoBorderTool {
   public reset_instance_points(instance_list: Instance[]){
     for (let inst of instance_list){
       if(inst.type === 'polygon'){
-        for(let point of inst.points){
-          point.point_set_as_auto_border = false
-          point.hovered_while_drawing = false
+        for(let point  of inst.points){
+          let curr = point as PolygonPoint
+          curr.point_set_as_auto_border = false
+          curr.hovered_while_drawing = false
         }
       }
     }
   }
   public perform_auto_bordering(path_type: string, instance_list: Instance[], current_drawing_instance: PolygonInstance){
     let current_polygon_point_list = current_drawing_instance.points as PolygonPoint[]
-    const auto_border_polygon =
-      instance_list[this.context.auto_border_polygon_p2_instance_index];
-    let points = auto_border_polygon.points;
+    let auto_border_polygon: PolygonInstance | undefined = undefined;
+    if(this.context.auto_border_polygon_p2_instance_index){
+      auto_border_polygon = instance_list[this.context.auto_border_polygon_p2_instance_index] as PolygonInstance;
+    }
+    if(!auto_border_polygon){
+      return
+    }
+
+    let points = auto_border_polygon.points as PolygonPoint[];
     if (this.context.auto_border_polygon_p1_figure) {
-      points = auto_border_polygon.points.filter(
+      points = points.filter(
         (p) => p.figure_id === this.context.auto_border_polygon_p1_figure
       );
     }
@@ -140,6 +145,9 @@ export class PolygonAutoBorderTool {
     let current_index = this.context.auto_border_polygon_p1_index;
     let forward_count = 0;
     let forward_index_list = [];
+    if(!current_index){
+      return
+    }
     while (current_index != this.context.auto_border_polygon_p2_index) {
       // Don't add p1 index
       if (current_index !== this.context.auto_border_polygon_p1_index) {
@@ -156,6 +164,9 @@ export class PolygonAutoBorderTool {
 
     // Backwards path
     current_index = this.context.auto_border_polygon_p1_index;
+    if(!current_index){
+      return;
+    }
     let backward_count = 0;
     let backward_index_list = [];
     while (current_index != this.context.auto_border_polygon_p2_index) {
@@ -222,7 +233,7 @@ export class PolygonAutoBorderTool {
     current_polygon_point_list.push({
       ...this.context.auto_border_polygon_p2,
       figure_id: undefined,
-    });
+    } as PolygonPoint);
     this.reset_auto_border_context()
     this.reset_instance_points(instance_list)
     current_drawing_instance.show_active_drawing_mouse_point = true

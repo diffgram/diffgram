@@ -1,27 +1,23 @@
-import {Coordinator, CoordinatorProcessResult} from "../Coordinator";
+import {CoordinatorProcessResult} from "../Coordinator";
 import {
-  InteractionEvent,
-  ImageAnnotationEventCtx,
   ImageInteractionEvent
 } from "../../annotation/InteractionEvent";
 import {ImageAnnotationCoordinator} from "./ImageAnnotationCoordinator";
 import {CanvasMouseCtx, Point, point_is_intersecting_circle} from "../../annotation/image/MousePosition";
 import CommandManager from "../../helpers/command/command_manager";
 import {PolygonInstance, PolygonPoint} from "../../instances/PolygonInstance";
-import {BoxInstance} from "../../instances/BoxInstance";
-import {PolygonAutoBorderTool} from "../../advanced_tools/PolygonAutoBorderTool";
+import {PolygonAutoBorderTool} from "../../annotation/image/advanced_tools/PolygonAutoBorderTool";
 import {GLOBAL_SELECTED_COLOR} from "../../instances/Instance";
-import {InstanceImage2D} from "../../instances/InstanceImage2D";
 
 export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
   /**
    * Routes an annotation_event and interaction of a user to box instances.
    * */
   public snap_to_edges_num_pixels: number = 5
-  public auto_border_polygon_p1: PolygonPoint = null
-  public auto_border_polygon_p2: PolygonPoint = null
+  public auto_border_polygon_p1?: PolygonPoint = undefined
+  public auto_border_polygon_p2?: PolygonPoint = undefined
 
-  constructor(poly_instance, canvas_mouse_ctx: CanvasMouseCtx, command_manager: CommandManager) {
+  constructor(poly_instance: PolygonInstance, canvas_mouse_ctx: CanvasMouseCtx, command_manager: CommandManager) {
     super();
     this.instance = poly_instance
     this.canvas_mouse_ctx = canvas_mouse_ctx
@@ -158,34 +154,42 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     !annotation_event.annotation_ctx.view_only_mode
   }
 
-  public polygon_delete_point(result: CoordinatorProcessResult, point_index: number = undefined) {
+  public polygon_delete_point(result: CoordinatorProcessResult, point_index?: number) {
     let instance = this.instance as PolygonInstance
     let index_to_delete = point_index
     if (index_to_delete == undefined) {
       index_to_delete = instance.polygon_point_hover_index
     }
-    instance.delete_point(index_to_delete)
-    result.instance_moved = true
+    if(index_to_delete){
+      instance.delete_point(index_to_delete)
+      result.instance_moved = true
+    }
+
   }
 
   public insert_polygon_midpoint(result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
     let instance = this.instance as PolygonInstance
     let points = instance.points.map((p) => ({...p}));
 
-    let rest_of_points = [];
+    let rest_of_points: PolygonPoint[] = [];
     if (instance.hovered_figure_id) {
-      points = instance.points.filter(
+      let inst_points = instance.points as PolygonPoint[]
+      points = inst_points.filter(
         (p) => p.figure_id === instance.hovered_figure_id
       );
-      rest_of_points = instance.points.filter(
+      rest_of_points = inst_points.filter(
         (p) => p.figure_id !== instance.hovered_figure_id
-      );
+      ) as PolygonPoint[];
     }
     let midpoints_polygon = instance.midpoints_polygon;
-    if (instance.hovered_figure_id) {
+    if (instance.hovered_figure_id && instance.midpoints_polygon) {
+      // @ts-ignore
       midpoints_polygon = instance.midpoints_polygon[instance.hovered_figure_id] as PolygonPoint[];
     }
-
+    if(!instance.midpoint_hover){
+      return
+    }
+    midpoints_polygon = midpoints_polygon as PolygonPoint[]
     let new_point_to_add = midpoints_polygon[instance.midpoint_hover] as PolygonPoint;
     if (new_point_to_add == undefined) {
       return;
@@ -264,8 +268,8 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     let poly = result.locked_editing_instance as PolygonInstance
     poly.set_is_moving(false)
     this.edit_instance_command_creation(annotation_event, result)
-    result.locked_editing_instance = null
-    result.polygon_point_click_index = null
+    result.locked_editing_instance = undefined
+    result.polygon_point_click_index = undefined
 
   }
 
@@ -473,10 +477,10 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       is_actively_drawing: annotation_event.annotation_ctx.is_actively_drawing,
       original_edit_instance: annotation_event.annotation_ctx.original_edit_instance,
       instance_hover_index: annotation_event.annotation_ctx.instance_list.indexOf(this.instance),
-      instance_hover_type: this.instance ? this.instance.type : null,
+      instance_hover_type: this.instance ? this.instance.type : undefined,
       locked_editing_instance: annotation_event.annotation_ctx.locked_editing_instance,
       lock_point_hover_change: annotation_event.annotation_ctx.lock_point_hover_change,
-      polygon_point_hover_index: instance ? instance.polygon_point_hover_index : null,
+      polygon_point_hover_index: instance ? instance.polygon_point_hover_index : undefined,
       auto_border_context: annotation_event.annotation_ctx.auto_border_context
     }
     // Polygon Select

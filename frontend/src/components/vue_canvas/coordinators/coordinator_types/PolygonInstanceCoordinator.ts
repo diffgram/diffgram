@@ -9,7 +9,7 @@ import {CanvasMouseCtx, Point, point_is_intersecting_circle} from "../../../../t
 import CommandManager from "../../../../helpers/command/command_manager";
 import {PolygonInstance, PolygonPoint} from "../../../../../embed/src/types/instances/PolygonInstance";
 import {BoxInstance} from "../../instances/BoxInstance";
-import {PolygonAutoBorderTool} from "../../advanced_tools/PolygonAutoBorderTool";
+import {PolygonAutoBorderTool} from "../../../../../embed/src/types/annotation/image/advanced_tools/PolygonAutoBorderTool";
 import {GLOBAL_SELECTED_COLOR} from "../../instances/Instance";
 import {InstanceImage2D} from "../../../../../embed/src/types/instances/InstanceImage2D";
 

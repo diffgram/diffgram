@@ -1,17 +1,11 @@
-import {Coordinator, CoordinatorProcessResult} from "../Coordinator";
+import {CoordinatorProcessResult} from "../Coordinator";
 import {BoxInstance} from "../../instances/BoxInstance";
 import {
-  InteractionEvent,
-  ImageAnnotationEventCtx,
   ImageInteractionEvent
 } from "../../annotation/InteractionEvent";
 import {ImageAnnotationCoordinator} from "./ImageAnnotationCoordinator";
-import {duplicate_instance} from "../../utils/instance_utils";
 import {CanvasMouseCtx} from "../../annotation/image/MousePosition";
-import {CreateInstanceCommand} from "../../helpers/command/available_commands/create_instance_command";
-import CommandManager from "../../../../../src/helpers/command/command_manager";
-import {InstanceColor} from "../../instances/InstanceColor";
-import {UpdateInstanceCommand} from "../../helpers/command/available_commands/update_instance_command";
+import CommandManager from "../../helpers/command//command_manager";
 
 export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
   /**
@@ -19,15 +13,17 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
    * */
 
 
-  constructor(box_instance, canvas_mouse_ctx: CanvasMouseCtx, command_manager: CommandManager) {
+
+  constructor(box_instance: BarProp, canvas_mouse_ctx: CanvasMouseCtx, command_manager: CommandManager) {
     super();
+    // @ts-ignore
     this.instance = box_instance
     this.canvas_mouse_ctx = canvas_mouse_ctx
     this.command_manager = command_manager
   }
 
 
-  public select(annotation_event) {
+  public select(annotation_event: ImageInteractionEvent) {
 
     super.select(annotation_event);
     let box = this.instance as BoxInstance
@@ -74,7 +70,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     }
 
     box_instance.resize_from_mouse_position(
-      annotation_event.dom_event,
+      annotation_event.dom_event as MouseEvent,
       annotation_event.annotation_ctx.mouse_position,
       annotation_event.annotation_ctx.mouse_down_position,
     )
@@ -207,7 +203,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     let box = result.locked_editing_instance as BoxInstance
     box.set_is_resizing(false)
     this.edit_instance_command_creation(annotation_event, result)
-    result.locked_editing_instance = null
+    result.locked_editing_instance = undefined
     result.lock_point_hover_change = false
 
   }
@@ -223,7 +219,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     let box = result.locked_editing_instance as BoxInstance
     box.set_is_moving(false)
     this.edit_instance_command_creation(annotation_event, result)
-    result.locked_editing_instance = null
+    result.locked_editing_instance = undefined
 
   }
 
@@ -246,7 +242,7 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
       is_actively_drawing: annotation_event.annotation_ctx.is_actively_drawing,
       original_edit_instance: annotation_event.annotation_ctx.original_edit_instance,
       instance_hover_index: annotation_event.annotation_ctx.instance_list.indexOf(this.instance),
-      instance_hover_type: this.instance ? this.instance.type : null,
+      instance_hover_type: this.instance ? this.instance.type : undefined,
       locked_editing_instance: annotation_event.annotation_ctx.locked_editing_instance,
       lock_point_hover_change: annotation_event.annotation_ctx.lock_point_hover_change,
     }

@@ -77,11 +77,9 @@ import drawable_canvas from "./drawable_canvas";
 import instance_list from "./instance_list";
 import axios from "../../services/customInstance";
 import {initialize_instance_object} from "../../../embed/src/types/utils/instance_utils";
-import {KeypointInstance} from "../../../embed/src/types/instances/KeypointInstance";
 import {newEmptyCanvasMouseCtx} from "../../../embed/src/types/annotation/image/MousePosition";
-import {InstanceImage2D} from "@/components/vue_canvas/instances/InstanceImage2D";
-import {post_init_instance} from "../../utils/instance_utils";
-import {CanvasMouseTools} from "./CanvasMouseTools";
+import {post_init_instance} from "../../../embed/src/types/utils/instance_utils";
+
 
 export default Vue.extend( {
     name: "video_drawable_canvas",

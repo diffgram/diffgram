@@ -4,15 +4,14 @@ import {get_sequence_color} from '../annotation/image/Sequence'
 import {InstanceColor} from "./InstanceColor";
 import {InstanceImage2D} from "./InstanceImage2D";
 import {ImageLabelSettings} from "../annotation/image/ImageLabelSettings";
+import {ImageCanvasTransform} from "../annotation/image/CanvasTransform";
 
 export class PolygonInstance extends InstanceImage2D implements InstanceBehaviour2D {
-  public ctx: CanvasRenderingContext2D;
-
   public colour: InstanceColor;
   public is_dragging_instance: boolean = false;
   public show_active_drawing_mouse_point: boolean = true;
   public draw_corners: boolean = false;
-  public midpoints_polygon?: { [p: number]: PolygonPoint[] } | PolygonPoint[] = undefined;
+  public midpoints_polygon?: { [p: string]: PolygonPoint[] } | PolygonPoint[] = undefined;
   public mouse_down_delta_event: any = undefined;
   public polygon_point_hover_index?: number = undefined;
   public hovered_figure_id?: string = undefined;
@@ -25,14 +24,14 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   private auto_border_polygon_p1?: PolygonPoint = undefined
   private auto_border_polygon_p2?: PolygonPoint = undefined
 
-  constructor(ctx: CanvasRenderingContext2D = undefined,
-              on_instance_updated: Function = undefined,
-              on_instance_selected: Function = undefined,
-              on_instance_deselected: Function = undefined,
-              mouse_down_delta_event = undefined,
-              mouse_down_position = undefined,
-              canvas_transform = undefined,
-              image_label_settings: ImageLabelSettings = undefined) {
+  constructor(ctx?: CanvasRenderingContext2D,
+              on_instance_updated?: Function,
+              on_instance_selected?: Function,
+              on_instance_deselected?: Function,
+              mouse_down_delta_event?: MousePosition,
+              mouse_down_position?: MousePosition,
+              canvas_transform?: ImageCanvasTransform,
+              image_label_settings?: ImageLabelSettings) {
 
     super();
     this.on_instance_updated = on_instance_updated;
@@ -40,16 +39,25 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     this.on_instance_deselected = on_instance_deselected;
     this.mouse_down_delta_event = mouse_down_delta_event;
     this.mouse_down_position = mouse_down_position;
-    this.canvas_transform = canvas_transform;
-    this.image_label_settings = image_label_settings;
+    if (canvas_transform) {
+      this.canvas_transform = canvas_transform;
+    }
+    if (image_label_settings) {
+      this.image_label_settings = image_label_settings;
+    }
+
     this.type = 'polygon'
     this.initialized = true;
     this.on_instance_hovered = this.set_default_hover_in_style
     this.on_instance_unhovered = this.set_default_hover_out_style
-    this.ctx = ctx;
+    if (ctx) {
+      this.ctx = ctx;
+    }
+
   }
-  public get_polygon_figures(): string[]{
-    let figure_list = [];
+
+  public get_polygon_figures(): string[] {
+    let figure_list: string[] = [];
     for (const p of this.points) {
       if (!p.figure_id) {
         continue;
@@ -60,7 +68,8 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     }
     return figure_list;
   }
-  private find_midpoint_index(midpoints_polygon){
+
+  private find_midpoint_index(midpoints_polygon: PolygonPoint[]) {
     let midpoint_hover = undefined;
     let count = 0;
 
@@ -85,7 +94,8 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     }
     return midpoint_hover;
   }
-  public detect_hover_polygon_midpoints(){
+
+  public detect_hover_polygon_midpoints() {
     const instance = this;
     if (!instance.selected) {
       return;
@@ -110,7 +120,8 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       this.find_midpoint_index(midpoints_polygon);
     }
   }
-  public move_polygon_points(x_move: number, y_move: number, figure_id: string = undefined){
+
+  public move_polygon_points(x_move: number, y_move: number, figure_id?: string) {
     let points = this.points;
     if (this.hovered_figure_id) {
       points = this.points.filter(
@@ -124,6 +135,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       point.y = Math.ceil(point.y)
     }
   }
+
   public duplicate_for_undo() {
     let duplicate_instance = new PolygonInstance(
       this.ctx,
@@ -132,6 +144,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       this.on_instance_deselected,
       this.mouse_down_delta_event,
       this.mouse_down_position,
+      this.canvas_transform,
       this.image_label_settings,
     );
     let instance_data_to_keep = {
@@ -142,7 +155,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   private check_polygon_intersection_on_points(): boolean {
-    if(!this.canvas_mouse_tools){
+    if (!this.canvas_mouse_tools) {
       return false
     }
     for (let i = 0; i < this.points.length; i++) {
@@ -160,7 +173,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       }
     }
     this.set_mouse_cursor_from_hovered_point()
-    this.polygon_point_hover_index = null
+    this.polygon_point_hover_index = undefined
 
     return false;
   }
@@ -251,7 +264,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
   }
 
-  private draw_circle(x, y, ctx) {
+  private draw_circle(x: number, y: number, ctx: CanvasRenderingContext2D) {
     ctx.arc(x, y, this.image_label_settings.vertex_size, 0, 2 * Math.PI);
     ctx.moveTo(x, y) // reset
   }
@@ -264,7 +277,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     this.draw_corners = false
   }
 
-  private generate_polygon_mid_points(points, figure_id = undefined) {
+  private generate_polygon_mid_points(points: PolygonPoint[], figure_id?: string) {
     const midpoints_polygon = []
     for (let i = 1; i < points.length; i++) {
       const prev = points[i - 1];
@@ -273,18 +286,19 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
         x: (prev.x + current.x) / 2,
         y: (prev.y + current.y) / 2,
         figure_id: figure_id
-      })
+      } as PolygonPoint)
     }
     midpoints_polygon.push({
       x: (points[0].x + points[points.length - 1].x) / 2,
       y: (points[0].y + points[points.length - 1].y) / 2
-    })
+    } as PolygonPoint)
     if (figure_id) {
       if (!this.midpoints_polygon) {
         this.midpoints_polygon = {
           [figure_id]: midpoints_polygon
         }
       } else {
+        // @ts-ignore
         this.midpoints_polygon[figure_id] = midpoints_polygon
       }
 
@@ -294,14 +308,16 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
 
-  private draw_polygon_midpoints(ctx, figure_id = undefined) {
+  private draw_polygon_midpoints(ctx: CanvasRenderingContext2D, figure_id?: string) {
     let midpoints_polygon = this.midpoints_polygon
-    if (figure_id) {
-      midpoints_polygon = this.midpoints_polygon[figure_id] as PolygonPoint[]
+    if (figure_id && midpoints_polygon) {
+      // @ts-ignore
+      midpoints_polygon = midpoints_polygon[figure_id] as PolygonPoint[]
     }
     if (this.midpoint_hover == undefined) {
       return
     }
+    midpoints_polygon = midpoints_polygon as PolygonPoint[]
     // Only draw when hovered in
     const point = midpoints_polygon[this.midpoint_hover] as Point;
     if (point == undefined) {
@@ -312,7 +328,13 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
   }
 
-  private draw_single_path_circle(x, y, radius, ctx, strokeStyle = '#bdbdbd', fillStyle = 'white', lineWidth = '2px') {
+  private draw_single_path_circle(x: number,
+                                  y: number,
+                                  radius: number = 5,
+                                  ctx: CanvasRenderingContext2D,
+                                  strokeStyle: string = '#bdbdbd',
+                                  fillStyle: string = 'white',
+                                  lineWidth: number = 2) {
     ctx.beginPath();
     ctx.strokeStyle = strokeStyle;
     ctx.fillStyle = fillStyle;
@@ -322,30 +344,30 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     ctx.stroke()
   }
 
-  public delete_point(p_index: number){
+  public delete_point(p_index: number) {
     this.points.splice(p_index, 1);
   }
 
-  private check_poly_hovered(ctx, figure_id: string = undefined) {
+  private check_poly_hovered(ctx: CanvasRenderingContext2D, figure_id?: string) {
 
     if (this.is_mouse_in_path(ctx)) {
       this.check_polygon_intersection_on_points()
       if (!this.is_hovered) {
         this.is_hovered = true
         this.hovered_figure_id = figure_id
-        if(this.on_instance_hovered){
+        if (this.on_instance_hovered) {
           this.on_instance_hovered(this)
         }
       }
-    }else{
+    } else {
       this.check_polygon_intersection_on_points()
-      if(this.is_hovered && this.polygon_point_hover_index == undefined
+      if (this.is_hovered && this.polygon_point_hover_index == undefined
         && this.midpoint_hover == undefined
-        && (!figure_id || this.hovered_figure_id === figure_id)){
+        && (!figure_id || this.hovered_figure_id === figure_id)) {
         this.set_mouse_cursor_from_hovered_point()
         this.is_hovered = false
-        this.hovered_figure_id = null
-        if(this.on_instance_unhovered){
+        this.hovered_figure_id = undefined
+        if (this.on_instance_unhovered) {
           this.on_instance_unhovered(this)
         }
       }
@@ -353,13 +375,13 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
   }
 
-  private draw_polygon_lines(ctx, points) {
+  private draw_polygon_lines(ctx: CanvasRenderingContext2D, points: PolygonPoint[]) {
     for (var j = 0; j < points.length - 1; j++) {
       ctx.lineTo(points[j + 1].x, points[j + 1].y)
     }
   }
 
-  private draw_polygon_figure(ctx, points, figure_id = undefined) {
+  private draw_polygon_figure(ctx: CanvasRenderingContext2D, points: PolygonPoint[], figure_id?: string) {
     if (this.selected) {
       this.generate_polygon_mid_points(points, figure_id)
       this.draw_polygon_midpoints(ctx, figure_id)
@@ -387,8 +409,8 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     ctx.fill()
   }
 
-  private draw_polygon_main_section(ctx) {
-    let figure_id_list = [];
+  private draw_polygon_main_section(ctx: CanvasRenderingContext2D) {
+    let figure_id_list: string[] = [];
     for (const point of this.points) {
       if (!point.figure_id) {
         continue
@@ -415,7 +437,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     return true
   }
 
-  private draw_many_polygon_circles(ctx) {
+  private draw_many_polygon_circles(ctx: CanvasRenderingContext2D) {
 
     // note different stopping point from lines
     const fillStyle = ctx.fillStyle;
@@ -441,7 +463,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     ctx.strokeStyle = strokeStyle;
   }
 
-  private draw_circle_from_instance(ctx, points, index) {
+  private draw_circle_from_instance(ctx: CanvasRenderingContext2D, points: PolygonPoint[], index: number) {
     let x = points[index].x
     let y = points[index].y
 
@@ -451,7 +473,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
   }
 
-  private draw_autoborder_control_points(ctx) {
+  private draw_autoborder_control_points(ctx: CanvasRenderingContext2D) {
     let spatial_line_size = this.get_spatial_line_size()
     if (this.auto_border_polygon_p1) {
       this.draw_single_path_circle(this.auto_border_polygon_p1.x,
@@ -460,7 +482,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
         ctx,
         '#4caf50',
         '#4caf50',
-        `${spatial_line_size}px`);
+        spatial_line_size);
     }
 
     if (this.auto_border_polygon_p2) {
@@ -471,20 +493,22 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
         ctx,
         '#4caf50',
         '#4caf50',
-        `${spatial_line_size}px`)
+        spatial_line_size)
     }
 
   }
-  public select(){
+
+  public select() {
     super.select()
     this.show_polygon_vertices()
   }
+
   public unselect() {
     super.unselect();
     this.hide_polygon_vertices()
   }
 
-  private draw_polygon_control_points(ctx) {
+  private draw_polygon_control_points(ctx: CanvasRenderingContext2D) {
     ctx.beginPath();
     let points = this.points
     if (this.draw_corners || this.is_actively_drawing) {
@@ -510,14 +534,14 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     ctx.stroke()
   }
 
-  public draw_actively_drawing_polygon(ctx) {
+  public draw_actively_drawing_polygon(ctx: CanvasRenderingContext2D) {
     let points = this.points
     let circle_size = 4 / this.zoom_value
 
     // If there is at least 2 points, draw the rest
     if (points.length >= 1) {
       if (this.number != undefined) {
-        ctx.fillText(this.number, points[0].x, points[0].y)
+        ctx.fillText(this.number.toString(), points[0].x, points[0].y)
       }
       ctx.fillText(this.label_file.label.name, points[0].x, points[0].y)
 

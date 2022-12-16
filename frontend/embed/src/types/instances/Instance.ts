@@ -7,6 +7,7 @@ import {MousePosition} from "../annotation/image/MousePosition";
 import {ImageCanvasTransform} from "../annotation/image/CanvasTransform";
 import {AttributeGroup, AttributeGroupMap} from "../attributes/AttributeGroup";
 import {CuboidFace} from "./CuboidInstance";
+import {PolygonPoint} from "./PolygonInstance";
 
 export const SUPPORTED_CLASS_INSTANCE_TYPES: Array<string> = ['box', 'keypoints'];
 export const GLOBAL_SELECTED_COLOR = '#0000ff'
@@ -54,7 +55,7 @@ export class Instance {
   public selected: boolean = false;
   public number: number;
   public type: string;
-  public points: object[] = [];
+  public points: PolygonPoint[] = [];
   public sequence_id: number;
   public soft_delete: boolean = false;
   public is_hovered: boolean = false;

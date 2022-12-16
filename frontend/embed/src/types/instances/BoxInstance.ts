@@ -1,10 +1,7 @@
-import {InstanceBehaviour2D, Instance} from './Instance'
-import {InstanceContext} from './InstanceContext';
-import {v4 as uuidv4} from 'uuid';
+import {InstanceBehaviour2D} from './Instance'
 import {MousePosition, point_is_intersecting_circle} from "../annotation/image/MousePosition";
 import {get_sequence_color} from '../annotation/image/Sequence'
 import {InstanceColor} from "./InstanceColor";
-import {LabelColourMap} from "../labels/LabelColourMap";
 import {ImageCanvasTransform} from "../annotation/image/CanvasTransform";
 import {InstanceImage2D} from "./InstanceImage2D";
 import {ImageLabelSettings} from "../annotation/image/ImageLabelSettings";
@@ -18,11 +15,9 @@ type BoxHoverPoints =
   | 'blocked'
 
 export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D {
-  public canvas_mouse_tools: ImageCanvasTransform;
   public colour: InstanceColor;
   public is_dragging_instance: boolean = false;
   public draw_corners: boolean = false;
-  private is_actively_drawing: boolean = false;
   public is_moving: boolean = false;
   public mouse_down_delta_event: any = undefined;
   public mouse_down_position: any = undefined;
@@ -63,7 +58,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
 
     this.type = 'box'
     if(mouse_position){
-      this.mouse_position = mouse_position;
+      this.canvas_mouse_tools.mouse_position = mouse_position;
     }
 
     this.initialized = true;
@@ -77,7 +72,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
 
   public duplicate_for_undo() {
     let duplicate_instance = new BoxInstance(
-      this.mouse_position,
+      this.canvas_mouse_tools.mouse_position,
       this.ctx,
       this.on_instance_updated,
       this.on_instance_selected,
@@ -146,7 +141,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
 
     for (let point of point_list) {
       let intersection = point_is_intersecting_circle(
-        this.mouse_position,
+        this.canvas_mouse_tools.mouse_position,
         {
           x: point[0] as number,
           y: point[1] as number
@@ -198,7 +193,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     }
   }
 
-  private update_width_and_height() {
+  public update_width_and_height() {
     this.width = this.x_max - this.x_min;
     this.height = this.y_max - this.y_min;
 
