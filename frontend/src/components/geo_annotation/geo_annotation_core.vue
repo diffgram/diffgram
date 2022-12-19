@@ -153,6 +153,7 @@ export default Vue.extend({
             drawing_poly: [],
             draw_mode: true,
             has_changed: false,
+            moving: false,
             current_instance_type: 'geo_circle',
             instance_type_list: [
                 {
@@ -437,6 +438,12 @@ export default Vue.extend({
             map.on('pointermove', (evt) => {
                 this.mouse_coords = evt.coordinate
             })
+            map.on('movestart', (evt) => {
+                this.moving = true
+            })
+            map.on('moveend', (evt) => {
+                this.moving = false
+            })
 
             this.map_instance = map
         },
@@ -473,6 +480,7 @@ export default Vue.extend({
         draw_instance: function(e) {
             if (!this.draw_mode) return;
             if (e.path[0].tagName.toLowerCase() !== "canvas") return
+            if (this.moving) return
             
             if (this.current_instance_type === 'geo_point') {
                 const lonlat = transform(this.mouse_coords, 'EPSG:3857', 'EPSG:4326');
