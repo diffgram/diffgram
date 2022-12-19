@@ -8,6 +8,11 @@ export type ListDirectoriesResponse = {
   default_directory: Directory,
   directory_list: Directory[]
 }
+
+export type GetDirectoryResponse = {
+  success: boolean
+  working_dir: Directory
+}
 export class DirectoriesServicesAPIDefinition {
   public baseAPI: APIConnection
 
@@ -15,6 +20,17 @@ export class DirectoriesServicesAPIDefinition {
     this.baseAPI = baseAPI
   }
 
+  public async getDirectory(dir_id: number): Promise<[GetDirectoryResponse | undefined, any]> {
+    let url = `${this.baseAPI.hostUrl}/api/project/${this.baseAPI.credentials.project_string_id}/user/sdk/working_dir/view`
+    try {
+      const response = await this.baseAPI.axios.get(url, {
+        params: {working_dir_id: dir_id}
+      })
+      return [response.data, undefined]
+    } catch (err) {
+      return [undefined, err]
+    }
+  }
   public async listDirectories(limit: number = 10): Promise<[ListDirectoriesResponse | undefined, any]> {
     let url = `${this.baseAPI.hostUrl}/api/v1/project/${this.baseAPI.credentials.project_string_id}/directory/list`
     try {

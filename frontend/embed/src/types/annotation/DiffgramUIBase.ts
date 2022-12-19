@@ -46,7 +46,7 @@ export class DiffgramUIBase {
       throw err
     }
     if (response_data?.default_directory){
-      this.directory_id = this.
+      this.directory = response_data.default_directory
     }
 
   }

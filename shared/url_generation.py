@@ -368,7 +368,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
     strategy = determine_url_regenerate_strategy(
         connection_id = connection_id,
         bucket_name = bucket_name)
-
+    print('GEN URLLL', strategy, blob_object, reference_file)
     should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(blob_object, session)
 
     if should_regenerate is not True and strategy != 'connection':

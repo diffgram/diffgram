@@ -385,8 +385,11 @@ class File(Base, Caching):
         assets_list = self.get_geo_assets(session)
         result = []
         for asset in assets_list:
-            result.append(asset.serialize(session, connection_id = connection_id, bucket_name = bucket_name,
-                                          regen_url = regen_url, create_thumbnails = create_thumbnails))
+            result.append(asset.serialize(session,
+                                          connection_id = connection_id,
+                                          bucket_name = bucket_name,
+                                          regen_url = regen_url,
+                                          create_thumbnails = create_thumbnails))
         return result
 
     def serialize_with_type(self, session = None, regen_url = True):
