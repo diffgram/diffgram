@@ -205,7 +205,7 @@ export default Vue.extend({
 
             return style
         },
-        draw_instances: function() {
+        draw_instances: function(e) {
             if (!this.instance_list) return
 
             this.feature_list.map(feature => {
@@ -470,8 +470,9 @@ export default Vue.extend({
                 this.has_changed = true
             }
         },
-        draw_instance: function() {
+        draw_instance: function(e) {
             if (!this.draw_mode) return;
+            if (e.path[0].tagName.toLowerCase() !== "canvas") return
             
             if (this.current_instance_type === 'geo_point') {
                 const lonlat = transform(this.mouse_coords, 'EPSG:3857', 'EPSG:4326');
