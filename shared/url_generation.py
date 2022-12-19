@@ -50,6 +50,7 @@ def default_url_regenerate(session: Session,
     :return:
     """
     log = regular_log.default()
+    print('URL REGENERATE', new_offset_in_seconds)
     try:
         blob_object.url_signed = data_tools.build_secure_url(blob_object.url_signed_blob_path, new_offset_in_seconds)
         blob_object.url_signed_expiry = time.time() + new_offset_in_seconds
@@ -62,7 +63,6 @@ def default_url_regenerate(session: Session,
         if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path:
             blob_object.url_signed_thumb = data_tools.build_secure_url(blob_object.url_signed_thumb_blob_path,
                                                                        new_offset_in_seconds)
-            blob_object.url_ = time.time() + new_offset_in_seconds
         if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
             blob_object.tokens_url_signed = data_tools.build_secure_url(blob_object.tokens_url_signed_blob_path,
                                                                         new_offset_in_seconds)
@@ -370,7 +370,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
         bucket_name = bucket_name)
 
     should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(blob_object, session)
-
+    print('should_regenerate', should_regenerate, new_offset_in_seconds, blob_object)
     if should_regenerate is not True and strategy != 'connection':
         return
 

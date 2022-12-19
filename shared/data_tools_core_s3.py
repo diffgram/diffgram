@@ -247,8 +247,7 @@ class DataToolsS3:
         """
 
         if expiration_offset is None:
-            one_day = 86400
-            expiration_offset = settings.SIGNED_URL_CACHE_NEW_OFFSET_SECONDS_VALID * one_day
+            expiration_offset = settings.SIGNED_URL_CACHE_NEW_OFFSET_SECONDS_VALID
 
 
         if bucket == "web":
@@ -258,7 +257,7 @@ class DataToolsS3:
             bucket_name = self.s3_bucket_name_ml
 
         filename = blob_name.split("/")[-1]
-
+        print('SECONDS VALID', expiration_offset)
         signed_url = self.s3_client.generate_presigned_url('get_object',
                                                            Params = {
                                                                'Bucket': bucket_name,

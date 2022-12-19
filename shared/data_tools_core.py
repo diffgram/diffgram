@@ -45,6 +45,8 @@ class Data_tools(metaclass = Singleton):
         if not session: return False, None
         minimum_secs_valid = settings.SIGNED_URL_CACHE_MINIMUM_SECONDS_VALID
         new_offset_in_seconds = settings.SIGNED_URL_CACHE_NEW_OFFSET_SECONDS_VALID
+        print('minimum_secs_valid', minimum_secs_valid)
+        print('new_offset_in_seconds', new_offset_in_seconds)
 
         time_to_check = time.time() + minimum_secs_valid
 
@@ -55,6 +57,8 @@ class Data_tools(metaclass = Singleton):
             return True, new_offset_in_seconds
 
         url_signed_expiry = int(float(blob_object.url_signed_expiry))
+        print('url_signed_expiry', url_signed_expiry)
+        print('time_to_check', time_to_check)
 
         if url_signed_expiry <= settings.URL_SIGNED_REFRESH + (new_offset_in_seconds):
             return True, new_offset_in_seconds
