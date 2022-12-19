@@ -40,13 +40,29 @@
                 @delete_instance="delete_instance"
                 @change_instance_label="change_instance_label"
             />
-            <div 
-                id="map" 
-                ref="map" 
-                v-if="!rendering"
-                @click="draw_instance" 
-                :style="`height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%;`"
+            <v-progress-linear
+                v-if="rendering"
+                indeterminate 
             />
+            <div
+                :style="`display:flex; flex-direction: column; height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%;`"
+            >
+                <v-progress-linear
+                    v-if="rendering"
+                    indeterminate 
+                />
+                <v_error_multiple 
+                    v-if="tiff_source && tiff_source.error_ && !rendering" 
+                    :error="['Error ocurred while rendering geotiff']" 
+                />
+                <div 
+                    id="map" 
+                    ref="map" 
+                    v-if="!rendering"
+                    @click="draw_instance" 
+                    :style="`height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%;`"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -87,6 +103,7 @@ import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Transform from "ol-ext/interaction/Transform";
 import 'ol/ol.css';
+import Error_multiple from "../regular/error_multiple.vue";
 
 export default Vue.extend({
     name: "geo_annotation_core",
@@ -143,6 +160,7 @@ export default Vue.extend({
             feature_list: [],
             drawing_feature: undefined,
             transform_interaction: null,
+            tiff_source: null,
             // Others
             selected: null,
             rendering: false,
@@ -398,7 +416,8 @@ export default Vue.extend({
                 ],
             });
 
-            
+            this.tiff_source = source
+    
             this.annotation_source = new VectorSource({})
 
             const draw_layer = new VectorLayer({
@@ -425,9 +444,7 @@ export default Vue.extend({
             })
 
             this.transform_interaction.on('translateend', this.transform_interraction_handler)
-
             this.transform_interaction.on('rotateend', this.transform_interraction_handler)
-
             this.transform_interaction.on('scaleend', this.transform_interraction_handler)
 
             const view = await source.getView()
