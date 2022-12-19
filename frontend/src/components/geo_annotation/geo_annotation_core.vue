@@ -672,6 +672,7 @@ export default Vue.extend({
             if (e.keyCode === 27) {
                 this.drawing_instance = false
                 this.annotation_source.removeFeature(this.drawing_feature)
+                this.drawing_poly = []
             }
 
             if (e.keyCode === 83) {
