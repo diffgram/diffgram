@@ -40,13 +40,29 @@
                 @delete_instance="delete_instance"
                 @change_instance_label="change_instance_label"
             />
-            <div 
-                id="map" 
-                ref="map" 
-                v-if="!rendering"
-                @click="draw_instance" 
-                :style="`height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%;`"
+            <v-progress-linear
+                v-if="rendering"
+                indeterminate 
             />
+            <div
+                :style="`display:flex; flex-direction: column; height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%;`"
+            >
+                <v-progress-linear
+                    v-if="rendering"
+                    indeterminate 
+                />
+                <v_error_multiple 
+                    v-if="tiff_source && tiff_source.error_ && !rendering" 
+                    :error="['Error ocurred while rendering geotiff']" 
+                />
+                <div 
+                    id="map" 
+                    ref="map" 
+                    v-if="!rendering"
+                    @click="draw_instance" 
+                    :style="`height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%;`"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -87,6 +103,7 @@ import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Transform from "ol-ext/interaction/Transform";
 import 'ol/ol.css';
+import Error_multiple from "../regular/error_multiple.vue";
 
 export default Vue.extend({
     name: "geo_annotation_core",
@@ -143,6 +160,7 @@ export default Vue.extend({
             feature_list: [],
             drawing_feature: undefined,
             transform_interaction: null,
+            tiff_source: null,
             // Others
             selected: null,
             rendering: false,
@@ -153,6 +171,7 @@ export default Vue.extend({
             drawing_poly: [],
             draw_mode: true,
             has_changed: false,
+            moving: false,
             current_instance_type: 'geo_circle',
             instance_type_list: [
                 {
@@ -205,7 +224,7 @@ export default Vue.extend({
 
             return style
         },
-        draw_instances: function() {
+        draw_instances: function(e) {
             if (!this.instance_list) return
 
             this.feature_list.map(feature => {
@@ -397,7 +416,8 @@ export default Vue.extend({
                 ],
             });
 
-            
+            this.tiff_source = source
+    
             this.annotation_source = new VectorSource({})
 
             const draw_layer = new VectorLayer({
@@ -424,9 +444,7 @@ export default Vue.extend({
             })
 
             this.transform_interaction.on('translateend', this.transform_interraction_handler)
-
             this.transform_interaction.on('rotateend', this.transform_interraction_handler)
-
             this.transform_interaction.on('scaleend', this.transform_interraction_handler)
 
             const view = await source.getView()
@@ -436,6 +454,12 @@ export default Vue.extend({
             // This  is event listener for mouse move within the map, and return coordinates of the map
             map.on('pointermove', (evt) => {
                 this.mouse_coords = evt.coordinate
+            })
+            map.on('movestart', (evt) => {
+                this.moving = true
+            })
+            map.on('moveend', (evt) => {
+                this.moving = false
             })
 
             this.map_instance = map
@@ -470,8 +494,10 @@ export default Vue.extend({
                 this.has_changed = true
             }
         },
-        draw_instance: function() {
+        draw_instance: function(e) {
             if (!this.draw_mode) return;
+            if (e.path[0].tagName.toLowerCase() !== "canvas") return
+            if (this.moving) return
             
             if (this.current_instance_type === 'geo_point') {
                 const lonlat = transform(this.mouse_coords, 'EPSG:3857', 'EPSG:4326');
@@ -646,6 +672,7 @@ export default Vue.extend({
             if (e.keyCode === 27) {
                 this.drawing_instance = false
                 this.annotation_source.removeFeature(this.drawing_feature)
+                this.drawing_poly = []
             }
 
             if (e.keyCode === 83) {
