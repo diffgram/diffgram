@@ -4,7 +4,7 @@
     <ul>
       <li
         v-for="tile in tiles"
-        :key="tile.name"
+        :key="tile.key"
       >
         <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between">
           {{ tile.name }}
@@ -14,6 +14,7 @@
             :icon_style="true"
             :bottom="true"
             :disabled="!tile.removable"
+            @click="() => remove_tile(tile.key)"
           />
         </div>
       </li>
@@ -73,7 +74,9 @@ export default Vue.extend({
 
       tile_keys.map(key => {
         const current_tile = this.map_layers[key]
-        tile_list.push({...current_tile, key})
+        if (current_tile) {
+          tile_list.push({...current_tile, key})
+        }
       })
 
       return tile_list.sort((a, b) => {
@@ -84,6 +87,26 @@ export default Vue.extend({
     }
   },
   methods: {
+    tiles: function() {
+      const tile_keys = Object.keys(this.map_layers)
+      const tile_list = []
+
+      tile_keys.map(key => {
+        const current_tile = this.map_layers[key]
+        if (current_tile) {
+          tile_list.push({...current_tile, key})
+        }
+      })
+
+      return tile_list.sort((a, b) => {
+        if (a.layer.values_.zIndex < b.layer.values_.zIndex) return -1;
+        if (a.layer.values_.zIndex > b.layer.values_.zIndex) return 1;
+        return 0;
+      });
+    },
+    remove_tile: function(key) {
+      this.$emit('remove_tile', key)
+    },
     add_tile: function() {
       if (!this.tile || !this.name) return
       

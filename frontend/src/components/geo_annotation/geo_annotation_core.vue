@@ -27,6 +27,7 @@
                     @change_file="change_file"
                     @change_task="trigger_task_change"
                     @add_xyz_layer="add_xyz_layer"
+                    @remove_xyz_layer="remove_xyz_layer"
                     @undo="undo()"
                     @redo="redo()"
                 />
@@ -490,7 +491,14 @@ export default Vue.extend({
 
             this.map_instance = map
         },
-        remove_xyz_layer: function(e) {},
+        remove_xyz_layer: function(e) {
+            const layer_to_remove = this.map_layers[e]
+            if (layer_to_remove) {
+                this.map_instance.removeLayer(layer_to_remove.layer)
+    
+                this.map_layers[e] = null
+            }
+        },
         add_xyz_layer: function(e) {
             const layer = new TileLayer({
                 source: new XYZ({

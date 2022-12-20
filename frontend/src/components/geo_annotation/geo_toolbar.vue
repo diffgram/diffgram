@@ -260,6 +260,7 @@
                         <geo_tile
                             :map_layers="map_layers"
                             @add_tile="(e) => $emit('add_xyz_layer', e)"
+                            @remove_tile="(e) => $emit('remove_xyz_layer', e)"
                         />
                     </template>
                 </button_with_menu>
@@ -434,6 +435,7 @@
                     <geo_tile
                         :map_layers="map_layers"
                         @add_tile="(e) => $emit('add_xyz_layer', e)"
+                        @remove_tile="(e) => $emit('remove_xyz_layer', e)"
                     />
                 </template>
             </button_with_menu>
