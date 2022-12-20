@@ -422,7 +422,8 @@ export default Vue.extend({
             this.annotation_source = new VectorSource({})
 
             const draw_layer = new VectorLayer({
-                source: this.annotation_source
+                source: this.annotation_source,
+                zIndex: 1001
             })
 
             const map = new Map({
@@ -470,7 +471,6 @@ export default Vue.extend({
             this.map_instance = map
         },
         add_xyz_layer: function(e) {
-            console.log(e)
             const layer = new TileLayer({
                 source: new XYZ({
                     url: e.tile
