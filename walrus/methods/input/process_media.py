@@ -1992,8 +1992,8 @@ class Process_Media():
         logger.info(f"Saved Tokens on: {self.new_text_file.tokens_url_signed_blob_path}")
 
     def save_raw_audio_file(self):
-        offset = 2592000
-        self.new_audio_file.url_signed_expiry = int(time.time() + offset)  # 1 month
+        new_offset_in_seconds = settings.SIGNED_URL_CACHE_NEW_OFFSET_SECONDS_VALID
+        self.new_audio_file.url_signed_expiry = int(new_offset_in_seconds)  # 1 month
 
         self.new_audio_file.url_signed_blob_path = '{}{}/{}'.format(settings.PROJECT_TEXT_FILES_BASE_DIR,
                                                                     str(self.project_id),
@@ -2009,11 +2009,11 @@ class Process_Media():
         )
 
         self.new_audio_file.url_signed = data_tools.build_secure_url(self.new_audio_file.url_signed_blob_path,
-                                                                     offset)
+                                                                     new_offset_in_seconds)
 
     def save_raw_text_file(self):
-        offset = 2592000
-        self.new_text_file.url_signed_expiry = int(time.time() + offset)  # 1 month
+        new_offset_in_seconds = settings.SIGNED_URL_CACHE_NEW_OFFSET_SECONDS_VALID
+        self.new_text_file.url_signed_expiry = int(new_offset_in_seconds)
 
         self.new_text_file.url_signed_blob_path = '{}{}/{}'.format(settings.PROJECT_TEXT_FILES_BASE_DIR,
                                                                    str(self.project_id),
@@ -2029,7 +2029,7 @@ class Process_Media():
         )
 
         self.new_text_file.url_signed = data_tools.build_secure_url(self.new_text_file.url_signed_blob_path,
-                                                                    offset)
+                                                                    new_offset_in_seconds)
 
         # Now Save Tokens
 
