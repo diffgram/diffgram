@@ -25,6 +25,7 @@
                     @change_label_visibility="change_label_visibility"
                     @change_file="change_file"
                     @change_task="trigger_task_change"
+                    @add_xyz_layer="add_xyz_layer"
                     @undo="undo()"
                     @redo="redo()"
                 />
@@ -102,8 +103,8 @@ import LineString from 'ol/geom/LineString';
 import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Transform from "ol-ext/interaction/Transform";
+import XYZ from 'ol/source/XYZ';
 import 'ol/ol.css';
-import Error_multiple from "../regular/error_multiple.vue";
 
 export default Vue.extend({
     name: "geo_annotation_core",
@@ -447,9 +448,13 @@ export default Vue.extend({
             this.transform_interaction.on('rotateend', this.transform_interraction_handler)
             this.transform_interaction.on('scaleend', this.transform_interraction_handler)
 
-            const view = await source.getView()
-            const overlayView = new View({...view})
-            map.setView(overlayView)
+            const sourceView = await source.getView()
+            const view = new View({
+                center: [...sourceView.center],
+                zoom: sourceView.zoom,
+                extent: sourceView.extent,
+            })
+            map.setView(view)
 
             // This  is event listener for mouse move within the map, and return coordinates of the map
             map.on('pointermove', (evt) => {
@@ -463,6 +468,16 @@ export default Vue.extend({
             })
 
             this.map_instance = map
+        },
+        add_xyz_layer: function(e) {
+            console.log(e)
+            const layer = new TileLayer({
+                source: new XYZ({
+                    url: e.tile
+                }),
+                opacity: e.opacity
+            })
+            this.map_instance.addLayer(layer)
         },
         transform_interraction_handler: function(e) {
             const { ol_uid } = e.feature

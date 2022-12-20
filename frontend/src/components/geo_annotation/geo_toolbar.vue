@@ -407,6 +407,21 @@
             </button_with_menu>
 
             <v-divider vertical></v-divider>
+            
+            <button_with_menu
+                tooltip_message="Add Tile"
+                color="primary"
+                icon="mdi-map-legend"
+                :close_by_button="true"
+            >
+                <template slot="content">
+                    <geo_add_tile
+                        @add_tile="(e) => $emit('add_xyz_layer', e)"
+                    />
+                </template>
+            </button_with_menu>
+
+            <v-divider vertical></v-divider>
 
         </v-toolbar-items>
     </v-toolbar>
@@ -418,6 +433,7 @@ import label_select_annotation from "../label/label_select_annotation.vue"
 import label_schema_selector from "../label/label_schema_selector.vue"
 import task_status from "../annotation/task_status.vue"
 import geo_hotkeys from "./geo_hotkeys.vue"
+import geo_add_tile from "./geo_add_tile.vue"
 
 export default Vue.extend({
     name: "geo_toolbar",
@@ -425,7 +441,8 @@ export default Vue.extend({
         label_select_annotation,
         geo_hotkeys,
         label_schema_selector,
-        task_status
+        task_status,
+        geo_add_tile
     },
     props: {
         undo_disabled: {
