@@ -50,7 +50,7 @@ def default_url_regenerate(session: Session,
     :return:
     """
     log = regular_log.default()
-    print('URL REGENERATE', new_offset_in_seconds)
+    #print('URL REGENERATE', new_offset_in_seconds)
     try:
         blob_object.url_signed = data_tools.build_secure_url(blob_object.url_signed_blob_path, new_offset_in_seconds)
         blob_object.url_signed_expiry = time.time() + new_offset_in_seconds
