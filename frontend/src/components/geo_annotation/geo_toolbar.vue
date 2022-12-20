@@ -249,6 +249,21 @@
                 </v_annotation_trainer_menu>
 
                 <v-divider vertical></v-divider>
+
+                <button_with_menu
+                    tooltip_message="Add Tile"
+                    color="primary"
+                    icon="mdi-map-legend"
+                    :close_by_button="true"
+                >
+                    <template slot="content">
+                        <geo_add_tile
+                            @add_tile="(e) => $emit('add_xyz_layer', e)"
+                        />
+                    </template>
+                </button_with_menu>
+
+                <v-divider vertical></v-divider>
                 </v-layout>
             </div>
         </v-toolbar-items>
