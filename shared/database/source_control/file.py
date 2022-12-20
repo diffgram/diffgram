@@ -408,6 +408,7 @@ class File(Base, Caching):
                                                                bucket_name = self.bucket_name)
                 file['video']['bucket_name'] = self.bucket_name
         elif self.type == "text":
+            print('serialize_with_type', regen_url)
             if self.text_file:
                 file['text'] = self.text_file.serialize(session = session,
                                                         connection_id = self.connection_id,
