@@ -257,7 +257,8 @@
                     :close_by_button="true"
                 >
                     <template slot="content">
-                        <geo_add_tile
+                        <geo_tile
+                            :map_layers="map_layers"
                             @add_tile="(e) => $emit('add_xyz_layer', e)"
                         />
                     </template>
@@ -430,7 +431,8 @@
                 :close_by_button="true"
             >
                 <template slot="content">
-                    <geo_add_tile
+                    <geo_tile
+                        :map_layers="map_layers"
                         @add_tile="(e) => $emit('add_xyz_layer', e)"
                     />
                 </template>
@@ -448,7 +450,7 @@ import label_select_annotation from "../label/label_select_annotation.vue"
 import label_schema_selector from "../label/label_schema_selector.vue"
 import task_status from "../annotation/task_status.vue"
 import geo_hotkeys from "./geo_hotkeys.vue"
-import geo_add_tile from "./geo_add_tile.vue"
+import geo_tile from "./geo_tile.vue"
 
 export default Vue.extend({
     name: "geo_toolbar",
@@ -457,7 +459,7 @@ export default Vue.extend({
         geo_hotkeys,
         label_schema_selector,
         task_status,
-        geo_add_tile
+        geo_tile
     },
     props: {
         undo_disabled: {
@@ -479,6 +481,10 @@ export default Vue.extend({
         height: {
             type: String,
             default: '50px'
+        },
+        map_layers: {
+            type: Object,
+            default: {}
         },
         project_string_id: {
             type: String,

@@ -18,6 +18,7 @@
                     :file="file"
                     :label_schema="label_schema"
                     :loading="rendering"
+                    :map_layers="map_layers"
                     @change_label_schema="on_change_label_schema"
                     @edit_mode_toggle="change_mode" 
                     @change_instance_type="change_instance_type"
@@ -83,6 +84,7 @@ import {
 } from "../../helpers/command/available_commands"
 import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
 import { getInstanceList, postInstanceList } from "../../services/instanceList";
+import slugify from "slugify"
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
 import Map from 'ol/Map';
@@ -162,6 +164,7 @@ export default Vue.extend({
             drawing_feature: undefined,
             transform_interaction: null,
             tiff_source: null,
+            map_layers: {},
             // Others
             selected: null,
             rendering: false,
@@ -426,19 +429,36 @@ export default Vue.extend({
                 zIndex: 1001
             })
 
+            const OSM_layer = new TileLayer({
+                source: new OSM(),
+                zIndex: 0
+            })
+            
+            const geotiff_layer = new TileLayer({
+                source,
+                opacity: 0.5,
+                zIndex: 1
+            })
+
+            this.map_layers = {
+                'base_layer': {
+                    name: "Base layer",
+                    layer: OSM_layer
+                },
+                'file_layer': {
+                    name: "GeoTiff layer",
+                    layer: geotiff_layer
+                },
+                'annotation_layer': {
+                    name: "Annotation layer",
+                    layer: draw_layer
+                }
+            }
+
             const map = new Map({
                 controls: defaultControls().extend([mousePositionControl]),
                 target: 'map',
-                layers: [
-                    new TileLayer({
-                        source: new OSM(),
-                    }),
-                    new TileLayer({
-                        source,
-                        opacity: 0.5
-                    }),
-                    draw_layer
-                ]
+                layers: [OSM_layer, geotiff_layer, draw_layer]
             });
 
             this.transform_interaction = new Transform({
@@ -475,8 +495,22 @@ export default Vue.extend({
                 source: new XYZ({
                     url: e.tile
                 }),
-                opacity: e.opacity
+                opacity: e.opacity,
+                zIndex: Object.keys(this.map_layers).length - 1
             })
+
+            console.log(layer.values_.zIndex)
+
+            const new_layer = {
+                name: e.name,
+                layer
+            }
+
+            this.map_layers = {
+                ...this.map_layers,
+                [slugify(e.name, '_')]: new_layer
+            }
+
             this.map_instance.addLayer(layer)
         },
         transform_interraction_handler: function(e) {
