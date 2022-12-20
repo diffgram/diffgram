@@ -490,6 +490,7 @@ export default Vue.extend({
 
             this.map_instance = map
         },
+        remove_xyz_layer: function(e) {},
         add_xyz_layer: function(e) {
             const layer = new TileLayer({
                 source: new XYZ({
@@ -499,10 +500,9 @@ export default Vue.extend({
                 zIndex: Object.keys(this.map_layers).length - 1
             })
 
-            console.log(layer.values_.zIndex)
-
             const new_layer = {
                 name: e.name,
+                removable: true,
                 layer
             }
 

@@ -2,13 +2,23 @@
   <div v-cloak id="geo-add-tile">
     <h3>Tiles</h3>
     <ul>
-      <li 
+      <li
         v-for="tile in tiles"
         :key="tile.name"
       >
-        {{ tile.name }}
+        <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between">
+          {{ tile.name }}
+          <standard_button
+            tooltip_message="Delete layer"
+            icon="mdi-close"
+            :icon_style="true"
+            :bottom="true"
+            :disabled="!tile.removable"
+          />
+        </div>
       </li>
     </ul>
+    <br />
     <h3>Add XYZ Tile</h3>
     <v-text-field
       v-model="name" 
@@ -63,7 +73,7 @@ export default Vue.extend({
 
       tile_keys.map(key => {
         const current_tile = this.map_layers[key]
-        tile_list.push(current_tile)
+        tile_list.push({...current_tile, key})
       })
 
       return tile_list.sort((a, b) => {
