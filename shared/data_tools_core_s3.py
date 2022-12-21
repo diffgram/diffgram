@@ -257,7 +257,7 @@ class DataToolsS3:
             bucket_name = self.s3_bucket_name_ml
 
         filename = blob_name.split("/")[-1]
-        print('SECONDS VALID', expiration_offset)
+        #print('SECONDS VALID', expiration_offset)
         signed_url = self.s3_client.generate_presigned_url('get_object',
                                                            Params = {
                                                                'Bucket': bucket_name,
