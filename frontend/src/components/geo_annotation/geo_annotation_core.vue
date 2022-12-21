@@ -19,6 +19,7 @@
                     :label_schema="label_schema"
                     :loading="rendering"
                     :map_layers="map_layers"
+                    :allow_add_tails="allow_add_tails"
                     @change_label_schema="on_change_label_schema"
                     @edit_mode_toggle="change_mode" 
                     @change_instance_type="change_instance_type"
@@ -167,6 +168,7 @@ export default Vue.extend({
             map_layers: {},
             tiff_source: null,
             // Others
+            allow_add_tails: false,
             selected: null,
             rendering: false,
             current_label: undefined,
@@ -471,6 +473,9 @@ export default Vue.extend({
             this.transform_interaction.on('scaleend', this.transform_interraction_handler)
 
             const sourceView = await source.getView()
+            
+            this.allow_add_tails = sourceView.projection.units_ === 'm'
+
             const view = new View({
                 center: sourceView.center,
                 projection: sourceView.projection,

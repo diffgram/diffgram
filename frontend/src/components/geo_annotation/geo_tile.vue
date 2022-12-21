@@ -20,31 +20,33 @@
       </li>
     </ul>
     <br />
-    <h3>Add XYZ Tile</h3>
-    <v-text-field
-      v-model="name" 
-      label="Layer name" 
-    />
-    <v-text-field
-      v-model="tile" 
-      label="Link to the tile" 
-    />
-    <v-text-field
-      v-model="opacity"
-      label="Opacity"
-      hide-details
-      single-line
-      type="number"
-    />
-    <br />
-    <standard_button
-      button_message="Add"
-      button_color="primary"
-      :icon="null"
-      :bottom="true"
-      :disabled="loading || save_loading"
-      @click="add_tile"
-    />
+    <div v-if="allow_add_tiles">
+      <h3>Add XYZ Tile</h3>
+      <v-text-field
+        v-model="name" 
+        label="Layer name" 
+      />
+      <v-text-field
+        v-model="tile" 
+        label="Link to the tile" 
+      />
+      <v-text-field
+        v-model="opacity"
+        label="Opacity"
+        hide-details
+        single-line
+        type="number"
+      />
+      <br />
+      <standard_button
+        button_message="Add"
+        button_color="primary"
+        :icon="null"
+        :bottom="true"
+        :disabled="loading || save_loading"
+        @click="add_tile"
+      />
+    </div>
   </div>
 </template>
 
@@ -58,6 +60,10 @@ export default Vue.extend({
     map_layers: {
       type: Object,
       default: {}
+    },
+    allow_add_tiles: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
