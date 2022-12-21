@@ -497,10 +497,13 @@ export default Vue.extend({
 
             const view = new View({
                 center: sourceView.center,
-                projection: sourceView.projection,
                 resolutions: sourceView.resolutions,
                 zoom: sourceView.zoom
             })
+
+            if (this.allow_add_tiles) {
+                view.projection = sourceView.projection
+            }
 
             map.setView(view)
 
