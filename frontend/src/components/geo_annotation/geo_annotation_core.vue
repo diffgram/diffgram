@@ -19,7 +19,7 @@
                     :label_schema="label_schema"
                     :loading="rendering"
                     :map_layers="map_layers"
-                    :allow_add_tails="allow_add_tails"
+                    :allow_add_tiles="allow_add_tiles"
                     @change_label_schema="on_change_label_schema"
                     @edit_mode_toggle="change_mode" 
                     @change_instance_type="change_instance_type"
@@ -29,6 +29,7 @@
                     @change_task="trigger_task_change"
                     @add_xyz_layer="add_xyz_layer"
                     @remove_xyz_layer="remove_xyz_layer"
+                    @reset_default_view="reset_default_view"
                     @undo="undo()"
                     @redo="redo()"
                 />
@@ -168,7 +169,7 @@ export default Vue.extend({
             map_layers: {},
             tiff_source: null,
             // Others
-            allow_add_tails: false,
+            allow_add_tiles: false,
             selected: null,
             rendering: false,
             current_label: undefined,
@@ -474,7 +475,7 @@ export default Vue.extend({
 
             const sourceView = await source.getView()
             
-            this.allow_add_tails = sourceView.projection.units_ === 'm'
+            this.allow_add_tiles = sourceView.projection.units_ === 'm'
 
             const view = new View({
                 center: sourceView.center,
@@ -497,6 +498,18 @@ export default Vue.extend({
             })
 
             this.map_instance = map
+        },
+        reset_default_view: async function() {
+            const sourceView = await this.tiff_source.getView()
+            
+            const view = new View({
+                center: sourceView.center,
+                projection: sourceView.projection,
+                resolutions: sourceView.resolutions,
+                zoom: sourceView.zoom
+            })
+
+            this.map_instance.setView(view)
         },
         remove_xyz_layer: function(e) {
             const layer_to_remove = this.map_layers[e]

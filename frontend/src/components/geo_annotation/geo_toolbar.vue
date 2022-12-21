@@ -267,6 +267,15 @@
                 </button_with_menu>
 
                 <v-divider vertical></v-divider>
+                    <standard_button
+                        tooltip_message="Reset default view"
+                        @click="$emit('reset_default_view')"
+                        color="primary"
+                        icon="mdi-target-variant"
+                        :icon_style="true"
+                        :bottom="true"
+                    />
+                <v-divider vertical></v-divider>
                 </v-layout>
             </div>
         </v-toolbar-items>
@@ -441,6 +450,17 @@
                     />
                 </template>
             </button_with_menu>
+
+            <v-divider vertical></v-divider>
+            
+            <standard_button
+                tooltip_message="Reset default view"
+                @click="$emit('reset_default_view')"
+                color="primary"
+                icon="mdi-target-variant"
+                :icon_style="true"
+                :bottom="true"
+            />
 
             <v-divider vertical></v-divider>
 
