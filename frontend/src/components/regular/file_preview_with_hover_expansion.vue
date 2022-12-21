@@ -23,6 +23,7 @@
         ></file_preview>
         <v-icon v-if="file.type === 'sensor_fusion'" size="64" color="primary">mdi-printer-3d</v-icon>
         <v-icon v-if="file.type === 'text'" size="64" color="primary">mdi-text-long</v-icon>
+        <v-icon v-if="file.type === 'geospatial'" size="64" color="primary">mdi-map-search-outline</v-icon>
        </div>
 
     </template>
