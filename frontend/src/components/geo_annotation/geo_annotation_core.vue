@@ -108,7 +108,6 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Transform from "ol-ext/interaction/Transform";
 import XYZ from 'ol/source/XYZ';
 import 'ol/ol.css';
-import Error_multiple from "../regular/error_multiple.vue";
 
 export default Vue.extend({
     name: "geo_annotation_core",
@@ -165,6 +164,8 @@ export default Vue.extend({
             feature_list: [],
             drawing_feature: undefined,
             transform_interaction: null,
+            map_layers: {},
+            tiff_source: null,
             // Others
             selected: null,
             rendering: false,
@@ -471,10 +472,12 @@ export default Vue.extend({
 
             const sourceView = await source.getView()
             const view = new View({
-                center: [...sourceView.center],
-                zoom: sourceView.zoom,
-                extent: sourceView.extent,
+                center: sourceView.center,
+                projection: sourceView.projection,
+                resolutions: sourceView.resolutions,
+                zoom: sourceView.zoom
             })
+
             map.setView(view)
 
             // This  is event listener for mouse move within the map, and return coordinates of the map
