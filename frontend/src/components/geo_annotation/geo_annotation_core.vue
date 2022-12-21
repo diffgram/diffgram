@@ -483,6 +483,8 @@ export default Vue.extend({
                 layers: [OSM_layer, geotiff_layer, draw_layer]
             });
 
+            this.map_instance = map
+
             this.transform_interaction = new Transform({
                 layers: [draw_layer],
             })
@@ -491,44 +493,38 @@ export default Vue.extend({
             this.transform_interaction.on('rotateend', this.transform_interraction_handler)
             this.transform_interaction.on('scaleend', this.transform_interraction_handler)
 
-            const sourceView = await source.getView()
-            
-            this.allow_add_tiles = sourceView.projection.units_ === 'm'
-
-            const view = new View({
-                center: sourceView.center,
-                resolutions: sourceView.resolutions,
-                zoom: sourceView.zoom
-            })
-
-            if (this.allow_add_tiles) {
-                view.projection = sourceView.projection
-            }
-
-            map.setView(view)
+            await this.reset_default_view()
 
             // This  is event listener for mouse move within the map, and return coordinates of the map
-            map.on('pointermove', (evt) => {
+            this.map_instance.on('pointermove', (evt) => {
                 this.mouse_coords = evt.coordinate
             })
-            map.on('movestart', (evt) => {
+            this.map_instance.on('movestart', (evt) => {
                 this.moving = true
             })
-            map.on('moveend', (evt) => {
+            this.map_instance.on('moveend', (evt) => {
                 this.moving = false
             })
-
-            this.map_instance = map
         },
         reset_default_view: async function() {
             const sourceView = await this.tiff_source.getView()
             
-            const view = new View({
+            this.allow_add_tiles = sourceView.projection.units_ === 'm'
+
+            let view = new View({
                 center: sourceView.center,
-                projection: sourceView.projection,
                 resolutions: sourceView.resolutions,
                 zoom: sourceView.zoom
             })
+
+            if (!this.allow_add_tiles) {
+                view = new View({
+                    center: sourceView.center,
+                    resolutions: sourceView.resolutions,
+                    zoom: sourceView.zoom,
+                    projection: sourceView.projection
+                })
+            }
 
             this.map_instance.setView(view)
         },
