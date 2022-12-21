@@ -93,7 +93,7 @@
                 >
                 </v_is_complete>
 
-                <div>
+                <!-- <div>
                     <standard_button
                         v-if="task && task.id && task.status == 'available'"
                         ui_schema_name="defer"
@@ -109,7 +109,7 @@
                         tooltip_message="Defer"
                         :bottom="true"
                     />
-                </div>
+                </div> -->
 
                 <v-divider vertical></v-divider>
 

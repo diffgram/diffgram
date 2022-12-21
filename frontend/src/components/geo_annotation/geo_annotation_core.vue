@@ -31,6 +31,8 @@
                     @add_xyz_layer="add_xyz_layer"
                     @remove_xyz_layer="remove_xyz_layer"
                     @reset_default_view="reset_default_view"
+                    @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
+                    @save="save"
                     @undo="undo()"
                     @redo="redo()"
                 />
@@ -110,6 +112,7 @@ import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Transform from "ol-ext/interaction/Transform";
 import XYZ from 'ol/source/XYZ';
+import {finishTaskAnnotation} from "../../services/tasksServices";
 import 'ol/ol.css';
 
 export default Vue.extend({
@@ -372,6 +375,19 @@ export default Vue.extend({
         this.start_autosave()
     },
     methods: {
+        on_task_annotation_complete_and_save: async function () {
+            await this.save(false);
+            const response = await finishTaskAnnotation(this.task.id);
+            const new_status = response.data.task.status;
+            this.task.status = new_status;
+            if (new_status !== "complete") {
+                this.submitted_to_review = true;
+            }
+            if (this.$props.task && this.$props.task.id) {
+                this.save_loading_image = false;
+                this.trigger_task_change("next", this.$props.task, true);
+            }
+        },
         initialize_interface_data: async function() {
             let url;
             let payload;
