@@ -18,6 +18,7 @@
                     :file="file"
                     :label_schema="label_schema"
                     :loading="rendering"
+                    :save_loading="save_loading"
                     :map_layers="map_layers"
                     :allow_add_tiles="allow_add_tiles"
                     @change_label_schema="on_change_label_schema"
@@ -169,6 +170,7 @@ export default Vue.extend({
             map_layers: {},
             tiff_source: null,
             // Others
+            save_loading: false,
             allow_add_tiles: false,
             selected: null,
             rendering: false,
