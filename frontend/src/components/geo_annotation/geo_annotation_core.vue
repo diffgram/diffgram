@@ -108,6 +108,7 @@ import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Transform from "ol-ext/interaction/Transform";
 import XYZ from 'ol/source/XYZ';
 import 'ol/ol.css';
+import Error_multiple from "../regular/error_multiple.vue";
 
 export default Vue.extend({
     name: "geo_annotation_core",
@@ -164,8 +165,6 @@ export default Vue.extend({
             feature_list: [],
             drawing_feature: undefined,
             transform_interaction: null,
-            tiff_source: null,
-            map_layers: {},
             // Others
             selected: null,
             rendering: false,
