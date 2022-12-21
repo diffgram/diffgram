@@ -822,6 +822,7 @@ export default Vue.extend({
             const command = new CreateInstanceCommand([newPoly], this.instance_list)
             this.command_manager.executeCommand(command)
 
+            this.has_changed = true
             this.drawing_instance = false;
             this.feature_list.push(polyFeature);
             this.drawing_feature = undefined;
