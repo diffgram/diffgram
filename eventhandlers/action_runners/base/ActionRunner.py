@@ -187,7 +187,7 @@ class ActionRunner:
             'task_id': None if not has_output else output.get('task_id'),
 
         }
-        print('DECLARE ACTION COMPELTEEED', event_payload)
+        #print('DECLARE ACTION COMPELTEEED', event_payload)
         if has_output:
             event_payload['extra_metadata'] = output
         Event.new(

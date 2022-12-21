@@ -18,6 +18,9 @@
                     :file="file"
                     :label_schema="label_schema"
                     :loading="rendering"
+                    :save_loading="save_loading"
+                    :map_layers="map_layers"
+                    :allow_add_tiles="allow_add_tiles"
                     @change_label_schema="on_change_label_schema"
                     @edit_mode_toggle="change_mode" 
                     @change_instance_type="change_instance_type"
@@ -25,6 +28,11 @@
                     @change_label_visibility="change_label_visibility"
                     @change_file="change_file"
                     @change_task="trigger_task_change"
+                    @add_xyz_layer="add_xyz_layer"
+                    @remove_xyz_layer="remove_xyz_layer"
+                    @reset_default_view="reset_default_view"
+                    @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
+                    @save="save"
                     @undo="undo()"
                     @redo="redo()"
                 />
@@ -82,6 +90,7 @@ import {
 } from "../../helpers/command/available_commands"
 import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
 import { getInstanceList, postInstanceList } from "../../services/instanceList";
+import slugify from "slugify"
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
 import Map from 'ol/Map';
@@ -102,8 +111,9 @@ import LineString from 'ol/geom/LineString';
 import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Transform from "ol-ext/interaction/Transform";
+import XYZ from 'ol/source/XYZ';
+import {finishTaskAnnotation} from "../../services/tasksServices";
 import 'ol/ol.css';
-import Error_multiple from "../regular/error_multiple.vue";
 
 export default Vue.extend({
     name: "geo_annotation_core",
@@ -160,8 +170,11 @@ export default Vue.extend({
             feature_list: [],
             drawing_feature: undefined,
             transform_interaction: null,
+            map_layers: {},
             tiff_source: null,
             // Others
+            save_loading: false,
+            allow_add_tiles: false,
             selected: null,
             rendering: false,
             current_label: undefined,
@@ -362,6 +375,19 @@ export default Vue.extend({
         this.start_autosave()
     },
     methods: {
+        on_task_annotation_complete_and_save: async function () {
+            await this.save(false);
+            const response = await finishTaskAnnotation(this.task.id);
+            const new_status = response.data.task.status;
+            this.task.status = new_status;
+            if (new_status !== "complete") {
+                this.submitted_to_review = true;
+            }
+            if (this.$props.task && this.$props.task.id) {
+                this.save_loading_image = false;
+                this.trigger_task_change("next", this.$props.task, true);
+            }
+        },
         initialize_interface_data: async function() {
             let url;
             let payload;
@@ -421,23 +447,43 @@ export default Vue.extend({
             this.annotation_source = new VectorSource({})
 
             const draw_layer = new VectorLayer({
-                source: this.annotation_source
+                source: this.annotation_source,
+                zIndex: 1001
             })
+
+            const OSM_layer = new TileLayer({
+                source: new OSM(),
+                zIndex: 0
+            })
+            
+            const geotiff_layer = new TileLayer({
+                source,
+                opacity: 0.5,
+                zIndex: 1
+            })
+
+            this.map_layers = {
+                'base_layer': {
+                    name: "Base layer",
+                    layer: OSM_layer
+                },
+                'file_layer': {
+                    name: "GeoTiff layer",
+                    layer: geotiff_layer
+                },
+                'annotation_layer': {
+                    name: "Annotation layer",
+                    layer: draw_layer
+                }
+            }
 
             const map = new Map({
                 controls: defaultControls().extend([mousePositionControl]),
                 target: 'map',
-                layers: [
-                    new TileLayer({
-                        source: new OSM(),
-                    }),
-                    new TileLayer({
-                        source,
-                        opacity: 0.5
-                    }),
-                    draw_layer
-                ]
+                layers: [OSM_layer, geotiff_layer, draw_layer]
             });
+
+            this.map_instance = map
 
             this.transform_interaction = new Transform({
                 layers: [draw_layer],
@@ -447,22 +493,70 @@ export default Vue.extend({
             this.transform_interaction.on('rotateend', this.transform_interraction_handler)
             this.transform_interaction.on('scaleend', this.transform_interraction_handler)
 
-            const view = await source.getView()
-            const overlayView = new View({...view})
-            map.setView(overlayView)
+            await this.reset_default_view()
 
             // This  is event listener for mouse move within the map, and return coordinates of the map
-            map.on('pointermove', (evt) => {
+            this.map_instance.on('pointermove', (evt) => {
                 this.mouse_coords = evt.coordinate
             })
-            map.on('movestart', (evt) => {
+            this.map_instance.on('movestart', (evt) => {
                 this.moving = true
             })
-            map.on('moveend', (evt) => {
+            this.map_instance.on('moveend', (evt) => {
                 this.moving = false
             })
+        },
+        reset_default_view: async function() {
+            const sourceView = await this.tiff_source.getView()
+            
+            this.allow_add_tiles = sourceView.projection.units_ === 'm'
 
-            this.map_instance = map
+            let view = new View({
+                center: sourceView.center,
+                resolutions: sourceView.resolutions,
+                zoom: sourceView.zoom
+            })
+
+            if (!this.allow_add_tiles) {
+                view = new View({
+                    center: sourceView.center,
+                    resolutions: sourceView.resolutions,
+                    zoom: sourceView.zoom,
+                    projection: sourceView.projection
+                })
+            }
+
+            this.map_instance.setView(view)
+        },
+        remove_xyz_layer: function(e) {
+            const layer_to_remove = this.map_layers[e]
+            if (layer_to_remove) {
+                this.map_instance.removeLayer(layer_to_remove.layer)
+    
+                this.map_layers[e] = null
+            }
+        },
+        add_xyz_layer: function(e) {
+            const layer = new TileLayer({
+                source: new XYZ({
+                    url: e.tile
+                }),
+                opacity: e.opacity,
+                zIndex: Object.keys(this.map_layers).length - 1
+            })
+
+            const new_layer = {
+                name: e.name,
+                removable: true,
+                layer
+            }
+
+            this.map_layers = {
+                ...this.map_layers,
+                [slugify(e.name, '_')]: new_layer
+            }
+
+            this.map_instance.addLayer(layer)
         },
         transform_interraction_handler: function(e) {
             const { ol_uid } = e.feature
@@ -743,6 +837,7 @@ export default Vue.extend({
             const command = new CreateInstanceCommand([newPoly], this.instance_list)
             this.command_manager.executeCommand(command)
 
+            this.has_changed = true
             this.drawing_instance = false;
             this.feature_list.push(polyFeature);
             this.drawing_feature = undefined;

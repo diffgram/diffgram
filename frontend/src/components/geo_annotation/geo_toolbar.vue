@@ -93,7 +93,7 @@
                 >
                 </v_is_complete>
 
-                <div>
+                <!-- <div>
                     <standard_button
                         v-if="task && task.id && task.status == 'available'"
                         ui_schema_name="defer"
@@ -109,7 +109,7 @@
                         tooltip_message="Defer"
                         :bottom="true"
                     />
-                </div>
+                </div> -->
 
                 <v-divider vertical></v-divider>
 
@@ -248,6 +248,33 @@
                 >
                 </v_annotation_trainer_menu>
 
+                <v-divider vertical></v-divider>
+
+                <button_with_menu
+                    tooltip_message="Add Tile"
+                    color="primary"
+                    icon="mdi-map-legend"
+                    :close_by_button="true"
+                >
+                    <template slot="content">
+                        <geo_tile
+                            :map_layers="map_layers"
+                            :allow_add_tiles="allow_add_tiles"
+                            @add_tile="(e) => $emit('add_xyz_layer', e)"
+                            @remove_tile="(e) => $emit('remove_xyz_layer', e)"
+                        />
+                    </template>
+                </button_with_menu>
+
+                <v-divider vertical></v-divider>
+                    <standard_button
+                        tooltip_message="Reset default view"
+                        @click="$emit('reset_default_view')"
+                        color="primary"
+                        icon="mdi-target-variant"
+                        :icon_style="true"
+                        :bottom="true"
+                    />
                 <v-divider vertical></v-divider>
                 </v-layout>
             </div>
@@ -407,6 +434,35 @@
             </button_with_menu>
 
             <v-divider vertical></v-divider>
+            
+            <button_with_menu
+                tooltip_message="Add Tile"
+                color="primary"
+                icon="mdi-map-legend"
+                :close_by_button="true"
+            >
+                <template slot="content">
+                    <geo_tile
+                        :map_layers="map_layers"
+                        :allow_add_tiles="allow_add_tiles"
+                        @add_tile="(e) => $emit('add_xyz_layer', e)"
+                        @remove_tile="(e) => $emit('remove_xyz_layer', e)"
+                    />
+                </template>
+            </button_with_menu>
+
+            <v-divider vertical></v-divider>
+            
+            <standard_button
+                tooltip_message="Reset default view"
+                @click="$emit('reset_default_view')"
+                color="primary"
+                icon="mdi-target-variant"
+                :icon_style="true"
+                :bottom="true"
+            />
+
+            <v-divider vertical></v-divider>
 
         </v-toolbar-items>
     </v-toolbar>
@@ -418,6 +474,7 @@ import label_select_annotation from "../label/label_select_annotation.vue"
 import label_schema_selector from "../label/label_schema_selector.vue"
 import task_status from "../annotation/task_status.vue"
 import geo_hotkeys from "./geo_hotkeys.vue"
+import geo_tile from "./geo_tile.vue"
 
 export default Vue.extend({
     name: "geo_toolbar",
@@ -425,7 +482,8 @@ export default Vue.extend({
         label_select_annotation,
         geo_hotkeys,
         label_schema_selector,
-        task_status
+        task_status,
+        geo_tile
     },
     props: {
         undo_disabled: {
@@ -435,6 +493,10 @@ export default Vue.extend({
         redo_disabled: {
             type: Boolean,
             required: true
+        },
+        allow_add_tiles: {
+            type: Boolean,
+            default: false
         },
         has_changed: {
             type: Boolean,
@@ -447,6 +509,10 @@ export default Vue.extend({
         height: {
             type: String,
             default: '50px'
+        },
+        map_layers: {
+            type: Object,
+            default: {}
         },
         project_string_id: {
             type: String,
