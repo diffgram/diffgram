@@ -262,6 +262,7 @@
                             :allow_add_tiles="allow_add_tiles"
                             @add_tile="(e) => $emit('add_xyz_layer', e)"
                             @remove_tile="(e) => $emit('remove_xyz_layer', e)"
+                            @show_hide_layer="(e) => $emit('show_hide_layer', e)"
                         />
                     </template>
                 </button_with_menu>
@@ -447,6 +448,7 @@
                         :allow_add_tiles="allow_add_tiles"
                         @add_tile="(e) => $emit('add_xyz_layer', e)"
                         @remove_tile="(e) => $emit('remove_xyz_layer', e)"
+                        @show_hide_layer="(e) => $emit('show_hide_layer', e)"
                     />
                 </template>
             </button_with_menu>

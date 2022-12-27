@@ -8,14 +8,23 @@
       >
         <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between">
           {{ tile.name }}
-          <standard_button
-            tooltip_message="Delete layer"
-            icon="mdi-close"
-            :icon_style="true"
-            :bottom="true"
-            :disabled="!tile.removable"
-            @click="() => remove_tile(tile.key)"
-          />
+          <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between">
+            <standard_button
+              tooltip_message="Delete layer"
+              icon="mdi-delete"
+              :icon_style="true"
+              :bottom="true"
+              :disabled="!tile.removable"
+              @click="() => remove_tile(tile.key)"
+            />
+            <standard_button
+              tooltip_message="Hide/Show Layer"
+              :icon="tile.hidden ? 'mdi-eye-off' : 'mdi-eye'"
+              :icon_style="true"
+              :bottom="true"
+              @click="() => show_hide_layer(tile.key)"
+            />
+          </div>
         </div>
       </li>
     </ul>
@@ -94,6 +103,9 @@ export default Vue.extend({
   methods: {
     remove_tile: function(key) {
       this.$emit('remove_tile', key)
+    },
+    show_hide_layer: function(key) {
+      this.$emit('show_hide_layer', key)
     },
     add_tile: function() {
       if (!this.tile || !this.name) return

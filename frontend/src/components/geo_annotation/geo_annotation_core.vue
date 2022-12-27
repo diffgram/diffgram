@@ -32,6 +32,7 @@
                     @remove_xyz_layer="remove_xyz_layer"
                     @reset_default_view="reset_default_view"
                     @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
+                    @show_hide_layer="show_hide_layer"
                     @save="save"
                     @undo="undo()"
                     @redo="redo()"
@@ -465,15 +466,18 @@ export default Vue.extend({
             this.map_layers = {
                 'base_layer': {
                     name: "Base layer",
-                    layer: OSM_layer
+                    layer: OSM_layer,
+                    hidden: false
                 },
                 'file_layer': {
                     name: "GeoTiff layer",
-                    layer: geotiff_layer
+                    layer: geotiff_layer,
+                    hidden: false
                 },
                 'annotation_layer': {
                     name: "Annotation layer",
-                    layer: draw_layer
+                    layer: draw_layer,
+                    hidden: false
                 }
             }
 
@@ -527,6 +531,19 @@ export default Vue.extend({
             }
 
             this.map_instance.setView(view)
+        },
+        show_hide_layer: function(e) {
+            const layer = this.map_layers[e]
+            if (layer) {
+                if (!layer.hidden) {
+                    this.map_instance.removeLayer(layer.layer)
+                    this.map_layers[e].hidden = true
+                }
+                else {
+                    this.map_instance.addLayer(layer.layer)
+                    this.map_layers[e].hidden = false
+                }
+            }
         },
         remove_xyz_layer: function(e) {
             const layer_to_remove = this.map_layers[e]
