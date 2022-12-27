@@ -99,6 +99,7 @@ export default {
   },
   mounted() {
     this.report_template.job_id = this.job_id;
+    this.report_template.project_id = this.$store.state.project.current.id;
     this.gen_report();
   },
   methods: {

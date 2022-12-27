@@ -30,12 +30,16 @@ import {runReport} from '../../services/reportServices.ts'
 import Bar_horizontal_chart from "../report/charts/bar_horizontal_chart";
 export default {
   name: "annotator_performance",
-  components: {Bar_horizontal_chart},
+  components: {
+    Bar_horizontal_chart
+  },
   props: {
     job_id: {
+      type: String,
       default: null
     },
     project_string_id: {
+      type: String,
       default: null
     }
   },
@@ -78,13 +82,14 @@ export default {
         job_id: null, // Populated on mounted(),
         period: 'all',
         view_type: 'all',
-        view_sub_type: 'bar',
+        view_sub_type: 'bar'
       },
       loading: false
     }
   },
   mounted() {
     this.report_template.job_id = this.job_id;
+    this.report_template.project_id = this.$store.state.project.current.id;
     this.gen_report();
   },
   methods: {
