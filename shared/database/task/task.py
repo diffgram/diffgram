@@ -707,7 +707,7 @@ class Task(Base):
         completed = query.filter(Task.job_id == job_id,
                                  Task.status == 'complete').count()
         in_review = query.filter(Task.job_id == job_id,
-                                 Task.status == 'review_requested').count()
+                                 Task.status == 'in_review').count()
         requires_changes = query.filter(Task.job_id == job_id,
                                         Task.status == 'requires_changes').count()
         in_progress = query.filter(Task.job_id == job_id,
