@@ -100,7 +100,7 @@ export default {
     gen_report: async function () {
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
-      if (result) {
+      if (result && result.stats) {
 
         this.chart_data = {
           labels: result.stats.labels,
