@@ -16,7 +16,7 @@ class Org_To_User(Base):
     user = relationship("User")
 
     # ["Admin", "Restricted Annotator"]
-    user_permission_level = Column(String())  # New May 30, 2019
+    user_permission_level = Column(String())
 
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
@@ -67,8 +67,6 @@ class Org_To_User(Base):
 
         if user is None:
             return {'Error': 'User is None'}
-
-        # Dec 27, 2019 need member id for front end table unique key
 
         return {
             'member_id': self.user.member_id,

@@ -34,7 +34,7 @@
               @click="$emit('rowclick', props.item)"
               >
 
-            <!-- Feb 27, 2020 checkbox is WIP -->
+            <!-- WIP -->
             <!--
               <td>
                 <v-checkbox v-model="props.isSelected"

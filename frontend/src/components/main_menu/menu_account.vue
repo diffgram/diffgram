@@ -10,7 +10,7 @@
         -->
 
 
-    <!-- Dec 24, 2019, don't show this till we change
+    <!-- don't show this till we change
          other stuff with account to make more sense here... -->
     <!-- and if we do will need to use new standard menu thing -->
 

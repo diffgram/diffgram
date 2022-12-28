@@ -33,8 +33,6 @@ class Credential(Base):
 
     external_id = Column(String())
 
-    # Question Sept 5, 2019, why would we want an image id here
-    # if we are referencing a credential type?
     image_id = Column(Integer, ForeignKey('image.id'))
     image = relationship("Image")
 
