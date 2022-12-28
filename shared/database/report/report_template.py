@@ -6,15 +6,6 @@ class ReportTemplate(Base):
     __tablename__ = 'report_template'
 
     """
-
-    Metadata about the report template
-
-    Columns are done by Column
-
-    NOTE 
-        May 1, 2020 
-            If adding items, make sure to add to serialize too,
-            since the report save assumes that will exist.
         
     """
 
