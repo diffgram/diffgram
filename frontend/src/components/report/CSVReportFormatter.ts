@@ -109,17 +109,21 @@ export class CSVReportFormatter{
     if(!values || values.length == 0){
       return null
     }
-    let result = ''
-    let row_keys = Object.keys(values[index])
-    for(let i =0;  i < row_keys.length; i++){
-      let elm = row_keys[i]
-      let value = values[index][elm]
-      result += `${value}`
-      if (i < row_keys.length - 1){
-        result += ','
-      }
 
-    }
+    let result = ''
+    const value_element = values[index]
+    const row_keys = Object.keys(value_element)
+
+    row_keys.map(
+      ( key: string,
+        key_index: number) => {
+
+      const value = value_element[key]
+
+      result += `${value}`
+ 
+      if (key_index != row_keys.length - 1) result += ','
+    })
     return result
   }
 
