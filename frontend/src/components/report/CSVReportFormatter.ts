@@ -78,7 +78,7 @@ export class CSVReportFormatter{
     * Depending on report_template config, we can adapt formatting and call different CSV formatting
     * functions. This function returns a function with the appropriate format based on report_template.
     * */
-    if(this.report_template.group_by_labels){
+    if(this.report_template.second_group_by == 'label'){
       return this.generate_grouped_by_label_format()
     }
     else{

@@ -35,6 +35,7 @@ class ReportTemplate(Base):
     item_of_interest = Column(String())
 
     group_by = Column(String())
+    second_group_by = Column(String())
 
     # dynamic period
     # all, last_week, last 14 days, last month, last year etc…
@@ -42,21 +43,14 @@ class ReportTemplate(Base):
     # always in context of current to previous right?
     period = Column(String(), default = "last_30_days")
 
-    # Return type is decided by the view?
-
     # day, month
     date_period_unit = Column(String())
 
     compare_to_previous_period = Column(Boolean, default = False)
 
-    # TODO add a list relation
-    # ie to access Column objects from here...
-    # and filters etc...
-
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys = [task_id])
 
-    # New May 11, 2020
     job_id = Column(Integer, ForeignKey('job.id'))
     job = relationship("Job", foreign_keys = [job_id])
     # If we wanted to add a multiple select filter for this in the future
@@ -72,7 +66,6 @@ class ReportTemplate(Base):
                                  'jobs_id_list': []
                              })
 
-    # WIP, NEW April 15, 2020
     report_dashboard_id = Column(Integer, ForeignKey('report_dashboard.id'))
     report_dashboard = relationship("ReportDashboard", foreign_keys = [report_dashboard_id])
 
@@ -84,8 +77,6 @@ class ReportTemplate(Base):
 
     # Maybe what type of chart?
     view_sub_type = Column(String())  # [web_chart, future]...
-
-    group_by_labels = Column(Boolean, default = False)
 
     task_event_type = Column(String())  # [task_completed, task_created, etc]...
 
@@ -125,8 +116,8 @@ class ReportTemplate(Base):
             'time_created': self.time_created.strftime('%m/%d/%Y, %H:%M:%S') if self.time_created else None,
             'time_updated': time_updated,
             'item_of_interest': self.item_of_interest,
-            'group_by_labels': self.group_by_labels,
             'group_by': self.group_by,
+            'second_group_by': self.second_group_by,
             'period': self.period,
             'date_period_unit': self.date_period_unit,
             'compare_to_previous_period': self.compare_to_previous_period,

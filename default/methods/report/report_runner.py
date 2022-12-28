@@ -91,9 +91,8 @@ report_spec_list = [
     }
     },
 
-    {"group_by_labels": {
-        'default': False,
-        'kind': bool,
+    {"second_group_by": {
+        'kind': str,
         'required': False
     }
     },
@@ -490,7 +489,7 @@ class Report_Runner():
 
         elif self.report_template.group_by == 'file':
 
-            if self.report_template.group_by_labels:
+            if self.report_template.second_group_by == 'label':
                 self.query = self.query.group_by(self.base_class.file_id, self.base_class.label_file_id)
             else:
                 self.query = self.query.group_by(self.base_class.file_id)
@@ -653,6 +652,8 @@ class Report_Runner():
             return
         if task_event_type.lower() == 'all':
             return
+        if not self.base_class.event_type:
+            return
         self.query = self.query.filter(self.base_class.event_type == task_event_type)
 
     def apply_concrete_filters(self):
@@ -765,7 +766,6 @@ class Report_Runner():
         # Assumes permissions handled by project scope
         self.report_template.task_id = metadata.get('task_id')
         self.report_template.member_list = metadata.get('member_list')
-        self.report_template.group_by_labels = metadata.get('group_by_labels', False)
         self.report_template.task_event_type = metadata.get('task_event_type')
 
         self.report_template.diffgram_wide_default = metadata.get('diffgram_wide_default')
@@ -788,6 +788,7 @@ class Report_Runner():
         self.report_template.is_visible_on_report_dashboard = metadata.get('is_visible_on_report_dashboard')
 
         self.report_template.group_by = metadata.get('group_by')
+        self.report_template.second_group_by = metadata.get('second_group_by')
 
         self.report_template.member_updated = self.member
 
@@ -994,10 +995,6 @@ class Report_Runner():
         return query
 
     def group_by_label(self):
-        """
-        WIP only really for Instance
-        Yes this must use an id it look like for group by
-        """
         if hasattr(self, 'label_file_id'):
             query = self.session.query(self.label_file_id, func.count(self.base_class.id))
         else:
@@ -1005,7 +1002,7 @@ class Report_Runner():
         return query
 
     def group_by_file(self):
-        if self.report_template.group_by_labels:
+        if self.report_template.second_group_by == 'label':
             query = self.session.query(self.base_class.file_id, self.base_class.label_file_id,
                                        func.count(self.base_class.id))
             query = query.filter()
@@ -1079,20 +1076,44 @@ class Report_Runner():
             # otherwise we just get the count of the "groups".
             return self.format_for_charting(execution_results)
 
+
+    def build_label_names_map_from_second_grouping(
+            self,
+            second_grouping):
+
+        label_file_ids = set(second_grouping)
+        labels_files = File.get_by_id_list(session = self.session, file_id_list = label_file_ids)
+        label_names_map = {}
+        for label_file in labels_files:
+            label_names_map[label_file.id] = label_file.label.name
+
+        return label_names_map
+
+
+    def format_view_type_count(
+            self, 
+            stats_list_by_period: list):
+
+        if len(stats_list_by_period) == 0:
+            return 0
+        if self.report_template.second_group:
+            labels, second_grouping, values = zip(*stats_list_by_period)
+        else:
+            labels, values = zip(*stats_list_by_period)
+        return sum(values)
+
+
     def format_for_charting(
-        self,
-        stats_list_by_period,
-        report_template = None):
+            self,
+            stats_list_by_period,
+            report_template = None):
         """
         This assumes stats_list_by_period is something like:
             0: ["Mon, 27 Jan 2020 00:00:00 GMT", 2]
             1: ["Tue, 28 Jan 2020 00:00:00 GMT", 2]
             2: ["Wed, 29 Jan 2020 00:00:00 GMT", 4]
 
-        Basically stats_list_by_period is the "actual data"
-        so to speak... the shape of the date needs work still
-
-        We set report_template from self if it's None...
+        stats_list_by_period is the "actual data"
 
         """
         if report_template is None:
@@ -1101,27 +1122,15 @@ class Report_Runner():
         second_grouping = None
         label_colour_map = None
         label_names_map = None
-        if self.report_template.group_by_labels:
-            # Get colour map for bars colors
+
+        if self.report_template.group_by == 'label' or self.report_template.second_group_by == 'label':
             label_colour_map = self.project.directory_default.label_file_colour_map
 
         if self.report_template.view_type == "count":
-
-            if len(stats_list_by_period) == 0:
-                return 0
-            if self.report_template.group_by_labels:
-                labels, second_grouping, values = zip(*stats_list_by_period)
-            else:
-                labels, values = zip(*stats_list_by_period)
-            return sum(values)
-
-        # TODO stronger handling if
-        # stats_list_by_period is None
-        # ie empty
+            return self.format_view_type_count(stats_list_by_period)
 
         if report_template.group_by and stats_list_by_period:
-            # fill missing days is sorta designed
-            # for "day" period?
+
             if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
 
                 with_missing_dates = Stats.fill_missing_dates(
@@ -1129,26 +1138,23 @@ class Report_Runner():
                     date_to = self.date_to,
                     list_by_period = stats_list_by_period)
 
-                if self.report_template.group_by_labels:
+                if self.report_template.second_group_by:
                     labels, second_grouping, values = zip(*with_missing_dates)
-                    label_file_ids = set(second_grouping)
-                    labels_files = File.get_by_id_list(session = self.session, file_id_list = label_file_ids)
-                    label_names_map = {}
-                    for label_file in labels_files:
-                        label_names_map[label_file.id] = label_file.label.name
+
+                    if self.report_template.second_group_by == 'label':
+                        label_names_map = self.build_label_names_map_from_second_grouping(second_grouping)
                 else:
                     labels, values = zip(*with_missing_dates)
 
             else:
-                if self.report_template.group_by_labels:
+                if self.report_template.second_group_by:
                     labels, second_grouping, values = zip(*stats_list_by_period)
-                    label_file_ids = set(second_grouping)
-                    labels_files = File.get_by_id_list(session = self.session, file_id_list = label_file_ids)
-                    label_names_map = {}
-                    for label_file in labels_files:
-                        label_names_map[label_file.id] = label_file.label.name
+
+                    if self.report_template.second_group_by == 'label':
+                        label_names_map = self.build_label_names_map_from_second_grouping(second_grouping)
                 else:
                     labels, values = zip(*stats_list_by_period)
+
             ids_labels = labels
             # Front end now handles for user case
             if report_template.group_by in ['label']:

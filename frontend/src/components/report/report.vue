@@ -59,8 +59,16 @@
                 <v-card-text>
                   <v-container>
                     <h2>Labels & Instances</h2>
-                    <v-checkbox @change="has_changes = true" label="Additionally Group Files By Label"
-                                v-model="report_template.group_by_labels"></v-checkbox>
+
+                      <diffgram_select
+                        class="pa-4"
+                        :item_list="second_group_by_list"
+                        v-model="report_template.second_group_by"
+                        label="Second Group by"
+                        :disabled="loading"
+                        @change="has_changes = true"
+                      >
+                      </diffgram_select>
                   </v-container>
                 </v-card-text>
               </v-card>
@@ -469,9 +477,7 @@
 
 /*  Caution, re adding new select controls
  *    expects  @change="has_changes = true"  otherwise won't "save"
- *
- *
- *
+
  *
  */
 
@@ -482,10 +488,122 @@ import {getReportTemplate} from '../../services/reportServices.ts'
 import {CSVReportFormatter} from './CSVReportFormatter';
 import Vue from "vue";
 
+
+const date_selector =
+    {
+      'display_name': 'Date',
+      'name': 'date',
+      'icon': 'mdi-calendar',
+      'color': 'primary'
+    }
+
+const user_selector =
+    {
+      'display_name': 'User',
+      'name': 'user',
+      'icon': 'mdi-account-circle',
+      'color': 'blue'
+    }
+
+const label_selector =
+    {
+      'display_name': 'Label',
+      'name': 'label',
+      'icon': 'mdi-format-paint',
+      'color': 'pink'
+    }
+
+const task_selector =
+    {
+      'display_name': 'Task',
+      'name': 'task',
+      'icon': 'mdi-flash-circle',
+      'color': 'purple'
+    }
+
+const file_selector =
+    {
+      'display_name': 'File (Frame)',
+      'name': 'file',
+      'icon': 'mdi-file',
+      'color': 'orange'
+    }
+
+const task_status_selector =
+    {
+      'display_name': 'Task Status',
+      'name': 'task_status',
+      'icon': 'mdi-list-status',
+      'color': 'green'
+    }
+
+const instance_selector =
+    {
+      'display_name': 'Instance',
+      'name': 'instance',
+      'icon': 'mdi-brush',
+      'color': 'green'
+    }
+
+const time_spent_task_selector =
+    {
+      'display_name': 'Time Spent On Task',
+      'name': 'time_spent_task',
+      'icon': 'mdi-clock',
+      'color': 'blue',
+      'allowed_groupings': [
+        task_selector,
+      ]
+    }
+
+const annotator_performance_selector =
+    {
+      'display_name': 'Annotators Performance',
+      'name': 'annotator_performance',
+      'icon': 'mdi-camera-timer',
+      'color': 'cyan',
+      'allowed_groupings': [
+        task_selector,
+        instance_selector,
+      ]
+    }
+
+const instance_selector_with_groupings = structuredClone(instance_selector)
+instance_selector_with_groupings['allowed_groupings'] = [
+          date_selector,       
+          user_selector,
+          label_selector,
+          task_selector,
+          file_selector,
+          task_status_selector             
+        ]
+
+const file_selector_with_groupings = structuredClone(file_selector)
+file_selector_with_groupings['allowed_groupings'] = [
+          date_selector,       
+          user_selector,
+          label_selector,
+          task_selector,
+          file_selector,
+          task_status_selector             
+        ]
+
+const task_selector_with_groupings = structuredClone(task_selector)
+task_selector_with_groupings['allowed_groupings'] = [
+          date_selector,       
+          user_selector,
+          label_selector,
+          task_selector,
+          file_selector,
+          task_status_selector             
+        ]
+
+
+
 export default Vue.extend({
     name: 'report',
     components: {
-      label_select_only,
+      label_select_only
     },
     props: {
       // Optional, for existing report
@@ -516,9 +634,6 @@ export default Vue.extend({
         values_metadata: [],
         values: [],
 
-        /*
-         *
-         */
         report_template: {
           'name': 'My Report',
           'archived': false,
@@ -527,183 +642,22 @@ export default Vue.extend({
           'date_period_unit': 'day',
           'label_file_id_list': null,
           'group_by': 'date',
+          'second_group_by': null,
           'directory_id_list': null,
           'scope': 'project',
           'view_type': 'chart',
           'diffgram_wide_default': false,
-          'group_by_labels': false,
           'task_event_type': 'task_created',
           'id': null,
           'view_sub_type': 'line'
         } as ReportTemplate,
 
         item_of_interest_list: [
-          {
-            'display_name': 'Annotators Performance',
-            'name': 'annotator_performance',
-            'icon': 'mdi-camera-timer',
-            'color': 'cyan',
-            'allowed_groupings': [
-              {
-                'display_name': 'Task',
-                'name': 'task',
-                'icon': 'mdi-flash-circle',
-                'color': 'purple'
-              },
-              {
-                'display_name': 'Instance',
-                'name': 'instance',
-                'icon': 'mdi-brush',
-                'color': 'green'
-              },
-            ]
-          },
-          {
-            'display_name': 'Time Spent On Task',
-            'name': 'time_spent_task',
-            'icon': 'mdi-clock',
-            'color': 'blue',
-            'allowed_groupings': [
-              {
-                'display_name': 'Task',
-                'name': 'task',
-                'icon': 'mdi-flash-circle',
-                'color': 'purple'
-              },
-            ]
-          },
-          {
-            'display_name': 'Instance',
-            'name': 'instance',
-            'icon': 'mdi-format-paint',
-            'color': 'green',
-            'allowed_groupings': [
-              {
-                'display_name': 'Date',
-                'name': 'date',
-                'icon': 'mdi-calendar',
-                'color': 'primary'
-              },
-              {
-                'display_name': 'User',
-                'name': 'user',
-                'icon': 'mdi-account-circle',
-                'color': 'blue'
-              },
-              {
-                'display_name': 'Label',
-                'name': 'label',
-                'icon': 'mdi-format-paint',
-                'color': 'pink'
-              },
-              {
-                'display_name': 'Task',
-                'name': 'task',
-                'icon': 'mdi-flash-circle',
-                'color': 'purple'
-              },
-              {
-                'display_name': 'File (Frame)',
-                'name': 'file',
-                'icon': 'mdi-file',
-                'color': 'orange'
-              },
-              {
-                'display_name': 'Task Status',
-                'name': 'task_status',
-                'icon': 'mdi-list-status',
-                'color': 'green'
-              },
-            ]
-          },
-          {
-            'display_name': 'File (Frame)',
-            'name': 'file',
-            'icon': 'mdi-file',
-            'color': 'orange',
-            'allowed_groupings': [
-              {
-                'display_name': 'Date',
-                'name': 'date',
-                'icon': 'mdi-calendar',
-                'color': 'primary'
-              },
-              {
-                'display_name': 'User',
-                'name': 'user',
-                'icon': 'mdi-account-circle',
-                'color': 'blue'
-              },
-              {
-                'display_name': 'Label',
-                'name': 'label',
-                'icon': 'mdi-format-paint',
-                'color': 'pink'
-              },
-              {
-                'display_name': 'Task',
-                'name': 'task',
-                'icon': 'mdi-flash-circle',
-                'color': 'purple'
-              },
-              {
-                'display_name': 'File (Frame)',
-                'name': 'file',
-                'icon': 'mdi-file',
-                'color': 'orange'
-              },
-              {
-                'display_name': 'Task Status',
-                'name': 'task_status',
-                'icon': 'mdi-list-status',
-                'color': 'green'
-              },
-            ]
-          },
-          {
-            'display_name': 'Task',
-            'name': 'task',
-            'icon': 'mdi-flash-circle',
-            'color': 'purple',
-            'allowed_groupings': [
-              {
-                'display_name': 'Date',
-                'name': 'date',
-                'icon': 'mdi-calendar',
-                'color': 'primary'
-              },
-              {
-                'display_name': 'User',
-                'name': 'user',
-                'icon': 'mdi-account-circle',
-                'color': 'blue'
-              },
-              {
-                'display_name': 'Label',
-                'name': 'label',
-                'icon': 'mdi-format-paint',
-                'color': 'pink'
-              },
-              {
-                'display_name': 'Task',
-                'name': 'task',
-                'icon': 'mdi-flash-circle',
-                'color': 'purple'
-              },
-              {
-                'display_name': 'File (Frame)',
-                'name': 'file',
-                'icon': 'mdi-file',
-                'color': 'orange'
-              },
-              {
-                'display_name': 'Task Status',
-                'name': 'task_status',
-                'icon': 'mdi-list-status',
-                'color': 'green'
-              },
-            ]
-          }
+          annotator_performance_selector,
+          time_spent_task_selector,
+          instance_selector_with_groupings,
+          file_selector_with_groupings,
+          task_selector_with_groupings
         ],
 
         period_list: [
@@ -843,8 +797,6 @@ export default Vue.extend({
         },
 
 
-        // TODO some more stuff to look at here option wise
-        // in terms of having this work with other things like labels
 
         bar_chart_options_time_series: {
           responsive: true,
@@ -873,7 +825,6 @@ export default Vue.extend({
           }
         },
 
-        // TODO must be better way to share this??
 
         bar_chart_options_non_time_series: {
           responsive: true,
@@ -935,6 +886,10 @@ export default Vue.extend({
           return []
         }
 
+      },
+      second_group_by_list: function(){
+        // expansion point to limit this more in future
+        return [label_selector, user_selector]
       },
       metadata: function () {
 
@@ -1016,9 +971,7 @@ export default Vue.extend({
       },
 
       reset_second_group_by: function (item_of_interest) {
-        if (item_of_interest != 'instance') {
-          this.report_template.group_by_labels = false
-        }
+        this.report_template.second_group_by = null
       },
       set_job: function (job) {
         this.job = job;
@@ -1094,7 +1047,7 @@ export default Vue.extend({
         return created_datasets
       },
       fillData(stats) {
-        if (this.report_template.group_by_labels) {
+        if (this.report_template.second_group_by = 'labels') {
           this.fill_grouped_by_label_chart_data(stats);
         } else {
           this.datacollection = {
