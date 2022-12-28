@@ -20,7 +20,6 @@
                     :loading="rendering"
                     :save_loading="save_loading"
                     :map_layers="map_layers"
-                    :allow_add_tiles="allow_add_tiles"
                     @change_label_schema="on_change_label_schema"
                     @edit_mode_toggle="change_mode" 
                     @change_instance_type="change_instance_type"
@@ -175,7 +174,6 @@ export default Vue.extend({
             tiff_source: null,
             // Others
             save_loading: false,
-            allow_add_tiles: false,
             selected: null,
             rendering: false,
             current_label: undefined,
@@ -513,22 +511,11 @@ export default Vue.extend({
         reset_default_view: async function() {
             const sourceView = await this.tiff_source.getView()
             
-            this.allow_add_tiles = sourceView.projection.units_ === 'm'
-
             let view = new View({
                 center: sourceView.center,
                 resolutions: sourceView.resolutions,
                 zoom: sourceView.zoom
             })
-
-            if (!this.allow_add_tiles) {
-                view = new View({
-                    center: sourceView.center,
-                    resolutions: sourceView.resolutions,
-                    zoom: sourceView.zoom,
-                    projection: sourceView.projection
-                })
-            }
 
             this.map_instance.setView(view)
         },

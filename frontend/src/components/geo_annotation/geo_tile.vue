@@ -29,7 +29,7 @@
       </li>
     </ul>
     <br />
-    <div v-if="allow_add_tiles">
+    <div>
       <h3>Add XYZ Tile</h3>
       <v-text-field
         v-model="name" 
@@ -68,10 +68,6 @@ export default Vue.extend({
     map_layers: {
       type: Object,
       default: {}
-    },
-    allow_add_tiles: {
-      type: Boolean,
-      default: false
     }
   },
   data() {
