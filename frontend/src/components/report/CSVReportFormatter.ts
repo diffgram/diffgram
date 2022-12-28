@@ -94,13 +94,11 @@ export class CSVReportFormatter{
     for(let i = 0;  i < Object.keys(this.values_metadata[0]).length; i++){
       let elm = Object.keys(this.values_metadata[0])[i]
       result += `${elm}`
-      console.log('I', i, Object.keys(this.values_metadata[0]).length )
       if(i < Object.keys(this.values_metadata[0]).length - 1){
         result += ','
       }
 
     }
-    console.log('RESULT HEADERS', result)
     return result
   }
 
@@ -130,7 +128,6 @@ export class CSVReportFormatter{
     this.csv_content = "data:text/csv;charset=utf-8,";
 
     let headers_metadata = this.append_metadata_headers(this.csv_content)
-    console.log('HEADERS META', headers_metadata)
     if(headers_metadata){
       this.csv_content += headers_metadata
       this.csv_content += ',Label,Value';
