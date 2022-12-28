@@ -35,6 +35,9 @@
           :options="bar_chart_options_time_series">
         </bar_horizontal_chart>
       </div>
+      <div v-else>
+        <p>No data</p>
+      </div>
     </v-card-text>
   </v-card>
 

@@ -36,6 +36,9 @@
           :options="chartObj.chartOptions"
         />
       </div>
+      <div v-else>
+        <p>No data</p>
+      </div>
     </v-card-text>
   </v-card>
 
