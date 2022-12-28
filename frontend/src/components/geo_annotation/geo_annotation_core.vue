@@ -113,7 +113,7 @@ import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Transform from "ol-ext/interaction/Transform";
 import XYZ from 'ol/source/XYZ';
-import {finishTaskAnnotation} from "../../services/tasksServices";
+import {finishTaskAnnotation, trackTimeTask} from "../../services/tasksServices";
 import 'ol/ol.css';
 
 export default Vue.extend({
@@ -695,6 +695,26 @@ export default Vue.extend({
             this.selected_style.getFill()
             return this.selected_style;
         },
+        save_time_tracking: async function () {
+            if (!this.task) return
+
+            const current_user_id = this.$store.state.user.current.id;
+            const record = this.task.time_tracking.find(elm => elm.user_id === current_user_id)
+            const [result, error] = await trackTimeTask(
+                record.time_spent,
+                this.task.id,
+                this.task.status,
+                this.task.job.id,
+                this.task.file.id,
+                null
+            )
+
+            if (result) {
+                record.id = result.id;
+                record.task_id = result.task_id;
+                record.job_id = result.job_id;
+            }
+        },
         change_mode: function() {
             this.draw_mode = !this.draw_mode
         },
@@ -758,6 +778,9 @@ export default Vue.extend({
                         instance.id = updated_instance.id
                     }
                 })
+            }
+            if (this.task) {
+                await this.save_time_tracking();
             }
             this.save_loading = false
         },

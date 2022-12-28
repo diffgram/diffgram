@@ -249,6 +249,13 @@
                 </v_annotation_trainer_menu>
 
                 <v-divider vertical></v-divider>
+                
+                <time_tracker
+                    v-if="task && task.id && task.job"
+                    :task="task"
+                />
+
+                <v-divider vertical></v-divider>
 
                 <button_with_menu
                     tooltip_message="Add Tile"
@@ -276,6 +283,7 @@
                         :icon_style="true"
                         :bottom="true"
                     />
+
                 <v-divider vertical></v-divider>
                 </v-layout>
             </div>
@@ -476,6 +484,7 @@ import label_select_annotation from "../label/label_select_annotation.vue"
 import label_schema_selector from "../label/label_schema_selector.vue"
 import task_status from "../annotation/task_status.vue"
 import geo_hotkeys from "./geo_hotkeys.vue"
+import time_tracker from "../task/time_track/time_tracker.vue";
 import geo_tile from "./geo_tile.vue"
 
 export default Vue.extend({
@@ -485,7 +494,8 @@ export default Vue.extend({
         geo_hotkeys,
         label_schema_selector,
         task_status,
-        geo_tile
+        geo_tile,
+        time_tracker
     },
     props: {
         undo_disabled: {
