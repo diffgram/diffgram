@@ -29,7 +29,7 @@
         >
         </diffgram_select>
       </div>
-      <div>
+      <div v-if="!no_data">
         <bar_horizontal_chart
           :chart-data="chart_data"
           :options="bar_chart_options_time_series">
@@ -59,6 +59,8 @@ export default {
       member_list: [],
       report_result: [],
       count_sum: 0,
+      no_data: false,
+
       chart_data: {
         datasets: [],
         labels: []
@@ -152,6 +154,7 @@ export default {
         labels = result.stats.labels
 
         this.count_sum = result.stats.values.reduce((acc, current) => acc + current, 0)
+        this.no_data = false
         this.chart_data ={
           labels: labels,
           datasets: [
@@ -160,6 +163,16 @@ export default {
               borderColor: 'white',
               label: this.task_status_filter.find(elm => elm.name === this.report_template.task_event_type).display_name,
               data: result.stats.values
+            }
+          ]
+        }
+      } else {
+        this.no_data = true
+        this.count_sum = 0
+        this.chart_data ={
+          datasets: [
+            {
+              data: []
             }
           ]
         }

@@ -113,6 +113,10 @@ export default {
             }
           ]
         }
+      } else {
+        this.chart_data = {
+          datasets: []
+        }
       }
     }
   }

@@ -120,7 +120,7 @@ export default {
     gen_report: async function(){
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
-      if(result && result.stats){
+      if(result && result.stats) {
         this.report_result = result;
         let labels = [];
         for(let i = 0; i< result.stats.labels.length; i++){
@@ -134,6 +134,17 @@ export default {
               borderColor: 'white',
               label: 'Average Time Per Task (Mins)',
               data: result.stats.values
+            }
+          ]
+        }
+      } else {
+        this.chart_data ={
+          datasets: [
+            {
+              backgroundColor: '#757575',
+              borderColor: 'white',
+              label: 'Average Time Per Task (Mins)',
+              data: []
             }
           ]
         }

@@ -29,7 +29,7 @@
         >
         </diffgram_select>
       </div>
-      <div>
+      <div v-if="!no_data">
         <pie-chart
           v-if="!loading"
           :data="chartObj.chartData"
@@ -61,6 +61,7 @@ export default {
       member_list: [],
       report_result: [],
       count_sum: 0,
+      no_data: false,
 
       task_status_filter: [
         {
@@ -176,7 +177,19 @@ export default {
             }
           ]
         }
+        this.no_data = false
         this.chartObj = {...this.chartObj}
+      }
+      else {
+        this.count_sum = 0
+        this.no_data = true
+        this.chartObj.chartData = {
+          datasets: [
+            {
+              data: []
+            }
+          ]
+        }
       }
       this.loading = false
     }
