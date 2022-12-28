@@ -784,7 +784,8 @@ export default Vue.extend({
             }
             this.save_loading = false
         },
-        change_file(direction, file) {
+        change_file: async (direction, file) => {
+            await this.save()
             if (direction == "next" || direction == "previous") {
                 this.$emit("request_file_change", direction, file);
             }
@@ -842,9 +843,7 @@ export default Vue.extend({
             return style
         },
         trigger_task_change: async function (direction, assign_to_user = false) {
-            if (this.has_changed) {
-                await this.save();
-            }
+            await this.save();
             this.$emit("request_new_task", direction, this.task, assign_to_user);
         },
         create_poly_instance: function() {
