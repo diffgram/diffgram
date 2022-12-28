@@ -37,7 +37,7 @@
         />
       </div>
       <div v-else>
-        <p>No data</p>
+        <p>No results</p>
       </div>
     </v-card-text>
   </v-card>
