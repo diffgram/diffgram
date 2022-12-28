@@ -2,7 +2,7 @@
   <div>
 
     <main_menu v-if="may_edit"
-               height="210">
+               height="250">
 
       <template slot="second_row">
 
