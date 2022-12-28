@@ -1011,7 +1011,14 @@ export default Vue.extend({
       on_change_item_of_interest: function(new_item){
         let item_of_interest = this.item_of_interest_list.find(elm => elm.name === new_item)
         this.report_template.group_by = item_of_interest.allowed_groupings[0].name;
+        this.reset_second_group_by(item_of_interest)
         this.has_changes = true;
+      },
+
+      reset_second_group_by: function (item_of_interest) {
+        if (item_of_interest != 'instance') {
+          this.report_template.group_by_labels = false
+        }
       },
       set_job: function (job) {
         this.job = job;
