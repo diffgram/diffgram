@@ -260,6 +260,7 @@
                         <geo_tile
                             :map_layers="map_layers"
                             @add_tile="(e) => $emit('add_xyz_layer', e)"
+                            @set_layer_opacity="(e) => $emit('set_layer_opacity', e)"
                             @remove_tile="(e) => $emit('remove_xyz_layer', e)"
                             @show_hide_layer="(e) => $emit('show_hide_layer', e)"
                         />
@@ -445,6 +446,7 @@
                     <geo_tile
                         :map_layers="map_layers"
                         @add_tile="(e) => $emit('add_xyz_layer', e)"
+                        @set_layer_opacity="(e) => $emit('set_layer_opacity', e)"
                         @remove_tile="(e) => $emit('remove_xyz_layer', e)"
                         @show_hide_layer="(e) => $emit('show_hide_layer', e)"
                     />

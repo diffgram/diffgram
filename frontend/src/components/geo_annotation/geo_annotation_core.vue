@@ -32,6 +32,7 @@
                     @reset_default_view="reset_default_view"
                     @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
                     @show_hide_layer="show_hide_layer"
+                    @set_layer_opacity="set_layer_opacity"
                     @save="save"
                     @undo="undo()"
                     @redo="redo()"
@@ -482,7 +483,11 @@ export default Vue.extend({
             const map = new Map({
                 controls: defaultControls().extend([mousePositionControl]),
                 target: 'map',
-                layers: [OSM_layer, geotiff_layer, draw_layer]
+                layers: [
+                    this.map_layers['base_layer'].layer, 
+                    this.map_layers['file_layer'].layer, 
+                    this.map_layers['annotation_layer'].layer
+                ]
             });
 
             this.map_instance = map
@@ -555,12 +560,17 @@ export default Vue.extend({
                 layer
             }
 
+            const layer_key = slugify(e.name, '_')
+
             this.map_layers = {
                 ...this.map_layers,
-                [slugify(e.name, '_')]: new_layer
+                [layer_key]: new_layer
             }
 
-            this.map_instance.addLayer(layer)
+            this.map_instance.addLayer(this.map_layers[layer_key].layer)
+        },
+        set_layer_opacity: function(e) {
+            this.map_layers[e.key].layer.setOpacity(e.value/100)
         },
         transform_interraction_handler: function(e) {
             const { ol_uid } = e.feature

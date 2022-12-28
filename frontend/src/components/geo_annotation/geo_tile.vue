@@ -1,5 +1,5 @@
 <template>
-  <div v-cloak id="geo-add-tile">
+  <div v-cloak style="width: 400px" id="geo-add-tile">
     <h3>Tiles</h3>
     <ul>
       <li
@@ -7,7 +7,18 @@
         :key="tile.key"
       >
         <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between">
-          {{ tile.name }}
+          <div style="width: 33%">
+            {{ tile.name }}
+          </div>
+          <div style="width: 33%">
+            <v-slider
+              :hint="`Layer opacity ${tile.layer.getOpacity()}`"
+              max="100"
+              min="0"
+              :value="tile.layer.getOpacity() * 100"
+              @change="(e) => set_layer_opacity(tile.key, e)"
+            />
+          </div>
           <div style="display: flex; flex-direction: row; align-items: center; justify-content: space-between">
             <standard_button
               tooltip_message="Delete layer"
@@ -97,6 +108,9 @@ export default Vue.extend({
     }
   },
   methods: {
+    set_layer_opacity: function(key, value) {
+      this.$emit('set_layer_opacity', {key, value})
+    },
     remove_tile: function(key) {
       this.$emit('remove_tile', key)
     },
