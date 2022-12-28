@@ -175,8 +175,6 @@ report_spec_list = [
 ]
 
 
-# TODO moving report stuff from stats into here...
-
 
 class Report_Runner():
     """

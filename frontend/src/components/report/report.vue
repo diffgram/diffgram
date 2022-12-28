@@ -914,8 +914,6 @@ export default Vue.extend({
           'member_list': this.member_list
 
         }
-        // merge properties
-
         let result =  {...dynamic_properties, ...this.report_template}
 
         return result
@@ -966,12 +964,12 @@ export default Vue.extend({
       on_change_item_of_interest: function(new_item){
         let item_of_interest = this.item_of_interest_list.find(elm => elm.name === new_item)
         this.report_template.group_by = item_of_interest.allowed_groupings[0].name;
-        this.reset_second_group_by(item_of_interest)
+        //this.reset_second_group_by(item_of_interest)
         this.has_changes = true;
       },
 
       reset_second_group_by: function (item_of_interest) {
-        this.report_template.second_group_by = null
+        //this.report_template.second_group_by = null
       },
       set_job: function (job) {
         this.job = job;
@@ -1067,13 +1065,6 @@ export default Vue.extend({
       },
 
       save_and_run_report: function () {
-        /*
-         *
-         *  For now we assume we must have a saved report to run it
-         *  as a future optimization can look at more ways to
-         *  run this just in "preview" mode...
-         *
-         */
 
         let do_run_report = true
 
@@ -1154,8 +1145,6 @@ export default Vue.extend({
 
         }).then(response => {
 
-          // careful need to grab this too to update other report concepts
-          // and this should happen before load stats so colors are all good
           this.update_local_data_from_remote_report_template(
             response.data.report_template)
           this.reset_chart_data()
@@ -1178,16 +1167,8 @@ export default Vue.extend({
       },
 
       get_report: function (report_template_id) {
-        /*
-         * TODO consider doing similar style like run where we pass the project_string_id in post
-         * so we can do permission check that way.
-         *
-         */
 
-        // we get this from the url so hard to do null check
-        // and still have it look good?
         if (report_template_id == "new") {
-          // could also check if it's not a "Number" type or something.
           return
         }
 
@@ -1197,10 +1178,6 @@ export default Vue.extend({
 
         axios.get('/api/v1/report/info/' + report_template_id
         ).then(response => {
-
-          // We do compelte object here
-          // because there are things like member_created_id
-          // and other stuff that may get "added" from the back end
 
           this.update_local_data_from_remote_report_template(
             response.data.report_template)
@@ -1255,26 +1232,9 @@ export default Vue.extend({
       },
 
       save_report: function (run_report) {
-        /*
-          * Assumes saving one report at a time.
-          *
-          * If we don't have a report id yet we need to save first
-          *
-          *
-          *  TODO load concrete filters like job id
-          *
-          */
 
         if (this.has_changes == false &&
           this.report_template.id != null) {
-
-          /*
-           *  not a fan of having this here
-            but it seemed like easist way
-            since for changes we need to run this
-            later after save success
-           *
-           */
 
           if (run_report == true) {
             this.run_report(this.report_template.id)
@@ -1294,25 +1254,11 @@ export default Vue.extend({
 
         }).then(response => {
 
-          // We do compelte object here
-          // because there are things like member_created_id
-          // and other stuff that may get "added" from the back end
-
           this.update_local_data_from_remote_report_template(
             response.data.report_template)
 
           this.success_saved = true
 
-          /*
-           * We detect things off of the URL so we want
-           * it to be updated when an id is newly created.
-           *
-           * ie if user refreshes page etc.
-           *
-           * This updates the "route" to the new id
-           *
-           * Only for New routes, so if it's already equal just leave it.
-           */
           if (this.report_template.id != this.report_template_id) {
             this.$router.push('/report/' + this.report_template.id)
           }
@@ -1349,9 +1295,6 @@ export default Vue.extend({
         this.loading = true
         this.error = {}
         this.result = null
-
-        // temp for testing
-        // this.directory_id_list = [this.$store.state.project.current_directory.directory_id]
 
         axios.post('/api/v1/diffgram/stats/general',
           {
