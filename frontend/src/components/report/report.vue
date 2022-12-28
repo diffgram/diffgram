@@ -760,6 +760,12 @@ export default Vue.extend({
 
         task_status_filter: [
           {
+            'display_name': 'All',
+            'name': 'all',
+            'icon': 'mdi-select-all',
+            'color': 'primary'
+          },
+          {
             'display_name': 'Tasks Created',
             'name': 'task_created',
             'icon': 'mdi-checkbox-marked-circle-plus-outline',

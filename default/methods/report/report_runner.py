@@ -131,7 +131,7 @@ report_spec_list = [
         'default': 'date',
         'kind': str,
         'required': False,
-        'valid_values_list': ['task_created', 'task_completed', 'task_request_changes', 'task_review_start', 'task_review_complete'],
+        'valid_values_list': ['all', 'task_created', 'task_completed', 'task_request_changes', 'task_review_start', 'task_review_complete'],
     }
     },
     {"directory_id_list": {
@@ -651,7 +651,10 @@ class Report_Runner():
     def filter_by_task_event_type(self, task_event_type: str):
         if self.report_template.item_of_interest != 'task':
             return
+        if task_event_type.lower() == 'all':
+            return
         self.query = self.query.filter(self.base_class.event_type == task_event_type)
+
     def apply_concrete_filters(self):
 
         if self.base_class == Instance:
