@@ -433,20 +433,20 @@ export default Vue.extend({
             // Get instances from teh backend and render them
             const initial_instances = raw_instance_list.map(instance_object => {
                 let instance;
-                const { id, type, bounds, bounds_lonlat, creation_ref_id, radius, lonlat, coords, label_file } = instance_object
+                const { id, type, bounds, bounds_lonlat, creation_ref_id, radius, lonlat, coords, label_file, attribute_groups } = instance_object
                 if (type === 'geo_circle') {
                     instance = new GeoCircle();
-                    instance.create_instance(id, creation_ref_id, lonlat, coords, radius, label_file)
+                    instance.create_instance(id, creation_ref_id, lonlat, coords, radius, label_file, attribute_groups)
                 } 
 
                 if (type === 'geo_point') {
                     instance = new GeoPoint();
-                    instance.create_instance(id, creation_ref_id, lonlat, coords, label_file)
+                    instance.create_instance(id, creation_ref_id, lonlat, coords, label_file, attribute_groups)
                 }
 
                 if (type === 'geo_polygon' || type === 'geo_polyline' || type === 'geo_box') {
                     instance = new GeoPoly(type);
-                    instance.create_instance(id, creation_ref_id, bounds, bounds_lonlat, label_file)
+                    instance.create_instance(id, creation_ref_id, bounds, bounds_lonlat, label_file, attribute_groups)
                 }
                 return instance
             })
