@@ -1166,36 +1166,6 @@ export default Vue.extend({
 
 
       },
-
-      get_report: function (report_template_id) {
-
-        if (report_template_id == "new") {
-          return
-        }
-
-        this.success_loading_existing = false
-        this.loading = true
-        this.error = {}
-
-        axios.get('/api/v1/report/info/' + report_template_id
-        ).then(response => {
-
-          this.update_local_data_from_remote_report_template(
-            response.data.report_template)
-
-          this.success_loading_existing = true
-          this.loading = false
-
-        })
-          .catch(error => {
-            this.loading = false
-            this.error = this.$route_api_errors(error)
-
-          });
-
-
-      },
-
       download_csv: function () {
 
 
