@@ -52,6 +52,7 @@
                 :global_attribute_groups_list="global_attribute_groups_list"
                 :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
                 :current_global_instance="instance_list && instance_list.get_global_instance() && instance_list.get_global_instance().get_instance_data()"
+                @on_update_attribute="on_update_attribute"
                 @delete_instance="delete_instance"
                 @on_select_instance="on_select_instance"
                 @change_instance_label="change_instance_label"
@@ -94,6 +95,8 @@ import {
     CreateInstanceCommand, 
     DeleteInstanceCommand,
     UpdateInstanceLabelCommand,
+    UpdateInstanceAttributeCommand,
+    UpdateGlobalAttributeCommand,
     UpdateInstanceGeoCoordinatesCommand
 } from "../../helpers/command/available_commands"
 import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
@@ -385,6 +388,19 @@ export default Vue.extend({
     methods: {
         on_select_instance: function(instance) {
             this.current_instance = instance
+        },
+        on_update_attribute: function(event, is_global) {
+            const attribute = event
+            let command
+            if (is_global) {
+                command = new UpdateGlobalAttributeCommand([this.instance_list.get_global_instance()], this.instance_list, true)
+            } else {
+                command = new UpdateInstanceAttributeCommand([this.instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.instance_list)
+            }
+            const attribute_to_pass = Array.isArray(attribute[1]) ? [...attribute[1]] : {...attribute[1]}
+            command.set_new_attribute(attribute[0].id, attribute_to_pass)
+            this.command_manager.executeCommand(command)
+            this.has_changed = true
         },
         on_task_annotation_complete_and_save: async function () {
             await this.save(false);
