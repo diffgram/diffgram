@@ -1037,7 +1037,6 @@ class Report_Runner():
             result = 'user'
         return result
 
-
     def format_for_external(
         self,
         execution_results
