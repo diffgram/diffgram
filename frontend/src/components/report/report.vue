@@ -1053,8 +1053,8 @@ export default Vue.extend({
 
           let dataset = new_dataset || existing_set
 
-          let data_index = unique_labels.indexOf(new_dataset.label)
-          dataset.data[data_index] = report.second_grouping[i]
+          let data_index = unique_labels.indexOf(report.labels[i])
+          dataset.data[data_index] = value
         }
 
         return created_datasets
