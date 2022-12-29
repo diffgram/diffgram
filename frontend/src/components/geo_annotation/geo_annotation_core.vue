@@ -47,10 +47,13 @@
                 :label_file_colour_map="label_file_colour_map"
                 :toolbar_height="`${!task ? '100px' : '50px'}`"
                 :loading="rendering"
+                :current_instance="current_instance"
                 :schema_id="label_schema.id"
                 :global_attribute_groups_list="global_attribute_groups_list"
+                :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
                 :current_global_instance="instance_list && instance_list.get_global_instance() && instance_list.get_global_instance().get_instance_data()"
                 @delete_instance="delete_instance"
+                @on_select_instance="on_select_instance"
                 @change_instance_label="change_instance_label"
             />
             <v-progress-linear
@@ -189,6 +192,7 @@ export default Vue.extend({
             draw_mode: true,
             has_changed: false,
             moving: false,
+            current_instance: null,
             current_instance_type: 'geo_circle',
             instance_type_list: [
                 {
@@ -379,6 +383,9 @@ export default Vue.extend({
         this.start_autosave()
     },
     methods: {
+        on_select_instance: function(instance) {
+            this.current_instance = instance
+        },
         on_task_annotation_complete_and_save: async function () {
             await this.save(false);
             const response = await finishTaskAnnotation(this.task.id);

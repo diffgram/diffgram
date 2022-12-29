@@ -19,10 +19,23 @@
                     @attribute_change="attribute_change($event, true)"
                 />
             </v-expansion-panel>
-            <v-expansion-panel @change="() => {}">
+            <v-expansion-panel @change="() => {}" :disabled="!current_instance">
                 <v-expansion-panel-header>
-                    <strong>Attributes</strong>
+                    <strong>Attributes {{ !current_instance ? "(select instance)" : null }}</strong>
                 </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                    <attribute_group_list
+                        :project_string_id="project_string_id"
+                        v-if="attribute_group_list_prop().length !== 0 || (current_instance && current_instance.attribute_groups)"
+                        :mode="'annotate'"
+                        :view_only_mode="false"
+                        :schema_id="schema_id"
+                        :attribute_group_list_prop="attribute_group_list_prop()"
+                        :current_instance="current_instance"
+                        @attribute_change="attribute_change($event)"
+                        key="attribute_groups_list"
+                    />
+                </v-expansion-panel-content>
             </v-expansion-panel>
             <v-expansion-panel>
                 <v-expansion-panel-header>
@@ -44,6 +57,7 @@
                                 :key="item.id"
                                 @mouseover="on_hover_item(item)"
                                 @mouseleave="on_stop_hover_item"
+                                @click="on_select_instance(item)"
                             >
                                 <td v-if="$store.state.user.settings.show_ids == true" class="centered-table-items">
                                     {{ item.id || 'new' }}
@@ -131,6 +145,7 @@ import Vue from 'vue'
 import instance_detail_list_view from "../annotation/instance_detail_list_view.vue";
 import button_with_menu from '../regular/button_with_menu.vue';
 import label_select_only from '../label/label_select_only.vue'
+import attribute_group_list from '../attribute/attribute_group_list.vue'
 import global_attributes_list from '../attribute/global_attributes_list.vue'
 
 export default Vue.extend({
@@ -139,7 +154,8 @@ export default Vue.extend({
         instance_detail_list_view,
         button_with_menu,
         label_select_only,
-        global_attributes_list
+        global_attributes_list,
+        attribute_group_list
     },
     props: {
         project_string_id: {
@@ -149,6 +165,14 @@ export default Vue.extend({
         schema_id: {
             type: Number,
             required: true
+        },
+        per_instance_attribute_groups_list: {
+            type: Array,
+            default: []
+        },
+        current_instance: {
+            type: Object,
+            default: null
         },
         instance_list: {
             type: Array,
@@ -234,7 +258,26 @@ export default Vue.extend({
         },
         on_stop_hover_item: function() {
             this.$emit("on_instance_stop_hover")
-        }
+        },
+        on_select_instance: function(instance) {
+            this.$emit("on_select_instance", instance)
+        },
+        attribute_group_list_prop: function () {
+            if (!this.label_list
+                || !this.current_instance
+                || !this.per_instance_attribute_groups_list
+                || !this.current_instance.label_file) {
+                    return []
+            }
+
+            const attr_group_list = this.per_instance_attribute_groups_list.filter(elm => {
+                const file_id_list = elm.label_file_list.map(label_file => label_file.id)
+                return file_id_list.includes(this.current_instance.label_file.id)
+            })
+
+
+            return attr_group_list;
+      },
     }
 })
 </script>
