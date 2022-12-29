@@ -7,97 +7,116 @@
         left: 0;
         top: ${toolbar_height}
     `">
-        <v-data-table
-            hide-default-footer
-            :style="`width: 350px; max-height: 100%; overflow-y: scroll`"
-            :headers="headers"
-            :items="instance_list"
-            fixed-header
-            disable-pagination
-        >
-            <template v-slot:body="{ items }">
-                <tbody v-if="items.length > 0 && !loading">
-                  <tr
-                    v-for="item in items"
-                    :key="item.id"
-                    @mouseover="on_hover_item(item)"
-                    @mouseleave="on_stop_hover_item"
-                  >
-                    <td v-if="$store.state.user.settings.show_ids == true" class="centered-table-items">
-                        {{ item.id || 'new' }}
-                    </td>
-                    <td class="centered-table-items">
-                        <v-icon 
-                            v-if="item.type === 'geo_circle'"
-                            :color="item.label_file.colour.hex"
-                        >
-                            mdi-checkbox-blank-circle-outline
-                        </v-icon>
-                        <v-icon 
-                            v-if="item.type === 'geo_point'"
-                            :color="item.label_file.colour.hex"
-                        >
-                            mdi-circle-slice-8
-                        </v-icon>
-                        <v-icon 
-                            v-if="item.type === 'geo_box'"
-                            :color="item.label_file.colour.hex"
-                        >
-                            mdi-checkbox-blank
-                        </v-icon>
-                        <v-icon 
-                            v-if="item.type === 'geo_polygon'"
-                            :color="item.label_file.colour.hex"
-                        >
-                            mdi-vector-polygon
-                        </v-icon>
-                        <v-icon 
-                            v-if="item.type === 'geo_polyline'"
-                            :color="item.label_file.colour.hex"
-                        >
-                            mdi-minus
-                        </v-icon>
-                    </td>
-                    <td class="centered-table-items">
-                        {{ item.label_file.label.name }}
-                    </td>
-                    <td class="centered-table-items">
-                        <v-layout justify-center>
-                            <button_with_menu
-                                    tooltip_message="Change Label Template"
-                                    icon="mdi-format-paint"
-                                    color="primary"
-                                    :close_by_button="true"
-                                >
-                                    <template slot="content">
-                                        <label_select_only
-                                        :label_file_list_prop="label_list"
-                                        :select_this_id_at_load="item.label_file_id"
-                                        @label_file="$emit('change_instance_label', { label: $event, instance: item })"
+        <v-expansion-panels multiple style="width: 350px;" accordion :value="[2]">
+            <v-expansion-panel @change="() => {}">
+                <v-expansion-panel-header>
+                    <strong>Globals</strong>
+                </v-expansion-panel-header>
+            </v-expansion-panel>
+            <v-expansion-panel @change="() => {}">
+                <v-expansion-panel-header>
+                    <strong>Attributes</strong>
+                </v-expansion-panel-header>
+            </v-expansion-panel>
+            <v-expansion-panel>
+                <v-expansion-panel-header>
+                    <strong>Instances</strong>
+                </v-expansion-panel-header>
+                <v-expansion-panel-content>
+                    <v-data-table
+                        hide-default-footer
+                        :style="`width: 350px; max-height: 100%; overflow-y: scroll`"
+                        :headers="headers"
+                        :items="instance_list"
+                        fixed-header
+                        disable-pagination
+                    >
+                        <template v-slot:body="{ items }">
+                            <tbody v-if="items.length > 0 && !loading">
+                            <tr
+                                v-for="item in items"
+                                :key="item.id"
+                                @mouseover="on_hover_item(item)"
+                                @mouseleave="on_stop_hover_item"
+                            >
+                                <td v-if="$store.state.user.settings.show_ids == true" class="centered-table-items">
+                                    {{ item.id || 'new' }}
+                                </td>
+                                <td class="centered-table-items">
+                                    <v-icon 
+                                        v-if="item.type === 'geo_circle'"
+                                        :color="item.label_file.colour.hex"
+                                    >
+                                        mdi-checkbox-blank-circle-outline
+                                    </v-icon>
+                                    <v-icon 
+                                        v-if="item.type === 'geo_point'"
+                                        :color="item.label_file.colour.hex"
+                                    >
+                                        mdi-circle-slice-8
+                                    </v-icon>
+                                    <v-icon 
+                                        v-if="item.type === 'geo_box'"
+                                        :color="item.label_file.colour.hex"
+                                    >
+                                        mdi-checkbox-blank
+                                    </v-icon>
+                                    <v-icon 
+                                        v-if="item.type === 'geo_polygon'"
+                                        :color="item.label_file.colour.hex"
+                                    >
+                                        mdi-vector-polygon
+                                    </v-icon>
+                                    <v-icon 
+                                        v-if="item.type === 'geo_polyline'"
+                                        :color="item.label_file.colour.hex"
+                                    >
+                                        mdi-minus
+                                    </v-icon>
+                                </td>
+                                <td class="centered-table-items">
+                                    {{ item.label_file.label.name }}
+                                </td>
+                                <td class="centered-table-items">
+                                    <v-layout justify-center>
+                                        <button_with_menu
+                                                tooltip_message="Change Label Template"
+                                                icon="mdi-format-paint"
+                                                color="primary"
+                                                :close_by_button="true"
+                                            >
+                                                <template slot="content">
+                                                    <label_select_only
+                                                    :label_file_list_prop="label_list"
+                                                    :select_this_id_at_load="item.label_file_id"
+                                                    @label_file="$emit('change_instance_label', { label: $event, instance: item })"
+                                                    />
+                                                </template>
+                                        </button_with_menu>
+                                        <standard_button
+                                            color="primary"
+                                            icon="mdi-delete"
+                                            tooltip_message="Delete instance"
+                                            @click="$emit('delete_instance', item)"
+                                            :icon_style="true"
+                                            :bottom="true"
                                         />
-                                    </template>
-                            </button_with_menu>
-                            <standard_button
-                                color="primary"
-                                icon="mdi-delete"
-                                tooltip_message="Delete instance"
-                                @click="$emit('delete_instance', item)"
-                                :icon_style="true"
-                                :bottom="true"
-                            />
-                        </v-layout>
-                    </td>
-                  </tr>
-                </tbody>
-                <tbody v-else>
-                    <tr>
-                        <td :colspan="headers.length" style="text-align: center">
-                            {{ loading ? "Loading..." : "No instances have been created yet" }}
-                        </td>
-                    </tr>
-                </tbody>
-            </template>
-        </v-data-table>
+                                    </v-layout>
+                                </td>
+                            </tr>
+                            </tbody>
+                            <tbody v-else>
+                                <tr>
+                                    <td :colspan="headers.length" style="text-align: center">
+                                        {{ loading ? "Loading..." : "No instances have been created yet" }}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </template>
+                    </v-data-table>
+                </v-expansion-panel-content>
+            </v-expansion-panel>
+        </v-expansion-panels>
     </div>
 </template>
 
