@@ -23,6 +23,7 @@ export class CSVReportFormatter{
     this.values_metadata = values_metadata;
     this.csv_content = '';
   }
+
   private generate_grouped_by_label_format(){
     this.csv_content = "data:text/csv;charset=utf-8,";
     this.csv_content += 'File ID,'
@@ -86,44 +87,51 @@ export class CSVReportFormatter{
 
   }
   private append_metadata_headers(csv_str: string){
-    if(!this.values_metadata){
+    if(!this.values_metadata || !this.values_metadata[0]){
       return null
     }
     let result = '';
     for(let i = 0;  i < Object.keys(this.values_metadata[0]).length; i++){
       let elm = Object.keys(this.values_metadata[0])[i]
       result += `${elm}`
-      console.log('I', i, Object.keys(this.values_metadata[0]).length )
       if(i < Object.keys(this.values_metadata[0]).length - 1){
         result += ','
       }
 
     }
-    console.log('RESULT HEADERS', result)
     return result
   }
-  private append_metadata_values(index: number){
-    if(!this.values_metadata){
+
+  private append_values(
+      values: any[],
+      index: number){
+
+    if(!values || values.length == 0){
       return null
     }
-    let result = ''
-    let row_keys = Object.keys(this.values_metadata[index])
-    for(let i =0;  i < row_keys.length; i++){
-      let elm = row_keys[i]
-      let value = this.values_metadata[index][elm]
-      result += `${value}`
-      if (i < row_keys.length - 1){
-        result += ','
-      }
 
-    }
+    let result = ''
+    const value_element = values[index]
+    const row_keys = Object.keys(value_element)
+
+    row_keys.map(
+      ( key: string,
+        key_index: number) => {
+
+      const value = value_element[key]
+
+      result += `${value}`
+ 
+      if (key_index != row_keys.length - 1) result += ','
+    })
     return result
   }
+
   private standard_csv_format(){
-    console.log("AAA", this.values_metadata)
+
     this.csv_content = "data:text/csv;charset=utf-8,";
+
     let headers_metadata = this.append_metadata_headers(this.csv_content)
-    console.log('HEADERS META', headers_metadata)
     if(headers_metadata){
       this.csv_content += headers_metadata
       this.csv_content += ',Label,Value';
@@ -133,12 +141,20 @@ export class CSVReportFormatter{
 
 
     this.csv_content += '\r\n'
+
+    let values = undefined
+    if (this.values && this.values.length > 0) {
+      values = this.values
+    } else {
+      values = this.values_metadata
+    }
+
     // Add Content from this.stats
     for (let i=0; i< this.labels.length; i++){
-      let metadata_content = this.append_metadata_values(i)
-      console.log('META', metadata_content)
-      if(metadata_content){
-        this.csv_content += metadata_content + ','
+      let stats_content = this.append_values(values, i)
+  
+      if(stats_content){
+        this.csv_content += stats_content + ','
       }
       this.csv_content += `${String(this.labels[i]).replace(/,/g, "")},${this.values[i]}\r\n`
     }

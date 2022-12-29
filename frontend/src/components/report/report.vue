@@ -2,7 +2,7 @@
   <div>
 
     <main_menu v-if="may_edit"
-               height="210">
+               height="250">
 
       <template slot="second_row">
 
@@ -760,6 +760,12 @@ export default Vue.extend({
 
         task_status_filter: [
           {
+            'display_name': 'All',
+            'name': 'all',
+            'icon': 'mdi-select-all',
+            'color': 'primary'
+          },
+          {
             'display_name': 'Tasks Created',
             'name': 'task_created',
             'icon': 'mdi-checkbox-marked-circle-plus-outline',
@@ -1005,7 +1011,14 @@ export default Vue.extend({
       on_change_item_of_interest: function(new_item){
         let item_of_interest = this.item_of_interest_list.find(elm => elm.name === new_item)
         this.report_template.group_by = item_of_interest.allowed_groupings[0].name;
+        this.reset_second_group_by(item_of_interest)
         this.has_changes = true;
+      },
+
+      reset_second_group_by: function (item_of_interest) {
+        if (item_of_interest != 'instance') {
+          this.report_template.group_by_labels = false
+        }
       },
       set_job: function (job) {
         this.job = job;
@@ -1029,17 +1042,13 @@ export default Vue.extend({
         })
 
       },
-      fill_grouped_by_label_chart_data(stats) {
-        const created_datasets = [];
-        this.report_warning = {};
-        let unique_labels = [...new Set(stats.labels)];
-        if (unique_labels.length > 20) {
-          this.datacollection = {}
-          this.report_warning['too_many_files'] = 'The report has too many files for complete chart rendering. Showing incomplete data.'
-          this.report_warning['csv'] = 'Please download CSV for complete data report.'
-          unique_labels = unique_labels.splice(0, 20);
+
+      fill_second_group_by(created_datasets, stats, unique_labels){
+
+        if (!stats.second_grouping || stats.second_grouping.length == 0) {
+          return created_datasets
         }
-        this.datacollection = {datasets: [], labels: unique_labels}
+
         for (let i = 0; i < stats.second_grouping.length; i++) {
           const current = stats.second_grouping[i];
           const label_name = stats.label_names_map[current];
@@ -1055,6 +1064,32 @@ export default Vue.extend({
           dataset.data[unique_labels.indexOf(stats.labels[i])] = stats.values[i]
 
         }
+
+        return created_datasets
+
+      },
+
+      warn_if_unique_labels(unique_labels){
+        if (unique_labels.length > 20) {
+          this.datacollection = {}
+          this.report_warning['too_many_files'] = 'The report has too many files for complete chart rendering. Showing incomplete data.'
+          this.report_warning['csv'] = 'Please download CSV for complete data report.'
+          unique_labels = unique_labels.splice(0, 20);
+        }
+        return unique_labels
+      },
+
+      fill_grouped_by_label_chart_data(stats) {
+        let created_datasets = [];
+        this.report_warning = {};
+        let unique_labels = [...new Set(stats.labels)];
+
+        unique_labels = this.warn_if_unique_labels(unique_labels)
+
+        this.datacollection = {datasets: [], labels: unique_labels}
+
+        created_datasets = this.fill_second_group_by(created_datasets, stats, unique_labels)
+
         this.datacollection.datasets = created_datasets
         return created_datasets
       },

@@ -33,9 +33,6 @@ class Stats():
 	
 		len_task_list = len(list_by_period)
 
-		#print(list_by_period)
-
-
 		index = 0
 		for i in range(period):
 
