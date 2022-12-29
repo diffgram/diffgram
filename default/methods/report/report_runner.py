@@ -1165,20 +1165,17 @@ class Report_Runner():
 
     def build_user_metadata(self, ids_labels, values):
         result = []
-        id_list = None
+        member_ids_list = None
         if self.report_template.group_by == 'user':
-            id_list = ids_labels
+            member_ids_list = ids_labels
             
         if self.report_template.second_group_by == 'user':
-            id_list = values
+            member_ids_list = values
 
-        if not id_list: return
+        if not member_ids_list: return
 
-        print(id_list)
-        users = self.session.query(User).filter(
-            User.id.in_(set(id_list))
-        ).all()
-        print(users)
+        member_ids_list = set(member_ids_list)
+        users = User.get_by_id_member_list(self.session, member_ids_list)
         for user in users:
             result.append({
                 'name': f'{user.first_name} {user.last_name}',
