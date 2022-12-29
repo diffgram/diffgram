@@ -19,8 +19,20 @@ from shared.database.report.report_template import ReportTemplate
 from shared.database.report.report_dashboard import ReportDashboard
 from shared.database.auth.member import Member
 
-# Would be nice if order of these matched
-# order in Report_Template
+
+class InitQuery:
+    base: None
+    group_by : None
+    group_by_str : str
+    second_group_by : None
+    second_group_by_str : str
+    distinct : bool
+
+    def __init__(self):
+        self.distinct = False
+        self.second_group_by = None
+        self.group_by = None
+
 
 report_spec_list = [
 
@@ -318,14 +330,10 @@ class Report_Runner():
                                           project_string_id: str = None,
                                           ):
         """
-        TODO look at report_scope
-        check project valid for user ect (using existing permission
-        approaches)...
 
         Then do we treat updating project
         as seperate from updating other attributes...
 
-        Note at current this assumes the user is logged in.
         We use project string id here because that's pattern
         with permissions thing.
 
@@ -372,7 +380,7 @@ class Report_Runner():
         self.scope = scope
 
         if scope == "project":
-            # Validate project
+      
             project_role_list = ["admin", "Editor"]
 
             Project_permissions.check_permissions(
@@ -386,22 +394,11 @@ class Report_Runner():
             self.project = Project.get(self.session, project_string_id)
             return
 
-        # Should not be possible to reach here
-        # if scope string is validated.
         raise Forbidden("Scope is invalid")
 
+
     def normalize_class_defintions(self):
-        """
-        ie that time created thing or...
 
-        This is more just for things that we
-        labelled differently but have different meanings?
-
-        This uses self because it's only relevant if
-        both item_of_interest and base_class are created?
-
-        """
-        # Time Created
         if self.item_of_interest in ['user', 'instance', 'file']:
             self.time_created = self.base_class.created_time
 
@@ -421,7 +418,6 @@ class Report_Runner():
         if self.item_of_interest in ['instance', 'file']:
             self.member_created = self.base_class.member_created
 
-    # self.log['internal'] = 'Ran normalize_class_defintions'
 
     def execute_query(self,
                       view_type: str = None):
@@ -429,6 +425,7 @@ class Report_Runner():
         q = self.query
         result = q.all()
         return result
+
 
     def apply_permission_scope_to_query(self):
         """
@@ -444,6 +441,7 @@ class Report_Runner():
             self.query = self.query.filter(
                 self.base_class.project_id == self.project.id)
 
+
     def generate_standard_report(self):
         """
             Logic for standard reports. This is for reports can be directly generated from single table queries.
@@ -451,9 +449,8 @@ class Report_Runner():
             -
         :return:
         """
-        init_query = self.get_init_operation(group_by = self.report_template.group_by)
+        self.query = self.get_init_query(group_by_str = self.report_template.group_by)
 
-        self.query = init_query()
         self.apply_permission_scope_to_query()
 
         if self.report_template.period:
@@ -472,7 +469,10 @@ class Report_Runner():
 
         if self.report_template.group_by == 'date':
             # assumes self.date_func is set from init_query
-            self.query = self.query.group_by(self.date_func)
+            if self.report_template.second_group_by == 'user':
+                self.query = self.query.group_by(self.date_func, self.member_id_normalized)
+            else:
+                self.query = self.query.group_by(self.date_func)
             self.query = self.query.order_by(self.date_func)
 
         elif self.report_template.group_by == 'label':
@@ -483,7 +483,10 @@ class Report_Runner():
             self.query = self.query.group_by(self.member_id_normalized)
 
         elif self.report_template.group_by == 'task':
-            self.query = self.query.group_by(self.base_class.task_id)
+            if self.report_template.second_group_by == 'user':
+                self.query = self.query.group_by(self.base_class.file_id, self.member_id_normalized)
+            else:
+                self.query = self.query.group_by(self.base_class.task_id)
 
         elif self.report_template.group_by == 'file':
 
@@ -773,13 +776,9 @@ class Report_Runner():
         self.report_template.view_type = metadata.get('view_type')
         self.report_template.view_sub_type = metadata.get('view_sub_type')
 
-        # Is it ok to just store this here
         self.report_template.scope = metadata.get('scope').lower()
 
-        # We assume to store this in lower case because then
-        # front end can easily show an upper case value
         self.report_template.item_of_interest = metadata.get('item_of_interest').lower()
-
         self.init_base_class_object(self.report_template.item_of_interest)
 
         self.report_template.archived = metadata.get('archived')
@@ -796,12 +795,10 @@ class Report_Runner():
 
         self.update_metadata_for_filter_by_items(metadata = metadata)
 
-    def update_metadata_for_filter_by_items(self, metadata: dict):
-        """
-        WIP
-        """
-        # This still will be part of Filters
-        # Not base template.
+
+    def update_metadata_for_filter_by_items(
+            self, 
+            metadata: dict):
 
         if not self.report_template.filter_by_items:
             self.report_template.filter_by_items = {}
@@ -810,11 +807,9 @@ class Report_Runner():
             'label_file_id_list')
 
     def update_dashboard(
-        self,
-        report_dashboard_id: int = None,
-        mode: str = "set_dashboard"):
-        """
-        """
+            self,
+            report_dashboard_id: int = None,
+            mode: str = "set_dashboard"):
 
         if report_dashboard_id is None:
             report_dashboard_id = self.get_or_create_project_report_dashboard_id()
@@ -825,23 +820,14 @@ class Report_Runner():
 
     def set_dashboard(
         self,
-        report_dashboard_id: int
-    ):
-        """
-        Any other validation here or...
-        """
+        report_dashboard_id: int):
 
         self.report_template.report_dashboard_id = report_dashboard_id
 
         self.session.add(self.report_template)
 
+
     def get_or_create_project_report_dashboard_id(self):
-        """
-        Not quite sure if this should be here or on each object,
-        the challenge is we may want other types of defaults here...
-        so for now seems more related to this, especially since we need
-        the ReportDashboard object to create new one...
-        """
 
         if self.report_template.diffgram_wide_default is True:
             """
@@ -862,6 +848,7 @@ class Report_Runner():
         self.project.default_report_dashboard_id = report_dashboard.id
 
         return report_dashboard.id
+
 
     @staticmethod
     def convert_str_to_datetime(date):
@@ -889,6 +876,7 @@ class Report_Runner():
                 date = datetime.datetime.strptime(date, format)
 
         return date
+
 
     def determine_dates_from_dynamic_period(
         self,
@@ -918,6 +906,7 @@ class Report_Runner():
 
         return date_from, date_to
 
+
     def filter_by_date(self,
                        date_from,
                        date_to,
@@ -934,9 +923,6 @@ class Report_Runner():
         # Set to next day so we can use default of 00:00 start
         # instead of midnight. Otherwise results during the
         # day get excluded
-
-        # TODO review if this makes sense in "generic" context
-
         # Do we assume if date_period_unit == "exact" for example then this doesn't matter?
         if date_period_unit == 'day':
             date_to += datetime.timedelta(days = 1)
@@ -944,22 +930,14 @@ class Report_Runner():
         self.query = self.query.filter(self.time_created >= date_from)
         self.query = self.query.filter(self.time_created < date_to)
 
-    def get_init_operation(self, group_by: str):
+
+    def get_init_query(self, group_by_str: str):
         """
-        Groupby is (must be?) the start of a query...
-        Returns an operation that can be called
-        ie query = operation()
-
-        All of these functions expect the base class to be set?
-        (vs having to pass it?)
-
-        Maybe this should be called like "init_query" or
-        something?
-
-            careful, if adding something here it needs to also be in group_by
-            clause above.
-
         """
+        init_query = InitQuery()
+        init_query.group_by_str = group_by_str
+        init_query.second_group_by_str = self.report_template.second_group_by
+
         group_by_dict = {
             None: self.no_group_by,
             'date': self.group_by_date,
@@ -969,51 +947,118 @@ class Report_Runner():
             'file': self.group_by_file,
             'task_status': self.group_by_task_status
         }
-        return group_by_dict.get(group_by)
+        first_group_by = group_by_dict.get(init_query.group_by_str)
+        first_group_by(init_query)
 
-    def no_group_by(self):
-        query = self.session.query(self.base_class)
+        init_query = self.set_second_group_by(init_query)
+
+        if init_query.second_group_by:
+            init_query.query = self.session.query(init_query.base, init_query.group_by, init_query.second_group_by)
+            query = self.apply_init_query_filters(init_query)
+            return query
+
+        if init_query.group_by:
+            init_query.query = self.session.query(init_query.base, init_query.group_by)
+            query = self.apply_init_query_filters(init_query)
+            return query
+
+        return self.session.query(init_query.base)()
+
+
+    def apply_init_query_filters(self, init_query):
+        if init_query.distinct is True:
+            return init_query.query.distinct()
+
+        if init_query.second_group_by:
+            return init_query.query.filter()
+
         return query
 
-    def group_by_task_status(self):
-        self.date_func = func.date_trunc(self.report_template.date_period_unit,
-                                         self.time_created)
-        query = self.session.query(self.base_class.status, func.count(self.base_class.id))
-        return query
 
-    def group_by_date(self):
-        """
-        Assumes everything is set,
-            ie report_template is set
-        """
-        self.date_func = func.date_trunc(self.report_template.date_period_unit,
-                                         self.time_created)
-        query = self.session.query(self.date_func,
-                                   func.count(self.base_class.id))
-        return query
-
-    def group_by_label(self):
-        if hasattr(self, 'label_file_id'):
-            query = self.session.query(self.label_file_id, func.count(self.base_class.id))
-        else:
-            query = self.session.query(self.base_class)
-        return query
-
-    def group_by_file(self):
+    def set_second_group_by(self, init_query):
+        if not self.report_template.second_group_by:
+            return init_query
+        
         if self.report_template.second_group_by == 'label':
-            query = self.session.query(self.base_class.file_id, self.base_class.label_file_id,
-                                       func.count(self.base_class.id))
-            query = query.filter()
+            init_query.second_group_by = self.base_class.label_file_id
+
+        if self.report_template.second_group_by == 'user':
+            self.member_id_normalized = self.get_and_set_member_id_normalized()
+            init_query.second_group_by = self.member_id_normalized
+
+        return init_query
+
+
+    def no_group_by(self, init_query):
+        init_query.base = self.base_class
+        return init_query
+
+
+    def group_by_task_status(self, init_query):
+        init_query.base = self.base_class.status
+        init_query.group_by = func.count(self.base_class.id)
+        return init_query
+
+
+    def group_by_date(self, init_query):
+        self.date_func = func.date_trunc(self.report_template.date_period_unit,
+                                         self.time_created)
+        init_query.base = self.date_func
+        init_query.group_by = func.count(self.base_class.id)
+        return init_query
+
+
+    def group_by_label(self, init_query):
+        if hasattr(self, 'label_file_id'):
+           init_query.base = self.label_file_id
+           init_query.group_by = func.count(self.base_class.id)
         else:
-            query = self.session.query(self.base_class.file_id, func.count(self.base_class.id))
+           init_query.base = self.base_class
+        return init_query
 
-        return query
 
-    def group_by_task(self):
-        """
-        """
-        query = self.session.query(self.base_class.task_id, func.count(self.base_class.id))
-        return query
+    def group_by_file(self, init_query):
+        init_query.base = self.base_class.file_id
+        init_query.group_by = func.count(self.base_class.id)
+        return init_query
+
+
+    def group_by_task(self, init_query):
+        init_query.base = self.base_class.task_id
+        init_query.group_by = func.count(self.base_class.id)
+        return init_query
+
+
+    def group_by_user(self, init_query):
+
+        self.member_id_normalized = self.get_and_set_member_id_normalized()
+
+        init_query.base = self.member_id_normalized
+        init_query.group_by = func.count(self.base_class.id)
+
+        if self.item_of_interest in ['task']:
+            init_query.group_by = func.count(self.base_class.task_id)
+            init_query.distinct = True
+        return init_query
+
+
+    def get_and_set_member_id_normalized(self):
+
+        self.member_id_normalized = None
+
+        if self.item_of_interest in ["instance", "file"]:
+            self.member_id_normalized = self.base_class.member_created_id
+
+        if self.item_of_interest in ["task"]:
+            self.base_class = self.string_to_class("task_event")
+            self.set_member_column_from_task_event_type()
+            self.normalize_class_defintions()
+
+        elif self.item_of_interest == "event":
+            self.member_id_normalized = self.base_class.member_id
+
+        return self.member_id_normalized
+
 
     def set_member_column_from_task_event_type(self):
         if self.report_template.task_event_type == ['task_created', 'task_review_start']:
@@ -1035,30 +1080,6 @@ class Report_Runner():
             result = 'user'
         return result
 
-    def group_by_user(self):
-        """
-
-        """
-
-        self.member_id_normalized = None
-
-        if self.item_of_interest in ["instance", "file"]:
-            self.member_id_normalized = self.base_class.member_created_id
-        if self.item_of_interest in ["task"]:
-            self.base_class = self.string_to_class("task_event")
-            self.set_member_column_from_task_event_type()
-            self.normalize_class_defintions()
-        elif self.item_of_interest == "event":
-            self.member_id_normalized = self.base_class.member_id
-
-        # Task has assignee_user_id instead of member id...
-
-        query = self.session.query(self.member_id_normalized,
-                                   func.count(self.base_class.id))
-        if self.item_of_interest in ['task']:
-            query = self.session.query(self.member_id_normalized, func.count(self.base_class.task_id))
-            query = query.distinct()
-        return query
 
     def format_for_external(
         self,
@@ -1130,6 +1151,8 @@ class Report_Runner():
         if report_template.group_by and stats_list_by_period:
 
             if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
+
+                print(stats_list_by_period)
 
                 with_missing_dates = Stats.fill_missing_dates(
                     date_from = self.date_from,

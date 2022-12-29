@@ -66,7 +66,10 @@
           <p>Diffgram quick start:</p>
           <ul>
             <li>
-              <a target= "_blank" href="https://diffgram.readme.io/docs/diffgram-101-key-concepts#project">Diffgram 101 - Key Concepts</a>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/concepts-101">Diffgram 101 - Key Concepts</a>
+            </li>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/schema-setup">Schema</a>
             </li>
             <li>
               <a target= "_blank" href="https://diffgram.readme.io/docs/data-scope-introduction">Datasets</a>

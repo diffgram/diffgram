@@ -60,15 +60,6 @@
                   <v-container>
                     <h2>Labels & Instances</h2>
 
-                      <diffgram_select
-                        class="pa-4"
-                        :item_list="second_group_by_list"
-                        v-model="report_template.second_group_by"
-                        label="Second Group by"
-                        :disabled="loading"
-                        @change="has_changes = true"
-                      >
-                      </diffgram_select>
                   </v-container>
                 </v-card-text>
               </v-card>
@@ -205,8 +196,20 @@
                 </diffgram_select>
               </v-col>
 
-              <v-col cols="2">
-                <!-- SCOPE -->
+               <v-col cols="2">
+                      <diffgram_select
+                        class="pa-4"
+                        :item_list="second_group_by_list"
+                        v-model="report_template.second_group_by"
+                        :clearable="true"
+                        label="Second Group by"
+                        :disabled="loading"
+                        @change="has_changes = true"
+                      >
+                      </diffgram_select>
+                </v-col>
+
+              <!--
                 <diffgram_select
                   class="pa-4"
                   :item_list="scope_icon_list"
@@ -216,8 +219,7 @@
                   @change="has_changes = true"
                 >
                 </diffgram_select>
-
-              </v-col>
+              -->
               <v-col cols="2">
                 <!-- View Type -->
                 <diffgram_select
@@ -1045,7 +1047,7 @@ export default Vue.extend({
         return created_datasets
       },
       fillData(stats) {
-        if (this.report_template.second_group_by = 'labels') {
+        if (this.report_template.second_group_by == 'labels') {
           this.fill_grouped_by_label_chart_data(stats);
         } else {
           this.datacollection = {
