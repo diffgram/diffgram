@@ -66,7 +66,7 @@
             </v-dialog>
 
             <standard_button tooltip_message="Save"
-                            @click="save_report"
+                            @click="save_report(true)"
                             icon="save"
                             :text_style="true"
                             :large="true"
@@ -105,7 +105,7 @@
 
             <div class="pa-2 pl-4 pr-4">
               <standard_chip
-                :message="`${count}`"
+                :message="`${report.count}`"
                 tooltip_message="Sum"
                 color="primary"
                 tooltip_direction="bottom">
@@ -346,7 +346,7 @@
 
 
     <v-alert type="info"
-             v-if="!loading && values.length == 0 && count ==0"
+             v-if="!loading && values.length == 0 && report.count ==0"
              dismissible>
       No results. <br>
       Is (time period, project) correct?
@@ -423,7 +423,7 @@
       </v-container>
     </v-card>
 
-    <v-card v-if="report_template.view_type == 'count' "
+    <v-card v-if="report_template.view_type == 'report.count' "
             elevation="0">
       <v-container>
         <v-chip
@@ -432,7 +432,7 @@
           text-color="white"
         >
 
-          <h2> {{ count }} </h2>
+          <h2> {{ report.count }} </h2>
 
         </v-chip>
       </v-container>
@@ -486,9 +486,11 @@
 import axios from '../../services/customInstance';
 import label_select_only from '../label/label_select_only.vue'
 import {ReportTemplate} from '../../types/ReportTemplate'
+import { Report } from '@/types/Report'
 import {getReportTemplate} from '../../services/reportServices.ts'
 import {CSVReportFormatter} from './CSVReportFormatter';
 import Vue from "vue";
+import { Schema } from '@/types/Schema'
 
 
 const date_selector =
@@ -625,6 +627,8 @@ export default Vue.extend({
         success_run: false,
 
         name: null,
+
+        report: null as Report,
 
         datacollection: {},
         job_select_this_id: null,
@@ -846,12 +850,8 @@ export default Vue.extend({
           }
         },
 
-        count: null,
-
         show_filters_dialog: false,
-        label_colour_map: null,
-        label_names_map: null,
-        second_grouping: null,
+
         loading: false,
         error: {},
         report_warning: {},
@@ -871,6 +871,7 @@ export default Vue.extend({
     computed: {
       // context of having a "preview" for the report
       // along with a way to save it?
+
       member_list_label: function () {
         if (this.report_template.item_of_interest === 'task') {
           return 'Assigned To.';
@@ -878,6 +879,7 @@ export default Vue.extend({
           return 'User';
         }
       },
+
       current_group_by_list: function(){
         let item_of_interest = this.report_template.item_of_interest;
         let ioi_obj = this.item_of_interest_list.find(elm => elm.name === item_of_interest)
@@ -889,10 +891,12 @@ export default Vue.extend({
         }
 
       },
+
       second_group_by_list: function(){
         // expansion point to limit this more in future
         return [label_selector, user_selector]
       },
+
       metadata: function () {
 
         // handle duplicate keys (things that already exist
@@ -931,27 +935,12 @@ export default Vue.extend({
 
 
     },
-    mounted() {
-
-
-    },
 
     async created() {
-      // Defaults
+
       this.project_string_id = this.$store.state.project.current.project_string_id
       this.org_id = this.$store.state.org.current.id
 
-      // TODO only do this in edit mode.
-
-      // TODO implement get_report() using report_template_id if provided.
-      // we asume if it's valid then it will update the report object appropriately
-
-      /*
-       * Not clear when value of running just get_report() here
-       * because we get template info back from runnin the report
-       * and in new case it's blank anyway
-       */
-      // this.get_report(this.report_template_id)
       let result = await this.fetch_report_template()
       if(result){
         this.report_template = result
@@ -973,26 +962,21 @@ export default Vue.extend({
       reset_second_group_by: function (item_of_interest) {
         //this.report_template.second_group_by = null
       },
+
       set_job: function (job) {
         this.job = job;
         this.has_changes = true
       },
+
       open_extra_filters_dialog: function () {
         this.show_filters_dialog = true;
       },
+
       reset_chart_data() {
-        this.labels = [];
-        this.values = [];
-        this.second_grouping = [];
-        this.label_colour_map = null;
-        this.label_names_map = null;
-        this.fillData({
-          labels: [],
-          values: [],
-          second_grouping: [],
-          label_colour_map: null,
-          label_names_map: null,
-        })
+
+        this.report = new Report()
+
+        this.fillData(this.report)
 
       },
 
@@ -1013,8 +997,8 @@ export default Vue.extend({
             })
           }
           // Add Value
-          const dataset = created_datasets.find(dset => dset.label === stats.label_names_map[current]);
-          dataset.data[unique_labels.indexOf(stats.labels[i])] = stats.values[i]
+          //const dataset = created_datasets.find(dset => dset.label === stats.label_names_map[current]);
+         // dataset.data[unique_labels.indexOf(stats.labels[i])] = stats.values[i]
 
         }
 
@@ -1023,6 +1007,8 @@ export default Vue.extend({
       },
 
       warn_if_unique_labels(unique_labels){
+        this.report_warning = {};
+
         if (unique_labels.length > 20) {
           this.datacollection = {}
           this.report_warning['too_many_files'] = 'The report has too many files for complete chart rendering. Showing incomplete data.'
@@ -1032,10 +1018,11 @@ export default Vue.extend({
         return unique_labels
       },
 
-      fill_grouped_by_label_chart_data(stats) {
+      fill_grouped_by_label_chart_data(report) {
+
         let created_datasets = [];
-        this.report_warning = {};
-        let unique_labels = [...new Set(stats.labels)];
+
+        let unique_labels = [...new Set(report.labels)];
 
         unique_labels = this.warn_if_unique_labels(unique_labels)
 
@@ -1046,17 +1033,19 @@ export default Vue.extend({
         this.datacollection.datasets = created_datasets
         return created_datasets
       },
-      fillData(stats) {
+
+      fillData(report) {
+
         if (this.report_template.second_group_by == 'labels') {
           this.fill_grouped_by_label_chart_data(stats);
         } else {
           this.datacollection = {
-            labels: stats.labels,
+            labels: report.labels,
             datasets: [
               {
                 // Label that shows on header
                 label: stats.header_name ? stats.header_name : this.report_template.item_of_interest,
-                data: stats.values,
+                data: report.values,
                 backgroundColor: this.color
               },
 
@@ -1074,51 +1063,60 @@ export default Vue.extend({
 
       },
 
+      new_report_from_json(report_json) {
+        let report = new Report()
 
-      load_stats: function (stats) {
-        this.stats = stats
-        if(!this.stats){
-          return
-        }
-        // assumes project scope
+        report.count = report_json.count
+        report.labels = report_json.labels
+        report.values = report_json.values
+        report.second_grouping = report_json.second_grouping
+        report.values_metadata = report_json.values_metadata
+
+        report.schema = new Schema()
+        report.schema.labelColourMap = report_json.label_colour_map
+        report.schema.labelNamesMap = report_json.label_names_map
+
+        return report
+      },
+
+      update_report_with_user_names(report){
 
         if (this.report_template.group_by == 'user' || this.report_template.item_of_interest === 'annotator_performance') {
-          for (const [i, member_id] of this.stats.labels.entries()) {
-            let member = stats.values_metadata.find(x => {
+          for (const [i, member_id] of report.labels.entries()) {
+            let member = report.values_metadata.find(x => {
               return x.user_id == member_id
             })
 
             if (member) {
-              this.stats.labels[i] = member.first_name + " " + member.last_name
+              report.labels[i] = member.first_name + " " + member.last_name
             } else {
-              this.stats.labels[i] = "User"
+              report.labels[i] = "User"
             }
 
           }
         }
 
-
-        if (this.report_template.view_type == "chart") {
-
-          /*
-         * assumes stats is a dict
-         */
-          if(!stats){
-            return
-          }
-          this.labels = stats.labels
-          this.values = stats.values
-          this.values_metadata = stats.values_metadata
-          this.second_grouping = stats.second_grouping
-          this.label_names_map = stats.label_names_map
-          this.label_colour_map = stats.label_colour_map
-          this.count = stats.count
-          this.fillData(stats)
-        } else if (this.report_template.view_type == "count") {
-          this.count = stats
-        }
+        return report
 
       },
+
+
+      load_report: function (report_json) {
+
+        if(!this.report_json){
+          return
+        }
+
+        this.report = this.new_report_from_json(report_json)
+
+        this.report = this.update_report_with_user_names(this.report)
+
+        if (this.report_template.view_type == "chart") {
+          this.fillData(this.report)
+        } 
+
+      },
+
       fetch_report_template: async function(){
         let [report_template, err] = await getReportTemplate(this.project_string_id, this.report_template_id)
         if (err != null){
@@ -1128,6 +1126,7 @@ export default Vue.extend({
         return report_template
 
       },
+
       run_report: function (report_template_id) {
 
         if (!report_template_id) {
@@ -1135,7 +1134,7 @@ export default Vue.extend({
           return
         }
 
-        this.count = null
+        this.report = null
 
         this.success_run = false
         this.loading = true
@@ -1143,18 +1142,18 @@ export default Vue.extend({
 
         axios.post('/api/v1/report/run', {
           report_template_id: parseInt(report_template_id),
-          project_string_id: this.project_string_id   // for default reports
+          project_string_id: this.project_string_id 
 
         }).then(response => {
 
           this.update_local_data_from_remote_report_template(
             response.data.report_template)
+
           this.reset_chart_data()
 
-          this.load_stats(response.data.stats)
+          this.load_report(response.data.report)
 
           this.success_run = true
-
           this.loading = false
 
         })
@@ -1201,12 +1200,7 @@ export default Vue.extend({
 
 
         const csv_formatter = new CSVReportFormatter(
-          this.labels,
-          this.values,
-          this.second_grouping,
-          this.label_names_map,
-          this.report_template,
-          this.values_metadata
+          this.report
         )
         let csvContent = csv_formatter.get_csv_data()
         // Inspiration https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
@@ -1218,11 +1212,9 @@ export default Vue.extend({
 
         link.click(); // This will download the data file
       },
+
       update_local_data_from_remote_report_template: function (report_template) {
-        /* context of local items using say a dict (like job select)
-         * and we may want a concrete report to save it, and update it.
-         *
-         */
+
         this.job_select_this_id = report_template.job_id
         // avoid circular updates, since we expect job component to reupdate
         // report template from this id
@@ -1269,15 +1261,6 @@ export default Vue.extend({
 
           this.loading = false
 
-          /*
-           * careful running report
-           * uses existing saved id
-           * so we must have this request complete
-           * before we can call it
-           *
-           * run_report in theory can use same metadata
-           * but for now this feels like stronger validation path
-           */
           if (run_report == true) {
             this.run_report(this.report_template.id)
           }
@@ -1289,48 +1272,8 @@ export default Vue.extend({
 
           });
 
-      },
-
-
-      stats_task_api: function () {
-
-        this.loading = true
-        this.error = {}
-        this.result = null
-
-        axios.post('/api/v1/diffgram/stats/general',
-          {
-            'date_from': this.date.from,
-            'date_to': this.date.to,
-            'item_of_interest': this.item_of_interest,
-            'date_period_unit': this.date_period_unit,
-            'count_only': this.count_only,
-            'label_file_id_list': this.label_file_id_list,
-            //'group_by': this.group_by,
-            'directory_id_list': this.directory_id_list
-
-          }).then(response => {
-          let log = response.data.log
-          if (log.success == true) {
-
-            this.labels = response.data.stats.labels
-            this.values = response.data.stats.values
-            this.fillData(response.data.stats)
-
-            this.count = response.data.stats.count
-
-          }
-          this.loading = false
-
-        })
-          .catch(error => {
-            this.loading = false
-            console.error(error)
-            this.error = this.$route_api_errors(error)
-
-
-          });
       }
+
     }
   }
 ) </script>
