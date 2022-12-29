@@ -7,7 +7,7 @@ from sqlalchemy.orm.session import Session
 @routes.route('/api/v1/report/run',
               methods = ['POST'])
 @General_permissions.grant_permission_for(['normal_user'])
-def run_report_api():
+def report_run_api():
 
     spec_list = [
         {"report_template_id": {
