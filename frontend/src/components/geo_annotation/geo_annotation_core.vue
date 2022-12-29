@@ -41,11 +41,15 @@
         </main_menu>
         <div style="display: flex; flex-direction: row">
             <geo_sidebar
+                :project_string_id="project_string_id"
                 :instance_list="instance_list ? instance_list.get() : []"
                 :label_list="label_list"
                 :label_file_colour_map="label_file_colour_map"
                 :toolbar_height="`${!task ? '100px' : '50px'}`"
                 :loading="rendering"
+                :schema_id="label_schema.id"
+                :global_attribute_groups_list="global_attribute_groups_list"
+                :current_global_instance="instance_list && instance_list.get_global_instance() && instance_list.get_global_instance().get_instance_data()"
                 @delete_instance="delete_instance"
                 @change_instance_label="change_instance_label"
             />

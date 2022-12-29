@@ -9,9 +9,15 @@
     `">
         <v-expansion-panels multiple style="width: 350px;" accordion :value="[2]">
             <v-expansion-panel @change="() => {}">
-                <v-expansion-panel-header>
-                    <strong>Globals</strong>
-                </v-expansion-panel-header>
+                <global_attributes_list
+                    v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
+                    :project_string_id="project_string_id"
+                    :global_attribute_groups_list="global_attribute_groups_list"
+                    :current_global_instance="current_global_instance"
+                    :schema_id="schema_id"
+                    :view_only_mode="false"
+                    @attribute_change="attribute_change($event, true)"
+                />
             </v-expansion-panel>
             <v-expansion-panel @change="() => {}">
                 <v-expansion-panel-header>
@@ -125,14 +131,25 @@ import Vue from 'vue'
 import instance_detail_list_view from "../annotation/instance_detail_list_view.vue";
 import button_with_menu from '../regular/button_with_menu.vue';
 import label_select_only from '../label/label_select_only.vue'
+import global_attributes_list from '../attribute/global_attributes_list.vue'
+
 export default Vue.extend({
     name: "geo_sidepanel",
     components: {
         instance_detail_list_view,
         button_with_menu,
-        label_select_only
+        label_select_only,
+        global_attributes_list
     },
     props: {
+        project_string_id: {
+            type: String,
+            required: true
+        },
+        schema_id: {
+            type: Number,
+            required: true
+        },
         instance_list: {
             type: Array,
             default: []
@@ -148,6 +165,14 @@ export default Vue.extend({
         loading: {
             type: Boolean,
             required: true
+        },
+        global_attribute_groups_list: {
+            type: Array,
+            default: null
+        },
+        current_global_instance: {
+            type: Object,
+            default: null
         }
     },
     computed: {
