@@ -90,6 +90,7 @@ import geo_toolbar from "./geo_toolbar.vue"
 import geo_sidebar from "./geo_sidebar.vue"
 import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
+import { Instance } from "../vue_canvas/instances/Instance"
 import History from "../../helpers/history"
 import { 
     CreateInstanceCommand, 
@@ -102,6 +103,7 @@ import {
 import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
 import { getInstanceList, postInstanceList } from "../../services/instanceList";
 import slugify from "slugify"
+import { v4 as uuidv4 } from 'uuid'
 // Imports from OpenLayers
 import GeoTIFF from 'ol/source/GeoTIFF';
 import Map from 'ol/Map';
@@ -415,6 +417,29 @@ export default Vue.extend({
                 this.trigger_task_change("next", this.$props.task, true);
             }
         },
+        get_and_set_global_instance: function (instance_list) {
+            if(!this.global_attribute_groups_list){
+                return instance_list
+            }
+            if(this.global_attribute_groups_list.length === 0) {
+                return instance_list
+            }
+            let existing_global_instance = instance_list.find(inst => inst && inst.type === 'global');
+            
+            if(!existing_global_instance) {
+                existing_global_instance = this.new_global_instance();
+            }
+
+            console.log(existing_global_instance)
+
+            this.instance_list.set_global_instance(existing_global_instance)
+        },
+        new_global_instance: function () {
+            let new_instance = new Instance();
+            new_instance.type = 'global'
+            new_instance.creation_ref_id = uuidv4();
+            return new_instance
+        },
         initialize_interface_data: async function() {
             let url;
             let payload;
@@ -429,9 +454,9 @@ export default Vue.extend({
                 url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
                 payload = {}
             }
-            const raw_instance_list = await getInstanceList(url, payload)
+            const instance_list = await getInstanceList(url, payload)
             // Get instances from teh backend and render them
-            const initial_instances = raw_instance_list.map(instance_object => {
+            let initial_instances = instance_list.map(instance_object => {
                 let instance;
                 const { id, type, bounds, bounds_lonlat, creation_ref_id, radius, lonlat, coords, label_file, attribute_groups } = instance_object
                 if (type === 'geo_circle') {
@@ -449,9 +474,11 @@ export default Vue.extend({
                     instance.create_instance(id, creation_ref_id, bounds, bounds_lonlat, label_file, attribute_groups)
                 }
                 return instance
-            })
+            }).filter(inst => inst)
 
             this.instance_list.push(initial_instances)
+
+            this.get_and_set_global_instance(instance_list)
             this.draw_instances
         },
         initialize_map: async function() {
@@ -796,7 +823,7 @@ export default Vue.extend({
                 url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
             }
             if (!this.drawing_instance) {
-                const res = await postInstanceList(url, this.instance_list.get_all())
+                const res = await postInstanceList(url, this.instance_list.get_for_save())
                 const { added_instances } = res
                 this.instance_list.get_all().map(instance => {
                     const instance_uuid = instance.creation_ref_id
