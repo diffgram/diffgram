@@ -141,7 +141,8 @@ def do_routes_importing():
     from methods.annotation.instance_template_update import update_instance_template_api
     from methods.annotation.instance_history import instance_history_api
 
-    from methods.report.report_runner import report_save_api
+    from methods.report.report_save_api import report_save_api
+    from methods.report.report_run_api import report_run_api
     from methods.report.report_list import report_list_api
     from methods.report.report_view_api import report_view_api
     from methods.userscript.userscript import userscript_new_api
