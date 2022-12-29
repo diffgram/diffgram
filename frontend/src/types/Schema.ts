@@ -1,10 +1,10 @@
 import { LabelColourMap } from "./label_colour_map";
 import { LabelFile } from "./label"
 
-export type Schema = {
-  id: number
-  name: string
-  labelColourMap: LabelColourMap
-  labelNamesMap: object
-  labelList: LabelFile[]
+export class Schema {
+  id: number = null
+  name: string = null
+  labelColourMap: LabelColourMap = null
+  labelNamesMap: object = null
+  labelList: LabelFile[] = null
 }

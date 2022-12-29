@@ -1,13 +1,13 @@
 import { ReportTemplate } from './ReportTemplate'
 import { Schema } from './Schema'
 
-export type Report = {
-  reportTemplate: ReportTemplate,
-  schema: Schema,
-  count: number,
-  labels: string[],
-  second_grouping: number[],
-  values: number[],
-  values_metadata: number[]
+export class Report {
+  reportTemplate: ReportTemplate = null
+  schema: Schema = new Schema()
+  count: number = null
+  labels: string[] = null
+  second_grouping: number[] = null
+  values: number[] = null
+  values_metadata: number[] = null
 }
 
