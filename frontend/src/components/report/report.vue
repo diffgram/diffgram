@@ -637,7 +637,7 @@ export default Vue.extend({
         request_time: null,
         labels: [],
         member_list: [],
-        values_metadata: [],
+        user_metadata: [],
         values: [],
 
         report_template: {
@@ -785,7 +785,7 @@ export default Vue.extend({
               type: 'time',
               distribution: 'series',
               time: {
-                unit: 'values_metadataday',
+                unit: 'user_metadataday',
                 unitStepSize: 1,
                 displayFormats: {
                   'day': 'MMM DD'
@@ -992,7 +992,6 @@ export default Vue.extend({
 
       get_unique_labels(report){
         let unique_labels = [...new Set(report.labels)];
-        unique_labels = this.warn_too_many_labels(unique_labels)
         if (unique_labels.length > 40) {
           unique_labels = unique_labels.splice(0, 40);
           this.warn_too_many_labels()
@@ -1000,15 +999,39 @@ export default Vue.extend({
         return unique_labels
       },
 
-      create_one_dataset(report){
+
+      create_one_dataset(report, value){
+        if (this.report_template.second_group_by == 'label') {
+           return this.create_one_dataset_labels(report, value)
+        }
+        if (this.report_template.second_group_by == 'user') {
+           return this.create_one_dataset_for_users(report, value)
+        }
+        throw("Unsupported report_template.second_group_by value")
+      },
+
+      create_one_dataset_for_users(report, value){
+        let member_id = null
+        if (report.user_metadata[value]) {
+          member_id = report.user_metadata[value].member_id
+        }
         return {
-            label: report.label_names_map[current],
-            backgroundColor: report.label_colour_map[current].hex,
+          label: this.get_user_label_from_metadata(report, member_id),
+          //backgroundColor: null,
+          data: []
+        }
+      },
+
+      create_one_dataset_labels(report, value){
+
+        return {
+            label: report.label_names_map[value],
+            backgroundColor: report.label_colour_map[value].hex,
             data: []
           }
       },
 
-      create_second_group_datasets(report){
+      create_second_group_datasets(report, unique_labels){
 
         let created_datasets = [];
 
@@ -1016,17 +1039,22 @@ export default Vue.extend({
           return created_datasets
         }
 
-        for (let i = 0; i < report.second_grouping.length; i++) {
+        console.log(report.second_grouping)
 
-          const current = report.second_grouping[i];
-          const label_name = report.label_names_map[current];
-          if (!created_datasets.map(ds => ds.label).includes(label_name)) {
-            created_datasets.push(this.create_one_dataset())
+        for (const [i, value] of report.second_grouping.entries()) {
+
+          let new_dataset = this.create_one_dataset(report, value)
+
+          let existing_set = created_datasets.find(x => x.label === new_dataset.label)
+
+          if (!existing_set) {
+            created_datasets.push(new_dataset)
           }
-          // Add Value
-          //const dataset = created_datasets.find(dset => dset.label === report.label_names_map[current]);
-         // dataset.data[unique_labels.indexOf(report.labels[i])] = report.values[i]
 
+          let dataset = new_dataset || existing_set
+
+          let data_index = unique_labels.indexOf(new_dataset.label)
+          dataset.data[data_index] = report.second_grouping[i]
         }
 
         return created_datasets
@@ -1052,7 +1080,9 @@ export default Vue.extend({
         let unique_labels = this.get_unique_labels(report)
         this.datacollection = {datasets: [], labels: unique_labels}
 
-        let created_datasets = this.create_second_group_datasets(report);
+        if (!unique_labels) { return }
+
+        let created_datasets = this.create_second_group_datasets(report, unique_labels);
 
         this.datacollection.datasets = created_datasets
       },
@@ -1060,13 +1090,9 @@ export default Vue.extend({
       fillData(report) {
 
         if (this.report_template.second_group_by) {
-
           this.fillData_second_group_by(report)
-
         } else {
-
           this.fillData_default_case(report)
-
         }
 
       },
@@ -1074,19 +1100,21 @@ export default Vue.extend({
       save_and_run_report: function () {
 
         let do_run_report = true
-
         this.save_report(do_run_report)
 
       },
 
       new_report_from_json(report_json) {
+
+        if (!report_json) { throw("missing report_json") }
+
         let report = new Report()
 
         report.count = report_json.count
         report.labels = report_json.labels
         report.values = report_json.values
         report.second_grouping = report_json.second_grouping
-        report.values_metadata = report_json.values_metadata
+        report.user_metadata = report_json.user_metadata
 
         report.schema = new Schema()
         report.schema.labelColourMap = report_json.label_colour_map
@@ -1095,19 +1123,32 @@ export default Vue.extend({
         return report
       },
 
+      get_user_from_metadata(report, member_id){
+        return report.user_metadata.find(x => {
+              return x.member_id == member_id
+            })
+      },
+
+      get_user_label_from_metadata(report, member_id){
+        let member = this.get_user_from_metadata(report, member_id)
+
+        if (member && member.name) {
+          return member.name
+        }
+        else if (member && member.first_name && member.last_name) {
+          return member.first_name + " " + member.last_name
+        } else {
+          return "User"
+        }
+      },
+
       update_report_with_user_names(report){
 
         if (this.report_template.group_by == 'user' || this.report_template.item_of_interest === 'annotator_performance') {
-          for (const [i, member_id] of report.labels.entries()) {
-            let member = report.values_metadata.find(x => {
-              return x.user_id == member_id
-            })
 
-            if (member) {
-              report.labels[i] = member.first_name + " " + member.last_name
-            } else {
-              report.labels[i] = "User"
-            }
+          for (const [i, member_id] of report.labels.entries()) {
+
+            report.labels[i] = this.get_user_label_from_metadata(report, member_id)
 
           }
         }
@@ -1119,10 +1160,8 @@ export default Vue.extend({
 
       load_report: function (report_json) {
 
-        if(!this.report_json){
-          return
-        }
-
+        if(!report_json) {throw ("missing report_json") }
+              
         this.report = this.new_report_from_json(report_json)
 
         this.report = this.update_report_with_user_names(this.report)
