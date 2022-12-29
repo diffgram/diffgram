@@ -105,6 +105,7 @@
 
             <div class="pa-2 pl-4 pr-4">
               <standard_chip
+                v-if="report"
                 :message="`${report.count}`"
                 tooltip_message="Sum"
                 color="primary"
@@ -346,7 +347,7 @@
 
 
     <v-alert type="info"
-             v-if="!loading && values.length == 0 && report.count ==0"
+             v-if="!loading && values.length == 0 && report && report.count ==0"
              dismissible>
       No results. <br>
       Is (time period, project) correct?
@@ -423,7 +424,7 @@
       </v-container>
     </v-card>
 
-    <v-card v-if="report_template.view_type == 'report.count' "
+    <v-card v-if="report && report_template.view_type == 'report.count' "
             elevation="0">
       <v-container>
         <v-chip
@@ -628,13 +629,12 @@ export default Vue.extend({
 
         name: null,
 
-        report: null as Report,
+        report: new Report(),
 
         datacollection: {},
         job_select_this_id: null,
 
         request_time: null,
-        stats: {},
         labels: [],
         member_list: [],
         values_metadata: [],
@@ -980,77 +980,93 @@ export default Vue.extend({
 
       },
 
-      fill_second_group_by(created_datasets, stats, unique_labels){
-
-        if (!stats.second_grouping || stats.second_grouping.length == 0) {
-          return created_datasets
-        }
-
-        for (let i = 0; i < stats.second_grouping.length; i++) {
-          const current = stats.second_grouping[i];
-          const label_name = stats.label_names_map[current];
-          if (!created_datasets.map(ds => ds.label).includes(label_name)) {
-            created_datasets.push({
-              label: stats.label_names_map[current],
-              backgroundColor: stats.label_colour_map[current].hex,
-              data: []
-            })
-          }
-          // Add Value
-          //const dataset = created_datasets.find(dset => dset.label === stats.label_names_map[current]);
-         // dataset.data[unique_labels.indexOf(stats.labels[i])] = stats.values[i]
-
-        }
-
-        return created_datasets
-
+      warn_too_many_labels(){
+        this.report_warning = {};   
+        this.report_warning['too_many_files'] = 'The report has too many files for complete chart rendering. Showing incomplete data.'
+        this.report_warning['csv'] = 'Please download CSV for complete data report.'
       },
 
-      warn_if_unique_labels(unique_labels){
-        this.report_warning = {};
+      get_header(report){
+        return report.header_name ? report.header_name : this.report_template.item_of_interest
+      },
 
-        if (unique_labels.length > 20) {
-          this.datacollection = {}
-          this.report_warning['too_many_files'] = 'The report has too many files for complete chart rendering. Showing incomplete data.'
-          this.report_warning['csv'] = 'Please download CSV for complete data report.'
-          unique_labels = unique_labels.splice(0, 20);
+      get_unique_labels(report){
+        let unique_labels = [...new Set(report.labels)];
+        unique_labels = this.warn_too_many_labels(unique_labels)
+        if (unique_labels.length > 40) {
+          unique_labels = unique_labels.splice(0, 40);
+          this.warn_too_many_labels()
         }
         return unique_labels
       },
 
-      fill_grouped_by_label_chart_data(report) {
+      create_one_dataset(report){
+        return {
+            label: report.label_names_map[current],
+            backgroundColor: report.label_colour_map[current].hex,
+            data: []
+          }
+      },
+
+      create_second_group_datasets(report){
 
         let created_datasets = [];
 
-        let unique_labels = [...new Set(report.labels)];
+        if (!report.second_grouping || report.second_grouping.length == 0) {
+          return created_datasets
+        }
 
-        unique_labels = this.warn_if_unique_labels(unique_labels)
+        for (let i = 0; i < report.second_grouping.length; i++) {
 
+          const current = report.second_grouping[i];
+          const label_name = report.label_names_map[current];
+          if (!created_datasets.map(ds => ds.label).includes(label_name)) {
+            created_datasets.push(this.create_one_dataset())
+          }
+          // Add Value
+          //const dataset = created_datasets.find(dset => dset.label === report.label_names_map[current]);
+         // dataset.data[unique_labels.indexOf(report.labels[i])] = report.values[i]
+
+        }
+
+        return created_datasets
+
+      },
+
+      fillData_default_case(report){
+        this.datacollection = {
+          labels: report.labels,
+          datasets: [
+            {
+              // Label means header (not label schema or rest of data labels)
+              label: this.get_header(report),
+              data: report.values,
+              backgroundColor: this.color
+            },
+
+          ]
+        }
+      },
+
+      fillData_second_group_by(report){
+        let unique_labels = this.get_unique_labels(report)
         this.datacollection = {datasets: [], labels: unique_labels}
 
-        created_datasets = this.fill_second_group_by(created_datasets, stats, unique_labels)
+        let created_datasets = this.create_second_group_datasets(report);
 
         this.datacollection.datasets = created_datasets
-        return created_datasets
       },
 
       fillData(report) {
 
-        if (this.report_template.second_group_by == 'labels') {
-          this.fill_grouped_by_label_chart_data(stats);
-        } else {
-          this.datacollection = {
-            labels: report.labels,
-            datasets: [
-              {
-                // Label that shows on header
-                label: stats.header_name ? stats.header_name : this.report_template.item_of_interest,
-                data: report.values,
-                backgroundColor: this.color
-              },
+        if (this.report_template.second_group_by) {
 
-            ]
-          }
+          this.fillData_second_group_by(report)
+
+        } else {
+
+          this.fillData_default_case(report)
+
         }
 
       },
