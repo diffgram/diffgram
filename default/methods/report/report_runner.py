@@ -1,4 +1,3 @@
-# OPENCORE - ADD
 try:
     from methods.regular.regular_api import *
 except:
@@ -132,7 +131,7 @@ report_spec_list = [
         'default': 'date',
         'kind': str,
         'required': False,
-        'valid_values_list': ['task_created', 'task_completed', 'task_request_changes', 'task_review_start', 'task_review_complete'],
+        'valid_values_list': ['all', 'task_created', 'task_completed', 'task_request_changes', 'task_review_start', 'task_review_complete'],
     }
     },
     {"directory_id_list": {
@@ -462,14 +461,6 @@ class Report_Runner():
 
         if self.report_template.period:
 
-            """
-            Note 100% sure about setting this self here...
-            the format for other thing requires the date to be set
-
-            "All" is relative to when something was created
-            and may still be needed for how we format the data for external view
-            even if internal sql filtering doesn't need it.
-            """
             self.date_from, self.date_to = self.determine_dates_from_dynamic_period(
                 dynamic_period = self.report_template.period
             )
@@ -660,7 +651,10 @@ class Report_Runner():
     def filter_by_task_event_type(self, task_event_type: str):
         if self.report_template.item_of_interest != 'task':
             return
+        if task_event_type.lower() == 'all':
+            return
         self.query = self.query.filter(self.base_class.event_type == task_event_type)
+
     def apply_concrete_filters(self):
 
         if self.base_class == Instance:
@@ -1035,6 +1029,7 @@ class Report_Runner():
             self.member_id_normalized = self.base_class.user_reviewer_id
         else:
             self.member_id_normalized = self.base_class.member_created_id
+
     def get_class_type_str_from_task_type_column(self):
         result = 'member'
         if self.report_template.task_event_type == ['task_created', 'task_review_start']:
@@ -1044,13 +1039,12 @@ class Report_Runner():
         elif self.report_template.task_event_type == ['task_request_changes']:
             result = 'user'
         return result
+
     def group_by_user(self):
         """
-        Do we want to call this member or user...
 
         """
 
-        # normalize member_id
         self.member_id_normalized = None
 
         if self.item_of_interest in ["instance", "file"]:
