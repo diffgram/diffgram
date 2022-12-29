@@ -1,47 +1,37 @@
+import { ReportTemplate } from '@/types/ReportTemplate'
+import { Report } from '@/types/Report'
 
 export class CSVReportFormatter{
-  public labels: any[] = null;
-  public values: number[] = null;
-  public second_grouping: any[] = null;
-  public values_metadata: any[] = null;
-  public label_names_map: object = null;
-  public report_template: any = null;
+  public report: Report = null;
+  public report_template: ReportTemplate = null;
   public csv_content: string = '';
 
-  public constructor(labels: any[],
-                     values: number[],
-                     second_grouping: number[],
-                     label_names_map: object,
-                     report_template: object,
-                     values_metadata: any[]) {
+  public constructor(report : Report) {
 
-    this.labels = labels;
-    this.values = values;
-    this.second_grouping = second_grouping;
-    this.label_names_map = label_names_map;
-    this.report_template = report_template;
-    this.values_metadata = values_metadata;
     this.csv_content = '';
+    this.report = report
   }
 
   private generate_grouped_by_label_format(){
     this.csv_content = "data:text/csv;charset=utf-8,";
     this.csv_content += 'File ID,'
     const label_names = []
-    for(const elm of this.second_grouping){
+    /*
+    for(const elm of this.report.second_grouping){
       if(!label_names.includes(this.label_names_map[elm])){
         label_names.push(this.label_names_map[elm])
         this.csv_content += `${this.label_names_map[elm]},`
       }
     }
+    */
     this.csv_content = this.csv_content.slice(0, -1); // Remove trailing ","
     this.csv_content += '\r\n'
     let file_label_map = {}
 
-    for(let i = 0; i < this.values.length ; i++){
-      const file_id = this.labels[i];
-      const count = this.values[i];
-      const label_name = this.second_grouping[i];
+    for(let i = 0; i < this.report.values.length ; i++){
+      const file_id = this.report.labels[i];
+      const count = this.report.values[i];
+      const label_name = this.report.second_grouping[i];
       if(file_label_map[file_id]){
         file_label_map[file_id][label_name] = count
       }
@@ -54,10 +44,13 @@ export class CSVReportFormatter{
     for(let file_id of Object.keys(file_label_map)){
       let row = `${file_id},`;
       let labels_count = label_names.map(elm => 0);
+
+      /*
       for(let label_file_id of Object.keys(file_label_map[file_id])){
         let index = label_names.indexOf(this.label_names_map[label_file_id]);
         labels_count[index] = file_label_map[file_id][label_file_id]
       }
+      */
 
       for(let i = 0; i < labels_count.length; i++){
         let current = labels_count[i];
@@ -78,7 +71,7 @@ export class CSVReportFormatter{
     * Depending on report_template config, we can adapt formatting and call different CSV formatting
     * functions. This function returns a function with the appropriate format based on report_template.
     * */
-    if(this.report_template.second_group_by == 'label'){
+    if(this.report_template.second_group_by){
       return this.generate_grouped_by_label_format()
     }
     else{
@@ -87,14 +80,14 @@ export class CSVReportFormatter{
 
   }
   private append_metadata_headers(csv_str: string){
-    if(!this.values_metadata || !this.values_metadata[0]){
+    if(!this.report.values_metadata || !this.report.values_metadata[0]){
       return null
     }
     let result = '';
-    for(let i = 0;  i < Object.keys(this.values_metadata[0]).length; i++){
-      let elm = Object.keys(this.values_metadata[0])[i]
+    for(let i = 0;  i < Object.keys(this.report.values_metadata[0]).length; i++){
+      let elm = Object.keys(this.report.values_metadata[0])[i]
       result += `${elm}`
-      if(i < Object.keys(this.values_metadata[0]).length - 1){
+      if(i < Object.keys(this.report.values_metadata[0]).length - 1){
         result += ','
       }
 
@@ -143,20 +136,19 @@ export class CSVReportFormatter{
     this.csv_content += '\r\n'
 
     let values = undefined
-    if (this.values && this.values.length > 0) {
-      values = this.values
+    if (this.report.values && this.report.values.length > 0) {
+      values = this.report.values
     } else {
-      values = this.values_metadata
+      values = this.report.values_metadata
     }
 
-    // Add Content from this.stats
-    for (let i=0; i< this.labels.length; i++){
-      let stats_content = this.append_values(values, i)
+    for (let i=0; i< this.report.labels.length; i++){
+      let content = this.append_values(values, i)
   
-      if(stats_content){
-        this.csv_content += stats_content + ','
+      if(content){
+        this.csv_content += content + ','
       }
-      this.csv_content += `${String(this.labels[i]).replace(/,/g, "")},${this.values[i]}\r\n`
+      this.csv_content += `${String(this.report.labels[i]).replace(/,/g, "")},${this.report.values[i]}\r\n`
     }
     return  this.csv_content
   }
