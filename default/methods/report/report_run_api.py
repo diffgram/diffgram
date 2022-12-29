@@ -80,4 +80,5 @@ def run_report_api():
         log['success'] = True
         return jsonify(log = report_runner.log,
                        report_template = report_runner.report_template.serialize(),
+                       report = results,
                        stats = results), 200
