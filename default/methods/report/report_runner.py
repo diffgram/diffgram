@@ -189,32 +189,6 @@ report_spec_list = [
 
 
 class Report_Runner():
-    """
-    Could we combine the run / save under one thing?
-
-    Directionally trying to make the primary class
-    and group by stuff fairly flexible, but at moment there
-    are some restrictions there...
-
-    When do we want to set self.query...
-        seems like a reasonable thing to couple
-        since query will be called so often
-
-
-    item_of_interest may come from report id
-
-    report_template_id instead of id because they may be other
-    id's or say an instance of a report that we interact with
-
-    In context of making this more composable, curious
-    if perhaps we should not pass report_template_id
-    here at all and that should be part of another thing...
-    ie making the base "init" lighter.
-
-        We now assume that a report template will only have 1
-        view. In the future can re look at many views for 1 template.
-
-    """
 
     def __init__(
         self,
@@ -230,14 +204,9 @@ class Report_Runner():
         self.report_template_id = report_template_id
         self.report_template_data = report_template_data
 
-        # This will get converted into
-        # metadata after validating spec.
-
         self.metadata_untrusted = metadata
         self.member = member
 
-        # These are assumed to be set from other functions
-        # ie through a validation process...???
         self.project_string_id = project_string_id
         self.project = Project.get_by_string_id(self.session, self.project_string_id)
 
@@ -282,16 +251,13 @@ class Report_Runner():
         }
         return class_dict.get(item_of_interest)
 
+
     def get_existing_report_template(self, report_template_id):
-        """
-        Not for saving,
-        case of just getting,
-        don't want to have optinal saving path here
-        since we expect to error if report doesn't exist etc.
-        """
+
         self.report_template = ReportTemplate.get_by_id(
             session = self.session,
             id = report_template_id)
+
 
     def validate_existing_report_id_permissions(
         self,
@@ -428,14 +394,6 @@ class Report_Runner():
 
 
     def apply_permission_scope_to_query(self):
-        """
-        Other stuff is in context of "does user have permission to run report"
-        this is the literal query modification
-
-        This assumes the baseclass has project_id,
-        in cases where it doesn't then have to think about it a bit.
-
-        """
 
         if self.scope == "project":
             self.query = self.query.filter(
@@ -445,9 +403,7 @@ class Report_Runner():
     def generate_standard_report(self):
         """
             Logic for standard reports. This is for reports can be directly generated from single table queries.
-            No need to combine, join or aggregate data. This applies for item of interest like:
-            -
-        :return:
+            No need to combine, join or aggregate data.
         """
         self.query = self.get_init_query(group_by_str = self.report_template.group_by)
 
@@ -534,12 +490,7 @@ class Report_Runner():
         self.scope = self.report_template_data.get('scope')
 
     def run(self):
-        """
-        Sets base class.
-            I don't think we should have to call "update" in order to run it
 
-        Assumes other values needed are set or loaded from existing???
-        """
         if self.report_template is None and self.report_template_data:
             self.build_dummy_report_template_from_data()
 
@@ -644,9 +595,11 @@ class Report_Runner():
         else:
             self.log['error']['item_of_interest'] = "item_of_interest is None"
 
+
     def __filter_soft_delete_instances(self):
 
         self.query = self.query.filter(self.base_class.soft_delete == False)
+
 
     def filter_by_task_event_type(self, task_event_type: str):
         if self.report_template.item_of_interest != 'task':
@@ -656,6 +609,7 @@ class Report_Runner():
         if not self.base_class.event_type:
             return
         self.query = self.query.filter(self.base_class.event_type == task_event_type)
+
 
     def apply_concrete_filters(self):
 
@@ -682,6 +636,7 @@ class Report_Runner():
                 self.filter_by_label_file_id_list(
                     label_file_id_list = self.report_template.filter_by_items.get('label_file_id_list'))
 
+
     def __filter_by_task(self,
                          query,
                          task_id: int):
@@ -691,6 +646,7 @@ class Report_Runner():
             logger.warning(f"No filter supported for task_id. item_of_interest is {self.item_of_interest}")
             return query
         return query.filter(self.base_class.task_id == task_id)
+
 
     def filter_by_member_list(self, member_list: list):
         # For now we can't add filters to task object as base class string. Might need to add member_created to task.
@@ -702,18 +658,19 @@ class Report_Runner():
             return
         self.query = self.query.filter(self.base_class.member_created_id.in_(member_list))
 
+
     def filter_by_job(self, job_id: int):
         """
 
         """
 
-        # TODO: Add suport or remove from UI the task filter when base class is Instance
         if self.item_of_interest in ['instance']:
             tasks_in_job = self.session.query(Task).filter(Task.job_id == job_id).all()
             task_id_list = [x.id for x in tasks_in_job]
             self.query = self.query.filter(self.base_class.task_id.in_(task_id_list))
         else:
             self.query = self.query.filter(self.base_class.job_id == job_id)
+
 
     def filter_by_label_file_id_list(self, label_file_id_list: list):
         """
@@ -1104,7 +1061,8 @@ class Report_Runner():
         labels_files = File.get_by_id_list(session = self.session, file_id_list = label_file_ids)
         label_names_map = {}
         for label_file in labels_files:
-            label_names_map[label_file.id] = label_file.label.name
+            if label_file.label:
+                label_names_map[label_file.id] = label_file.label.name
 
         return label_names_map
 
