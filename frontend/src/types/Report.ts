@@ -8,6 +8,6 @@ export class Report {
   labels: string[] = null
   second_grouping: number[] = null
   values: number[] = null
-  values_metadata: number[] = null
+  user_metadata: any[] = null
 }
 

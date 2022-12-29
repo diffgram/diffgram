@@ -80,14 +80,14 @@ export class CSVReportFormatter{
 
   }
   private append_metadata_headers(csv_str: string){
-    if(!this.report.values_metadata || !this.report.values_metadata[0]){
+    if(!this.report.user_metadata || !this.report.user_metadata[0]){
       return null
     }
     let result = '';
-    for(let i = 0;  i < Object.keys(this.report.values_metadata[0]).length; i++){
-      let elm = Object.keys(this.report.values_metadata[0])[i]
+    for(let i = 0;  i < Object.keys(this.report.user_metadata[0]).length; i++){
+      let elm = Object.keys(this.report.user_metadata[0])[i]
       result += `${elm}`
-      if(i < Object.keys(this.report.values_metadata[0]).length - 1){
+      if(i < Object.keys(this.report.user_metadata[0]).length - 1){
         result += ','
       }
 
@@ -139,7 +139,7 @@ export class CSVReportFormatter{
     if (this.report.values && this.report.values.length > 0) {
       values = this.report.values
     } else {
-      values = this.report.values_metadata
+      values = this.report.user_metadata
     }
 
     for (let i=0; i< this.report.labels.length; i++){

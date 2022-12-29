@@ -1154,29 +1154,38 @@ class Report_Runner():
             count = sum(values)
 
             # stats_list_by_period = date_convert_to_string(stats_list_by_period)
-            values_metadata = self.build_values_metadata(ids_labels)
+            user_metadata = self.build_user_metadata(ids_labels, values)
             return {'labels': labels,
                     'values': values,
                     'count': count,
-                    'values_metadata': values_metadata,
+                    'user_metadata': user_metadata,
                     'label_colour_map': label_colour_map,
                     'label_names_map': label_names_map,
                     'second_grouping': second_grouping}
 
-    def build_values_metadata(self, labels):
+    def build_user_metadata(self, ids_labels, values):
         result = []
-        print('labels', labels)
+        id_list = None
         if self.report_template.group_by == 'user':
-            users = self.session.query(User).filter(
-                User.id.in_(labels)
-            ).all()
-            for user in users:
-                result.append({
-                    'name': f'{user.first_name} {user.last_name}',
-                    'user_id': user.id,
-                    'member_id': user.member_id,
-                    'email': user.email,
-                })
+            id_list = ids_labels
+            
+        if self.report_template.second_group_by == 'user':
+            id_list = values
+
+        if not id_list: return
+
+        print(id_list)
+        users = self.session.query(User).filter(
+            User.id.in_(set(id_list))
+        ).all()
+        print(users)
+        for user in users:
+            result.append({
+                'name': f'{user.first_name} {user.last_name}',
+                'user_id': user.id,
+                'member_id': user.member_id,
+                'email': user.email,
+            })
         return result
     def report_template_list(
         self,
