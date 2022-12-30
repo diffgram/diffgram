@@ -7,8 +7,8 @@
         left: 0;
         top: ${toolbar_height}
     `">
-        <v-expansion-panels multiple style="width: 350px;" accordion :value="[2]">
-            <v-expansion-panel @change="() => {}">
+        <v-expansion-panels multiple style="width: 350px;" accordion :value="open_panels">
+            <v-expansion-panel @change="on_change_expansion(0)">
                 <global_attributes_list
                     v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
                     :project_string_id="project_string_id"
@@ -16,10 +16,12 @@
                     :current_global_instance="current_global_instance"
                     :schema_id="schema_id"
                     :view_only_mode="false"
+                    :open_state="open_panels && open_panels.includes(0)"
                     @attribute_change="attribute_change($event, true)"
                 />
             </v-expansion-panel>
-            <v-expansion-panel @change="() => {}" :disabled="!current_instance">
+
+            <v-expansion-panel @change="on_change_expansion(1)" :disabled="!current_instance">
                 <v-expansion-panel-header>
                     <strong>Attributes {{ !current_instance ? "(select instance)" : null }}</strong>
                 </v-expansion-panel-header>
@@ -37,7 +39,8 @@
                     />
                 </v-expansion-panel-content>
             </v-expansion-panel>
-            <v-expansion-panel>
+
+            <v-expansion-panel @change="on_change_expansion(2)">
                 <v-expansion-panel-header>
                     <strong>Instances</strong>
                 </v-expansion-panel-header>
@@ -199,6 +202,11 @@ export default Vue.extend({
             default: null
         }
     },
+    data() {
+        return {
+            open_panels: [2] as Array<number>
+        }
+    },
     computed: {
         headers: function() {
             if (this.$store.state.user.current.is_super_admin) {
@@ -253,6 +261,14 @@ export default Vue.extend({
         }
     },
     methods: {
+        on_change_expansion: function(panel_index: number): void {
+            if (!this.open_panels.includes(panel_index)) this.open_panels.push(panel_index)
+            
+            else {
+                const index_to_remove = this.open_panels.indexOf(panel_index)
+                this.open_panels.splice(index_to_remove, 1)
+            }
+        },
         on_hover_item: function(item) {
             this.$emit("on_instance_hover", item.get_instance_data().id)
         },
