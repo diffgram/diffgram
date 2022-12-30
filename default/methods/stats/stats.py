@@ -25,21 +25,22 @@ class Stats():
 		
 		next_date = date_from
 
-		period = (date_to - date_from).days
+		period_desired = (date_to - date_from).days
 	
 		len_period = len(known_dates_list)
 
-		index = 0
-		for i in range(period):
+		known_date_index = 0
+		for i in range(period_desired):
 
 			# date() "Return date object with same year, month and day."
 
-			known_date = known_dates_list[index]
-
-			if index + 1 <= len_period and known_date.date() == next_date.date():	
-			
-				with_missing_dates.append(known_date) 
-				index += 1
+			if known_date_index + 1 <= len_period:
+				known_date = known_dates_list[known_date_index]
+				if known_date.date() == next_date.date()	:			
+				    with_missing_dates.append(known_date) 
+				    known_date_index += 1
+				else:
+				    with_missing_dates.append(next_date)
 			else:			
 				with_missing_dates.append(next_date)
 				
