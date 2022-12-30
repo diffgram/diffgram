@@ -258,7 +258,7 @@
                 <v-divider vertical></v-divider>
 
                 <button_with_menu
-                    tooltip_message="Add Tile"
+                    tooltip_message="Map Settings"
                     color="primary"
                     icon="mdi-map-legend"
                     :close_by_button="true"
@@ -448,7 +448,7 @@
             <v-divider vertical></v-divider>
             
             <button_with_menu
-                tooltip_message="Add Tile"
+                tooltip_message="Map Settings"
                 color="primary"
                 icon="mdi-map-legend"
                 :close_by_button="true"

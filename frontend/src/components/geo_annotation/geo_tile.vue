@@ -3,10 +3,12 @@
     <h3>Render</h3>
     <v-switch
       label="Normalize"
+      :input-value="normalize"
       @change="$emit('on_geotiff_rendere_change', 'normalize', !normalize)"
     />
     <v-switch
       label="Interpolate"
+      :input-value="interpolate"
       @change="$emit('on_geotiff_rendere_change', 'interpolate', !interpolate)"
     />
     <h3>Tiles</h3>

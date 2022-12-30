@@ -402,7 +402,7 @@ export default Vue.extend({
             const geotiff_layer = new TileLayer({
                 source: this.generate_geotif_source(),
                 opacity: this.map_layers.file_layer.layer.getOpacity(),
-                zIndex: 1
+                zIndex: 1000
             })
 
             this.map_layers.file_layer = {
@@ -542,7 +542,7 @@ export default Vue.extend({
             const geotiff_layer = new TileLayer({
                 source,
                 opacity: 0.5,
-                zIndex: 1
+                zIndex: 1000
             })
 
             this.map_layers = {
