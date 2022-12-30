@@ -1120,6 +1120,8 @@ class Report_Runner():
                     date_to = self.date_to,
                     known_dates_list = labels)
 
+                labels = [i.isoformat() for i in labels]
+
             ids_labels = labels
             # Front end now handles for user case
             if report_template.group_by in ['label']:
@@ -1148,8 +1150,11 @@ class Report_Runner():
             # e.g. 
             # "(ABC datetime, 13, 1)", "(ABC datetime, 0, 0)
             # Where the the SQL query order is generally maintained
-            # So the last element is the last group by etc. 
-            serialized_list_tuples_by_period = [str(i) for i in list_tuples_by_period]
+            # So the last element is the last group by etc.
+            if self.report_template.second_group_by: 
+                serialized_list_tuples_by_period = [[i[0].isoformat(), i[1], i[2]] for i in list_tuples_by_period]
+            else:
+                serialized_list_tuples_by_period = [[str(i[0]), i[1]] for i in list_tuples_by_period]
 
             return {'labels': labels,
                     'values': values,

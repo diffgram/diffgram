@@ -9,5 +9,6 @@ export class Report {
   second_grouping: number[] = null
   values: number[] = null
   user_metadata: any[] = null
+  list_tuples_by_period: any[] = null
 }
 
