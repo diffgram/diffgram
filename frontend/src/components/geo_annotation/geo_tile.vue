@@ -1,5 +1,14 @@
 <template>
   <div v-cloak style="width: 400px" id="geo-add-tile">
+    <h3>Render</h3>
+    <v-switch
+      label="Normalize"
+      @change="$emit('on_geotiff_rendere_change', 'normalize', !normalize)"
+    />
+    <v-switch
+      label="Interpolate"
+      @change="$emit('on_geotiff_rendere_change', 'interpolate', !interpolate)"
+    />
     <h3>Tiles</h3>
     <ul>
       <li
@@ -79,7 +88,15 @@ export default Vue.extend({
     map_layers: {
       type: Object,
       default: {}
-    }
+    },
+    normalize: {
+      type: Boolean,
+      default: false
+    },
+    interpolate: {
+      type: Boolean,
+      default: false
+    },
   },
   data() {
     return {

@@ -20,6 +20,9 @@
                     :loading="rendering"
                     :save_loading="save_loading"
                     :map_layers="map_layers"
+                    :normalize="normalize"
+                    :interpolate="interpolate"
+                    @on_geotiff_rendere_change="on_geotiff_rendere_change"
                     @change_label_schema="on_change_label_schema"
                     @edit_mode_toggle="change_mode" 
                     @change_instance_type="change_instance_type"
@@ -186,6 +189,8 @@ export default Vue.extend({
             transform_interaction: null,
             map_layers: {},
             tiff_source: null,
+            normalize: true,
+            interpolate: true,
             // Others
             save_loading: false,
             selected: null,
@@ -389,8 +394,42 @@ export default Vue.extend({
         this.start_autosave()
     },
     methods: {
+        on_geotiff_rendere_change: function(name, value) {
+            this[name] = value
+
+            this.map_instance.removeLayer(this.map_layers.file_layer.layer)
+
+            const geotiff_layer = new TileLayer({
+                source: this.generate_geotif_source(),
+                opacity: this.map_layers.file_layer.layer.getOpacity(),
+                zIndex: 1
+            })
+
+            this.map_layers.file_layer = {
+                name: "GeoTiff layer",
+                layer: geotiff_layer,
+                hidden: false
+            }
+
+            this.map_instance.addLayer(geotiff_layer)
+        },
         on_select_instance: function(instance) {
             this.current_instance = instance
+        },
+        generate_geotif_source: function() {
+            const source = new GeoTIFF({
+                sources: [
+                    {
+                        url: this.task ? this.task.file.geospatial.layers[0].url_signed : this.file.geospatial.layers[0].url_signed,
+                    },
+                ],
+                interpolate: this.normalize,
+                normalize: this.interpolate,
+            });
+
+            this.tiff_source = source
+
+            return source
         },
         on_update_attribute: function(event, is_global) {
             const attribute = event
@@ -487,18 +526,7 @@ export default Vue.extend({
                 projection: 'EPSG:4326',
             });
 
-            const source = new GeoTIFF({
-                sources: [
-                    {
-                        url: this.task ? this.task.file.geospatial.layers[0].url_signed : this.file.geospatial.layers[0].url_signed,
-                    },
-                ],
-                interpolate: false,
-                normalize: false,
-            });
-
-            this.tiff_source = source
-    
+            const source = this.generate_geotif_source()
             this.annotation_source = new VectorSource({})
 
             const draw_layer = new VectorLayer({

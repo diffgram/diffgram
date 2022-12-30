@@ -266,6 +266,9 @@
                     <template slot="content">
                         <geo_tile
                             :map_layers="map_layers"
+                            :normalize="normalize"
+                            :interpolate="interpolate"
+                            @on_geotiff_rendere_change="(name, value) => $emit('on_geotiff_rendere_change', name, value)"
                             @add_tile="(e) => $emit('add_xyz_layer', e)"
                             @set_layer_opacity="(e) => $emit('set_layer_opacity', e)"
                             @remove_tile="(e) => $emit('remove_xyz_layer', e)"
@@ -453,6 +456,9 @@
                 <template slot="content">
                     <geo_tile
                         :map_layers="map_layers"
+                        :normalize="normalize"
+                        :interpolate="interpolate"
+                        @on_geotiff_rendere_change="(name, value) => $emit('on_geotiff_rendere_change', name, value)"
                         @add_tile="(e) => $emit('add_xyz_layer', e)"
                         @set_layer_opacity="(e) => $emit('set_layer_opacity', e)"
                         @remove_tile="(e) => $emit('remove_xyz_layer', e)"
@@ -557,7 +563,15 @@ export default Vue.extend({
         label_schema: {
             type: Object,
             required: true
-        }
+        },
+        normalize: {
+            type: Boolean,
+            default: false
+        },
+        interpolate: {
+            type: Boolean,
+            default: false
+        },
     },
     data() {
         return {
