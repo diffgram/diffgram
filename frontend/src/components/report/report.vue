@@ -1010,11 +1010,8 @@ export default Vue.extend({
         throw("Unsupported report_template.second_group_by value")
       },
 
-      create_one_dataset_for_users(report, value){
-        let member_id = null
-        if (report.user_metadata[value]) {
-          member_id = report.user_metadata[value].member_id
-        }
+      create_one_dataset_for_users(report, tuple){
+        let member_id = tuple[2]
         return {
           label: this.get_user_label_from_metadata(report, member_id),
           backgroundColor: '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0'),
@@ -1022,7 +1019,7 @@ export default Vue.extend({
         }
       },
 
-      create_one_dataset_labels(report, value){
+      create_one_dataset_labels(report, tuple){
 
         return {
             label: report.label_names_map[value],
@@ -1030,6 +1027,21 @@ export default Vue.extend({
             data: []
           }
       },
+
+      format_chart_data(dataset, x_axis_key, x_axis_list, y_axis_value){
+        /* 
+         * each element is of the shape
+         * one label : {
+         *    data: [
+         *       position on x axis :  value of y axis
+         *    ]
+         * }
+         *
+         */
+          let x_axis_index = x_axis_list.indexOf(x_axis_key)
+          dataset.data[x_axis_index] = y_axis_value
+      },
+
 
       create_second_group_datasets(report, unique_labels){
 
@@ -1041,9 +1053,9 @@ export default Vue.extend({
 
         console.log(report.second_grouping)
 
-        for (const [i, value] of report.second_grouping.entries()) {
+        for (const [i, tuple] of report.list_tuples_by_period.entries()) {
 
-          let new_dataset = this.create_one_dataset(report, value)
+          let new_dataset = this.create_one_dataset(report, tuple)
 
           let existing_set = created_datasets.find(x => x.label === new_dataset.label)
 
@@ -1051,12 +1063,15 @@ export default Vue.extend({
             created_datasets.push(new_dataset)
           }
 
-          let dataset = new_dataset || existing_set
+          let dataset = existing_set || new_dataset
 
-          let data_index = unique_labels.indexOf(report.labels[i])
-          dataset.data[data_index] = value
+          let x_axis_key = tuple[0]
+          let x_axis_list = unique_labels
+          let y_axis_value = tuple[1]
+
+          this.format_chart_data(dataset, x_axis_key, x_axis_list, y_axis_value)
         }
-
+        console.log(created_datasets)
         return created_datasets
 
       },
@@ -1082,9 +1097,7 @@ export default Vue.extend({
 
         if (!unique_labels) { return }
 
-        let created_datasets = this.create_second_group_datasets(report, unique_labels);
-
-        this.datacollection.datasets = created_datasets
+        this.datacollection.datasets = this.create_second_group_datasets(report, unique_labels);
       },
 
       fillData(report) {
@@ -1115,6 +1128,7 @@ export default Vue.extend({
         report.values = report_json.values
         report.second_grouping = report_json.second_grouping
         report.user_metadata = report_json.user_metadata
+        report.list_tuples_by_period = report_json.list_tuples_by_period
 
         report.schema = new Schema()
         report.schema.labelColourMap = report_json.label_colour_map
