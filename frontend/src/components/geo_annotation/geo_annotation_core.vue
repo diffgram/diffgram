@@ -91,6 +91,7 @@ import geo_sidebar from "./geo_sidebar.vue"
 import CommandManager from "../../helpers/command/command_manager"
 import InstanceList from "../../helpers/instance_list"
 import { Instance } from "../vue_canvas/instances/Instance"
+import { GlobalAnnotationInstance } from "../../components/vue_canvas/instances/GlobalInstance";
 import History from "../../helpers/history"
 import { 
     CreateInstanceCommand, 
@@ -417,22 +418,19 @@ export default Vue.extend({
                 this.trigger_task_change("next", this.$props.task, true);
             }
         },
-        get_and_set_global_instance: function (instance_list) {
-            if(!this.global_attribute_groups_list){
-                return instance_list
-            }
-            if(this.global_attribute_groups_list.length === 0) {
-                return instance_list
-            }
+        get_and_set_global_instance: function (instance_list) {            
             let existing_global_instance = instance_list.find(inst => inst && inst.type === 'global');
             
             if(!existing_global_instance) {
                 existing_global_instance = this.new_global_instance();
             }
 
-            console.log(existing_global_instance)
+            const { id, creation_ref_id, attribute_groups } = existing_global_instance
 
-            this.instance_list.set_global_instance(existing_global_instance)
+            const global_instance = new GlobalAnnotationInstance()
+            global_instance.create_instance(id, creation_ref_id, attribute_groups)
+
+            this.instance_list.set_global_instance(global_instance)
         },
         new_global_instance: function () {
             let new_instance = new Instance();
@@ -479,6 +477,7 @@ export default Vue.extend({
             this.instance_list.push(initial_instances)
 
             this.get_and_set_global_instance(instance_list)
+
             this.draw_instances
         },
         initialize_map: async function() {
@@ -877,6 +876,8 @@ export default Vue.extend({
             }
         },
         create_style: function(label_file) {
+            if (!label_file) return
+
             const { r, g, b } = label_file.colour.rgba;
             const styleSet = {
                 fill: new Fill({
