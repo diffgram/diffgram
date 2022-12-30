@@ -1241,7 +1241,6 @@ export default Vue.extend({
           this.report_template
           )
 
-
         let csvContent = csv_formatter.get_csv_data()
         // Inspiration https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
         var encodedUri = encodeURI(csvContent);

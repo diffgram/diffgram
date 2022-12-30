@@ -6,10 +6,13 @@ export class CSVReportFormatter{
   public report_template: ReportTemplate = null;
   public csv_content: string = '';
 
-  public constructor(report : Report) {
+  public constructor(
+      report : Report,
+      report_template: ReportTemplate) {
 
-    this.csv_content = '';
+    this.csv_content = ''
     this.report = report
+    this.report_template = report_template
   }
 
   private generate_grouped_by_label_format(){
@@ -66,12 +69,63 @@ export class CSVReportFormatter{
     }
     return this.csv_content
   }
-  private determine_format_to_generate(): string{
+
+  private generate_second_group_user_format(report : Report){
+
+    this.csv_content = "data:text/csv;charset=utf-8,";
+    this.csv_content += 'Date'
+
+    // header
+    for(const [i, tuple] of report.user_metadata.entries()){
+      this.csv_content += `${tuple.name},`
+    }
+
+    this.csv_content = this.csv_content.slice(0, -1); // Remove trailing ","
+    this.csv_content += '\r\n'
+
+    // assumes that each row is a label / date
+
+    for (const [ii, label] of report.labels.entries()) {
+
+      let row = `${label},`
+
+      for(const [j, user] of report.user_metadata.entries()){
+
+        let did_write = false
+
+        for (const [k, tuple] of report.list_tuples_by_period.entries()) { 
+          if (label == tuple[0] && user.member_id == tuple[2]) {
+            // write data
+            row += `${tuple[1]},`
+            did_write = true
+
+          }
+        }
+
+        if (did_write == false) {
+          // write empty data
+          row += `${0},`
+        }
+
+      }
+
+      this.csv_content += `${row}\r\n`
+    }
+
+    return this.csv_content
+
+  }
+
+  private determine_format_to_generate(){
     /*
     * Depending on report_template config, we can adapt formatting and call different CSV formatting
     * functions. This function returns a function with the appropriate format based on report_template.
     * */
-    if(this.report_template.second_group_by){
+    if(this.report_template.second_group_by == 'user'){
+      return this.generate_second_group_user_format(this.report)
+    }
+
+    if(this.report_template.second_group_by == 'label'){
       return this.generate_grouped_by_label_format()
     }
     else{
