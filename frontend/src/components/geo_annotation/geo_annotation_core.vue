@@ -867,7 +867,7 @@ export default Vue.extend({
             }
             this.save_loading = false
         },
-        change_file: async (direction, file) => {
+        change_file: async function(direction, file) {
             await this.save()
             if (direction == "next" || direction == "previous") {
                 this.$emit("request_file_change", direction, file);
