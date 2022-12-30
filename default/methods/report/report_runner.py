@@ -1068,28 +1068,28 @@ class Report_Runner():
 
     def format_view_type_count(
             self, 
-            stats_list_by_period: list):
+            list_tuples_by_period: list):
 
-        if len(stats_list_by_period) == 0:
+        if len(list_tuples_by_period) == 0:
             return 0
         if self.report_template.second_group:
-            labels, second_grouping, values = zip(*stats_list_by_period)
+            labels, second_grouping, values = zip(*list_tuples_by_period)
         else:
-            labels, values = zip(*stats_list_by_period)
+            labels, values = zip(*list_tuples_by_period)
         return sum(values)
 
 
     def format_for_charting(
             self,
-            stats_list_by_period,
+            list_tuples_by_period,
             report_template = None):
         """
-        This assumes stats_list_by_period is something like:
+        This assumes list_tuples_by_period is something like:
             0: ["Mon, 27 Jan 2020 00:00:00 GMT", 2]
             1: ["Tue, 28 Jan 2020 00:00:00 GMT", 2]
             2: ["Wed, 29 Jan 2020 00:00:00 GMT", 4]
 
-        stats_list_by_period is the "actual data"
+        list_tuples_by_period is the "actual data"
 
         """
         if report_template is None:
@@ -1103,47 +1103,34 @@ class Report_Runner():
             label_colour_map = self.project.directory_default.label_file_colour_map
 
         if self.report_template.view_type == "count":
-            return self.format_view_type_count(stats_list_by_period)
+            return self.format_view_type_count(list_tuples_by_period)
 
-        if report_template.group_by and stats_list_by_period:
+        if report_template.group_by and list_tuples_by_period:
+
+            if self.report_template.second_group_by:
+                labels, values, second_grouping = zip(*list_tuples_by_period)
+            else:
+                labels, values = zip(*list_tuples_by_period)
 
             if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
 
-                print(stats_list_by_period)
-
-                with_missing_dates = Stats.fill_missing_dates(
+                print(list_tuples_by_period)
+                labels = Stats.fill_missing_dates(
                     date_from = self.date_from,
                     date_to = self.date_to,
-                    list_by_period = stats_list_by_period)
-
-                if self.report_template.second_group_by:
-                    labels, second_grouping, values = zip(*with_missing_dates)
-
-                    if self.report_template.second_group_by == 'label':
-                        label_names_map = self.build_label_names_map_from_second_grouping(second_grouping)
-                else:
-                    labels, values = zip(*with_missing_dates)
-
-            else:
-                if self.report_template.second_group_by:
-                    labels, second_grouping, values = zip(*stats_list_by_period)
-
-                    if self.report_template.second_group_by == 'label':
-                        label_names_map = self.build_label_names_map_from_second_grouping(second_grouping)
-                else:
-                    labels, values = zip(*stats_list_by_period)
+                    known_dates_list = labels)
 
             ids_labels = labels
             # Front end now handles for user case
             if report_template.group_by in ['label']:
-                labels, values = zip(*stats_list_by_period)
+                labels, values = zip(*list_tuples_by_period)
 
                 labels = self.ids_to_human_readable_labels(
                     ids_list = labels,
                     group_by = report_template.group_by)
 
             if report_template.group_by in ['user'] and self.item_of_interest == 'task':
-                labels, values = zip(*stats_list_by_period)
+                labels, values = zip(*list_tuples_by_period)
 
                 labels = self.ids_to_human_readable_labels(
                     ids_list = labels,
@@ -1153,15 +1140,25 @@ class Report_Runner():
             # like [2000, 456, 123]
             count = sum(values)
 
-            # stats_list_by_period = date_convert_to_string(stats_list_by_period)
             user_metadata = self.build_user_metadata(ids_labels, values)
+            
+            if self.report_template.second_group_by == 'label':
+                label_names_map = self.build_label_names_map_from_second_grouping(second_grouping)
+
+            # e.g. 
+            # "(ABC datetime, 13, 1)", "(ABC datetime, 0, 0)
+            # Where the the SQL query order is generally maintained
+            # So the last element is the last group by etc. 
+            serialized_list_tuples_by_period = [str(i) for i in list_tuples_by_period]
+
             return {'labels': labels,
                     'values': values,
                     'count': count,
                     'user_metadata': user_metadata,
                     'label_colour_map': label_colour_map,
                     'label_names_map': label_names_map,
-                    'second_grouping': second_grouping}
+                    'second_grouping': second_grouping,
+                    'list_tuples_by_period': serialized_list_tuples_by_period}
 
     def build_user_metadata(self, ids_labels, values):
         result = []

@@ -7,7 +7,7 @@ class Stats():
 
 	def fill_missing_dates(date_from, 
 						   date_to, 
-						   list_by_period):
+						   known_dates_list: list):
 
 		"""
 		date_from, a python datetime.datetime object
@@ -27,20 +27,21 @@ class Stats():
 
 		period = (date_to - date_from).days
 	
-		len_task_list = len(list_by_period)
+		len_period = len(known_dates_list)
 
 		index = 0
 		for i in range(period):
 
 			# date() "Return date object with same year, month and day."
 
-			if index + 1 <= len_task_list and list_by_period[index][0].date() == next_date.date():	
-			
-				with_missing_dates.append(list_by_period[index]) 
-				index += 1
+			known_date = known_dates_list[index]
 
+			if index + 1 <= len_period and known_date.date() == next_date.date():	
+			
+				with_missing_dates.append(known_date) 
+				index += 1
 			else:			
-				with_missing_dates.append((next_date, 0, 0))
+				with_missing_dates.append(next_date)
 				
 			next_date = next_date + datetime.timedelta(days=1)
 
