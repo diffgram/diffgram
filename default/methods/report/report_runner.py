@@ -844,8 +844,8 @@ class Report_Runner():
 
         """
 
-        # Default to now, that thing where it's <= so we do this "offset" of 1 day.
-        date_to = datetime.datetime.utcnow() + datetime.timedelta(days = 1)
+        # Default to now, that thing where it's <= so we do this "offset"
+        date_to = datetime.datetime.utcnow() + datetime.timedelta(days = 2)
 
         if dynamic_period == "all":
             # For now assume from when project was created
@@ -1142,7 +1142,7 @@ class Report_Runner():
             # like [2000, 456, 123]
             count = sum(values)
 
-            user_metadata = self.build_user_metadata(ids_labels, values)
+            user_metadata = self.build_user_metadata(ids_labels, second_grouping)
             
             if self.report_template.second_group_by == 'label':
                 label_names_map = self.build_label_names_map_from_second_grouping(second_grouping)
@@ -1165,14 +1165,14 @@ class Report_Runner():
                     'second_grouping': second_grouping,
                     'list_tuples_by_period': serialized_list_tuples_by_period}
 
-    def build_user_metadata(self, ids_labels, values):
+    def build_user_metadata(self, ids_labels, second_grouping):
         result = []
         member_ids_list = None
         if self.report_template.group_by == 'user':
             member_ids_list = ids_labels
             
         if self.report_template.second_group_by == 'user':
-            member_ids_list = values
+            member_ids_list = second_grouping
 
         if not member_ids_list: return
 
