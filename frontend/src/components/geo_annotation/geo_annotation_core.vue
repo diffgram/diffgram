@@ -493,6 +493,8 @@ export default Vue.extend({
                         url: this.task ? this.task.file.geospatial.layers[0].url_signed : this.file.geospatial.layers[0].url_signed,
                     },
                 ],
+                interpolate: false,
+                normalize: false,
             });
 
             this.tiff_source = source
