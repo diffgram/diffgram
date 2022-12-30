@@ -29,11 +29,14 @@
         >
         </diffgram_select>
       </div>
-      <div>
+      <div v-if="!no_data">
         <bar_horizontal_chart
           :chart-data="chart_data"
           :options="bar_chart_options_time_series">
         </bar_horizontal_chart>
+      </div>
+      <div v-else>
+        <p>No results</p>
       </div>
     </v-card-text>
   </v-card>
@@ -59,6 +62,8 @@ export default {
       member_list: [],
       report_result: [],
       count_sum: 0,
+      no_data: false,
+
       chart_data: {
         datasets: [],
         labels: []
@@ -146,12 +151,13 @@ export default {
     gen_report: async function(){
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
-      if(result){
+      if(result && result.stats){
         this.report_result = result;
         let labels = [];
         labels = result.stats.labels
 
         this.count_sum = result.stats.values.reduce((acc, current) => acc + current, 0)
+        this.no_data = false
         this.chart_data ={
           labels: labels,
           datasets: [
@@ -160,6 +166,16 @@ export default {
               borderColor: 'white',
               label: this.task_status_filter.find(elm => elm.name === this.report_template.task_event_type).display_name,
               data: result.stats.values
+            }
+          ]
+        }
+      } else {
+        this.no_data = true
+        this.count_sum = 0
+        this.chart_data ={
+          datasets: [
+            {
+              data: []
             }
           ]
         }

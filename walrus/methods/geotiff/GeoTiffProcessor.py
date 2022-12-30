@@ -1,4 +1,6 @@
-import json
+import os
+import shutil
+from datetime import datetime
 from shared.database.input import Input
 from sqlalchemy.orm import Session
 from shared.data_tools_core import Data_tools
@@ -67,17 +69,40 @@ class GeoTiffProcessor:
         self.input.file_id = file.id
         return file
 
+    def __reproject_tiff_file(self, path_to_file: str) -> str:
+        timestamp = datetime.timestamp(datetime.now())
+        temp_foleder_name = f"temp_geo_{timestamp}"
+        
+        os.mkdir(temp_foleder_name)
+
+        filename = f"{temp_foleder_name}/{self.input.original_filename}"
+
+        input_raster = gdal.Open(path_to_file)
+        gdal.Warp(filename, input_raster, dstSRS='EPSG:3857')
+
+        return {
+            "filename": filename,
+            "folder": temp_foleder_name
+        }
+
+    def __cleanup_temp_file(self, folder_name: str) -> None:
+        shutil.rmtree(folder_name)
+
     def __upload_tiff_and_attach_to_asset(self, geo_asset: GeoAsset):
         """
-            Uploads the pcd file in the given path to cloud storage and
-            creates point cloud object
+            Uploads the tiff file in the given path to cloud storage and
+            geotiffobject
         :return:
         """
+        path_to_file_with_proper_projection = self.__reproject_tiff_file(self.input.temp_dir_path_and_filename)
+
         blob_path = f"{settings.PROJECT_GEOSPATIAL_FILES_BASE_DIR}{str(self.input.project_id)}/assets/{str(geo_asset.id)}"
-        self.data_tools.upload_to_cloud_storage(temp_local_path = self.input.temp_dir_path_and_filename,
+        self.data_tools.upload_to_cloud_storage(temp_local_path = path_to_file_with_proper_projection["filename"],
                                                 blob_path = blob_path,
                                                 content_type = 'image/tiff')
         geo_asset.url_signed_blob_path = blob_path
+
+        self.__cleanup_temp_file(path_to_file_with_proper_projection["folder"])
 
     def __create_geo_layer_child_file(self, parent_file: File) -> GeoAsset:
         geo_asset = GeoAsset.new(

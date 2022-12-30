@@ -84,6 +84,7 @@ export default {
   },
   mounted() {
     this.report_template.job_id = this.job_id;
+    this.report_template.project_id = this.$store.state.project.current.id;
     this.gen_report();
   },
   methods: {
@@ -99,7 +100,7 @@ export default {
     gen_report: async function () {
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
-      if (result) {
+      if (result && result.stats) {
 
         this.chart_data = {
           labels: result.stats.labels,
@@ -111,6 +112,10 @@ export default {
               data: result.stats.values
             }
           ]
+        }
+      } else {
+        this.chart_data = {
+          datasets: []
         }
       }
     }

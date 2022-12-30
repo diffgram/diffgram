@@ -34,13 +34,6 @@ describe("Test stats panel component", () => {
         };
       });
 
-    it("Checks local storage on creation", () => {
-        jest.spyOn(window.localStorage.__proto__, 'getItem');
-        window.localStorage.__proto__.getItem = jest.fn();
-        shallowMount(stats_panel, props, localVue);
-        expect(localStorage.getItem).toHaveBeenCalled();
-    })
-
     it("Should render all the headers of the stats elements correctly", () => {
       const wrapper = shallowMount(stats_panel, props, localVue);
 

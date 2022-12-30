@@ -29,12 +29,15 @@
         >
         </diffgram_select>
       </div>
-      <div>
+      <div v-if="!no_data">
         <pie-chart
           v-if="!loading"
           :data="chartObj.chartData"
           :options="chartObj.chartOptions"
         />
+      </div>
+      <div v-else>
+        <p>No results</p>
       </div>
     </v-card-text>
   </v-card>
@@ -61,6 +64,7 @@ export default {
       member_list: [],
       report_result: [],
       count_sum: 0,
+      no_data: false,
 
       task_status_filter: [
         {
@@ -158,7 +162,7 @@ export default {
     gen_report: async function(){
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
-      if(result){
+      if(result && result.stats){
         this.report_result = result;
         let labels = [];
         labels = result.stats.labels
@@ -176,7 +180,19 @@ export default {
             }
           ]
         }
+        this.no_data = false
         this.chartObj = {...this.chartObj}
+      }
+      else {
+        this.count_sum = 0
+        this.no_data = true
+        this.chartObj.chartData = {
+          datasets: [
+            {
+              data: []
+            }
+          ]
+        }
       }
       this.loading = false
     }
