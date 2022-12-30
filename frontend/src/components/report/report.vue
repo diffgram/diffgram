@@ -1051,8 +1051,6 @@ export default Vue.extend({
           return created_datasets
         }
 
-        console.log(report.second_grouping)
-
         for (const [i, tuple] of report.list_tuples_by_period.entries()) {
 
           let new_dataset = this.create_one_dataset(report, tuple)
@@ -1238,7 +1236,11 @@ export default Vue.extend({
 
       download_csv: function () {
 
-        const csv_formatter = new CSVReportFormatter(this.report)
+        const csv_formatter = new CSVReportFormatter(
+          this.report,
+          this.report_template
+          )
+
 
         let csvContent = csv_formatter.get_csv_data()
         // Inspiration https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
