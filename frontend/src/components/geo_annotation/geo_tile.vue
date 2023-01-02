@@ -50,33 +50,42 @@
         </div>
       </li>
     </ul>
-    <br />
-    <div>
-      <h3>Add XYZ Tile</h3>
-      <v-text-field
-        v-model="name" 
-        label="Layer name" 
-      />
-      <v-text-field
-        v-model="tile" 
-        label="Link to the tile" 
-      />
-      <v-text-field
-        v-model="opacity"
-        label="Opacity"
-        hide-details
-        single-line
-        type="number"
-      />
-      <br />
-      <standard_button
-        button_message="Add"
-        button_color="primary"
-        :icon="null"
-        :bottom="true"
-        @click="add_tile"
-      />
-    </div>
+    <button_with_menu
+      button_text="Add tile"
+      color="primary"
+      icon="mdi-plus"
+      :text_style="true"
+      :close_by_button="true"
+    >
+      <template slot="content">
+        <div>
+          <h3>Add XYZ Tile</h3>
+          <v-text-field
+            v-model="name" 
+            label="Layer name" 
+          />
+          <v-text-field
+            v-model="tile" 
+            label="Link to the tile" 
+          />
+          <v-text-field
+            v-model="opacity"
+            label="Opacity"
+            hide-details
+            single-line
+            type="number"
+          />
+          <br />
+          <standard_button
+            button_message="Add"
+            button_color="primary"
+            :icon="null"
+            :bottom="true"
+            @click="add_tile"
+          />
+        </div>
+      </template>
+    </button_with_menu>
   </div>
 </template>
 
