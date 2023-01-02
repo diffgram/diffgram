@@ -432,7 +432,6 @@ export default Vue.extend({
             return source
         },
         on_update_attribute: function(event, is_global) {
-            console.log(event, is_global)
             const attribute = event
             let command
             if (is_global) {
