@@ -441,7 +441,7 @@ export default Vue.extend({
             }
             let attribute_to_pass = Array.isArray(attribute[1]) ? [...attribute[1]] : {...attribute[1]}
 
-            if (attribute[0].kind === 'text') attribute_to_pass = attribute[1]
+            if (["slider", "text"].includes(attribute[0].kind)) attribute_to_pass = attribute[1]
 
             command.set_new_attribute(attribute[0].id, attribute_to_pass)
             this.command_manager.executeCommand(command)
