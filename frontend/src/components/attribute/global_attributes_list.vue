@@ -12,7 +12,9 @@
     :tile="true"
   >
     <v-expansion-panel>
-      <v-expansion-panel-header class="d-flex justify-start pa-0 sidebar-accordeon-header">
+      <v-expansion-panel-header 
+        class="d-flex justify-start pa-0 sidebar-accordeon-header"
+      >
         <v-icon 
           left 
           class="ml-5 flex-grow-0" 
