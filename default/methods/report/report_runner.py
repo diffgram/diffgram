@@ -428,11 +428,9 @@ class Report_Runner():
         self.apply_concrete_filters()
 
         if self.init_query.group_by_str and not self.init_query.second_group_by_str:
-            logger.info("first_group_by used")
             self.query = self.query.group_by(self.init_query.base)
 
         if self.init_query.second_group_by_str:
-            logger.info("second_group_by used")
             self.query = self.query.group_by(self.init_query.base, self.init_query.second_group_by)
 
         if self.report_template.group_by == 'date':
@@ -485,6 +483,7 @@ class Report_Runner():
 
         if self.base_class == 'custom_report':
             self.results = self.generate_custom_report()
+            self.results['user_metadata'] = self.build_user_metadata(self.results['labels'])
         else:
             self.results = self.generate_standard_report()
 
@@ -985,9 +984,9 @@ class Report_Runner():
         init_query.base = self.member_id_normalized
         init_query.group_by = func.count(self.base_class.id)
 
-        #if self.item_of_interest == 'task':
-        #    init_query.group_by = func.count(self.base_class.task_id)
-        #    init_query.distinct = True
+        if self.item_of_interest == 'task':
+            init_query.group_by = func.count(self.base_class.task_id)
+            init_query.distinct = True
         return init_query
 
 
@@ -1105,10 +1104,15 @@ class Report_Runner():
 
             if self.report_template.second_group_by:
                 labels, values, second_grouping = zip(*list_tuples_by_period)
-                user_metadata = self.build_user_metadata(labels, second_grouping)
             else:
                 labels, values = zip(*list_tuples_by_period)
-                user_metadata = self.build_user_metadata(labels, values)
+
+
+            if self.report_template.group_by == 'user':
+                user_metadata = self.build_user_metadata(labels)
+
+            if self.report_template.second_group_by == 'user':
+                user_metadata = self.build_user_metadata(second_grouping)
 
             if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
 
@@ -1149,15 +1153,8 @@ class Report_Runner():
         return serialized_list_tuples_by_period
 
 
-    def build_user_metadata(self, ids_labels, second_grouping):
+    def build_user_metadata(self, member_ids_list):
         result = []
-        member_ids_list = None
-        if self.report_template.group_by == 'user':
-            member_ids_list = ids_labels
-            
-        if self.report_template.second_group_by == 'user':
-            member_ids_list = second_grouping
-
         if not member_ids_list: return
 
         member_ids_list = set(member_ids_list)
