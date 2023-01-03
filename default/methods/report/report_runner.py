@@ -423,41 +423,17 @@ class Report_Runner():
 
         self.apply_concrete_filters()
 
-        if self.report_template.group_by == 'date':
-            # assumes self.date_func is set from init_query
-            if self.report_template.second_group_by == 'user':
-                self.query = self.query.group_by(self.date_func, self.member_id_normalized)
-            else:
-                self.query = self.query.group_by(self.date_func)
-            self.query = self.query.order_by(self.date_func)
+        if str(init_query.group_by):
+            self.query = self.query.group_by(init_query.base, init_query.group_by)
 
-        elif self.report_template.group_by == 'label':
-            if hasattr(self, 'label_file_id'):
-                self.query = self.query.group_by(self.label_file_id)
-
-        elif self.report_template.group_by == 'user':
-            self.query = self.query.group_by(self.member_id_normalized)
-
-        elif self.report_template.group_by == 'task':
-            if self.report_template.second_group_by == 'user':
-                self.query = self.query.group_by(self.base_class.file_id, self.member_id_normalized)
-            else:
-                self.query = self.query.group_by(self.base_class.task_id)
-
-        elif self.report_template.group_by == 'file':
-
-            if self.report_template.second_group_by == 'label':
-                self.query = self.query.group_by(self.base_class.file_id, self.base_class.label_file_id)
-            else:
-                self.query = self.query.group_by(self.base_class.file_id)
-
-        elif self.report_template.group_by == 'task_status':
-            self.query = self.query.group_by(self.base_class.status)
+        if str(init_query.second_group_by):
+            self.query = self.query.group_by(init_query.base, init_query.group_by, init_query.second_group_by)
 
         self.results = self.execute_query(
             view_type = self.report_template.view_type)
         stats = self.format_for_external(self.results)
         stats_serialized = self.serialize_stats(stats)
+
         Event.new(
             kind = "report_run",
             session = self.session,
