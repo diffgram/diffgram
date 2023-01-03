@@ -909,12 +909,13 @@ class Report_Runner():
 
         init_query = self.set_second_group_by(init_query)
 
-        if init_query.second_group_by:
+        if str(init_query.second_group_by):
             init_query.query = self.session.query(init_query.base, init_query.group_by, init_query.second_group_by)
             query = self.apply_init_query_filters(init_query)
             return query
 
-        if init_query.group_by:
+        logger.info(str(init_query.group_by))
+        if str(init_query.group_by):
             init_query.query = self.session.query(init_query.base, init_query.group_by)
             query = self.apply_init_query_filters(init_query)
             return query
@@ -929,7 +930,7 @@ class Report_Runner():
         if init_query.second_group_by:
             return init_query.query.filter()
 
-        return query
+        return init_query.query
 
 
     def set_second_group_by(self, init_query):
