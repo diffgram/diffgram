@@ -274,7 +274,11 @@ export default Vue.extend({
                 }
 
                 let feature;
-                const style = this.create_style(instance.label_file)
+                let style = this.create_style(instance.label_file)
+ 
+                if (this.current_instance && this.current_instance.id === instance.id) {
+                    style = this.activate_instance()
+                }
 
                 if (!instance.soft_delete && instance.type === 'geo_point') {
                     feature = new Feature(new Point(instance.coords));
@@ -413,6 +417,7 @@ export default Vue.extend({
         },
         on_select_instance: function(instance) {
             this.current_instance = instance
+            this.draw_instances
         },
         generate_geotif_source: function() {
             const source = new GeoTIFF({
@@ -690,6 +695,8 @@ export default Vue.extend({
             if (!this.draw_mode) return;
             if (e.path[0].tagName.toLowerCase() !== "canvas") return
             if (this.moving) return
+            this.current_instance = null
+            this.draw_instances
             
             if (this.current_instance_type === 'geo_point') {
                 const lonlat = transform(this.mouse_coords, 'EPSG:3857', 'EPSG:4326');
@@ -887,8 +894,10 @@ export default Vue.extend({
 
             if (e.keyCode === 27) {
                 this.drawing_instance = false
+                this.current_instance = null
                 this.annotation_source.removeFeature(this.drawing_feature)
                 this.drawing_poly = []
+                this.draw_instances
             }
 
             if (e.keyCode === 83) {

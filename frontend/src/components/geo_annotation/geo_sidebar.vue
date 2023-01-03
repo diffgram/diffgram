@@ -61,6 +61,7 @@
                                 @mouseover="on_hover_item(item)"
                                 @mouseleave="on_stop_hover_item"
                                 @click="on_select_instance(item)"
+                                :style="current_instance && current_instance.id === item.id && 'background-color: #ecf0f1'"
                             >
                                 <td v-if="$store.state.user.settings.show_ids == true" class="centered-table-items">
                                     {{ item.id || 'new' }}
