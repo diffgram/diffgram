@@ -1085,9 +1085,9 @@ class Report_Runner():
             report_template = None):
         """
         This assumes list_tuples_by_period is something like:
-            0: ["Mon, 27 Jan 2020 00:00:00 GMT", 2]
-            1: ["Tue, 28 Jan 2020 00:00:00 GMT", 2]
-            2: ["Wed, 29 Jan 2020 00:00:00 GMT", 4]
+            0: ["Mon, 27 Jan 2020", 2, n]
+            1: ["Tue, 28 Jan 2020", 2, n]
+            2: ["Wed, 29 Jan 2020", 4, n]
 
         list_tuples_by_period is the "actual data"
 
@@ -1098,6 +1098,7 @@ class Report_Runner():
         second_grouping = None
         label_colour_map = None
         label_names_map = None
+        user_metadata = None
 
         if self.report_template.group_by == 'label' or self.report_template.second_group_by == 'label':
             label_colour_map = self.project.directory_default.label_file_colour_map
@@ -1109,12 +1110,12 @@ class Report_Runner():
 
             if self.report_template.second_group_by:
                 labels, values, second_grouping = zip(*list_tuples_by_period)
+                user_metadata = self.build_user_metadata(labels, second_grouping)
             else:
                 labels, values = zip(*list_tuples_by_period)
 
             if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
 
-                print(list_tuples_by_period)
                 labels = Stats.fill_missing_dates(
                     date_from = self.date_from,
                     date_to = self.date_to,
@@ -1122,39 +1123,12 @@ class Report_Runner():
 
                 labels = [i.isoformat() for i in labels]
 
-            ids_labels = labels
-            # Front end now handles for user case
-            if report_template.group_by in ['label']:
-                labels, values = zip(*list_tuples_by_period)
-
-                labels = self.ids_to_human_readable_labels(
-                    ids_list = labels,
-                    group_by = report_template.group_by)
-
-            if report_template.group_by in ['user'] and self.item_of_interest == 'task':
-                labels, values = zip(*list_tuples_by_period)
-
-                labels = self.ids_to_human_readable_labels(
-                    ids_list = labels,
-                    group_by = report_template.group_by)
-
-            # This assumes values is a list of ints
-            # like [2000, 456, 123]
             count = sum(values)
-
-            user_metadata = self.build_user_metadata(ids_labels, second_grouping)
             
             if self.report_template.second_group_by == 'label':
                 label_names_map = self.build_label_names_map_from_second_grouping(second_grouping)
 
-            # e.g. 
-            # "(ABC datetime, 13, 1)", "(ABC datetime, 0, 0)
-            # Where the the SQL query order is generally maintained
-            # So the last element is the last group by etc.
-            if self.report_template.second_group_by: 
-                serialized_list_tuples_by_period = [[i[0].isoformat(), i[1], i[2]] for i in list_tuples_by_period]
-            else:
-                serialized_list_tuples_by_period = [[str(i[0]), i[1]] for i in list_tuples_by_period]
+            serialized_list_tuples_by_period = self.serialize_list_tuples_by_period(list_tuples_by_period)
 
             return {'labels': labels,
                     'values': values,
@@ -1164,6 +1138,20 @@ class Report_Runner():
                     'label_names_map': label_names_map,
                     'second_grouping': second_grouping,
                     'list_tuples_by_period': serialized_list_tuples_by_period}
+
+
+    def serialize_list_tuples_by_period(self, list_tuples_by_period):
+        # e.g. 
+        # "(ABC datetime, 13, 1)", "(ABC datetime, 0, 0)
+        # Where the the SQL query order is generally maintained
+        # So the last element is the last group by etc.
+        if self.report_template.second_group_by: 
+            serialized_list_tuples_by_period = [[i[0].isoformat(), i[1], i[2]] for i in list_tuples_by_period]
+        else:
+            serialized_list_tuples_by_period = [[str(i[0]), i[1]] for i in list_tuples_by_period]
+
+        return serialized_list_tuples_by_period
+
 
     def build_user_metadata(self, ids_labels, second_grouping):
         result = []
@@ -1221,55 +1209,3 @@ class Report_Runner():
         )
 
         return custom_reports_list + default_reports_list
-
-    def ids_to_human_readable_labels(
-        self,
-        ids_list: list,
-        group_by: str):
-        """
-        SO clearly WIP not very composable yet
-        ALSO note 100% clear if it's great to worry about getting the labels
-        seperetly like this... Is there a way to built it into group by?
-
-        Careful with order here...
-        Getting the ids from a list does not preserve order...
-
-        I swear we were doing something with this type of id
-        to object mapping before but maybe eventually trying to make this
-        more generic...
-        https://stackoverflow.com/questions/35316864/sqlalchemy-get-query-results-in-same-order-as-in-clause
-        """
-
-        human_readable = []
-
-        if group_by == 'label':
-
-            label_file_list = File.get_by_id_list(self.session, ids_list)
-
-            id_to_label_file = {file.id: file for file in label_file_list}
-
-            # CAUTION we are using ids list to maintain order
-            # Append None if issue so as to keep order.
-            for id in ids_list:
-                attribute = None
-                file = id_to_label_file.get(id)
-                if file and file.label:
-                    attribute = file.label.name
-                human_readable.append(attribute)
-
-        # note we are handling this on the front end
-        # Probably can delete this block
-        if group_by == 'user':
-            if self.report_template.task_event_type is not None:
-                class_type = self.get_class_type_str_from_task_type_column()
-                users = None
-                if class_type == 'user':
-                    users = User.get_by_user_id_list(self.session,ids_list)
-                elif class_type == 'member':
-                    users = User.get_by_id_member_list(self.session, ids_list)
-                if users:
-                    for user in users:
-                        human_readable.append(f'{user.first_name} {user.last_name}')
-
-        return human_readable
-
