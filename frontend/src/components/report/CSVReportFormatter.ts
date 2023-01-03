@@ -73,7 +73,7 @@ export class CSVReportFormatter{
   private generate_second_group_user_format(report : Report){
 
     this.csv_content = "data:text/csv;charset=utf-8,";
-    this.csv_content += 'Date'
+    this.csv_content += 'Date,'
 
     // header
     for(const [i, tuple] of report.user_metadata.entries()){
