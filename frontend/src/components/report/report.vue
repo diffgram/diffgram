@@ -1033,7 +1033,7 @@ export default Vue.extend({
          * each element is of the shape
          * one label : {
          *    data: [
-         *       position on x axis :  value of y axis
+         *       position on x axis :  value of y axis,
          *    ]
          * }
          *
