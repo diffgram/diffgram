@@ -30,9 +30,10 @@ class InitQuery:
 
     def __init__(self):
         self.distinct = False
-        self.second_group_by = None
+        self.second_group_by = None     # SQLAlchemy statements don't have good bool check so use _str instead
         self.group_by = None
-
+        self.second_group_by_str = None
+        self.group_by_str = None
 
 report_spec_list = [
 
@@ -405,7 +406,9 @@ class Report_Runner():
             Logic for standard reports. This is for reports can be directly generated from single table queries.
             No need to combine, join or aggregate data.
         """
-        self.query = self.get_init_query(group_by_str = self.report_template.group_by)
+        self.init_query = self.get_init_query(group_by_str = self.report_template.group_by)
+
+        self.query = self.init_query.query
 
         self.apply_permission_scope_to_query()
 
@@ -423,11 +426,16 @@ class Report_Runner():
 
         self.apply_concrete_filters()
 
-        if str(init_query.group_by):
-            self.query = self.query.group_by(init_query.base, init_query.group_by)
+        if self.init_query.second_group_by_str:
+            logger.info("second_group_by used")
+            self.query = self.query.group_by(self.init_query.base, self.init_query.second_group_by)
 
-        if str(init_query.second_group_by):
-            self.query = self.query.group_by(init_query.base, init_query.group_by, init_query.second_group_by)
+        if self.init_query.group_by_str:
+            logger.info("first_group_by used")
+            self.query = self.query.group_by(self.init_query.base)
+
+        if self.report_template.group_by == 'date':
+            self.query = self.query.order_by(self.init_query.base)
 
         self.results = self.execute_query(
             view_type = self.report_template.view_type)
@@ -890,18 +898,19 @@ class Report_Runner():
 
         init_query = self.set_second_group_by(init_query)
 
-        if str(init_query.second_group_by):
+        if init_query.group_by_str:
             init_query.query = self.session.query(init_query.base, init_query.group_by, init_query.second_group_by)
-            query = self.apply_init_query_filters(init_query)
-            return query
+            init_query.query = self.apply_init_query_filters(init_query)
+            return init_query
 
-        logger.info(str(init_query.group_by))
-        if str(init_query.group_by):
+        if init_query.second_group_by_str:
             init_query.query = self.session.query(init_query.base, init_query.group_by)
-            query = self.apply_init_query_filters(init_query)
-            return query
+            init_query.query = self.apply_init_query_filters(init_query)
+            return init_query
 
-        return self.session.query(init_query.base)()
+        # Else no group by
+        init_query.query = self.session.query(init_query.base)()
+        return init_query
 
 
     def apply_init_query_filters(self, init_query):
