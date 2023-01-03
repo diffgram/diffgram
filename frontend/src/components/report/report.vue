@@ -1136,6 +1136,9 @@ export default Vue.extend({
       },
 
       get_user_from_metadata(report, member_id){
+        if (!report.user_metadata) {
+          throw("Missing report.user_metadata")
+        }
         return report.user_metadata.find(x => {
               return x.member_id == member_id
             })
