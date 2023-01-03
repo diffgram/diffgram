@@ -268,10 +268,8 @@ export default Vue.extend({
 
             this.instance_list.get_all().map(instance => {
                 const already_exists = this.feature_list.find(feature => feature.ol_uid === instance.ol_id)
-                if ((already_exists && instance.soft_delete) || this.invisible_labels.find(label => label.id === instance.label_id)) {
+                if ((already_exists && instance.soft_delete) || this.invisible_labels.find(label => label === instance.label_file_id)) {
                     this.annotation_source.removeFeature(already_exists)
-                    const index_to_remove = this.feature_list.indexOf(already_exists)
-                    this.feature_list.splice(index_to_remove, 1)
                     return
                 }
 
