@@ -390,6 +390,7 @@ class Report_Runner():
                       view_type: str = None):
 
         q = self.query
+        print(q)
         result = q.all()
         return result
 
@@ -409,7 +410,7 @@ class Report_Runner():
         self.init_query = self.get_init_query(group_by_str = self.report_template.group_by)
 
         self.query = self.init_query.query
-
+        logger.info(self.query)
         self.apply_permission_scope_to_query()
 
         if self.report_template.period:
@@ -426,13 +427,13 @@ class Report_Runner():
 
         self.apply_concrete_filters()
 
+        if self.init_query.group_by_str and not self.init_query.second_group_by_str:
+            logger.info("first_group_by used")
+            self.query = self.query.group_by(self.init_query.base)
+
         if self.init_query.second_group_by_str:
             logger.info("second_group_by used")
             self.query = self.query.group_by(self.init_query.base, self.init_query.second_group_by)
-
-        if self.init_query.group_by_str:
-            logger.info("first_group_by used")
-            self.query = self.query.group_by(self.init_query.base)
 
         if self.report_template.group_by == 'date':
             self.query = self.query.order_by(self.init_query.base)
@@ -884,6 +885,8 @@ class Report_Runner():
         if self.item_of_interest == "task":
             self.set_task_end_user_to_db_logic_change()
 
+        logger.info(self.member_id_normalized)
+
         group_by_dict = {
             None: self.no_group_by,
             'date': self.group_by_date,
@@ -898,12 +901,12 @@ class Report_Runner():
 
         init_query = self.set_second_group_by(init_query)
 
-        if init_query.group_by_str:
+        if init_query.second_group_by_str:
             init_query.query = self.session.query(init_query.base, init_query.group_by, init_query.second_group_by)
             init_query.query = self.apply_init_query_filters(init_query)
             return init_query
 
-        if init_query.second_group_by_str:
+        if init_query.group_by_str:
             init_query.query = self.session.query(init_query.base, init_query.group_by)
             init_query.query = self.apply_init_query_filters(init_query)
             return init_query
@@ -982,9 +985,9 @@ class Report_Runner():
         init_query.base = self.member_id_normalized
         init_query.group_by = func.count(self.base_class.id)
 
-        if self.item_of_interest in ['task']:
-            init_query.group_by = func.count(self.base_class.task_id)
-            init_query.distinct = True
+        #if self.item_of_interest == 'task':
+        #    init_query.group_by = func.count(self.base_class.task_id)
+        #    init_query.distinct = True
         return init_query
 
 
@@ -1098,11 +1101,14 @@ class Report_Runner():
 
         if report_template.group_by and list_tuples_by_period:
 
+            print(list_tuples_by_period)
+
             if self.report_template.second_group_by:
                 labels, values, second_grouping = zip(*list_tuples_by_period)
                 user_metadata = self.build_user_metadata(labels, second_grouping)
             else:
                 labels, values = zip(*list_tuples_by_period)
+                user_metadata = self.build_user_metadata(labels, values)
 
             if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
 
