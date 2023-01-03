@@ -871,6 +871,11 @@ class Report_Runner():
         init_query.group_by_str = group_by_str
         init_query.second_group_by_str = self.report_template.second_group_by
 
+        self.member_id_normalized = self.get_and_set_member_id_normalized()
+
+        if self.item_of_interest == "task":
+            self.set_task_end_user_to_db_logic_change()
+
         group_by_dict = {
             None: self.no_group_by,
             'date': self.group_by_date,
@@ -965,8 +970,6 @@ class Report_Runner():
 
     def group_by_user(self, init_query):
 
-        self.member_id_normalized = self.get_and_set_member_id_normalized()
-
         init_query.base = self.member_id_normalized
         init_query.group_by = func.count(self.base_class.id)
 
@@ -976,17 +979,18 @@ class Report_Runner():
         return init_query
 
 
+    def set_task_end_user_to_db_logic_change(self):
+        self.base_class = self.string_to_class("task_event")
+        self.set_member_column_from_task_event_type()
+        self.normalize_class_defintions()
+
+
     def get_and_set_member_id_normalized(self):
 
         self.member_id_normalized = None
 
         if self.item_of_interest in ["instance", "file"]:
             self.member_id_normalized = self.base_class.member_created_id
-
-        if self.item_of_interest in ["task"]:
-            self.base_class = self.string_to_class("task_event")
-            self.set_member_column_from_task_event_type()
-            self.normalize_class_defintions()
 
         elif self.item_of_interest == "event":
             self.member_id_normalized = self.base_class.member_id
