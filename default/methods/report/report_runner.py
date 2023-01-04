@@ -1116,10 +1116,9 @@ class Report_Runner():
 
             if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
 
-                labels = Stats.fill_missing_dates(
+                labels = self.build_date_range(
                     date_from = self.date_from,
-                    date_to = self.date_to,
-                    known_dates_list = labels)
+                    date_to = self.date_to)
 
                 labels = [i.isoformat() for i in labels]
 
@@ -1139,6 +1138,16 @@ class Report_Runner():
                     'second_grouping': second_grouping,
                     'list_tuples_by_period': serialized_list_tuples_by_period}
 
+    def build_date_range(self, 
+                date_from: datetime.datetime, 
+				date_to: datetime.datetime):
+
+        days_list = []
+        period_desired = (date_to - date_from).days
+        for i in range(period_desired):
+            date = date_from + datetime.timedelta(days=i)
+            days_list.append(date.replace(hour=0, minute=0, second=0, microsecond=0))
+        return days_list
 
     def format_if_datetime(self, text):
         if isinstance(text, datetime.datetime):
