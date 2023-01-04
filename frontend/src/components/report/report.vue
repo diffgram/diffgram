@@ -1069,19 +1069,44 @@ export default Vue.extend({
 
           this.format_chart_data(dataset, x_axis_key, x_axis_list, y_axis_value)
         }
-        console.log(created_datasets)
         return created_datasets
+
+      },
+      fill_zeroes(report){
+        if (!report.labels) {return}
+        let values_zeroes_filled = []
+        for (const label of report.labels) {
+          let tuple = report.list_tuples_by_period.find(x => x[0] === label)
+          if (tuple) {
+            let value = tuple[1]
+            values_zeroes_filled.push(value)
+          } else {
+            values_zeroes_filled.push(0)
+          }
+        }
+        return values_zeroes_filled
 
       },
 
       fillData_default_case(report){
+
+        let values = null
+
+        if (['file', 'instance', 'task'].includes(this.report_template.item_of_interest)
+          && this.report_template.group_by == 'date') {
+          values = this.fill_zeroes(report)
+        }
+        else {
+          values = report.values
+        }
+
         this.datacollection = {
           labels: report.labels,
           datasets: [
             {
               // Label means header (not label schema or rest of data labels)
               label: this.get_header(report),
-              data: report.values,
+              data: values,
               backgroundColor: this.color
             },
 
@@ -1183,7 +1208,7 @@ export default Vue.extend({
 
         if (this.report_template.view_type == "chart") {
           this.fillData(this.report)
-        } 
+        }
 
       },
 
