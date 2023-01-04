@@ -872,19 +872,10 @@ class Report_Runner():
                        date_from,
                        date_to,
                        date_period_unit: str):
-        """
-        Assumes qeury is set
-
-        Does literal query modification
-        see ie determine_dates_from_dynamic_period()
-        for determining dates
-
-        """
 
         # Set to next day so we can use default of 00:00 start
         # instead of midnight. Otherwise results during the
         # day get excluded
-        # Do we assume if date_period_unit == "exact" for example then this doesn't matter?
         if date_period_unit == 'day':
             date_to += datetime.timedelta(days = 1)
 
@@ -895,9 +886,6 @@ class Report_Runner():
     def get_init_query(self, group_by_str: str):
         """
         """
-        #if self.base_class == TaskTimeTracking:
-        #    self.custom_report = AnnotatorPerformanceReport(self.report_template)
-
         init_query = InitQuery()
         init_query.group_by_str = group_by_str
         init_query.second_group_by_str = self.report_template.second_group_by
@@ -1033,7 +1021,7 @@ class Report_Runner():
             self.member_id_normalized = self.base_class.member_id
 
         elif self.item_of_interest == "time_spent_task":
-            self.member_id_normalized = self.base_class.user_id
+            self.member_id_normalized = self.base_class.member_id
 
         return self.member_id_normalized
 
@@ -1112,6 +1100,8 @@ class Report_Runner():
 
         list_tuples_by_period is the "actual data"
 
+        Does not have to be date centric
+
         """
         if report_template is None:
             report_template = self.report_template
@@ -1142,10 +1132,6 @@ class Report_Runner():
 
             if self.report_template.second_group_by == 'user':
                 user_metadata = self.build_user_metadata(second_grouping)
-
-
-            if self.base_class == TaskTimeTracking:
-                pass
 
             if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
 

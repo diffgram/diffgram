@@ -32,3 +32,11 @@ class Member(Base):
                   member_id):
         return session.query(Member).filter(
             Member.id == member_id).first()
+
+
+    @staticmethod
+    def get_by_user_id(
+            session,
+            user_id):
+        return session.query(Member).filter(
+            Member.user_id == user_id).first()

@@ -37,6 +37,9 @@ class TaskTimeTracking(Base, SerializerMixin):
     user_id = Column(Integer, ForeignKey('userbase.id'))
     user = relationship("User", foreign_keys = [user_id])
 
+    member_id = Column(Integer, ForeignKey('member.id'))
+    member = relationship("Member", foreign_keys = [member_id])
+
     time_spent = Column(Float, default = 0.0)
 
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
@@ -91,6 +94,7 @@ class TaskTimeTracking(Base, SerializerMixin):
         :param flush_session:
         :return:
         """
+        from shared.database.auth.member import Member
 
         time_track_record = session.query(TaskTimeTracking).filter(
             TaskTimeTracking.job_id == job_id,
@@ -113,6 +117,9 @@ class TaskTimeTracking(Base, SerializerMixin):
         ).first()
 
         existing_global_record = True
+
+        member = Member.get_by_user_id(session, user_id)
+
         if time_track_record_global is None:
             # Create new Record
             logger.info(f"New Global Track Time Record task_id:{task_id} status:{status} user_id:{user_id}")
@@ -124,6 +131,7 @@ class TaskTimeTracking(Base, SerializerMixin):
                 time_spent = time_spent,
                 parent_file_id = parent_file_id,
                 file_id = file_id,
+                member = member
             )
             existing_global_record = False
             if add_to_session:
@@ -141,7 +149,8 @@ class TaskTimeTracking(Base, SerializerMixin):
                 time_spent = time_spent,
                 parent_file_id = parent_file_id,
                 file_id = file_id,
-                status = status
+                status = status,
+                member = member
             )
             existing_status_record = False
             if add_to_session:
@@ -175,6 +184,7 @@ class TaskTimeTracking(Base, SerializerMixin):
             '-job',
             '-task',
             '-file',
-            '-parent_file'))
+            '-parent_file',
+            '-member'))
 
         return data
