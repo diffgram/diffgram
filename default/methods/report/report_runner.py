@@ -13,6 +13,7 @@ from methods.report.custom_reports.TaskReportRejectRatioReport import TaskReport
 from shared.database.annotation.instance import Instance
 from shared.database.source_control.file import File
 from shared.database.task.task_event import TaskEvent
+from shared.database.task.task_time_tracking import TaskTimeTracking
 
 from shared.permissions.super_admin_only import Super_Admin
 from shared.database.report.report_template import ReportTemplate
@@ -199,11 +200,14 @@ class Report_Runner():
         metadata: dict = None,
         member = None,
         project_string_id = None
+
     ):
 
         self.session = session
         self.report_template_id = report_template_id
         self.report_template_data = report_template_data
+
+        self.time_created_normalized = None
 
         self.metadata_untrusted = metadata
         self.member = member
@@ -246,7 +250,7 @@ class Report_Runner():
             'task': Task,
             'task_event': TaskEvent,
             'event': Event,
-            'time_spent_task': 'custom_report',
+            'time_spent_task': TaskTimeTracking,
             'annotator_performance': 'custom_report',
             'approval_reject_ratio': 'custom_report'
         }
@@ -367,10 +371,13 @@ class Report_Runner():
     def normalize_class_defintions(self):
 
         if self.item_of_interest in ['user', 'instance', 'file']:
-            self.time_created = self.base_class.created_time
+            self.time_created_normalized = self.base_class.created_time
 
-        if self.item_of_interest in ['task', 'event', 'task_event']:
-            self.time_created = self.base_class.time_created
+        if self.item_of_interest in ['task', 'event', 'task_event', 'time_spent_task']:
+            self.time_created_normalized = self.base_class.time_created
+
+        if self.time_created_normalized is None:
+            raise Exception(f"self.item_of_interest: '{self.item_of_interest}' has not defined a self.time_created_normalized.")
 
         if self.item_of_interest in ['file']:
             self.label_file_id = self.base_class.id
@@ -457,8 +464,17 @@ class Report_Runner():
         ReportClass = None
         if self.item_of_interest == 'time_spent_task':
             ReportClass = TimeSpentReport
+
         elif self.item_of_interest == 'annotator_performance':
-            ReportClass = AnnotatorPerformanceReport
+            #ReportClass = AnnotatorPerformanceReport
+            #self.init_query = Init_Query()
+            #report = ReportClass(
+            #    session = self.session, 
+            #    report_template = self.report_template, 
+            #    init_query = self.init_query)
+            # report.build_query()
+            pass
+
         elif self.item_of_interest == 'approval_reject_ratio':
             ReportClass = TaskReportRejectRatioReport
         else:
@@ -596,6 +612,10 @@ class Report_Runner():
 
 
     def apply_concrete_filters(self):
+
+        if self.base_class == TaskTimeTracking:
+            # Exclude statues, e.g. time spent looking at completed tasks
+            self.query = self.query.filter(TaskTimeTracking.status.is_(None))
 
         if self.base_class == Instance:
             self.__filter_soft_delete_instances()
@@ -868,13 +888,16 @@ class Report_Runner():
         if date_period_unit == 'day':
             date_to += datetime.timedelta(days = 1)
 
-        self.query = self.query.filter(self.time_created >= date_from)
-        self.query = self.query.filter(self.time_created < date_to)
+        self.query = self.query.filter(self.time_created_normalized >= date_from)
+        self.query = self.query.filter(self.time_created_normalized < date_to)
 
 
     def get_init_query(self, group_by_str: str):
         """
         """
+        #if self.base_class == TaskTimeTracking:
+        #    self.custom_report = AnnotatorPerformanceReport(self.report_template)
+
         init_query = InitQuery()
         init_query.group_by_str = group_by_str
         init_query.second_group_by_str = self.report_template.second_group_by
@@ -897,6 +920,9 @@ class Report_Runner():
         }
         first_group_by = group_by_dict.get(init_query.group_by_str)
         first_group_by(init_query)
+
+        if self.base_class == TaskTimeTracking:
+            init_query.group_by = func.sum(self.base_class.time_spent)
 
         init_query = self.set_second_group_by(init_query)
 
@@ -952,7 +978,7 @@ class Report_Runner():
 
     def group_by_date(self, init_query):
         self.date_func = func.date_trunc(self.report_template.date_period_unit,
-                                         self.time_created)
+                                         self.time_created_normalized)
         init_query.base = self.date_func
         init_query.group_by = func.count(self.base_class.id)
         return init_query
@@ -1005,6 +1031,9 @@ class Report_Runner():
 
         elif self.item_of_interest == "event":
             self.member_id_normalized = self.base_class.member_id
+
+        elif self.item_of_interest == "time_spent_task":
+            self.member_id_normalized = self.base_class.user_id
 
         return self.member_id_normalized
 
@@ -1114,6 +1143,10 @@ class Report_Runner():
             if self.report_template.second_group_by == 'user':
                 user_metadata = self.build_user_metadata(second_grouping)
 
+
+            if self.base_class == TaskTimeTracking:
+                pass
+
             if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
 
                 labels = self.build_date_range(
@@ -1183,6 +1216,7 @@ class Report_Runner():
                 'email': user.email,
             })
         return result
+
     def report_template_list(
         self,
         report_dashboard_id = None,
