@@ -247,7 +247,7 @@ class Report_Runner():
             'instance': Instance,
             'user': User,
             'file': File,
-            'task': Task,
+            'task': TaskEvent,
             'task_event': TaskEvent,
             'event': Event,
             'time_spent_task': TaskTimeTracking,
@@ -892,9 +892,6 @@ class Report_Runner():
 
         self.member_id_normalized = self.get_and_set_member_id_normalized()
 
-        if self.item_of_interest == "task":
-            self.set_task_end_user_to_db_logic_change()
-
         logger.info(self.member_id_normalized)
 
         group_by_dict = {
@@ -949,6 +946,7 @@ class Report_Runner():
         if self.report_template.second_group_by == 'user':
             self.member_id_normalized = self.get_and_set_member_id_normalized()
             init_query.second_group_by = self.member_id_normalized
+            logger.info(init_query.second_group_by)
 
         return init_query
 
@@ -1004,11 +1002,6 @@ class Report_Runner():
         return init_query
 
 
-    def set_task_end_user_to_db_logic_change(self):
-        self.base_class = self.string_to_class("task_event")
-        self.set_member_column_from_task_event_type()
-        self.normalize_class_defintions()
-
 
     def get_and_set_member_id_normalized(self):
 
@@ -1017,16 +1010,20 @@ class Report_Runner():
         if self.item_of_interest in ["instance", "file"]:
             self.member_id_normalized = self.base_class.member_created_id
 
-        elif self.item_of_interest == "event":
+        elif self.item_of_interest in ["event", "time_spent_task"]:
             self.member_id_normalized = self.base_class.member_id
 
-        elif self.item_of_interest == "time_spent_task":
-            self.member_id_normalized = self.base_class.member_id
+        if self.item_of_interest == 'task':
+            self.set_member_column_from_task_event_type()
+
+        if self.member_id_normalized is None:
+            raise Exception(f"self.member_id_normalized is None for self.item_of_interest: {self.item_of_interest}")
 
         return self.member_id_normalized
 
 
     def set_member_column_from_task_event_type(self):
+        # Needs review, should only be member
         if self.report_template.task_event_type == ['task_created', 'task_review_start']:
             self.member_id_normalized = self.base_class.member_created_id
         elif self.report_template.task_event_type == ['task_completed']:
@@ -1125,7 +1122,6 @@ class Report_Runner():
                 labels, values, second_grouping = zip(*list_tuples_by_period)
             else:
                 labels, values = zip(*list_tuples_by_period)
-
 
             if self.report_template.group_by == 'user':
                 user_metadata = self.build_user_metadata(labels)
