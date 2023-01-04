@@ -16,15 +16,12 @@ class TaskTimeTracking(Base, SerializerMixin):
     __tablename__ = 'task_time_tracking'
     id = Column(BIGINT, primary_key = True)
 
-    # The job context on where this sync happened.
     job_id = Column(Integer, ForeignKey('job.id'))
     job = relationship("Job", foreign_keys = [job_id])
 
-    # For knowing in what project did the sync occurred.
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project", foreign_keys = [project_id])
 
-    # For knowing which task was created.
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys = [task_id])
 
