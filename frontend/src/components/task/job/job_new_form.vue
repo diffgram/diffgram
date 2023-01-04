@@ -261,7 +261,7 @@
 
 
 
-                <!-- Disable changes for Jan 2019 release -->
+                <!-- Disabled -->
                 <v-select :items="permission_list"
                           v-model="job.permission"
                           label="Visibility"

@@ -8,11 +8,11 @@ export type ReportTemplate = {
   date_period_unit: string,
   label_file_id_list: number[],
   group_by: string,
+  second_group_by: string,
   directory_id_list: number[],
   scope: string,
   view_type: string,
   diffgram_wide_default: boolean,
-  group_by_labels: boolean,
   id: number,
   view_sub_type: string
   task_event_type: string

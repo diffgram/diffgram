@@ -56,8 +56,7 @@
 
           </template>
 
-          <!-- Duplicate because veutify needs
-            it - at least last time checked early 2020 -->
+          <!-- Duplicate because veutify needs -->
 
           <template v-slot:selection="data">
 

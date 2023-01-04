@@ -59,15 +59,14 @@
                 <v-card-text>
                   <v-container>
                     <h2>Labels & Instances</h2>
-                    <v-checkbox @change="has_changes = true" label="Additionally Group Files By Label"
-                                v-model="report_template.group_by_labels"></v-checkbox>
+
                   </v-container>
                 </v-card-text>
               </v-card>
             </v-dialog>
 
             <standard_button tooltip_message="Save"
-                            @click="save_report"
+                            @click="save_report(true)"
                             icon="save"
                             :text_style="true"
                             :large="true"
@@ -106,7 +105,8 @@
 
             <div class="pa-2 pl-4 pr-4">
               <standard_chip
-                :message="`${count}`"
+                v-if="report"
+                :message="`${report.count}`"
                 tooltip_message="Sum"
                 color="primary"
                 tooltip_direction="bottom">
@@ -197,8 +197,20 @@
                 </diffgram_select>
               </v-col>
 
-              <v-col cols="2">
-                <!-- SCOPE -->
+               <v-col cols="2">
+                      <diffgram_select
+                        class="pa-4"
+                        :item_list="second_group_by_list"
+                        v-model="report_template.second_group_by"
+                        :clearable="true"
+                        label="Second Group by"
+                        :disabled="loading"
+                        @change="has_changes = true"
+                      >
+                      </diffgram_select>
+                </v-col>
+
+              <!--
                 <diffgram_select
                   class="pa-4"
                   :item_list="scope_icon_list"
@@ -208,8 +220,7 @@
                   @change="has_changes = true"
                 >
                 </diffgram_select>
-
-              </v-col>
+              -->
               <v-col cols="2">
                 <!-- View Type -->
                 <diffgram_select
@@ -336,7 +347,7 @@
 
 
     <v-alert type="info"
-             v-if="!loading && values.length == 0 && count ==0"
+             v-if="!loading && values.length == 0 && report && report.count ==0"
              dismissible>
       No results. <br>
       Is (time period, project) correct?
@@ -413,7 +424,7 @@
       </v-container>
     </v-card>
 
-    <v-card v-if="report_template.view_type == 'count' "
+    <v-card v-if="report && report_template.view_type == 'report.count' "
             elevation="0">
       <v-container>
         <v-chip
@@ -422,7 +433,7 @@
           text-color="white"
         >
 
-          <h2> {{ count }} </h2>
+          <h2> {{ report.count }} </h2>
 
         </v-chip>
       </v-container>
@@ -469,23 +480,137 @@
 
 /*  Caution, re adding new select controls
  *    expects  @change="has_changes = true"  otherwise won't "save"
- *
- *
- *
+
  *
  */
 
 import axios from '../../services/customInstance';
 import label_select_only from '../label/label_select_only.vue'
 import {ReportTemplate} from '../../types/ReportTemplate'
+import { Report } from '@/types/Report'
 import {getReportTemplate} from '../../services/reportServices.ts'
 import {CSVReportFormatter} from './CSVReportFormatter';
 import Vue from "vue";
+import { Schema } from '@/types/Schema'
+
+
+const date_selector =
+    {
+      'display_name': 'Date',
+      'name': 'date',
+      'icon': 'mdi-calendar',
+      'color': 'primary'
+    }
+
+const user_selector =
+    {
+      'display_name': 'User',
+      'name': 'user',
+      'icon': 'mdi-account-circle',
+      'color': 'blue'
+    }
+
+const label_selector =
+    {
+      'display_name': 'Label',
+      'name': 'label',
+      'icon': 'mdi-format-paint',
+      'color': 'pink'
+    }
+
+const task_selector =
+    {
+      'display_name': 'Task',
+      'name': 'task',
+      'icon': 'mdi-flash-circle',
+      'color': 'purple'
+    }
+
+const file_selector =
+    {
+      'display_name': 'File',
+      'name': 'file',
+      'icon': 'mdi-file',
+      'color': 'orange'
+    }
+
+const task_status_selector =
+    {
+      'display_name': 'Task Status',
+      'name': 'task_status',
+      'icon': 'mdi-list-status',
+      'color': 'green'
+    }
+
+const instance_selector =
+    {
+      'display_name': 'Instance (Annotation)',
+      'name': 'instance',
+      'icon': 'mdi-brush',
+      'color': 'green'
+    }
+
+const time_spent_task_selector =
+    {
+      'display_name': 'Time Spent On Task',
+      'name': 'time_spent_task',
+      'icon': 'mdi-clock',
+      'color': 'blue',
+      'allowed_groupings': [
+        date_selector,
+        user_selector,
+        task_selector
+      ]
+    }
+
+const annotator_performance_selector =
+    {
+      'display_name': 'Annotators Performance',
+      'name': 'annotator_performance',
+      'icon': 'mdi-camera-timer',
+      'color': 'cyan',
+      'allowed_groupings': [
+        task_selector,
+        instance_selector,
+      ]
+    }
+
+const instance_selector_with_groupings = structuredClone(instance_selector)
+instance_selector_with_groupings['allowed_groupings'] = [
+          date_selector,       
+          user_selector,
+          label_selector,
+          task_selector,
+          file_selector,
+          task_status_selector             
+        ]
+
+const file_selector_with_groupings = structuredClone(file_selector)
+file_selector_with_groupings['allowed_groupings'] = [
+          date_selector,       
+          user_selector,
+          label_selector,
+          task_selector,
+          file_selector,
+          task_status_selector             
+        ]
+
+const task_selector_with_groupings = structuredClone(task_selector)
+task_selector_with_groupings['allowed_groupings'] = [
+          date_selector,       
+          user_selector,
+          label_selector,
+          task_selector,
+          file_selector,
+          task_status_selector             
+        ]
+
+
 
 export default Vue.extend({
     name: 'report',
     components: {
-      label_select_only,
+      label_select_only
     },
     props: {
       // Optional, for existing report
@@ -506,19 +631,17 @@ export default Vue.extend({
 
         name: null,
 
+        report: new Report(),
+
         datacollection: {},
         job_select_this_id: null,
 
         request_time: null,
-        stats: {},
         labels: [],
         member_list: [],
-        values_metadata: [],
+        user_metadata: [],
         values: [],
 
-        /*
-         *
-         */
         report_template: {
           'name': 'My Report',
           'archived': false,
@@ -527,183 +650,21 @@ export default Vue.extend({
           'date_period_unit': 'day',
           'label_file_id_list': null,
           'group_by': 'date',
+          'second_group_by': null,
           'directory_id_list': null,
           'scope': 'project',
           'view_type': 'chart',
           'diffgram_wide_default': false,
-          'group_by_labels': false,
           'task_event_type': 'task_created',
           'id': null,
           'view_sub_type': 'line'
         } as ReportTemplate,
 
         item_of_interest_list: [
-          {
-            'display_name': 'Annotators Performance',
-            'name': 'annotator_performance',
-            'icon': 'mdi-camera-timer',
-            'color': 'cyan',
-            'allowed_groupings': [
-              {
-                'display_name': 'Task',
-                'name': 'task',
-                'icon': 'mdi-flash-circle',
-                'color': 'purple'
-              },
-              {
-                'display_name': 'Instance',
-                'name': 'instance',
-                'icon': 'mdi-brush',
-                'color': 'green'
-              },
-            ]
-          },
-          {
-            'display_name': 'Time Spent On Task',
-            'name': 'time_spent_task',
-            'icon': 'mdi-clock',
-            'color': 'blue',
-            'allowed_groupings': [
-              {
-                'display_name': 'Task',
-                'name': 'task',
-                'icon': 'mdi-flash-circle',
-                'color': 'purple'
-              },
-            ]
-          },
-          {
-            'display_name': 'Instance',
-            'name': 'instance',
-            'icon': 'mdi-format-paint',
-            'color': 'green',
-            'allowed_groupings': [
-              {
-                'display_name': 'Date',
-                'name': 'date',
-                'icon': 'mdi-calendar',
-                'color': 'primary'
-              },
-              {
-                'display_name': 'User',
-                'name': 'user',
-                'icon': 'mdi-account-circle',
-                'color': 'blue'
-              },
-              {
-                'display_name': 'Label',
-                'name': 'label',
-                'icon': 'mdi-format-paint',
-                'color': 'pink'
-              },
-              {
-                'display_name': 'Task',
-                'name': 'task',
-                'icon': 'mdi-flash-circle',
-                'color': 'purple'
-              },
-              {
-                'display_name': 'File (Frame)',
-                'name': 'file',
-                'icon': 'mdi-file',
-                'color': 'orange'
-              },
-              {
-                'display_name': 'Task Status',
-                'name': 'task_status',
-                'icon': 'mdi-list-status',
-                'color': 'green'
-              },
-            ]
-          },
-          {
-            'display_name': 'File (Frame)',
-            'name': 'file',
-            'icon': 'mdi-file',
-            'color': 'orange',
-            'allowed_groupings': [
-              {
-                'display_name': 'Date',
-                'name': 'date',
-                'icon': 'mdi-calendar',
-                'color': 'primary'
-              },
-              {
-                'display_name': 'User',
-                'name': 'user',
-                'icon': 'mdi-account-circle',
-                'color': 'blue'
-              },
-              {
-                'display_name': 'Label',
-                'name': 'label',
-                'icon': 'mdi-format-paint',
-                'color': 'pink'
-              },
-              {
-                'display_name': 'Task',
-                'name': 'task',
-                'icon': 'mdi-flash-circle',
-                'color': 'purple'
-              },
-              {
-                'display_name': 'File (Frame)',
-                'name': 'file',
-                'icon': 'mdi-file',
-                'color': 'orange'
-              },
-              {
-                'display_name': 'Task Status',
-                'name': 'task_status',
-                'icon': 'mdi-list-status',
-                'color': 'green'
-              },
-            ]
-          },
-          {
-            'display_name': 'Task',
-            'name': 'task',
-            'icon': 'mdi-flash-circle',
-            'color': 'purple',
-            'allowed_groupings': [
-              {
-                'display_name': 'Date',
-                'name': 'date',
-                'icon': 'mdi-calendar',
-                'color': 'primary'
-              },
-              {
-                'display_name': 'User',
-                'name': 'user',
-                'icon': 'mdi-account-circle',
-                'color': 'blue'
-              },
-              {
-                'display_name': 'Label',
-                'name': 'label',
-                'icon': 'mdi-format-paint',
-                'color': 'pink'
-              },
-              {
-                'display_name': 'Task',
-                'name': 'task',
-                'icon': 'mdi-flash-circle',
-                'color': 'purple'
-              },
-              {
-                'display_name': 'File (Frame)',
-                'name': 'file',
-                'icon': 'mdi-file',
-                'color': 'orange'
-              },
-              {
-                'display_name': 'Task Status',
-                'name': 'task_status',
-                'icon': 'mdi-list-status',
-                'color': 'green'
-              },
-            ]
-          }
+          time_spent_task_selector,
+          instance_selector_with_groupings,
+          file_selector_with_groupings,
+          task_selector_with_groupings
         ],
 
         period_list: [
@@ -825,7 +786,7 @@ export default Vue.extend({
               type: 'time',
               distribution: 'series',
               time: {
-                unit: 'values_metadataday',
+                unit: 'user_metadataday',
                 unitStepSize: 1,
                 displayFormats: {
                   'day': 'MMM DD'
@@ -843,8 +804,6 @@ export default Vue.extend({
         },
 
 
-        // TODO some more stuff to look at here option wise
-        // in terms of having this work with other things like labels
 
         bar_chart_options_time_series: {
           responsive: true,
@@ -873,7 +832,6 @@ export default Vue.extend({
           }
         },
 
-        // TODO must be better way to share this??
 
         bar_chart_options_non_time_series: {
           responsive: true,
@@ -893,12 +851,8 @@ export default Vue.extend({
           }
         },
 
-        count: null,
-
         show_filters_dialog: false,
-        label_colour_map: null,
-        label_names_map: null,
-        second_grouping: null,
+
         loading: false,
         error: {},
         report_warning: {},
@@ -918,6 +872,7 @@ export default Vue.extend({
     computed: {
       // context of having a "preview" for the report
       // along with a way to save it?
+
       member_list_label: function () {
         if (this.report_template.item_of_interest === 'task') {
           return 'Assigned To.';
@@ -925,6 +880,7 @@ export default Vue.extend({
           return 'User';
         }
       },
+
       current_group_by_list: function(){
         let item_of_interest = this.report_template.item_of_interest;
         let ioi_obj = this.item_of_interest_list.find(elm => elm.name === item_of_interest)
@@ -936,6 +892,12 @@ export default Vue.extend({
         }
 
       },
+
+      second_group_by_list: function(){
+        // expansion point to limit this more in future
+        return [label_selector, user_selector]
+      },
+
       metadata: function () {
 
         // handle duplicate keys (things that already exist
@@ -959,8 +921,6 @@ export default Vue.extend({
           'member_list': this.member_list
 
         }
-        // merge properties
-
         let result =  {...dynamic_properties, ...this.report_template}
 
         return result
@@ -976,27 +936,12 @@ export default Vue.extend({
 
 
     },
-    mounted() {
-
-
-    },
 
     async created() {
-      // Defaults
+
       this.project_string_id = this.$store.state.project.current.project_string_id
       this.org_id = this.$store.state.org.current.id
 
-      // TODO only do this in edit mode.
-
-      // TODO implement get_report() using report_template_id if provided.
-      // we asume if it's valid then it will update the report object appropriately
-
-      /*
-       * Not clear when value of running just get_report() here
-       * because we get template info back from runnin the report
-       * and in new case it's blank anyway
-       */
-      // this.get_report(this.report_template_id)
       let result = await this.fetch_report_template()
       if(result){
         this.report_template = result
@@ -1011,168 +956,264 @@ export default Vue.extend({
       on_change_item_of_interest: function(new_item){
         let item_of_interest = this.item_of_interest_list.find(elm => elm.name === new_item)
         this.report_template.group_by = item_of_interest.allowed_groupings[0].name;
-        this.reset_second_group_by(item_of_interest)
+        //this.reset_second_group_by(item_of_interest)
         this.has_changes = true;
       },
 
       reset_second_group_by: function (item_of_interest) {
-        if (item_of_interest != 'instance') {
-          this.report_template.group_by_labels = false
-        }
+        //this.report_template.second_group_by = null
       },
+
       set_job: function (job) {
         this.job = job;
         this.has_changes = true
       },
+
       open_extra_filters_dialog: function () {
         this.show_filters_dialog = true;
       },
+
       reset_chart_data() {
-        this.labels = [];
-        this.values = [];
-        this.second_grouping = [];
-        this.label_colour_map = null;
-        this.label_names_map = null;
-        this.fillData({
-          labels: [],
-          values: [],
-          second_grouping: [],
-          label_colour_map: null,
-          label_names_map: null,
-        })
+
+        this.report = new Report()
+
+        this.fillData(this.report)
 
       },
 
-      fill_second_group_by(created_datasets, stats, unique_labels){
-
-        if (!stats.second_grouping || stats.second_grouping.length == 0) {
-          return created_datasets
-        }
-
-        for (let i = 0; i < stats.second_grouping.length; i++) {
-          const current = stats.second_grouping[i];
-          const label_name = stats.label_names_map[current];
-          if (!created_datasets.map(ds => ds.label).includes(label_name)) {
-            created_datasets.push({
-              label: stats.label_names_map[current],
-              backgroundColor: stats.label_colour_map[current].hex,
-              data: []
-            })
-          }
-          // Add Value
-          const dataset = created_datasets.find(dset => dset.label === stats.label_names_map[current]);
-          dataset.data[unique_labels.indexOf(stats.labels[i])] = stats.values[i]
-
-        }
-
-        return created_datasets
-
+      warn_too_many_labels(){
+        this.report_warning = {};   
+        this.report_warning['too_many_files'] = 'The report has too many files for complete chart rendering. Showing incomplete data.'
+        this.report_warning['csv'] = 'Please download CSV for complete data report.'
       },
 
-      warn_if_unique_labels(unique_labels){
-        if (unique_labels.length > 20) {
-          this.datacollection = {}
-          this.report_warning['too_many_files'] = 'The report has too many files for complete chart rendering. Showing incomplete data.'
-          this.report_warning['csv'] = 'Please download CSV for complete data report.'
-          unique_labels = unique_labels.splice(0, 20);
+      get_header(report){
+        return report.header_name ? report.header_name : this.report_template.item_of_interest
+      },
+
+      get_unique_labels(report){
+        let unique_labels = [...new Set(report.labels)];
+        if (unique_labels.length > 40) {
+          unique_labels = unique_labels.splice(0, 40);
+          this.warn_too_many_labels()
         }
         return unique_labels
       },
 
-      fill_grouped_by_label_chart_data(stats) {
+
+      create_one_dataset(report, value){
+        if (this.report_template.second_group_by == 'label') {
+           return this.create_one_dataset_labels(report, value)
+        }
+        if (this.report_template.second_group_by == 'user') {
+           return this.create_one_dataset_for_users(report, value)
+        }
+        throw("Unsupported report_template.second_group_by value")
+      },
+
+      create_one_dataset_for_users(report, tuple){
+        let member_id = tuple[2]
+        return {
+          label: this.get_user_label_from_metadata(report, member_id),
+          backgroundColor: '#'+(Math.random() * 0xFFFFFF << 0).toString(16).padStart(6, '0'),
+          data: []
+        }
+      },
+
+      create_one_dataset_labels(report, tuple){
+
+        return {
+            label: report.label_names_map[value],
+            backgroundColor: report.label_colour_map[value].hex,
+            data: []
+          }
+      },
+
+      format_chart_data(dataset, x_axis_key, x_axis_list, y_axis_value){
+        /* 
+         * each element is of the shape
+         * one label : {
+         *    data: [
+         *       position on x axis :  value of y axis,
+         *    ]
+         * }
+         *
+         */
+          let x_axis_index = x_axis_list.indexOf(x_axis_key)
+          dataset.data[x_axis_index] = y_axis_value
+      },
+
+
+      create_second_group_datasets(report, unique_labels){
+
         let created_datasets = [];
-        this.report_warning = {};
-        let unique_labels = [...new Set(stats.labels)];
 
-        unique_labels = this.warn_if_unique_labels(unique_labels)
+        if (!report.second_grouping || report.second_grouping.length == 0) {
+          return created_datasets
+        }
 
+        for (const [i, tuple] of report.list_tuples_by_period.entries()) {
+
+          let new_dataset = this.create_one_dataset(report, tuple)
+
+          let existing_set = created_datasets.find(x => x.label === new_dataset.label)
+
+          if (!existing_set) {
+            created_datasets.push(new_dataset)
+          }
+
+          let dataset = existing_set || new_dataset
+
+          let x_axis_key = tuple[0]
+          let x_axis_list = unique_labels
+          let y_axis_value = tuple[1]
+
+          this.format_chart_data(dataset, x_axis_key, x_axis_list, y_axis_value)
+        }
+        return created_datasets
+
+      },
+      fill_zeroes(report){
+        if (!report.labels) {return}
+        let values_zeroes_filled = []
+        for (const label of report.labels) {
+          let tuple = report.list_tuples_by_period.find(x => x[0] === label)
+          if (tuple) {
+            let value = tuple[1]
+            values_zeroes_filled.push(value)
+          } else {
+            values_zeroes_filled.push(0)
+          }
+        }
+        return values_zeroes_filled
+
+      },
+
+      fillData_default_case(report){
+
+        let values = null
+
+        if (this.report_template.group_by == 'date') {
+          values = this.fill_zeroes(report)
+          report.values_zeros_filled = values
+        }
+        else {
+          values = report.values
+        }
+
+        this.datacollection = {
+          labels: report.labels,
+          datasets: [
+            {
+              // Label means header (not label schema or rest of data labels)
+              label: this.get_header(report),
+              data: values,
+              backgroundColor: this.color
+            },
+
+          ]
+        }
+      },
+
+      fillData_second_group_by(report){
+        let unique_labels = this.get_unique_labels(report)
         this.datacollection = {datasets: [], labels: unique_labels}
 
-        created_datasets = this.fill_second_group_by(created_datasets, stats, unique_labels)
+        if (!unique_labels) { return }
 
-        this.datacollection.datasets = created_datasets
-        return created_datasets
+        this.datacollection.datasets = this.create_second_group_datasets(report, unique_labels);
       },
-      fillData(stats) {
-        if (this.report_template.group_by_labels) {
-          this.fill_grouped_by_label_chart_data(stats);
-        } else {
-          this.datacollection = {
-            labels: stats.labels,
-            datasets: [
-              {
-                // Label that shows on header
-                label: stats.header_name ? stats.header_name : this.report_template.item_of_interest,
-                data: stats.values,
-                backgroundColor: this.color
-              },
 
-            ]
-          }
+      fillData(report) {
+
+        if (this.report_template.second_group_by) {
+          this.fillData_second_group_by(report)
+        } else {
+          this.fillData_default_case(report)
         }
 
       },
 
       save_and_run_report: function () {
-        /*
-         *
-         *  For now we assume we must have a saved report to run it
-         *  as a future optimization can look at more ways to
-         *  run this just in "preview" mode...
-         *
-         */
 
         let do_run_report = true
-
         this.save_report(do_run_report)
 
       },
 
+      new_report_from_json(report_json) {
 
-      load_stats: function (stats) {
-        this.stats = stats
-        if(!this.stats){
-          return
+        if (!report_json) { throw("missing report_json") }
+
+        let report = new Report()
+
+        report.count = report_json.count
+        report.labels = report_json.labels
+        report.values = report_json.values
+        report.second_grouping = report_json.second_grouping
+        report.user_metadata = report_json.user_metadata
+        report.list_tuples_by_period = report_json.list_tuples_by_period
+
+        report.schema = new Schema()
+        report.schema.labelColourMap = report_json.label_colour_map
+        report.schema.labelNamesMap = report_json.label_names_map
+
+        return report
+      },
+
+      get_user_from_metadata(report, member_id){
+        if (!report.user_metadata) {
+          throw("Missing report.user_metadata")
         }
-        // assumes project scope
+
+        return report.user_metadata.find(x => {
+              return x.member_id == member_id
+            })
+      },
+
+      get_user_label_from_metadata(report, member_id){
+        let member = this.get_user_from_metadata(report, member_id)
+
+        if (member && member.name) {
+          return member.name
+        }
+        else if (member && member.first_name && member.last_name) {
+          return member.first_name + " " + member.last_name
+        } else {
+          return "User"
+        }
+      },
+
+      update_report_with_user_names(report){
 
         if (this.report_template.group_by == 'user' || this.report_template.item_of_interest === 'annotator_performance') {
-          for (const [i, member_id] of this.stats.labels.entries()) {
-            let member = stats.values_metadata.find(x => {
-              return x.user_id == member_id
-            })
 
-            if (member) {
-              this.stats.labels[i] = member.first_name + " " + member.last_name
-            } else {
-              this.stats.labels[i] = "User"
-            }
+          for (const [i, member_id] of report.labels.entries()) {
+
+            report.labels[i] = this.get_user_label_from_metadata(report, member_id)
 
           }
         }
 
+        return report
+
+      },
+
+
+      load_report: function (report_json) {
+
+        if(!report_json) {throw ("missing report_json") }
+              
+        this.report = this.new_report_from_json(report_json)
+
+        this.report = this.update_report_with_user_names(this.report)
 
         if (this.report_template.view_type == "chart") {
-
-          /*
-         * assumes stats is a dict
-         */
-          if(!stats){
-            return
-          }
-          this.labels = stats.labels
-          this.values = stats.values
-          this.values_metadata = stats.values_metadata
-          this.second_grouping = stats.second_grouping
-          this.label_names_map = stats.label_names_map
-          this.label_colour_map = stats.label_colour_map
-          this.count = stats.count
-          this.fillData(stats)
-        } else if (this.report_template.view_type == "count") {
-          this.count = stats
+          this.fillData(this.report)
         }
 
       },
+
       fetch_report_template: async function(){
         let [report_template, err] = await getReportTemplate(this.project_string_id, this.report_template_id)
         if (err != null){
@@ -1182,6 +1223,7 @@ export default Vue.extend({
         return report_template
 
       },
+
       run_report: function (report_template_id) {
 
         if (!report_template_id) {
@@ -1189,7 +1231,7 @@ export default Vue.extend({
           return
         }
 
-        this.count = null
+        this.report = null
 
         this.success_run = false
         this.loading = true
@@ -1197,20 +1239,18 @@ export default Vue.extend({
 
         axios.post('/api/v1/report/run', {
           report_template_id: parseInt(report_template_id),
-          project_string_id: this.project_string_id   // for default reports
+          project_string_id: this.project_string_id 
 
         }).then(response => {
 
-          // careful need to grab this too to update other report concepts
-          // and this should happen before load stats so colors are all good
           this.update_local_data_from_remote_report_template(
             response.data.report_template)
+
           this.reset_chart_data()
 
-          this.load_stats(response.data.stats)
+          this.load_report(response.data.report)
 
           this.success_run = true
-
           this.loading = false
 
         })
@@ -1224,58 +1264,13 @@ export default Vue.extend({
 
       },
 
-      get_report: function (report_template_id) {
-        /*
-         * TODO consider doing similar style like run where we pass the project_string_id in post
-         * so we can do permission check that way.
-         *
-         */
-
-        // we get this from the url so hard to do null check
-        // and still have it look good?
-        if (report_template_id == "new") {
-          // could also check if it's not a "Number" type or something.
-          return
-        }
-
-        this.success_loading_existing = false
-        this.loading = true
-        this.error = {}
-
-        axios.get('/api/v1/report/info/' + report_template_id
-        ).then(response => {
-
-          // We do compelte object here
-          // because there are things like member_created_id
-          // and other stuff that may get "added" from the back end
-
-          this.update_local_data_from_remote_report_template(
-            response.data.report_template)
-
-          this.success_loading_existing = true
-          this.loading = false
-
-        })
-          .catch(error => {
-            this.loading = false
-            this.error = this.$route_api_errors(error)
-
-          });
-
-
-      },
-
       download_csv: function () {
 
-
         const csv_formatter = new CSVReportFormatter(
-          this.labels,
-          this.values,
-          this.second_grouping,
-          this.label_names_map,
-          this.report_template,
-          this.values_metadata
-        )
+          this.report,
+          this.report_template
+          )
+
         let csvContent = csv_formatter.get_csv_data()
         // Inspiration https://stackoverflow.com/questions/14964035/how-to-export-javascript-array-info-to-csv-on-client-side
         var encodedUri = encodeURI(csvContent);
@@ -1286,11 +1281,9 @@ export default Vue.extend({
 
         link.click(); // This will download the data file
       },
+
       update_local_data_from_remote_report_template: function (report_template) {
-        /* context of local items using say a dict (like job select)
-         * and we may want a concrete report to save it, and update it.
-         *
-         */
+
         this.job_select_this_id = report_template.job_id
         // avoid circular updates, since we expect job component to reupdate
         // report template from this id
@@ -1302,26 +1295,9 @@ export default Vue.extend({
       },
 
       save_report: function (run_report) {
-        /*
-          * Assumes saving one report at a time.
-          *
-          * If we don't have a report id yet we need to save first
-          *
-          *
-          *  TODO load concrete filters like job id
-          *
-          */
 
         if (this.has_changes == false &&
           this.report_template.id != null) {
-
-          /*
-           *  not a fan of having this here
-            but it seemed like easist way
-            since for changes we need to run this
-            later after save success
-           *
-           */
 
           if (run_report == true) {
             this.run_report(this.report_template.id)
@@ -1341,25 +1317,11 @@ export default Vue.extend({
 
         }).then(response => {
 
-          // We do compelte object here
-          // because there are things like member_created_id
-          // and other stuff that may get "added" from the back end
-
           this.update_local_data_from_remote_report_template(
             response.data.report_template)
 
           this.success_saved = true
 
-          /*
-           * We detect things off of the URL so we want
-           * it to be updated when an id is newly created.
-           *
-           * ie if user refreshes page etc.
-           *
-           * This updates the "route" to the new id
-           *
-           * Only for New routes, so if it's already equal just leave it.
-           */
           if (this.report_template.id != this.report_template_id) {
             this.$router.push('/report/' + this.report_template.id)
           }
@@ -1368,15 +1330,6 @@ export default Vue.extend({
 
           this.loading = false
 
-          /*
-           * careful running report
-           * uses existing saved id
-           * so we must have this request complete
-           * before we can call it
-           *
-           * run_report in theory can use same metadata
-           * but for now this feels like stronger validation path
-           */
           if (run_report == true) {
             this.run_report(this.report_template.id)
           }
@@ -1388,51 +1341,8 @@ export default Vue.extend({
 
           });
 
-      },
-
-
-      stats_task_api: function () {
-
-        this.loading = true
-        this.error = {}
-        this.result = null
-
-        // temp for testing
-        // this.directory_id_list = [this.$store.state.project.current_directory.directory_id]
-
-        axios.post('/api/v1/diffgram/stats/general',
-          {
-            'date_from': this.date.from,
-            'date_to': this.date.to,
-            'item_of_interest': this.item_of_interest,
-            'date_period_unit': this.date_period_unit,
-            'count_only': this.count_only,
-            'label_file_id_list': this.label_file_id_list,
-            //'group_by': this.group_by,
-            'directory_id_list': this.directory_id_list
-
-          }).then(response => {
-          let log = response.data.log
-          if (log.success == true) {
-
-            this.labels = response.data.stats.labels
-            this.values = response.data.stats.values
-            this.fillData(response.data.stats)
-
-            this.count = response.data.stats.count
-
-          }
-          this.loading = false
-
-        })
-          .catch(error => {
-            this.loading = false
-            console.error(error)
-            this.error = this.$route_api_errors(error)
-
-
-          });
       }
+
     }
   }
 ) </script>

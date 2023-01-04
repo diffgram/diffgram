@@ -214,8 +214,7 @@
                   </div>
 
 
-                  <!-- Update log
-                       As of Sept 3 2020 this is just errors
+                  <!-- Update log is Just errors
                        In future could be other updates too
                     -->
                   <button_with_menu

@@ -975,7 +975,6 @@ export default Vue.extend( {
        *
        */
 
-      // Feb 24, 2020
       // only do this for high resolution media
 
       if (!this.primary_video) {

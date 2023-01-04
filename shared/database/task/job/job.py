@@ -105,7 +105,7 @@ class Job(Base, Caching):
 
     completion_action = Column(String())
 
-    exam_id = Column(Integer, ForeignKey('exam.id'))  # New Feb 8, 2019
+    exam_id = Column(Integer, ForeignKey('exam.id'))
     exam = relationship("Exam")
 
     # Review settings

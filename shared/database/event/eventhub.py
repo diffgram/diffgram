@@ -49,7 +49,6 @@ class EventHub(Base):
 
     member_id = Column(Integer)
 
-    # New August 7th, 2019
     file_id = Column(Integer)
 
     report_template_id = Column(Integer)

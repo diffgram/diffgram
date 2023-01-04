@@ -146,12 +146,10 @@ class Action(Base, SerializerMixin):
 
     # Overlay
 
-    # New June 19, 2019
-
     overlay_kind = Column(String())  # "text", "image", "icon" ?
     overlay_text = Column(String())
 
-    overlay_image_id = Column(Integer, ForeignKey('image.id'))  # new feb 12 2019
+    overlay_image_id = Column(Integer, ForeignKey('image.id'))
     overlay_image = relationship("Image",
                                  foreign_keys = [overlay_image_id])
 

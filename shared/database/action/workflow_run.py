@@ -16,7 +16,6 @@ class WorkflowRun(Base):
     status = Column(String())
     status_description = Column(String())
 
-    # New June 20, 2019
     file_id = Column(BIGINT, ForeignKey('file.id'))
     file = relationship("File", foreign_keys = [file_id])
 

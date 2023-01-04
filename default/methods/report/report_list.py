@@ -1,15 +1,8 @@
-# OPENCORE - ADD
 from methods.regular.regular_api import *
 
 from .report_runner import Report_Runner
 
 
-"""
-Some of these can be similar to what's in report runner
-But here just getting existing ones.
-The only thing needed is one of the report scopes, otherwise
-rest we can add on later as future filtering options.
-"""
 report_list_api_spec = [
 	{'scope' : {
 		'default': 'project',
@@ -34,7 +27,7 @@ report_list_api_spec = [
 		}
 	}
 	
-	]
+]
 
 @routes.route('/api/v1/report/template/list', 
 			  methods=['POST'])
@@ -58,7 +51,6 @@ def report_list_api():
 
 	with sessionMaker.session_scope() as session:  
 	    	
-		### MAIN ###
 		report_runner = Report_Runner(
 			session = session,
 			member = None
@@ -67,14 +59,10 @@ def report_list_api():
 		if len(report_runner.log["error"].keys()) >= 1:
 			return jsonify(log=report_runner.log), 400
 
-		# In the future we could have additional
-		# items passed here, but makes sense to reuse this.
 		report_runner.validate_report_permissions_scope(
 			scope = input.get('scope'),
 			project_string_id = input.get('project_string_id')
 			)
-
-		# TODO caching
 
 		report_template_list = report_runner.report_template_list(
 			report_dashboard_id = input.get('report_dashboard_id'),

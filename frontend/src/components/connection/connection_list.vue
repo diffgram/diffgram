@@ -73,7 +73,7 @@
 
               </v-layout>
 
-            <!-- May 7, 2020 Hide while WIP -->
+            <!-- Hide while WIP -->
 
             <!--
               <v-select :items="permission_scope_list"
