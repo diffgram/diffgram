@@ -528,7 +528,7 @@ const task_selector =
 
 const file_selector =
     {
-      'display_name': 'File (Frame)',
+      'display_name': 'File',
       'name': 'file',
       'icon': 'mdi-file',
       'color': 'orange'
@@ -544,7 +544,7 @@ const task_status_selector =
 
 const instance_selector =
     {
-      'display_name': 'Instance',
+      'display_name': 'Instance (Annotation)',
       'name': 'instance',
       'icon': 'mdi-brush',
       'color': 'green'
@@ -661,7 +661,6 @@ export default Vue.extend({
         } as ReportTemplate,
 
         item_of_interest_list: [
-          annotator_performance_selector,
           time_spent_task_selector,
           instance_selector_with_groupings,
           file_selector_with_groupings,
