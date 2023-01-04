@@ -1140,15 +1140,22 @@ class Report_Runner():
                     'list_tuples_by_period': serialized_list_tuples_by_period}
 
 
+    def format_if_datetime(self, text):
+        if isinstance(text, datetime.datetime):
+            return text.isoformat()
+        else:
+           return text
+
+
     def serialize_list_tuples_by_period(self, list_tuples_by_period):
         # e.g. 
         # "(ABC datetime, 13, 1)", "(ABC datetime, 0, 0)
         # Where the the SQL query order is generally maintained
         # So the last element is the last group by etc.
-        if self.report_template.second_group_by: 
-            serialized_list_tuples_by_period = [[i[0].isoformat(), i[1], i[2]] for i in list_tuples_by_period]
+        if self.report_template.second_group_by:
+            serialized_list_tuples_by_period = [[self.format_if_datetime(i[0]), i[1], i[2]] for i in list_tuples_by_period]
         else:
-            serialized_list_tuples_by_period = [[str(i[0]), i[1]] for i in list_tuples_by_period]
+            serialized_list_tuples_by_period = [[self.format_if_datetime(i[0]), i[1]] for i in list_tuples_by_period]
 
         return serialized_list_tuples_by_period
 
