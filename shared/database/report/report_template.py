@@ -75,10 +75,12 @@ class ReportTemplate(Base):
     view_type = Column(String())  # [count, rows, chart, objects]
     # 'objects' is internal only maybe
 
-    # Maybe what type of chart?
     view_sub_type = Column(String())  # [web_chart, future]...
 
     task_event_type = Column(String())  # [task_completed, task_created, etc]...
+
+    aggregate_func = Column(String())
+
 
     @staticmethod
     def get_by_id(session,
@@ -129,7 +131,8 @@ class ReportTemplate(Base):
             'is_visible_on_report_dashboard': self.is_visible_on_report_dashboard,
             'job_id': self.job_id,
             'label_file_id_list': label_file_id_list,
-            'task_id': self.task_id
+            'task_id': self.task_id,
+            'aggregate_func': self.aggregate_func
 
         }
 

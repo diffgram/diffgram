@@ -198,17 +198,31 @@
               </v-col>
 
                <v-col cols="2">
-                      <diffgram_select
-                        class="pa-4"
-                        :item_list="second_group_by_list"
-                        v-model="report_template.second_group_by"
-                        :clearable="true"
-                        label="Second Group by"
-                        :disabled="loading"
-                        @change="has_changes = true"
-                      >
-                      </diffgram_select>
+                  <diffgram_select
+                    class="pa-4"
+                    :item_list="second_group_by_list"
+                    v-model="report_template.second_group_by"
+                    :clearable="true"
+                    label="Second Group by"
+                    :disabled="loading"
+                    @change="has_changes = true"
+                  >
+                  </diffgram_select>
                 </v-col>
+
+                <v-col cols="2">
+                  <diffgram_select
+                    class="pa-4"
+                    :item_list="func_selectors"
+                    v-model="report_template.aggregate_func"
+                    :clearable="true"
+                    label="Aggregate"
+                    :disabled="loading"
+                    @change="has_changes = true"
+                  >
+                  </diffgram_select>
+                </v-col>
+
 
               <!--
                 <diffgram_select
@@ -563,6 +577,47 @@ const time_spent_task_selector =
       ]
     }
 
+const sum_selector =
+    {
+      'display_name': 'Sum',
+      'name': 'sum',
+      'icon': 'mdi-sigma',
+      'color': 'primary'
+    }
+
+
+const avg_selector =
+    {
+      'display_name': 'Average',
+      'name': 'avg',
+      'icon': 'mdi-format-list-group',
+      'color': 'primary'
+    }
+
+const max_selector =
+    {
+      'display_name': 'Max',
+      'name': 'max',
+      'icon': 'mdi-plus',
+      'color': 'primary'
+    }
+
+const min_selector =
+    {
+      'display_name': 'Min',
+      'name': 'min',
+      'icon': 'mdi-minus',
+      'color': 'primary'
+    }
+
+
+const func_selectors = [
+  sum_selector,
+  avg_selector,
+  max_selector,
+  min_selector
+  ]
+
 const annotator_performance_selector =
     {
       'display_name': 'Annotators Performance',
@@ -630,6 +685,7 @@ export default Vue.extend({
         success_run: false,
 
         name: null,
+        func_selectors: func_selectors,
 
         report: new Report(),
 
