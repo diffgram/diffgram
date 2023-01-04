@@ -129,7 +129,7 @@ export class CSVReportFormatter{
       return this.generate_grouped_by_label_format()
     }
     else{
-      return this.standard_csv_format()
+      return this.standard_csv_format(this.report)
     }
 
   }
@@ -149,32 +149,8 @@ export class CSVReportFormatter{
     return result
   }
 
-  private append_values(
-      values: any[],
-      index: number){
 
-    if(!values || values.length == 0){
-      return null
-    }
-
-    let result = ''
-    const value_element = values[index]
-    const row_keys = Object.keys(value_element)
-
-    row_keys.map(
-      ( key: string,
-        key_index: number) => {
-
-      const value = value_element[key]
-
-      result += `${value}`
- 
-      if (key_index != row_keys.length - 1) result += ','
-    })
-    return result
-  }
-
-  private standard_csv_format(){
+  private standard_csv_format(report){
 
     this.csv_content = "data:text/csv;charset=utf-8,";
 
@@ -186,24 +162,27 @@ export class CSVReportFormatter{
       this.csv_content += 'Label,Value';
     }
 
-
     this.csv_content += '\r\n'
 
-    let values = undefined
-    if (this.report.values && this.report.values.length > 0) {
-      values = this.report.values
-    } else {
-      values = this.report.user_metadata
+    for (const [i, label] of report.labels.entries()) {
+
+      let row = `${label},`
+      let existing_data = false
+      for (const [j, tuple] of report.list_tuples_by_period.entries()) { 
+        if (label == tuple[0]) {
+          row += `${tuple[1]},`
+          existing_data = true
+        }
+
+      }
+      if (!existing_data) {
+        row += `${0},`
+      }
+
+      this.csv_content += `${row}\r\n`
     }
 
-    for (let i=0; i< this.report.labels.length; i++){
-      let content = this.append_values(values, i)
-  
-      if(content){
-        this.csv_content += content + ','
-      }
-      this.csv_content += `${String(this.report.labels[i]).replace(/,/g, "")},${this.report.values[i]}\r\n`
-    }
+
     return  this.csv_content
   }
   public get_csv_data(): string{
