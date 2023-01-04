@@ -558,7 +558,8 @@ const time_spent_task_selector =
       'color': 'blue',
       'allowed_groupings': [
         date_selector,
-        user_selector
+        user_selector,
+        task_selector
       ]
     }
 
@@ -1165,6 +1166,7 @@ export default Vue.extend({
         if (!report.user_metadata) {
           throw("Missing report.user_metadata")
         }
+
         return report.user_metadata.find(x => {
               return x.member_id == member_id
             })
