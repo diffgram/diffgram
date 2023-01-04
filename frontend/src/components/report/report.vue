@@ -1092,9 +1092,9 @@ export default Vue.extend({
 
         let values = null
 
-        if (['file', 'instance', 'task'].includes(this.report_template.item_of_interest)
-          && this.report_template.group_by == 'date') {
+        if (this.report_template.group_by == 'date') {
           values = this.fill_zeroes(report)
+          report.values_zeros_filled = values
         }
         else {
           values = report.values
