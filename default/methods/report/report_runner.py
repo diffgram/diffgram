@@ -376,7 +376,8 @@ class Report_Runner():
         if self.item_of_interest in ['task', 'event', 'task_event', 'time_spent_task']:
             self.time_created_normalized = self.base_class.time_created
 
-        if self.time_created_normalized is None:
+        if self.time_created_normalized is None and \
+           self.item_of_interest not in ["approval_reject_ratio", "annotator_performance"]:
             raise Exception(f"self.item_of_interest: '{self.item_of_interest}' has not defined a self.time_created_normalized.")
 
         if self.item_of_interest in ['file']:
@@ -466,14 +467,13 @@ class Report_Runner():
             ReportClass = TimeSpentReport
 
         elif self.item_of_interest == 'annotator_performance':
-            #ReportClass = AnnotatorPerformanceReport
+            ReportClass = AnnotatorPerformanceReport
             #self.init_query = Init_Query()
             #report = ReportClass(
             #    session = self.session, 
             #    report_template = self.report_template, 
             #    init_query = self.init_query)
             # report.build_query()
-            pass
 
         elif self.item_of_interest == 'approval_reject_ratio':
             ReportClass = TaskReportRejectRatioReport
