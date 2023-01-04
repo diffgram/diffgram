@@ -557,7 +557,8 @@ const time_spent_task_selector =
       'icon': 'mdi-clock',
       'color': 'blue',
       'allowed_groupings': [
-        task_selector,
+        date_selector,
+        user_selector
       ]
     }
 
