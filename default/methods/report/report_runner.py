@@ -282,27 +282,7 @@ class Report_Runner():
     def validate_existing_report_id_permissions(
         self,
         project_string_id: str = None):
-        """
-        Concept that for existing reports
-        we could still get or run permissions
-        from the project  scope ie below?
-        validate_report_permissions_scope
 
-        Assumes self.report_template is set, ie
-        by calling get_existing_report_template()
-
-        We are always checking the project id regardless,
-        so the concern is not so much that the project id is related to
-        the template, ie in the case of diffgram wide reports
-
-            But need to think about implications for editing this a bit here
-
-        Careful, there's a strong potential to bypass the permissions
-        by mistake here. better to still check the permissions as expected here...
-            (context of trying to use the "built" in project_string_id for
-            defaults, but that defeats the point)
-
-        """
         if self.report_template is None:
             raise Forbidden("Not Found")
 
@@ -311,59 +291,12 @@ class Report_Runner():
             project_string_id = project_string_id,
         )
 
+
     def validate_report_permissions_scope(self,
                                           scope: str,
                                           project_string_id: str = None,
                                           ):
-        """
-
-        Then do we treat updating project
-        as seperate from updating other attributes...
-
-        We use project string id here because that's pattern
-        with permissions thing.
-
-        We expect this to raise if there are issues.
-        This function could actually be generic to other things that
-        may need to validate / store at different scope levels
-
-        Like for example sharing guides among projects...
-
-        Assumptions
-
-            For now this assumes that scope has been validated
-            so a scope != to one of these shouldn't be possible.
-            But could have a forbidden here...
-
-            We don't call this at init, since this is primarily for a
-            user / (member more generically in future),
-            where as we may want to run report runner internally
-            for other things
-
-        It's almost like the only question is if for some reason
-        this doesn't match the existing report right?
-
-        Case of new report:
-            Check this (from user) and it's fine
-
-        Case of updating a report:
-            Check this (from user)
-            AND
-            in the update case, I feel like
-            there's an extra check
-            that it needs to run this on the existing report ALSO
-            to make sure the person could update it in first place
-            More of a data integretity concern that I can only
-            modify reports in my scope.
-
-        Case of running a report (/ reading a report)
-            Check this (from our database) and it's fine?
-
-        """
-
-        scope = scope.lower()
-
-        self.scope = scope
+        self.scope = scope.lower()
 
         if scope == "project":
       
