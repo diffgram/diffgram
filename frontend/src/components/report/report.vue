@@ -359,6 +359,12 @@
               :value="report_template.second_group_by"
             >
             </icon_from_regular_list>
+
+            <icon_from_regular_list
+              :item_list="func_selectors"
+              :value="report_template.aggregate_func"
+            >
+            </icon_from_regular_list>
           </div>
 
           </v-toolbar-items>
