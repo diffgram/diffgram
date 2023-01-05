@@ -317,7 +317,7 @@
                         target="_blank"
                         color="primary"
                         icon="mdi-book-multiple"
-                        left="true"
+                        :left="true"
                         button_message="Reporting Docs"
                         :text_style="true"
                         :button_style="true"
@@ -1033,6 +1033,8 @@ export default Vue.extend({
       on_change_item_of_interest: function(new_item){
         let item_of_interest = this.item_of_interest_list.find(elm => elm.name === new_item)
         this.report_template.group_by = item_of_interest.allowed_groupings[0].name;
+
+        this.report_template.aggregate_func = null
         //this.reset_second_group_by(item_of_interest)
         this.has_changes = true;
       },

@@ -194,9 +194,10 @@ report_spec_list = [
     }
     },
     {"aggregate_func": {
-        'default': 'sum',
+        'default': None,
         'kind': str,
-        'valid_values_list': ['sum', 'avg', 'min', 'max']
+        'valid_values_list': ['sum', 'avg', 'min', 'max'],
+        'allow_empty': True
         }
     },
     # See update_report_template () for where metadata get loaded
