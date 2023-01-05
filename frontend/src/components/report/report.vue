@@ -710,8 +710,6 @@ export default Vue.extend({
 
         report: new Report(),
 
-        report: new Report(),
-
         datacollection: {},
         job_select_this_id: null,
 
