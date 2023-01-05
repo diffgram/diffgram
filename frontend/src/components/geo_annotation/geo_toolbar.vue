@@ -249,9 +249,16 @@
                 </v_annotation_trainer_menu>
 
                 <v-divider vertical></v-divider>
+                
+                <time_tracker
+                    v-if="task && task.id && task.job"
+                    :task="task"
+                />
+
+                <v-divider vertical></v-divider>
 
                 <button_with_menu
-                    tooltip_message="Add Tile"
+                    tooltip_message="Map Settings"
                     color="primary"
                     icon="mdi-map-legend"
                     :close_by_button="true"
@@ -259,9 +266,13 @@
                     <template slot="content">
                         <geo_tile
                             :map_layers="map_layers"
-                            :allow_add_tiles="allow_add_tiles"
+                            :normalize="normalize"
+                            :interpolate="interpolate"
+                            @on_geotiff_rendere_change="(name, value) => $emit('on_geotiff_rendere_change', name, value)"
                             @add_tile="(e) => $emit('add_xyz_layer', e)"
+                            @set_layer_opacity="(e) => $emit('set_layer_opacity', e)"
                             @remove_tile="(e) => $emit('remove_xyz_layer', e)"
+                            @show_hide_layer="(e) => $emit('show_hide_layer', e)"
                         />
                     </template>
                 </button_with_menu>
@@ -275,6 +286,7 @@
                         :icon_style="true"
                         :bottom="true"
                     />
+
                 <v-divider vertical></v-divider>
                 </v-layout>
             </div>
@@ -436,7 +448,7 @@
             <v-divider vertical></v-divider>
             
             <button_with_menu
-                tooltip_message="Add Tile"
+                tooltip_message="Map Settings"
                 color="primary"
                 icon="mdi-map-legend"
                 :close_by_button="true"
@@ -444,9 +456,13 @@
                 <template slot="content">
                     <geo_tile
                         :map_layers="map_layers"
-                        :allow_add_tiles="allow_add_tiles"
+                        :normalize="normalize"
+                        :interpolate="interpolate"
+                        @on_geotiff_rendere_change="(name, value) => $emit('on_geotiff_rendere_change', name, value)"
                         @add_tile="(e) => $emit('add_xyz_layer', e)"
+                        @set_layer_opacity="(e) => $emit('set_layer_opacity', e)"
                         @remove_tile="(e) => $emit('remove_xyz_layer', e)"
+                        @show_hide_layer="(e) => $emit('show_hide_layer', e)"
                     />
                 </template>
             </button_with_menu>
@@ -474,6 +490,7 @@ import label_select_annotation from "../label/label_select_annotation.vue"
 import label_schema_selector from "../label/label_schema_selector.vue"
 import task_status from "../annotation/task_status.vue"
 import geo_hotkeys from "./geo_hotkeys.vue"
+import time_tracker from "../task/time_track/time_tracker.vue";
 import geo_tile from "./geo_tile.vue"
 
 export default Vue.extend({
@@ -483,7 +500,8 @@ export default Vue.extend({
         geo_hotkeys,
         label_schema_selector,
         task_status,
-        geo_tile
+        geo_tile,
+        time_tracker
     },
     props: {
         undo_disabled: {
@@ -493,10 +511,6 @@ export default Vue.extend({
         redo_disabled: {
             type: Boolean,
             required: true
-        },
-        allow_add_tiles: {
-            type: Boolean,
-            default: false
         },
         has_changed: {
             type: Boolean,
@@ -549,7 +563,15 @@ export default Vue.extend({
         label_schema: {
             type: Object,
             required: true
-        }
+        },
+        normalize: {
+            type: Boolean,
+            default: false
+        },
+        interpolate: {
+            type: Boolean,
+            default: false
+        },
     },
     data() {
         return {

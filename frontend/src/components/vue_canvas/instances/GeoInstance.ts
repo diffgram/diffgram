@@ -20,6 +20,7 @@ export class GeoCircle extends Instance implements InstanceInterface {
         coords: Array<any>, 
         radius: number, 
         label_file: any, 
+        attribute_groups: any,
         soft_delete: boolean = false
     ): void {
         this.id = id
@@ -30,6 +31,7 @@ export class GeoCircle extends Instance implements InstanceInterface {
         this.creation_ref_id = creation_ref_id;
         this.label_file = label_file;
         this.label_file_id = label_file.id;
+        this.attribute_groups = attribute_groups
     }
 
     public create_frontend_instance(
@@ -62,7 +64,8 @@ export class GeoCircle extends Instance implements InstanceInterface {
             lonlat: this.lonlat,
             coords: this.coords,
             radius: this.radius,
-            ol_id: this.ol_id
+            ol_id: this.ol_id,
+            attribute_groups: this.attribute_groups
         }
         
         return payload
@@ -86,6 +89,7 @@ export class GeoPoly extends Instance implements InstanceInterface {
         bounds: Array<number>, 
         bounds_lonlat: Array<number>, 
         label_file: any, 
+        attribute_groups: any,
         soft_delete: boolean = false
     ): void {
         this.id = id;
@@ -95,6 +99,7 @@ export class GeoPoly extends Instance implements InstanceInterface {
         this.creation_ref_id = creation_ref_id;
         this.label_file = label_file;
         this.label_file_id = label_file.id;
+        this.attribute_groups = attribute_groups
     }
 
     public create_frontend_instance(
@@ -124,7 +129,8 @@ export class GeoPoly extends Instance implements InstanceInterface {
             creation_ref_id: this.creation_ref_id,
             bounds: this.bounds,
             bounds_lonlat: this.bounds_lonlat,
-            ol_id: this.ol_id
+            ol_id: this.ol_id,
+            attribute_groups: this.attribute_groups
         }
         
         return payload
@@ -147,6 +153,7 @@ export class GeoPoint extends Instance implements InstanceInterface {
         lonlat: Array<number>,
         coords: Array<number>,
         label_file: any,
+        attribute_groups: any,
         soft_delete: boolean = false
     ): void {
         this.id = id;
@@ -156,6 +163,7 @@ export class GeoPoint extends Instance implements InstanceInterface {
         this.creation_ref_id = creation_ref_id;
         this.label_file = label_file;
         this.label_file_id = label_file.id;
+        this.attribute_groups = attribute_groups;
     }
 
     public create_frontend_instance(
@@ -185,7 +193,8 @@ export class GeoPoint extends Instance implements InstanceInterface {
             creation_ref_id: this.creation_ref_id,
             lonlat: this.lonlat,
             coords: this.coords,
-            ol_id: this.ol_id
+            ol_id: this.ol_id,
+            attribute_groups: this.attribute_groups
         }
         
         return payload

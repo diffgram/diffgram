@@ -41,3 +41,19 @@ export const attribute_group_list = async (project_string_id,
     return [null, e]
   }
 }
+
+export const archive_attribute_group = async (project_string_id, group) => {
+  try {
+    const payload = {
+      group_id: Number(group.id),
+      mode: 'ARCHIVE',
+      kind: group.kind
+    }
+    
+    const { data } = await axios.post(`/api/v1/project/${project_string_id}/attribute/group/update`, payload)
+
+    return [data, null]
+  } catch(e) {
+    return [null, e]
+  }
+}
