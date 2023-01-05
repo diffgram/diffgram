@@ -312,12 +312,25 @@
                         </v-checkbox>
                       </div>
 
-                    <div class="pa-2">
+                      <standard_button
+                        href="https://diffgram.readme.io/docs/reporting"
+                        target="_blank"
+                        color="primary"
+                        icon="mdi-book-multiple"
+                        left="true"
+                        button_message="Reporting Docs"
+                        :text_style="true"
+                        :button_style="true"
+                        :bottom="true"
+                      >
+                      </standard_button>
+
+                    <div class="pt-2">
                       <standard_chip
                         v-if="report_template && report_template.id != null"
                         :message="`ID: ${report_template.id}`"
-                        tooltip_message="ID"
-                        color="grey"
+                        color="white"
+                        text_color="primary"
                         tooltip_direction="bottom"
                         :small="true"
                       >
