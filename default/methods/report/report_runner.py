@@ -282,27 +282,7 @@ class Report_Runner():
     def validate_existing_report_id_permissions(
         self,
         project_string_id: str = None):
-        """
-        Concept that for existing reports
-        we could still get or run permissions
-        from the project  scope ie below?
-        validate_report_permissions_scope
 
-        Assumes self.report_template is set, ie
-        by calling get_existing_report_template()
-
-        We are always checking the project id regardless,
-        so the concern is not so much that the project id is related to
-        the template, ie in the case of diffgram wide reports
-
-            But need to think about implications for editing this a bit here
-
-        Careful, there's a strong potential to bypass the permissions
-        by mistake here. better to still check the permissions as expected here...
-            (context of trying to use the "built" in project_string_id for
-            defaults, but that defeats the point)
-
-        """
         if self.report_template is None:
             raise Forbidden("Not Found")
 
@@ -311,59 +291,12 @@ class Report_Runner():
             project_string_id = project_string_id,
         )
 
+
     def validate_report_permissions_scope(self,
                                           scope: str,
                                           project_string_id: str = None,
                                           ):
-        """
-
-        Then do we treat updating project
-        as seperate from updating other attributes...
-
-        We use project string id here because that's pattern
-        with permissions thing.
-
-        We expect this to raise if there are issues.
-        This function could actually be generic to other things that
-        may need to validate / store at different scope levels
-
-        Like for example sharing guides among projects...
-
-        Assumptions
-
-            For now this assumes that scope has been validated
-            so a scope != to one of these shouldn't be possible.
-            But could have a forbidden here...
-
-            We don't call this at init, since this is primarily for a
-            user / (member more generically in future),
-            where as we may want to run report runner internally
-            for other things
-
-        It's almost like the only question is if for some reason
-        this doesn't match the existing report right?
-
-        Case of new report:
-            Check this (from user) and it's fine
-
-        Case of updating a report:
-            Check this (from user)
-            AND
-            in the update case, I feel like
-            there's an extra check
-            that it needs to run this on the existing report ALSO
-            to make sure the person could update it in first place
-            More of a data integretity concern that I can only
-            modify reports in my scope.
-
-        Case of running a report (/ reading a report)
-            Check this (from our database) and it's fine?
-
-        """
-
-        scope = scope.lower()
-
-        self.scope = scope
+        self.scope = scope.lower()
 
         if scope == "project":
       
@@ -515,7 +448,7 @@ class Report_Runner():
         self.init_base_class_object(self.report_template.item_of_interest)
 
         assert self.base_class is not None
-
+        
         if self.base_class == 'custom_report':
             self.results = self.generate_custom_report()
             self.results['user_metadata'] = self.build_user_metadata(self.results['labels'])
@@ -1126,6 +1059,10 @@ class Report_Runner():
         label_colour_map = None
         label_names_map = None
         user_metadata = None
+        labels = []
+        values = []
+        count = 0
+        serialized_list_tuples_by_period = None
 
         if self.report_template.group_by == 'label' or self.report_template.second_group_by == 'label':
             label_colour_map = self.project.directory_default.label_file_colour_map
@@ -1146,29 +1083,29 @@ class Report_Runner():
             if self.report_template.second_group_by == 'user':
                 user_metadata = self.build_user_metadata(second_grouping)
 
-            if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
-
-                labels = self.build_date_range(
-                    date_from = self.date_from,
-                    date_to = self.date_to)
-
-                labels = [i.isoformat() for i in labels]
-
             count = sum(values)
-            
+
             if self.report_template.second_group_by == 'label':
                 label_names_map = self.build_label_names_map_from_second_grouping(second_grouping)
 
             serialized_list_tuples_by_period = self.serialize_list_tuples_by_period(list_tuples_by_period)
 
-            return {'labels': labels,
-                    'values': values,
-                    'count': count,
-                    'user_metadata': user_metadata,
-                    'label_colour_map': label_colour_map,
-                    'label_names_map': label_names_map,
-                    'second_grouping': second_grouping,
-                    'list_tuples_by_period': serialized_list_tuples_by_period}
+        if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
+
+            labels = self.build_date_range(
+                date_from = self.date_from,
+                date_to = self.date_to)
+
+            labels = [i.isoformat() for i in labels]           
+
+        return {'labels': labels,
+                'values': values,
+                'count': count,
+                'user_metadata': user_metadata,
+                'label_colour_map': label_colour_map,
+                'label_names_map': label_names_map,
+                'second_grouping': second_grouping,
+                'list_tuples_by_period': serialized_list_tuples_by_period}
 
     def build_date_range(self, 
                 date_from: datetime.datetime, 
