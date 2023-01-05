@@ -21,6 +21,14 @@ from shared.database.report.report_dashboard import ReportDashboard
 from shared.database.auth.member import Member
 
 
+aggregate_func_str_to_class = {
+    'sum' : func.sum,
+    'min' : func.min,
+    'max' : func.max,
+    'avg' : func.avg,
+}
+
+
 class InitQuery:
     base: None
     group_by : None
@@ -184,7 +192,14 @@ report_spec_list = [
         'default': None,
         'kind': int,
     }
-    }
+    },
+    {"aggregate_func": {
+        'default': None,
+        'kind': str,
+        'valid_values_list': ['sum', 'avg', 'min', 'max'],
+        'allow_empty': True
+        }
+    },
     # See update_report_template () for where metadata get loaded
 ]
 
@@ -398,7 +413,6 @@ class Report_Runner():
                       view_type: str = None):
 
         q = self.query
-        print(q)
         result = q.all()
         return result
 
@@ -418,7 +432,7 @@ class Report_Runner():
         self.init_query = self.get_init_query(group_by_str = self.report_template.group_by)
 
         self.query = self.init_query.query
-        logger.info(self.query)
+        #logger.info(self.query)
         self.apply_permission_scope_to_query()
 
         if self.report_template.period:
@@ -460,6 +474,11 @@ class Report_Runner():
         )
 
         return stats
+
+
+    def get_aggregate_func(self, aggregate_func):
+        return aggregate_func_str_to_class.get(aggregate_func, func.sum)
+
 
     def generate_custom_report(self):
         ReportClass = None
@@ -754,6 +773,8 @@ class Report_Runner():
         self.report_template.date_period_unit = metadata.get('date_period_unit')
         self.report_template.compare_to_previous_period = metadata.get('compare_to_previous_period')
 
+        self.report_template.aggregate_func = metadata.get('aggregate_func')
+
         self.update_metadata_for_filter_by_items(metadata = metadata)
 
 
@@ -892,8 +913,6 @@ class Report_Runner():
 
         self.member_id_normalized = self.get_and_set_member_id_normalized()
 
-        logger.info(self.member_id_normalized)
-
         group_by_dict = {
             None: self.no_group_by,
             'date': self.group_by_date,
@@ -907,7 +926,8 @@ class Report_Runner():
         first_group_by(init_query)
 
         if self.base_class == TaskTimeTracking:
-            init_query.group_by = func.sum(self.base_class.time_spent)
+            aggregate_func = self.get_aggregate_func(self.report_template.aggregate_func)
+            init_query.group_by = aggregate_func(self.base_class.time_spent)
 
         init_query = self.set_second_group_by(init_query)
 
@@ -946,7 +966,6 @@ class Report_Runner():
         if self.report_template.second_group_by == 'user':
             self.member_id_normalized = self.get_and_set_member_id_normalized()
             init_query.second_group_by = self.member_id_normalized
-            logger.info(init_query.second_group_by)
 
         return init_query
 
@@ -1115,8 +1134,6 @@ class Report_Runner():
             return self.format_view_type_count(list_tuples_by_period)
 
         if report_template.group_by and list_tuples_by_period:
-
-            print(list_tuples_by_period)
 
             if self.report_template.second_group_by:
                 labels, values, second_grouping = zip(*list_tuples_by_period)

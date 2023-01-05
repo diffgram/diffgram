@@ -28,7 +28,7 @@ def migrate_existing_time_tracking():
             session = session, 
             user_id = task_time_track.user_id)
         task_time_track.member_id = member.id
-        print(f'Migrating: {task_time_track.id} UserID: {task_time_track.user_id}  MemberID: {task_time_track.member_id}')
+        #print(f'Migrating: {task_time_track.id} UserID: {task_time_track.user_id}  MemberID: {task_time_track.member_id}')
         session.add(task_time_track)
 
 

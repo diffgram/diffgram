@@ -222,7 +222,6 @@
             </button_with_menu>
 
 
-            <!-- Don't show for trainers, but do show even if not logged in.-->
             <!-- Docs -->
             <standard_button
               class="hidden-sm-and-down"
