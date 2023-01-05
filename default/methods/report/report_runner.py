@@ -1062,7 +1062,6 @@ class Report_Runner():
         labels = []
         values = []
         count = 0
-        list_tuples_by_period = None
         serialized_list_tuples_by_period = None
 
         if self.report_template.group_by == 'label' or self.report_template.second_group_by == 'label':
