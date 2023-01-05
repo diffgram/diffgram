@@ -2,7 +2,7 @@
   <div>
 
     <main_menu v-if="may_edit"
-               height="250">
+               height="100">
 
       <template slot="second_row">
 
@@ -14,15 +14,15 @@
           height="50px"
         >
           <v-toolbar-items>
-            <standard_chip
-              v-if="report_template && report_template.id != null"
-              :message="`${report_template.id}`"
-              tooltip_message="ID"
-              color="grey"
-              tooltip_direction="bottom"
-              :small="true"
-            >
-            </standard_chip>
+
+            <standard_button
+              tooltip_message="Back to Report List"
+              @click="$router.push('/reports/list')"
+              icon="mdi-arrow-left"
+              :icon_style="true"
+              color="primary">
+            </standard_button>
+
             <v-text-field
               class="ma-0"
               style="font-size: 18pt"
@@ -34,170 +34,71 @@
             >
             </v-text-field>
 
-
-            <standard_button tooltip_message="Save & Refresh Report"
-                            @click="save_and_run_report"
-                            icon="mdi-refresh"
-                            :disabled="loading"
-                            :text_style="true"
-                            :large="true"
-                            color="primary">
-            </standard_button>
-
-            <standard_button tooltip_message="More Filters & Configs"
-                            @click="open_extra_filters_dialog"
-                            icon="mdi-filter"
-                            :disabled="!['instance'].includes(report_template.item_of_interest)"
-                            :text_style="true"
-                            :large="true"
-                            color="primary">
-            </standard_button>
-            <v-dialog v-model="show_filters_dialog"
-                      width="800">
-              <v-card>
-                <v-card-title>More Filters:</v-card-title>
-                <v-card-text>
-                  <v-container>
-                    <h2>Labels & Instances</h2>
-
-                  </v-container>
-                </v-card-text>
-              </v-card>
-            </v-dialog>
-
-            <standard_button tooltip_message="Save"
-                            @click="save_report(true)"
-                            icon="save"
-                            :text_style="true"
-                            :large="true"
-                            :disabled="!has_changes"
-                            color="primary">
-            </standard_button>
-
-            <standard_button
-              tooltip_message="Back to Report List"
-              @click="$router.push('/reports/list')"
-              icon="list"
-              :icon_style="true"
-              :large="true"
-              color="primary">
-            </standard_button>
-
-            <standard_button
-              tooltip_message="Download as CSV"
-              @click="download_csv"
-              icon="mdi-download"
-              color="primary"
-              :disabled="loading"
-              :text_style="true"
-              :large="true"
-            >
-            </standard_button>
-
-            <div class="pa-2">
-              <div v-if="has_changes">
-                Changes detected.
-              </div>
-              <div v-else>
-                No changes.
-              </div>
+            <div class="pt-2">
+              <standard_button tooltip_message="Save & Refresh Report"
+                              @click="save_and_run_report"
+                              icon="mdi-refresh"
+                              :disabled="loading"
+                              :text_style="true"
+                              color="primary">
+              </standard_button>
             </div>
 
-            <div class="pa-2 pl-4 pr-4">
-              <standard_chip
-                v-if="report"
-                :message="`${report.count}`"
-                tooltip_message="Sum"
-                color="primary"
-                tooltip_direction="bottom">
-              </standard_chip>
-
+            <div class="pt-2">
+              <standard_button tooltip_message="Save"
+                              @click="save_report(true)"
+                              icon="save"
+                              :text_style="true"
+                              :disabled="!has_changes"
+                              color="primary">
+              </standard_button>
             </div>
 
-            <div class="pa-2">
-              <v-checkbox v-if="$store.state.user.current.is_super_admin"
-                          v-model="report_template.diffgram_wide_default"
-                          label="Diffgram Default"
-                          @change="has_changes = true"
-                          :disabled="loading"
-              >
-              </v-checkbox>
-            </div>
-
-            <div class="pa-2">
-              <v-checkbox v-model="report_template.is_visible_on_report_dashboard"
-                          label="Show on Dashboard"
-                          @change="has_changes = true"
-                          :disabled="loading"
-              >
-              </v-checkbox>
-            </div>
-
-            <div class="pa-2">
-              <v-checkbox v-model="report_template.archived"
-                          label="Archived"
-                          @change="has_changes = true"
-                          :disabled="loading"
-              >
-              </v-checkbox>
-            </div>
-
-          </v-toolbar-items>
-        </v-toolbar>
-      </template>
-
-      <template slot="third_row">
-
-        <v-toolbar
-          style="border-top: 1px solid #e0e0e0"
-          elevation="1"
-          fixed
-          height="75px"
-        >
-          <v-toolbar-items>
-
-            <!-- base_class -->
-            <v-row>
-              <v-col cols="2">
-                <diffgram_select
-                  class="pa-4"
-                  :item_list="item_of_interest_list"
-                  v-model="report_template.item_of_interest"
-                  label="Item of Interest"
-                  :disabled="loading"
-                  @change="on_change_item_of_interest"
+          <button_with_menu
+            tooltip_message="Primary Setup"
+            icon="mdi-cog"
+            :close_by_button="true"
+            color="primary"
                 >
-                </diffgram_select>
-              </v-col>
 
-              <v-col cols="2">
-                <!-- Period -->
-                <diffgram_select
-                  style="min-width: 200px"
-                  class="pa-4"
-                  :item_list="period_list"
-                  v-model="report_template.period"
-                  label="Period"
-                  :disabled="loading"
-                  @change="has_changes = true"
-                >
-                </diffgram_select>
-              </v-col>
+            <template slot="content">
+              <v-layout column>
 
-              <v-col cols="2">
-                <!-- Period -->
-                <diffgram_select
-                  class="pa-4"
-                  :item_list="current_group_by_list"
-                  v-model="report_template.group_by"
-                  label="Group by"
-                  :disabled="loading"
-                  @change="has_changes = true"
-                >
-                </diffgram_select>
-              </v-col>
+                <!-- base_class -->
+                  <diffgram_select
+                    class="pa-4"
+                    :item_list="item_of_interest_list"
+                    v-model="report_template.item_of_interest"
+                    label="Item of Interest"
+                    :disabled="loading"
+                    @change="on_change_item_of_interest"
+                  >
+                  </diffgram_select>
 
-               <v-col cols="2">
+                  <!-- Period -->
+                  <diffgram_select
+                    style="min-width: 200px"
+                    class="pa-4"
+                    :item_list="period_list"
+                    v-model="report_template.period"
+                    label="Period"
+                    :disabled="loading"
+                    @change="has_changes = true"
+                  >
+                  </diffgram_select>
+
+                  <!-- Period -->
+                  <diffgram_select
+                    class="pa-4"
+                    :item_list="current_group_by_list"
+                    v-model="report_template.group_by"
+                    label="Group by"
+                    :disabled="loading"
+                    @change="has_changes = true"
+                  >
+                  </diffgram_select>
+
+                
                   <diffgram_select
                     class="pa-4"
                     :item_list="second_group_by_list"
@@ -208,10 +109,11 @@
                     @change="has_changes = true"
                   >
                   </diffgram_select>
-                </v-col>
+                 
 
-                <v-col cols="2">
                   <diffgram_select
+                    v-if="report_template.group_by == 'date'
+                            && report_template.second_group_by == 'user'"
                     class="pa-4"
                     :item_list="func_selectors"
                     v-model="report_template.aggregate_func"
@@ -221,140 +123,248 @@
                     @change="has_changes = true"
                   >
                   </diffgram_select>
-                </v-col>
 
+              </v-layout>
+            </template>
 
-              <!--
-                <diffgram_select
-                  class="pa-4"
-                  :item_list="scope_icon_list"
-                  v-model="report_template.scope"
-                  label="Permission Scope"
-                  :disabled="true || loading"
-                  @change="has_changes = true"
+          </button_with_menu>
+
+          <button_with_menu
+            tooltip_message="Filters"
+            icon="mdi-filter"
+            :close_by_button="true"
+            color="primary"
                 >
-                </diffgram_select>
-              -->
-              <v-col cols="2">
-                <!-- View Type -->
-                <diffgram_select
-                  class="pa-4"
-                  :item_list="view_type_list"
-                  v-model="report_template.view_type"
-                  label="View"
-                  :disabled="loading"
-                  @change="has_changes = true"
-                >
-                </diffgram_select>
 
-              </v-col>
+              <template slot="content">
+                <v-layout column>
 
-              <v-col cols="2">
-                <!-- View view_sub_type -->
-                <diffgram_select
-                  class="pa-4"
-                  v-if="report_template.view_type == 'chart'"
-                  :item_list="view_sub_type_list"
-                  v-model="report_template.view_sub_type"
-                  label="Type"
-                  :disabled="loading"
-                  @change="has_changes = true"
-                >
-                </diffgram_select>
-              </v-col>
+                  <div class=pa-2>
+                      <job_select
+                                   v-if="['file', 'task', 'instance'].includes(report_template.item_of_interest)"
+                                  v-model="job"
 
-            </v-row>
-          </v-toolbar-items>
-        </v-toolbar>
+                                  :disabled="loading || !['file', 'task', 'instance'].includes(report_template.item_of_interest)"
+                                  @change="set_job"
+                                  :select_this_id="job_select_this_id"
+                      >
 
-      </template>
+                      </job_select>
+                    </div>
 
-      <template slot="forth_row">
+               
+                    <div style="min-width: 200px; max-width: 300px" class="pa-2">
+                      <diffgram_select
+                        v-if="['task'].includes(report_template.item_of_interest)"
+                        :item_list="task_status_filter"
+                        v-model="report_template.task_event_type"
+                        label="Task Status"
+                        :disabled="loading"
+                        @change="has_changes = true"
+                      >
+                      </diffgram_select>
+                    </div>
+                
+                    <div style="min-width: 200px" class="pa-2">
+                      <v-text-field
+                        v-if="['instance'].includes(report_template.item_of_interest)"
+                        type="number"
+                        clearable
+                        @change="has_changes = true"
+                        v-model="report_template.task_id"
+                        label="Filter by Task ID">
+                      </v-text-field>
+                    </div>
+                  
+                    <div style="min-width: 200px" class="pa-2">
+                      <member_select
+                        v-model="member_list"
+                        :label="member_list_label"
+                        multiple
+                        :show_names_on_selected="true"
+                        @change="has_changes = true"
+                        :allow_all_option="true"
+                        :member_list="$store.state.project.current.member_list">
+                      </member_select>
 
-        <!-- generally try to keep this to "concrete" filters,
-          so can form a visual distinction in comparison to row above this
-          which are the "abstract" filters -->
+                    </div>           
+                  
+                    <div style="min-width: 200px" class="pa-2">
+                      <label_select_only
+                        :project_string_id="$store.state.project.current.project_string_id"
+                        @selected_ids_only="report_template.label_file_id_list = $event,
+                                      has_changes = true"
+                        :load_selected_id_list="report_template.label_file_id_list"
+                        :mode=" 'multiple' "
+                        :disabled="loading"
+                        :show_select_all="false"
+                      >
+                      </label_select_only>
+                    </div>
+                  
+      
 
-        <v-toolbar
-          style="border-top: 1px solid #e0e0e0"
-          elevation="1"
-          fixed
-          height="75px"
-        >
-          <v-toolbar-items>
+                    </v-layout>
+              </template>
+            </button_with_menu>
 
-            <v-row class="d-flex justify-start align-center">
-              <v-col cols="3"   v-if="['file', 'task', 'instance'].includes(report_template.item_of_interest)">
-                <div style="min-width: 200px" class="pa-4">
-                  <job_select v-model="job"
-
-                              :disabled="loading || !['file', 'task', 'instance'].includes(report_template.item_of_interest)"
-                              @change="set_job"
-                              :select_this_id="job_select_this_id"
+          <button_with_menu
+              tooltip_message="View"
+              icon="mdi-chart-bar"
+              :close_by_button="true"
+              color="primary"
                   >
 
-                  </job_select>
-                </div>
-              </v-col>
-              <v-col cols="3" v-if="['task'].includes(report_template.item_of_interest)">
-                <div style="min-width: 200px; max-width: 300px" class="pa-4">
+              <template slot="content">
+                <v-layout column>
+
+                  <!-- View Type -->
                   <diffgram_select
-                    v-if="['task'].includes(report_template.item_of_interest)"
                     class="pa-4"
-                    :item_list="task_status_filter"
-                    v-model="report_template.task_event_type"
-                    label="Task Status"
+                    :item_list="view_type_list"
+                    v-model="report_template.view_type"
+                    label="View"
                     :disabled="loading"
                     @change="has_changes = true"
                   >
                   </diffgram_select>
-                </div>
-              </v-col>
-              <v-col cols="3"   v-if="['instance'].includes(report_template.item_of_interest)">
-                <div style="min-width: 200px" class="pa-4">
-                  <v-text-field
-
-                    type="number"
-                    clearable
-                    @change="has_changes = true"
-                    v-model="report_template.task_id"
-                    label="Filter by Task ID">
-                  </v-text-field>
-                </div>
-              </v-col>
-              <v-col cols="3">
-                <div style="min-width: 200px; max-width: 300px" class="pa-4">
-                  <member_select
-                    v-model="member_list"
-                    :label="member_list_label"
-                    multiple
-                    :show_names_on_selected="true"
-                    @change="has_changes = true"
-                    :allow_all_option="true"
-                    :member_list="$store.state.project.current.member_list">
-                  </member_select>
-
-                </div>
-              </v-col>
-              <v-col cols="3">
-                <div style="min-width: 200px" class="pa-4">
-                  <label_select_only
-                    :project_string_id="$store.state.project.current.project_string_id"
-                    @selected_ids_only="report_template.label_file_id_list = $event,
-                                 has_changes = true"
-                    :load_selected_id_list="report_template.label_file_id_list"
-                    :mode=" 'multiple' "
+           
+                  <!-- View view_sub_type -->
+                  <diffgram_select
+                    class="pa-4"
+                    v-if="report_template.view_type == 'chart'"
+                    :item_list="view_sub_type_list"
+                    v-model="report_template.view_sub_type"
+                    label="Type"
                     :disabled="loading"
-                    :show_select_all="false"
+                    @change="has_changes = true"
                   >
-                  </label_select_only>
-                </div>
-              </v-col>
-            </v-row>
+                  </diffgram_select>
+
+                </v-layout>
+              </template>
+
+          </button_with_menu>
+
+            <div class="pt-2">
+              <standard_button
+                tooltip_message="Download as CSV"
+                @click="download_csv"
+                icon="mdi-download"
+                color="primary"
+                :disabled="loading"
+                :text_style="true"
+              >
+              </standard_button>
+
+            </div>
+
+          <button_with_menu
+                tooltip_message="More"
+                icon="mdi-dots-horizontal"
+                :close_by_button="true"
+                color="primary"
+                    >
+
+                <template slot="content">
+                  <v-layout column>
+
+                      <div class="pa-2">
+                          <standard_chip
+                            v-if="report"
+                            :message="`Sum: ${report.count}`"
+                            tooltip_message="Sum"
+                            color="primary"
+                            tooltip_direction="bottom">
+                          </standard_chip>
+                      </div>           
+                      
+
+                      <div class="pa-2">
+                        <v-checkbox v-if="$store.state.user.current.is_super_admin"
+                                    v-model="report_template.diffgram_wide_default"
+                                    label="Default for All Projects"
+                                    @change="has_changes = true"
+                                    :disabled="loading"
+                        >
+                        </v-checkbox>
+                      </div>
+
+                      <div class="pa-2">
+                        <v-checkbox v-model="report_template.is_visible_on_report_dashboard"
+                                    label="Show on Dashboard"
+                                    @change="has_changes = true"
+                                    :disabled="loading"
+                        >
+                        </v-checkbox>
+                      </div>
+
+                      <div class="pa-2">
+                        <v-checkbox v-model="report_template.archived"
+                                    label="Archived"
+                                    @change="has_changes = true"
+                                    :disabled="loading"
+                        >
+                        </v-checkbox>
+                      </div>
+
+                    <div class="pa-2">
+                      <standard_chip
+                        v-if="report_template && report_template.id != null"
+                        :message="`ID: ${report_template.id}`"
+                        tooltip_message="ID"
+                        color="grey"
+                        tooltip_direction="bottom"
+                        :small="true"
+                      >
+                      </standard_chip>
+                    </div>
+
+                  </v-layout>
+                </template>
+
+            </button_with_menu>
+
+            <div class="pa-2">
+              <div v-if="has_changes">
+                Changes detected.
+              </div>
+              <div v-else>
+                No changes.
+              </div>
+            </div>
+
+
+          <div class="pa-2" v-cloak>
+            <icon_from_regular_list
+              :item_list="item_of_interest_list"
+              :value="report_template.item_of_interest"
+            >
+            </icon_from_regular_list>
+
+            <icon_from_regular_list
+              :item_list="period_list"
+              :value="report_template.period"
+            >
+            </icon_from_regular_list>
+
+            <icon_from_regular_list
+              :item_list="current_group_by_list"
+              :value="report_template.group_by"
+            >
+            </icon_from_regular_list>
+
+            <icon_from_regular_list
+              :item_list="second_group_by_list"
+              :value="report_template.second_group_by"
+            >
+            </icon_from_regular_list>
+          </div>
+
           </v-toolbar-items>
         </v-toolbar>
-
       </template>
+
 
     </main_menu>
 
