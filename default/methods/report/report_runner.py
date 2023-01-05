@@ -413,7 +413,6 @@ class Report_Runner():
                       view_type: str = None):
 
         q = self.query
-        print(q)
         result = q.all()
         return result
 
@@ -433,7 +432,7 @@ class Report_Runner():
         self.init_query = self.get_init_query(group_by_str = self.report_template.group_by)
 
         self.query = self.init_query.query
-        logger.info(self.query)
+        #logger.info(self.query)
         self.apply_permission_scope_to_query()
 
         if self.report_template.period:
@@ -914,8 +913,6 @@ class Report_Runner():
 
         self.member_id_normalized = self.get_and_set_member_id_normalized()
 
-        logger.info(self.member_id_normalized)
-
         group_by_dict = {
             None: self.no_group_by,
             'date': self.group_by_date,
@@ -1137,8 +1134,6 @@ class Report_Runner():
             return self.format_view_type_count(list_tuples_by_period)
 
         if report_template.group_by and list_tuples_by_period:
-
-            print(list_tuples_by_period)
 
             if self.report_template.second_group_by:
                 labels, values, second_grouping = zip(*list_tuples_by_period)
