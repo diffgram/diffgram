@@ -394,10 +394,9 @@
 
 
     <v-alert type="info"
-             v-if="!loading && values.length == 0 && report && report.count ==0"
+             v-if="!loading && values.length == 0 && report && report.count == 0"
              dismissible>
-      No results. <br>
-      Is (time period, project) correct?
+      No results.
     </v-alert>
 
     <v-card v-if="may_edit == false"
@@ -1156,12 +1155,14 @@ export default Vue.extend({
         if (!report.labels) {return}
         let values_zeroes_filled = []
         for (const label of report.labels) {
-          let tuple = report.list_tuples_by_period.find(x => x[0] === label)
-          if (tuple) {
-            let value = tuple[1]
-            values_zeroes_filled.push(value)
-          } else {
-            values_zeroes_filled.push(0)
+          if (report.list_tuples_by_period) {
+            let tuple = report.list_tuples_by_period.find(x => x[0] === label)
+            if (tuple) {
+              let value = tuple[1]
+              values_zeroes_filled.push(value)
+            } else {
+              values_zeroes_filled.push(0)
+            }
           }
         }
         return values_zeroes_filled
