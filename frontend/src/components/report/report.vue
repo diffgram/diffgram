@@ -59,6 +59,8 @@
             icon="mdi-cog"
             :close_by_button="true"
             color="primary"
+            action_message="Save & Close"
+            @action_clicked="save_and_run_report()"
                 >
 
             <template slot="content">
@@ -112,8 +114,7 @@
                  
 
                   <diffgram_select
-                    v-if="report_template.group_by == 'date'
-                            && report_template.second_group_by == 'user'"
+                    v-if="report_template.item_of_interest == 'time_spent_task'"
                     class="pa-4"
                     :item_list="func_selectors"
                     v-model="report_template.aggregate_func"
@@ -134,6 +135,8 @@
             icon="mdi-filter"
             :close_by_button="true"
             color="primary"
+            action_message="Save & Close"
+            @action_clicked="save_and_run_report()"
                 >
 
               <template slot="content">
@@ -264,6 +267,7 @@
                 icon="mdi-dots-horizontal"
                 :close_by_button="true"
                 color="primary"
+                @action_clicked="save_report()"
                     >
 
                 <template slot="content">
@@ -473,18 +477,6 @@
     <!-- Bottom -->
 
     <v-card v-if="may_edit == true" elevation="0">
-
-      <v-alert type="success"
-               v-model="success_loading_existing"
-               dismissible>
-        Loaded Existing Info
-      </v-alert>
-
-      <v-alert type="success"
-               v-model="success_saved"
-               dismissible>
-        Saved
-      </v-alert>
 
       <v-snackbar color="success" v-model="success_run" class="pa-0">
         <div class="d-flex justify-center align-center">
