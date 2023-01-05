@@ -448,7 +448,7 @@ class Report_Runner():
         self.init_base_class_object(self.report_template.item_of_interest)
 
         assert self.base_class is not None
-
+        
         if self.base_class == 'custom_report':
             self.results = self.generate_custom_report()
             self.results['user_metadata'] = self.build_user_metadata(self.results['labels'])
@@ -1059,6 +1059,11 @@ class Report_Runner():
         label_colour_map = None
         label_names_map = None
         user_metadata = None
+        labels = []
+        values = []
+        count = 0
+        list_tuples_by_period = None
+        serialized_list_tuples_by_period = None
 
         if self.report_template.group_by == 'label' or self.report_template.second_group_by == 'label':
             label_colour_map = self.project.directory_default.label_file_colour_map
@@ -1079,29 +1084,29 @@ class Report_Runner():
             if self.report_template.second_group_by == 'user':
                 user_metadata = self.build_user_metadata(second_grouping)
 
-            if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
-
-                labels = self.build_date_range(
-                    date_from = self.date_from,
-                    date_to = self.date_to)
-
-                labels = [i.isoformat() for i in labels]
-
             count = sum(values)
-            
+
             if self.report_template.second_group_by == 'label':
                 label_names_map = self.build_label_names_map_from_second_grouping(second_grouping)
 
             serialized_list_tuples_by_period = self.serialize_list_tuples_by_period(list_tuples_by_period)
 
-            return {'labels': labels,
-                    'values': values,
-                    'count': count,
-                    'user_metadata': user_metadata,
-                    'label_colour_map': label_colour_map,
-                    'label_names_map': label_names_map,
-                    'second_grouping': second_grouping,
-                    'list_tuples_by_period': serialized_list_tuples_by_period}
+        if report_template.group_by == 'date' and report_template.date_period_unit == 'day':
+
+            labels = self.build_date_range(
+                date_from = self.date_from,
+                date_to = self.date_to)
+
+            labels = [i.isoformat() for i in labels]           
+
+        return {'labels': labels,
+                'values': values,
+                'count': count,
+                'user_metadata': user_metadata,
+                'label_colour_map': label_colour_map,
+                'label_names_map': label_names_map,
+                'second_grouping': second_grouping,
+                'list_tuples_by_period': serialized_list_tuples_by_period}
 
     def build_date_range(self, 
                 date_from: datetime.datetime, 
