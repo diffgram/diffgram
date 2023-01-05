@@ -39,3 +39,34 @@ def report_view_core(session: Session,
 
     result = report_template.serialize()
     return result, log
+
+
+
+@routes.route('/api/v1/report/info/<int:report_template_id>',
+              methods = ['GET'])
+@General_permissions.grant_permission_for(['normal_user'])
+def report_info_api(report_template_id):
+    """
+    Permissions handled by Report_Runner
+    """
+
+    with sessionMaker.session_scope() as session:
+        report_runner = Report_Runner(
+            session = session,
+            member = None,
+            report_template_id = report_template_id
+        )
+
+        if len(report_runner.log["error"].keys()) >= 1:
+            return jsonify(log = report_runner.log), 400
+
+        report_runner.get_existing_report_template(report_template_id)
+
+        report_runner.validate_existing_report_id_permissions()
+
+        report_runner.log['success'] = True
+
+        return jsonify(
+            log = report_runner.log,
+            report_template = report_runner.report_template.serialize()), 200
+

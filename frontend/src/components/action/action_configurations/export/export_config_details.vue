@@ -72,7 +72,8 @@ export default {
     }
   },
   components: {
-    global_dataset_selector
+    global_dataset_selector,
+    directory_selector
   },
   methods: {
     on_task_template_changed: function(tt){
@@ -108,9 +109,6 @@ export default {
       ],
       kind_list: ["Annotations"],
     }
-  },
-  components: {
-    directory_list: directory_selector
   },
   computed:{
     on_directories_updated: function(){

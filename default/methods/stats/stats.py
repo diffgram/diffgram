@@ -7,52 +7,42 @@ class Stats():
 
 	def fill_missing_dates(date_from, 
 						   date_to, 
-						   list_by_period):
+						   known_dates_list: list):
 
 		"""
-		date_from, a python datetime.datetime object?
+		date_from, a python datetime.datetime object
 
 		"""
 
 		# CAREFUL
 		# ASSUMES *assending* ORDERED!!!!! (
 
-		# TODO not quite generic yet, "day" focused in a few areas
-
 		with_missing_dates = []
 
-		# Maybe take this out and just enforce is datetime?
-		# This was from prior issues with midnight / date_to
 		if isinstance(date_from, datetime.datetime) is False:
 			date_from = datetime.datetime.strptime(date_from,  "%Y-%m-%d")
 			date_to = datetime.datetime.strptime(date_to,  "%Y-%m-%d")
 		
 		next_date = date_from
 
-		period = (date_to - date_from).days
+		period_desired = (date_to - date_from).days
 	
-		len_task_list = len(list_by_period)
+		len_period = len(known_dates_list)
 
-		#print(list_by_period)
+		known_date_index = 0
+		for i in range(period_desired):
 
+			# date() "Return date object with same year, month and day."
 
-		index = 0
-		for i in range(period):
-
-			# Careful to use .date() here to only compare date otherwise
-			# time thing can mess it up?
-
-			# What is date() is doing? 
-			# Answer: docs says "Return date object with same year, month and day."
-			# https://docs.python.org/3.5/library/datetime.html#datetime.datetime.date
-
-			if index + 1 <= len_task_list and list_by_period[index][0].date() == next_date.date():	
-			
-				with_missing_dates.append(list_by_period[index]) 
-				index += 1
-
+			if known_date_index + 1 <= len_period:
+				known_date = known_dates_list[known_date_index]
+				if known_date.date() == next_date.date()	:			
+				    with_missing_dates.append(known_date) 
+				    known_date_index += 1
+				else:
+				    with_missing_dates.append(next_date)
 			else:			
-				with_missing_dates.append((next_date, 0))
+				with_missing_dates.append(next_date)
 				
 			next_date = next_date + datetime.timedelta(days=1)
 

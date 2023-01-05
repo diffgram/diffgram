@@ -16,7 +16,6 @@ class Credential_Type(Base):
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship('Project')
 
-    # New Oct 15, 2019
     archived = Column(Boolean, default = False)  # Hide from list
 
     history_cache = deferred(Column(MutableDict.as_mutable(JSONEncodedDict),

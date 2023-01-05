@@ -119,9 +119,6 @@
           <v_error_multiple :error="error">
           </v_error_multiple>
 
-          <!-- Dec 26, 2019
-            removed "show more / 3 dots" menu till we have more stuff
-            if add back in use new button_with_menu thing -->
 
           <div class="text-right">
 

@@ -180,7 +180,7 @@
 
   1) ie <button_with_menu> has:
 
-  Jan 7, 2020: OLD
+  OLD
   @click="$store.commit('set_user_is_typing_or_menu_open', true)"
   @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
 

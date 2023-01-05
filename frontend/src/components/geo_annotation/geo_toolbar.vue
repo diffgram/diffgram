@@ -93,7 +93,7 @@
                 >
                 </v_is_complete>
 
-                <div>
+                <!-- <div>
                     <standard_button
                         v-if="task && task.id && task.status == 'available'"
                         ui_schema_name="defer"
@@ -109,7 +109,7 @@
                         tooltip_message="Defer"
                         :bottom="true"
                     />
-                </div>
+                </div> -->
 
                 <v-divider vertical></v-divider>
 
@@ -247,6 +247,45 @@
                     :task="task"
                 >
                 </v_annotation_trainer_menu>
+
+                <v-divider vertical></v-divider>
+                
+                <time_tracker
+                    v-if="task && task.id && task.job"
+                    :task="task"
+                />
+
+                <v-divider vertical></v-divider>
+
+                <button_with_menu
+                    tooltip_message="Map Settings"
+                    color="primary"
+                    icon="mdi-map-legend"
+                    :close_by_button="true"
+                >
+                    <template slot="content">
+                        <geo_tile
+                            :map_layers="map_layers"
+                            :normalize="normalize"
+                            :interpolate="interpolate"
+                            @on_geotiff_rendere_change="(name, value) => $emit('on_geotiff_rendere_change', name, value)"
+                            @add_tile="(e) => $emit('add_xyz_layer', e)"
+                            @set_layer_opacity="(e) => $emit('set_layer_opacity', e)"
+                            @remove_tile="(e) => $emit('remove_xyz_layer', e)"
+                            @show_hide_layer="(e) => $emit('show_hide_layer', e)"
+                        />
+                    </template>
+                </button_with_menu>
+
+                <v-divider vertical></v-divider>
+                    <standard_button
+                        tooltip_message="Reset default view"
+                        @click="$emit('reset_default_view')"
+                        color="primary"
+                        icon="mdi-target-variant"
+                        :icon_style="true"
+                        :bottom="true"
+                    />
 
                 <v-divider vertical></v-divider>
                 </v-layout>
@@ -407,6 +446,39 @@
             </button_with_menu>
 
             <v-divider vertical></v-divider>
+            
+            <button_with_menu
+                tooltip_message="Map Settings"
+                color="primary"
+                icon="mdi-map-legend"
+                :close_by_button="true"
+            >
+                <template slot="content">
+                    <geo_tile
+                        :map_layers="map_layers"
+                        :normalize="normalize"
+                        :interpolate="interpolate"
+                        @on_geotiff_rendere_change="(name, value) => $emit('on_geotiff_rendere_change', name, value)"
+                        @add_tile="(e) => $emit('add_xyz_layer', e)"
+                        @set_layer_opacity="(e) => $emit('set_layer_opacity', e)"
+                        @remove_tile="(e) => $emit('remove_xyz_layer', e)"
+                        @show_hide_layer="(e) => $emit('show_hide_layer', e)"
+                    />
+                </template>
+            </button_with_menu>
+
+            <v-divider vertical></v-divider>
+            
+            <standard_button
+                tooltip_message="Reset default view"
+                @click="$emit('reset_default_view')"
+                color="primary"
+                icon="mdi-target-variant"
+                :icon_style="true"
+                :bottom="true"
+            />
+
+            <v-divider vertical></v-divider>
 
         </v-toolbar-items>
     </v-toolbar>
@@ -418,6 +490,8 @@ import label_select_annotation from "../label/label_select_annotation.vue"
 import label_schema_selector from "../label/label_schema_selector.vue"
 import task_status from "../annotation/task_status.vue"
 import geo_hotkeys from "./geo_hotkeys.vue"
+import time_tracker from "../task/time_track/time_tracker.vue";
+import geo_tile from "./geo_tile.vue"
 
 export default Vue.extend({
     name: "geo_toolbar",
@@ -425,7 +499,9 @@ export default Vue.extend({
         label_select_annotation,
         geo_hotkeys,
         label_schema_selector,
-        task_status
+        task_status,
+        geo_tile,
+        time_tracker
     },
     props: {
         undo_disabled: {
@@ -447,6 +523,10 @@ export default Vue.extend({
         height: {
             type: String,
             default: '50px'
+        },
+        map_layers: {
+            type: Object,
+            default: {}
         },
         project_string_id: {
             type: String,
@@ -483,7 +563,15 @@ export default Vue.extend({
         label_schema: {
             type: Object,
             required: true
-        }
+        },
+        normalize: {
+            type: Boolean,
+            default: false
+        },
+        interpolate: {
+            type: Boolean,
+            default: false
+        },
     },
     data() {
         return {

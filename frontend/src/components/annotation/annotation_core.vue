@@ -3857,7 +3857,7 @@ export default Vue.extend({
        *
        *
        *  Refresh workaround note:
-       *    As of Jan 16, 2020 it appears to not be
+       *    it appears to not be
        *    since perhaps instance_list is changing?
        *
        *    Question, is "refresh" a heavy operation?

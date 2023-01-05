@@ -1506,8 +1506,8 @@ export default Vue.extend({
         // Note if we want both the event and something else like index
         // ie seems like we need to do on_image_error($event, index) when calling it
 
-        // Jan 8th, 2020, there is still something funny with the
-        // way this gets "propogated"
+        // there is still something funny with the
+        // way this gets "propagated"
         // when using the vuetify iamge thing...
 
         this.file_list[index].frontend_src_load_failed = true

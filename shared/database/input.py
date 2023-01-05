@@ -163,7 +163,7 @@ class Input(Base):
     frame_packet_map = Column(MutableDict.as_mutable(JSONEncodedDict))
 
     update_log = Column(MutableDict.as_mutable(JSONEncodedDict),
-                        default = regular_log.default())  # New Sept 3, 2020
+                        default = regular_log.default())
 
     # Context of video
     video_parent_length = Column(Integer)  # This way don't have to check video each time. To see where it ends

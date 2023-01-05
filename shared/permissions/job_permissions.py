@@ -77,7 +77,6 @@ class Job_permissions():
                     # TODO deprecate 'mode' flag or have it as something else
                     # like "builder_only" or something
 
-                    # Jan 3, 2020
                     # One downside of doing it this way is it means
                     # that we need to be careful with
                     # project_role_list list...
