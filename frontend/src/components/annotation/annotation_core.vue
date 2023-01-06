@@ -1113,11 +1113,6 @@ export default Vue.extend({
     },
     request_save: {},
     annotator_email: {},
-    file: {
-      default: () => ({
-        image: {},
-      }),
-    },
     model_run_id_list: {
       default: null,
     },
@@ -1166,19 +1161,6 @@ export default Vue.extend({
     },
     canvas_scale_global: function (newVal, oldVal) {
       this.on_canvas_scale_global_changed(newVal);
-    },
-    file: {
-      handler(newVal, oldVal) {
-        if (newVal != oldVal) {
-          this.on_change_current_file();
-        } else {
-          if (newVal.image.url_signed != oldVal.image.url_signed) {
-            this.current_file_updates(newVal);
-          }
-        }
-
-      },
-      deep: true
     },
     task: {
       handler(newVal, oldVal) {
