@@ -1193,8 +1193,19 @@ export default Vue.extend({
           values = report.values
         }
 
+        let labels = report.labels
+
+        if (report.labels && this.report_template.group_by == 'label') {
+          labels = []
+          for (let label of report.labels)
+            {
+            label = report.schema.labelNamesMap[label]
+            labels.push(label)
+            }
+        }
+
         this.datacollection = {
-          labels: report.labels,
+          labels: labels,
           datasets: [
             {
               // Label means header (not label schema or rest of data labels)
