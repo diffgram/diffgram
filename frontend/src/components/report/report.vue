@@ -394,10 +394,9 @@
 
 
     <v-alert type="info"
-             v-if="!loading && values.length == 0 && report && report.count ==0"
+             v-if="!loading && values.length == 0 && report && report.count == 0"
              dismissible>
-      No results. <br>
-      Is (time period, project) correct?
+      No results.
     </v-alert>
 
     <v-card v-if="may_edit == false"
@@ -972,7 +971,7 @@ export default Vue.extend({
 
       second_group_by_list: function(){
         // expansion point to limit this more in future
-        return [label_selector, user_selector]
+        return [user_selector, label_selector]
       },
 
       metadata: function () {
@@ -1090,7 +1089,7 @@ export default Vue.extend({
         throw("Unsupported report_template.second_group_by value")
       },
 
-      create_one_dataset_for_users(report, tuple){
+      create_one_dataset_for_users(report : Report, tuple){
         let member_id = tuple[2]
         return {
           label: this.get_user_label_from_metadata(report, member_id),
@@ -1099,11 +1098,16 @@ export default Vue.extend({
         }
       },
 
-      create_one_dataset_labels(report, tuple){
+      create_one_dataset_labels(report : Report, tuple){
 
+        let label_id = parseInt(tuple[2])
+        if (!label_id || !report.schema
+          || !report.schema.labelNamesMap || !report.schema.labelColourMap) {
+          return { label: "None", data: [] }
+        }
         return {
-            label: report.label_names_map[value],
-            backgroundColor: report.label_colour_map[value].hex,
+            label: report.schema.labelNamesMap[label_id],
+            backgroundColor: report.schema.labelColourMap[label_id].hex,
             data: []
           }
       },
@@ -1118,8 +1122,11 @@ export default Vue.extend({
          * }
          *
          */
+          if (!dataset) { return }
           let x_axis_index = x_axis_list.indexOf(x_axis_key)
-          dataset.data[x_axis_index] = y_axis_value
+          if (x_axis_index >= 0) {
+            dataset.data[x_axis_index] = y_axis_value
+          }
       },
 
 
@@ -1138,13 +1145,17 @@ export default Vue.extend({
           let existing_set = created_datasets.find(x => x.label === new_dataset.label)
 
           if (!existing_set) {
-            created_datasets.push(new_dataset)
+            if (new_dataset) {
+              created_datasets.push(new_dataset)
+            }
           }
 
           let dataset = existing_set || new_dataset
 
+          if (!dataset) { return }
+
           let x_axis_key = tuple[0]
-          let x_axis_list = unique_labels
+          let x_axis_list = [...new Set(report.original_labels)]
           let y_axis_value = tuple[1]
 
           this.format_chart_data(dataset, x_axis_key, x_axis_list, y_axis_value)
@@ -1156,12 +1167,14 @@ export default Vue.extend({
         if (!report.labels) {return}
         let values_zeroes_filled = []
         for (const label of report.labels) {
-          let tuple = report.list_tuples_by_period.find(x => x[0] === label)
-          if (tuple) {
-            let value = tuple[1]
-            values_zeroes_filled.push(value)
-          } else {
-            values_zeroes_filled.push(0)
+          if (report.list_tuples_by_period) {
+            let tuple = report.list_tuples_by_period.find(x => x[0] === label)
+            if (tuple) {
+              let value = tuple[1]
+              values_zeroes_filled.push(value)
+            } else {
+              values_zeroes_filled.push(0)
+            }
           }
         }
         return values_zeroes_filled
@@ -1180,8 +1193,19 @@ export default Vue.extend({
           values = report.values
         }
 
+        let labels = report.labels
+
+        if (report.labels && this.report_template.group_by == 'label') {
+          labels = []
+          for (let label of report.labels)
+            {
+            label = report.schema.labelNamesMap[label]
+            labels.push(label)
+            }
+        }
+
         this.datacollection = {
-          labels: report.labels,
+          labels: labels,
           datasets: [
             {
               // Label means header (not label schema or rest of data labels)
@@ -1228,6 +1252,7 @@ export default Vue.extend({
 
         report.count = report_json.count
         report.labels = report_json.labels
+        report.original_labels = report.labels.slice()
         report.values = report_json.values
         report.second_grouping = report_json.second_grouping
         report.user_metadata = report_json.user_metadata
