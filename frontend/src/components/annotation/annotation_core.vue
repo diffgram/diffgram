@@ -36,7 +36,7 @@
 
             :project_string_id="project_string_id"
             :task="task"
-            :file="file"
+            :file="working_file"
             :canvas_scale_local="zoom_value"
             :has_changed="has_changed || has_pending_frames"
             :label_list="label_list"
@@ -391,55 +391,43 @@
                 </standard_button>
 
                 <create_issue_panel
-                  :project_string_id="
-                project_string_id
-                  ? project_string_id
-                  : this.$store.state.project.current.project_string_id
-              "
                   v-show="show_modify_an_issue == true && !current_issue"
+                  :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
                   :instance_list="instance_list"
                   :task="task"
-                  :file="file"
+                  :file="working_file"
                   :frame_number="this.video_mode ? this.current_frame : undefined"
                   :mouse_position="issue_mouse_position"
                   @new_issue_created="refresh_issues_sidepanel"
                   @open_side_panel="open_issue_panel"
                   @close_issue_panel="close_issue_panel"
-                ></create_issue_panel>
+                />
 
                 <view_edit_issue_panel
                   v-if="!loading"
                   v-show="show_modify_an_issue == true && current_issue"
-                  :project_string_id="
-                project_string_id
-                  ? project_string_id
-                  : this.$store.state.project.current.project_string_id
-              "
+                  :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
                   :task="task"
                   :instance_list="instance_list"
                   :current_issue_id="current_issue ? current_issue.id : undefined"
-                  :file="file"
+                  :file="working_file"
                   @close_view_edit_panel="close_view_edit_issue_panel"
                   @start_attach_instance_edition="start_attach_instance_edition"
                   @update_issues_list="update_issues_list"
                   @stop_attach_instance_edition="stop_attach_instance_edition"
                   @update_canvas="update_canvas"
                   ref="view_edit_issue_panel"
-                ></view_edit_issue_panel>
+                />
 
                 <!-- List -->
                 <issues_sidepanel
-                  :project_string_id="
-                project_string_id
-                  ? project_string_id
-                  : this.$store.state.project.current.project_string_id
-              "
+                  :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
                   :task="task"
-                  :file="file"
+                  :file="working_file"
                   @view_issue_detail="open_view_edit_panel"
                   @issues_fetched="issues_fetched"
                   ref="issues_sidepanel"
-                ></issues_sidepanel>
+                />
 
 
               </v-expansion-panel-content>
@@ -554,7 +542,7 @@
             >
               <v_bg
                 :image="html_image"
-                :current_file="file"
+                :current_file="working_file"
                 :refresh="refresh"
                 @update_canvas="update_canvas"
                 :canvas_transform="canvas_transform"
