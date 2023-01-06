@@ -285,7 +285,7 @@
                                      :video_playing="video_playing"
                                      :external_requested_index="request_change_current_instance"
                                      :trigger_refresh_current_instance="trigger_refresh_current_instance"
-                                     :current_file="file ? file : task"
+                                     :current_file="task ? task : working_file"
           >
           </instance_detail_list_view>
 
@@ -515,15 +515,15 @@
                  class="d-flex flex-column justify-center align-center"
                  style="min-width: 750px; min-height: 750px; border: 1px solid #e0e0e0">
               <v-icon size="450">mdi-download-off</v-icon>
-              <div v-if="file && file.image" style="max-width: 500px">
+              <div v-if="working_file && working_file.image" style="max-width: 500px">
                 <p class="primary--text font-weight-medium">
                   URL Attempted To be Used:
                 <div>
-                  <a target="_blank" v-if="file.image.url_signed" class="secondary--text font-weight-medium"
-                     :href="file.image.url_signed">
-                    {{ file.image.url_signed ? file.image.url_signed : "null" }}
+                  <a target="_blank" v-if="working_file.image.url_signed" class="secondary--text font-weight-medium"
+                     :href="working_file.image.url_signed">
+                    {{ working_file.image.url_signed ? working_file.image.url_signed : "null" }}
                   </a>
-                  <p v-else> {{ file.image.url_signed ? file.image.url_signed : "null" }}</p>
+                  <p v-else> {{ working_file.image.url_signed ? working_file.image.url_signed : "null" }}</p>
                 </div>
               </div>
               <v_error_multiple :error="file_cant_be_accessed_error"></v_error_multiple>
@@ -7529,7 +7529,6 @@ export default Vue.extend({
 
         } catch (error) {
           this.working_file_cant_be_accessed = true
-          console.error(error);
           this.working_file_cant_be_accessed_error = this.$route_api_errors(error)
           this.working_file_cant_be_accessed_error['Blob Storage error'] = 'You may not have permissions. If you are an Admin, check storage config and signed URL settings.'
         }
