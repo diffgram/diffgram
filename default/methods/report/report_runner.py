@@ -1010,7 +1010,7 @@ class Report_Runner():
             return self.format_for_charting(execution_results)
 
 
-    def build_label_names_map_from_second_grouping(
+    def build_label_map_from_ids(
             self,
             second_grouping):
 
@@ -1086,7 +1086,10 @@ class Report_Runner():
             count = sum(values)
 
             if self.report_template.second_group_by == 'label':
-                label_names_map = self.build_label_names_map_from_second_grouping(second_grouping)
+                label_names_map = self.build_label_map_from_ids(second_grouping)
+
+            if self.report_template.group_by == 'label': 
+                label_names_map = self.build_label_map_from_ids(labels)
 
             serialized_list_tuples_by_period = self.serialize_list_tuples_by_period(list_tuples_by_period)
 
