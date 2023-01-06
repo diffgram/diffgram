@@ -15,60 +15,6 @@ export class CSVReportFormatter{
     this.report_template = report_template
   }
 
-  private generate_grouped_by_label_format(){
-    this.csv_content = "data:text/csv;charset=utf-8,";
-    this.csv_content += 'File ID,'
-    const label_names = []
-    /*
-    for(const elm of this.report.second_grouping){
-      if(!label_names.includes(this.label_names_map[elm])){
-        label_names.push(this.label_names_map[elm])
-        this.csv_content += `${this.label_names_map[elm]},`
-      }
-    }
-    */
-    this.csv_content = this.csv_content.slice(0, -1); // Remove trailing ","
-    this.csv_content += '\r\n'
-    let file_label_map = {}
-
-    for(let i = 0; i < this.report.values.length ; i++){
-      const file_id = this.report.labels[i];
-      const count = this.report.values[i];
-      const label_name = this.report.second_grouping[i];
-      if(file_label_map[file_id]){
-        file_label_map[file_id][label_name] = count
-      }
-      else{
-        file_label_map[file_id] = {[label_name]: count}
-      }
-
-    }
-
-    for(let file_id of Object.keys(file_label_map)){
-      let row = `${file_id},`;
-      let labels_count = label_names.map(elm => 0);
-
-      /*
-      for(let label_file_id of Object.keys(file_label_map[file_id])){
-        let index = label_names.indexOf(this.label_names_map[label_file_id]);
-        labels_count[index] = file_label_map[file_id][label_file_id]
-      }
-      */
-
-      for(let i = 0; i < labels_count.length; i++){
-        let current = labels_count[i];
-        if(i != labels_count.length - 1){
-          row += `${current},`
-        }
-        else{
-          row += `${current}`
-        }
-      }
-      this.csv_content += `${row}\r\n`
-
-    }
-    return this.csv_content
-  }
 
   private generate_second_group_user_format(report : Report){
 
@@ -116,6 +62,56 @@ export class CSVReportFormatter{
 
   }
 
+  private generate_grouped_by_label_format(report : Report){
+    // this is similar to generate_second_group_user_format()
+    // some assumption are different, e.g. labelNamesMap is a dict not a list
+ 
+    this.csv_content = "data:text/csv;charset=utf-8,";
+    this.csv_content += 'Date,'
+
+    // header
+    console.log(report)
+    for(const [i, schema_label] of Object.entries(report.schema.labelNamesMap)){
+      this.csv_content += `${schema_label},`
+    }
+
+    this.csv_content = this.csv_content.slice(0, -1); // Remove trailing ","
+    this.csv_content += '\r\n'
+
+    // assumes that each row is a label / date
+
+    for (const [ii, label] of report.labels.entries()) {
+
+      let row = `${label},`
+
+      for(const [schema_id, schema_label] of Object.entries(report.schema.labelNamesMap)){
+
+        let did_write = false
+
+        for (const [k, tuple] of report.list_tuples_by_period.entries()) { 
+          if (label == tuple[0] && schema_id == tuple[2]) {
+            // write data
+            row += `${tuple[1]},`
+            did_write = true
+
+          }
+        }
+
+        if (did_write == false) {
+          // write empty data
+          row += `${0},`
+        }
+
+      }
+
+      this.csv_content += `${row}\r\n`
+    }
+
+    return this.csv_content
+
+  }
+
+
   private determine_format_to_generate(){
     /*
     * Depending on report_template config, we can adapt formatting and call different CSV formatting
@@ -126,7 +122,7 @@ export class CSVReportFormatter{
     }
 
     if(this.report_template.second_group_by == 'label'){
-      return this.generate_grouped_by_label_format()
+      return this.generate_grouped_by_label_format(this.report)
     }
     else{
       return this.standard_csv_format(this.report)
