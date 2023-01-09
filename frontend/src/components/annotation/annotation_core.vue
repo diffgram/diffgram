@@ -2824,35 +2824,29 @@ export default Vue.extend({
     },
     open_issue_panel(mouse_position) {
       // This boolean controls if issues create/edit panel is shown or hidden.
-      this.show_modify_an_issue = true
+      this.$store.commit("open_issue_panel");
       // Close context menu and set select instance mode
       this.show_context_menu = false;
-      this.issues_ui_manager.issue_mouse_position = mouse_position;
-      this.$store.commit("set_instance_select_for_issue", true);
-      this.$emit('open_issues_panel', 0)
+
     },
 
 
-    start_attach_instance_edition() {
-      this.$store.commit("set_instance_select_for_issue", true);
-      this.issues_ui_manager.snackbar_issues = true;
-    },
     stop_attach_instance_edition() {
       this.$store.commit("set_instance_select_for_issue", false);
       this.issues_ui_manager.snackbar_issues = false;
     },
     close_view_edit_issue_panel() {
       this.current_issue = undefined;
-      this.show_modify_an_issue = false;
+      this.issues_ui_manager.show_modify_an_issue = false;
       this.label_settings.allow_multiple_instance_select = false;
       this.$store.commit("set_view_issue_mode", false);
       this.$store.commit("set_instance_select_for_issue", false);
     },
     close_issue_panel() {
-      this.show_modify_an_issue = false;
+      this.issues_ui_manager.show_modify_an_issue = false;
       this.$store.commit("set_instance_select_for_issue", false);
       this.issues_ui_manager.snackbar_issues = false;
-      this.issue_mouse_position = undefined;
+      this.issues_ui_manager.issue_mouse_position = undefined;
       this.clear_selected();
     },
     done_selecting_instaces_issues() {

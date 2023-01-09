@@ -141,13 +141,13 @@
           </standard_button>
 
           <create_issue_panel
-            v-show="show_modify_an_issue == true && !current_issue"
+            v-show="issues_ui_manager.show_modify_an_issue == true && !issues_ui_manager.current_issue"
             :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
             :instance_list="instance_list"
             :task="task"
             :file="working_file"
             :frame_number="this.video_mode ? this.current_frame : undefined"
-            :mouse_position="issue_mouse_position"
+            :mouse_position="issues_ui_manager.issue_mouse_position"
             @new_issue_created="refresh_issues_sidepanel"
             @open_side_panel="open_issue_panel"
             @close_issue_panel="close_issue_panel"
@@ -155,11 +155,11 @@
 
           <view_edit_issue_panel
             v-if="!loading"
-            v-show="show_modify_an_issue == true && current_issue"
+            v-show="issues_ui_manager.show_modify_an_issue == true && issues_ui_manager.current_issue"
             :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
             :task="task"
             :instance_list="instance_list"
-            :current_issue_id="current_issue ? current_issue.id : undefined"
+            :current_issue_id="issues_ui_manager.current_issue ? issues_ui_manager.current_issue.id : undefined"
             :file="working_file"
             @close_view_edit_panel="close_view_edit_issue_panel"
             @start_attach_instance_edition="start_attach_instance_edition"
@@ -243,6 +243,20 @@ export default {
     }
   },
   methods: {
+    open_issue_panel(mouse_position) {
+      // This boolean controls if issues create/edit panel is shown or hidden.
+      this.issues_ui_manager.show_modify_an_issue = true
+      this.issues_ui_manager.issue_mouse_position = mouse_position;
+
+      // Close context menu and set select instance mode
+      this.show_context_menu = false;
+      this.$store.commit("set_instance_select_for_issue", true);
+    },
+
+    start_attach_instance_edition() {
+      this.$store.commit("set_instance_select_for_issue", true);
+      this.issues_ui_manager.snackbar_issues = true;
+    },
     update_issues_list(issue) {
       this.issues_ui_manager.update_issue(issue);
     },

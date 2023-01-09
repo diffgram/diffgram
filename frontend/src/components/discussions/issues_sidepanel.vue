@@ -2,7 +2,7 @@
   <div v-cloak>
 
     <v-container fluid style="border: 1px solid #ababab"
-                 v-if="!loading && issues_list.length == 0"
+                 v-if="!loading && issues_ui_manager.issues_list.length == 0"
                  class="d-flex flex-column align-center justify-center ma-0">
       <h1>No Issues.</h1>
       <v-icon size="250" color="green">mdi-check</v-icon>
@@ -11,7 +11,7 @@
     <v-expand-transition>
       <v-card-text class="pa-0" >
 
-        <v-container  v-if="!loading && issues_list.length > 0" class="d-flex flex-column pa-1">
+        <v-container  v-if="!loading && issues_ui_manager.issues_list.length > 0" class="d-flex flex-column pa-1">
 
           <v-select :items="status_list"
                     v-model="status_filter"
@@ -142,7 +142,7 @@
       },
       computed: {
         filtered_issues_list: function(){
-          return this.issues_list.filter(elm => elm.status === this.status_filter);
+          return this.issues_ui_manager.issues_list.filter(elm => elm.status === this.status_filter);
         }
 
       },

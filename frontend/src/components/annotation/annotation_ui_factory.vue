@@ -3,6 +3,7 @@
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
     <sidebar_factory
       v-if="annotation_interface === 'image_or_video' && !task_error.task_request"
+      :annotation_ui_context="annotation_ui_context"
       :working_file="working_file"
       :instance_type="instance_type"
       :instance_store="instance_store"
@@ -120,7 +121,7 @@
           @selected_instance_for_history="selected_instance_for_history = $event"
           @event_create_instance="event_create_instance = $event"
           @refresh="refresh = $event"
-          @open_issues_panel="issues_expansion_panel = $event"
+          @open_issue_panel="issues_expansion_panel = $event"
 
           ref="annotation_core"
         >
@@ -314,6 +315,7 @@ import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
 import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
+import {BaseAnnotationUIContext} from '../../types/AnnotationUIContext'
 
 import { saveTaskAnnotations, saveFileAnnotations } from "../../services/saveServices"
 
@@ -352,6 +354,7 @@ export default Vue.extend({
         task_request: null,
       },
       instance_store: null,
+      annotation_ui_context: null as BaseAnnotationUIContext,
       issues_ui_manager: null,
       refresh: new Date(),
       trigger_refresh_current_instance: new Date(),
@@ -480,6 +483,7 @@ export default Vue.extend({
   async mounted() {
     this.instance_store = new InstanceStore()
     this.issues_ui_manager = new IssuesAnnotationUIManager()
+    this.annotation_ui_context = new BaseAnnotationUIContext()
     if (!this.$props.task_id_prop) {
       await this.get_project();
     } else {
