@@ -9,7 +9,6 @@
 
 
     <instance_detail_list_view ref="instance_detail_list"
-                               v-if=""
                                :instance_list="instance_list"
                                :instance_store="instance_store"
                                :model_run_list="model_run_list"
@@ -98,7 +97,7 @@
     </v-expansion-panels>
 
     <v-expansion-panels
-      v-model="issues_expansion_panel"
+      v-model="issues_ui_manager.issues_expansion_panel"
       :accordion="true"
       :inset="false"
       :multiple="false"
@@ -197,6 +196,7 @@ import {types} from "sass";
 import String = types.String;
 import InstanceStore from "../../helpers/InstanceStore";
 import {LabelFile} from "../../types/label";
+import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager";
 
 export default {
   name: "sidebar_image_annotation",
@@ -229,6 +229,9 @@ export default {
     trigger_refresh_current_instance: {type: Date, required: false},
     selected_instance_for_history: {type: Date, required: true},
     event_create_instance: {type: Object, required: true},
+    get_userscript: {type: Function, required: true},
+    userscript_select_disabled: {type: Boolean, required: true},
+    issues_ui_manager: {type: Object as IssuesAnnotationUIManager, required: true},
   },
   computed: {
     instance_list: function () {
@@ -236,9 +239,17 @@ export default {
     }
   },
   data: function () {
-    return {}
+    return {
+    }
   },
-  methods: {},
+  methods: {
+    update_issues_list(issue) {
+      this.issues_ui_manager.update_issue(issue);
+    },
+    refresh_issues_sidepanel(issue) {
+      this.issues_ui_manager.add_issue_to_list(issue);
+    },
+  },
 }
 </script>
 

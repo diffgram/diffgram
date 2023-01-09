@@ -26,6 +26,9 @@
       :trigger_refresh_current_instance="trigger_refresh_current_instance"
       :selected_instance_for_history="selected_instance_for_history"
       :event_create_instance="event_create_instance"
+      :issues_ui_manager="issues_ui_manager"
+      :get_userscript="get_userscript"
+      :userscript_select_disabled="userscript_select_disabled"
       @toggle_instance_focus="handle_focus_image_instance"
       @close_instance_history_panel="selected_instance_for_history= undefined"
       @focus_instance_show_all="handle_focus_instance_show_all"
@@ -54,7 +57,6 @@
         <v_annotation_core
           v-if="!changing_file && !changing_task"
           class="pt-1 pl-1"
-          :userscript_select_disabled="userscript_select_disabled()"
           :working_file="working_file"
           :url_instance_buffer="get_url_instance_buffer()"
           :save_loading_image="save_loading_image"
@@ -92,6 +94,7 @@
           :task_instances="task_instances"
           :task_loading="task_loading"
           :task_error="task_error"
+          :issues_ui_manager="issues_ui_manager"
           @request_file_change="request_file_change"
 
           @change_label_schema="on_change_label_schema"
@@ -117,6 +120,7 @@
           @selected_instance_for_history="selected_instance_for_history = $event"
           @event_create_instance="event_create_instance = $event"
           @refresh="refresh = $event"
+          @open_issues_panel="issues_expansion_panel = $event"
 
           ref="annotation_core"
         >
@@ -307,6 +311,7 @@ import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
 import Vue from "vue";
 
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
+import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
 import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
 
@@ -347,6 +352,7 @@ export default Vue.extend({
         task_request: null,
       },
       instance_store: null,
+      issues_ui_manager: null,
       refresh: new Date(),
       trigger_refresh_current_instance: new Date(),
       model_run_list: null,
@@ -359,6 +365,7 @@ export default Vue.extend({
       current_label_file: null,
       selected_instance_for_history: undefined,
       task_loading: false,
+      issues_expansion_panel: true,
       draw_mode: true,
       show_snackbar: false,
       video_playing: false,
@@ -472,7 +479,7 @@ export default Vue.extend({
   },
   async mounted() {
     this.instance_store = new InstanceStore()
-
+    this.issues_ui_manager = new IssuesAnnotationUIManager()
     if (!this.$props.task_id_prop) {
       await this.get_project();
     } else {
@@ -528,6 +535,9 @@ export default Vue.extend({
     this.initializing = false
   },
   computed: {
+    userscript_select_disabled: function () {
+      return this.task && this.task.id
+    },
     current_frame: function(){
       return this.current_interface_ref.current_frame
     },
@@ -1164,9 +1174,7 @@ export default Vue.extend({
 
       this.video_mode = this.working_file.type === 'video'
     },
-    userscript_select_disabled: function () {
-      return this.task && this.task.id
-    },
+
     on_change_label_schema: function (schema) {
       if(schema.id === this.current_label_schema.id){
         return

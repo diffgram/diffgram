@@ -72,6 +72,7 @@
 
 
   import Vue from "vue";
+  import IssuesAnnotationUIManager from "../annotation/issues/IssuesAnnotationUIManager";
   export default Vue.extend({
       name: 'issues_sidepanel',
 
@@ -95,7 +96,8 @@
           type: Boolean
         },
         'current_issue': undefined,
-        'task': undefined
+        'task': undefined,
+        'issues_ui_manager': {type: Object as IssuesAnnotationUIManager, required: true}
       },
       watch: {
         task: function(newval, oldval){
@@ -115,7 +117,6 @@
       data() {
         return {
           loading: false,
-          issues_list: [],
           status_filter: 'open',
           status_list: [
             {
@@ -162,43 +163,29 @@
         maximize_panel(){
           this.$emit('maximize_issues_panel', true)
         },
-        update_issue(updated_issue){
-          this.issues_list = this.issues_list.map(issue =>{
-            if(issue.id === updated_issue.id){
-              return {
-                ...updated_issue
-              }
-            }
-            return issue
-          })
-        },
         view_issue_detail(new_issue){
           this.$emit('view_issue_detail', new_issue)
-        },
-        add_issue_to_list(new_issue){
-          this.issues_list.push(new_issue)
         },
         async get_issues_list() {
 
           if(!this.$props.task && !this.$props.file){
             return;
           }
+          let task_id, file_id;
+          if(this.$props.task){
+            task_id = this.$props.task.id
+          }
+          if(this.$props.file){
+            file_id = this.$props.file.id
+          }
           this.loading = true;
           try {
-            const response = await axios.post(`/api/v1/project/${this.$props.project_string_id}/discussions/list`,
-              {
-                'task_id': this.$props.task ? this.$props.task.id : undefined,
-                'file_id': this.$props.file ? this.$props.file.id : undefined,
-              }
-            )
-            if (response.data && response.data.issues) {
-              this.issues_list = response.data.issues;
-              this.$emit('issues_fetched', this.issues_list);
+            const issues_list = await this.issues_ui_manager.get_issues_list(this.$props.project_string_id, task_id, file_id)
+            if (issues_list) {
+              this.$emit('issues_fetched', issues_list);
             }
           } catch (error) {
             console.error(error)
-          } finally {
-            this.loading = false;
           }
         }
       }

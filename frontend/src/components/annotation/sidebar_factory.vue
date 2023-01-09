@@ -20,6 +20,7 @@ import {ImageLabelSettings} from "../../types/image_label_settings";
 import InstanceStore from "../../helpers/InstanceStore";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher";
 import {LabelFile} from "../../types/label";
+import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager";
 
 export default {
   name: "sidebar_factory",
@@ -49,6 +50,9 @@ export default {
     trigger_refresh_current_instance: {type: Date, required: false},
     selected_instance_for_history: {type: Number, required: false},
     event_create_instance: {type: Number, required: false},
+    get_userscript: {type: Function, required: true},
+    userscript_select_disabled: {type: Boolean, required: true},
+    issues_ui_manager: {type: Object as IssuesAnnotationUIManager, required: true},
   },
   data: function () {
     return {}

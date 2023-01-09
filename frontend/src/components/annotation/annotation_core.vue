@@ -134,8 +134,8 @@
       </template>
     </v-snackbar>
     <v-snackbar
-      v-if="snackbar_issues"
-      v-model="snackbar_issues"
+      v-if="issues_ui_manager.snackbar_issues"
+      v-model="issues_ui_manager.snackbar_issues"
       :multi-line="true"
       :timeout="-1"
     >
@@ -691,7 +691,6 @@ import task_status_icons from "../regular_concrete/task_status_icons";
 import context_menu from "../context_menu/context_menu.vue";
 import polygon_borders_context_menu from "../context_menu/polygon_borders_context_menu.vue";
 import ui_schema_context_menu from "../ui_schema/ui_schema_context_menu.vue";
-import issues_sidepanel from "../discussions/issues_sidepanel.vue";
 import current_instance_template from "../vue_canvas/current_instance_template.vue";
 import instance_template_creation_dialog from "../instance_templates/instance_template_creation_dialog";
 import create_issue_panel from "../discussions/create_issue_panel.vue";
@@ -745,6 +744,7 @@ import {PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBor
 import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
 import {PolygonMergeTool} from "../vue_canvas/advanced_tools/PolygonMergeTool";
 import {store} from "../../store";
+import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -769,7 +769,6 @@ export default Vue.extend({
     instance_history_sidepanel,
     polygon_borders_context_menu,
     view_edit_issue_panel,
-    issues_sidepanel,
     canvas_current_instance,
     current_instance_template,
     canvas_instance_list,
@@ -803,7 +802,6 @@ export default Vue.extend({
     annotations_loading: { type: Boolean, default: false},
     url_instance_buffer: {required: true, type: String},
     working_file: {required: true, type: Object},
-    userscript_select_disabled: {default: null, type: Number},
     instance_store: {required: true},
     task_image: {type: HTMLImageElement, default: null},
     task_instances: {type: Object, default: null},
@@ -826,6 +824,7 @@ export default Vue.extend({
     global_attribute_groups_list: {type: Array, required: true},
     per_instance_attribute_groups_list: {type: Array, required: true},
     task_error: {type: Object, required: true},
+    issues_ui_manager: {type: Object as IssuesAnnotationUIManager, required: true},
   },
   watch: {
     event_create_instance: function(newVal){
@@ -894,11 +893,11 @@ export default Vue.extend({
     instance_select_for_issue(newval, oldval) {
       if (newval) {
         this.update_canvas();
-        this.snackbar_issues = true;
+        this.issues_ui_manager.snackbar_issues = true;
         this.draw_mode = false;
         this.label_settings.allow_multiple_instance_select = true;
       } else {
-        this.snackbar_issues = false;
+        this.issues_ui_manager.snackbar_issues = false;
       }
     },
     instance_select_for_merge(newval, oldval) {
@@ -1026,7 +1025,6 @@ export default Vue.extend({
       current_issue: undefined,
       share_dialog_open: false,
       show_modify_an_issue: false,
-      snackbar_issues: false, // Controls the display of snackbar with info message when selecting instance on issues.
       trigger_refresh_current_instance: null,
       ellipse_hovered_corner: undefined,
       ellipse_hovered_corner_key: undefined,
@@ -1143,7 +1141,7 @@ export default Vue.extend({
         smooth_canvas: true
       },
 
-      issues_expansion_panel: true,
+
 
       source_control_menu: false,
 
@@ -2827,27 +2825,21 @@ export default Vue.extend({
     open_issue_panel(mouse_position) {
       // This boolean controls if issues create/edit panel is shown or hidden.
       this.show_modify_an_issue = true
-      this.issues_expansion_panel = 0
       // Close context menu and set select instance mode
       this.show_context_menu = false;
-      this.issue_mouse_position = mouse_position;
+      this.issues_ui_manager.issue_mouse_position = mouse_position;
       this.$store.commit("set_instance_select_for_issue", true);
+      this.$emit('open_issues_panel', 0)
     },
-    refresh_issues_sidepanel(issue) {
-      this.$refs.issues_sidepanel.add_issue_to_list(issue);
-    },
-    update_issues_list(issue) {
-      if (this.$refs["issues_sidepanel"]) {
-        this.$refs["issues_sidepanel"].update_issue(issue);
-      }
-    },
+
+
     start_attach_instance_edition() {
       this.$store.commit("set_instance_select_for_issue", true);
-      this.snackbar_issues = true;
+      this.issues_ui_manager.snackbar_issues = true;
     },
     stop_attach_instance_edition() {
       this.$store.commit("set_instance_select_for_issue", false);
-      this.snackbar_issues = false;
+      this.issues_ui_manager.snackbar_issues = false;
     },
     close_view_edit_issue_panel() {
       this.current_issue = undefined;
@@ -2859,12 +2851,12 @@ export default Vue.extend({
     close_issue_panel() {
       this.show_modify_an_issue = false;
       this.$store.commit("set_instance_select_for_issue", false);
-      this.snackbar_issues = false;
+      this.issues_ui_manager.snackbar_issues = false;
       this.issue_mouse_position = undefined;
       this.clear_selected();
     },
     done_selecting_instaces_issues() {
-      this.snackbar_issues = false;
+      this.issues_ui_manager.snackbar_issues = false;
     },
     open_share_dialog: function () {
       this.share_dialog_open = true;
