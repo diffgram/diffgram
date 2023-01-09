@@ -152,7 +152,12 @@
         </v-btn>
       </template>
     </v-snackbar>
-
+    <div v-if="instance_type === 'polygon'">
+      <v-snackbar dismissible type="info" v-model="alert_info_drawing">
+        To complete polygon click first point again, or
+        <kbd>Enter</kbd> key, or hover in turbo mode.
+      </v-snackbar>
+    </div>
     <v-snackbar
       v-if="show_custom_snackbar"
       v-model="show_custom_snackbar"
@@ -226,216 +231,7 @@
     <v-sheet style="outline: none">
       <v-layout style="outline: none">
         <!-- Left nav -->
-        <v-navigation-drawer
-          permanent
-          left
-          style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; height: 100%"
-          v-if="!error_no_permissions.data"
-          :width="label_settings.left_nav_width"
-        >
-          <v-alert
-            v-if="
-              $store.state.user.settings.studio_box_info == true &&
-              file != undefined
-            "
-            dismissible
-            @input="
-              $store.commit('set_user_setting', ['studio_box_info', false])
-            "
-            type="info"
-            :value="instance_type == 'box'"
-          >
-            Two click mode: Click and release first point, draw, click second
-            point.
-          </v-alert>
 
-          <!-- This could use a lot of improvement -->
-          <div v-if="instance_type == 'polygon'">
-            <v-alert dismissible type="info" v-model="alert_info_drawing">
-              To complete polygon click first point again, or
-              <kbd>Enter</kbd> key, or hover in turbo mode.
-            </v-alert>
-          </div>
-
-          <instance_detail_list_view ref="instance_detail_list"
-                                     v-if="!task_error.task_request"
-                                     :instance_list="instance_list"
-                                     :instance_store="instance_store"
-                                     :model_run_list="model_run_list"
-                                     :label_file_colour_map="label_file_colour_map"
-                                     :refresh="refresh"
-                                     :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-                                     @toggle_instance_focus="focus_instance($event)"
-                                     @show_all="focus_instance_show_all()"
-                                     @update_canvas="update_canvas"
-                                     @instance_update="instance_update($event)"
-                                     :video_mode="video_mode"
-                                     :task="task"
-                                     :view_only_mode="view_only_mode"
-                                     :label_settings="label_settings"
-                                     :label_list="label_list"
-                                     :project_string_id="project_string_id"
-                                     :global_attribute_groups_list="global_attribute_groups_list"
-                                     :schema_id="label_schema.id"
-                                     :current_global_instance="current_global_instance"
-                                     :draw_mode="draw_mode"
-                                     :current_frame="current_frame"
-                                     :current_video_file_id="current_video_file_id"
-                                     :current_label_file_id="current_label_file_id"
-                                     :video_playing="video_playing"
-                                     :external_requested_index="request_change_current_instance"
-                                     :trigger_refresh_current_instance="trigger_refresh_current_instance"
-                                     :current_file="task ? task : working_file"
-          >
-          </instance_detail_list_view>
-
-          <instance_history_sidepanel
-            v-show="show_instance_history"
-            :project_string_id="project_string_id"
-            @close_instance_history_panel="close_instance_history_panel"
-            :instance="selected_instance_for_history"
-          >
-          </instance_history_sidepanel>
-
-          <v-divider></v-divider>
-
-          <v-expansion-panels
-            :accordion="true"
-            :inset="false"
-            :multiple="false"
-            :focusable="true"
-            :disabled="false"
-            :flat="true"
-            :hover="false"
-            :tile="true"
-          >
-            <v-expansion-panel>
-
-              <v-expansion-panel-header
-                data-cy="show_userscript_panel_button"
-                class="d-flex justify-start pa-0 pr-1 align-center"
-                style="border-top: 1px solid #e0e0e0;border-bottom: 1px solid #e0e0e0">
-
-                <v-icon left class="ml-4 flex-grow-0" color="primary" size="18">
-                  mdi-language-javascript
-                </v-icon>
-
-                <h4>Scripts</h4>
-
-                <v-spacer></v-spacer>
-
-              </v-expansion-panel-header>
-
-              <v-expansion-panel-content>
-
-                <userscript
-                  :project_string_id_prop="project_string_id"
-                  :create_instance="event_create_instance"
-                  :current_userscript_prop="() => get_userscript($refs.userscript)"
-                  :userscript_select_disabled="userscript_select_disabled"
-                  :show_code_editor="!task || !task.id"
-                  :show_external_scripts="!task || !task.id"
-                  :show_save="!task || !task.id"
-                  :show_other_controls="!task || !task.id"
-                  ref="userscript"
-                >
-                </userscript>
-
-              </v-expansion-panel-content>
-
-            </v-expansion-panel>
-          </v-expansion-panels>
-
-          <v-expansion-panels
-            v-model="issues_expansion_panel"
-            :accordion="true"
-            :inset="false"
-            :multiple="false"
-            :focusable="true"
-            :disabled="false"
-            :flat="true"
-            :hover="false"
-            :tile="true"
-          >
-            <v-expansion-panel>
-
-              <v-expansion-panel-header
-                data-cy="show_issues_panel_button"
-                class="d-flex justify-start pa-0 sidebar-accordeon-header align-center">
-
-                <v-icon left class="ml-5 flex-grow-0" color="primary" size="18">
-                  mdi-comment-multiple
-                </v-icon>
-
-                <h4>Issues</h4>
-
-                <v-spacer></v-spacer>
-
-                <v-chip x-small class="d-flex justify-center flex-grow-0">
-                  {{ issues_list.length }}
-                </v-chip>
-
-              </v-expansion-panel-header>
-
-              <v-expansion-panel-content>
-
-                <standard_button
-                  v-if="show_modify_an_issue != true"
-                  tooltip_message="New Issue"
-                  datacy="new_issue_in_side_panel"
-                  @click="show_modify_an_issue=true"
-                  icon="add"
-                  :icon_style="true"
-                  color="primary"
-                >
-                </standard_button>
-
-                <create_issue_panel
-                  v-show="show_modify_an_issue == true && !current_issue"
-                  :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-                  :instance_list="instance_list"
-                  :task="task"
-                  :file="working_file"
-                  :frame_number="this.video_mode ? this.current_frame : undefined"
-                  :mouse_position="issue_mouse_position"
-                  @new_issue_created="refresh_issues_sidepanel"
-                  @open_side_panel="open_issue_panel"
-                  @close_issue_panel="close_issue_panel"
-                />
-
-                <view_edit_issue_panel
-                  v-if="!loading"
-                  v-show="show_modify_an_issue == true && current_issue"
-                  :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-                  :task="task"
-                  :instance_list="instance_list"
-                  :current_issue_id="current_issue ? current_issue.id : undefined"
-                  :file="working_file"
-                  @close_view_edit_panel="close_view_edit_issue_panel"
-                  @start_attach_instance_edition="start_attach_instance_edition"
-                  @update_issues_list="update_issues_list"
-                  @stop_attach_instance_edition="stop_attach_instance_edition"
-                  @update_canvas="update_canvas"
-                  ref="view_edit_issue_panel"
-                />
-
-                <!-- List -->
-                <issues_sidepanel
-                  :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-                  :task="task"
-                  :file="working_file"
-                  @view_issue_detail="open_view_edit_panel"
-                  @issues_fetched="issues_fetched"
-                  ref="issues_sidepanel"
-                />
-
-
-              </v-expansion-panel-content>
-
-            </v-expansion-panel>
-          </v-expansion-panels>
-
-        </v-navigation-drawer>
 
         <v-container v-if="error_no_permissions.data">
           <v_error_multiple
@@ -745,7 +541,7 @@
               @paste_instance_on_next_frames="(num_frames, index_instance) => paste_instance(num_frames, index_instance, current_frame)"
               @create_instance_template="create_instance_template"
               @open_instance_history_panel="show_instance_history_panel"
-              @close_instance_history_panel="show_instance_history_panel"
+              @close_instance_history_panel="close_instance_history_panel"
               ref="context_menu"
               @share_dialog_close="close_share_dialog"
               @close_context_menu="show_context_menu = false"
@@ -873,19 +669,14 @@
       @stop_carousel="annotation_show_activate"
     />
 
-    <v-snackbar timeout="5000" v-model="submitted_to_review">
-      Task has been submitted to review
-    </v-snackbar>
+
   </div>
 </template>
 
 <script lang="ts">
 // @ts-nocheck
-import moment from "moment";
 import axios from "../../services/customInstance/index.js";
 import Vue from "vue";
-import instance_detail_list_view from "./instance_detail_list_view";
-import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
 import * as SequenceUpdateHelpers from '../annotation/utils/SequenceUpdateHelpers'
 import autoborder_avaiable_alert from "./autoborder_avaiable_alert";
 import ghost_canvas_available_alert from "./ghost_canvas_available_alert";
@@ -917,24 +708,17 @@ import {ImageAnnotationCoordinator} from "../vue_canvas/coordinators/coordinator
 import {polygon} from "../vue_canvas/polygon.js";
 import {v4 as uuidv4} from "uuid";
 import {cloneDeep} from "lodash";
-import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
 import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../vue_canvas/instances/Instance";
 import userscript from "./userscript/userscript.vue";
 import toolbar from "./toolbar.vue";
-import {sha256} from "js-sha256";
-import stringify from "json-stable-stringify";
-import PropType from "vue";
-import _ from "lodash";
 import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
 import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
+import {File} from "../../types/files";
+import {update_file_metadata} from "../../services/fileServices";
 import {getInstanceTemplatesFromProject} from "../../services/instanceTemplateService";
 import {File} from "../../types/files";
-import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
-import { update_file_metadata } from "../../services/fileServices";
-import { getInstanceTemplatesFromProject } from "../../services/instanceTemplateService";
-import { File } from "../../types/files";
 import task_status from "./task_status.vue"
 import v_sequence_list from "../video/sequence_list"
 import {
@@ -945,21 +729,19 @@ import {
 import {
   InteractionEvent,
   genImageAnnotationEvent,
-  AnnotationEventCtx,
   ImageAnnotationEventCtx, ImageInteractionEvent
 } from "../../types/InteractionEvent";
-import {Coordinator, CoordinatorProcessResult} from "../vue_canvas/coordinators/Coordinator";
+import {CoordinatorProcessResult} from "../vue_canvas/coordinators/Coordinator";
 import {Interaction} from "../../types/Interaction";
 import {BoxInstance} from "../vue_canvas/instances/BoxInstance";
 import {LabelColourMap} from "../../types/label_colour_map";
 import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
 import {ImageCanvasTransform} from "../../types/CanvasTransform";
 import {LabelFile} from "../../types/label";
-import {InstanceImage2D} from "../vue_canvas/instances/InstanceImage2D";
-import { regenerate_cache } from "../../services/fileServices"
-import { get_model_run_list } from "../../services/modelServices"
+import {regenerate_cache} from "../../services/fileServices"
+import {get_model_run_list} from "../../services/modelServices"
 import {PolygonInstance} from "../vue_canvas/instances/PolygonInstance";
-import {AutoBorderContext, PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBorderTool";
+import {PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBorderTool";
 import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
 import {PolygonMergeTool} from "../vue_canvas/advanced_tools/PolygonMergeTool";
 import {store} from "../../store";
@@ -982,7 +764,6 @@ export default Vue.extend({
   components: {
     create_issue_panel,
     v_sequence_list,
-    instance_detail_list_view,
     autoborder_avaiable_alert,
     instance_template_creation_dialog,
     instance_history_sidepanel,
@@ -1006,139 +787,63 @@ export default Vue.extend({
     task_status
   },
   props: {
-    project_string_id: {
-      default: null,
-      type: String,
-    },
-    has_pending_frames: {
-      type: Boolean,
-      default: false
-    },
-    video_parent_file_instance_list: {
-      type: Array,
-      default: []
-    },
-    create_instance_template_url: {
-      type: String,
-      required:  true
-    },
-    instance_buffer_metadata: {
-      type: Object,
-      default: {}
-    },
-    go_to_keyframe_loading: {
-      type: Boolean,
-      default: false
-    },
-    video_mode: {
-      type: Boolean,
-      default: false
-    },
-    get_userscript: {
-      type: Function,
-      required: true
-    },
-    save_loading_frames_list: {
-      type: Array,
-      default: []
-    },
-    filtered_instance_type_list_function: {
-      type: Function,
-      default: () => []
-    },
-    save_loading_image: {
-      type: Boolean,
-      default: false
-    },
-    loading: {
-      type: Boolean,
-      default: false
-    },
-    has_changed: {
-      type: Boolean,
-      default: false
-    },
-    annotations_loading: {
-      type: Boolean,
-      default: false
-    },
-    submitted_to_review: {
-      type: Boolean,
-      default: false
-    },
-    url_instance_buffer: {
-      required: true,
-      type: String
-    },
-    working_file: {
-      required: true,
-      type: Object
-    },
-    userscript_select_disabled: {
-      default: null,
-      type: Number
-    },
-    instance_store: {
-      required:  true
-    },
-    task_image: {
-      type: HTMLImageElement,
-      default: null
-    },
-    task_instances: {
-      type: Object,
-      default: null
-    },
-    task_loading: {
-      type: Boolean,
-      default: null
-    },
-    label_schema:{
-      required: true
-    },
-    // TODO review this being a prop...
-    job_id: {
-      default: null,
-    },
-    job: {
-      default: null,
-    },
-    task: {
-      default: null,
-    },
+    project_string_id: {default: null, type: String},
+    has_pending_frames: {type: Boolean, default: false},
+    video_parent_file_instance_list: {type: Array, default: []},
+    create_instance_template_url: {type: String, required: true},
+    instance_buffer_metadata: {type: Object, default: {}},
+    go_to_keyframe_loading: {type: Boolean, default: false},
+    video_mode: {type: Boolean, default: false},
+    get_userscript: {type: Function, required: true},
+    save_loading_frames_list: {type: Array,default: []},
+    filtered_instance_type_list_function: {type: Function, default: () => []},
+    save_loading_image: {type: Boolean, default: false},
+    loading: {type: Boolean, default: false},
+    has_changed: {type: Boolean, default: false},
+    annotations_loading: { type: Boolean, default: false},
+    url_instance_buffer: {required: true, type: String},
+    working_file: {required: true, type: Object},
+    userscript_select_disabled: {default: null, type: Number},
+    instance_store: {required: true},
+    task_image: {type: HTMLImageElement, default: null},
+    task_instances: {type: Object, default: null},
+    task_loading: {type: Boolean, default: null},
+    label_schema: {required: true},
+    // TODO review job_id being a prop vs job...
+    job_id: {default: null},
+    job: {default: null},
+    task: {default: null},
     label_file_colour_map: {},
     label_list: {},
-    task_mode_prop: {
-      default: null,
-    },
+    task_mode_prop: {default: null},
     request_save: {},
     annotator_email: {},
-    model_run_id_list: {
-      default: null,
-    },
-    model_run_color_list: {
-      default: null,
-    },
-    current_version_prop: {},
-
-    view_only_mode: {
-      default: false,
-    },
+    model_run_id_list: {default: null},
+    model_run_color_list: {default: null},
+    view_only_mode: {default: false,},
     enabled_edit_schema: {},
-    finish_annotation_show: {
-      default: false,
-    },
-    global_attribute_groups_list: {
-      type: Array,
-      required: true
-    },
-    per_instance_attribute_groups_list: {
-      type: Array,
-      required: true
-    },
+    finish_annotation_show: {default: false},
+    global_attribute_groups_list: {type: Array, required: true},
+    per_instance_attribute_groups_list: {type: Array, required: true},
+    task_error: {type: Object, required: true},
   },
   watch: {
-    instance_list: function(newVal) {
+    event_create_instance: function(newVal){
+      this.$emit('event_create_instance', newVal)
+    },
+    selected_instance_for_history: function(newVal){
+      this.$emit('selected_instance_for_history', newVal)
+    },
+    request_change_current_instance: function (newVal) {
+      this.$emit('request_change_current_instance', newVal)
+    },
+    video_playing: function (newVal) {
+      this.$emit('change_video_playing', newVal)
+    },
+    refresh: function (newVal) {
+      this.$emit('refresh', this.refresh)
+    },
+    instance_list: function (newVal) {
       if (this.working_file.type === "image") {
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
@@ -1146,7 +851,7 @@ export default Vue.extend({
     },
     instance_buffer_dict: {
       deep: true,
-      handler: function(newVal) {
+      handler: function (newVal) {
         if (this.working_file.type === "video") {
           this.instance_store.set_instance_list(this.working_file.id, newVal)
           this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
@@ -1210,20 +915,16 @@ export default Vue.extend({
         this.clear_selected();
       }
     },
-    current_version_prop() {
-      this.current_version = this.current_version_prop;
-      this.get_media();
-    },
     request_save: function (bool) {
       if (bool == true) {
         this.$emit('save');
       }
     },
     $route: "page_refresh",
-    draw_mode: function () {
+    draw_mode: function (newVal) {
       this.polygon_point_hover_index = null;
-
       this.clear_selected();
+      this.$emit('draw_mode_change', newVal)
     },
     show_modify_an_issue: function () {
       if (this.show_modify_an_issue == true) {
@@ -1409,9 +1110,7 @@ export default Vue.extend({
       error: {},
       instance_buffer_error: {},
 
-      task_error: {
-        task_request: null,
-      },
+
 
       current_version: null,
 
@@ -1619,7 +1318,7 @@ export default Vue.extend({
     };
   },
   computed: {
-    filtered_instance_type_list: function() {
+    filtered_instance_type_list: function () {
       const filtered_instance_type_list = this.filtered_instance_type_list_function(this.instance_type_list)
       return filtered_instance_type_list
     },
@@ -2152,7 +1851,6 @@ export default Vue.extend({
 
           Using this as a workaround into shared computed property
         */
-
       if (this.current_label_file) {
         return this.current_label_file.id;
       } else {
@@ -2209,10 +1907,10 @@ export default Vue.extend({
   },
   // TODO 312 Methods!! refactor in multiple files and classes.
   methods: {
-    cancel_polygon_merge: function(){
+    cancel_polygon_merge: function () {
       this.polygon_merge_tool = null
     },
-    change_keyframe: function(keyframe){
+    change_keyframe: function (keyframe) {
       if (this.video_mode) {
         if (this.current_frame !== keyframe && this.$refs.video_controllers) {
           this.$refs.video_controllers.go_to_keyframe(keyframe);
@@ -2226,8 +1924,8 @@ export default Vue.extend({
       }
       return instance_type_mapper[this.instance_type]
     },
-    on_image_rotation: async function(rotation_degrees: number){
-      try{
+    on_image_rotation: async function (rotation_degrees: number) {
+      try {
         await this.detect_is_ok_to_save()
         this.loading = true
         const file = this.working_file
@@ -2247,11 +1945,11 @@ export default Vue.extend({
         })
         await this.image_update_core(file)
         this.loading = false
-      } catch (e){
+      } catch (e) {
         console.error(e)
       }
     },
-    on_change_label_schema: function(schema){
+    on_change_label_schema: function (schema) {
       this.$emit('change_label_schema', schema)
     },
     on_keypoints_mode_set: function (mode) {
@@ -2362,7 +2060,7 @@ export default Vue.extend({
       this.$store.commit("set_instance_select_for_merge", false);
       this.polygon_merge_tool = null
       let polygons = this.instance_list.filter(inst => inst.type === 'polygon')
-      for(let poly of polygons){
+      for (let poly of polygons) {
         this.deselect_instance(poly)
       }
     },
@@ -2392,14 +2090,14 @@ export default Vue.extend({
         parent_instance.points = new_points;
       }
     },
-    merge_polygons_v2: function(){
+    merge_polygons_v2: function () {
       let deleted_instance_indexes = this.polygon_merge_tool.merge_polygons(this.instance_list)
       this.$store.commit("set_instance_select_for_merge", false);
-      for (let index of deleted_instance_indexes){
+      for (let index of deleted_instance_indexes) {
         this.delete_single_instance(this.instance_list[index])
       }
       this.$store.commit("set_instance_select_for_merge", false);
-      for (let index of deleted_instance_indexes){
+      for (let index of deleted_instance_indexes) {
         this.delete_single_instance(this.instance_list[index])
       }
       this.polygon_merge_tool = null
@@ -2478,11 +2176,9 @@ export default Vue.extend({
       this.detect_is_ok_to_save();
     },
     show_instance_history_panel: function (instance_index) {
-      this.show_instance_history = true;
       this.selected_instance_for_history = this.instance_list[instance_index];
     },
     close_instance_history_panel: function (e) {
-      this.show_instance_history = false;
       this.selected_instance_for_history = undefined;
     },
     warn_user_unload: function (e) {
@@ -2733,6 +2429,7 @@ export default Vue.extend({
 
       const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
       this.command_manager.executeCommand(command);
+      this.event_create_instance = new_instance;
       return new_instance;
     },
 
@@ -2824,7 +2521,7 @@ export default Vue.extend({
       // For now we only have Kepoints instance using this.
       this.$emit('set_has_changed', true);
     },
-    deselect_instance: function(instance){
+    deselect_instance: function (instance) {
 
       if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance.type)) {
         let coord_router: ImageAnnotationCoordinatorRouter = this.create_coordinator_router()
@@ -2841,18 +2538,17 @@ export default Vue.extend({
       // This is a WIP that will be used for all the class Instance Types
       // For now we only have Kepoints instance using this.
       let instances_to_merge_creation_refs = []
-      if(this.polygon_merge_tool){
+      if (this.polygon_merge_tool) {
         instances_to_merge_creation_refs = this.polygon_merge_tool.instances_to_merge.map(inst => inst.creation_ref_id)
       }
-
 
 
       for (let elm of this.instance_list) {
         if (elm.creation_ref_id != instance.creation_ref_id) {
           // Case when polygon merge tool is active.
-          if(this.polygon_merge_tool && this.polygon_merge_tool.parent_merge_instance
-            && elm.creation_ref_id != this.polygon_merge_tool.parent_merge_instance.creation_ref_id){
-            if(instances_to_merge_creation_refs.includes(elm.creation_ref_id)){
+          if (this.polygon_merge_tool && this.polygon_merge_tool.parent_merge_instance
+            && elm.creation_ref_id != this.polygon_merge_tool.parent_merge_instance.creation_ref_id) {
+            if (instances_to_merge_creation_refs.includes(elm.creation_ref_id)) {
               continue
             }
             if (this.polygon_merge_tool && this.polygon_merge_tool.is_allowed_instance_to_merge(elm)) {
@@ -2861,7 +2557,7 @@ export default Vue.extend({
             this.deselect_instance(elm)
           } else if (!this.polygon_merge_tool ||
             !this.polygon_merge_tool.parent_merge_instance ||
-            this.polygon_merge_tool.parent_merge_instance.length === 0){
+            this.polygon_merge_tool.parent_merge_instance.length === 0) {
             this.deselect_instance(elm)
           }
 
@@ -2869,12 +2565,11 @@ export default Vue.extend({
       }
 
       let index = this.instance_list.indexOf(instance)
-      if(index === this.instance_hover_index || this.instance_hover_index == undefined){
+      if (index === this.instance_hover_index || this.instance_hover_index == undefined) {
 
         this.refresh_instance_list_sidebar(index)
         this.trigger_refresh_current_instance = Date.now(); // decouple, for case of file changing but instance list being the same index
       }
-
 
 
     },
@@ -3181,7 +2876,7 @@ export default Vue.extend({
 
       for (let i in this.instance_list) {
         let elm = this.instance_list[i]
-        if(i == this.parent_merge_instance_index){
+        if (i == this.parent_merge_instance_index) {
           continue
         }
         if (except_instance && (elm.creation_ref_id === except_instance.creation_ref_id)) {
@@ -3695,8 +3390,9 @@ export default Vue.extend({
           this.model_run_list[i].color = this.model_run_color_list[i];
         }
       }
-      
+
       this.loading = false;
+      this.$emit('model_run_list_loaded', this.model_run_list)
     },
     task_mode_mounted: function () {
       // Default because can be timing issues with how it loads new value
@@ -3763,6 +3459,7 @@ export default Vue.extend({
       this.cuboid_face_hover = undefined;
       this.$store.commit("finish_draw");
       this.$store.commit("set_last_selected_tool", this.instance_type);
+      this.$emit('change_instance_type', this.instance_type)
       this.set_keypoints_instance_draw_mode();
     },
 
@@ -4193,6 +3890,7 @@ export default Vue.extend({
       if (this.instance_type == "tag") {
         this.insert_tag_type();
       }
+      this.$emit('change_current_label_file', this.current_label_file)
     },
 
     insert_tag_type: function () {
@@ -4757,7 +4455,7 @@ export default Vue.extend({
 
       if (this.label_settings.allow_multiple_instance_select == false) {
         this.clear_selected(this.instance_list[this.instance_hover_index]);
-        if( this.instance_hover_index == null){
+        if (this.instance_hover_index == null) {
           this.refresh_instance_list_sidebar(null)
         }
       }
@@ -5571,15 +5269,14 @@ export default Vue.extend({
         if (degrees === 90 || degrees === 270) { // values for width and height are swapped for these rotation positions
           w = height
           h = width
-        }
-        else {
+        } else {
           w = width
           h = height
         }
-        return { width: w, height: h }
+        return {width: w, height: h}
       }
       this.degrees = file.image.rotation_degrees
-      if(this.degrees == undefined){
+      if (this.degrees == undefined) {
         this.degrees = 0
       }
       let newSize = determineSize(file.image.width, file.image.height, this.degrees)
@@ -5605,7 +5302,8 @@ export default Vue.extend({
     toInt: function (n) {
       return Math.round(Number(n));
     },
-    onRendered: function (ctx) {},
+    onRendered: function (ctx) {
+    },
     test: function () {
       console.debug(Date.now());
     },
@@ -5654,7 +5352,6 @@ export default Vue.extend({
       );
 
       // Test if proposed position will break world mapped bounds
-      let current_trans_x = transform.e;
       if (x_min_proposed > min_point.x && x_max_proposed < max_point.x) {
         let new_bounds =
           this.canvas_mouse_tools.get_new_bounds_from_translate_x(
@@ -5752,7 +5449,7 @@ export default Vue.extend({
       }
       return current_point;
     },
-    perform_auto_bordering_v2: function(path_type: string){
+    perform_auto_bordering_v2: function (path_type: string) {
       const auto_border_tool = new PolygonAutoBorderTool(this.auto_border_context)
       auto_border_tool.perform_auto_bordering(path_type, this.instance_list, this.current_drawing_polygon_instance)
     },
@@ -6065,7 +5762,7 @@ export default Vue.extend({
       this.original_edit_instance_index = undefined;
     },
     polygon_delete_point_click_callback: function (polygon_point_index) {
-      if(!this.selected_instance){
+      if (!this.selected_instance) {
         return
       }
       if (!this.selected_instance) {
@@ -6587,7 +6284,7 @@ export default Vue.extend({
         return;
       }
       let found_point = false;
-      for (let instance_index = 0;instance_index < this.instance_list.length;instance_index++) {
+      for (let instance_index = 0; instance_index < this.instance_list.length; instance_index++) {
         const polygon = this.instance_list[instance_index];
         if (polygon.type !== "polygon" || polygon.soft_delete) {
           continue;
@@ -6857,7 +6554,7 @@ export default Vue.extend({
           this.$emit('set_has_changed', true);
         }
         this.polygon_point_hover_index = result.polygon_point_hover_index
-        if(result.auto_border_context){
+        if (result.auto_border_context) {
           this.auto_border_context = result.auto_border_context
         }
 
@@ -6865,7 +6562,7 @@ export default Vue.extend({
         this.locked_editing_instance = result.locked_editing_instance
       }
     },
-    new_instance_refresh: function(new_instance_index: number){
+    new_instance_refresh: function (new_instance_index: number) {
       this.refresh_instance_list_sidebar()
       this.reset_current_instances()
       let instance = this.instance_list[new_instance_index]
@@ -6901,7 +6598,7 @@ export default Vue.extend({
           this.new_instance_refresh(result.new_instance_index)
         }
         this.original_edit_instance = result.original_edit_instance
-        if(result.auto_border_context){
+        if (result.auto_border_context) {
           this.auto_border_context = result.auto_border_context
         }
 
@@ -7042,7 +6739,7 @@ export default Vue.extend({
       let file = this.working_file;
 
       if (this.task_instances) {
-        this.get_instances_core({ data: this.task_instances })
+        this.get_instances_core({data: this.task_instances})
         return
       }
 
@@ -7319,24 +7016,24 @@ export default Vue.extend({
         this.loading = false;
       }
     },
-    reset_for_file_change_context: function (){
-        this.current_sequence_annotation_core_prop = {
-          id: null,
-          number: null
-        }
-        this.video_mode = false   // if we don't have this can be issues switching to say an image
-        this.degrees = 0
-        this.instance_buffer_dict = {}
-        this.instance_buffer_metadata = {}
-        this.instance_list = []
-        if(this.video_mode){
-          this.$refs.video_controllers.reset_cache();
-        }
-        if(this.$refs.qa_carrousel){
-          this.$refs.qa_carrousel.annotation_show_previous_instance = 0
-          this.$refs.qa_carrousel.annotation_show_progress = 0
-          this.annotation_show_current_instance = 0
-        }
+    reset_for_file_change_context: function () {
+      this.current_sequence_annotation_core_prop = {
+        id: null,
+        number: null
+      }
+      this.video_mode = false   // if we don't have this can be issues switching to say an image
+      this.degrees = 0
+      this.instance_buffer_dict = {}
+      this.instance_buffer_metadata = {}
+      this.instance_list = []
+      if (this.video_mode) {
+        this.$refs.video_controllers.reset_cache();
+      }
+      if (this.$refs.qa_carrousel) {
+        this.$refs.qa_carrousel.annotation_show_previous_instance = 0
+        this.$refs.qa_carrousel.annotation_show_progress = 0
+        this.annotation_show_current_instance = 0
+      }
 
     },
     annotation_show_activate(show_type) {
@@ -7621,7 +7318,9 @@ export default Vue.extend({
         const file = this.working_file
         let current_rotation_degrees = file.image.rotation_degrees
         current_rotation_degrees += 90
-        if (current_rotation_degrees == 360) { current_rotation_degrees = 0}
+        if (current_rotation_degrees == 360) {
+          current_rotation_degrees = 0
+        }
         this.on_image_rotation(current_rotation_degrees);
       }
 
@@ -7664,9 +7363,9 @@ export default Vue.extend({
       if (event.keyCode === 37 || event.key === "a") {
         // left arrow or A
         if (this.shift_key) {
-          if(!this.task){
+          if (!this.task) {
             this.change_file("previous");
-          } else{
+          } else {
             this.trigger_task_change("previous", this.task, false)
           }
         } else {
@@ -7694,9 +7393,9 @@ export default Vue.extend({
       if (event.keyCode === 39 || event.key === "d") {
         // right arrow
         if (this.shift_key) {
-          if(!this.task){
+          if (!this.task) {
             this.change_file("next");
-          } else{
+          } else {
             this.trigger_task_change("next", this.task, false)
           }
 

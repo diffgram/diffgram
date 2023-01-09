@@ -5,8 +5,8 @@
             :show_default_navigation="!task"
         >
             <template slot="second_row">
-                <geo_toolbar 
-                    :instance_type_list="instance_type_list" 
+                <geo_toolbar
+                    :instance_type_list="instance_type_list"
                     :draw_mode="draw_mode"
                     :undo_disabled="undo_disabled"
                     :redo_disabled="redo_disabled"
@@ -24,7 +24,7 @@
                     :interpolate="interpolate"
                     @on_geotiff_rendere_change="on_geotiff_rendere_change"
                     @change_label_schema="on_change_label_schema"
-                    @edit_mode_toggle="change_mode" 
+                    @edit_mode_toggle="change_mode"
                     @change_instance_type="change_instance_type"
                     @change_label_file="change_label_file"
                     @change_label_visibility="change_label_visibility"
@@ -54,7 +54,7 @@
                 :schema_id="label_schema.id"
                 :global_attribute_groups_list="global_attribute_groups_list"
                 :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-                :current_global_instance="instance_list && instance_list.get_global_instance() && instance_list.get_global_instance().get_instance_data()"
+                :current_global_instance="current_global_instance"
                 @on_update_attribute="on_update_attribute"
                 @delete_instance="delete_instance"
                 @on_select_instance="on_select_instance"
@@ -62,24 +62,24 @@
             />
             <v-progress-linear
                 v-if="rendering"
-                indeterminate 
+                indeterminate
             />
             <div
                 :style="`display:flex; flex-direction: column; height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%;`"
             >
                 <v-progress-linear
                     v-if="rendering"
-                    indeterminate 
+                    indeterminate
                 />
-                <v_error_multiple 
-                    v-if="tiff_source && tiff_source.error_ && !rendering" 
-                    :error="['Error ocurred while rendering geotiff']" 
+                <v_error_multiple
+                    v-if="tiff_source && tiff_source.error_ && !rendering"
+                    :error="['Error ocurred while rendering geotiff']"
                 />
-                <div 
-                    id="map" 
-                    ref="map" 
+                <div
+                    id="map"
+                    ref="map"
                     v-if="!rendering"
-                    @click="draw_instance" 
+                    @click="draw_instance"
                     :style="`height: calc(100vh - ${!task ? '100px' : '50px'}); z-index: 0; width: 100%;`"
                 />
             </div>
@@ -96,8 +96,8 @@ import InstanceList from "../../helpers/instance_list"
 import { Instance } from "../vue_canvas/instances/Instance"
 import { GlobalAnnotationInstance } from "../../components/vue_canvas/instances/GlobalInstance";
 import History from "../../helpers/history"
-import { 
-    CreateInstanceCommand, 
+import {
+    CreateInstanceCommand,
     DeleteInstanceCommand,
     UpdateInstanceLabelCommand,
     UpdateInstanceAttributeCommand,
@@ -227,6 +227,9 @@ export default Vue.extend({
         geo_sidebar
     },
     computed: {
+        current_global_instance: function(){
+          return instance_list && instance_list.get_global_instance() && instance_list.get_global_instance().get_instance_data()
+        },
         current_style: function() {
             return this.create_style(this.current_label)
         },
@@ -275,7 +278,7 @@ export default Vue.extend({
 
                 let feature;
                 let style = this.create_style(instance.label_file)
- 
+
                 if (this.current_instance && this.current_instance.id === instance.id) {
                     style = this.activate_instance()
                 }
@@ -353,7 +356,7 @@ export default Vue.extend({
             if (this.current_instance_type === 'geo_circle') {
                 this.annotation_source.removeFeature(this.drawing_feature)
                 const line = new LineString([this.draw_init, this.mouse_coords]);
-                const radius = getLength(line); 
+                const radius = getLength(line);
                 const circleFeature = new Feature(new Circle(this.draw_init, radius));
                 circleFeature.setStyle(this.current_style)
                 this.annotation_source.addFeature(circleFeature)
@@ -463,9 +466,9 @@ export default Vue.extend({
                 this.trigger_task_change("next", this.$props.task, true);
             }
         },
-        get_and_set_global_instance: function (instance_list) {            
+        get_and_set_global_instance: function (instance_list) {
             let existing_global_instance = instance_list.find(inst => inst && inst.type === 'global');
-            
+
             if(!existing_global_instance) {
                 existing_global_instance = this.new_global_instance();
             }
@@ -505,7 +508,7 @@ export default Vue.extend({
                 if (type === 'geo_circle') {
                     instance = new GeoCircle();
                     instance.create_instance(id, creation_ref_id, lonlat, coords, radius, label_file, attribute_groups)
-                } 
+                }
 
                 if (type === 'geo_point') {
                     instance = new GeoPoint();
@@ -544,7 +547,7 @@ export default Vue.extend({
                 source: new OSM(),
                 zIndex: 0
             })
-            
+
             const geotiff_layer = new TileLayer({
                 source,
                 opacity: 0.5,
@@ -573,8 +576,8 @@ export default Vue.extend({
                 controls: defaultControls().extend([mousePositionControl]),
                 target: 'map',
                 layers: [
-                    this.map_layers['base_layer'].layer, 
-                    this.map_layers['file_layer'].layer, 
+                    this.map_layers['base_layer'].layer,
+                    this.map_layers['file_layer'].layer,
                     this.map_layers['annotation_layer'].layer
                 ]
             });
@@ -604,7 +607,7 @@ export default Vue.extend({
         },
         reset_default_view: async function() {
             const sourceView = await this.tiff_source.getView()
-            
+
             let view = new View({
                 center: sourceView.center,
                 resolutions: sourceView.resolutions,
@@ -630,7 +633,7 @@ export default Vue.extend({
             const layer_to_remove = this.map_layers[e]
             if (layer_to_remove) {
                 this.map_instance.removeLayer(layer_to_remove.layer)
-    
+
                 this.map_layers[e] = null
             }
         },
@@ -697,7 +700,7 @@ export default Vue.extend({
             if (this.moving) return
             this.current_instance = null
             this.draw_instances
-            
+
             if (this.current_instance_type === 'geo_point') {
                 const lonlat = transform(this.mouse_coords, 'EPSG:3857', 'EPSG:4326');
                 const pointFeature = new Feature(new Point(this.mouse_coords));
@@ -705,11 +708,11 @@ export default Vue.extend({
 
                 this.annotation_source.addFeature(pointFeature)
                 this.feature_list.push(pointFeature)
-                
+
                 const newPoint = new GeoPoint()
                 newPoint.create_frontend_instance(
                     lonlat,
-                    this.mouse_coords, 
+                    this.mouse_coords,
                     { ...this.current_label },
                     pointFeature.ol_uid
                 )
@@ -727,7 +730,7 @@ export default Vue.extend({
 
                 this.annotation_source.addFeature(pointFeature)
                 this.drawing_feature = pointFeature
-                
+
                 this.drawing_instance = true
                 this.draw_init = this.mouse_coords
                 this.drawing_coords = this.mouse_coords
@@ -737,7 +740,7 @@ export default Vue.extend({
             if (this.current_instance_type === 'geo_circle') {
                 const lonlat = transform(this.draw_init, 'EPSG:3857', 'EPSG:4326');
                 const line = new LineString([this.draw_init, this.mouse_coords]);
-                const radius = getLength(line); 
+                const radius = getLength(line);
 
                 const newCircle = new GeoCircle()
                 newCircle.create_frontend_instance(
@@ -846,7 +849,7 @@ export default Vue.extend({
         redo: function () {
             if (!this.history.redo_posible) return;
             let redone = this.command_manager.redo();
-            
+
             if (redone) this.has_changed = true;
             this.draw_instances
         },
@@ -934,7 +937,7 @@ export default Vue.extend({
                     ...styleSet
                 })
             })
-            
+
             return style
         },
         trigger_task_change: async function (direction, assign_to_user = false) {
@@ -944,7 +947,7 @@ export default Vue.extend({
         create_poly_instance: function() {
             this.annotation_source.removeFeature(this.drawing_feature)
             let polyFeature;
-            
+
             if (this.current_instance_type === 'geo_polyline') {
                 polyFeature = new Feature(new LineString([this.draw_init, ...this.drawing_poly]))
             } else if (this.current_instance_type === 'geo_polygon') {
