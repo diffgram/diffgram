@@ -1030,16 +1030,16 @@
 
 <script lang="ts">
 import Vue from "vue";
-import label_select_annotation from "../label/label_select_annotation.vue";
-import label_schema_selector from "../label/label_schema_selector.vue";
+import label_select_annotation from "../../label/label_select_annotation.vue";
+import label_schema_selector from "../../label/label_schema_selector.vue";
 import file_meta_data_card from "./file_meta_data_card.vue";
-import time_tracker from "../task/time_track/time_tracker";
+import time_tracker from "../../task/time_track/time_tracker.vue";
 import task_relations_card from "./task_relations_card.vue";
 import file_relations_card from "./file_relations_card.vue";
 import task_meta_data_card from "./task_meta_data_card.vue";
 import hotkeys from "./hotkeys.vue";
 import task_status from "./task_status.vue"
-import Guided_1_click_mode_selector from "../instance_templates/guided_1_click_mode_selector.vue";
+import Guided_1_click_mode_selector from "../../instance_templates/guided_1_click_mode_selector.vue";
 
 export default Vue.extend({
   name: "toolbar",

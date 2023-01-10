@@ -91,10 +91,10 @@
 </template>
 
 <script lang="ts">
-import axios from "../../../services/customInstance";
-import store from "../../../store";
-import review_dialog from "../../dialogs/review_dialog.vue";
-import { submitTaskReview } from "../../../services/tasksServices";
+import axios from "../../../../services/customInstance";
+import store from "../../../../store";
+import review_dialog from "../../../dialogs/review_dialog.vue";
+import { submitTaskReview } from "../../../../services/tasksServices";
 
 import Vue from "vue";
 

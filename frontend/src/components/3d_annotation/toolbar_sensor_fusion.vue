@@ -574,13 +574,13 @@
   import Vue from "vue";
   import label_select_annotation from '../label/label_select_annotation.vue';
   import label_schema_selector from '../label/label_schema_selector.vue';
-  import file_meta_data_card from '../image_annotation/file_meta_data_card'
-  import task_status from '../image_annotation/task_status'
-  import time_tracker from '../task/time_track/time_tracker'
-  import task_relations_card from '../image_annotation/task_relations_card'
-  import file_relations_card from '../image_annotation/file_relations_card'
-  import task_meta_data_card from '../image_annotation/task_meta_data_card'
-  import hotkeys_sensor_fusion from './hotkeys_sensor_fusion'
+  import file_meta_data_card from '../annotation/image_annotation/file_meta_data_card.vue'
+  import task_status from '../annotation/image_annotation/task_status.vue'
+  import time_tracker from '../task/time_track/time_tracker.vue'
+  import task_relations_card from '../annotation/image_annotation/task_relations_card.vue'
+  import file_relations_card from '../annotation/image_annotation/file_relations_card.vue'
+  import task_meta_data_card from '../annotation/image_annotation/task_meta_data_card.vue'
+  import hotkeys_sensor_fusion from './hotkeys_sensor_fusion.vue'
 
   export default Vue.extend({
       name: 'toolbar_3d',

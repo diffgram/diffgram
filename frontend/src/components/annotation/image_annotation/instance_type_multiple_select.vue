@@ -73,7 +73,7 @@
 
 <script lang="ts">
   import Vue from "vue";
-  import {getInstanceTemplatesFromProject}  from '../../services/instanceTemplateService'
+  import {getInstanceTemplatesFromProject}  from '../../../services/instanceTemplateService'
   export default Vue.extend({
 
       name: 'instance_type_multiple_select',

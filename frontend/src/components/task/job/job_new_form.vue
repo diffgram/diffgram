@@ -316,7 +316,7 @@
   import label_select_only from '../../label/label_select_only.vue'
   import label_manager_dialog from '../../label/label_manager_dialog.vue'
   import {route_errors} from '../../regular/regular_error_handling'
-  import userscript_select from '../../image_annotation/userscript/userscript_select.vue'
+  import userscript_select from '../../annotation/image_annotation/userscript/userscript_select.vue'
   import Vue from "vue";
 
 

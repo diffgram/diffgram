@@ -13,7 +13,7 @@
 
   import user_icon from '../user/user_icon.vue';
   import share_instance_dialog from '../share/share_instance_dialog.vue';
-  import node_name_editor_keypoint_instance from '../image_annotation/node_name_editor_keypoint_instance';
+  import node_name_editor_keypoint_instance from '../annotation/image_annotation/node_name_editor_keypoint_instance.vue';
   import sequence_select from '../video/sequence_select.vue'
 
   export default Vue.extend({

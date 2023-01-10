@@ -344,12 +344,11 @@
 
 <script lang="ts">
 
-  import axios from '../../services/customInstance';
-  import attribute_home from '../attribute/attribute_home'
-  import schema_card_selector from './schema_card_selector'
-  import {get_labels} from '../../services/labelServices';
-
   import Vue from "vue";
+  import axios from '../../../services/customInstance';
+  import attribute_home from '../../attribute/attribute_home.vue'
+  import schema_card_selector from './schema_card_selector.vue'
+  import {get_labels} from '../../../services/labelServices';
 
   export default Vue.extend({
       name: 'labels_view',

@@ -48,9 +48,8 @@
 
 <script lang="ts">
 
-  import guide_selector from '../../guide/guide_selector'
-  import userscript_select from '../../../image_annotation/userscript/userscript_select'
-
+  import guide_selector from '../../guide/guide_selector.vue'
+  import userscript_select from '../../../annotation/image_annotation/userscript/userscript_select.vue'
   import Vue from "vue";
 
   export default Vue.extend({

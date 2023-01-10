@@ -66,7 +66,7 @@
 </template>
 
 <script>
-import {create_schema} from '../../services/labelServices'
+import {create_schema} from '../../../services/labelServices'
 import sillyname from 'sillyname';
 
 export default {

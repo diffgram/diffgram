@@ -88,8 +88,8 @@
 
 <script>
   import Vue from 'vue';
-  import axios from '../../services/customInstance';
-  import instance_diff_dialog from '../image_annotation/instance_diff_dialog'
+  import axios from '../../../services/customInstance';
+  import instance_diff_dialog from './instance_diff_dialog'
 
   export default Vue.extend({
     name: "instance_history_sidepanel",

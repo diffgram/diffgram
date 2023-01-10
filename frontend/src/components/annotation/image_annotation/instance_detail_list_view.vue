@@ -527,12 +527,12 @@
 
 <script lang="ts">
 
-import rating_review from './rating_review'
-import attribute_group_list from '../attribute/attribute_group_list.vue';
-import label_select_only from '../label/label_select_only.vue'
-import global_attributes_list from '../attribute/global_attributes_list'
-import attribute_preview from "../base/attribute_preview.vue"
 import Vue from "vue";
+import rating_review from './rating_review.vue'
+import attribute_group_list from '../../attribute/attribute_group_list.vue';
+import label_select_only from '../../label/label_select_only.vue'
+import global_attributes_list from '../../attribute/global_attributes_list.vue'
+import attribute_preview from "../../base/attribute_preview.vue"
 
 export default Vue.extend({
     name: 'instance_detail_list',

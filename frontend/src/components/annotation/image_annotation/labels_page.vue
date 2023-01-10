@@ -108,11 +108,11 @@
 
 import Vue from "vue";
 
-import {create_event} from "../event/create_event";
-import schema_card_selector from './schema_card_selector'
+import {create_event} from "../../event/create_event";
+import schema_card_selector from './schema_card_selector.vue'
 
-import {get_schemas, update_schema} from '../../services/labelServices'
-import Labels_manager_tabs from "../label/labels_manager_tabs.vue";
+import {get_schemas, update_schema} from '../../../services/labelServices'
+import Labels_manager_tabs from "../../label/labels_manager_tabs.vue";
 
 export default Vue.extend({
   name: 'labels_page',

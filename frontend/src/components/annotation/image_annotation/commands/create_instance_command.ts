@@ -1,6 +1,6 @@
-import {TextAnnotationInstance, TextRelationInstance} from "../../vue_canvas/instances/TextInstance";
-import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../../vue_canvas/instances/Instance";
-import {initialize_instance_object, post_init_instance} from "../../../utils/instance_utils";
+import {TextAnnotationInstance, TextRelationInstance} from "../../../vue_canvas/instances/TextInstance";
+import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../../../vue_canvas/instances/Instance";
+import {initialize_instance_object, post_init_instance} from "../../../../utils/instance_utils";
 
 export class CreateInstanceCommand {
   ann_core_ctx: any

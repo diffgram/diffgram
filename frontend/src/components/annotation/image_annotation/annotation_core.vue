@@ -881,78 +881,78 @@
 
 <script lang="ts">
 // @ts-nocheck
-import axios from "../../services/customInstance/index.js";
+import axios from "../../../services/customInstance/index.js";
 import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view";
-import * as SequenceUpdateHelpers from '../image_annotation/utils/SequenceUpdateHelpers'
+import * as SequenceUpdateHelpers from './utils/SequenceUpdateHelpers'
 import autoborder_avaiable_alert from "./autoborder_avaiable_alert";
 import ghost_canvas_available_alert from "./ghost_canvas_available_alert";
-import canvas_current_instance from "../vue_canvas/current_instance";
-import canvas_instance_list from "../vue_canvas/instance_list";
-import ghost_instance_list_canvas from "../vue_canvas/ghost_instance_list";
-import instance_history_sidepanel from "../image_annotation/instance_history_sidepanel";
-import v_bg from "../vue_canvas/v_bg";
-import v_text from "../vue_canvas/v_text";
-import target_reticle from "../vue_canvas/target_reticle";
-import task_status_icons from "../regular_concrete/task_status_icons";
-import context_menu from "../context_menu/context_menu.vue";
-import polygon_borders_context_menu from "../context_menu/polygon_borders_context_menu.vue";
-import ui_schema_context_menu from "../ui_schema/ui_schema_context_menu.vue";
-import issues_sidepanel from "../discussions/issues_sidepanel.vue";
-import current_instance_template from "../vue_canvas/current_instance_template.vue";
-import instance_template_creation_dialog from "../instance_templates/instance_template_creation_dialog";
-import create_issue_panel from "../discussions/create_issue_panel.vue";
-import view_edit_issue_panel from "../discussions/view_edit_issue_panel.vue";
-import {getContrastColor} from '../../utils/colorUtils.js'
-import {ellipse} from "../vue_canvas/ellipse.js";
+import canvas_current_instance from "../../vue_canvas/current_instance";
+import canvas_instance_list from "../../vue_canvas/instance_list";
+import ghost_instance_list_canvas from "../../vue_canvas/ghost_instance_list";
+import instance_history_sidepanel from "../../annotation/image_annotation/instance_history_sidepanel";
+import v_bg from "../../vue_canvas/v_bg";
+import v_text from "../../vue_canvas/v_text";
+import target_reticle from "../../vue_canvas/target_reticle";
+import task_status_icons from "../../regular_concrete/task_status_icons";
+import context_menu from "../../context_menu/context_menu.vue";
+import polygon_borders_context_menu from "../../context_menu/polygon_borders_context_menu.vue";
+import ui_schema_context_menu from "../../ui_schema/ui_schema_context_menu.vue";
+import issues_sidepanel from "../../discussions/issues_sidepanel.vue";
+import current_instance_template from "../../vue_canvas/current_instance_template.vue";
+import instance_template_creation_dialog from "../../instance_templates/instance_template_creation_dialog";
+import create_issue_panel from "../../discussions/create_issue_panel.vue";
+import view_edit_issue_panel from "../../discussions/view_edit_issue_panel.vue";
+import {getContrastColor} from '../../../utils/colorUtils.js'
+import {ellipse} from "../../vue_canvas/ellipse.js";
 import {CommandManagerAnnotationCore} from "./annotation_core_command_manager.js";
 import {CreateInstanceCommand} from "./commands/create_instance_command";
 import {UpdateInstanceCommand} from "./commands/update_instance_command.ts";
 import {
   ImageAnnotationCoordinatorRouter,
-} from "../vue_canvas/coordinators/ImageAnnotationCoordinatorRouter";
-import {ImageAnnotationCoordinator} from "../vue_canvas/coordinators/coordinator_types/ImageAnnotationCoordinator";
-import {polygon} from "../vue_canvas/polygon.js";
+} from "../../vue_canvas/coordinators/ImageAnnotationCoordinatorRouter";
+import {ImageAnnotationCoordinator} from "../../vue_canvas/coordinators/coordinator_types/ImageAnnotationCoordinator";
+import {polygon} from "../../vue_canvas/polygon.js";
 import {v4 as uuidv4} from "uuid";
 import {cloneDeep} from "lodash";
-import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../vue_canvas/instances/Instance";
+import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../../vue_canvas/instances/Instance";
 import userscript from "./userscript/userscript.vue";
 import toolbar from "./toolbar.vue";
 import _ from "lodash";
-import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
-import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
+import {InstanceContext} from "../../vue_canvas/instances/InstanceContext";
+import {CanvasMouseTools} from "../../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
-import {getInstanceTemplatesFromProject} from "../../services/instanceTemplateService";
-import {File} from "../../types/files";
-import { update_file_metadata } from "../../services/fileServices";
-import { getInstanceTemplatesFromProject } from "../../services/instanceTemplateService";
-import { File } from "../../types/files";
+import {getInstanceTemplatesFromProject} from "../../../services/instanceTemplateService";
+import {File} from "../../../types/files";
+import { update_file_metadata } from "../../../services/fileServices";
+import { getInstanceTemplatesFromProject } from "../../../services/instanceTemplateService";
+import { File } from "../../../types/files";
 import task_status from "./task_status.vue"
-import v_sequence_list from "../video/sequence_list"
+import v_sequence_list from "../../video/sequence_list"
 import {
   initialize_instance_object,
   duplicate_instance,
   duplicate_instance_template, post_init_instance
-} from '../../utils/instance_utils.ts';
+} from '../../../utils/instance_utils.ts';
 import {
   InteractionEvent,
   genImageAnnotationEvent,
   ImageAnnotationEventCtx, ImageInteractionEvent
-} from "../../types/InteractionEvent";
+} from "../../../types/InteractionEvent";
 import { CoordinatorProcessResult } from "../vue_canvas/coordinators/Coordinator";
-import {Interaction} from "../../types/Interaction";
-import {BoxInstance} from "../vue_canvas/instances/BoxInstance";
-import {LabelColourMap} from "../../types/label_colour_map";
-import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
-import {ImageCanvasTransform} from "../../types/CanvasTransform";
-import {LabelFile} from "../../types/label";
-import { regenerate_cache } from "../../services/fileServices"
-import { get_model_run_list } from "../../services/modelServices"
-import {PolygonInstance} from "../vue_canvas/instances/PolygonInstance";
-import {PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBorderTool";
-import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
-import {PolygonMergeTool} from "../vue_canvas/advanced_tools/PolygonMergeTool";
+import {Interaction} from "../../../types/Interaction";
+import {BoxInstance} from "../../vue_canvas/instances/BoxInstance";
+import {LabelColourMap} from "../../../types/label_colour_map";
+import {CanvasMouseCtx, MousePosition} from "../../../types/mouse_position";
+import {ImageCanvasTransform} from "../../../types/CanvasTransform";
+import {LabelFile} from "../../../types/label";
+import { regenerate_cache } from "../../../services/fileServices"
+import { get_model_run_list } from "../../../services/modelServices"
+import {PolygonInstance} from "../../vue_canvas/instances/PolygonInstance";
+import {PolygonAutoBorderTool} from "../../vue_canvas/advanced_tools/PolygonAutoBorderTool";
+import {PolygonInstanceCoordinator} from "../../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
+import {PolygonMergeTool} from "../../vue_canvas/advanced_tools/PolygonMergeTool";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();

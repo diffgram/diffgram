@@ -264,8 +264,8 @@ import text_selection_svg from "./render_elements/selection.vue"
 import text_fast_label from "./render_elements/fast_label_menu.vue"
 import text_context_menu from "./render_elements/text_context_menu.vue"
 import relation_in_progress from "./render_elements/relation_in_progress.vue"
-import {CommandManagerAnnotationCore} from "../image_annotation/annotation_core_command_manager"
-import {CreateInstanceCommand as CreateInstanceCommandLegacy} from "../image_annotation/commands/create_instance_command.ts";
+import {CommandManagerAnnotationCore} from "../annotation/image_annotation/annotation_core_command_manager"
+import {CreateInstanceCommand as CreateInstanceCommandLegacy} from "../annotation/image_annotation/commands/create_instance_command.ts";
 import {TextAnnotationInstance, TextRelationInstance} from "../vue_canvas/instances/TextInstance"
 import {postInstanceList, getInstanceList} from "../../services/instanceList"
 import getTextService from "../../services/getTextService"

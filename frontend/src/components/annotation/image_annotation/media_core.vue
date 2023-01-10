@@ -882,17 +882,15 @@
 <script lang="ts">
 // @ts-nocheck
 
-import axios from '../../services/customInstance';
-import v_file_transfer from '../source_control/file_transfer'
-import directory_icon_selector from '../source_control/directory_icon_selector'
-import compound_file_preview from '../source_control/compound_file_preview'
-import {get_file_list, get_file_signed_url} from '../../services/fileServices.ts'
-import dir_attach from '../task/file/dir_attach'
-import global_dataset_selector from "../attached/global_dataset_selector.vue"
-import pLimit from "p-limit";
-
 import Vue from "vue";
-import Compound_file_preview from "../source_control/compound_file_preview.vue";
+import axios from '../../../services/customInstance';
+import v_file_transfer from '../../source_control/file_transfer'
+import directory_icon_selector from '../../source_control/directory_icon_selector'
+import compound_file_preview from '../../source_control/compound_file_preview'
+import {get_file_list, get_file_signed_url} from '../../../services/fileServices.ts'
+import dir_attach from '../../task/file/dir_attach'
+import global_dataset_selector from "../../attached/global_dataset_selector.vue"
+import Compound_file_preview from "../../source_control/compound_file_preview.vue";
 
 export default Vue.extend({
     name: 'media_core',

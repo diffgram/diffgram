@@ -19,12 +19,11 @@
 </template>
 
 <script lang="ts">
-import labels_view from '../../components/image_annotation/labels_view'
 import Vue from "vue";
+import labels_view from '../../components/annotation/image_annotation/labels_view.vue'
 import Labels_manager_tabs from "./labels_manager_tabs.vue";
 
 export default Vue.extend({
-
     name: 'label_manager_dialog',
     components: {
       Labels_manager_tabs,
