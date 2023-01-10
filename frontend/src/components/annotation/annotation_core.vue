@@ -391,7 +391,7 @@
                 :auto_border_polygon_p1="auto_border_context.auto_border_polygon_p1"
                 :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"
                 :issues_list="issues_list"
-                :current_frame="current_frame"
+                :current_frame="annotation_ui_context.image_annotation_ctx.current_frame"
                 :label_settings="label_settings"
                 :current_instance="current_instance"
                 :is_actively_drawing="is_actively_drawing"
@@ -428,7 +428,7 @@
                 :instance_list="ghost_instance_list"
                 :vertex_size="label_settings.vertex_size"
                 :video_mode="video_mode"
-                :current_frame="current_frame"
+                :current_frame="annotation_ui_context.image_annotation_ctx.current_frame"
                 :label_settings="label_settings"
                 :is_actively_drawing="is_actively_drawing"
                 :refresh="refresh"
@@ -463,7 +463,7 @@
                 :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"
                 :video_mode="video_mode"
                 :is_actively_drawing="is_actively_drawing"
-                :current_frame="current_frame"
+                :current_frame="annotation_ui_context.image_annotation_ctx.current_frame"
                 :issues_list="issues_list"
                 :label_settings="label_settings"
                 :current_instance="current_instance"
@@ -515,7 +515,7 @@
 
             <context_menu
               :mouse_position="mouse_position"
-              :show_context_menu="show_context_menu"
+              :show_context_menu="annotation_ui_context.show_context_menu"
               :instance_clipboard="instance_clipboard"
               :instance_focused_index="instance_focused_index"
               :draw_mode="draw_mode"
@@ -537,14 +537,14 @@
               @on_click_polygon_merge="start_polygon_select_for_merge"
               @delete_polygon_point="polygon_delete_point_click_callback"
               @copy_instance="on_context_menu_copy_instance"
-              @paste_instance="(num_frames, index_instance) => paste_instance(num_frames, index_instance, current_frame)"
-              @paste_instance_on_next_frames="(num_frames, index_instance) => paste_instance(num_frames, index_instance, current_frame)"
+              @paste_instance="(num_frames, index_instance) => paste_instance(num_frames, index_instance, annotation_ui_context.image_annotation_ctx.current_frame)"
+              @paste_instance_on_next_frames="(num_frames, index_instance) => paste_instance(num_frames, index_instance, annotation_ui_context.image_annotation_ctx.current_frame)"
               @create_instance_template="create_instance_template"
               @open_instance_history_panel="show_instance_history_panel"
               @close_instance_history_panel="close_instance_history_panel"
               ref="context_menu"
               @share_dialog_close="close_share_dialog"
-              @close_context_menu="show_context_menu = false"
+              @close_context_menu="annotation_ui_context.show_context_menu = false"
               @hide_context_menu="hide_context_menu"
             />
           </div>
@@ -568,7 +568,7 @@
             @go_to_keyframe_loading_started="set_keyframe_loading(true)"
             @go_to_keyframe_loading_ended="on_key_frame_loaded"
             @video_animation_unit_of_work="video_animation_unit_of_work($event)"
-            @video_current_frame_guess="current_frame = parseInt($event)"
+            @video_current_frame_guess="annotation_ui_context.image_annotation_ctx.current_frame = parseInt($event)"
             @slide_start="detect_is_ok_to_save()"
             @request_save="detect_is_ok_to_save()"
             @go_to_keyframe="go_to_key_frame_handler()"
@@ -598,7 +598,7 @@
             "
             :view_only_mode="view_only_mode"
             :current_video_file_id="current_video_file_id"
-            :current_frame="current_frame"
+            :current_frame="annotation_ui_context.image_annotation_ctx.current_frame"
             :label_file_id="current_label_file_id"
             :current_sequence_annotation_core_prop="
               current_sequence_annotation_core_prop
@@ -683,7 +683,6 @@ import ghost_canvas_available_alert from "./ghost_canvas_available_alert";
 import canvas_current_instance from "../vue_canvas/current_instance";
 import canvas_instance_list from "../vue_canvas/instance_list";
 import ghost_instance_list_canvas from "../vue_canvas/ghost_instance_list";
-import instance_history_sidepanel from "../annotation/instance_history_sidepanel";
 import v_bg from "../vue_canvas/v_bg";
 import v_text from "../vue_canvas/v_text";
 import target_reticle from "../vue_canvas/target_reticle";
@@ -745,6 +744,7 @@ import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator
 import {PolygonMergeTool} from "../vue_canvas/advanced_tools/PolygonMergeTool";
 import {store} from "../../store";
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager";
+import {BaseAnnotationUIContext} from "../../types/AnnotationUIContext";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
@@ -766,7 +766,6 @@ export default Vue.extend({
     v_sequence_list,
     autoborder_avaiable_alert,
     instance_template_creation_dialog,
-    instance_history_sidepanel,
     polygon_borders_context_menu,
     view_edit_issue_panel,
     canvas_current_instance,
@@ -825,8 +824,12 @@ export default Vue.extend({
     per_instance_attribute_groups_list: {type: Array, required: true},
     task_error: {type: Object, required: true},
     issues_ui_manager: {type: Object as IssuesAnnotationUIManager, required: true},
+    annotation_ui_context: {type: Object as BaseAnnotationUIContext, required: true},
   },
   watch: {
+    loading: function(newVal){
+      this.$emit('loading_changed', newVal)
+    },
     event_create_instance: function(newVal){
       this.$emit('event_create_instance', newVal)
     },
@@ -928,16 +931,11 @@ export default Vue.extend({
     show_modify_an_issue: function () {
       if (this.show_modify_an_issue == true) {
         this.label_settings.show_ghost_instances = false;
-        this.label_settings.ghost_instances_closed_by_open_view_edit_panel =
-          true;
+        this.label_settings.ghost_instances_closed_by_open_view_edit_panel = true;
       } else {
-        if (
-          this.label_settings.ghost_instances_closed_by_open_view_edit_panel ==
-          true
-        ) {
+        if (this.label_settings.ghost_instances_closed_by_open_view_edit_panel == true) {
           this.label_settings.show_ghost_instances = true;
-          this.label_settings.ghost_instances_closed_by_open_view_edit_panel =
-            false;
+          this.label_settings.ghost_instances_closed_by_open_view_edit_panel = false;
         }
       }
     },
@@ -949,7 +947,6 @@ export default Vue.extend({
       degrees: 0,
       n_key: false,
       mouse_wheel_button: false,
-      current_frame: 0,
 
       locked_editing_instance: null as Instance,
       current_instance_v2: null as Instance,
@@ -967,8 +964,6 @@ export default Vue.extend({
 
       file_cant_be_accessed: null,
       file_cant_be_accessed_error: null,
-
-      current_global_instance: null,
       instance_list_global: [],
 
       snackbar_paste_message: '',
@@ -1041,7 +1036,6 @@ export default Vue.extend({
       user_requested_file_id: null,
 
       instance_clipboard: undefined,
-      show_context_menu: false,
       media_core_height: 300, // assumes admin mode, minimize "jerk" by defaulting
       // it takes time for media_core to pass real value, so we want this to be close to real value
       emit_instance_hover: true, // ie can set to true to get hover updates
@@ -1111,38 +1105,6 @@ export default Vue.extend({
 
 
       current_version: null,
-
-      label_settings: {
-        font_background_opacity: 0.75,
-        enable_snap_to_instance: true,
-        show_ghost_instances: true,
-        show_text: true,
-        show_label_text: true,
-        show_attribute_text: true,
-        show_list: true,
-        show_occluded_keypoints: true,
-        show_left_right_arrows: false,
-        allow_multiple_instance_select: false,
-        font_size: 20,
-        spatial_line_size: 2,
-        vertex_size: 6,
-        show_removed_instances: false,
-        target_reticle_size: 20,
-        filter_brightness: 100, // Percentage. Applies a linear multiplier to the drawing, making it appear more or less bright.
-        filter_contrast: 100, // Percentage. A value of 0% will create a drawing that is completely black. A value of 100% leaves the drawing unchanged.
-        filter_grayscale: 0, //  A value of 100% is completely gray-scale. A value of 0% leaves the drawing unchanged.
-        instance_buffer_size: 60,
-        max_image_buffer: 3,
-        canvas_scale_global_is_automatic: true,
-        canvas_scale_global_setting: 0.5,
-        left_nav_width: 450,
-        on_instance_creation_advance_sequence: true,
-        ghost_instances_closed_by_open_view_edit_panel: false,
-        smooth_canvas: true
-      },
-
-
-
       source_control_menu: false,
 
       show_annotations: true,
@@ -1316,6 +1278,14 @@ export default Vue.extend({
     };
   },
   computed: {
+    label_settings: {
+      get: function(){
+        return this.annotation_ui_context.image_annotation_ctx.label_settings
+      },
+      set: function(settings){
+        return settings
+      }
+    },
     filtered_instance_type_list: function () {
       const filtered_instance_type_list = this.filtered_instance_type_list_function(this.instance_type_list)
       return filtered_instance_type_list
@@ -1411,7 +1381,7 @@ export default Vue.extend({
       if (!this.draw_mode) {
         return false;
       }
-      if (this.show_context_menu) {
+      if (this.annotation_ui_context.show_context_menu) {
         return false;
       }
       if (this.instance_type == "tag") {
@@ -1529,6 +1499,7 @@ export default Vue.extend({
        * Context here is that it's not a "zoom".
        */
       // Manual override
+      console.log('LABEEEE', this.label_settings)
       if (this.label_settings.canvas_scale_global_is_automatic == false) {
         return this.label_settings.canvas_scale_global_setting;
       }
@@ -1910,7 +1881,7 @@ export default Vue.extend({
     },
     change_keyframe: function (keyframe) {
       if (this.video_mode) {
-        if (this.current_frame !== keyframe && this.$refs.video_controllers) {
+        if (this.annotation_ui_context.image_annotation_ctx.current_frame !== keyframe && this.$refs.video_controllers) {
           this.$refs.video_controllers.go_to_keyframe(keyframe);
         }
       }
@@ -2132,7 +2103,7 @@ export default Vue.extend({
     },
     regenerate_file_cache: async function () {
       this.regenerate_file_cache_loading = true;
-      let frame_number = this.current_frame;
+      let frame_number = this.annotation_ui_context.image_annotation_ctx.current_frame;
       const file_id = this.working_file.id;
       let project_string = this.project_string_id;
       if (!project_string) {
@@ -2225,10 +2196,10 @@ export default Vue.extend({
       }
       let existing_global_instance = instance_list.find(inst => inst.type === 'global');
       if (existing_global_instance) {
-        this.current_global_instance = existing_global_instance;
+        this.annotation_ui_context.current_global_instance = existing_global_instance;
       } else {
-        this.current_global_instance = this.new_global_instance();
-        instance_list.push(this.current_global_instance)
+        this.annotation_ui_context.current_global_instance = this.new_global_instance();
+        instance_list.push(this.annotation_ui_context.current_global_instance)
       }
 
     },
@@ -2296,7 +2267,7 @@ export default Vue.extend({
         return;
       }
 
-      const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
+      const command = new CreateInstanceCommand(new_instance, this, this.annotation_ui_context.image_annotation_ctx.current_frame);
       this.command_manager.executeCommand(command);
 
       this.event_create_instance = new_instance;
@@ -2365,7 +2336,7 @@ export default Vue.extend({
       };
       new_instance.type = "point";
       new_instance.points = [{x: x, y: y}];
-      const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
+      const command = new CreateInstanceCommand(new_instance, this, this.annotation_ui_context.image_annotation_ctx.current_frame);
       this.command_manager.executeCommand(command);
       return new_instance
     },
@@ -2425,7 +2396,7 @@ export default Vue.extend({
         return;
       }
 
-      const command = new CreateInstanceCommand(new_instance, this, this.current_frame);
+      const command = new CreateInstanceCommand(new_instance, this, this.annotation_ui_context.image_annotation_ctx.current_frame);
       this.command_manager.executeCommand(command);
       this.event_create_instance = new_instance;
       return new_instance;
@@ -2440,7 +2411,7 @@ export default Vue.extend({
 
       for (let keypoint of keypoints_list) {
         this.current_instance.points = [keypoint.position];
-        const command = new CreateInstanceCommand(this.current_instance, this, this.current_frame);
+        const command = new CreateInstanceCommand(this.current_instance, this, this.annotation_ui_context.image_annotation_ctx.current_frame);
         this.command_manager.executeCommand(command);
       }
     },
@@ -2580,7 +2551,7 @@ export default Vue.extend({
       for (let i = 0; i < this.instance_list.length; i++) {
         let is_valid_by_ref =
           this.instance_list[i] ==
-          this.instance_buffer_dict[this.current_frame][i];
+          this.instance_buffer_dict[this.annotation_ui_context.image_annotation_ctx.current_frame][i];
         if (!is_valid_by_ref) {
           return false;
         }
@@ -2765,20 +2736,18 @@ export default Vue.extend({
       this.canvas_width = this.working_file.video.width;
       this.canvas_height = this.working_file.video.height;
     },
-    issues_fetched: function (issues_list) {
-      this.issues_list = issues_list;
-    },
+
     open_view_edit_panel(issue) {
       // This boolean controls if issues create/edit panel is shown or hidden.
-      this.show_modify_an_issue = true;
+      this.annotation_ui_context.issues_ui_manager.show_modify_an_issue = true;
 
       // Case for edit/view mode.
-      this.current_issue = issue;
-      this.draw_mode = false;
+      this.annotation_ui_context.issues_ui_manager.current_issue = issue;
+      this.annotation_ui_context.issues_ui_manager.draw_mode = false;
       this.label_settings.allow_multiple_instance_select = true;
       this.$store.commit("set_view_issue_mode", true);
       if (this.video_mode) {
-        if (this.current_frame !== issue.marker_frame_number) {
+        if (this.annotation_ui_context.image_annotation_ctx.current_frame !== issue.marker_frame_number) {
           this.$refs.video_controllers.go_to_keyframe(
             issue.marker_frame_number
           );
@@ -2808,7 +2777,7 @@ export default Vue.extend({
       instance_to_unmerge.points = figure_points;
       this.add_instance_to_file(
         instance_to_unmerge,
-        this.current_frame
+        this.annotation_ui_context.image_annotation_ctx.current_frame
       );
       // Auto select on label view detail for inmediate attribute edition.
       this.refresh_instance_list_sidebar();
@@ -2819,36 +2788,20 @@ export default Vue.extend({
         return;
       }
       this.polygon_merge_tool = new PolygonMergeTool(this.instance_list[merge_instance_index])
-      this.show_context_menu = false;
+      this.annotation_ui_context.show_context_menu = false;
       this.$store.commit("set_instance_select_for_merge", true);
     },
     open_issue_panel(mouse_position) {
       // This boolean controls if issues create/edit panel is shown or hidden.
       this.$store.commit("open_issue_panel");
       // Close context menu and set select instance mode
-      this.show_context_menu = false;
+      this.annotation_ui_context.show_context_menu = false;
 
     },
 
 
-    stop_attach_instance_edition() {
-      this.$store.commit("set_instance_select_for_issue", false);
-      this.issues_ui_manager.snackbar_issues = false;
-    },
-    close_view_edit_issue_panel() {
-      this.current_issue = undefined;
-      this.issues_ui_manager.show_modify_an_issue = false;
-      this.label_settings.allow_multiple_instance_select = false;
-      this.$store.commit("set_view_issue_mode", false);
-      this.$store.commit("set_instance_select_for_issue", false);
-    },
-    close_issue_panel() {
-      this.issues_ui_manager.show_modify_an_issue = false;
-      this.$store.commit("set_instance_select_for_issue", false);
-      this.issues_ui_manager.snackbar_issues = false;
-      this.issues_ui_manager.issue_mouse_position = undefined;
-      this.clear_selected();
-    },
+
+
     done_selecting_instaces_issues() {
       this.issues_ui_manager.snackbar_issues = false;
     },
@@ -2890,31 +2843,31 @@ export default Vue.extend({
 
     shift_frame_via_store: function (direction) {
       // direction is an int where: -1 to go back, 1 go forward
-      if (this.current_frame === 0 && direction === -1) {
+      if (this.annotation_ui_context.image_annotation_ctx.current_frame === 0 && direction === -1) {
         return;
       }
 
       if (
-        this.current_frame >= this.current_video.frame_count - 1 &&
+        this.annotation_ui_context.image_annotation_ctx.current_frame >= this.current_video.frame_count - 1 &&
         direction === 1
       ) {
         return;
       }
 
-      let new_frame = direction + this.current_frame;
+      let new_frame = direction + this.annotation_ui_context.image_annotation_ctx.current_frame;
       this.$refs.video_controllers.move_frame(direction)
     },
 
     hide_context_menu: function () {
       // search tags: close close_context
-      this.show_context_menu = false;
+      this.annotation_ui_context.show_context_menu = false;
       // this.emit_instance_hover = false;   // computation optimzation
       // there's a timing issue with doing this though so leave off for now.
     },
 
     open_context_menu: function () {
       //this.emit_instance_hover = true;
-      this.show_context_menu = true;
+      this.annotation_ui_context.show_context_menu = true;
     },
 
     detect_clicks_outside_context_menu: function (e) {
@@ -3121,7 +3074,7 @@ export default Vue.extend({
 
         if (instance.type === "global") {
 
-          this.current_global_instance = instance
+          this.annotation_ui_context.current_global_instance = instance
         }
         //console.debug(group, value)
       }
@@ -3524,12 +3477,12 @@ export default Vue.extend({
       //this.trigger_refresh_with_delay()
       // also this could be a lot smarter ie getting instances
       // while still some buffer left etc.
-      if (this.current_frame in this.instance_buffer_dict) {
+      if (this.annotation_ui_context.image_annotation_ctx.current_frame in this.instance_buffer_dict) {
         // We want to initialize the buffer dict before assinging the pointer on instance_list.
-        this.initialize_instance_buffer_dict_frame(this.current_frame);
+        this.initialize_instance_buffer_dict_frame(this.annotation_ui_context.image_annotation_ctx.current_frame);
         // IMPORTANT  This is a POINTER not a new object. This is a critical assumption.
         // See https://docs.google.com/document/d/1KkpccWaCoiVWkiit8W_F5xlH0Ap_9j4hWduZteU4nxE/edit
-        this.instance_list = this.instance_buffer_dict[this.current_frame];
+        this.instance_list = this.instance_buffer_dict[this.annotation_ui_context.image_annotation_ctx.current_frame];
       } else {
         this.video_pause = Date.now();
         this.get_instances(true);
@@ -3635,7 +3588,7 @@ export default Vue.extend({
     },
     // todo why not make this part of rest of event stuff
     wheel: function (event) {
-      if (this.show_context_menu == true) {
+      if (this.annotation_ui_context.show_context_menu == true) {
         return;
       } // becasue could have own menus that scroll
 
@@ -3882,7 +3835,7 @@ export default Vue.extend({
     insert_tag_type: function () {
       this.add_instance_to_file(
         this.current_instance,
-        this.current_frame
+        this.annotation_ui_context.image_annotation_ctx.current_frame
       );
     },
     add_instance_to_frame_buffer: async function (instance, frame_number) {
@@ -4938,7 +4891,7 @@ export default Vue.extend({
         this.instance_unhovered,
         this.canvas_mouse_tools
       )
-      this.add_instance_to_file(instance, this.current_frame); // this handles the creation_ref_id stuff too
+      this.add_instance_to_file(instance, this.annotation_ui_context.image_annotation_ctx.current_frame); // this handles the creation_ref_id stuff too
       this.ghost_instance_list.splice(ghost_index, 1); // remove from ghost list
     },
 
@@ -5830,7 +5783,7 @@ export default Vue.extend({
       // start LIMITS, returns immediately
       this.canvas_mouse_tools.mouse_is_down = false
 
-      let locked_frame_number = this.current_frame;
+      let locked_frame_number = this.annotation_ui_context.image_annotation_ctx.current_frame;
       if (this.view_only_mode == true) {
         return;
       }
@@ -6100,7 +6053,7 @@ export default Vue.extend({
         return false;
       }
 
-      if (this.show_context_menu == true) {
+      if (this.annotation_ui_context.show_context_menu == true) {
         this.mouse_down_limits_result = false;
         return false;
       }
@@ -6516,7 +6469,7 @@ export default Vue.extend({
         canvas_transform: this.canvas_transform,
         canvas_element: this.canvas_element,
         view_issue_mode: this.view_issue_mode,
-        frame_number: this.current_frame,
+        frame_number: this.annotation_ui_context.image_annotation_ctx.current_frame,
         ann_core_ctx: this,
         instance_select_for_issue: this.instance_select_for_issue,
         view_only_mode: this.view_only_mode,
@@ -6636,7 +6589,7 @@ export default Vue.extend({
       // here for performance
       // TODO new method ie
       // this.is_actively_drawing = true
-      let locked_frame_number = this.current_frame;
+      let locked_frame_number = this.annotation_ui_context.image_annotation_ctx.current_frame;
       this.mouse_position = this.mouse_transform(event, this.mouse_position);
 
       if (this.view_only_mode == true) {
@@ -6702,7 +6655,7 @@ export default Vue.extend({
 
       // since may use in other contexts
       this.show_annotations = true
-      this.current_global_instance = null // reset
+      this.annotation_ui_context.current_global_instance = null // reset
 
       // Not sure if a "silent" null check is right here
       if (response.data['file_serialized']) {
@@ -6842,21 +6795,21 @@ export default Vue.extend({
     async update_instance_list_from_buffer_or_get_new_buffer(
       play_after_success
     ) {
-      if (this.current_frame in this.instance_buffer_dict) {
+      if (this.annotation_ui_context.image_annotation_ctx.current_frame in this.instance_buffer_dict) {
         // Initialize instances to class objects before assigning pointer.
-        this.initialize_instance_buffer_dict_frame(this.current_frame);
+        this.initialize_instance_buffer_dict_frame(this.annotation_ui_context.image_annotation_ctx.current_frame);
         // Instance list is always a pointer to the actual instance_buffer dict.
         // IMPORTANT  This is a POINTER not a new object. This is a critical assumption.
         // See https://docs.google.com/document/d/1KkpccWaCoiVWkiit8W_F5xlH0Ap_9j4hWduZteU4nxE/edit
 
-        this.instance_list = this.instance_buffer_dict[this.current_frame];
+        this.instance_list = this.instance_buffer_dict[this.annotation_ui_context.image_annotation_ctx.current_frame];
         this.add_override_colors_for_model_runs();
         this.show_annotations = true;
         this.loading = false;
         this.annotations_loading = false;
         if (
-          this.instance_buffer_metadata[this.current_frame] &&
-          this.instance_buffer_metadata[this.current_frame].pending_save
+          this.instance_buffer_metadata[this.annotation_ui_context.image_annotation_ctx.current_frame] &&
+          this.instance_buffer_metadata[this.annotation_ui_context.image_annotation_ctx.current_frame].pending_save
         ) {
           this.$emit('set_has_changed', true);
         }
@@ -6922,7 +6875,7 @@ export default Vue.extend({
 
       this.instance_buffer_error = {};
 
-      this.instance_frame_start = this.current_frame;
+      this.instance_frame_start = this.annotation_ui_context.image_annotation_ctx.current_frame;
 
       let url = this.url_instance_buffer;
 
@@ -6931,8 +6884,8 @@ export default Vue.extend({
         // We'll initialize class instances as per frame and not all at once for performance reasons.
         let new_instance_buffer_dict = await this.get_instance_buffer_parallel(
           url,
-          this.current_frame,
-          this.current_frame + this.label_settings.instance_buffer_size
+          this.annotation_ui_context.image_annotation_ctx.current_frame,
+          this.annotation_ui_context.image_annotation_ctx.current_frame + this.label_settings.instance_buffer_size
         );
         if (!new_instance_buffer_dict) {
           return
@@ -6941,8 +6894,8 @@ export default Vue.extend({
         // Now set the current list from buffer
         if (this.instance_buffer_dict) {
           // We want to do the equals because that creates the reference on the instance list to buffer dict
-          this.initialize_instance_buffer_dict_frame(this.current_frame);
-          this.instance_list = this.instance_buffer_dict[this.current_frame];
+          this.initialize_instance_buffer_dict_frame(this.annotation_ui_context.image_annotation_ctx.current_frame);
+          this.instance_list = this.instance_buffer_dict[this.annotation_ui_context.image_annotation_ctx.current_frame];
         } else {
           // handle if buffer list doesn't load all the way?
           this.instance_list = [];
@@ -7257,12 +7210,12 @@ export default Vue.extend({
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // Caution must be near top to prevent when typing
       }
-      let locked_frame_number = this.current_frame;
+      let locked_frame_number = this.annotation_ui_context.image_annotation_ctx.current_frame;
 
       this.set_control_key(event);
       this.set_alt_key(event);
 
-      if (this.show_context_menu) {
+      if (this.annotation_ui_context.show_context_menu) {
         return;
       }
 
@@ -7437,7 +7390,7 @@ export default Vue.extend({
 
       this.set_control_key(event);
       this.set_alt_key(event);
-      let frame_number_locked = this.current_frame;
+      let frame_number_locked = this.annotation_ui_context.image_annotation_ctx.current_frame;
       if (this.$store.state.user.is_typing_or_menu_open == true) {
         return; // this guard should be at highest level
       }
@@ -7628,7 +7581,7 @@ export default Vue.extend({
     ) {
       let on_new_frame_or_file = false;
       if (
-        instance_clipboard.original_frame_number != this.current_frame ||
+        instance_clipboard.original_frame_number != this.annotation_ui_context.image_annotation_ctx.current_frame ||
         next_frames != undefined
       ) {
         on_new_frame_or_file = true;
@@ -7653,7 +7606,7 @@ export default Vue.extend({
         const frames_to_save = [];
         // Fetch Instance List for empty frame buffers
         let missing_frames = []
-        for (let i = this.current_frame + 1; i <= this.current_frame + next_frames_to_add; i++) {
+        for (let i = this.annotation_ui_context.image_annotation_ctx.current_frame + 1; i <= this.annotation_ui_context.image_annotation_ctx.current_frame + next_frames_to_add; i++) {
           if (!this.instance_buffer_dict[i]) {
             missing_frames.push(i)
           }
@@ -7670,7 +7623,7 @@ export default Vue.extend({
           ...this.instance_buffer_dict,
           ...new_instance_buffer
         };
-        for (let i = this.current_frame + 1; i <= this.current_frame + next_frames_to_add; i++) {
+        for (let i = this.annotation_ui_context.image_annotation_ctx.current_frame + 1; i <= this.annotation_ui_context.image_annotation_ctx.current_frame + next_frames_to_add; i++) {
           // Here we need to create a new COPY of the instance. Otherwise, if we moved one instance
           // It will move on all the other frames.
           let new_frame_instance = duplicate_instance(pasted_instance, this);
@@ -7746,7 +7699,7 @@ export default Vue.extend({
         }
         let instance_clipboard = duplicate_instance(instance, this);
         instance_clipboard.selected = false;
-        instance_clipboard.original_frame_number = this.current_frame;
+        instance_clipboard.original_frame_number = this.annotation_ui_context.image_annotation_ctx.current_frame;
         new_instance_list.push(instance_clipboard);
       }
       this.set_clipboard(new_instance_list);
@@ -7771,7 +7724,7 @@ export default Vue.extend({
           : this.instance_list[instance_index];
         this.instance_clipboard = duplicate_instance(instance_to_copy, this);
         this.instance_clipboard.selected = true;
-        this.instance_clipboard.original_frame_number = this.current_frame;
+        this.instance_clipboard.original_frame_number = this.annotation_ui_context.image_annotation_ctx.current_frame;
 
         this.set_clipboard([this.instance_clipboard]);
       } else {

@@ -1,4 +1,4 @@
-tit# OPENCORE - ADD
+# OPENCORE - ADD
 from shared.database.common import *
 from shared.database.discussion.discussion_member import DiscussionMember
 import shared.database.discussion.discussion_relation as discussion_relation_models
