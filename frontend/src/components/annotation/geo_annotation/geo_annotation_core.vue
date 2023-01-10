@@ -91,11 +91,11 @@
 import Vue from "vue";
 import geo_toolbar from "./geo_toolbar.vue"
 import geo_sidebar from "./geo_sidebar.vue"
-import CommandManager from "../../helpers/command/command_manager"
-import InstanceList from "../../helpers/instance_list"
-import { Instance } from "../vue_canvas/instances/Instance"
-import { GlobalAnnotationInstance } from "../../components/vue_canvas/instances/GlobalInstance";
-import History from "../../helpers/history"
+import CommandManager from "../../../helpers/command/command_manager"
+import InstanceList from "../../../helpers/instance_list"
+import { Instance } from "../../vue_canvas/instances/Instance"
+import { GlobalAnnotationInstance } from "../../../components/vue_canvas/instances/GlobalInstance";
+import History from "../../../helpers/history"
 import { 
     CreateInstanceCommand, 
     DeleteInstanceCommand,
@@ -103,9 +103,9 @@ import {
     UpdateInstanceAttributeCommand,
     UpdateGlobalAttributeCommand,
     UpdateInstanceGeoCoordinatesCommand
-} from "../../helpers/command/available_commands"
-import { GeoCircle, GeoPoint, GeoPoly } from "../vue_canvas/instances/GeoInstance"
-import { getInstanceList, postInstanceList } from "../../services/instanceList";
+} from "../../../helpers/command/available_commands"
+import { GeoCircle, GeoPoint, GeoPoly } from "../../vue_canvas/instances/GeoInstance"
+import { getInstanceList, postInstanceList } from "../../../services/instanceList";
 import slugify from "slugify"
 import { v4 as uuidv4 } from 'uuid'
 // Imports from OpenLayers
@@ -129,7 +129,7 @@ import { getLength } from 'ol/sphere';
 import { Circle as CircleStyle, Fill, Stroke, Style } from 'ol/style';
 import Transform from "ol-ext/interaction/Transform";
 import XYZ from 'ol/source/XYZ';
-import {finishTaskAnnotation, trackTimeTask} from "../../services/tasksServices";
+import {finishTaskAnnotation, trackTimeTask} from "../../../services/tasksServices";
 import 'ol/ol.css';
 
 export default Vue.extend({

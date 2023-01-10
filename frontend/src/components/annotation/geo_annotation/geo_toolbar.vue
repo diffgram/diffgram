@@ -486,11 +486,11 @@
 
 <script>
 import Vue from 'vue'
-import label_select_annotation from "../label/label_select_annotation.vue"
-import label_schema_selector from "../label/label_schema_selector.vue"
-import task_status from "../annotation/image_annotation/task_status.vue"
+import label_select_annotation from "../../label/label_select_annotation.vue"
+import label_schema_selector from "../../label/label_schema_selector.vue"
+import task_status from "../../annotation/image_annotation/task_status.vue"
 import geo_hotkeys from "./geo_hotkeys.vue"
-import time_tracker from "../task/time_track/time_tracker.vue";
+import time_tracker from "../../task/time_track/time_tracker.vue";
 import geo_tile from "./geo_tile.vue"
 
 export default Vue.extend({
