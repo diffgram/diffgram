@@ -256,7 +256,7 @@ import {get_labels} from '../../services/labelServices';
 import {get_schemas} from "../../services/labelServices";
 import { trackTimeTask, finishTaskAnnotation } from "../../services/tasksServices";
 
-import audio_annotation_core from "../audio_annotation/audio_annotation_core.vue";
+import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue";
 import sensor_fusion_editor from './3d_annotation/sensor_fusion_editor.vue'
 import text_annotation_core from "../text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
