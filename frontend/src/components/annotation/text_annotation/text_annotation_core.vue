@@ -264,26 +264,26 @@ import text_selection_svg from "./render_elements/selection.vue"
 import text_fast_label from "./render_elements/fast_label_menu.vue"
 import text_context_menu from "./render_elements/text_context_menu.vue"
 import relation_in_progress from "./render_elements/relation_in_progress.vue"
-import {CommandManagerAnnotationCore} from "../annotation/image_annotation/annotation_core_command_manager"
-import {CreateInstanceCommand as CreateInstanceCommandLegacy} from "../annotation/image_annotation/commands/create_instance_command.ts";
-import {TextAnnotationInstance, TextRelationInstance} from "../vue_canvas/instances/TextInstance"
-import {postInstanceList, getInstanceList} from "../../services/instanceList"
-import getTextService from "../../services/getTextService"
-import {deferTask, finishTaskAnnotation} from "../../services/tasksServices"
+import {CommandManagerAnnotationCore} from "../image_annotation/annotation_core_command_manager"
+import {CreateInstanceCommand as CreateInstanceCommandLegacy} from "../image_annotation/commands/create_instance_command.ts";
+import {TextAnnotationInstance, TextRelationInstance} from "../../vue_canvas/instances/TextInstance"
+import {postInstanceList, getInstanceList} from "../../../services/instanceList"
+import getTextService from "../../../services/getTextService"
+import {deferTask, finishTaskAnnotation} from "../../../services/tasksServices"
 // New command pattern
-import CommandManager from "../../helpers/command/command_manager"
-import InstanceList from "../../helpers/instance_list"
-import History from "../../helpers/history"
+import CommandManager from "../../../helpers/command/command_manager"
+import InstanceList from "../../../helpers/instance_list"
+import History from "../../../helpers/history"
 import {
   CreateInstanceCommand,
   DeleteInstanceCommand,
   UpdateInstanceLabelCommand,
   UpdateInstanceAttributeCommand,
   UpdateGlobalAttributeCommand
-} from "../../helpers/command/available_commands"
+} from "../../../helpers/command/available_commands"
 import DrawRects from "./text_utils/draw_rects";
 import closest_token from "./text_utils/closest_token"
-import { Instance } from "../vue_canvas/instances/Instance";
+import { Instance } from "../../vue_canvas/instances/Instance";
 import { v4 as uuidv4 } from 'uuid'
 
 export default Vue.extend({
