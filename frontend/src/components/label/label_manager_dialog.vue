@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import labels_view from '../../components/annotation/labels_view'
+import labels_view from '../../components/image_annotation/labels_view'
 import Vue from "vue";
 import Labels_manager_tabs from "./labels_manager_tabs.vue";
 

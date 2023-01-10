@@ -130,7 +130,7 @@ import user_icon from './components/user/user_icon'
 import user_profile_image_edit from './components/user/user_profile_image_edit'
 Vue.component('user_profile_image_edit', user_profile_image_edit)
 
-import thumbnail from './components/annotation/thumbnail'
+import thumbnail from './components/image_annotation/thumbnail'
 Vue.component('thumbnail', thumbnail)
 
 import VueHighlightJS from 'vue-highlight.js';
@@ -151,7 +151,7 @@ import store from './store'
 import './vue-canvas.js'
 //import canvas_zoom_picture_in_picture from './components/vue_canvas/zoom_picture_in_picture'
 
-import is_complete from './components/annotation/actions/is_complete'
+import is_complete from './components/image_annotation/actions/is_complete'
 
 
 import export_view from './components/export/export_home'
@@ -161,21 +161,21 @@ import project_manager from './components/project/project_manager'
 import profile_in_menu from './components/user/profile_in_menu'
 import main_menu from './components/main_menu/menu'
 
-import labels_view from './components/annotation/labels_view'
-import labels_new from './components/annotation/labels_new'
-import labels_edit from './components/annotation/labels_edit'
+import labels_view from './components/image_annotation/labels_view'
+import labels_new from './components/image_annotation/labels_new'
+import labels_edit from './components/image_annotation/labels_edit'
 
 import { Chrome } from 'vue-color'
 
 import job_cancel from './components/task/job/job_cancel'
 
-import annotation_trainer_menu from './components/annotation/trainer/trainer_menu'
-import annotation_trainer_job_info from './components/annotation/trainer/trainer_job_info'
+import annotation_trainer_menu from './components/image_annotation/trainer/trainer_menu'
+import annotation_trainer_job_info from './components/image_annotation/trainer/trainer_job_info'
 
-import annotation_core from './components/annotation/annotation_core'
+import annotation_core from './components/image_annotation/annotation_core'
 
 import vue_scroll_to from 'vue-scrollto'
-import media_core from './components/annotation/media_core'
+import media_core from './components/image_annotation/media_core'
 
 import input_view from './components/input/input_view'
 

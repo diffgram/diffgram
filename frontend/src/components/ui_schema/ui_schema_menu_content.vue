@@ -70,7 +70,7 @@
 <script lang="ts">
 
   import Vue from 'vue';
-  import instance_type_multiple_select from './../annotation/instance_type_multiple_select'
+  import instance_type_multiple_select from './../image_annotation/instance_type_multiple_select'
 
   export default Vue.extend({
     name: 'ui_schema_menu_content',

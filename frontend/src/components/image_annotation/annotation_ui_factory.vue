@@ -263,7 +263,7 @@ import Vue from "vue";
 
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import InstanceStore from "../../helpers/InstanceStore"
-import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
+import * as AnnotationSavePrechecks from '../image_annotation/utils/AnnotationSavePrechecks'
 
 import { saveTaskAnnotations, saveFileAnnotations } from "../../services/saveServices"
 

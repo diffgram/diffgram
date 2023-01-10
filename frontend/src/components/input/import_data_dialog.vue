@@ -13,7 +13,7 @@
 
 <script lang="ts">
 
-  import labels_view from '../../components/annotation/labels_view'
+  import labels_view from '../../components/image_annotation/labels_view'
   import v_upload_large from '../upload_large'
   import Vue from "vue";
 

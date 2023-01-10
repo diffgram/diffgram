@@ -62,7 +62,7 @@ const routerOptions = [
   },
   {
     path: '/file/:file_id_prop',
-    component: 'annotation/annotation_ui_factory',
+    component: 'image_annotation/annotation_ui_factory',
     props: true,
     meta: {
       requiresAuth: true,
@@ -71,7 +71,7 @@ const routerOptions = [
   },
   {
     path: '/userscript',
-    component: 'annotation/userscript/userscript',
+    component: 'image_annotation/userscript/userscript',
     props: true,
     meta: {
       requiresAuth: true,
@@ -98,7 +98,7 @@ const routerOptions = [
   },
   {
     path: '/task/:task_id_prop',
-    component: 'annotation/annotation_ui_factory',
+    component: 'image_annotation/annotation_ui_factory',
     props: true,
     meta: (route) => ({
       requiresAuth: true,
@@ -146,7 +146,7 @@ const routerOptions = [
   },
   {
     path: '/project/:project_string_id/labels',
-    component: 'annotation/labels_page',
+    component: 'image_annotation/labels_page',
     props: (route) => ({
       // why do we need this "override" again?
       project_string_id: route.params.project_string_id
@@ -198,7 +198,7 @@ const routerOptions = [
   {
     path: '/studio/annotate/:project_string_id',
     alias: ['/project/:project_string_id'],
-    component: 'annotation/annotation_ui_factory',
+    component: 'image_annotation/annotation_ui_factory',
     props: true,
     meta: (route) => ({
       requiresAuth: true,
@@ -211,7 +211,7 @@ const routerOptions = [
   {
     path: '/studio/annotate/:project_string_id/explorer',
     alias: ['/project/:project_string_id'],
-    component: 'annotation/annotation_ui_factory',
+    component: 'image_annotation/annotation_ui_factory',
     props: (route) => ({
       show_explorer_full_screen: true,
       project_string_id: route.params.project_string_id
@@ -232,7 +232,7 @@ const routerOptions = [
   },
   {
     path: '/job/:job_id/annotate/',
-    component: 'annotation/trainer/trainer_annotation',
+    component: 'image_annotation/trainer/trainer_annotation',
     props: true,
     meta: {
       requiresAuth: true,
@@ -305,7 +305,7 @@ const routerOptions = [
 
   {
     path: '/project/:project_string_id/annotation_project/new',
-    component: 'annotation/annotation_project_create',
+    component: 'image_annotation/annotation_project_create',
     props: true, meta: {requiresAuth: true}
   },
 

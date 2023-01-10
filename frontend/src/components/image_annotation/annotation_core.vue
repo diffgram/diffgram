@@ -884,13 +884,13 @@
 import axios from "../../services/customInstance/index.js";
 import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view";
-import * as SequenceUpdateHelpers from '../annotation/utils/SequenceUpdateHelpers'
+import * as SequenceUpdateHelpers from '../image_annotation/utils/SequenceUpdateHelpers'
 import autoborder_avaiable_alert from "./autoborder_avaiable_alert";
 import ghost_canvas_available_alert from "./ghost_canvas_available_alert";
 import canvas_current_instance from "../vue_canvas/current_instance";
 import canvas_instance_list from "../vue_canvas/instance_list";
 import ghost_instance_list_canvas from "../vue_canvas/ghost_instance_list";
-import instance_history_sidepanel from "../annotation/instance_history_sidepanel";
+import instance_history_sidepanel from "../image_annotation/instance_history_sidepanel";
 import v_bg from "../vue_canvas/v_bg";
 import v_text from "../vue_canvas/v_text";
 import target_reticle from "../vue_canvas/target_reticle";

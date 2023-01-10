@@ -131,7 +131,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
-import instance_detail_list_view from "../annotation/instance_detail_list_view.vue";
+import instance_detail_list_view from "../image_annotation/instance_detail_list_view.vue";
 import button_with_menu from '../regular/button_with_menu.vue';
 import label_select_only from '../label/label_select_only.vue'
 import attribute_group_list from '../attribute/attribute_group_list.vue'

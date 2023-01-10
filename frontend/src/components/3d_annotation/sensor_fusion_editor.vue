@@ -239,9 +239,9 @@
     has_duplicate_instances,
     add_ids_to_new_instances_and_delete_old,
     check_if_pending_created_instance
-  } from '../annotation/utils/AnnotationSavePrechecks';
+  } from '../image_annotation/utils/AnnotationSavePrechecks';
   import toolbar_sensor_fusion from "./toolbar_sensor_fusion";
-  import instance_detail_list_view from "../annotation/instance_detail_list_view";
+  import instance_detail_list_view from "../image_annotation/instance_detail_list_view";
   import context_menu_3d_editor from "./context_menu_3d_editor";
   import canvas_3d from "./canvas_3d";
   import main_menu from '../main_menu/menu'
@@ -252,8 +252,8 @@
   import FileLoader3DPointClouds from "./FileLoader3DPointClouds";
   import * as instance_utils from "../../utils/instance_utils.ts"
   import * as THREE from "three";
-  import {UpdateInstanceCommand} from "../annotation/commands/update_instance_command.ts";
-  import {CommandManagerAnnotationCore} from "../annotation/annotation_core_command_manager";
+  import {UpdateInstanceCommand} from "../image_annotation/commands/update_instance_command.ts";
+  import {CommandManagerAnnotationCore} from "../image_annotation/annotation_core_command_manager";
   import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices";
 
   export default Vue.extend({

@@ -48,7 +48,7 @@
 <script lang="ts">
 
 import guide_selector from '../../guide/guide_selector'
-import userscript_select from '../../../annotation/userscript/userscript_select'
+import userscript_select from '../../../image_annotation/userscript/userscript_select'
 
 import Vue from "vue";
 

@@ -574,12 +574,12 @@
   import Vue from "vue";
   import label_select_annotation from '../label/label_select_annotation.vue';
   import label_schema_selector from '../label/label_schema_selector.vue';
-  import file_meta_data_card from '../annotation/file_meta_data_card'
-  import task_status from '../annotation/task_status'
+  import file_meta_data_card from '../image_annotation/file_meta_data_card'
+  import task_status from '../image_annotation/task_status'
   import time_tracker from '../task/time_track/time_tracker'
-  import task_relations_card from '../annotation/task_relations_card'
-  import file_relations_card from '../annotation/file_relations_card'
-  import task_meta_data_card from '../annotation/task_meta_data_card'
+  import task_relations_card from '../image_annotation/task_relations_card'
+  import file_relations_card from '../image_annotation/file_relations_card'
+  import task_meta_data_card from '../image_annotation/task_meta_data_card'
   import hotkeys_sensor_fusion from './hotkeys_sensor_fusion'
 
   export default Vue.extend({
