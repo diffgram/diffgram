@@ -881,11 +881,9 @@
 
 <script lang="ts">
 // @ts-nocheck
-import moment from "moment";
 import axios from "../../services/customInstance/index.js";
 import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view";
-import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
 import * as SequenceUpdateHelpers from '../annotation/utils/SequenceUpdateHelpers'
 import autoborder_avaiable_alert from "./autoborder_avaiable_alert";
 import ghost_canvas_available_alert from "./ghost_canvas_available_alert";
@@ -917,13 +915,9 @@ import {ImageAnnotationCoordinator} from "../vue_canvas/coordinators/coordinator
 import {polygon} from "../vue_canvas/polygon.js";
 import {v4 as uuidv4} from "uuid";
 import {cloneDeep} from "lodash";
-import {KeypointInstance} from "../vue_canvas/instances/KeypointInstance";
 import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../vue_canvas/instances/Instance";
 import userscript from "./userscript/userscript.vue";
 import toolbar from "./toolbar.vue";
-import {sha256} from "js-sha256";
-import stringify from "json-stable-stringify";
-import PropType from "vue";
 import _ from "lodash";
 import {InstanceContext} from "../vue_canvas/instances/InstanceContext";
 import {CanvasMouseTools} from "../vue_canvas/CanvasMouseTools";
@@ -931,7 +925,6 @@ import pLimit from "p-limit";
 import qa_carousel from "./qa_carousel.vue";
 import {getInstanceTemplatesFromProject} from "../../services/instanceTemplateService";
 import {File} from "../../types/files";
-import { finishTaskAnnotation, trackTimeTask } from "../../services/tasksServices";
 import { update_file_metadata } from "../../services/fileServices";
 import { getInstanceTemplatesFromProject } from "../../services/instanceTemplateService";
 import { File } from "../../types/files";
@@ -945,24 +938,21 @@ import {
 import {
   InteractionEvent,
   genImageAnnotationEvent,
-  AnnotationEventCtx,
   ImageAnnotationEventCtx, ImageInteractionEvent
 } from "../../types/InteractionEvent";
-import {Coordinator, CoordinatorProcessResult} from "../vue_canvas/coordinators/Coordinator";
+import { CoordinatorProcessResult } from "../vue_canvas/coordinators/Coordinator";
 import {Interaction} from "../../types/Interaction";
 import {BoxInstance} from "../vue_canvas/instances/BoxInstance";
 import {LabelColourMap} from "../../types/label_colour_map";
 import {CanvasMouseCtx, MousePosition} from "../../types/mouse_position";
 import {ImageCanvasTransform} from "../../types/CanvasTransform";
 import {LabelFile} from "../../types/label";
-import {InstanceImage2D} from "../vue_canvas/instances/InstanceImage2D";
 import { regenerate_cache } from "../../services/fileServices"
 import { get_model_run_list } from "../../services/modelServices"
 import {PolygonInstance} from "../vue_canvas/instances/PolygonInstance";
-import {AutoBorderContext, PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBorderTool";
+import {PolygonAutoBorderTool} from "../vue_canvas/advanced_tools/PolygonAutoBorderTool";
 import {PolygonInstanceCoordinator} from "../vue_canvas/coordinators/coordinator_types/PolygonInstanceCoordinator";
 import {PolygonMergeTool} from "../vue_canvas/advanced_tools/PolygonMergeTool";
-import {store} from "../../store";
 
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
