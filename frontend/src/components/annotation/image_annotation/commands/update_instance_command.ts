@@ -1,4 +1,4 @@
-import AnnotationScene3D from "../../../3d_annotation/AnnotationScene3DOrtographicView";
+import AnnotationScene3D from "../../3d_annotation/AnnotationScene3DOrtographicView";
 import {Instance} from "../../../vue_canvas/instances/Instance";
 import {CanvasMouseCtx} from "../../../../types/mouse_position";
 import {duplicate_instance} from "../../../../utils/instance_utils";

@@ -171,8 +171,8 @@
 </template>
 <script lang="ts">
   import Vue from 'vue';
-  import share_instance_dialog from '../share/share_instance_dialog';
-  import user_icon from '../../components/user/user_icon'
+  import share_instance_dialog from '../../share/share_instance_dialog.vue';
+  import user_icon from '../../../components/user/user_icon.vue'
 
   export default Vue.extend({
     name: 'context_menu_3d_editor',

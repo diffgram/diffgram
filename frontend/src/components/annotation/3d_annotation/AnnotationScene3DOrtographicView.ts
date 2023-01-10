@@ -1,9 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
 import ObjectTransformControls from "./ObjectTransformControls";
-import {Instance3D} from '../vue_canvas/instances/Instance3D';
-import {Instance} from '../vue_canvas/instances/Instance';
-import Cuboid3DInstance from "../vue_canvas/instances/Cuboid3DInstance";
+import {Instance3D} from '../../vue_canvas/instances/Instance3D';
+import {Instance} from '../../vue_canvas/instances/Instance';
+import Cuboid3DInstance from "../../vue_canvas/instances/Cuboid3DInstance";
 import AnnotationScene3D from "./AnnotationScene3D";
 import {getCenterPoint} from './utils_3d'
 
