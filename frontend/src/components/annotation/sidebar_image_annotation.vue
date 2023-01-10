@@ -8,7 +8,7 @@
 
 
     <instance_detail_list_view ref="instance_detail_list"
-                               :instance_list="instance_list"
+                               :instance_list="current_file_instance_list"
                                :instance_store="annotation_ui_context.instance_store"
                                :model_run_list="annotation_ui_context.model_run_list"
                                :label_file_colour_map="label_file_colour_map"
@@ -142,7 +142,7 @@
           <create_issue_panel
             v-show="annotation_ui_context.issues_ui_manager.show_modify_an_issue && !annotation_ui_context.issues_ui_manager.current_issue"
             :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-            :instance_list="instance_list"
+            :instance_list="current_file_instance_list"
             :task="annotation_ui_context.task"
             :file="annotation_ui_context.working_file"
             :frame_number="annotation_ui_context.image_annotation_ctx.video_mode ? annotation_ui_context.image_annotation_ctx.current_frame : undefined"
@@ -157,7 +157,7 @@
             v-show="annotation_ui_context.issues_ui_manager.show_modify_an_issue == true && annotation_ui_context.issues_ui_manager.current_issue"
             :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
             :task="annotation_ui_context.task"
-            :instance_list="instance_list"
+            :instance_list="current_file_instance_list"
             :current_issue_id="annotation_ui_context.issues_ui_manager.current_issue ? annotation_ui_context.issues_ui_manager.current_issue.id : undefined"
             :file="annotation_ui_context.working_file"
             @close_view_edit_panel="close_view_edit_issue_panel"
@@ -210,20 +210,41 @@ export default Vue.extend({
     project_string_id: {type: String, required: true},
     current_global_instance: {type: String, required: true},
   },
-  computed: {
-    instance_list: function () {
-      return this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id)
+  mounted() {
+   this.update_current_instance_list()
+  },
+  watch: {
+    'annotation_ui_context.instance_store': {
+      deep: true,
+      handler: function (newVal){
+        console.log('WATCHER instance_store')
+        this.update_current_instance_list()
+      }
     },
+    'annotation_ui_context.working_file.id': {
+      deep: true,
+      handler: function (newVal){
+        console.log('WATCHER working_file')
+        this.update_current_instance_list()
+      }
+    },
+  },
+  computed: {
     userscript_select_disabled: function () {
       return this.annotation_ui_context.task && this.annotation_ui_context.task.id
     },
   },
   data: function () {
     return {
+      current_file_instance_list: []
     }
   },
 
   methods: {
+    update_current_instance_list: function(){
+      console.log('UPDATE INSTANCE LIST', JSON.stringify(this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id)))
+      this.current_file_instance_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id)
+    },
     open_issue_panel(mouse_position) {
       // This boolean controls if issues create/edit panel is shown or hidden.
       this.annotation_ui_context.issues_ui_manager.show_modify_an_issue = true

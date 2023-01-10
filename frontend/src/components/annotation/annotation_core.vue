@@ -1499,7 +1499,6 @@ export default Vue.extend({
        * Context here is that it's not a "zoom".
        */
       // Manual override
-      console.log('LABEEEE', this.label_settings)
       if (this.label_settings.canvas_scale_global_is_automatic == false) {
         return this.label_settings.canvas_scale_global_setting;
       }

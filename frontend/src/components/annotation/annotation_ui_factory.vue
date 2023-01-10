@@ -2,7 +2,7 @@
   <div>
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
     <sidebar_factory
-      v-if="annotation_interface === 'image_or_video' && !task_error.task_request"
+      v-if="annotation_interface === 'image_or_video' && !task_error.task_request && !changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
       :annotation_ui_context="annotation_ui_context"
       :annotation_interface="annotation_interface"
       :label_file_colour_map="label_file_colour_map"
@@ -441,7 +441,7 @@ export default Vue.extend({
       handler(newVal, oldVal) {
         this.update_working_file()
         if (newVal && newVal != oldVal) {
-          this.annotation_ui_context.instance_store = new InstanceStore()
+          Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
           this.$addQueriesToLocation({file: newVal.id});
         }
       },
@@ -449,7 +449,7 @@ export default Vue.extend({
     'annotation_ui_context.task'(newVal) {
       this.update_working_file()
       if (newVal && this.task_prefetcher && newVal.file.type === 'image') {
-        this.annotation_ui_context.instance_store = new InstanceStore()
+        Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
         this.task_prefetcher.update_tasks(newVal)
       }
     }
@@ -484,7 +484,7 @@ export default Vue.extend({
     }
   },
   async mounted() {
-    this.annotation_ui_context.instance_store = new InstanceStore()
+    Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
     this.annotation_ui_context.issues_ui_manager = new IssuesAnnotationUIManager()
     if (!this.$props.task_id_prop) {
       await this.get_project();
