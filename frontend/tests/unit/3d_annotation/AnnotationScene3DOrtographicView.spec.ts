@@ -1,15 +1,13 @@
 import Vuex from "vuex";
 import Vue from "vue";
 import * as THREE from "three";
-import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
-import ObjectTransformControls from "../../../src/components/3d_annotation/ObjectTransformControls";
-import AnnotationScene3DOrtographicView from "../../../src/components/3d_annotation/AnnotationScene3DOrtographicView";
+import {createLocalVue, Wrapper} from "@vue/test-utils";
+import AnnotationScene3DOrtographicView from "../../../src/components/annotation/3d_annotation/AnnotationScene3DOrtographicView";
 import axios from "axios";
 import {mocked} from 'ts-jest/utils'
 import {load} from "mime";
 import mock = jest.mock;
-import {OrbitControls} from "../../../src/components/3d_annotation/OrbitControls";
-import {getCenterPoint} from "../../../src/components/3d_annotation/utils_3d";
+import {getCenterPoint} from "../../../src/components/annotation/3d_annotation/utils_3d";
 import {create_test_mesh} from './3d_mocks'
 
 axios.defaults.adapter = require('axios/lib/adapters/http')

@@ -1,12 +1,11 @@
 import Vuex from "vuex";
 import Vue from "vue";
 import * as THREE from "three";
-import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
-import ObjectTransformControls from "../../../src/components/3d_annotation/ObjectTransformControls";
-import AnnotationScene3D from "../../../src/components/3d_annotation/AnnotationScene3D";
+import {createLocalVue, Wrapper} from "@vue/test-utils";
+import ObjectTransformControls from "../../../src/components/annotation/3d_annotation/ObjectTransformControls";
+import AnnotationScene3D from "../../../src/components/annotation/3d_annotation/AnnotationScene3D";
 import axios from "axios";
 import {mocked} from 'ts-jest/utils'
-import {load} from "mime";
 axios.defaults.adapter = require('axios/lib/adapters/http')
 
 jest.mock("three/src/renderers/WebGLRenderer"); // this happens automatically with automocking

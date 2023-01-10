@@ -1,5 +1,5 @@
-import { InstanceData } from "../../../helpers/interfaces/InstanceData";
-import InstanceList from "../../../helpers/instance_list"
+import { InstanceData } from "../../../../helpers/interfaces/InstanceData";
+import InstanceList from "../../../../helpers/instance_list"
 
 export default class DrawRects {
     private token_list: Array<any>;

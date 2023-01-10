@@ -1,4 +1,4 @@
-import closest_token from "../../../../src/components/text_annotation/text_utils/closest_token";
+import closest_token from "../../../../src/components/annotation/text_annotation/text_utils/closest_token";
 import { tokens, lines } from "../text_test_data"
 
 describe("Closes token search, closest_token.ts", () => {

@@ -1,5 +1,5 @@
 import { shallowMount } from "@vue/test-utils";
-import is_complete from "@/components/annotation/actions/is_complete.vue";
+import is_complete from "@/components/annotation/image_annotation/actions/is_complete.vue";
 
 describe("is_complete.vue", () => {
     let props;

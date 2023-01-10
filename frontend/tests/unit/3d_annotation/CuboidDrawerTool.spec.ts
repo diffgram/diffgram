@@ -1,10 +1,9 @@
 import Vuex from "vuex";
-import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
-import CuboidDrawerTool from "../../../src/components/3d_annotation/CuboidDrawerTool";
+import {createLocalVue, Wrapper} from "@vue/test-utils";
+import CuboidDrawerTool from "../../../src/components/annotation/3d_annotation/CuboidDrawerTool";
 import * as THREE from "three";
-import {WEBGL} from "../../../src/components/3d_annotation/WebGL";
+import AnnotationScene3D from "../../../src/components/annotation/3d_annotation/AnnotationScene3D";
 import mock = jest.mock;
-import AnnotationScene3D from "../../../src/components/3d_annotation/AnnotationScene3D";
 import Cuboid3DInstance from "../../../src/components/vue_canvas/instances/Cuboid3DInstance"
 import {mocked} from 'ts-jest/utils'
 import {LabelFile} from "../../../src/types/label";

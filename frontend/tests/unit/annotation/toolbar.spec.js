@@ -1,6 +1,6 @@
 import Vuex from "vuex";
 import { shallowMount, createLocalVue } from "@vue/test-utils";
-import toolbar from "@/components/annotation/toolbar.vue";
+import toolbar from "@/components/annotation/image_annotation/toolbar.vue";
 
 const localVue = createLocalVue();
 localVue.use(Vuex);

@@ -1,10 +1,8 @@
 import Vuex from "vuex";
 import Vuetify from "vuetify";
-import {mount, createLocalVue, shallowMount} from "@vue/test-utils";
-import labels_view from "@/components/annotation/labels_view";
+import {mount, createLocalVue } from "@vue/test-utils";
+import labels_view from "@/components/annotation/image_annotation/labels_view";
 import * as labelServices from '@/services/labelServices'
-import * as eventServices from '@/components/event/create_event'
-import {create_event} from "@/components/event/create_event";
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();

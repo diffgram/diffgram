@@ -1,4 +1,4 @@
-import { CreateInstanceCommand } from "@/components/annotation/commands/create_instance_command";
+import { CreateInstanceCommand } from "@/components/annotation/image_annotation/commands/create_instance_command";
 
 describe("Instance creation class", () => {
   let instanceShape;

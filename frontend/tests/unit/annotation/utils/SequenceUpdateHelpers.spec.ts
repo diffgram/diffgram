@@ -1,4 +1,4 @@
-import * as SequenceUpdateHelpers from "../../../../src/components/annotation/utils/SequenceUpdateHelpers";
+import * as SequenceUpdateHelpers from "../../../../src/components/annotation/image_annotation/utils/SequenceUpdateHelpers";
 
 describe("Test SequenceUpdateHelpers.ts", () => {
 
