@@ -48,7 +48,7 @@
 <script lang="ts">
 import Vue from "vue";
 import guide_selector from '../../guide/guide_selector.vue'
-import userscript_select from '../../../annotation/image_annotation/userscript/userscript_select.vue'
+import userscript_select from '../../../annotation/image_and_video_annotation/userscript/userscript_select.vue'
 
 export default Vue.extend({
     name: 'step_credentials_task_template',

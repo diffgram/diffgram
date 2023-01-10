@@ -1,7 +1,7 @@
 import Vuex from "vuex";
 import Vuetify from "vuetify";
 import {mount, createLocalVue } from "@vue/test-utils";
-import labels_view from "@/components/annotation/image_annotation/labels_view";
+import labels_view from "@/components/annotation/image_and_video_annotation/labels_view";
 import * as labelServices from '@/services/labelServices'
 
 const vuetify = new Vuetify();

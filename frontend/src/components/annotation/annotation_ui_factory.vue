@@ -248,7 +248,7 @@ import moment from "moment";
 import axios from "../../services/customInstance";
 import {create_event} from "../event/create_event";
 import {UI_SCHEMA_TASK_MOCK} from "../ui_schema/ui_schema_task_mock";
-import empty_file_editor_placeholder from "./image_annotation/empty_file_editor_placeholder.vue";
+import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue";
 import no_credentials_dialog from '../task/job/no_credentials_dialog.vue';
 import file_manager_sheet from "../source_control/file_manager_sheet.vue";
 import {user_has_credentials} from '../../services/userServices'
@@ -263,7 +263,7 @@ import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
 
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import InstanceStore from "../../helpers/InstanceStore"
-import * as AnnotationSavePrechecks from './image_annotation/utils/AnnotationSavePrechecks'
+import * as AnnotationSavePrechecks from './image_and_video_annotation/utils/AnnotationSavePrechecks'
 
 import { saveTaskAnnotations, saveFileAnnotations } from "../../services/saveServices"
 

@@ -1,7 +1,7 @@
 import Vuex from "vuex";
 import Vuetify from "vuetify";
 import {mount, createLocalVue } from "@vue/test-utils";
-import schema_card_selector from "@/components/annotation/image_annotation/schema_card_selector";
+import schema_card_selector from "@/components/annotation/image_and_video_annotation/schema_card_selector";
 import * as labelServices from '@/services/labelServices'
 
 const vuetify = new Vuetify();

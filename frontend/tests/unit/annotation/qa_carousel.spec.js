@@ -1,5 +1,5 @@
 import { shallowMount, createLocalVue } from "@vue/test-utils";
-import qa_carousel from "@/components/annotation/image_annotation/qa_carousel.vue";
+import qa_carousel from "@/components/annotation/image_and_video_annotation/qa_carousel.vue";
 
 const localVue = createLocalVue();
 

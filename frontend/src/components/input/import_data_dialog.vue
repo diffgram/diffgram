@@ -15,7 +15,7 @@
 
 <script lang="ts">
 
-  import labels_view from '../../components/annotation/image_annotation/labels_view.vue'
+  import labels_view from '../../components/annotation/image_and_video_annotation/labels_view.vue'
   import v_upload_large from '../upload_large.vue'
   import Vue from "vue";
 

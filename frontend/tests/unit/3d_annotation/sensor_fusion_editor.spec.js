@@ -4,7 +4,7 @@ import sensor_fusion_editor from "../../../src/components/annotation/3d_annotati
 import * as instanceServices from '../../../src/services/instanceServices';
 import * as instance_utils from "@/utils/instance_utils"
 import {create_test_mesh} from './3d_mocks'
-import * as AnnotationSavePrechecks from '../../../src/components/annotation/image_annotation/utils/AnnotationSavePrechecks';
+import * as AnnotationSavePrechecks from '../../../src/components/annotation/image_and_video_annotation/utils/AnnotationSavePrechecks';
 import axios from "../../../src/services/customInstance";
 
 jest.mock('axios')
@@ -20,7 +20,7 @@ jest.mock("../../../src/components/annotation/3d_annotation/FileLoader3DPointClo
     })
   }
 );
-jest.mock("../../../src/components/annotation/image_annotation/commands/update_instance_command"); // this happens automatically with automocking
+jest.mock("../../../src/components/annotation/image_and_video_annotation/commands/update_instance_command"); // this happens automatically with automocking
 const localVue = createLocalVue();
 localVue.use(Vuex);
 axios.defaults.adapter = require('axios/lib/adapters/http')

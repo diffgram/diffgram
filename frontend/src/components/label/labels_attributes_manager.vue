@@ -97,7 +97,7 @@
 
 <script lang="ts">
   import Vue from "vue";
-  import v_labels_edit from '../annotation/image_annotation/labels_edit.vue'
+  import v_labels_edit from '../annotation/image_and_video_annotation/labels_edit.vue'
   import labels_manager_tabs from './labels_manager_tabs.vue'
   import attribute_group_list_manager from '../attribute/attribute_group_list_manager.vue'
   import labels_management_list from '../label/labels_management_list.vue'

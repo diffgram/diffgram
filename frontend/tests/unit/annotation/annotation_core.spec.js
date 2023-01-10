@@ -1,7 +1,7 @@
 import Vuex from "vuex";
 import Vuetify from "vuetify";
 import {shallowMount, createLocalVue} from "@vue/test-utils";
-import annotation_core from "@/components/annotation/image_annotation/annotation_core.vue";
+import annotation_core from "@/components/annotation/image_and_video_annotation/annotation_core.vue";
 import * as InstanceUtils from "@/utils/instance_utils";
 
 const vuetify = new Vuetify();

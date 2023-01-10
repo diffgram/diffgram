@@ -20,7 +20,7 @@
 
 <script lang="ts">
 import Vue from "vue";
-import labels_view from '../../components/annotation/image_annotation/labels_view.vue'
+import labels_view from '../../components/annotation/image_and_video_annotation/labels_view.vue'
 import Labels_manager_tabs from "./labels_manager_tabs.vue";
 
 export default Vue.extend({

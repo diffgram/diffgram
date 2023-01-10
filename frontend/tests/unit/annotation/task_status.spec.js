@@ -1,6 +1,6 @@
 import Vuex from "vuex";
 import { shallowMount, createLocalVue } from "@vue/test-utils";
-import task_status from "@/components/annotation/image_annotation/task_status.vue";
+import task_status from "@/components/annotation/image_and_video_annotation/task_status.vue";
 
 const localVue = createLocalVue();
 localVue.use(Vuex);
