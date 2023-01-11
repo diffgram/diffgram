@@ -146,7 +146,7 @@ const routerOptions = [
   },
   {
     path: '/project/:project_string_id/labels',
-    component: 'annotation/image_and_video_annotation/labels_page',
+    component: 'labels_schema/labels_page',
     props: (route) => ({
       // why do we need this "override" again?
       project_string_id: route.params.project_string_id

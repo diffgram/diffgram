@@ -25,6 +25,7 @@ export class BaseAnnotationUIContext {
   issues_ui_manager: IssuesAnnotationUIManager
 
   image_annotation_ctx: ImageAnnotationUIContext
+
 }
 
 export class ImageAnnotationUIContext extends BaseAnnotationUIContext{
@@ -40,6 +41,8 @@ export class ImageAnnotationUIContext extends BaseAnnotationUIContext{
 
   event_create_instance: Instance
   label_settings: ImageLabelSettings
+  instance_buffer_metadata: {number: object}
+  annotations_loading: boolean
 
   get_userscript: Function
 
