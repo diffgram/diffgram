@@ -1,14 +1,14 @@
 <template>
   <div>
-  <v-progress-linear 
-    v-if="loading" 
-    indeterminate 
-    class="mt-4" 
+  <v-progress-linear
+    v-if="loading"
+    indeterminate
+    class="mt-4"
   />
-    <div 
+    <div
       style="overflow-y:auto"
     >
-      <v-layout 
+      <v-layout
         v-if="mode==='edit'"
         class="d-flex pa-4 align-center"
       >
@@ -17,10 +17,10 @@
           admin thing here...-->
         <attribute_group_new
           :schema_id="schema_id"
-          :project_string_id="project_string_id" 
+          :project_string_id="project_string_id"
         />
 
-        <v-btn 
+        <v-btn
           text
           icon
           color="primary"
@@ -32,8 +32,8 @@
       </v-layout>
 
       <!--  Caution     This is for  annotate mode too -->
-      <v-layout 
-        column 
+      <v-layout
+        column
         v-if="mode==='edit' || current_instance && current_instance.soft_delete != true || !current_instance"
       >
         <v_error_multiple :error="error" />
@@ -66,7 +66,7 @@
                   :kind=" group.kind "
                 />
                 {{group.prompt}}
-                <div 
+                <div
                   v-if="!group.prompt"
                   :data-cy="`attribute_group_header_Untitled Attribute Group`"
                 >
@@ -74,7 +74,7 @@
                 </div>
 
                 <v-spacer />
-                
+
                 <button_with_confirm
                   v-if="mode==='edit'"
                   icon="archive"
@@ -377,5 +377,5 @@ export default Vue.extend({
 
     }
   }
-) 
+)
 </script>
