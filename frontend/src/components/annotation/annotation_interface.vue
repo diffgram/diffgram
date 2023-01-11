@@ -70,6 +70,10 @@ export default Vue.extend({
     empty_file_editor_placeholder
   },
   props: {
+    project_string_id: {
+      type: String,
+      required: true
+    },
     working_file: {
       type: Object,
       required: true
@@ -91,7 +95,6 @@ export default Vue.extend({
     video_parent_file_instance_list: {},
     has_pending_frames: {},
     instance_store: {},
-    project_string_id: {},
     label_schema: {},
     model_run_id_list: {},
     model_run_color_list: {},
@@ -112,7 +115,9 @@ export default Vue.extend({
     task_instances: {},
     task_loading: {},
     credentials_granted: {},
-    initializing: {}
+    initializing: {},
+    changing_file: {},
+    changing_task: {},
   },
   computed: {
     interface_type: function() {

@@ -45,6 +45,8 @@
           :task_image="task_image"
           :task_instances="task_instances"
           :task_loading="task_loading"
+          :changing_file="changing_file"
+          :changing_task="changing_task"
           @request_file_change="request_file_change"
           @change_label_schema="on_change_label_schema"
           @set_file_list="set_file_list"
