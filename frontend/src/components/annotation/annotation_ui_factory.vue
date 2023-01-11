@@ -2,7 +2,7 @@
   <div>
     <div id="annotation_ui_factory" tabindex="0">
       <v_error_multiple :error="error"></v_error_multiple>
-      <annotation_interface
+      <annotation_area_factory
           v-if="working_file"
           :credentials_granted="credentials_granted"
           :initializing="initializing"
@@ -169,7 +169,7 @@ import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue"
 import sensor_fusion_editor from './3d_annotation/sensor_fusion_editor.vue'
 import text_annotation_core from "./text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
-import annotation_interface from "./annotation_interface.vue"
+import annotation_area_factory from "./annotation_area_factory.vue"
 
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import InstanceStore from "../../helpers/InstanceStore"
@@ -188,7 +188,7 @@ export default Vue.extend({
     text_annotation_core,
     geo_annotation_core,
     audio_annotation_core,
-    annotation_interface
+    annotation_area_factory
   },
   props: {
     project_string_id: {

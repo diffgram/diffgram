@@ -60,7 +60,7 @@ import sensor_fusion_annotation_core from './3d_annotation/sensor_fusion_editor.
 import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue";
 
 export default Vue.extend({
-  name: "annotation_interface",
+  name: "annotation_area_factory",
   components: {
     image_and_audio_annotation_core,
     text_annotation_core,
