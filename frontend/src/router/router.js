@@ -71,7 +71,7 @@ const routerOptions = [
   },
   {
     path: '/userscript',
-    component: 'annotation/userscript/userscript',
+    component: 'annotation/image_and_video_annotation/userscript/userscript',
     props: true,
     meta: {
       requiresAuth: true,
@@ -232,7 +232,7 @@ const routerOptions = [
   },
   {
     path: '/job/:job_id/annotate/',
-    component: 'annotation/trainer/trainer_annotation',
+    component: 'annotation/image_and_video_annotation/trainer/trainer_annotation',
     props: true,
     meta: {
       requiresAuth: true,
@@ -305,7 +305,7 @@ const routerOptions = [
 
   {
     path: '/project/:project_string_id/annotation_project/new',
-    component: 'annotation/annotation_project_create',
+    component: 'annotation/image_and_video_annotation/annotation_project_create',
     props: true, meta: {requiresAuth: true}
   },
 

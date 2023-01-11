@@ -18,176 +18,72 @@
       @clear_selected_instances_image="handle_clear_selected_instances_image"
       @open_view_edit_panel="handle_open_view_edit_panel"
     ></sidebar_factory>
+    
     <div id="annotation_ui_factory" tabindex="0">
-      <v_error_multiple :error="error"></v_error_multiple>
-      <div v-if="!annotation_interface&& !initializing">
-        <empty_file_editor_placeholder
-          :loading="any_loading"
-          :project_string_id="project_string_id"
-        ></empty_file_editor_placeholder>
-      </div>
-      <div v-else-if="!credentials_granted && !initializing">
-        <empty_file_editor_placeholder
-          :loading="false"
-          :project_string_id="project_string_id"
-          :title="`Invalid credentials`"
-          :message="`You need more credentials to work on this task.`"
-          :icon="`mdi-account-cancel`"
-          :show_upload="false"
-        ></empty_file_editor_placeholder>
-      </div>
-      <div v-else-if="annotation_interface === 'image_or_video'">
-        <v_annotation_core
-          v-if="!changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
-          class="pt-1 pl-1"
-          :annotation_ui_context="annotation_ui_context"
-          :working_file="annotation_ui_context.working_file"
-          :url_instance_buffer="get_url_instance_buffer()"
-          :save_loading_image="save_loading_image"
-          :submitted_to_review="submitted_to_review"
-          :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
-          :loading="loading"
-          :filtered_instance_type_list_function="filtered_instance_type_list"
-          :get_userscript="get_userscript"
-          :save_loading_frames_list="save_loading_frames_list"
-          :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
-          :go_to_keyframe_loading="go_to_keyframe_loading"
-          :has_changed="has_changed"
-          :instance_buffer_metadata="annotation_ui_context.image_annotation_ctx.instance_buffer_metadata"
-          :create_instance_template_url="create_instance_template_url"
-          :video_parent_file_instance_list="video_parent_file_instance_list"
-          :has_pending_frames="has_pending_frames"
-          :instance_store="annotation_ui_context.instance_store"
-          :project_string_id="computed_project_string_id"
-          :label_schema="annotation_ui_context.label_schema"
-          :model_run_id_list="model_run_id_list"
-          :model_run_color_list="model_run_color_list"
-          :task="annotation_ui_context.task"
-          :file="current_file"
-          :task_id_prop="task_id_prop"
-          :request_save="request_save"
-          :job_id="job_id"
-          :view_only_mode="view_only"
-          :label_list="label_list"
-          :label_file_colour_map="label_file_colour_map"
-          :enabled_edit_schema="enabled_edit_schema"
-          :finish_annotation_show="show_snackbar"
-          :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
-          :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
-          :task_image="task_image"
-          :task_instances="task_instances"
-          :task_loading="task_loading"
-          :task_error="task_error"
-          :issues_ui_manager="annotation_ui_context.issues_ui_manager"
-          @request_file_change="request_file_change"
-
-          @change_label_schema="on_change_label_schema"
-          @set_file_list="set_file_list"
-          @request_new_task="change_task"
-          @replace_file="current_file = $event"
-          @get_userscript="get_userscript"
-          @save_time_tracking="save_time_tracking"
-          @trigger_task_change="trigger_task_change"
-          @set_ui_schema="set_ui_schema"
-          @set_save_loading="set_save_loading"
-          @save="save"
-          @set_frame_pending_save="set_frame_pending_save"
-          @task_update="task_update"
-          @set_has_changed="set_has_changed"
-          @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
-          @model_run_list_loaded="annotation_ui_context.model_run_list = $event"
-          @draw_mode_change="on_draw_mode_changed"
-          @change_video_playing="annotation_ui_context.image_annotation_ctx.video_playing = $event"
-          @change_current_label_file="annotation_ui_context.current_label_file = $event"
-          @request_change_current_instance="annotation_ui_context.image_annotation_ctx.request_change_current_instance = $event"
-          @trigger_refresh_current_instance="annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = $event"
-          @selected_instance_for_history="annotation_ui_context.selected_instance_for_history = $event"
-          @event_create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance = $event"
-          @loading_changed="annotation_ui_context.image_annotation_ctx.loading = $event"
-          @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
-          @open_issue_panel="issues_expansion_panel = $event"
-          @instance_list_updated="update_current_instance_list"
-          @instance_buffer_dict_updated="update_current_frame_buffer_dict"
-
-          ref="annotation_core"
-        >
-        </v_annotation_core>
-      </div>
-      <div v-else-if="annotation_interface === 'sensor_fusion'">
-        <sensor_fusion_editor
-          :project_string_id="computed_project_string_id"
-          :label_file_colour_map="label_file_colour_map"
-          :label_schema="annotation_ui_context.label_schema"
-          :label_list="label_list"
-          :task="annotation_ui_context.task"
-          :file="current_file"
-          :view_only_mode="view_only"
-          :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
-          :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
-          @change_label_schema="on_change_label_schema"
-          @request_file_change="request_file_change"
-          @request_new_task="change_task"
-          ref="sensor_fusion_editor"
-        >
-        </sensor_fusion_editor>
-      </div>
-      <div v-else-if="annotation_interface === 'text'">
-        <text_annotation_core
-          :file="current_file"
-          :task="annotation_ui_context.task"
-          :job_id="job_id"
-          :label_schema="annotation_ui_context.label_schema"
-          :label_list="label_list"
-          :label_file_colour_map="label_file_colour_map"
-          :project_string_id="computed_project_string_id"
-          :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
-          :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
-          @change_label_schema="on_change_label_schema"
-          @request_file_change="request_file_change"
-          @request_new_task="change_task"
-          ref="text_annotation_core"
-        />
-      </div>
-      <div v-else-if="annotation_interface === 'geo'">
-        <geo_annotation_core
-          :file="current_file"
-          :task="annotation_ui_context.task"
-          :job_id="job_id"
-          :label_schema="annotation_ui_context.label_schema"
-          :label_list="label_list"
-          :label_file_colour_map="label_file_colour_map"
-          :project_string_id="computed_project_string_id"
-          :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
-          :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
-          @change_label_schema="on_change_label_schema"
-          @request_file_change="request_file_change"
-          @request_new_task="change_task"
-          ref="geo_annotation_core"
-        />
-      </div>
-      <div v-else-if="annotation_interface === 'audio'">
-        <audio_annotation_core
-          :file="current_file"
-          :task="annotation_ui_context.task"
-          :job_id="job_id"
-          :label_schema="annotation_ui_context.label_schema"
-          :label_list="label_list"
-          :label_file_colour_map="label_file_colour_map"
-          :project_string_id="computed_project_string_id"
-          :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
-          :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
-          @change_label_schema="on_change_label_schema"
-          @request_file_change="request_file_change"
-          @request_new_task="change_task"
-          ref="audio_annotation_core"
-        />
-      </div>
-      <div v-else-if="!annotation_interface">
-        <empty_file_editor_placeholder
-          :loading="any_loading"
-          :project_string_id="project_string_id"
-        ></empty_file_editor_placeholder>
-      </div>
+      <v_error_multiple :error="error" />
+      
+      <annotation_area_factory
+        v-if="annotation_ui_context && annotation_ui_context.working_file"
+        :credentials_granted="credentials_granted"
+        :initializing="initializing"
+        :working_file="annotation_ui_context.working_file"
+        :annotation_ui_context="annotation_ui_context"
+        :url_instance_buffer="get_url_instance_buffer()"
+        :save_loading_image="save_loading_image"
+        :submitted_to_review="submitted_to_review"
+        :annotations_loading="annotations_loading"
+        :loading="loading"
+        :filtered_instance_type_list_function="filtered_instance_type_list"
+        :get_userscript="get_userscript"
+        :save_loading_frames_list="save_loading_frames_list"
+        :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
+        :go_to_keyframe_loading="go_to_keyframe_loading"
+        :has_changed="has_changed"
+        :instance_buffer_metadata="instance_buffer_metadata"
+        :create_instance_template_url="create_instance_template_url"
+        :video_parent_file_instance_list="video_parent_file_instance_list"
+        :has_pending_frames="has_pending_frames"
+        :instance_store="annotation_ui_context.instance_store"
+        :project_string_id="computed_project_string_id"
+        :label_schema="annotation_ui_context.label_schema"
+        :model_run_id_list="model_run_id_list"
+        :model_run_color_list="model_run_color_list"
+        :task="annotation_ui_context.task"
+        :file="current_file"
+        :task_id_prop="task_id_prop"
+        :request_save="request_save"
+        :job_id="job_id"
+        :view_only_mode="view_only"
+        :label_list="label_list"
+        :label_file_colour_map="label_file_colour_map"
+        :enabled_edit_schema="enabled_edit_schema"
+        :finish_annotation_show="show_snackbar"
+        :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
+        :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
+        :task_image="task_image"
+        :task_instances="task_instances"
+        :task_loading="task_loading"
+        :changing_file="changing_file"
+        :changing_task="changing_task"
+        :task_error="task_error"
+        :issues_ui_manager="annotation_ui_context.issues_ui_manager"
+        
+        @request_file_change="request_file_change"
+        @change_label_schema="on_change_label_schema"
+        @set_file_list="set_file_list"
+        @request_new_task="change_task"
+        @replace_file="current_file = $event"
+        @get_userscript="get_userscript"
+        @save_time_tracking="save_time_tracking"
+        @trigger_task_change="trigger_task_change"
+        @set_ui_schema="set_ui_schema"
+        @set_save_loading="set_save_loading" 
+        @save="save"
+        @set_frame_pending_save="set_frame_pending_save"
+        @task_update="task_update"
+        @set_has_changed="set_has_changed"
+        @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
+      />
 
       <file_manager_sheet
         v-if="!annotation_ui_context.task && context === 'file'"
@@ -295,7 +191,9 @@ import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue"
 import sensor_fusion_editor from './3d_annotation/sensor_fusion_editor.vue'
 import text_annotation_core from "./text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
-import {duplicate_instance} from "../../utils/instance_utils.ts";
+import annotation_area_factory from "./annotation_area_factory.vue"
+
+import {duplicate_instance} from "../../utils/instance_utils";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
@@ -317,7 +215,8 @@ export default Vue.extend({
     sensor_fusion_editor,
     text_annotation_core,
     geo_annotation_core,
-    audio_annotation_core
+    audio_annotation_core,
+    annotation_area_factory
   },
   props: {
     project_string_id: {
