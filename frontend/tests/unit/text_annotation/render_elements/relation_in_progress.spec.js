@@ -1,5 +1,5 @@
 import { shallowMount } from "@vue/test-utils";
-import relation_in_progress from "../../../../src/components/text_annotation/render_elements/relation_in_progress.vue"
+import relation_in_progress from "../../../../src/components/annotation/text_annotation/render_elements/relation_in_progress.vue"
 
 describe("Tests for relation_in_progress.vue", () => {
     let wrapper;

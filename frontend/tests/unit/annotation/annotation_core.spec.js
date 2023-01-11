@@ -1,7 +1,7 @@
 import Vuex from "vuex";
 import Vuetify from "vuetify";
 import {shallowMount, createLocalVue} from "@vue/test-utils";
-import annotation_core from "@/components/annotation/annotation_core.vue";
+import annotation_core from "@/components/annotation/image_and_video_annotation/annotation_core.vue";
 import * as InstanceUtils from "@/utils/instance_utils";
 
 const vuetify = new Vuetify();
@@ -21,6 +21,9 @@ describe("Test annotation_core", () => {
           name: 'test'
         },
         global_attribute_groups_list: [],
+        working_file: {
+          id: 1
+        }
       },
       mocks: {
         $get_sequence_color: () => {

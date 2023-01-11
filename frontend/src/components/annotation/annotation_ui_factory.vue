@@ -279,24 +279,24 @@
 
 
 <script lang="ts">
+import Vue from "vue";
 import moment from "moment";
 import axios from "../../services/customInstance";
 import {create_event} from "../event/create_event";
 import {UI_SCHEMA_TASK_MOCK} from "../ui_schema/ui_schema_task_mock";
-import empty_file_editor_placeholder from "./empty_file_editor_placeholder";
-import no_credentials_dialog from '../task/job/no_credentials_dialog';
-import file_manager_sheet from "../source_control/file_manager_sheet";
-import audio_annotation_core from "../audio_annotation/audio_annotation_core";
-import sensor_fusion_editor from '../3d_annotation/sensor_fusion_editor'
+import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue";
+import no_credentials_dialog from '../task/job/no_credentials_dialog.vue';
+import file_manager_sheet from "../source_control/file_manager_sheet.vue";
 import {user_has_credentials} from '../../services/userServices'
 
 import {get_labels} from '../../services/labelServices';
 import {get_schemas} from "../../services/labelServices";
 import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices";
 
-import text_annotation_core from "../text_annotation/text_annotation_core.vue"
-import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
-import Vue from "vue";
+import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue";
+import sensor_fusion_editor from './3d_annotation/sensor_fusion_editor.vue'
+import text_annotation_core from "./text_annotation/text_annotation_core.vue"
+import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
 
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"

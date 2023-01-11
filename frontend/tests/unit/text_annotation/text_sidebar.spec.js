@@ -1,4 +1,4 @@
-import text_sidebar from "../../../src/components/text_annotation/text_sidebar.vue"
+import text_sidebar from "../../../src/components/annotation/text_annotation/text_sidebar.vue"
 import { shallowMount, createLocalVue } from "@vue/test-utils";
 import { instance_list } from "./text_test_data"
 import { TextAnnotationInstance } from "../../../src/components/vue_canvas/instances/TextInstance";

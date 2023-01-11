@@ -39,8 +39,8 @@
 
 <script lang="ts">
 
-  import labels_view from '../../components/annotation/labels_view'
-  import v_upload_large from '../upload_large'
+  import labels_view from '../../components/annotation/image_and_video_annotation/labels_view.vue'
+  import v_upload_large from '../upload_large.vue'
   import Vue from "vue";
   import CodeDiff from 'vue-code-diff/dist/vue-code-diff'
 

@@ -1,6 +1,6 @@
 import Vuex from "vuex";
-import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
-import hotkeys_sensor_fusion from "../../../src/components/3d_annotation/hotkeys_sensor_fusion";
+import {shallowMount, createLocalVue } from "@vue/test-utils";
+import hotkeys_sensor_fusion from "../../../src/components/annotation/3d_annotation/hotkeys_sensor_fusion";
 
 jest.mock("three/src/renderers/WebGLRenderer"); // this happens automatically with automocking
 const localVue = createLocalVue();

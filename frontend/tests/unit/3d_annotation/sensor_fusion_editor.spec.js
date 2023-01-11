@@ -1,17 +1,15 @@
 import Vuex from "vuex";
-import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
-import sensor_fusion_editor from "../../../src/components/3d_annotation/sensor_fusion_editor";
-import FileLoader3DPointClouds from "../../../src/components/3d_annotation/FileLoader3DPointClouds";
+import {shallowMount, createLocalVue } from "@vue/test-utils";
+import sensor_fusion_editor from "../../../src/components/annotation/3d_annotation/sensor_fusion_editor";
 import * as instanceServices from '../../../src/services/instanceServices';
 import * as instance_utils from "@/utils/instance_utils"
 import {create_test_mesh} from './3d_mocks'
-import * as AnnotationSavePrechecks from '../../../src/components/annotation/utils/AnnotationSavePrechecks';
-import * as THREE from 'three';
+import * as AnnotationSavePrechecks from '../../../src/components/annotation/image_and_video_annotation/utils/AnnotationSavePrechecks';
 import axios from "../../../src/services/customInstance";
 
 jest.mock('axios')
 jest.mock("three/src/renderers/WebGLRenderer"); // this happens automatically with automocking
-jest.mock("../../../src/components/3d_annotation/FileLoader3DPointClouds", () => {
+jest.mock("../../../src/components/annotation/3d_annotation/FileLoader3DPointClouds", () => {
     return jest.fn().mockImplementation(() => {
       return {
         load_pcd_from_url: async () => ({
@@ -22,7 +20,7 @@ jest.mock("../../../src/components/3d_annotation/FileLoader3DPointClouds", () =>
     })
   }
 );
-jest.mock("../../../src/components/annotation/commands/update_instance_command"); // this happens automatically with automocking
+jest.mock("../../../src/components/annotation/image_and_video_annotation/commands/update_instance_command"); // this happens automatically with automocking
 const localVue = createLocalVue();
 localVue.use(Vuex);
 axios.defaults.adapter = require('axios/lib/adapters/http')

@@ -1,7 +1,6 @@
 import Vuex from "vuex";
-import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
-import context_menu_3d_editor from "../../../src/components/3d_annotation/context_menu_3d_editor.vue";
-import Vue from "vue";
+import {shallowMount, createLocalVue } from "@vue/test-utils";
+import context_menu_3d_editor from "../../../src/components/annotation/3d_annotation/context_menu_3d_editor.vue";
 
 jest.mock("three/src/renderers/WebGLRenderer"); // this happens automatically with automocking
 const localVue = createLocalVue();

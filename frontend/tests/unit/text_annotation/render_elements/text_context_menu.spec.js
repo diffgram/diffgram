@@ -1,4 +1,4 @@
-import text_context_menu from "../../../../src/components/text_annotation/render_elements/text_context_menu.vue"
+import text_context_menu from "../../../../src/components/annotation/text_annotation/render_elements/text_context_menu.vue"
 import { shallowMount } from "@vue/test-utils";
 
 describe("Tests text_context_menu.vue", () => {

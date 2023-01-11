@@ -1,6 +1,6 @@
 import {KeypointInstance} from "../components/vue_canvas/instances/KeypointInstance";
 import Cuboid3DInstance from "../components/vue_canvas/instances/Cuboid3DInstance";
-import CuboidDrawerTool from "../components/3d_annotation/CuboidDrawerTool";
+import CuboidDrawerTool from "../components/annotation/3d_annotation/CuboidDrawerTool";
 import {CanvasMouseCtx} from "../types/mouse_position"
 import {BoxInstance} from "../components/vue_canvas/instances/BoxInstance";
 import {TextAnnotationInstance, TextRelationInstance} from "../components/vue_canvas/instances/TextInstance";
