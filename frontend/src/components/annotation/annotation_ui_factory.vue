@@ -281,32 +281,31 @@
 <script lang="ts">
 import Vue from "vue";
 import moment from "moment";
-import axios from "../../services/customInstance";
+import axios from "../../services/customInstance/index.js";
 import {create_event} from "../event/create_event";
-import {UI_SCHEMA_TASK_MOCK} from "../ui_schema/ui_schema_task_mock";
+import {UI_SCHEMA_TASK_MOCK} from "../ui_schema/ui_schema_task_mock.js";
 import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue";
 import no_credentials_dialog from '../task/job/no_credentials_dialog.vue';
 import file_manager_sheet from "../source_control/file_manager_sheet.vue";
-import {user_has_credentials} from '../../services/userServices'
-
-import {get_labels} from '../../services/labelServices';
-import {get_schemas} from "../../services/labelServices";
-import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices";
-
+import {user_has_credentials} from '../../services/userServices.js'
+import {Task} from "../../types/Task";
+import {get_labels, get_schemas} from '../../services/labelServices.js';
+import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices.js";
 import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue";
 import sensor_fusion_editor from './3d_annotation/sensor_fusion_editor.vue'
 import text_annotation_core from "./text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
-
+import {duplicate_instance} from "../../utils/instance_utils.ts";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
-import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
+import * as AnnotationSavePrechecks from '../annotation/image_and_video_annotation/utils/AnnotationSavePrechecks'
 import {BaseAnnotationUIContext} from '../../types/AnnotationUIContext'
 
 import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServices"
 import {createDefaultLabelSettings} from "../../types/image_label_settings";
 import sidebar_factory from "./sidebar_factory.vue";
+import {Schema} from "../../types/Schema";
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -509,7 +508,7 @@ export default Vue.extend({
     if (this.enabled_edit_schema) {
       this.annotation_ui_context.task = {
         ...UI_SCHEMA_TASK_MOCK,
-      };
+      } as Task;
       this.annotation_ui_context.label_schema = this.annotation_ui_context.task.job.label_schema;
       if (this.$refs.file_manager_sheet) {
         this.$refs.file_manager_sheet.set_file_list([this.annotation_ui_context.task.file]);
@@ -662,7 +661,7 @@ export default Vue.extend({
     },
     update_current_frame_buffer_dict: function (instance_buffer_dict, file_id, file_type) {
       this.current_instance_buffer_dict = this.annotation_ui_context.instance_store.get_instance_list(file_id)
-      this.current_instance_list = this.current_instance_buffer_dict[]
+      this.current_instance_list = this.current_instance_buffer_dict[this.annotation_ui_context.image_annotation_ctx.current_frame]
     },
     on_draw_mode_changed: function (draw_mode) {
       this.annotation_ui_context.image_annotation_ctx.draw_mode = draw_mode
@@ -1084,7 +1083,7 @@ export default Vue.extend({
       this.$forceUpdate();
     },
     filtered_instance_type_list: function (instance_type_list) {
-      const schema_allowed_types = (): any[] | null => {
+      const schema_allowed_types = (): string[] | null => {
         if (
           !this.annotation_ui_context.task ||
           !this.annotation_ui_context.task.job ||
@@ -1100,7 +1099,8 @@ export default Vue.extend({
         return null
       }
 
-      const allowed_types = schema_allowed_types()
+      let allowed_types = schema_allowed_types() as Array<string>
+      allowed_types = allowed_types as Array<string>
 
       if (!allowed_types) return instance_type_list
 
