@@ -2,27 +2,10 @@
   <div>
     <div id="annotation_ui_factory" tabindex="0">
       <v_error_multiple :error="error"></v_error_multiple>
-      <div v-if="!annotation_interface&& !initializing">
-        <empty_file_editor_placeholder
-          :loading="any_loading"
-          :project_string_id="project_string_id"
-        ></empty_file_editor_placeholder>
-      </div>
-      <div v-else-if="!credentials_granted && !initializing">
-        <empty_file_editor_placeholder
-          :loading="false"
-          :project_string_id="project_string_id"
-          :title="`Invalid credentials`"
-          :message="`You need more credentials to work on this task.`"
-          :icon="`mdi-account-cancel`"
-          :show_upload="false"
-        ></empty_file_editor_placeholder>
-      </div>
-      <div v-else-if="annotation_interface === 'image_or_video'">
-        <v_annotation_core
-          v-if="!changing_file && !changing_task"
-          class="pt-1 pl-1"
-
+      <annotation_interface
+          v-if="working_file"
+          :credentials_granted="credentials_granted"
+          :initializing="initializing"
           :userscript_select_disabled="userscript_select_disabled()"
           :working_file="working_file"
           :url_instance_buffer="get_url_instance_buffer()"
@@ -78,83 +61,7 @@
           @task_update="task_update"
           @set_has_changed="set_has_changed"
           @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
-          
-          ref="annotation_core"
-        >
-        </v_annotation_core>
-      </div>
-      <div v-else-if="annotation_interface === 'sensor_fusion'">
-        <sensor_fusion_editor
-          :project_string_id="computed_project_string_id"
-          :label_file_colour_map="label_file_colour_map"
-          :label_schema="current_label_schema"
-          :label_list="label_list"
-          :task="task"
-          :file="current_file"
-          :view_only_mode="view_only"
-          :global_attribute_groups_list="global_attribute_groups_list"
-          :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-          @change_label_schema="on_change_label_schema"
-          @request_file_change="request_file_change"
-          @request_new_task="change_task"
-          ref="sensor_fusion_editor"
-        >
-        </sensor_fusion_editor>
-      </div>
-      <div v-else-if="annotation_interface === 'text'">
-        <text_annotation_core
-          :file="current_file"
-          :task="task"
-          :job_id="job_id"
-          :label_schema="current_label_schema"
-          :label_list="label_list"
-          :label_file_colour_map="label_file_colour_map"
-          :project_string_id="computed_project_string_id"
-          :global_attribute_groups_list="global_attribute_groups_list"
-          :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-          @change_label_schema="on_change_label_schema"
-          @request_file_change="request_file_change"
-          @request_new_task="change_task"
-        />
-      </div>
-      <div v-else-if="annotation_interface === 'geo'">
-        <geo_annotation_core
-          :file="current_file"
-          :task="task"
-          :job_id="job_id"
-          :label_schema="current_label_schema"
-          :label_list="label_list"
-          :label_file_colour_map="label_file_colour_map"
-          :project_string_id="computed_project_string_id"
-          :global_attribute_groups_list="global_attribute_groups_list"
-          :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-          @change_label_schema="on_change_label_schema"
-          @request_file_change="request_file_change"
-          @request_new_task="change_task"
-        />
-      </div>
-      <div v-else-if="annotation_interface === 'audio'">
-        <audio_annotation_core
-          :file="current_file"
-          :task="task"
-          :job_id="job_id"
-          :label_schema="current_label_schema"
-          :label_list="label_list"
-          :label_file_colour_map="label_file_colour_map"
-          :project_string_id="computed_project_string_id"
-          :global_attribute_groups_list="global_attribute_groups_list"
-          :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-          @change_label_schema="on_change_label_schema"
-          @request_file_change="request_file_change"
-          @request_new_task="change_task"
-        />
-      </div>
-      <div v-else-if="!annotation_interface">
-        <empty_file_editor_placeholder
-          :loading="any_loading"
-          :project_string_id="project_string_id"
-        ></empty_file_editor_placeholder>
-      </div>
+      />
 
       <file_manager_sheet
         v-if="!task && context === 'file'"
@@ -260,6 +167,7 @@ import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue"
 import sensor_fusion_editor from './3d_annotation/sensor_fusion_editor.vue'
 import text_annotation_core from "./text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
+import annotation_interface from "./annotation_interface.vue"
 
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import InstanceStore from "../../helpers/InstanceStore"
@@ -277,7 +185,8 @@ export default Vue.extend({
     sensor_fusion_editor,
     text_annotation_core,
     geo_annotation_core,
-    audio_annotation_core
+    audio_annotation_core,
+    annotation_interface
   },
   props: {
     project_string_id: {
