@@ -657,7 +657,7 @@ export default Vue.extend({
   },
   methods: {
     update_current_instance_list: function (instance_list, file_id, file_type) {
-      this.current_instance_list = this.annotation_ui_context.get_instance_list(file_id)
+      this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file_id)
     },
     update_current_frame_buffer_dict: function (instance_buffer_dict, file_id, file_type) {
       this.current_instance_buffer_dict = this.annotation_ui_context.instance_store.get_instance_list(file_id)

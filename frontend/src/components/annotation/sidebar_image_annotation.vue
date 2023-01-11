@@ -142,7 +142,7 @@
           <create_issue_panel
             v-show="annotation_ui_context.issues_ui_manager.show_modify_an_issue && !annotation_ui_context.issues_ui_manager.current_issue"
             :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
-            :instance_list="current_file_instance_list"
+            :instance_list="instance_list"
             :task="annotation_ui_context.task"
             :file="annotation_ui_context.working_file"
             :frame_number="annotation_ui_context.image_annotation_ctx.video_mode ? annotation_ui_context.image_annotation_ctx.current_frame : undefined"
@@ -157,7 +157,7 @@
             v-show="annotation_ui_context.issues_ui_manager.show_modify_an_issue == true && annotation_ui_context.issues_ui_manager.current_issue"
             :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
             :task="annotation_ui_context.task"
-            :instance_list="current_file_instance_list"
+            :instance_list="instance_list"
             :current_issue_id="annotation_ui_context.issues_ui_manager.current_issue ? annotation_ui_context.issues_ui_manager.current_issue.id : undefined"
             :file="annotation_ui_context.working_file"
             @close_view_edit_panel="close_view_edit_issue_panel"
