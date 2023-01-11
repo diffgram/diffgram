@@ -978,6 +978,8 @@ export default Vue.extend({
       },
 
       attribute_change: function (attribute) {
+        console.log('ATRIBUTE CHANGE INDEX, ID', this.current_instance_index, this.current_instance.id)
+        console.log(this.instance_list)
         this.instance_update(
           "attribute_change",
           this.current_instance_index,

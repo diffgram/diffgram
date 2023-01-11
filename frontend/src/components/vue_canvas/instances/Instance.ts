@@ -35,7 +35,7 @@ export class Instance {
   public edges: any[] = [];
   public front_face: object = null;
   public angle: number = 0;
-  public attribute_groups: any = null;
+  public attribute_groups: any = {};
   public rear_face: number = null;
   public override_color: string = null;
   public model_run_id: number = null;

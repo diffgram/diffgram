@@ -836,6 +836,7 @@ export default Vue.extend({
       this.$emit('selected_instance_for_history', newVal)
     },
     request_change_current_instance: function (newVal) {
+      console.log('request_change_current_instance', newVal)
       this.$emit('request_change_current_instance', newVal)
     },
     video_playing: function (newVal) {

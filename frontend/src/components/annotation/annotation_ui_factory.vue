@@ -683,6 +683,7 @@ export default Vue.extend({
       }
     },
     handle_instance_update: function (update_data) {
+      console.log('INSTANCE UPDATE', update_data)
       if (this.annotation_interface != 'image_or_video') {
         return
       }

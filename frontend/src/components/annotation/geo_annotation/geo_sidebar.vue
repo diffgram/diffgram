@@ -161,7 +161,7 @@ export default Vue.extend({
         button_with_menu,
         label_select_only,
         global_attributes_list,
-        attribute_group_list_prop
+        attribute_group_list
     },
     props: {
         project_string_id: {
@@ -284,7 +284,7 @@ export default Vue.extend({
         attribute_change: function(event, is_global = false) {
             this.$emit('on_update_attribute', event, is_global)
         },
-        attribute_group_list_computed: function () {
+      attribute_group_list_prop: function () {
             if (!this.label_list
                 || !this.current_instance
                 || !this.per_instance_attribute_groups_list
