@@ -6,6 +6,7 @@
     :project_string_id="project_string_id"
     :label_list="label_list"
     :current_global_instance="current_global_instance"
+    :instance_list="instance_list"
     @toggle_instance_focus="$emit('toggle_instance_focus', $event)"
     @focus_instance_show_all="$emit('focus_instance_show_all', $event)"
     @update_canvas="$emit('update_canvas', $event)"
@@ -21,6 +22,7 @@ import {BaseAnnotationUIContext} from "../../types/AnnotationUIContext";
 import {LabelColourMap} from "../../types/label_colour_map";
 import {LabelFile} from "../../types/label";
 import sidebar_image_annotation from './sidebar_image_annotation'
+import {Instance} from "../vue_canvas/instances/Instance";
 export default Vue.extend({
   name: "sidebar_factory",
   components:{
@@ -33,6 +35,7 @@ export default Vue.extend({
     label_list: {type: Array as LabelFile[], required: true},
     project_string_id: {type: String, required: true},
     current_global_instance: {type: Object, required: false},
+    instance_list: {type: Array as Instance[], required: false},
   },
   data: function () {
     return {}

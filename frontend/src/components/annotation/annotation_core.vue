@@ -849,6 +849,7 @@ export default Vue.extend({
       if (this.working_file.type === "image") {
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
+        this.$emit('instance_list_updated', newVal, this.working_file.id, this.working_file.type)
       }
     },
     instance_buffer_dict: {
@@ -857,6 +858,7 @@ export default Vue.extend({
         if (this.working_file.type === "video") {
           this.instance_store.set_instance_list(this.working_file.id, newVal)
           this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
+          this.$emit('instance_buffer_dict_updated', newVal, this.working_file.id, this.working_file.type)
         }
       },
     },

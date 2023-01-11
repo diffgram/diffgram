@@ -9,6 +9,7 @@
       :label_list="label_list"
       :project_string_id="project_string_id"
       :current_global_instance="annotation_ui_context.current_global_instance"
+      :instance_list="current_instance_list"
       @toggle_instance_focus="handle_focus_image_instance"
       @close_instance_history_panel="annotation_ui_context.selected_instance_for_history= undefined"
       @focus_instance_show_all="handle_focus_instance_show_all"
@@ -105,6 +106,8 @@
           @loading_changed="annotation_ui_context.image_annotation_ctx.loading = $event"
           @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
           @open_issue_panel="issues_expansion_panel = $event"
+          @instance_list_updated="update_current_instance_list"
+          @instance_buffer_dict_updated="update_current_frame_buffer_dict"
 
           ref="annotation_core"
         >
@@ -289,7 +292,7 @@ import {user_has_credentials} from '../../services/userServices'
 
 import {get_labels} from '../../services/labelServices';
 import {get_schemas} from "../../services/labelServices";
-import { trackTimeTask, finishTaskAnnotation } from "../../services/tasksServices";
+import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices";
 
 import text_annotation_core from "../text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "../geo_annotation/geo_annotation_core.vue"
@@ -301,7 +304,7 @@ import InstanceStore from "../../helpers/InstanceStore"
 import * as AnnotationSavePrechecks from '../annotation/utils/AnnotationSavePrechecks'
 import {BaseAnnotationUIContext} from '../../types/AnnotationUIContext'
 
-import { saveTaskAnnotations, saveFileAnnotations } from "../../services/saveServices"
+import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServices"
 import {createDefaultLabelSettings} from "../../types/image_label_settings";
 import sidebar_factory from "./sidebar_factory.vue";
 
@@ -416,7 +419,8 @@ export default Vue.extend({
       unsaved_frames: [],
       snackbar_success: false,
       snackbar_success_text: null,
-
+      current_instance_list: [],
+      current_instance_buffer_dict: {},
 
 
     }
@@ -520,7 +524,7 @@ export default Vue.extend({
         await this.$nextTick()
         this.credentials_granted = this.has_credentials_or_admin();
         if (!this.credentials_granted) {
-          this.show_missing_credentials_dialog()  ;
+          this.show_missing_credentials_dialog();
         }
         this.changing_task = false
       } else if (this.$props.file_id_prop) {
@@ -542,34 +546,34 @@ export default Vue.extend({
   },
   computed: {
 
-    current_frame: function(){
+    current_frame: function () {
       return this.current_interface_ref.current_frame
     },
-    current_interface_ref: function(){
-      if(this.annotation_interface === 'image_or_video'){
+    current_interface_ref: function () {
+      if (this.annotation_interface === 'image_or_video') {
         return this.$refs.annotation_core
-      } else if(this.annotation_interface === 'sensor_fusion'){
+      } else if (this.annotation_interface === 'sensor_fusion') {
         return this.$refs.sensor_fusion_editor
-      }else if(this.annotation_interface === 'text'){
+      } else if (this.annotation_interface === 'text') {
         return this.$refs.text_annotation_core
-      }else if(this.annotation_interface === 'geo'){
+      } else if (this.annotation_interface === 'geo') {
         return this.$refs.geo_annotation_core
-      }else if(this.annotation_interface === 'audio'){
+      } else if (this.annotation_interface === 'audio') {
         return this.$refs.audio_annotation_core
-      }else if(this.annotation_interface === 'compound'){
+      } else if (this.annotation_interface === 'compound') {
         // Not implemented yet. Will need to deduct current interface from mouse hover maybe
         return null
       }
     },
-    has_pending_frames: function() {
+    has_pending_frames: function () {
       return this.unsaved_frames.length > 0
     },
-    save_request: function(): Function {
+    save_request: function (): Function {
       if (this.annotation_ui_context.task) return (payload) => saveTaskAnnotations(this.annotation_ui_context.task.id, payload)
 
       return (payload) => saveFileAnnotations(this.project_string_id, this.annotation_ui_context.working_file.id, payload)
     },
-    create_instance_template_url: function(): string {
+    create_instance_template_url: function (): string {
       if (this.annotation_ui_context.task && this.annotation_ui_context.task.id) return `/api/v1/task/${this.annotation_ui_context.task.id}/instance-template/new`
       else return `/api/v1/project/${this.computed_project_string_id}/instance-template/new`
     },
@@ -588,18 +592,16 @@ export default Vue.extend({
         return
       }
 
-      if(this.current_file){
-        if(this.current_file.type === 'image' || this.current_file.type === 'video'){
+      if (this.current_file) {
+        if (this.current_file.type === 'image' || this.current_file.type === 'video') {
           return 'image_or_video';
         } else if (this.current_file.type === 'sensor_fusion') {
           return 'sensor_fusion';
         } else if (this.current_file.type === 'text') {
           return 'text'
-        }
-        else if(this.current_file.type === 'geospatial') {
+        } else if (this.current_file.type === 'geospatial') {
           return 'geo'
-        }
-        else if(this.current_file.type === 'audio'){
+        } else if (this.current_file.type === 'audio') {
           return 'audio'
         }
       }
@@ -610,11 +612,9 @@ export default Vue.extend({
           return 'sensor_fusion';
         } else if (this.annotation_ui_context.task.file.type === 'text') {
           return 'text';
-        }
-        else if (this.annotation_ui_context.task.file.type === 'geospatial') {
+        } else if (this.annotation_ui_context.task.file.type === 'geospatial') {
           return 'geo'
-        }
-        else if(this.annotation_ui_context.task.file.type === 'audio'){
+        } else if (this.annotation_ui_context.task.file.type === 'audio') {
           return 'audio'
         }
       }
@@ -657,60 +657,67 @@ export default Vue.extend({
     },
   },
   methods: {
-    on_draw_mode_changed: function(draw_mode){
+    update_current_instance_list: function (instance_list, file_id, file_type) {
+      this.current_instance_list = this.annotation_ui_context.get_instance_list(file_id)
+    },
+    update_current_frame_buffer_dict: function (instance_buffer_dict, file_id, file_type) {
+      this.current_instance_buffer_dict = this.annotation_ui_context.instance_store.get_instance_list(file_id)
+      this.current_instance_list = this.current_instance_buffer_dict[]
+    },
+    on_draw_mode_changed: function (draw_mode) {
       this.annotation_ui_context.image_annotation_ctx.draw_mode = draw_mode
     },
-    handle_open_view_edit_panel: function(issue){
-      if(this.annotation_interface != 'image_or_video'){
+    handle_open_view_edit_panel: function (issue) {
+      if (this.annotation_interface != 'image_or_video') {
         return
       }
-      if(this.current_interface_ref){
+      if (this.current_interface_ref) {
         this.current_interface_ref.open_view_edit_panel()
       }
     },
-    handle_clear_selected_instances_image: function(){
-      if(this.annotation_interface != 'image_or_video'){
+    handle_clear_selected_instances_image: function () {
+      if (this.annotation_interface != 'image_or_video') {
         return
       }
-      if(this.current_interface_ref){
+      if (this.current_interface_ref) {
         this.current_interface_ref.clear_selected()
       }
     },
-    handle_instance_update: function(update_data){
-      if(this.annotation_interface != 'image_or_video'){
+    handle_instance_update: function (update_data) {
+      if (this.annotation_interface != 'image_or_video') {
         return
       }
-      if(this.current_interface_ref){
+      if (this.current_interface_ref) {
         this.current_interface_ref.instance_update(update_data)
       }
     },
-    handle_update_canvas: function(){
-      if(this.annotation_interface != 'image_or_video'){
+    handle_update_canvas: function () {
+      if (this.annotation_interface != 'image_or_video') {
         return
       }
-      if(this.current_interface_ref){
+      if (this.current_interface_ref) {
         this.current_interface_ref.update_canvas()
       }
     },
-    handle_focus_instance_show_all: function(){
-      if(this.annotation_interface != 'image_or_video'){
+    handle_focus_instance_show_all: function () {
+      if (this.annotation_interface != 'image_or_video') {
         return
       }
-      if(this.current_interface_ref){
+      if (this.current_interface_ref) {
         this.current_interface_ref.focus_instance_show_all()
       }
 
     },
-    handle_focus_image_instance: function(focus){
-      if(this.annotation_interface != 'image_or_video'){
+    handle_focus_image_instance: function (focus) {
+      if (this.annotation_interface != 'image_or_video') {
         return
       }
-      if(this.current_interface_ref){
+      if (this.current_interface_ref) {
         this.current_interface_ref.focus_instance(focus)
       }
 
     },
-    set_has_changed: function(value) {
+    set_has_changed: function (value) {
       this.has_changed = value
     },
     save: async function (
@@ -807,7 +814,7 @@ export default Vue.extend({
         if (this.annotation_ui_context.image_annotation_ctx.video_mode && this.video_parent_file_instance_list.length > 0 && this.video_global_attribute_changed) {
           video_data.set_parent_instance_list = true
 
-          const video_payload = {...payload, instance_list: this.video_parent_file_instance_list }
+          const video_payload = {...payload, instance_list: this.video_parent_file_instance_list}
           const [parent_result, parent_error] = await this.save_request(video_payload);
 
           if (parent_result) {
@@ -970,7 +977,7 @@ export default Vue.extend({
       }
     },
     ghost_determine_if_no_conflicts_with_existing: function (ghost_instance) {
-      if(this.instance_list == undefined){
+      if (this.instance_list == undefined) {
         return
       }
       for (let existing_instance of this.instance_list) {
@@ -1126,7 +1133,7 @@ export default Vue.extend({
       this.change_task(direction, task, assign_to_user);
     },
 
-    on_task_annotation_complete_and_save: async function() {
+    on_task_annotation_complete_and_save: async function () {
       await this.save(true);
       const response = await finishTaskAnnotation(this.annotation_ui_context.task.id);
 
@@ -1176,24 +1183,23 @@ export default Vue.extend({
       }
       return undefined;
     },
-    get_url_instance_buffer: function() {
+    get_url_instance_buffer: function () {
       if (this.annotation_ui_context.task && this.annotation_ui_context.task.id) return `/api/v1/task/${this.annotation_ui_context.task.id}/video/file_from_task`
 
       return `/api/project/${this.project_string_id}/video/${this.annotation_ui_context.working_file.id}`
     },
-    update_working_file: function() {
+    update_working_file: function () {
       if (this.annotation_ui_context.task && this.annotation_ui_context.task.id) {
         this.annotation_ui_context.working_file = this.annotation_ui_context.task.file
-      }
-      else {
+      } else {
         this.annotation_ui_context.working_file = this.current_file
       }
       let file = this.annotation_ui_context.working_file
-      this.annotation_ui_context.image_annotation_ctx.video_mode =  file && file.type === 'video'
+      this.annotation_ui_context.image_annotation_ctx.video_mode = file && file.type === 'video'
     },
 
     on_change_label_schema: function (schema) {
-      if(schema.id === this.annotation_ui_context.label_schema.id){
+      if (schema.id === this.annotation_ui_context.label_schema.id) {
         return
       }
       this.annotation_ui_context.label_schema = schema;
@@ -1395,12 +1401,12 @@ export default Vue.extend({
         if (this.annotation_ui_context.task.file.type !== 'image') {
           const response = await axios.post(
             `/api/v1/job/${task.job_id}/next-task`,
-              {
-                project_string_id: this.computed_project_string_id,
-                task_id: task.id,
-                direction: direction,
-                assign_to_user: assign_to_user,
-              }
+            {
+              project_string_id: this.computed_project_string_id,
+              task_id: task.id,
+              direction: direction,
+              assign_to_user: assign_to_user,
+            }
           );
 
           if (response.data && response.data.task) {
@@ -1413,8 +1419,7 @@ export default Vue.extend({
           } else {
             success = false
           }
-        }
-        else {
+        } else {
           if (this.task_prefetcher.has_next(direction)) {
             this.task_loading = true
             const new_task = await this.task_prefetcher.change_task(direction)
@@ -1442,16 +1447,16 @@ export default Vue.extend({
         }
 
         if (!success) {
-            if (direction === "next") {
-              this.dialog = true;
-              this.snackbar_message =
-                "This is the last task of the list. Please go to previous tasks.";
-            } else {
-              this.show_snackbar = true;
-              this.snackbar_message =
-                "This is the first task of the list. Please go to the next tasks.";
-            }
+          if (direction === "next") {
+            this.dialog = true;
+            this.snackbar_message =
+              "This is the last task of the list. Please go to previous tasks.";
+          } else {
+            this.show_snackbar = true;
+            this.snackbar_message =
+              "This is the first task of the list. Please go to the next tasks.";
           }
+        }
       } catch (error) {
         console.debug(error);
       } finally {

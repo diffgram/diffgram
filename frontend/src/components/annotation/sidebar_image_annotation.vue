@@ -8,7 +8,7 @@
 
 
     <instance_detail_list_view ref="instance_detail_list"
-                               :instance_list="current_file_instance_list"
+                               :instance_list="instance_list"
                                :instance_store="annotation_ui_context.instance_store"
                                :model_run_list="annotation_ui_context.model_run_list"
                                :label_file_colour_map="label_file_colour_map"
@@ -196,6 +196,7 @@ import {LabelFile} from "../../types/label";
 import {BaseAnnotationUIContext} from "../../types/AnnotationUIContext";
 import {LabelColourMap} from "../../types/label_colour_map";
 import instance_history_sidepanel from "./instance_history_sidepanel.vue";
+import {Instance} from "../vue_canvas/instances/Instance";
 
 export default Vue.extend({
   name: "sidebar_image_annotation",
@@ -209,25 +210,7 @@ export default Vue.extend({
     label_list: {type: Array as LabelFile[], required: true},
     project_string_id: {type: String, required: true},
     current_global_instance: {type: String, required: true},
-  },
-  mounted() {
-   this.update_current_instance_list()
-  },
-  watch: {
-    'annotation_ui_context.instance_store': {
-      deep: true,
-      handler: function (newVal){
-        console.log('WATCHER instance_store')
-        this.update_current_instance_list()
-      }
-    },
-    'annotation_ui_context.working_file.id': {
-      deep: true,
-      handler: function (newVal){
-        console.log('WATCHER working_file')
-        this.update_current_instance_list()
-      }
-    },
+    instance_list: {type: Array as Instance[], required: true},
   },
   computed: {
     userscript_select_disabled: function () {
@@ -236,15 +219,12 @@ export default Vue.extend({
   },
   data: function () {
     return {
-      current_file_instance_list: []
+
     }
   },
 
   methods: {
-    update_current_instance_list: function(){
-      console.log('UPDATE INSTANCE LIST', JSON.stringify(this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id)))
-      this.current_file_instance_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id)
-    },
+
     open_issue_panel(mouse_position) {
       // This boolean controls if issues create/edit panel is shown or hidden.
       this.annotation_ui_context.issues_ui_manager.show_modify_an_issue = true

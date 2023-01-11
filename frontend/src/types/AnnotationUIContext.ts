@@ -25,7 +25,6 @@ export class BaseAnnotationUIContext {
   issues_ui_manager: IssuesAnnotationUIManager
 
   image_annotation_ctx: ImageAnnotationUIContext
-
 }
 
 export class ImageAnnotationUIContext extends BaseAnnotationUIContext{

@@ -22,6 +22,5 @@ export default class InstanceStore {
   set_instance_list(file_id: number, instance_list: any[]): void {
     this.instance_store[file_id] = instance_list
     Vue.set(this.instance_store, file_id, instance_list)
-    console.log('SET INSTANCE LIST', file_id, instance_list)
   }
 }
