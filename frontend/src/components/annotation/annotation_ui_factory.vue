@@ -45,7 +45,7 @@
           :url_instance_buffer="get_url_instance_buffer()"
           :save_loading_image="save_loading_image"
           :submitted_to_review="submitted_to_review"
-          :annotations_loading="annotations_loading"
+          :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
           :loading="loading"
           :filtered_instance_type_list_function="filtered_instance_type_list"
           :get_userscript="get_userscript"
@@ -53,7 +53,7 @@
           :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
           :go_to_keyframe_loading="go_to_keyframe_loading"
           :has_changed="has_changed"
-          :instance_buffer_metadata="instance_buffer_metadata"
+          :instance_buffer_metadata="annotation_ui_context.image_annotation_ctx.instance_buffer_metadata"
           :create_instance_template_url="create_instance_template_url"
           :video_parent_file_instance_list="video_parent_file_instance_list"
           :has_pending_frames="has_pending_frames"
@@ -368,6 +368,8 @@ export default Vue.extend({
           event_create_instance: null,
           get_userscript: this.get_userscript,
           label_settings: createDefaultLabelSettings(),
+          instance_buffer_metadata: {},
+          annotations_loading: false,
 
 
         },
@@ -409,11 +411,9 @@ export default Vue.extend({
       label_file_colour_map_from_project: null,
       save_loading_image: false,
       submitted_to_review: false,
-      annotations_loading: false,
       has_changed: false,
       save_loading_frames_list: [],
       go_to_keyframe_loading: false,
-      instance_buffer_metadata: {},
       video_parent_file_instance_list: [],
       unsaved_frames: [],
       snackbar_success: false,
@@ -754,7 +754,7 @@ export default Vue.extend({
         this.annotation_ui_context.image_annotation_ctx.video_mode &&
         (
           !this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id, frame_number) ||
-          this.annotations_loading
+          this.annotation_ui_context.image_annotation_ctx.annotations_loading
         )
       ) return
 
@@ -1037,8 +1037,8 @@ export default Vue.extend({
     },
     get_pending_save_frames: function () {
       let result = [];
-      for (let frame_num of Object.keys(this.instance_buffer_metadata)) {
-        let frame_metadata = this.instance_buffer_metadata[frame_num]
+      for (let frame_num of Object.keys(this.annotation_ui_context.image_annotation_ctx.instance_buffer_metadata)) {
+        let frame_metadata = this.annotation_ui_context.image_annotation_ctx.instance_buffer_metadata[frame_num]
         if (frame_metadata.pending_save) {
           result.push(parseInt(frame_num, 10))
         }
@@ -1048,11 +1048,11 @@ export default Vue.extend({
     set_frame_pending_save: function (value, frame_number) {
       if (!frame_number) return
 
-      if (this.instance_buffer_metadata[frame_number]) {
+      if (this.annotation_ui_context.image_annotation_ctx.instance_buffer_metadata[frame_number]) {
         // We need to recreate object so that computed props get triggered
-        this.instance_buffer_metadata[frame_number].pending_save = value;
+        this.annotation_ui_context.image_annotation_ctx.instance_buffer_metadata[frame_number].pending_save = value;
       } else {
-        this.instance_buffer_metadata[frame_number] = {
+        this.annotation_ui_context.image_annotation_ctx.instance_buffer_metadata[frame_number] = {
           pending_save: value
         }
       }
@@ -1124,7 +1124,7 @@ export default Vue.extend({
     ) {
       if (
         this.loading === true ||
-        this.annotations_loading === true
+        this.annotation_ui_context.image_annotation_ctx.annotations_loading === true
       ) return
 
 

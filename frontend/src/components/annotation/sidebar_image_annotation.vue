@@ -216,6 +216,9 @@ export default Vue.extend({
     userscript_select_disabled: function () {
       return this.annotation_ui_context.task && this.annotation_ui_context.task.id
     },
+    my_instance_list_test: function(){
+      return this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id)
+    }
   },
   data: function () {
     return {
