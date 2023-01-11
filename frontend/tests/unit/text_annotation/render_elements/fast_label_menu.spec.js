@@ -1,5 +1,5 @@
 import { shallowMount } from "@vue/test-utils";
-import fast_label_menu from "../../../../src/components/text_annotation/render_elements/fast_label_menu.vue"
+import fast_label_menu from "../../../../src/components/annotation/text_annotation/render_elements/fast_label_menu.vue"
 
 describe("Tests for fast_label_menu.vue", () => {
     const label_list = [

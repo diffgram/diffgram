@@ -1,11 +1,8 @@
 import Vuex from "vuex";
 import Vue from "vue";
-import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
-import FileLoader3DPointClouds from "../../../src/components/3d_annotation/FileLoader3DPointClouds";
-import {PCDLoader} from 'three/examples/jsm/loaders/PCDLoader';
+import {createLocalVue, Wrapper} from "@vue/test-utils";
+import FileLoader3DPointClouds from "../../../src/components/annotation/3d_annotation/FileLoader3DPointClouds";
 import axios from "axios";
-import {mocked} from 'ts-jest/utils'
-import {load} from "mime";
 axios.defaults.adapter = require('axios/lib/adapters/http')
 
 jest.mock("three/src/renderers/WebGLRenderer"); // this happens automatically with automocking
