@@ -16,7 +16,7 @@
     <div v-else-if="interface_type === 'image' || interface_type === 'video'">
       <v_annotation_core
         class="pt-1 pl-1"
-        v-if="!changing_file && !changing_task"
+        v-if="!changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
         v-bind="$props"
         v-on="$listeners"
         ref="annotation_core" 
@@ -80,6 +80,10 @@ export default Vue.extend({
     },
     credentials_granted: {
       type: Boolean,
+      required: true
+    },
+    annotation_ui_context: {
+      type: Object,
       required: true
     },
     userscript_select_disabled: {
@@ -238,6 +242,14 @@ export default Vue.extend({
       type: Boolean,
       default: false
     },
+    issues_ui_manager: {
+      type: Object,
+      default: {}
+    },
+    task_error: {
+      type: Object,
+      default: null
+    }
   },
   computed: {
     interface_type: function(): string | null {
