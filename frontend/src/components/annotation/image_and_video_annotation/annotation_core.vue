@@ -836,6 +836,7 @@ export default Vue.extend({
       this.$emit('selected_instance_for_history', newVal)
     },
     request_change_current_instance: function (newVal) {
+      console.log('request_change_current_instance', newVal)
       this.$emit('request_change_current_instance', newVal)
     },
     video_playing: function (newVal) {
@@ -1018,7 +1019,6 @@ export default Vue.extend({
       current_issue: undefined,
       share_dialog_open: false,
       show_modify_an_issue: false,
-      trigger_refresh_current_instance: null,
       ellipse_hovered_corner: undefined,
       ellipse_hovered_corner_key: undefined,
       ellipse_hovered_instance: undefined,
@@ -2527,7 +2527,7 @@ export default Vue.extend({
       if (index === this.instance_hover_index || this.instance_hover_index == undefined) {
 
         this.refresh_instance_list_sidebar(index)
-        this.trigger_refresh_current_instance = Date.now(); // decouple, for case of file changing but instance list being the same index
+        this.annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = Date.now(); // decouple, for case of file changing but instance list being the same index
       }
 
 
@@ -2818,7 +2818,7 @@ export default Vue.extend({
           let coord_router: ImageAnnotationCoordinatorRouter = this.create_coordinator_router()
           let coordinator: ImageAnnotationCoordinator = coord_router.generate_from_instance(elm, elm.type)
           coordinator.deselect({} as ImageInteractionEvent)
-          this.trigger_refresh_current_instance = new Date()
+          this.annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = new Date()
 
         } else {
 
@@ -4376,7 +4376,7 @@ export default Vue.extend({
       const instance_to_select = this.instance_list[this.instance_hover_index];
       if (instance_to_select && !SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance_to_select.type)) {
         this.request_change_current_instance = this.instance_hover_index;
-        this.trigger_refresh_current_instance = Date.now(); // decouple, for case of file changing but instance list being the same index
+        this.annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = Date.now(); // decouple, for case of file changing but instance list being the same index
 
       }
 
@@ -6081,13 +6081,13 @@ export default Vue.extend({
     ) {
       this.event_create_instance = {...this.current_instance};
       this.request_change_current_instance = instance_index;
-      this.trigger_refresh_current_instance = Date.now();
+      this.annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = Date.now();
     },
 
     unset_instance_list_sidebar: function () {
       this.event_create_instance = null;
       this.request_change_current_instance = null;
-      this.trigger_refresh_current_instance = Date.now();
+      this.annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = Date.now();
     },
     polygon_mid_point_mouse_down: function () {
       if (!this.selected_instance) {

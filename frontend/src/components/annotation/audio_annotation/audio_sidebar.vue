@@ -1,6 +1,6 @@
 <template>
-    <div 
-        class="wrapper-element" 
+    <div
+        class="wrapper-element"
         :style="`
             max-height: calc(100vh - ${toolbar_height});
             min-height: calc(100vh - ${toolbar_height});
@@ -54,7 +54,7 @@
                                         {{ item.id || 'new' }}
                                     </td>
                                     <td class="centered-table-items">
-                                            <v-icon 
+                                            <v-icon
                                                 v-if="item.type === 'audio'"
                                                 :color="item.label_file.colour.hex"
                                             >
@@ -177,21 +177,21 @@ export default Vue.extend({
                     sortable: false,
                     value: 'type'
                 },
-                { 
-                    text: 'Name', 
+                {
+                    text: 'Name',
                     value: 'label_file.label.name',
                     sortable: false,
                     align: 'center'
                 },
-                { 
-                    text: 'Action', 
+                {
+                    text: 'Action',
                     value: 'action',
                     sortable: false,
                     align: 'center'
                 }
             ]
             }
-        
+
             return [
                 {
                     text: 'Type',
@@ -199,14 +199,14 @@ export default Vue.extend({
                     sortable: false,
                     value: 'type'
                 },
-                { 
-                    text: 'Name', 
+                {
+                    text: 'Name',
                     value: 'label_file.label.name',
                     sortable: false,
                     align: 'center'
                 },
-                { 
-                    text: 'Action', 
+                {
+                    text: 'Action',
                     value: 'action',
                     sortable: false,
                     align: 'center'
@@ -256,16 +256,16 @@ export default Vue.extend({
 
 <style scoped>
 .wrapper-element {
-    width: 350px; 
+    width: 350px;
     min-width: 350px;
-    border-right: 1px solid #e0e0e0; 
+    border-right: 1px solid #e0e0e0;
     position: sticky;
     left: 0;
     overflow: scroll;
 }
 
 .centered-table-items {
-    vertical-align: middle; 
+    vertical-align: middle;
     text-align: center;
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="d-flex">
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
     <sidebar_factory
       v-if="annotation_interface === 'image_or_video' && !task_error.task_request && !changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
@@ -582,6 +582,7 @@ export default Vue.extend({
       }
     },
     handle_instance_update: function (update_data) {
+      console.log('INSTANCE UPDATE', update_data)
       if (this.annotation_interface != 'image_or_video') {
         return
       }
