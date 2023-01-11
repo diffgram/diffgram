@@ -262,7 +262,7 @@ export default Vue.extend({
         on_select_instance: function(instance) {
             this.$emit("on_select_instance", instance)
         },
-        attribute_group_list_computed: function () {
+        attribute_group_list_prop: function () {
 
             if (!this.label_list
                 || !this.current_instance

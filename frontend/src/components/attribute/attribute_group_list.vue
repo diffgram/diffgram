@@ -153,7 +153,7 @@ export default Vue.extend({
         type: String,
         default: null
       },
-      attribute_group_list_computed: {
+      attribute_group_list_prop: {
         type: Array,
         default: null
       },
@@ -189,7 +189,7 @@ export default Vue.extend({
         this.api_attribute_group_list("from_project")
       },
       attribute_group_list_prop() {
-        this.attribute_group_list = this.attribute_group_list_computed
+        this.attribute_group_list = this.attribute_group_list_prop
         this.attribute_group_list_computed
         if(this.attribute_group_list.length > 0 && this.openedPanel == undefined){
           this.openedPanel = 0
@@ -208,7 +208,7 @@ export default Vue.extend({
        this.api_attribute_group_list("from_project")
       }
       if (this.mode == 'annotate') {
-       this.attribute_group_list = this.attribute_group_list_computed
+       this.attribute_group_list = this.attribute_group_list_prop
         this.fetch_current_instance_missing_attributes("from_project")
       }
     },

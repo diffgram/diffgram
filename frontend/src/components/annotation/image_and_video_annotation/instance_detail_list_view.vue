@@ -589,7 +589,6 @@ export default Vue.extend({
       },
 
       trigger_refresh_current_instance: function () {
-        console.log('trigger_refresh_current_instance', this.trigger_refresh_current_instance)
         if (this.instance_list) {
           this.change_instance(
             this.instance_list[this.external_requested_index],
@@ -766,7 +765,7 @@ export default Vue.extend({
       },
       attribute_group_list_computed: function () {
 
-        // attribute_group_list_computed handles determining which group it
+        // attribute_group_list_prop handles determining which group it
         // should passed based on current label
 
         if (!this.label_list

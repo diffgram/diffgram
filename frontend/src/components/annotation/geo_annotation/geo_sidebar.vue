@@ -161,7 +161,7 @@ export default Vue.extend({
         button_with_menu,
         label_select_only,
         global_attributes_list,
-        attribute_group_list
+        attribute_group_list_prop
     },
     props: {
         project_string_id: {

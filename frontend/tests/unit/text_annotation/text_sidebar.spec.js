@@ -89,22 +89,22 @@ describe("text_sidebar.vue", () => {
         props.propsData.per_instance_attribute_groups_list = undefined
 
         local_wrapper = shallowMount(text_sidebar, props, localVue)
-        result = local_wrapper.vm.attribute_group_list_computed()
+        result = local_wrapper.vm.attribute_group_list_prop()
         expect(result).toEqual([])
 
         props.propsData.label_list = [1]
         local_wrapper = shallowMount(text_sidebar, props, localVue)
-        result = local_wrapper.vm.attribute_group_list_computed()
+        result = local_wrapper.vm.attribute_group_list_prop()
         expect(result).toEqual([])
 
         props.propsData.current_instance = {id: 1}
         local_wrapper = shallowMount(text_sidebar, props, localVue)
-        result = local_wrapper.vm.attribute_group_list_computed()
+        result = local_wrapper.vm.attribute_group_list_prop()
         expect(result).toEqual([])
 
         props.propsData.per_instance_attribute_groups_list = [{id: 1}]
         local_wrapper = shallowMount(text_sidebar, props, localVue)
-        result = local_wrapper.vm.attribute_group_list_computed()
+        result = local_wrapper.vm.attribute_group_list_prop()
         expect(result).toEqual([])
     })
 
@@ -127,7 +127,7 @@ describe("text_sidebar.vue", () => {
         ]
 
         const local_wrapper = shallowMount(text_sidebar, props, localVue)
-        const result = local_wrapper.vm.attribute_group_list_computed()
+        const result = local_wrapper.vm.attribute_group_list_prop()
         expect(result).toEqual(props.propsData.per_instance_attribute_groups_list)
     })
 
