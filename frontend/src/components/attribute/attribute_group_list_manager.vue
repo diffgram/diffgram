@@ -96,7 +96,7 @@
         'project_string_id': {
           default: null
         },
-        'attribute_group_list_prop': {
+        'attribute_group_list_computed': {
           default: null
         },
         'schema_id':{
@@ -121,7 +121,7 @@
         },
 
         attribute_group_list_prop() {
-          this.attribute_group_list = this.attribute_group_list_prop
+          this.attribute_group_list = this.attribute_group_list_computed
         }
 
       },

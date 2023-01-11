@@ -48,10 +48,10 @@
         @attribute_change="global_attribute_change($event)"
       />
 
-      <v-divider v-if="attribute_group_list_prop.length != 0 || (current_instance && current_instance.attribute_groups)"></v-divider>
+      <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups)"></v-divider>
 
       <v-expansion-panels
-        v-if="attribute_group_list_prop.length != 0 || (current_instance && current_instance.attribute_groups)"
+        v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups)"
         v-model="instance_detail_open"
         accordion
         flat
@@ -69,7 +69,7 @@
             <v-spacer></v-spacer>
 
             <v-chip x-small class="d-flex justify-center flex-grow-0">
-              {{ attribute_group_list_prop.length }}
+              {{ attribute_group_list_computed.length }}
             </v-chip>
           </v-expansion-panel-header>
 
@@ -78,11 +78,11 @@
             <attribute_group_list
               :project_string_id="project_string_id"
               style="overflow-y:auto; max-height: 400px"
-              v-if="attribute_group_list_prop.length !== 0 || (current_instance && current_instance.attribute_groups)"
+              v-if="attribute_group_list_computed.length !== 0 || (current_instance && current_instance.attribute_groups)"
               :mode="'annotate'"
               :view_only_mode="view_only_mode"
               :schema_id="schema_id"
-              :attribute_group_list_prop="attribute_group_list_prop"
+              :attribute_group_list_prop="attribute_group_list_computed"
               :current_instance="current_instance"
               @attribute_change="attribute_change($event)"
               key="attribute_groups_list"
@@ -589,6 +589,7 @@ export default Vue.extend({
       },
 
       trigger_refresh_current_instance: function () {
+        console.log('trigger_refresh_current_instance', this.trigger_refresh_current_instance)
         if (this.instance_list) {
           this.change_instance(
             this.instance_list[this.external_requested_index],
@@ -763,9 +764,9 @@ export default Vue.extend({
         }
 
       },
-      attribute_group_list_prop: function () {
+      attribute_group_list_computed: function () {
 
-        // attribute_group_list_prop handles determining which group it
+        // attribute_group_list_computed handles determining which group it
         // should passed based on current label
 
         if (!this.label_list

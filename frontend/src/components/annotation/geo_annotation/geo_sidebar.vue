@@ -1,8 +1,8 @@
 <template>
     <div :style="`
-        min-width: 350px; 
-        width: 350px; 
-        border-right: 1px solid #e0e0e0; 
+        min-width: 350px;
+        width: 350px;
+        border-right: 1px solid #e0e0e0;
         max-height: calc(100vh - ${toolbar_height});
         position: sticky;
         overflow-y: scroll;
@@ -69,31 +69,31 @@
                                     {{ item.id || 'new' }}
                                 </td>
                                 <td class="centered-table-items">
-                                    <v-icon 
+                                    <v-icon
                                         v-if="item.type === 'geo_circle'"
                                         :color="item.label_file.colour.hex"
                                     >
                                         mdi-checkbox-blank-circle-outline
                                     </v-icon>
-                                    <v-icon 
+                                    <v-icon
                                         v-if="item.type === 'geo_point'"
                                         :color="item.label_file.colour.hex"
                                     >
                                         mdi-circle-slice-8
                                     </v-icon>
-                                    <v-icon 
+                                    <v-icon
                                         v-if="item.type === 'geo_box'"
                                         :color="item.label_file.colour.hex"
                                     >
                                         mdi-checkbox-blank
                                     </v-icon>
-                                    <v-icon 
+                                    <v-icon
                                         v-if="item.type === 'geo_polygon'"
                                         :color="item.label_file.colour.hex"
                                     >
                                         mdi-vector-polygon
                                     </v-icon>
-                                    <v-icon 
+                                    <v-icon
                                         v-if="item.type === 'geo_polyline'"
                                         :color="item.label_file.colour.hex"
                                     >
@@ -226,21 +226,21 @@ export default Vue.extend({
                     sortable: false,
                     value: 'type'
                 },
-                { 
-                    text: 'Name', 
+                {
+                    text: 'Name',
                     value: 'label_file.label.name',
                     sortable: false,
                     align: 'center'
                 },
-                { 
-                    text: 'Action', 
+                {
+                    text: 'Action',
                     value: 'action',
                     sortable: false,
                     align: 'center'
                 }
             ]
             }
-        
+
             return [
                 {
                     text: 'Type',
@@ -248,14 +248,14 @@ export default Vue.extend({
                     sortable: false,
                     value: 'type'
                 },
-                { 
-                    text: 'Name', 
+                {
+                    text: 'Name',
                     value: 'label_file.label.name',
                     sortable: false,
                     align: 'center'
                 },
-                { 
-                    text: 'Action', 
+                {
+                    text: 'Action',
                     value: 'action',
                     sortable: false,
                     align: 'center'
@@ -266,7 +266,7 @@ export default Vue.extend({
     methods: {
         on_change_expansion: function(panel_index: number): void {
             if (!this.open_panels.includes(panel_index)) this.open_panels.push(panel_index)
-            
+
             else {
                 const index_to_remove = this.open_panels.indexOf(panel_index)
                 this.open_panels.splice(index_to_remove, 1)
@@ -284,7 +284,7 @@ export default Vue.extend({
         attribute_change: function(event, is_global = false) {
             this.$emit('on_update_attribute', event, is_global)
         },
-        attribute_group_list_prop: function () {
+        attribute_group_list_computed: function () {
             if (!this.label_list
                 || !this.current_instance
                 || !this.per_instance_attribute_groups_list
@@ -306,7 +306,7 @@ export default Vue.extend({
 
 <style scoped>
 .centered-table-items {
-    vertical-align: middle; 
+    vertical-align: middle;
     text-align: center;
 }
-</style> 
+</style>
