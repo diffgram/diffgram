@@ -78,49 +78,169 @@ export default Vue.extend({
       type: Object,
       required: true
     },
-    userscript_select_disabled: {},
-    url_instance_buffer: {},
-    save_loading_image: {},
-    submitted_to_review: {},
-    annotations_loading: {},
-    loading: {},
-    filtered_instance_type_list_function: {},
-    get_userscript: {},
-    save_loading_frames_list: {},
-    video_mode: {},
-    go_to_keyframe_loading: {},
-    has_changed: {},
-    instance_buffer_metadata: {},
-    create_instance_template_url: {},
-    video_parent_file_instance_list: {},
-    has_pending_frames: {},
-    instance_store: {},
-    label_schema: {},
-    model_run_id_list: {},
-    model_run_color_list: {},
-    task: {},
-    file: {},
-    task_id_prop: {},
-    request_save: {},
-    accesskey: {},
-    job_id: {},
-    view_only_mode: {},
-    label_list: {},
-    label_file_colour_map: {},
-    enabled_edit_schema: {},
-    finish_annotation_show: {},
-    global_attribute_groups_list: {},
-    per_instance_attribute_groups_list: {},
-    task_image: {},
-    task_instances: {},
-    task_loading: {},
-    credentials_granted: {},
-    initializing: {},
-    changing_file: {},
-    changing_task: {},
+    credentials_granted: {
+      type: Boolean,
+      required: true
+    },
+    userscript_select_disabled: {
+      type: Boolean,
+      default: false
+    },
+    url_instance_buffer: {
+      type: String || undefined || null,
+      default: null
+    },
+    save_loading_image: {
+      type: Boolean,
+      default: false
+    },
+    submitted_to_review: {
+      type: Boolean,
+      default: false
+    },
+    annotations_loading: {
+      type: Boolean,
+      default: false
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    filtered_instance_type_list_function: {
+      type: Function,
+      default: () => {}
+    },
+    get_userscript: {
+      type: Function,
+      default: () => {}
+    },
+    save_loading_frames_list: {
+      type: Array,
+      default: []
+    },
+    video_mode: {
+      type: Boolean,
+      default: false
+    },
+    go_to_keyframe_loading: {
+      type: Boolean,
+      default: false
+    },
+    has_changed: {
+      type: Boolean,
+      default: false
+    },
+    instance_buffer_metadata: {
+      type: Object,
+      default: {}
+    },
+    create_instance_template_url: {
+      type: String,
+      default: ''
+    },
+    video_parent_file_instance_list: {
+      type: Array,
+      default: []
+    },
+    has_pending_frames: {
+      type: Boolean,
+      default: false
+    },
+    instance_store: {
+      type: Object,
+      default: {}
+    },
+    label_schema: {
+      type: Object || null,
+      default: null
+    },
+    model_run_id_list: {
+      type: Array,
+      default: []
+    },
+    model_run_color_list: {
+      type: Array,
+      default: []
+    },
+    task: {
+      type: Object || null,
+      default: null
+    },
+    file: {
+      type: Object,
+      default: null
+    },
+    task_id_prop: {
+      type: Number,
+      default: null
+    },
+    request_save: {
+      type: Boolean,
+      default: false
+    },
+    accesskey: {
+      type: String,
+      default: 'full'
+    },
+    job_id: {
+      type: Number,
+      default: null
+    },
+    view_only_mode: {
+      type: Boolean,
+      default: false
+    },
+    label_list: {
+      type: Array,
+      default: []
+    },
+    label_file_colour_map: {
+      type: Object,
+      default: {}
+    },
+    enabled_edit_schema: {
+      type: Boolean,
+      default: false
+    },
+    finish_annotation_show: {
+      type: Boolean,
+      default: false
+    },
+    global_attribute_groups_list: {
+      type: Array,
+      default: []
+    },
+    per_instance_attribute_groups_list: {
+      type: Array,
+      default: []
+    },
+    task_image: {
+      type: Node || null,
+      default: null
+    },
+    task_instances: {
+      type: Object,
+      default: null
+    },
+    task_loading: {
+      type: Boolean,
+      default: false
+    },
+    initializing: {
+      type: Boolean,
+      default: false
+    },
+    changing_file: {
+      type: Boolean,
+      default: false
+    },
+    changing_task: {
+      type: Boolean,
+      default: false
+    },
   },
   computed: {
-    interface_type: function() {
+    interface_type: function(): string | null {
       if (!this.working_file || !this.working_file.type) return null
       
       return this.working_file.type
