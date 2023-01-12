@@ -155,8 +155,7 @@
           />
 
           <view_edit_issue_panel
-            v-if="!annotation_ui_context.image_annotation_ctx.loading"
-            v-show="annotation_ui_context.issues_ui_manager.show_modify_an_issue == true && annotation_ui_context.issues_ui_manager.current_issue"
+            v-if="!annotation_ui_context.image_annotation_ctx.loading && annotation_ui_context.issues_ui_manager.show_modify_an_issue && annotation_ui_context.issues_ui_manager.current_issue"
             :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
             :task="annotation_ui_context.task"
             :instance_list="instance_list"
@@ -177,7 +176,7 @@
             :task="annotation_ui_context.task"
             :issues_ui_manager="annotation_ui_context.issues_ui_manager"
             :file="annotation_ui_context.working_file"
-            @view_issue_detail="$emit('open_view_edit_panel')"
+            @view_issue_detail="$emit('open_view_edit_panel', $event)"
             @issues_fetched="issues_fetched"
             ref="issues_sidepanel"
           />
@@ -262,8 +261,10 @@ export default Vue.extend({
       this.$emit('clear_selected_instances_image')
     },
     close_view_edit_issue_panel() {
+      console.log('CLOSE VIE EDITT')
       this.annotation_ui_context.issues_ui_manager.current_issue = undefined;
       this.annotation_ui_context.issues_ui_manager.show_modify_an_issue = false;
+      this.annotation_ui_context.issues_ui_manager.issue_mouse_position = undefined;
       this.annotation_ui_context.image_annotation_ctx.label_settings.allow_multiple_instance_select = false;
       this.$store.commit("set_view_issue_mode", false);
       this.$store.commit("set_instance_select_for_issue", false);

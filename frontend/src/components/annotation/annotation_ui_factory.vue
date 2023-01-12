@@ -550,13 +550,14 @@ export default Vue.extend({
     on_draw_mode_changed: function (draw_mode) {
       this.annotation_ui_context.image_annotation_ctx.draw_mode = draw_mode
     },
+
     handle_open_view_edit_panel: function (issue) {
       if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
       let current_interface = this.get_current_annotation_area_ref()
       if (current_interface) {
-        current_interface.open_view_edit_panel()
+        current_interface.open_view_edit_panel(issue)
       }
     },
     handle_clear_selected_instances_image: function () {
