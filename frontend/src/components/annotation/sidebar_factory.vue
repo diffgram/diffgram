@@ -1,6 +1,6 @@
 <template>
   <sidebar_image_annotation
-    v-if="annotation_interface === 'image_or_video'"
+    v-if="(interface_type === 'image' || interface_type === 'video')"
     :annotation_ui_context="annotation_ui_context"
     :label_file_colour_map="label_file_colour_map"
     :project_string_id="project_string_id"
@@ -29,7 +29,7 @@ export default Vue.extend({
     sidebar_image_annotation
   },
   props: {
-    annotation_interface: {type: String, required: true},
+    interface_type: {type: String, required: true},
     annotation_ui_context: {type: Object as BaseAnnotationUIContext, required: true},
     label_file_colour_map: {type: Object as LabelColourMap, required: true},
     label_list: {type: Array as LabelFile[], required: true},
