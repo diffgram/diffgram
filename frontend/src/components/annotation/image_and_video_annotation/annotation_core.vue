@@ -692,8 +692,8 @@ import polygon_borders_context_menu from "../../context_menu/polygon_borders_con
 import ui_schema_context_menu from "../../ui_schema/ui_schema_context_menu.vue";
 import current_instance_template from "../../vue_canvas/current_instance_template.vue";
 import instance_template_creation_dialog from "../../instance_templates/instance_template_creation_dialog";
-import create_issue_panel from "../../discussions/create_issue_panel.vue";
-import view_edit_issue_panel from "../../discussions/view_edit_issue_panel.vue";
+
+
 import {getContrastColor} from '../../../utils/colorUtils.js'
 import {ellipse} from "../../vue_canvas/ellipse.js";
 import {CommandManagerAnnotationCore} from "./annotation_core_command_manager.js";
@@ -762,12 +762,10 @@ Vue.prototype.$polygon = new polygon();
 export default Vue.extend({
   name: "annotation_core",
   components: {
-    create_issue_panel,
     v_sequence_list,
     autoborder_avaiable_alert,
     instance_template_creation_dialog,
     polygon_borders_context_menu,
-    view_edit_issue_panel,
     canvas_current_instance,
     current_instance_template,
     canvas_instance_list,
@@ -2496,7 +2494,7 @@ export default Vue.extend({
     instance_selected: function (instance) {
       // Callback for when an instance is selected
       // This is a WIP that will be used for all the class Instance Types
-      // For now we only have Kepoints instance using this.
+      // For now we only have Keypoints instance using this.
       let instances_to_merge_creation_refs = []
       if (this.polygon_merge_tool) {
         instances_to_merge_creation_refs = this.polygon_merge_tool.instances_to_merge.map(inst => inst.creation_ref_id)
@@ -2518,6 +2516,9 @@ export default Vue.extend({
           } else if (!this.polygon_merge_tool ||
             !this.polygon_merge_tool.parent_merge_instance ||
             this.polygon_merge_tool.parent_merge_instance.length === 0) {
+            if(this.label_settings.allow_multiple_instance_select){
+              continue
+            }
             this.deselect_instance(elm)
           }
 
@@ -3236,9 +3237,7 @@ export default Vue.extend({
       this.add_event_listeners();
       this.fetch_model_run_list();
       this.fetch_instance_template();
-      if (this.$refs.issues_sidepanel) {
-        this.$refs.issues_sidepanel.get_issues_list()
-      }
+
       this.update_canvas()
       this.populate_canvas_element()
       this.canvas_mouse_tools = new CanvasMouseTools(

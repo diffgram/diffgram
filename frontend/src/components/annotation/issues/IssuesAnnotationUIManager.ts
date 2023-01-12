@@ -16,6 +16,7 @@ export default class IssuesAnnotationUIManager {
     this.issues_list = []
     this.show_modify_an_issue = false
     this.issues_expansion_panel = true
+    this.current_issue = undefined
   }
   public async get_issues_list(project_string_id: string, file_id: number = undefined, task_id: number = undefined): Promise<Discussion[]>{
     try {

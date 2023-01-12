@@ -17,10 +17,25 @@
                       >
         </v-text-field>
       </v-layout>
-
+        <div v-if="selected_instances && selected_instances.length > 0">
+          <p class="ma-0"><strong>Attached Instances</strong></p>
+          <v-container class="d-flex flex-wrap">
+            <v-chip color="primary" small v-for="instance in selected_instances">
+              <template>
+              <span style="font-size: 10px">
+                  ID: {{instance.id}}
+              </span>
+              </template>
+            </v-chip>
+          </v-container>
+        </div>
+        <div v-else>
+          <h5 class="text--accent-1">
+            No Annotations Selected.
+          </h5>
+        </div>
       <v-layout>
         <editor-menu-bar :editor="editor" v-slot="{ commands, isActive }">
-
           <div class="menubar d-flex justify-end flex-wrap">
 
             <v-btn
@@ -160,23 +175,7 @@
         >
       </v-card-actions>
 
-      <div v-if="selected_instances && selected_instances.length > 0">
-        <p class="ma-0"><strong>Attached Instances</strong></p>
-        <v-container class="d-flex flex-wrap">
-          <v-chip color="primary" small v-for="instance in selected_instances">
-            <template>
-              <span style="font-size: 10px">
-                  ID: {{instance.id}}
-              </span>
-            </template>
-          </v-chip>
-        </v-container>
-      </div>
-      <div v-else>
-        <p>
-          No Annotations Selected.
-        </p>
-      </div>
+
 
 
     </v-card>
