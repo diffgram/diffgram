@@ -19,7 +19,7 @@
         v-if="!changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
         v-bind="$props"
         v-on="$listeners"
-        ref="annotation_core" 
+        ref="annotation_core"
       />
     </div>
       <div v-else-if="interface_type === 'sensor_fusion'">
@@ -56,7 +56,7 @@ import image_and_audio_annotation_core from "./image_and_video_annotation/annota
 import text_annotation_core from "./text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
 import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue"
-import sensor_fusion_annotation_core from './3d_annotation/sensor_fusion_editor.vue' 
+import sensor_fusion_annotation_core from './3d_annotation/sensor_fusion_editor.vue'
 import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue";
 
 export default Vue.extend({
@@ -71,6 +71,10 @@ export default Vue.extend({
   },
   props: {
     project_string_id: {
+      type: String,
+      required: true
+    },
+    interface_type: {
       type: String,
       required: true
     },
@@ -252,11 +256,23 @@ export default Vue.extend({
     }
   },
   computed: {
-    interface_type: function(): string | null {
-      if (!this.working_file || !this.working_file.type) return null
-      
-      return this.working_file.type
-    }
+
+    current_interface_ref: function () {
+      if (this.interface_type === 'image' || this.interface_type === 'video') {
+        return this.$refs.annotation_core
+      } else if (this.interface_type === 'sensor_fusion') {
+        return this.$refs.sensor_fusion_editor
+      } else if (this.interface_type === 'text') {
+        return this.$refs.text_annotation_core
+      } else if (this.interface_type === 'geo') {
+        return this.$refs.geo_annotation_core
+      } else if (this.interface_type === 'audio') {
+        return this.$refs.audio_annotation_core
+      } else if (this.interface_type === 'compound') {
+        // Not implemented yet. Will need to deduct current interface from mouse hover maybe
+        return null
+      }
+    },
   }
 })
 </script>
