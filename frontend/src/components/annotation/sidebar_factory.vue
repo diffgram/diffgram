@@ -21,7 +21,7 @@ import Vue from "vue";
 import {BaseAnnotationUIContext} from "../../types/AnnotationUIContext";
 import {LabelColourMap} from "../../types/label_colour_map";
 import {LabelFile} from "../../types/label";
-import sidebar_image_annotation from './sidebar_image_annotation'
+import sidebar_image_annotation from './image_and_video_annotation/sidebar_image_annotation.vue'
 import {Instance} from "../vue_canvas/instances/Instance";
 export default Vue.extend({
   name: "sidebar_factory",
