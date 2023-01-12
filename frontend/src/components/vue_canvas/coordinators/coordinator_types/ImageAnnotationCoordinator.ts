@@ -132,7 +132,6 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
         instance = hovered_instance
       }
     }
-    console.log('annotation_event.annotation_ctx.instance_select_for_issue', annotation_event.annotation_ctx.instance_select_for_issue)
     // Deselection Allowed in issue creation mode
     if(this.is_mouse_down_event(annotation_event) &&
       instance &&
