@@ -189,14 +189,14 @@
 
 <script lang="ts">
 import Vue from "vue";
-import instance_detail_list_view from "../annotation/image_and_video_annotation/instance_detail_list_view";
+import instance_detail_list_view from "./instance_detail_list_view.vue";
 import {types} from "sass";
 import String = types.String;
-import {LabelFile} from "../../types/label";
-import {BaseAnnotationUIContext} from "../../types/AnnotationUIContext";
-import {LabelColourMap} from "../../types/label_colour_map";
-import instance_history_sidepanel from "../annotation/image_and_video_annotation/instance_history_sidepanel.vue";
-import {Instance} from "../vue_canvas/instances/Instance";
+import {LabelFile} from "../../../types/label";
+import {BaseAnnotationUIContext} from "../../../types/AnnotationUIContext";
+import {LabelColourMap} from "../../../types/label_colour_map";
+import instance_history_sidepanel from "./instance_history_sidepanel.vue";
+import {Instance} from "../../vue_canvas/instances/Instance";
 
 export default Vue.extend({
   name: "sidebar_image_annotation",
