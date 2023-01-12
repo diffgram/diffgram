@@ -18,20 +18,20 @@
       @clear_selected_instances_image="handle_clear_selected_instances_image"
       @open_view_edit_panel="handle_open_view_edit_panel"
     ></sidebar_factory>
-    
+
     <div id="annotation_ui_factory" tabindex="0">
       <v_error_multiple :error="error" />
-      
+
       <annotation_area_factory
         v-if="annotation_ui_context && annotation_ui_context.working_file"
+        :annotation_ui_context="annotation_ui_context"
+        :working_file="annotation_ui_context.working_file"
         :credentials_granted="credentials_granted"
         :initializing="initializing"
-        :working_file="annotation_ui_context.working_file"
-        :annotation_ui_context="annotation_ui_context"
-        :url_instance_buffer="get_url_instance_buffer()"
         :save_loading_image="save_loading_image"
+        :url_instance_buffer="get_url_instance_buffer()"
         :submitted_to_review="submitted_to_review"
-        :annotations_loading="annotations_loading"
+        :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
         :loading="loading"
         :filtered_instance_type_list_function="filtered_instance_type_list"
         :get_userscript="get_userscript"
@@ -39,7 +39,7 @@
         :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
         :go_to_keyframe_loading="go_to_keyframe_loading"
         :has_changed="has_changed"
-        :instance_buffer_metadata="instance_buffer_metadata"
+        :instance_buffer_metadata="annotation_ui_context.image_annotation_ctx.instance_buffer_metadata"
         :create_instance_template_url="create_instance_template_url"
         :video_parent_file_instance_list="video_parent_file_instance_list"
         :has_pending_frames="has_pending_frames"
@@ -67,7 +67,6 @@
         :changing_task="changing_task"
         :task_error="task_error"
         :issues_ui_manager="annotation_ui_context.issues_ui_manager"
-        
         @request_file_change="request_file_change"
         @change_label_schema="on_change_label_schema"
         @set_file_list="set_file_list"
@@ -77,12 +76,25 @@
         @save_time_tracking="save_time_tracking"
         @trigger_task_change="trigger_task_change"
         @set_ui_schema="set_ui_schema"
-        @set_save_loading="set_save_loading" 
+        @set_save_loading="set_save_loading"
         @save="save"
         @set_frame_pending_save="set_frame_pending_save"
         @task_update="task_update"
         @set_has_changed="set_has_changed"
         @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
+        @model_run_list_loaded="annotation_ui_context.model_run_list = $event"
+        @draw_mode_change="on_draw_mode_changed"
+        @change_video_playing="annotation_ui_context.image_annotation_ctx.video_playing = $event"
+        @change_current_label_file="annotation_ui_context.current_label_file = $event"
+        @request_change_current_instance="annotation_ui_context.image_annotation_ctx.request_change_current_instance = $event"
+        @trigger_refresh_current_instance="annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = $event"
+        @selected_instance_for_history="annotation_ui_context.selected_instance_for_history = $event"
+        @event_create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance = $event"
+        @loading_changed="annotation_ui_context.image_annotation_ctx.loading = $event"
+        @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
+        @open_issue_panel="issues_expansion_panel = $event"
+        @instance_list_updated="update_current_instance_list"
+        @instance_buffer_dict_updated="update_current_frame_buffer_dict"
       />
 
       <file_manager_sheet
