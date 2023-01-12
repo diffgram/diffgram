@@ -13,6 +13,7 @@
     @instance_update="$emit('instance_update', $event)"
     @open_view_edit_panel="$emit('open_view_edit_panel', $event)"
     @clear_selected_instances_image="$emit('clear_selected_instances_image', $event)"
+    ref="sidebar_image"
   ></sidebar_image_annotation>
 </template>
 
@@ -40,7 +41,13 @@ export default Vue.extend({
   data: function () {
     return {}
   },
-  methods: {},
+  methods: {
+    get_current_sidebar_ref: function(){
+      if(this.interface_type === 'image' || this.interface_type === 'video'){
+        return this.$refs.sidebar_image
+      }
+    }
+  },
 })
 </script>
 

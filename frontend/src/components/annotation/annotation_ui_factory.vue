@@ -17,6 +17,7 @@
       @instance_update="handle_instance_update"
       @clear_selected_instances_image="handle_clear_selected_instances_image"
       @open_view_edit_panel="handle_open_view_edit_panel"
+      ref="sidebar_factory"
     ></sidebar_factory>
 
     <div id="annotation_ui_factory" tabindex="0">
@@ -94,7 +95,7 @@
         @event_create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance = $event"
         @loading_changed="annotation_ui_context.image_annotation_ctx.loading = $event"
         @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
-        @open_issue_panel="issues_expansion_panel = $event"
+        @open_issue_panel="handle_open_issue_panel"
         @instance_list_updated="update_current_instance_list"
         @instance_buffer_dict_updated="update_current_frame_buffer_dict"
       />
@@ -530,6 +531,15 @@ export default Vue.extend({
     },
   },
   methods: {
+    handle_open_issue_panel: function(mouse_position){
+      if(!this.$refs.sidebar_factory){
+        return
+      }
+      let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref()
+      if(sidebar){
+        sidebar.open_issue_panel(mouse_position)
+      }
+    },
     update_current_instance_list: function (instance_list, file_id, file_type) {
       this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file_id)
     },

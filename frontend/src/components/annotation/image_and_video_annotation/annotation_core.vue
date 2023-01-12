@@ -532,7 +532,7 @@
               @share_dialog_open="open_share_dialog"
               @focus_instance="on_context_menu_click_focus_instance"
               @stop_focus_instance="on_context_menu_click_stop_focus_instance"
-              @open_issue_panel="open_issue_panel"
+              @open_issue_panel="$emit('open_issue_panel', $event)"
               @on_click_polygon_unmerge="polygon_unmerge"
               @on_click_polygon_merge="start_polygon_select_for_merge"
               @delete_polygon_point="polygon_delete_point_click_callback"
@@ -745,6 +745,7 @@ import {PolygonMergeTool} from "../../vue_canvas/advanced_tools/PolygonMergeTool
 import IssuesAnnotationUIManager from "./../issues/IssuesAnnotationUIManager";
 import {BaseAnnotationUIContext} from "../../../types/AnnotationUIContext";
 import {AutoBorderContext} from "../../vue_canvas/advanced_tools/PolygonAutoBorderTool";
+import store from '../../../../src/store.js'
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
 
@@ -2780,13 +2781,6 @@ export default Vue.extend({
       this.polygon_merge_tool = new PolygonMergeTool(this.instance_list[merge_instance_index])
       this.annotation_ui_context.show_context_menu = false;
       this.$store.commit("set_instance_select_for_merge", true);
-    },
-    open_issue_panel(mouse_position) {
-      // This boolean controls if issues create/edit panel is shown or hidden.
-      this.$store.commit("open_issue_panel");
-      // Close context menu and set select instance mode
-      this.annotation_ui_context.show_context_menu = false;
-
     },
 
 
