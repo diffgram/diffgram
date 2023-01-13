@@ -105,17 +105,26 @@ export default Vue.extend({
       type: Boolean,
       default: false
     },
+    view_issue_mode: {
+      type: Boolean,
+      default: false
+    },
+    is_keypoint_template: {
+      type: Boolean,
+      default: false
+    },
+    enabled_edit_schema: {
+      type: Boolean,
+      default: false
+    },
+    annotation_show_on: {
+      type: Boolean,
+      default: false
+    },
     instance_type_list: {
       type: Array,
       default: []
-    },
-    
-
-            :instance_type_list="filtered_instance_type_list"
-            :view_issue_mode="view_issue_mode"
-            :is_keypoint_template="is_keypoint_template"
-            :enabled_edit_schema="enabled_edit_schema"
-            :annotation_show_on="annotation_show_on"
+    }
   },
   computed: {
     interface_type: function(): string | null {
