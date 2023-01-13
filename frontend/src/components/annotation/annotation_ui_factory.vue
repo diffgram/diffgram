@@ -20,11 +20,32 @@
       ref="sidebar_factory"
     ></sidebar_factory>
 
-    <div id="annotation_ui_factory" tabindex="0">
+    <div :class="{'ma-auto': interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing}"
+         id="annotation_ui_factory" tabindex="0">
       <v_error_multiple :error="error" />
-
+      <div v-if="!interface_type || !interface_type && !initializing">
+        <empty_file_editor_placeholder
+          :message="`File ID: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.id : 'N/A'}. File Type: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.type : 'N/A'}`"
+          :title="'Invalid File loaded'"
+        />
+      </div>
+      <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing" >
+        <empty_file_editor_placeholder
+          :message="'Try adding child files to this compound file.'"
+          :title="'This compound file has no child files.'" />
+      </div>
+      <div v-else-if="!credentials_granted && !initializing">
+        <empty_file_editor_placeholder
+          icon="mdi-account-cancel"
+          :loading="false"
+          :project_string_id="project_string_id"
+          :title="`Invalid credentials`"
+          :message="`You need more credentials to work on this task.`"
+          :show_upload="false"
+        />
+      </div>
       <annotation_area_factory
-        v-if="annotation_ui_context && annotation_ui_context.working_file"
+        v-else-if="annotation_ui_context && annotation_ui_context.working_file"
         ref="annotation_area_factory"
         :interface_type="interface_type"
         :annotation_ui_context="annotation_ui_context"
@@ -52,7 +73,7 @@
         :model_run_id_list="model_run_id_list"
         :model_run_color_list="model_run_color_list"
         :task="annotation_ui_context.task"
-        :file="current_file"
+        :file="annotation_ui_context.working_file"
         :task_id_prop="task_id_prop"
         :request_save="request_save"
         :job_id="job_id"
@@ -74,7 +95,7 @@
         @change_label_schema="on_change_label_schema"
         @set_file_list="set_file_list"
         @request_new_task="change_task"
-        @replace_file="current_file = $event"
+        @replace_file="annotation_ui_context.working_file = $event"
         @get_userscript="get_userscript"
         @save_time_tracking="save_time_tracking"
         @trigger_task_change="trigger_task_change"
@@ -206,7 +227,7 @@ import sensor_fusion_editor from './3d_annotation/sensor_fusion_editor.vue'
 import text_annotation_core from "./text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
 import annotation_area_factory from "./annotation_area_factory.vue"
-
+import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue";
 import {duplicate_instance} from "../../utils/instance_utils";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
@@ -218,6 +239,7 @@ import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServi
 import {createDefaultLabelSettings} from "../../types/image_label_settings";
 import sidebar_factory from "./sidebar_factory.vue";
 import {Schema} from "../../types/Schema";
+import {get_child_files} from "../../services/fileServices";
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -229,7 +251,8 @@ export default Vue.extend({
     text_annotation_core,
     geo_annotation_core,
     audio_annotation_core,
-    annotation_area_factory
+    annotation_area_factory,
+    empty_file_editor_placeholder
   },
   props: {
     project_string_id: {
@@ -254,39 +277,7 @@ export default Vue.extend({
         task_request: null,
       },
 
-      annotation_ui_context: {
-        working_file: null,
-        task: null,
-        instance_type: 'box',
-        instance_store: null,
-        per_instance_attribute_groups_list: [],
-        global_attribute_groups_list: [],
-        current_global_instance: undefined,
-        label_schema: null,
-        current_label_file: null,
-        selected_instance_for_history: undefined,
-        model_run_list: null,
-        issues_ui_manager: null,
-        image_annotation_ctx: {
-          show_context_menu: false,
-          loading: false,
-          refresh: new Date(),
-          video_mode: false,
-          draw_mode: true,
-          current_frame: 0,
-          video_playing: false,
-          request_change_current_instance: null,
-          trigger_refresh_current_instance: new Date(),
-          event_create_instance: null,
-          get_userscript: this.get_userscript,
-          label_settings: createDefaultLabelSettings(),
-          instance_buffer_metadata: {},
-          annotations_loading: false,
-
-
-        },
-
-      } as BaseAnnotationUIContext,
+      annotation_ui_context: new BaseAnnotationUIContext(),
       task_prefetcher: null,
       task_image: null,
       task_instances: null,
@@ -307,7 +298,6 @@ export default Vue.extend({
       loading_project: true,
 
       context: null,
-      current_file: null,
       error: null,
       request_save: false,
       model_run_id_list: [],
@@ -346,15 +336,14 @@ export default Vue.extend({
         }
       }
       if (from.name === 'studio' && to.name === 'task_annotation') {
-        this.current_file = null;
+        this.working_file = null;
         this.fetch_single_task(this.$props.task_id_prop);
         this.$refs.file_manager_sheet.hide_file_manager_sheet()
       }
       this.get_model_runs_from_query(to.query);
     },
-    current_file: {
+    working_file: {
       handler(newVal, oldVal) {
-        this.update_working_file()
         if (newVal && newVal != oldVal) {
           Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
           this.$addQueriesToLocation({file: newVal.id});
@@ -362,7 +351,7 @@ export default Vue.extend({
       },
     },
     'annotation_ui_context.task'(newVal) {
-      this.update_working_file()
+      this.update_working_file(newVal.file)
       if (newVal && this.task_prefetcher && newVal.file.type === 'image') {
         Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
         this.task_prefetcher.update_tasks(newVal)
@@ -399,6 +388,7 @@ export default Vue.extend({
     }
   },
   async mounted() {
+    this.annotation_ui_context.get_userscript = this.get_userscript
     Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
     this.annotation_ui_context.issues_ui_manager = new IssuesAnnotationUIManager()
     if (!this.$props.task_id_prop) {
@@ -550,13 +540,14 @@ export default Vue.extend({
     on_draw_mode_changed: function (draw_mode) {
       this.annotation_ui_context.image_annotation_ctx.draw_mode = draw_mode
     },
+
     handle_open_view_edit_panel: function (issue) {
       if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
       let current_interface = this.get_current_annotation_area_ref()
       if (current_interface) {
-        current_interface.open_view_edit_panel()
+        current_interface.open_view_edit_panel(issue)
       }
     },
     handle_clear_selected_instances_image: function () {
@@ -1083,14 +1074,25 @@ export default Vue.extend({
 
       return `/api/project/${this.project_string_id}/video/${this.annotation_ui_context.working_file.id}`
     },
-    update_working_file: function () {
-      if (this.annotation_ui_context.task && this.annotation_ui_context.task.id) {
-        this.annotation_ui_context.working_file = this.annotation_ui_context.task.file
-      } else {
-        this.annotation_ui_context.working_file = this.current_file
+    set_working_file_from_child_file_list: function(file_to_set){
+      for(let file of this.annotation_ui_context.working_file_list){
+        if(file.id === file_to_set.id){
+          this.annotation_ui_context.working_file = file
+        }
       }
-      let file = this.annotation_ui_context.working_file
+    },
+    update_working_file: async function  (file) {
+      this.annotation_ui_context.working_file = file
       this.annotation_ui_context.image_annotation_ctx.video_mode = file && file.type === 'video'
+      if(file.type === 'compound'){
+        let [child_files, err] = await get_child_files(this.project_string_id, file.id)
+        if (err) {
+          console.error(err)
+          return
+        }
+        this.annotation_ui_context.working_file_list = child_files
+        this.set_working_file_from_child_file_list(child_files[0])
+      }
     },
 
     on_change_label_schema: function (schema) {
@@ -1170,7 +1172,7 @@ export default Vue.extend({
 
     change_file: async function (file, model_runs, color_list) {
       this.changing_file = true
-      this.current_file = file;
+      this.update_working_file(file)
       await this.$nextTick();
       let model_runs_data = "";
       if (model_runs) {
@@ -1214,14 +1216,16 @@ export default Vue.extend({
       this.loading = true;
       if (this.$route.query.file) {
         if (this.$refs.file_manager_sheet) {
-          this.current_file = await this.$refs.file_manager_sheet.get_media(
+          let file = await this.$refs.file_manager_sheet.get_media(
             true,
             this.$route.query.file
           );
+          this.update_working_file(file)
         }
       } else {
         if (this.$refs.file_manager_sheet) {
-          this.current_file = await this.$refs.file_manager_sheet.get_media();
+          let file = await this.$refs.file_manager_sheet.get_media();
+          this.update_working_file(file)
         }
       }
       this.loading = false;
@@ -1235,7 +1239,8 @@ export default Vue.extend({
       this.loading = true;
 
       if (this.$refs.file_manager_sheet) {
-        this.current_file = await this.$refs.file_manager_sheet.get_media();
+        let file = await this.$refs.file_manager_sheet.get_media();
+        this.update_working_file(file);
       }
 
       this.loading = false;
