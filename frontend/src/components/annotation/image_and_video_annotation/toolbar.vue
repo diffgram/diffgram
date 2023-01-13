@@ -231,7 +231,7 @@
           and optionally hidden-->
 
 
-      <ui_schema name="instance_selector" v-if="!loading_instance_type">
+      <ui_schema name="instance_selector">
         <div class="pl-3 pr-3 pt-4" style="max-width: 200px">
           <!-- instance_selector -->
           <diffgram_select
