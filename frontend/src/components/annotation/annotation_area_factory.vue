@@ -1,19 +1,8 @@
 <template>
   <div>
-    <div v-if="!interface_type || !interface_type && !initializing">
-      <empty_file_editor_placeholder v-bind="$props" />
-    </div>
-    <div v-else-if="!credentials_granted && !initializing">
-      <empty_file_editor_placeholder
-        icon="mdi-account-cancel"
-        :loading="false"
-        :project_string_id="project_string_id"
-        :title="`Invalid credentials`"
-        :message="`You need more credentials to work on this task.`"
-        :show_upload="false"
-      />
-    </div>
-    <div v-else-if="interface_type === 'image' || interface_type === 'video'">
+
+
+    <div v-if="interface_type === 'image' || interface_type === 'video'">
       <v_annotation_core
         class="pt-1 pl-1"
         v-if="!changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
@@ -22,31 +11,31 @@
         ref="annotation_core"
       />
     </div>
-      <div v-else-if="interface_type === 'sensor_fusion'">
-        <sensor_fusion_editor
-          ref="sensor_fusion_editor"
-          v-bind="$props"
-          v-on="$listeners"
-        />
-      </div>
-      <div v-else-if="interface_type === 'text'">
-        <text_annotation_core
-          v-bind="$props"
-          v-on="$listeners"
-        />
-      </div>
-      <div v-else-if="interface_type === 'geospatial'">
-        <geo_annotation_core
-          v-bind="$props"
-          v-on="$listeners"
-        />
-      </div>
-      <div v-else-if="interface_type === 'audio'">
-        <audio_annotation_core
-          v-bind="$props"
-          v-on="$listeners"
-        />
-      </div>
+    <div v-else-if="interface_type === 'sensor_fusion'">
+      <sensor_fusion_editor
+        ref="sensor_fusion_editor"
+        v-bind="$props"
+        v-on="$listeners"
+      />
+    </div>
+    <div v-else-if="interface_type === 'text'">
+      <text_annotation_core
+        v-bind="$props"
+        v-on="$listeners"
+      />
+    </div>
+    <div v-else-if="interface_type === 'geospatial'">
+      <geo_annotation_core
+        v-bind="$props"
+        v-on="$listeners"
+      />
+    </div>
+    <div v-else-if="interface_type === 'audio'">
+      <audio_annotation_core
+        v-bind="$props"
+        v-on="$listeners"
+      />
+    </div>
   </div>
 </template>
 
@@ -57,7 +46,7 @@ import text_annotation_core from "./text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
 import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue"
 import sensor_fusion_annotation_core from './3d_annotation/sensor_fusion_editor.vue'
-import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue";
+
 
 export default Vue.extend({
   name: "annotation_area_factory",
@@ -67,7 +56,6 @@ export default Vue.extend({
     geo_annotation_core,
     audio_annotation_core,
     sensor_fusion_annotation_core,
-    empty_file_editor_placeholder
   },
   props: {
     project_string_id: {

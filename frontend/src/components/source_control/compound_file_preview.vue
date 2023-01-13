@@ -13,7 +13,6 @@
       :file_preview_width="file_preview_width"
     ></file_preview_details_card>
     <drawable_canvas
-
       v-if="child_files.length > 0 && image_bg"
       ref="drawable_canvas"
       :allow_zoom="false"
@@ -41,6 +40,14 @@
       />
 
     </drawable_canvas>
+    <div v-else
+         class="compound-file-container mb-2 d-flex flex-column truncate-text"
+         :style="`width: ${file_preview_width}px; height: ${file_preview_height}px;`">
+      <v-icon size="85">mdi-file</v-icon>
+      <h5 class="truncate-text " >
+        {{file.original_filename}}asdasdasdasd
+      </h5>
+    </div>
 
   </div>
 
@@ -249,6 +256,11 @@
 }
 .compound-file-container{
   position: relative;
+}
+.truncate-text{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .fade-box{
   background: rgba(0,0,0,0.4) !important;
