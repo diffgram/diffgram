@@ -8,6 +8,7 @@
         <image_and_video_toolbar
           ref="toolbar"
           :height="50"
+          :instance_type_list="filtered_instance_type_list"
           v-bind="$props"
           v-on="$listeners"
         />
@@ -35,7 +36,12 @@ export default Vue.extend({
       required: true
     },
     command_manager: {
-      type: Object
+      type: Object,
+      required: true
+    },
+    interface_type: {
+      type: String,
+      default: null
     },
     save_loading: {
       type: Boolean,
@@ -121,17 +127,35 @@ export default Vue.extend({
       type: Boolean,
       default: false
     },
-    instance_type_list: {
-      type: Array,
-      default: []
+    filtered_instance_type_list_function: {
+      type: Function,
+      default: () => {}
+    }
+  },
+  data() {
+    return {
+      instance_type_list: [
+        {name: "box", display_name: "Box", icon: "mdi-checkbox-blank"},
+        {name: "polygon", display_name: "Polygon", icon: "mdi-vector-polygon"},
+        {name: "tag", display_name: "Tag", icon: "mdi-tag"},
+        {name: "point", display_name: "Point", icon: "mdi-circle-slice-8"},
+        {name: "line", display_name: "Fixed Line", icon: "mdi-minus"},
+        {name: "cuboid", display_name: "Cuboid 2D", icon: "mdi-cube-outline"},
+        {name: "ellipse", display_name: "Ellipse & Circle", icon: "mdi-ellipse-outline"},
+        {name: "curve", display_name: "Curve Quadratic", icon: "mdi-chart-bell-curve-cumulative"},
+      ],
     }
   },
   computed: {
-    interface_type: function(): string | null {
-      if (!this.working_file || !this.working_file.type) return null
-      
-      return this.working_file.type
-    }
+    show_default_navigation: function(): Boolean {
+      if (!this.task) return true
+
+      return false
+    },
+    filtered_instance_type_list: function () {
+      const filtered_instance_type_list = this.filtered_instance_type_list_function(this.instance_type_list)
+      return filtered_instance_type_list
+    },
   }
 })
 </script>

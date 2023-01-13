@@ -230,6 +230,7 @@
       <!-- TODO in task mode, this can be force set by Schema
           and optionally hidden-->
 
+
       <ui_schema name="instance_selector" v-if="!loading_instance_type">
         <div class="pl-3 pr-3 pt-4" style="max-width: 200px">
           <!-- instance_selector -->
@@ -240,8 +241,7 @@
             label="New Instance Type"
             :disabled="loading || loading_instance_templates || view_only_mode"
             @change="$emit('change_instance_type', instance_type)"
-          >
-          </diffgram_select>
+          />
         </div>
       </ui_schema>
 

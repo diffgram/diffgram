@@ -1,5 +1,17 @@
 <template>
   <div class="d-flex">
+    <toolbar_factory
+      v-if="annotation_ui_context.working_file && annotation_ui_context.command_manager"
+      :project_string_id="project_string_id"
+      :working_file="annotation_ui_context.working_file"
+      :command_manager="annotation_ui_context.command_manager"
+      :label_file_colour_map="label_file_colour_map"
+      :label_schema="annotation_ui_context.label_schema"
+      :label_list="label_list"
+      :interface_type="interface_type"
+      :filtered_instance_type_list_function="filtered_instance_type_list"
+      :show_default_navigation="show_default_navigation"
+    />
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
     <sidebar_factory
       v-if="(interface_type === 'image' || interface_type === 'video') && !task_error.task_request && !changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
@@ -201,6 +213,7 @@ import {user_has_credentials} from '../../services/userServices.js'
 import {Task} from "../../types/Task";
 import {get_labels, get_schemas} from '../../services/labelServices.js';
 import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices.js";
+import {CommandManagerAnnotationCore} from "./image_and_video_annotation/annotation_core_command_manager";
 
 import annotation_area_factory from "./annotation_area_factory.vue"
 import toolbar_factory from "./toolbar_factory.vue"
@@ -250,6 +263,7 @@ export default Vue.extend({
 
       annotation_ui_context: {
         working_file: null,
+        command_manager: null,
         task: null,
         instance_type: 'box',
         instance_store: null,
@@ -276,8 +290,6 @@ export default Vue.extend({
           label_settings: createDefaultLabelSettings(),
           instance_buffer_metadata: {},
           annotations_loading: false,
-
-
         },
 
       } as BaseAnnotationUIContext,
@@ -299,6 +311,7 @@ export default Vue.extend({
       snackbar_message: "",
       loading: true,
       loading_project: true,
+      show_default_navigation: true,
 
       context: null,
       current_file: null,
@@ -326,11 +339,12 @@ export default Vue.extend({
       snackbar_success_text: null,
       current_instance_list: [],
       current_instance_buffer_dict: {},
-
-
     }
   },
   watch: {
+    'annotation_ui_context.working_file': function() {
+      this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
+    },
     '$route'(to, from) {
       if (from.name === 'task_annotation' && to.name === 'studio') {
         this.fetch_project_file_list();
@@ -451,21 +465,17 @@ export default Vue.extend({
   },
   computed: {
     interface_type: function(): string | null {
-      if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) {
-        return
-      }
+      if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) return
 
-      if (this.annotation_ui_context.working_file) {
+      if (this.annotation_ui_context.working_file)
         return this.annotation_ui_context.working_file.type
-      }
-      if (this.task && this.task.file) {
+
+      if (this.task && this.task.file)
         return this.task.file
-      }
     },
     current_frame: function () {
       return this.current_interface_ref.current_frame
     },
-
     has_pending_frames: function () {
       return this.unsaved_frames.length > 0
     },
