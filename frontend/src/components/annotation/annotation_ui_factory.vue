@@ -18,7 +18,7 @@
       @clear_selected_instances_image="handle_clear_selected_instances_image"
       @open_view_edit_panel="handle_open_view_edit_panel"
       ref="sidebar_factory"
-    ></sidebar_factory>
+    />
 
     <div id="annotation_ui_factory" tabindex="0">
       <v_error_multiple :error="error" />
@@ -201,11 +201,10 @@ import {user_has_credentials} from '../../services/userServices.js'
 import {Task} from "../../types/Task";
 import {get_labels, get_schemas} from '../../services/labelServices.js';
 import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices.js";
-import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue";
-import sensor_fusion_editor from './3d_annotation/sensor_fusion_editor.vue'
-import text_annotation_core from "./text_annotation/text_annotation_core.vue"
-import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
+
 import annotation_area_factory from "./annotation_area_factory.vue"
+import toolbar_factory from "./toolbar_factory.vue"
+import sidebar_factory from "./sidebar_factory.vue";
 
 import {duplicate_instance} from "../../utils/instance_utils";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
@@ -216,8 +215,6 @@ import {BaseAnnotationUIContext} from '../../types/AnnotationUIContext'
 
 import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServices"
 import {createDefaultLabelSettings} from "../../types/image_label_settings";
-import sidebar_factory from "./sidebar_factory.vue";
-import {Schema} from "../../types/Schema";
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -225,11 +222,8 @@ export default Vue.extend({
     file_manager_sheet,
     no_credentials_dialog,
     sidebar_factory,
-    sensor_fusion_editor,
-    text_annotation_core,
-    geo_annotation_core,
-    audio_annotation_core,
-    annotation_area_factory
+    annotation_area_factory,
+    toolbar_factory
   },
   props: {
     project_string_id: {
