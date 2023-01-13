@@ -186,6 +186,8 @@
             }
           } catch (error) {
             console.error(error)
+          } finally {
+            this.loading = false;
           }
         }
       }

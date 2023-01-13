@@ -2,9 +2,9 @@
   <div class="d-flex">
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
     <sidebar_factory
-      v-if="annotation_interface === 'image_or_video' && !task_error.task_request && !changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
+      v-if="(interface_type === 'image' || interface_type === 'video') && !task_error.task_request && !changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
       :annotation_ui_context="annotation_ui_context"
-      :annotation_interface="annotation_interface"
+      :interface_type="interface_type"
       :label_file_colour_map="label_file_colour_map"
       :label_list="label_list"
       :project_string_id="project_string_id"
@@ -17,21 +17,24 @@
       @instance_update="handle_instance_update"
       @clear_selected_instances_image="handle_clear_selected_instances_image"
       @open_view_edit_panel="handle_open_view_edit_panel"
+      ref="sidebar_factory"
     ></sidebar_factory>
-    
+
     <div id="annotation_ui_factory" tabindex="0">
       <v_error_multiple :error="error" />
-      
+
       <annotation_area_factory
         v-if="annotation_ui_context && annotation_ui_context.working_file"
+        ref="annotation_area_factory"
+        :interface_type="interface_type"
+        :annotation_ui_context="annotation_ui_context"
+        :working_file="annotation_ui_context.working_file"
         :credentials_granted="credentials_granted"
         :initializing="initializing"
-        :working_file="annotation_ui_context.working_file"
-        :annotation_ui_context="annotation_ui_context"
-        :url_instance_buffer="get_url_instance_buffer()"
         :save_loading_image="save_loading_image"
+        :url_instance_buffer="get_url_instance_buffer()"
         :submitted_to_review="submitted_to_review"
-        :annotations_loading="annotations_loading"
+        :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
         :loading="loading"
         :filtered_instance_type_list_function="filtered_instance_type_list"
         :get_userscript="get_userscript"
@@ -39,7 +42,7 @@
         :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
         :go_to_keyframe_loading="go_to_keyframe_loading"
         :has_changed="has_changed"
-        :instance_buffer_metadata="instance_buffer_metadata"
+        :instance_buffer_metadata="annotation_ui_context.image_annotation_ctx.instance_buffer_metadata"
         :create_instance_template_url="create_instance_template_url"
         :video_parent_file_instance_list="video_parent_file_instance_list"
         :has_pending_frames="has_pending_frames"
@@ -67,7 +70,6 @@
         :changing_task="changing_task"
         :task_error="task_error"
         :issues_ui_manager="annotation_ui_context.issues_ui_manager"
-        
         @request_file_change="request_file_change"
         @change_label_schema="on_change_label_schema"
         @set_file_list="set_file_list"
@@ -77,12 +79,25 @@
         @save_time_tracking="save_time_tracking"
         @trigger_task_change="trigger_task_change"
         @set_ui_schema="set_ui_schema"
-        @set_save_loading="set_save_loading" 
+        @set_save_loading="set_save_loading"
         @save="save"
         @set_frame_pending_save="set_frame_pending_save"
         @task_update="task_update"
         @set_has_changed="set_has_changed"
         @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
+        @model_run_list_loaded="annotation_ui_context.model_run_list = $event"
+        @draw_mode_change="on_draw_mode_changed"
+        @change_video_playing="annotation_ui_context.image_annotation_ctx.video_playing = $event"
+        @change_current_label_file="annotation_ui_context.current_label_file = $event"
+        @request_change_current_instance="annotation_ui_context.image_annotation_ctx.request_change_current_instance = $event"
+        @trigger_refresh_current_instance="annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = $event"
+        @selected_instance_for_history="annotation_ui_context.selected_instance_for_history = $event"
+        @event_create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance = $event"
+        @loading_changed="annotation_ui_context.image_annotation_ctx.loading = $event"
+        @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
+        @open_issue_panel="handle_open_issue_panel"
+        @instance_list_updated="update_current_instance_list"
+        @instance_buffer_dict_updated="update_current_frame_buffer_dict"
       />
 
       <file_manager_sheet
@@ -180,7 +195,6 @@ import moment from "moment";
 import axios from "../../services/customInstance/index.js";
 import {create_event} from "../event/create_event";
 import {UI_SCHEMA_TASK_MOCK} from "../ui_schema/ui_schema_task_mock.js";
-import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue";
 import no_credentials_dialog from '../task/job/no_credentials_dialog.vue';
 import file_manager_sheet from "../source_control/file_manager_sheet.vue";
 import {user_has_credentials} from '../../services/userServices.js'
@@ -211,7 +225,6 @@ export default Vue.extend({
     file_manager_sheet,
     no_credentials_dialog,
     sidebar_factory,
-    empty_file_editor_placeholder,
     sensor_fusion_editor,
     text_annotation_core,
     geo_annotation_core,
@@ -443,26 +456,22 @@ export default Vue.extend({
     this.initializing = false
   },
   computed: {
+    interface_type: function(): string | null {
+      if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) {
+        return
+      }
 
+      if (this.annotation_ui_context.working_file) {
+        return this.annotation_ui_context.working_file.type
+      }
+      if (this.task && this.task.file) {
+        return this.task.file
+      }
+    },
     current_frame: function () {
       return this.current_interface_ref.current_frame
     },
-    current_interface_ref: function () {
-      if (this.annotation_interface === 'image_or_video') {
-        return this.$refs.annotation_core
-      } else if (this.annotation_interface === 'sensor_fusion') {
-        return this.$refs.sensor_fusion_editor
-      } else if (this.annotation_interface === 'text') {
-        return this.$refs.text_annotation_core
-      } else if (this.annotation_interface === 'geo') {
-        return this.$refs.geo_annotation_core
-      } else if (this.annotation_interface === 'audio') {
-        return this.$refs.audio_annotation_core
-      } else if (this.annotation_interface === 'compound') {
-        // Not implemented yet. Will need to deduct current interface from mouse hover maybe
-        return null
-      }
-    },
+
     has_pending_frames: function () {
       return this.unsaved_frames.length > 0
     },
@@ -485,40 +494,7 @@ export default Vue.extend({
       }
       return file_id;
     },
-    annotation_interface: function () {
-      if (!this.current_file && !this.annotation_ui_context.task) {
-        return
-      }
 
-      if (this.current_file) {
-        if (this.current_file.type === 'image' || this.current_file.type === 'video') {
-          return 'image_or_video';
-        } else if (this.current_file.type === 'sensor_fusion') {
-          return 'sensor_fusion';
-        } else if (this.current_file.type === 'text') {
-          return 'text'
-        } else if (this.current_file.type === 'geospatial') {
-          return 'geo'
-        } else if (this.current_file.type === 'audio') {
-          return 'audio'
-        }
-      }
-      if (this.annotation_ui_context.task) {
-        if (this.annotation_ui_context.task.file.type === 'image' || this.annotation_ui_context.task.file.type === 'video') {
-          return 'image_or_video';
-        } else if (this.annotation_ui_context.task.file.type === 'sensor_fusion') {
-          return 'sensor_fusion';
-        } else if (this.annotation_ui_context.task.file.type === 'text') {
-          return 'text';
-        } else if (this.annotation_ui_context.task.file.type === 'geospatial') {
-          return 'geo'
-        } else if (this.annotation_ui_context.task.file.type === 'audio') {
-          return 'audio'
-        }
-      }
-
-
-    },
     computed_project_string_id: function () {
       if (this.$props.project_string_id) {
         this.$store.commit(
@@ -555,6 +531,15 @@ export default Vue.extend({
     },
   },
   methods: {
+    handle_open_issue_panel: function(mouse_position){
+      if(!this.$refs.sidebar_factory){
+        return
+      }
+      let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref()
+      if(sidebar){
+        sidebar.open_issue_panel(mouse_position)
+      }
+    },
     update_current_instance_list: function (instance_list, file_id, file_type) {
       this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file_id)
     },
@@ -566,49 +551,55 @@ export default Vue.extend({
       this.annotation_ui_context.image_annotation_ctx.draw_mode = draw_mode
     },
     handle_open_view_edit_panel: function (issue) {
-      if (this.annotation_interface != 'image_or_video') {
+      if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
-      if (this.current_interface_ref) {
-        this.current_interface_ref.open_view_edit_panel()
+      let current_interface = this.get_current_annotation_area_ref()
+      if (current_interface) {
+        current_interface.open_view_edit_panel()
       }
     },
     handle_clear_selected_instances_image: function () {
-      if (this.annotation_interface != 'image_or_video') {
+      if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
-      if (this.current_interface_ref) {
-        this.current_interface_ref.clear_selected()
+      let current_interface = this.get_current_annotation_area_ref()
+      if (current_interface) {
+        current_interface.clear_selected()
       }
     },
     handle_instance_update: function (update_data) {
-      console.log('INSTANCE UPDATE', update_data)
-      if (this.annotation_interface != 'image_or_video') {
+      console.log('INSTANCE UPDATE', update_data, this.interface_type)
+      if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
-      if (this.current_interface_ref) {
-        this.current_interface_ref.instance_update(update_data)
+      let current_interface = this.get_current_annotation_area_ref()
+      console.log('CURRENT INTERFACE', current_interface)
+      if (current_interface) {
+        current_interface.instance_update(update_data)
       }
     },
     handle_update_canvas: function () {
-      if (this.annotation_interface != 'image_or_video') {
+      if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
-      if (this.current_interface_ref) {
-        this.current_interface_ref.update_canvas()
+      let current_interface = this.get_current_annotation_area_ref()
+      if (current_interface) {
+        current_interface.update_canvas()
       }
     },
     handle_focus_instance_show_all: function () {
-      if (this.annotation_interface != 'image_or_video') {
+      if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
-      if (this.current_interface_ref) {
-        this.current_interface_ref.focus_instance_show_all()
+      let current_interface = this.get_current_annotation_area_ref()
+      if (current_interface) {
+        current_interface.focus_instance_show_all()
       }
 
     },
     handle_focus_image_instance: function (focus) {
-      if (this.annotation_interface != 'image_or_video') {
+      if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
       if (this.current_interface_ref) {
@@ -618,6 +609,10 @@ export default Vue.extend({
     },
     set_has_changed: function (value) {
       this.has_changed = value
+    },
+    get_current_annotation_area_ref(file_id, file_type){
+      // For now just return computed prop. More complex logic might need to be added with file_id once compound file exists.
+      return this.$refs.annotation_area_factory.current_interface_ref
     },
     save: async function (
       and_complete = false,
@@ -678,7 +673,7 @@ export default Vue.extend({
           duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`,
         };
         // We want to focus the most recent instance, if we focus the older one we can produce an error.
-        this.$refs.instance_detail_list.toggle_instance_focus(
+        this.get_current_annotation_area_ref().$refs.instance_detail_list.toggle_instance_focus(
           dup_instance_list[0].original_index,
           undefined
         );
@@ -737,7 +732,7 @@ export default Vue.extend({
 
         // Update Sequence ID's and Keyframes.
         if ((result.data.sequence || result.data.new_sequence_list) && this.annotation_ui_context.image_annotation_ctx.video_mode) {
-          this.$refs.annotation_core.update_sequence_data(instance_list, frame_number, result);
+          this.get_current_annotation_area_ref().update_sequence_data(instance_list, frame_number, result);
         }
 
         this.set_save_loading(false, frame_number);

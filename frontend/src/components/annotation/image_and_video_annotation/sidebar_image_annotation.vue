@@ -8,6 +8,7 @@
 
 
     <instance_detail_list_view ref="instance_detail_list"
+                               v-show="!annotation_ui_context.issues_ui_manager.show_modify_an_issue"
                                :instance_list="instance_list"
                                :instance_store="annotation_ui_context.instance_store"
                                :model_run_list="annotation_ui_context.model_run_list"
@@ -57,6 +58,7 @@
       :flat="true"
       :hover="false"
       :tile="true"
+      v-show="!annotation_ui_context.issues_ui_manager.show_modify_an_issue"
     >
       <v-expansion-panel>
 
@@ -170,8 +172,10 @@
 
           <!-- List -->
           <issues_sidepanel
+            v-show="!annotation_ui_context.issues_ui_manager.show_modify_an_issue"
             :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
             :task="annotation_ui_context.task"
+            :issues_ui_manager="annotation_ui_context.issues_ui_manager"
             :file="annotation_ui_context.working_file"
             @view_issue_detail="$emit('open_view_edit_panel')"
             @issues_fetched="issues_fetched"
@@ -190,6 +194,8 @@
 <script lang="ts">
 import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view.vue";
+import view_edit_issue_panel from "../../discussions/view_edit_issue_panel.vue";
+import issues_sidepanel from "../../discussions/issues_sidepanel.vue";
 import {types} from "sass";
 import String = types.String;
 import {LabelFile} from "../../../types/label";
@@ -197,11 +203,14 @@ import {BaseAnnotationUIContext} from "../../../types/AnnotationUIContext";
 import {LabelColourMap} from "../../../types/label_colour_map";
 import instance_history_sidepanel from "./instance_history_sidepanel.vue";
 import {Instance} from "../../vue_canvas/instances/Instance";
-
+import create_issue_panel from "../../discussions/create_issue_panel.vue";
 export default Vue.extend({
   name: "sidebar_image_annotation",
   components: {
     instance_detail_list_view,
+    view_edit_issue_panel,
+    issues_sidepanel,
+    create_issue_panel,
     instance_history_sidepanel
   },
   props: {
@@ -225,17 +234,24 @@ export default Vue.extend({
 
     }
   },
-
+  mounted() {
+    if (this.$refs.issues_sidepanel) {
+      this.$refs.issues_sidepanel.get_issues_list()
+    }
+  },
   methods: {
 
     open_issue_panel(mouse_position) {
       // This boolean controls if issues create/edit panel is shown or hidden.
       this.annotation_ui_context.issues_ui_manager.show_modify_an_issue = true
       this.annotation_ui_context.issues_ui_manager.issue_mouse_position = mouse_position;
+      this.annotation_ui_context.issues_ui_manager.issues_expansion_panel = 0;
 
       // Close context menu and set select instance mode
       this.annotation_ui_context.image_annotation_ctx.show_context_menu = false;
       this.$store.commit("set_instance_select_for_issue", true);
+      // const issues_ui_mngr = this.annotation_ui_context.issues_ui_manager;
+      // this.annotation_ui_context.image_annotation_ctx.issues_ui_manager = Object.create(issues_ui_mngr)
     },
     close_issue_panel() {
       this.annotation_ui_context.issues_ui_manager.show_modify_an_issue = false;
