@@ -52,7 +52,7 @@
         :model_run_id_list="model_run_id_list"
         :model_run_color_list="model_run_color_list"
         :task="annotation_ui_context.task"
-        :file="current_file"
+        :file="annotation_ui_context.working_file"
         :task_id_prop="task_id_prop"
         :request_save="request_save"
         :job_id="job_id"
@@ -74,7 +74,7 @@
         @change_label_schema="on_change_label_schema"
         @set_file_list="set_file_list"
         @request_new_task="change_task"
-        @replace_file="current_file = $event"
+        @replace_file="annotation_ui_context.working_file = $event"
         @get_userscript="get_userscript"
         @save_time_tracking="save_time_tracking"
         @trigger_task_change="trigger_task_change"
@@ -307,7 +307,6 @@ export default Vue.extend({
       loading_project: true,
 
       context: null,
-      current_file: null,
       error: null,
       request_save: false,
       model_run_id_list: [],
@@ -346,15 +345,14 @@ export default Vue.extend({
         }
       }
       if (from.name === 'studio' && to.name === 'task_annotation') {
-        this.current_file = null;
+        this.working_file = null;
         this.fetch_single_task(this.$props.task_id_prop);
         this.$refs.file_manager_sheet.hide_file_manager_sheet()
       }
       this.get_model_runs_from_query(to.query);
     },
-    current_file: {
+    working_file: {
       handler(newVal, oldVal) {
-        this.update_working_file()
         if (newVal && newVal != oldVal) {
           Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
           this.$addQueriesToLocation({file: newVal.id});
@@ -1087,8 +1085,6 @@ export default Vue.extend({
     update_working_file: function () {
       if (this.annotation_ui_context.task && this.annotation_ui_context.task.id) {
         this.annotation_ui_context.working_file = this.annotation_ui_context.task.file
-      } else {
-        this.annotation_ui_context.working_file = this.current_file
       }
       let file = this.annotation_ui_context.working_file
       this.annotation_ui_context.image_annotation_ctx.video_mode = file && file.type === 'video'
@@ -1171,7 +1167,7 @@ export default Vue.extend({
 
     change_file: async function (file, model_runs, color_list) {
       this.changing_file = true
-      this.current_file = file;
+      this.annotation_ui_context.working_file = file;
       await this.$nextTick();
       let model_runs_data = "";
       if (model_runs) {
@@ -1215,14 +1211,14 @@ export default Vue.extend({
       this.loading = true;
       if (this.$route.query.file) {
         if (this.$refs.file_manager_sheet) {
-          this.current_file = await this.$refs.file_manager_sheet.get_media(
+          this.annotation_ui_context.working_file = await this.$refs.file_manager_sheet.get_media(
             true,
             this.$route.query.file
           );
         }
       } else {
         if (this.$refs.file_manager_sheet) {
-          this.current_file = await this.$refs.file_manager_sheet.get_media();
+          this.annotation_ui_context.working_file = await this.$refs.file_manager_sheet.get_media();
         }
       }
       this.loading = false;
@@ -1236,7 +1232,7 @@ export default Vue.extend({
       this.loading = true;
 
       if (this.$refs.file_manager_sheet) {
-        this.current_file = await this.$refs.file_manager_sheet.get_media();
+        this.annotation_ui_context.working_file = await this.$refs.file_manager_sheet.get_media();
       }
 
       this.loading = false;

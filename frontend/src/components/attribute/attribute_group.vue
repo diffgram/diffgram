@@ -1004,9 +1004,7 @@
           let value = null    // shared with existing and default
           let existing_value = null
           let default_value = null
-          console.log('CURRENT INSTANCE WATCH', this.get_default(), this.format_default())
           if (this.current_instance.attribute_groups && this.current_instance.attribute_groups[this.group.id]) {
-            console.log('USE EXISTING', this.current_instance.attribute_groups)
             existing_value = this.current_instance.attribute_groups[this.group.id]
           }
           else  {
@@ -1015,14 +1013,12 @@
             // We must be careful here, we don't want to "reset" to the default value
             // if there was an existing value. We only set default when it's null.
             default_value = this.get_default()
-            console.log('SET DEFAULT', default_value)
             if (!default_value) {
               // If no default and no exist_value to set so return
               return
             } else {
               value = this.format_default()
             }
-            console.log('SET format_default', value)
           }
           // Populate existing value.
           if ((existing_value != null && this.group.kind != 'multiple_select' )
@@ -1044,7 +1040,6 @@
            */
 
           if (!this.group.kind || this.group.kind == "select" || this.group.kind == "radio") {
-            console.log('RADIO SET', this.select_format, value)
             this.internal_selected = this.select_format.find(
               attribute => {
                 return attribute.id == value.id
@@ -1058,7 +1053,6 @@
             this.internal_selected = value
 
           } else if (this.group.kind == "multiple_select") {
-            console.log('multiple_select SET', value)
             if(value && value.length > 0){
               this.internal_selected = []
             }
