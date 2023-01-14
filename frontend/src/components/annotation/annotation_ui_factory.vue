@@ -20,16 +20,23 @@
       ref="sidebar_factory"
     ></sidebar_factory>
 
-    <div :class="{'ma-auto': interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing}"
+    <div :class="{'ma-auto': (interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing) || loading}"
          id="annotation_ui_factory" tabindex="0">
       <v_error_multiple :error="error" />
-      <div v-if="!interface_type || !interface_type && !initializing">
+      <div v-if="!interface_type || !interface_type && !initializing && loading">
+        <empty_file_editor_placeholder
+          style="width: 800px"
+          :loading="true"
+          :title="'Loading Annotation UI...'"
+        />
+      </div>
+      <div v-if="!interface_type && !initializing && !loading">
         <empty_file_editor_placeholder
           :message="`File ID: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.id : 'N/A'}. File Type: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.type : 'N/A'}`"
           :title="'Invalid File loaded'"
         />
       </div>
-      <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing" >
+      <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing && !loading" >
         <empty_file_editor_placeholder
           :message="'Try adding child files to this compound file.'"
           :title="'This compound file has no child files.'" />
@@ -56,12 +63,10 @@
         :url_instance_buffer="get_url_instance_buffer()"
         :submitted_to_review="submitted_to_review"
         :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
-        :loading="loading"
+        :loading="annotation_ui_context.image_annotation_ctx.loading"
         :filtered_instance_type_list_function="filtered_instance_type_list"
         :get_userscript="get_userscript"
         :save_loading_frames_list="save_loading_frames_list"
-        :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
-        :go_to_keyframe_loading="go_to_keyframe_loading"
         :has_changed="has_changed"
         :instance_buffer_metadata="annotation_ui_context.image_annotation_ctx.instance_buffer_metadata"
         :create_instance_template_url="create_instance_template_url"
@@ -315,7 +320,6 @@ export default Vue.extend({
       submitted_to_review: false,
       has_changed: false,
       save_loading_frames_list: [],
-      go_to_keyframe_loading: false,
       video_parent_file_instance_list: [],
       unsaved_frames: [],
       snackbar_success: false,
@@ -459,7 +463,11 @@ export default Vue.extend({
       }
     },
     current_frame: function () {
-      return this.current_interface_ref.current_frame
+      let current_interface = this.get_current_annotation_area_ref()
+      if(current_interface){
+        return current_interface.current_frame
+      }
+
     },
 
     has_pending_frames: function () {
@@ -593,8 +601,9 @@ export default Vue.extend({
       if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
-      if (this.current_interface_ref) {
-        this.current_interface_ref.focus_instance(focus)
+      let current_interface = this.get_current_annotation_area_ref()
+      if (current_interface) {
+        current_interface.focus_instance(focus)
       }
 
     },
@@ -613,7 +622,7 @@ export default Vue.extend({
       this.save_error = {}
       this.save_warning = {}
 
-      if (this.go_to_keyframe_loading) return
+      if (this.annotation_ui_context.image_annotation_ctx.go_to_keyframe_loading) return
       if (this.view_only_mode) return
 
 
