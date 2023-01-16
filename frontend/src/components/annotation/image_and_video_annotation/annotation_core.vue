@@ -2485,6 +2485,7 @@ export default Vue.extend({
 
     },
     instance_selected: function (instance) {
+      console.log('INSTANCE SELECTED', instance)
       // Callback for when an instance is selected
       // This is a WIP that will be used for all the class Instance Types
       // For now we only have Keypoints instance using this.
