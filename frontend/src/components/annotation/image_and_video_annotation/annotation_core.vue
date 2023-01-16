@@ -23,15 +23,15 @@
             :height="50"
             :command_manager="command_manager"
             :save_loading="
-              video_mode
+              annotation_ui_context.image_annotation_ctx.video_mode
                 ? any_frame_saving
                 : save_loading_image
             "
             :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
             :label_schema="label_schema"
-            :loading="loading"
+            :loading="annotation_ui_context.image_annotation_ctx.loading"
             :view_only_mode="view_only_mode"
-            :video_mode="video_mode"
+            :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
             :label_settings="label_settings"
 
             :project_string_id="project_string_id"
@@ -88,7 +88,7 @@
       </v-alert>
 
       <v_error_multiple :error="save_error"></v_error_multiple>
-      <v_error_multiple :error="save_multiple_frames_error"></v_error_multiple>
+      <v_error_multiple :error="annotation_ui_context.image_annotation_ctx.save_multiple_frames_error"></v_error_multiple>
       <v_error_multiple
         :error="save_warning"
         type="warning"
@@ -307,7 +307,7 @@
             >
             </ghost_canvas_available_alert>
 
-            <div v-if="file_cant_be_accessed && !loading"
+            <div v-if="file_cant_be_accessed && !annotation_ui_context.image_annotation_ctx.loading"
                  class="d-flex flex-column justify-center align-center"
                  style="min-width: 750px; min-height: 750px; border: 1px solid #e0e0e0">
               <v-icon size="450">mdi-download-off</v-icon>
@@ -328,7 +328,7 @@
             <canvas
               data-cy="canvas"
               ref="canvas"
-              v-show="!show_place_holder && !file_cant_be_accessed && !loading"
+              v-show="!show_place_holder && !file_cant_be_accessed && !annotation_ui_context.image_annotation_ctx.loading"
               id="my_canvas"
               v-canvas:cb="onRendered"
               :height="canvas_height_scaled"
@@ -387,7 +387,7 @@
                 :default_instance_opacity="default_instance_opacity"
                 :vertex_size="label_settings.vertex_size"
                 :cuboid_corner_move_point="cuboid_corner_move_point"
-                :video_mode="video_mode"
+                :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
                 :auto_border_polygon_p1="auto_border_context.auto_border_polygon_p1"
                 :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"
                 :issues_list="issues_list"
@@ -427,7 +427,7 @@
                 :show="label_settings.show_ghost_instances"
                 :instance_list="ghost_instance_list"
                 :vertex_size="label_settings.vertex_size"
-                :video_mode="video_mode"
+                :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
                 :current_frame="annotation_ui_context.image_annotation_ctx.current_frame"
                 :label_settings="label_settings"
                 :is_actively_drawing="is_actively_drawing"
@@ -461,7 +461,7 @@
                 :instance_list="gold_standard_file.instance_list"
                 :auto_border_polygon_p1="auto_border_context.auto_border_polygon_p1"
                 :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"
-                :video_mode="video_mode"
+                :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
                 :is_actively_drawing="is_actively_drawing"
                 :current_frame="annotation_ui_context.image_annotation_ctx.current_frame"
                 :issues_list="issues_list"
@@ -527,7 +527,7 @@
               :hovered_figure_id="hovered_figure_id"
               :instance_list="instance_list"
               :sequence_list="sequence_list_local_copy"
-              :video_mode="video_mode"
+              :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
               @instance_update="instance_update($event)"
               @share_dialog_open="open_share_dialog"
               @focus_instance="on_context_menu_click_focus_instance"
@@ -550,12 +550,12 @@
           </div>
 
           <v_video
-            v-if="video_mode"
+            v-if="annotation_ui_context.image_annotation_ctx.video_mode"
             :style="style_max_width"
             v-show="!show_place_holder"
             class="pb-0"
             :current_video="current_video"
-            :video_mode="video_mode"
+            :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
             :max_num_image_buffer="label_settings.max_image_buffer"
             :player_height="'80px'"
             :parent_save="this.detect_is_ok_to_save"
@@ -589,7 +589,7 @@
 
           <v_sequence_list
             v-show="!show_place_holder"
-            :video_mode="video_mode"
+            :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
             class="pl-4"
             :project_string_id="
               project_string_id
@@ -661,7 +661,7 @@
       v-if="instance_list != undefined"
       ref="qa_carrousel"
       :annotation_show_on="annotation_show_on"
-      :loading="loading || annotation_ui_context.image_annotation_ctx.annotations_loading || full_file_loading"
+      :loading="annotation_ui_context.image_annotation_ctx.loading || annotation_ui_context.image_annotation_ctx.annotations_loading || full_file_loading"
       :instance_list="instance_list"
       :annotation_show_duration="annotation_show_duration_per_instance"
       @focus_instance="(index) => focus_instance({ index })"
@@ -788,8 +788,6 @@ export default Vue.extend({
     video_parent_file_instance_list: {type: Array, default: []},
     create_instance_template_url: {type: String, required: true},
     instance_buffer_metadata: {type: Object, default: {}},
-    go_to_keyframe_loading: {type: Boolean, default: false},
-    video_mode: {type: Boolean, default: false},
     get_userscript: {type: Function, required: true},
     save_loading_frames_list: {type: Array, default: []},
     filtered_instance_type_list_function: {type: Function, default: () => []},
@@ -825,9 +823,6 @@ export default Vue.extend({
     annotation_ui_context: {type: Object as BaseAnnotationUIContext, required: true},
   },
   watch: {
-    loading: function (newVal) {
-      this.$emit('loading_changed', newVal)
-    },
     event_create_instance: function (newVal) {
       this.$emit('event_create_instance', newVal)
     },
@@ -1094,7 +1089,6 @@ export default Vue.extend({
       save_count: 0,
 
       save_error: {},
-      save_multiple_frames_error: {},
       error: {},
       instance_buffer_error: {},
 
@@ -1463,7 +1457,7 @@ export default Vue.extend({
       return (
         this.full_file_loading ||
         this.annotation_ui_context.image_annotation_ctx.annotations_loading ||
-        this.loading ||
+        this.annotation_ui_context.image_annotation_ctx.loading ||
         this.loading_sequences
       );
     },
@@ -1548,7 +1542,7 @@ export default Vue.extend({
         this.media_core_height -
         this.magic_nav_spacer;
 
-      if (this.video_mode == true) {
+      if (this.annotation_ui_context.image_annotation_ctx.video_mode == true) {
         // TEMP this is solving wrong problem
         // In preview mode it def makes more sense for sequences to be to the right of video
         let video_offset = 80;
@@ -1741,7 +1735,7 @@ export default Vue.extend({
 
       let number = null;
       let sequence_id = null;
-      if (this.video_mode == true) {
+      if (this.annotation_ui_context.image_annotation_ctx.video_mode == true) {
         number = this.current_sequence_from_sequence_component.number;
         sequence_id = this.current_sequence_from_sequence_component.id;
       }
@@ -1868,7 +1862,7 @@ export default Vue.extend({
       this.polygon_merge_tool = null
     },
     change_keyframe: function (keyframe) {
-      if (this.video_mode) {
+      if (this.annotation_ui_context.image_annotation_ctx.video_mode) {
         if (this.annotation_ui_context.image_annotation_ctx.current_frame !== keyframe && this.$refs.video_controllers) {
           this.$refs.video_controllers.go_to_keyframe(keyframe);
         }
@@ -1884,7 +1878,7 @@ export default Vue.extend({
     on_image_rotation: async function (rotation_degrees: number) {
       try {
         await this.detect_is_ok_to_save()
-        this.loading = true
+        this.annotation_ui_context.image_annotation_ctx.loading = true
         const file = this.working_file
         let [updated_file, err] = await update_file_metadata(
           this.project_string_id,
@@ -1901,7 +1895,7 @@ export default Vue.extend({
           color: 'success'
         })
         await this.image_update_core(file)
-        this.loading = false
+        this.annotation_ui_context.image_annotation_ctx.loading = false
       } catch (e) {
         console.error(e)
       }
@@ -2441,7 +2435,7 @@ export default Vue.extend({
         console.error(error);
         this.error = this.$route_api_errors(error);
       } finally {
-        this.loading = false;
+        this.annotation_ui_context.image_annotation_ctx.loading = false;
       }
     },
     show_snackbar: function (message, color = 'primary',
@@ -2738,7 +2732,7 @@ export default Vue.extend({
       this.annotation_ui_context.issues_ui_manager.draw_mode = false;
       this.label_settings.allow_multiple_instance_select = true;
       this.$store.commit("set_view_issue_mode", true);
-      if (this.video_mode) {
+      if (this.annotation_ui_context.image_annotation_ctx.video_mode) {
         if (this.annotation_ui_context.image_annotation_ctx.current_frame !== issue.marker_frame_number) {
           this.$refs.video_controllers.go_to_keyframe(
             issue.marker_frame_number
@@ -2944,7 +2938,7 @@ export default Vue.extend({
       } else if (update.list_type == "gold_standard") {
         instance = this.gold_standard_file.instance_list[index]
       } else if (update.list_type == "global") {
-        if (this.video_mode) {
+        if (this.annotation_ui_context.image_annotation_ctx.video_mode) {
           instance = this.video_parent_file_instance_list[index]
         } else {
           instance = this.instance_list[index]
@@ -3064,10 +3058,10 @@ export default Vue.extend({
       }
 
       // end instance update
-      if (instance.type === 'global' && this.video_mode) {
+      if (instance.type === 'global' && this.annotation_ui_context.image_annotation_ctx.video_mode) {
         this.video_global_attribute_changed = true;
       }
-      if (!this.video_mode) {
+      if (!this.annotation_ui_context.image_annotation_ctx.video_mode) {
         let insert_instance_result = this.insert_instance(
           index,
           instance,
@@ -3075,7 +3069,7 @@ export default Vue.extend({
           update
         );
       }
-      if (this.video_mode && instance.type !== 'global') {
+      if (this.annotation_ui_context.image_annotation_ctx.video_mode && instance.type !== 'global') {
         let insert_instance_result = this.insert_instance(
           index,
           instance,
@@ -3302,7 +3296,7 @@ export default Vue.extend({
     fetch_model_run_list: async function () {
       if (!this.model_run_id_list || this.model_run_id_list.length === 0) return
 
-      this.loading = true;
+      this.annotation_ui_context.image_annotation_ctx.loading = true;
       const [response] = await get_model_run_list(this.project_string_id, this.model_run_id_list)
 
       if (response && response.data.model_run_list !== undefined) {
@@ -3312,7 +3306,7 @@ export default Vue.extend({
         }
       }
 
-      this.loading = false;
+      this.annotation_ui_context.image_annotation_ctx.loading = false;
       this.$emit('model_run_list_loaded', this.model_run_list)
     },
     task_mode_mounted: function () {
@@ -3500,7 +3494,7 @@ export default Vue.extend({
       }
     },
     set_keyframe_loading: function (value) {
-      this.go_to_keyframe_loading = value
+      this.annotation_ui_context.image_annotation_ctx.go_to_keyframe_loading = value
     },
     on_key_frame_loaded: async function (url, frame_number) {
       let existing_image = null;
@@ -3531,7 +3525,7 @@ export default Vue.extend({
       // this gets instances if it needs to
       this.html_image = image;
       this.canvas_wrapper.style.display = "";
-      this.loading = false;
+      this.annotation_ui_context.image_annotation_ctx.loading = false;
       this.trigger_refresh_with_delay();
     },
     add_image_process: async function (url) {
@@ -3544,7 +3538,7 @@ export default Vue.extend({
         throw new Error("Provide file.");
       }
       if (file.type == "image") {
-        this.video_mode = false;
+        this.annotation_ui_context.image_annotation_ctx.video_mode = false;
         this.canvas_width = file.image.width;
         this.canvas_height = file.image.height;
 
@@ -3557,7 +3551,7 @@ export default Vue.extend({
       }
 
       if (file.type == "video") {
-        this.video_mode = true;
+        this.annotation_ui_context.image_annotation_ctx.video_mode = true;
         this.current_video = file.video;
         this.current_video_file_id = file.id;
 
@@ -3821,7 +3815,7 @@ export default Vue.extend({
       );
     },
     add_instance_to_frame_buffer: async function (instance, frame_number) {
-      if (!this.video_mode) {
+      if (!this.annotation_ui_context.image_annotation_ctx.video_mode) {
         return;
       }
       if (frame_number == undefined) {
@@ -3854,7 +3848,7 @@ export default Vue.extend({
 
     // TODO rename? / refactor? in contect of more awareness of ref/by value for buffer
     add_instance_to_file: async function (instance, frame_number = undefined) {
-      if (this.video_mode) {
+      if (this.annotation_ui_context.image_annotation_ctx.video_mode) {
         if (frame_number == undefined) {
           console.error('Please provide a frame number to call add_instance_to_file()')
           return
@@ -5127,7 +5121,7 @@ export default Vue.extend({
 
       this.canvas_width = file.video.width;
       this.canvas_height = file.video.height;
-      this.video_mode = true;
+      this.annotation_ui_context.image_annotation_ctx.video_mode = true;
       this.current_video = file.video;
       this.current_video_file_id = file.id;
       await this.get_instances();
@@ -5154,7 +5148,7 @@ export default Vue.extend({
           await this.video_update_core(file);
         }
       } else {
-        this.loading = false;
+        this.annotation_ui_context.image_annotation_ctx.loading = false;
         this.annotation_ui_context.image_annotation_ctx.annotations_loading = false;
         // The two different loading flags relate to differential between loading files,
         // and loading annotations which need to be different in current design
@@ -5176,7 +5170,7 @@ export default Vue.extend({
     image_update_core: async function (file: File) {
 
       if (!file) {
-        this.loading = false;
+        this.annotation_ui_context.image_annotation_ctx.loading = false;
       } else {
         this.$emit("current_file", file);
       }
@@ -5214,7 +5208,7 @@ export default Vue.extend({
         );
         this.html_image = new_image;
         this.update_canvas();
-        this.loading = false;
+        this.annotation_ui_context.image_annotation_ctx.loading = false;
         this.refresh = Date.now();
       } catch (error) {
         console.error(error);
@@ -6060,7 +6054,7 @@ export default Vue.extend({
         return false;
       }
 
-      if (this.video_mode == true) {
+      if (this.annotation_ui_context.image_annotation_ctx.video_mode == true) {
         if (this.validate_sequences() == false) {
           this.mouse_down_limits_result = false;
           return false;
@@ -6253,7 +6247,7 @@ export default Vue.extend({
     add_instance_template_to_instance_list(frame_number) {
       this.actively_drawing_instance_template.instance_list.forEach((instance) => {
         let new_instance = duplicate_instance(instance, this);
-        if (this.video_mode == true) {
+        if (this.annotation_ui_context.image_annotation_ctx.video_mode == true) {
           new_instance.number =
             this.current_sequence_from_sequence_component.number;
           new_instance.sequence_id =
@@ -6462,7 +6456,7 @@ export default Vue.extend({
         locked_editing_instance: this.locked_editing_instance,
         lock_point_hover_change: this.lock_point_hover_change,
         polygon_merge_tool: this.polygon_merge_tool,
-        video_mode: this.video_mode,
+        video_mode: this.annotation_ui_context.image_annotation_ctx.video_mode,
         current_sequence_from_sequence_component: this.current_sequence_from_sequence_component
       }
       return ann_ctx
@@ -6649,7 +6643,7 @@ export default Vue.extend({
         this.instance_list = new_instance_list
       }
 
-      this.loading = false
+      this.annotation_ui_context.image_annotation_ctx.loading = false
 
       this.trigger_refresh_with_delay();
     },
@@ -6703,7 +6697,7 @@ export default Vue.extend({
           this.annotation_ui_context.image_annotation_ctx.annotations_loading = false;
         } catch (error) {
           console.debug(error);
-          this.loading = false;
+          this.annotation_ui_context.image_annotation_ctx.loading = false;
         }
         return;
       } else if (this.$store.state.builder_or_trainer.mode == "trainer") {
@@ -6717,7 +6711,7 @@ export default Vue.extend({
           this.annotation_ui_context.image_annotation_ctx.annotations_loading = false;
         } catch (error) {
           console.debug(error);
-          this.loading = false;
+          this.annotation_ui_context.image_annotation_ctx.loading = false;
         }
       }
     },
@@ -6747,7 +6741,7 @@ export default Vue.extend({
       this.annotation_ui_context.image_annotation_ctx.annotations_loading = true;
       this.show_annotations = false;
       // Fetch Instance list for either video or image.
-      if (this.video_mode == true) {
+      if (this.annotation_ui_context.image_annotation_ctx.video_mode == true) {
         /*  Caution, if this is firing twice
          *    Look at vidue.vue   get_video_single_image()
          *    It's spawning a 'video_file_update' event this is waiting for.
@@ -6789,7 +6783,7 @@ export default Vue.extend({
         this.instance_list = this.instance_buffer_dict[this.annotation_ui_context.image_annotation_ctx.current_frame];
         this.add_override_colors_for_model_runs();
         this.show_annotations = true;
-        this.loading = false;
+        this.annotation_ui_context.image_annotation_ctx.loading = false;
         this.annotation_ui_context.image_annotation_ctx.annotations_loading = false;
         if (
           this.annotation_ui_context.image_annotation_ctx.instance_buffer_metadata[this.annotation_ui_context.image_annotation_ctx.current_frame] &&
@@ -6853,7 +6847,7 @@ export default Vue.extend({
        *
        */
       this.show_annotations = false;
-      this.loading = true;
+      this.annotation_ui_context.image_annotation_ctx.loading = true;
 
       this.annotation_ui_context.image_annotation_ctx.annotations_loading = true;
 
@@ -6886,7 +6880,7 @@ export default Vue.extend({
         }
 
         this.show_annotations = true;
-        this.loading = false;
+        this.annotation_ui_context.image_annotation_ctx.loading = false;
         this.annotation_ui_context.image_annotation_ctx.annotations_loading = false;
         this.trigger_refresh_with_delay();
         this.update_canvas();
@@ -6897,7 +6891,7 @@ export default Vue.extend({
       } catch (error) {
         this.instance_buffer_error = this.$route_api_errors(error);
         console.debug(error);
-        this.loading = false;
+        this.annotation_ui_context.image_annotation_ctx.loading = false;
       }
     },
 
@@ -6908,7 +6902,7 @@ export default Vue.extend({
     },
 
     next_issue_task: async function (task) {
-      if (this.loading == true || this.annotation_ui_context.image_annotation_ctx.annotations_loading == true) {
+      if (this.annotation_ui_context.image_annotation_ctx.loading == true || this.annotation_ui_context.image_annotation_ctx.annotations_loading == true) {
         return;
       }
 
@@ -6919,7 +6913,7 @@ export default Vue.extend({
 
       this.reset_for_file_change_context();
 
-      this.loading = true;
+      this.annotation_ui_context.image_annotation_ctx.loading = true;
 
       try {
         const response = await axios.post(
@@ -6936,7 +6930,7 @@ export default Vue.extend({
       } catch (error) {
         console.debug(error);
       } finally {
-        this.loading = false;
+        this.annotation_ui_context.image_annotation_ctx.loading = false;
       }
     },
     reset_for_file_change_context: function () {
@@ -6944,12 +6938,12 @@ export default Vue.extend({
         id: null,
         number: null
       }
-      this.video_mode = false   // if we don't have this can be issues switching to say an image
+      this.annotation_ui_context.image_annotation_ctx.video_mode = false   // if we don't have this can be issues switching to say an image
       this.degrees = 0
       this.instance_buffer_dict = {}
       this.annotation_ui_context.image_annotation_ctx.instance_buffer_metadata = {}
       this.instance_list = []
-      if (this.video_mode) {
+      if (this.annotation_ui_context.image_annotation_ctx.video_mode) {
         this.$refs.video_controllers.reset_cache();
       }
       if (this.$refs.qa_carrousel) {
@@ -7029,7 +7023,7 @@ export default Vue.extend({
       }
 
       if (
-        this.loading == true ||
+        this.annotation_ui_context.image_annotation_ctx.loading == true ||
         this.annotation_ui_context.image_annotation_ctx.annotations_loading == true ||
         this.full_file_loading
       ) {
@@ -7069,7 +7063,7 @@ export default Vue.extend({
       }
 
       if (
-        this.loading == true ||
+        this.annotation_ui_context.image_annotation_ctx.loading == true ||
         this.annotation_ui_context.image_annotation_ctx.annotations_loading == true ||
         this.full_file_loading
       ) {
@@ -7108,7 +7102,7 @@ export default Vue.extend({
       if (file.type == "image") {
         // TODO a better way... this is so the watch on current video changes
         this.current_video_file_id = null;
-        this.video_mode = false;
+        this.annotation_ui_context.image_annotation_ctx.video_mode = false;
         this.current_video = {
           frame_count: 0,
           current_frame: 0,
@@ -7136,7 +7130,7 @@ export default Vue.extend({
         }
       }
       if (file.type === "video") {
-        this.video_mode = true; // order matters here, downstream things need this to pull right stuff
+        this.annotation_ui_context.image_annotation_ctx.video_mode = true; // order matters here, downstream things need this to pull right stuff
         // may be a good opportunity to think about a computed property here
 
         this.current_video_file_id = file.id;
@@ -7492,27 +7486,7 @@ export default Vue.extend({
     initialize_instance: function (instance): Instance {
       return initialize_instance_object(instance, this)
     },
-    save_multiple_frames: async function (frames_list) {
-      const limit = pLimit(25); // 25 Max concurrent request.
-      try {
-        this.save_multiple_frames_error = {};
-        const promises = frames_list.map((frame_number) => {
-          return limit(() =>
-            this.$emit('save',
-              false,
-              frame_number,
-              this.instance_buffer_dict[frame_number]
-            )
-          );
-        });
-        const result = await Promise.all(promises);
-        return result
 
-      } catch (error) {
-        this.save_multiple_frames_error = this.$route_api_errors(error);
-        console.error(error);
-      }
-    },
     move_instance: function (instance_clipboard) {
       /*
       * Mostly used for pasting instances on same image/frame, so that they don't
@@ -7618,7 +7592,7 @@ export default Vue.extend({
         }
         this.refresh_instance_list_sidebar();
         this.show_loading_paste();
-        await this.save_multiple_frames(frames_to_save);
+        this.$emit('save_multiple_frames', frames_to_save)
         this.show_success_paste();
       } else {
         this.add_instance_to_file(
@@ -7638,7 +7612,7 @@ export default Vue.extend({
       if (this.any_frame_saving || this.any_loading) {
         return
       }
-      if (this.go_to_keyframe_loading) {
+      if (this.annotation_ui_context.image_annotation_ctx.go_to_keyframe_loading) {
         return
       }
       if (!clipboard && instance_hover_index == undefined) {

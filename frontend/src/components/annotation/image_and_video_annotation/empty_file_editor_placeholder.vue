@@ -21,6 +21,11 @@
       </v-card>
 
     </div>
+    <div v-else class="ma-auto d-flex align-center justify-center mt-8 flex-column"
+         style="width: 100%; height: 100%">
+      <h1>{{ title }}</h1>
+      <v-progress-linear indeterminate color="secondary" height="75"></v-progress-linear>
+    </div>
 
   </div>
 </template>
