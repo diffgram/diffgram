@@ -835,7 +835,6 @@ export default Vue.extend({
       this.$emit('selected_instance_for_history', newVal)
     },
     request_change_current_instance: function (newVal) {
-      console.log('request_change_current_instance', newVal)
       this.$emit('request_change_current_instance', newVal)
     },
     video_playing: function (newVal) {
@@ -2492,6 +2491,7 @@ export default Vue.extend({
 
     },
     instance_selected: function (instance) {
+      console.log('INSTANCE SELECTED', instance)
       // Callback for when an instance is selected
       // This is a WIP that will be used for all the class Instance Types
       // For now we only have Keypoints instance using this.
@@ -2851,6 +2851,7 @@ export default Vue.extend({
     open_context_menu: function () {
       //this.emit_instance_hover = true;
       this.annotation_ui_context.show_context_menu = true;
+      this.update_canvas()
     },
 
     detect_clicks_outside_context_menu: function (e) {
@@ -6072,9 +6073,11 @@ export default Vue.extend({
     refresh_instance_list_sidebar: function (
       instance_index = this.instance_list.length - 1
     ) {
+
       this.event_create_instance = {...this.current_instance};
       this.request_change_current_instance = instance_index;
       this.annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = Date.now();
+      this.update_canvas()
     },
 
     unset_instance_list_sidebar: function () {
