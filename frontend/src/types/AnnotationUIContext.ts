@@ -62,6 +62,7 @@ export class ImageAnnotationUIContext {
   instance_buffer_metadata: object
   annotations_loading: boolean
   go_to_keyframe_loading: boolean
+  save_multiple_frames_error: object
 
   get_userscript: Function
 
@@ -81,6 +82,7 @@ export class ImageAnnotationUIContext {
     this.instance_buffer_metadata = {}
     this.annotations_loading = false
     this.go_to_keyframe_loading = false
+    this.save_multiple_frames_error = {}
   }
 
 }
