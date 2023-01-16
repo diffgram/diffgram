@@ -599,7 +599,7 @@
             :view_only_mode="view_only_mode"
             :current_video_file_id="current_video_file_id"
             :current_frame="annotation_ui_context.image_annotation_ctx.current_frame"
-            :label_file_id="current_label_file_id"
+            :label_file_id="annotation_ui_context.current_label_file ? annotation_ui_context.current_label_file.id : undefined"
             :current_sequence_annotation_core_prop="
               current_sequence_annotation_core_prop
             "
@@ -611,7 +611,7 @@
             @keyframe_click="change_keyframe"
             @sequence_list="sequence_list_local_copy = $event"
             :task="task"
-            :current_label_file="current_label_file"
+            :current_label_file="annotation_ui_context.current_label_file"
             :video_playing="video_playing"
             :force_new_sequence_request="force_new_sequence_request"
             :label_file_list="label_list"
@@ -1792,8 +1792,8 @@ export default Vue.extend({
         rear_face: rear_face,
         width: width,
         height: height,
-        label_file: this.current_label_file,
-        label_file_id: this.current_label_file_id,
+        label_file: this.annotation_ui_context.current_label_file,
+        label_file_id: this.annotation_ui_context.current_label_file_id,
         selected: "false",
         number: number,
         machine_made: false,
@@ -1814,8 +1814,8 @@ export default Vue.extend({
 
           Using this as a workaround into shared computed property
         */
-      if (this.current_label_file) {
-        return this.current_label_file.id;
+      if (this.annotation_ui_context.current_label_file) {
+        return this.annotation_ui_context.current_label_file.id;
       } else {
         return null;
       }
@@ -3409,7 +3409,7 @@ export default Vue.extend({
         if (
           this.instance_list[i].number ==
           this.current_sequence_from_sequence_component.number &&
-          this.instance_list[i].label_file_id == this.current_label_file.id
+          this.instance_list[i].label_file_id == this.annotation_ui_context.current_label_file.id
         ) {
           count += 1;
         }
@@ -3805,13 +3805,6 @@ export default Vue.extend({
           this.delete_single_instance(i);
         }
       }
-    },
-    change_current_label_file_template: function (label_file) {
-      this.current_label_file = label_file;
-      if (this.instance_type == "tag") {
-        this.insert_tag_type();
-      }
-      this.$emit('change_current_label_file', this.current_label_file)
     },
 
     insert_tag_type: function () {
@@ -6053,7 +6046,7 @@ export default Vue.extend({
       }
 
       // TODO clarify if we could just do this first check
-      if (!this.current_label_file || !this.current_label_file.id) {
+      if (!this.annotation_ui_context.current_label_file || !this.annotation_ui_context.current_label_file.id) {
         this.snackbar_warning = true;
         this.snackbar_warning_text = "Please select a label first";
         this.mouse_down_limits_result = false;
@@ -6246,8 +6239,8 @@ export default Vue.extend({
     instance_template_mouse_down: function () {
     },
     add_label_file_to_instance(instance) {
-      instance.label_file = this.current_label_file;
-      instance.label_file_id = this.current_label_file_id;
+      instance.label_file = this.annotation_ui_context.current_label_file;
+      instance.label_file_id = this.annotation_ui_context.current_label_file.id;
       return instance;
     },
     add_instance_template_to_instance_list(frame_number) {
@@ -6434,7 +6427,7 @@ export default Vue.extend({
     build_ann_event_ctx: function (): ImageAnnotationEventCtx {
       let ann_ctx: ImageAnnotationEventCtx = {
         polygon_point_hover_index: this.polygon_point_hover_index,
-        label_file: this.current_label_file as LabelFile,
+        label_file: this.annotation_ui_context.current_label_file as LabelFile,
         instance_type: this.instance_type,
         instance_list: this.instance_list as Instance[],
         draw_mode: this.draw_mode,

@@ -11,6 +11,7 @@
       :interface_type="interface_type"
       :filtered_instance_type_list_function="filtered_instance_type_list"
       :show_default_navigation="show_default_navigation"
+      @change_label_file="change_current_label_file_template($event)"
     />
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
     <sidebar_factory
@@ -282,7 +283,6 @@ export default Vue.extend({
       task_error: {
         task_request: null,
       },
-
       annotation_ui_context: {
         working_file: null,
         command_manager: null,
@@ -557,6 +557,10 @@ export default Vue.extend({
     },
   },
   methods: {
+    change_current_label_file_template: function (label_file) {
+      this.annotation_ui_context.current_label_file = label_file;
+      this.$emit('change_current_label_file', this.annotation_ui_context.current_label_file)
+    },
     handle_open_issue_panel: function(mouse_position){
       if(!this.$refs.sidebar_factory){
         return
