@@ -271,7 +271,15 @@ export default Vue.extend({
     draw_mode: {
       type: Boolean,
       default: true
-    }
+    },
+    instance_type_list: {
+      type: Array,
+      default: []
+    },
+    instance_type: {
+      type: String,
+      default: "box"
+    },
   },
   computed: {
 

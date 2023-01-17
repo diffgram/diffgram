@@ -8,13 +8,16 @@
       :label_settings="annotation_ui_context.image_annotation_ctx.label_settings"
       :label_schema="annotation_ui_context.label_schema"
       :draw_mode="annotation_ui_context.image_annotation_ctx.draw_mode"
+      :instance_type="annotation_ui_context.instance_type"
       :label_file_colour_map="label_file_colour_map"
       :label_list="label_list"
       :interface_type="interface_type"
+      :instance_type_list="instance_type_list"
       :filtered_instance_type_list_function="filtered_instance_type_list"
       :show_default_navigation="show_default_navigation"
       :current_label_file="annotation_ui_context.current_label_file"
       @edit_mode_toggle="on_draw_mode_changed"
+      @change_instance_type="change_instance_type"
       @change_label_schema="on_change_label_schema"
       @change_label_file="change_current_label_file_template($event)"
     />
@@ -57,6 +60,7 @@
         :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
         :loading="annotation_ui_context.image_annotation_ctx.loading"
         :filtered_instance_type_list_function="filtered_instance_type_list"
+        :instance_type_list="instance_type_list"
         :get_userscript="get_userscript"
         :save_loading_frames_list="save_loading_frames_list"
         :has_changed="has_changed"
@@ -90,6 +94,7 @@
         :error="error"
         :issues_ui_manager="annotation_ui_context.issues_ui_manager"
         :draw_mode="annotation_ui_context.image_annotation_ctx.draw_mode"
+        :instance_type="annotation_ui_context.instance_type"
         @request_file_change="request_file_change"
         @change_label_schema="on_change_label_schema"
         @set_file_list="set_file_list"
@@ -346,6 +351,15 @@ export default Vue.extend({
       snackbar_success_text: null,
       current_instance_list: [],
       current_instance_buffer_dict: {},
+      instance_type_list: [
+        {name: "box", display_name: "Box", icon: "mdi-checkbox-blank"},
+        {name: "polygon", display_name: "Polygon", icon: "mdi-vector-polygon"},
+        {name: "point", display_name: "Point", icon: "mdi-circle-slice-8"},
+        {name: "line", display_name: "Fixed Line", icon: "mdi-minus"},
+        {name: "cuboid", display_name: "Cuboid 2D", icon: "mdi-cube-outline"},
+        {name: "ellipse", display_name: "Ellipse & Circle", icon: "mdi-ellipse-outline"},
+        {name: "curve", display_name: "Curve Quadratic", icon: "mdi-chart-bell-curve-cumulative"},
+      ],
     }
   },
   watch: {
@@ -547,6 +561,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    change_instance_type: function(instance_type: string): void {
+      this.annotation_ui_context.instance_type = instance_type
+    },
     change_current_label_file_template: function (label_file) {
       this.annotation_ui_context.current_label_file = label_file;
       this.$emit('change_current_label_file', this.annotation_ui_context.current_label_file)

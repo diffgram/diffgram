@@ -130,20 +130,15 @@ export default Vue.extend({
     filtered_instance_type_list_function: {
       type: Function,
       default: () => {}
-    }
-  },
-  data() {
-    return {
-      instance_type_list: [
-        {name: "box", display_name: "Box", icon: "mdi-checkbox-blank"},
-        {name: "polygon", display_name: "Polygon", icon: "mdi-vector-polygon"},
-        {name: "point", display_name: "Point", icon: "mdi-circle-slice-8"},
-        {name: "line", display_name: "Fixed Line", icon: "mdi-minus"},
-        {name: "cuboid", display_name: "Cuboid 2D", icon: "mdi-cube-outline"},
-        {name: "ellipse", display_name: "Ellipse & Circle", icon: "mdi-ellipse-outline"},
-        {name: "curve", display_name: "Curve Quadratic", icon: "mdi-chart-bell-curve-cumulative"},
-      ],
-    }
+    },
+    instance_type_list: {
+      type: Array,
+      default: []
+    },
+    instance_type: {
+      type: String,
+      default: "box"
+    },
   },
   computed: {
     show_default_navigation: function(): Boolean {

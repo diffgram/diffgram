@@ -787,6 +787,14 @@ export default Vue.extend({
       type: Boolean,
       default: true
     },
+    instance_type_list: {
+      type: Array,
+      default: []
+    },
+    instance_type: {
+      type: String,
+      default: "box"
+    },
     project_string_id: {default: null, type: String},
     has_pending_frames: {type: Boolean, default: false},
     video_parent_file_instance_list: {type: Array, default: []},
@@ -1119,21 +1127,6 @@ export default Vue.extend({
       annotation_show_timer: null,
       annotation_show_revert: 2,
 
-      // We could also use this dictionary for other parts
-      // that rely on type to specifcy an icon
-      instance_type_list: [
-        {name: "box", display_name: "Box", icon: "mdi-checkbox-blank"},
-        {name: "polygon", display_name: "Polygon", icon: "mdi-vector-polygon"},
-        {name: "tag", display_name: "Tag", icon: "mdi-tag"},
-        {name: "point", display_name: "Point", icon: "mdi-circle-slice-8"},
-        {name: "line", display_name: "Fixed Line", icon: "mdi-minus"},
-        {name: "cuboid", display_name: "Cuboid 2D", icon: "mdi-cube-outline"},
-        {name: "ellipse", display_name: "Ellipse & Circle", icon: "mdi-ellipse-outline"},
-        {name: "curve", display_name: "Curve Quadratic", icon: "mdi-chart-bell-curve-cumulative"},
-      ],
-
-      instance_type: "box", //"box" or "polygon" or... "text"... or "cuboid"
-
       polygon_type_list: ["closed"],
 
       instance_sub_type: "closed",
@@ -1374,9 +1367,6 @@ export default Vue.extend({
         return false;
       }
       if (this.annotation_ui_context.show_context_menu) {
-        return false;
-      }
-      if (this.instance_type == "tag") {
         return false;
       }
 
@@ -2681,10 +2671,6 @@ export default Vue.extend({
         });
         await this.$nextTick();
         if (this.filtered_instance_type_list && this.filtered_instance_type_list[0]) {
-          this.instance_type = this.filtered_instance_type_list[0].name;
-          if (this.$refs.toolbar) {
-            this.$refs.toolbar.instance_type = this.instance_type;
-          }
           this.set_default_tool()
 
         }
@@ -3372,7 +3358,6 @@ export default Vue.extend({
       this.instance_context.keypoints_draw_mode = this.current_instance_template.mode
     },
     change_instance_type: function ($event) {
-      this.instance_type = $event;
       this.current_polygon_point_list = [];
       this.cuboid_face_hover = undefined;
       this.$store.commit("finish_draw");
