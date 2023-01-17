@@ -20,9 +20,10 @@
       ref="sidebar_factory"
     ></sidebar_factory>
 
-    <div :class="{'ma-auto': (interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing) || loading}"
-         id="annotation_ui_factory" tabindex="0">
-      <v_error_multiple :error="error" />
+    <div
+      :class="{'ma-auto': (interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing) || loading}"
+      id="annotation_ui_factory" tabindex="0">
+      <v_error_multiple :error="error"/>
       <div v-if="!interface_type || !interface_type && !initializing && loading">
         <empty_file_editor_placeholder
           style="width: 800px"
@@ -36,10 +37,11 @@
           :title="'Invalid File loaded'"
         />
       </div>
-      <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing && !loading" >
+      <div
+        v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing && !loading">
         <empty_file_editor_placeholder
           :message="'Try adding child files to this compound file.'"
-          :title="'This compound file has no child files.'" />
+          :title="'This compound file has no child files.'"/>
       </div>
       <div v-else-if="!credentials_granted && !initializing">
         <empty_file_editor_placeholder
@@ -51,85 +53,100 @@
           :show_upload="false"
         />
       </div>
-      <panel_manager :num_columns="annotation_ui_context.working_file_list.length"
-                     :num_rows="annotation_ui_context.num_rows">
-        <div v-for="(file, index) in annotation_ui_context.working_file_list"
-             v-slot="`panel:${1}:${index}`">
-          <annotation_area_factory
-            v-else-if="annotation_ui_context && annotation_ui_context.working_file"
-            ref="annotation_area_factory"
-            :interface_type="interface_type"
-            :annotation_ui_context="annotation_ui_context"
-            :working_file="annotation_ui_context.working_file"
-            :credentials_granted="credentials_granted"
-            :initializing="initializing"
-            :save_loading_image="save_loading_image"
-            :url_instance_buffer="get_url_instance_buffer()"
-            :submitted_to_review="submitted_to_review"
-            :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
-            :loading="annotation_ui_context.image_annotation_ctx.loading"
-            :filtered_instance_type_list_function="filtered_instance_type_list"
-            :get_userscript="get_userscript"
-            :save_loading_frames_list="save_loading_frames_list"
-            :has_changed="has_changed"
-            :instance_buffer_metadata="annotation_ui_context.image_annotation_ctx.instance_buffer_metadata"
-            :create_instance_template_url="create_instance_template_url"
-            :video_parent_file_instance_list="video_parent_file_instance_list"
-            :has_pending_frames="has_pending_frames"
-            :instance_store="annotation_ui_context.instance_store"
-            :project_string_id="computed_project_string_id"
-            :label_schema="annotation_ui_context.label_schema"
-            :model_run_id_list="model_run_id_list"
-            :model_run_color_list="model_run_color_list"
-            :task="annotation_ui_context.task"
-            :file="annotation_ui_context.working_file"
-            :task_id_prop="task_id_prop"
-            :request_save="request_save"
-            :job_id="job_id"
-            :view_only_mode="view_only"
-            :label_list="label_list"
-            :label_file_colour_map="label_file_colour_map"
-            :enabled_edit_schema="enabled_edit_schema"
-            :finish_annotation_show="show_snackbar"
-            :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
-            :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
-            :task_image="task_image"
-            :task_instances="task_instances"
-            :task_loading="task_loading"
-            :changing_file="changing_file"
-            :changing_task="changing_task"
-            :task_error="task_error"
-            :issues_ui_manager="annotation_ui_context.issues_ui_manager"
-            @request_file_change="request_file_change"
-            @change_label_schema="on_change_label_schema"
-            @set_file_list="set_file_list"
-            @request_new_task="change_task"
-            @replace_file="annotation_ui_context.working_file = $event"
-            @get_userscript="get_userscript"
-            @save_time_tracking="save_time_tracking"
-            @trigger_task_change="trigger_task_change"
-            @set_ui_schema="set_ui_schema"
-            @set_save_loading="set_save_loading"
-            @save="save"
-            @set_frame_pending_save="set_frame_pending_save"
-            @task_update="task_update"
-            @set_has_changed="set_has_changed"
-            @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
-            @model_run_list_loaded="annotation_ui_context.model_run_list = $event"
-            @draw_mode_change="on_draw_mode_changed"
-            @change_video_playing="annotation_ui_context.image_annotation_ctx.video_playing = $event"
-            @change_current_label_file="annotation_ui_context.current_label_file = $event"
-            @request_change_current_instance="annotation_ui_context.image_annotation_ctx.request_change_current_instance = $event"
-            @trigger_refresh_current_instance="annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = $event"
-            @selected_instance_for_history="annotation_ui_context.selected_instance_for_history = $event"
-            @event_create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance = $event"
-            @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
-            @open_issue_panel="handle_open_issue_panel"
-            @instance_list_updated="update_current_instance_list"
-            @instance_buffer_dict_updated="update_current_frame_buffer_dict"
-            @save_multiple_frames="save_multiple_frames"
-          />
-        </div>
+
+      <panel_manager
+        v-else-if="annotation_ui_context && annotation_ui_context.working_file_list && annotation_ui_context.working_file_list.length > 0"
+        :num_columns="annotation_ui_context.working_file_list.length"
+        :num_rows="annotation_ui_context.num_rows"
+        @panes_resized="on_panes_resized"
+      >
+<!--              <template v-for="(file, index) in annotation_ui_context.working_file_list"-->
+<!--                        v-slot:[`panel_${annotation_ui_context.num_rows}:${index+1}`]="">-->
+
+<!--                <img src="https://picsum.photos/seed/600/600" alt="">-->
+
+<!--              </template>-->
+        <template v-for="(file, index) in annotation_ui_context.working_file_list"
+                  v-slot:[`panel_${annotation_ui_context.num_rows}:${index+1}`]="">
+
+                <annotation_area_factory
+                  ref="annotation_area_factory"
+                  :container_width="600"
+                  :container_height="600"
+                  :use_full_window="annotation_ui_context.working_file_list.length === 1"
+                  :interface_type="interface_type"
+                  :show_toolbar="index === 0"
+                  :annotation_ui_context="annotation_ui_context"
+                  :working_file="file"
+                  :credentials_granted="credentials_granted"
+                  :initializing="initializing"
+                  :save_loading_image="save_loading_image"
+                  :url_instance_buffer="get_url_instance_buffer()"
+                  :submitted_to_review="submitted_to_review"
+                  :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
+                  :loading="annotation_ui_context.image_annotation_ctx.loading"
+                  :filtered_instance_type_list_function="filtered_instance_type_list"
+                  :get_userscript="get_userscript"
+                  :save_loading_frames_list="save_loading_frames_list"
+                  :has_changed="has_changed"
+                  :instance_buffer_metadata="annotation_ui_context.image_annotation_ctx.instance_buffer_metadata"
+                  :create_instance_template_url="create_instance_template_url"
+                  :video_parent_file_instance_list="video_parent_file_instance_list"
+                  :has_pending_frames="has_pending_frames"
+                  :instance_store="annotation_ui_context.instance_store"
+                  :project_string_id="computed_project_string_id"
+                  :label_schema="annotation_ui_context.label_schema"
+                  :model_run_id_list="model_run_id_list"
+                  :model_run_color_list="model_run_color_list"
+                  :task="annotation_ui_context.task"
+                  :task_id_prop="task_id_prop"
+                  :request_save="request_save"
+                  :job_id="job_id"
+                  :view_only_mode="view_only"
+                  :label_list="label_list"
+                  :label_file_colour_map="label_file_colour_map"
+                  :enabled_edit_schema="enabled_edit_schema"
+                  :finish_annotation_show="show_snackbar"
+                  :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
+                  :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
+                  :task_image="task_image"
+                  :task_instances="task_instances"
+                  :task_loading="task_loading"
+                  :changing_file="changing_file"
+                  :changing_task="changing_task"
+                  :task_error="task_error"
+                  :issues_ui_manager="annotation_ui_context.issues_ui_manager"
+                  @request_file_change="request_file_change"
+                  @change_label_schema="on_change_label_schema"
+                  @set_file_list="set_file_list"
+                  @request_new_task="change_task"
+                  @replace_file="annotation_ui_context.working_file = $event"
+                  @get_userscript="get_userscript"
+                  @save_time_tracking="save_time_tracking"
+                  @trigger_task_change="trigger_task_change"
+                  @set_ui_schema="set_ui_schema"
+                  @set_save_loading="set_save_loading"
+                  @save="save"
+                  @set_frame_pending_save="set_frame_pending_save"
+                  @task_update="task_update"
+                  @set_has_changed="set_has_changed"
+                  @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
+                  @model_run_list_loaded="annotation_ui_context.model_run_list = $event"
+                  @draw_mode_change="on_draw_mode_changed"
+                  @change_video_playing="annotation_ui_context.image_annotation_ctx.video_playing = $event"
+                  @change_current_label_file="annotation_ui_context.current_label_file = $event"
+                  @request_change_current_instance="annotation_ui_context.image_annotation_ctx.request_change_current_instance = $event"
+                  @trigger_refresh_current_instance="annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = $event"
+                  @selected_instance_for_history="annotation_ui_context.selected_instance_for_history = $event"
+                  @event_create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance = $event"
+                  @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
+                  @open_issue_panel="handle_open_issue_panel"
+                  @instance_list_updated="update_current_instance_list"
+                  @instance_buffer_dict_updated="update_current_frame_buffer_dict"
+                  @save_multiple_frames="save_multiple_frames"
+                />
+
+        </template>
       </panel_manager>
 
 
@@ -245,7 +262,7 @@ import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
 import * as AnnotationSavePrechecks from '../annotation/image_and_video_annotation/utils/AnnotationSavePrechecks'
-import {BaseAnnotationUIContext} from '../../types/AnnotationUIContext'
+import {BaseAnnotationUIContext, ImageAnnotationUIContext} from '../../types/AnnotationUIContext'
 import panel_manager from "./panel_manager.vue";
 import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServices"
 import {createDefaultLabelSettings} from "../../types/image_label_settings";
@@ -291,6 +308,7 @@ export default Vue.extend({
       },
 
       annotation_ui_context: new BaseAnnotationUIContext(),
+      child_annotation_ctx_list: [],
       task_prefetcher: null,
       task_image: null,
       task_instances: null,
@@ -408,6 +426,7 @@ export default Vue.extend({
     } else {
       this.loading_project = false; // caution some assumptions around this flag for media loading
     }
+
     this.initializing = true
 
     this.get_model_runs_from_query(this.$route.query);
@@ -458,7 +477,7 @@ export default Vue.extend({
     this.initializing = false
   },
   computed: {
-    interface_type: function(): string | null {
+    interface_type: function (): string | null {
       if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) {
         return
       }
@@ -538,12 +557,25 @@ export default Vue.extend({
     },
   },
   methods: {
-    handle_open_issue_panel: function(mouse_position){
-      if(!this.$refs.sidebar_factory){
+    on_panes_resized: function(panes_list){
+      console.log('RESIZE', panes_list)
+    },
+    populate_child_context_list: function(child_files){
+      for(let file of child_files){
+        if(file.type === 'image'){
+          this.child_annotation_ctx_list.push(new ImageAnnotationUIContext())
+        }
+      }
+    },
+    get_slot_name(row, column) {
+      return `panel_${row}:${column}`
+    },
+    handle_open_issue_panel: function (mouse_position) {
+      if (!this.$refs.sidebar_factory) {
         return
       }
       let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref()
-      if(sidebar){
+      if (sidebar) {
         sidebar.open_issue_panel(mouse_position)
       }
     },
@@ -618,7 +650,7 @@ export default Vue.extend({
     set_has_changed: function (value) {
       this.has_changed = value
     },
-    get_current_annotation_area_ref(file_id, file_type){
+    get_current_annotation_area_ref(file_id, file_type) {
       // For now just return computed prop. More complex logic might need to be added with file_id once compound file exists.
       return this.$refs.annotation_area_factory.current_interface_ref
     },
@@ -626,7 +658,7 @@ export default Vue.extend({
       try {
 
         this.annotation_ui_context.image_annotation_ctx.save_multiple_frames_error = {};
-        for (let frame_number of frames_list){
+        for (let frame_number of frames_list) {
           let inst_list = this.annotation_ui_context.instance_store.get_instance_list(
             this.annotation_ui_context.working_file.id,
             frame_number
@@ -656,8 +688,7 @@ export default Vue.extend({
       if (this.annotation_ui_context.image_annotation_ctx.video_mode) {
         if (!frame_number_param) {
           frame_number = parseInt(this.current_frame, 10);
-        }
-        else frame_number = parseInt(frame_number_param, 10);
+        } else frame_number = parseInt(frame_number_param, 10);
 
         if (instance_list_param) instance_list = instance_list_param;
         else instance_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id, frame_number)
@@ -1107,17 +1138,17 @@ export default Vue.extend({
 
       return `/api/project/${this.project_string_id}/video/${this.annotation_ui_context.working_file.id}`
     },
-    set_working_file_from_child_file_list: function(file_to_set){
-      for(let file of this.annotation_ui_context.working_file_list){
-        if(file.id === file_to_set.id){
+    set_working_file_from_child_file_list: function (file_to_set) {
+      for (let file of this.annotation_ui_context.working_file_list) {
+        if (file.id === file_to_set.id) {
           this.annotation_ui_context.working_file = file
         }
       }
     },
-    update_working_file: async function  (file) {
+    update_working_file: async function (file) {
       this.annotation_ui_context.working_file = file
       this.annotation_ui_context.image_annotation_ctx.video_mode = file && file.type === 'video'
-      if(file.type === 'compound'){
+      if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.project_string_id, file.id)
         if (err) {
           console.error(err)
@@ -1125,6 +1156,7 @@ export default Vue.extend({
         }
         this.annotation_ui_context.working_file_list = child_files
         this.set_working_file_from_child_file_list(child_files[0])
+        this.populate_child_context_list(child_files)
       }
     },
 

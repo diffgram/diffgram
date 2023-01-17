@@ -19,6 +19,7 @@
       >
         <template slot="second_row">
           <toolbar
+            v-if="show_toolbar"
             ref="toolbar"
             :height="50"
             :command_manager="command_manager"
@@ -346,8 +347,8 @@
                 :canvas_element="canvas_element"
                 :ord="1"
                 :annotations_loading="any_loading"
-                :canvas_width="canvas_width"
-                :canvas_height="canvas_height"
+                :canvas_width="original_media_width"
+                :canvas_height="original_media_height"
                 :degrees="degrees"
               >
               </v_bg>
@@ -360,8 +361,8 @@
                 :x="mouse_position.x"
                 :y="mouse_position.y"
                 :mouse_position="mouse_position"
-                :height="canvas_height"
-                :width="canvas_width"
+                :height="original_media_height"
+                :width="original_media_width"
                 :degrees="degrees"
                 :canvas_element="canvas_element"
                 :canvas_mouse_tools="canvas_mouse_tools"
@@ -395,8 +396,8 @@
                 :label_settings="label_settings"
                 :current_instance="current_instance"
                 :is_actively_drawing="is_actively_drawing"
-                :height="canvas_height"
-                :width="canvas_width"
+                :height="original_media_height"
+                :width="original_media_width"
                 :refresh="refresh"
                 :draw_mode="draw_mode"
                 :mouse_position="mouse_position"
@@ -784,7 +785,11 @@ export default Vue.extend({
   },
   props: {
     project_string_id: {default: null, type: String},
+    use_full_window: {type: Boolean, default: 500},
+    container_width: {type: Number, default: 500},
+    container_height: {type: Number, default: 500},
     has_pending_frames: {type: Boolean, default: false},
+    show_toolbar: {type: Boolean, default: false},
     video_parent_file_instance_list: {type: Array, default: []},
     create_instance_template_url: {type: String, required: true},
     instance_buffer_metadata: {type: Object, default: {}},
@@ -1136,8 +1141,8 @@ export default Vue.extend({
 
       // this gets set from image or video
       // additionall used as a nuetral reference when it applies to both types
-      canvas_width: 1,
-      canvas_height: 1,
+      original_media_width: 1,
+      original_media_height: 1,
 
       seeking: false,
 
@@ -1295,7 +1300,7 @@ export default Vue.extend({
     current_keypoints_instance: function () {
       if (this.current_instance_template && this.current_instance_template.instance_list) {
         return this.current_instance_template.instance_list[0]
-      }
+      }canvas_scale_gl
 
     },
     any_frame_saving: function () {
@@ -1492,20 +1497,15 @@ export default Vue.extend({
         return this.label_settings.canvas_scale_global_setting;
       }
 
-      if (this.working_file && this.working_file.type == "text") {
-        // Temp until more text functions. eg so canvas doesn't 'explode' to large size.
-        return 100;
-      }
-
       let image_size_width = 1920; // default
       let image_size_height = 1280;
 
 
-      if (this.canvas_width) {
+      if (this.original_media_width) {
         //  TODO rename 'canvas' thing here as it's more like original media width
         // the 'canvas_scaled' is what's being used for actual canvas stuff?
-        image_size_width = this.canvas_width;
-        image_size_height = this.canvas_height;
+        image_size_width = this.original_media_width;
+        image_size_height = this.original_media_height;
       }
       // basically the math above does work but it needs right image size
 
@@ -1517,7 +1517,11 @@ export default Vue.extend({
        *
        * the goal of calculation is to make it relative to left and right panel
        */
+      if(this.use_full_window){
 
+      } else{
+
+      }
       let middle_pane_width =
         this.window_width_from_listener -
         this.label_settings.left_nav_width -
@@ -1569,11 +1573,11 @@ export default Vue.extend({
     },
 
     canvas_width_scaled: function (): number {
-      return this.canvas_width * this.canvas_scale_global;
+      return this.original_media_width * this.canvas_scale_global;
     },
 
     canvas_height_scaled: function (): number {
-      return this.canvas_height * this.canvas_scale_global;
+      return this.original_media_height * this.canvas_scale_global;
     },
 
     canvas_scale_combined: function (): number {
@@ -1586,8 +1590,8 @@ export default Vue.extend({
         canvas_scale_local: this.canvas_scale_local,
         canvas_scale_combined: this.canvas_scale_local * this.canvas_scale_global,
         translate: this.canvas_translate,
-        canvas_width: this.canvas_width,
-        canvas_height: this.canvas_height,
+        canvas_width: this.original_media_width,
+        canvas_height: this.original_media_height,
         zoom: this.zoom_canvas,
       }
       return transform
@@ -1651,13 +1655,13 @@ export default Vue.extend({
       //y_max = 99999
 
       // 480 is from 0 to 479.
-      if (this.canvas_width) {
-        if (x_max >= this.canvas_width) {
-          x_max = this.canvas_width - 1;
+      if (this.original_media_width) {
+        if (x_max >= this.original_media_width) {
+          x_max = this.original_media_width - 1;
         }
 
-        if (y_max >= this.canvas_height) {
-          y_max = this.canvas_height - 1;
+        if (y_max >= this.original_media_height) {
+          y_max = this.original_media_height - 1;
         }
       }
 
@@ -1974,8 +1978,8 @@ export default Vue.extend({
       this.canvas_element_ctx.resetTransform();
       this.canvas_element_ctx.scale(new_scale, new_scale);
       this.canvas_element.width += 0;
-      this.canvas_mouse_tools.canvas_width = this.canvas_width;
-      this.canvas_mouse_tools.canvas_height = this.canvas_height;
+      this.canvas_mouse_tools.canvas_width = this.original_media_width;
+      this.canvas_mouse_tools.canvas_height = this.original_media_height;
 
       await this.$nextTick();
       this.canvas_mouse_tools.reset_transform_with_global_scale();
@@ -2416,9 +2420,9 @@ export default Vue.extend({
         }
         const response = await axios.post(this.create_instance_template_url, {
           name: name,
-          reference_height: this.canvas_height,
+          reference_height: this.original_media_height,
           schema_id: this.label_schema.id,
-          reference_width: this.canvas_width,
+          reference_width: this.original_media_width,
           instance_list: [instance],
         });
 
@@ -2719,8 +2723,8 @@ export default Vue.extend({
         throw new Error("Must provide task or file in props.");
       }
 
-      this.canvas_width = this.working_file.video.width;
-      this.canvas_height = this.working_file.video.height;
+      this.original_media_width = this.working_file.video.width;
+      this.original_media_height = this.working_file.video.height;
     },
 
     open_view_edit_panel(issue) {
@@ -3240,8 +3244,8 @@ export default Vue.extend({
         this.canvas_translate,
         this.canvas_element,
         this.canvas_scale_global,
-        this.canvas_width,
-        this.canvas_height,
+        this.original_media_width,
+        this.original_media_height,
       );
       this.on_canvas_scale_global_changed();
       // assumes canvas wrapper available
@@ -3539,8 +3543,8 @@ export default Vue.extend({
       }
       if (file.type == "image") {
         this.annotation_ui_context.image_annotation_ctx.video_mode = false;
-        this.canvas_width = file.image.width;
-        this.canvas_height = file.image.height;
+        this.original_media_width = file.image.width;
+        this.original_media_height = file.image.height;
 
         var self = this;
         this.addImageProcess(file.image.url_signed).then((new_image) => {
@@ -3555,8 +3559,8 @@ export default Vue.extend({
         this.current_video = file.video;
         this.current_video_file_id = file.id;
 
-        this.canvas_width = file.video.width;
-        this.canvas_height = file.video.height;
+        this.original_media_width = file.video.width;
+        this.original_media_height = file.video.height;
 
         this.$refs.video_controllers.reset_cache();
         await this.$refs.video_controllers.get_video_single_image();
@@ -3606,8 +3610,8 @@ export default Vue.extend({
       let point = {x: 0, y: 0};
       let center_point = this.get_center_point_of_instance(instance);
       let center_of_frame = {
-        x: this.canvas_width / 2,
-        y: this.canvas_height / 2,
+        x: this.original_media_width / 2,
+        y: this.original_media_height / 2,
       };
 
       if (
@@ -3616,12 +3620,12 @@ export default Vue.extend({
         return center_point;
       }
 
-      if (instance.x_max > this.canvas_width / 2) {
+      if (instance.x_max > this.original_media_width / 2) {
         point.x = instance.x_max;
       } else {
         point.x = instance.x_min;
       }
-      if (instance.y_max > this.canvas_height / 2) {
+      if (instance.y_max > this.original_media_height / 2) {
         point.y = instance.y_max;
       } else {
         point.y = instance.y_min;
@@ -3652,12 +3656,12 @@ export default Vue.extend({
       let max_x = this.clamp_values(
         max_zoom,
         this.canvas_scale_global,
-        this.canvas_width / instance.width
+        this.original_media_width / instance.width
       );
       let max_y = this.clamp_values(
         max_zoom,
         this.canvas_scale_global,
-        this.canvas_height / instance.height
+        this.original_media_height / instance.height
       );
       let max_zoom_to_show_all = this.clamp_values(max_zoom, max_x, max_y);
       max_zoom_to_show_all += padding;
@@ -5119,8 +5123,8 @@ export default Vue.extend({
     video_update_core: async function (file: File) {
       // TODO change this to update video component?
 
-      this.canvas_width = file.video.width;
-      this.canvas_height = file.video.height;
+      this.original_media_width = file.video.width;
+      this.original_media_height = file.video.height;
       this.annotation_ui_context.image_annotation_ctx.video_mode = true;
       this.current_video = file.video;
       this.current_video_file_id = file.id;
@@ -5195,8 +5199,8 @@ export default Vue.extend({
         this.degrees = 0
       }
       let newSize = determineSize(file.image.width, file.image.height, this.degrees)
-      this.canvas_width = newSize.width;
-      this.canvas_height = newSize.height;
+      this.original_media_width = newSize.width;
+      this.original_media_height = newSize.height;
 
       await this.addImageProcess_with_canvas_refresh(file);
     },
@@ -5248,8 +5252,8 @@ export default Vue.extend({
       );
 
       let max_point = this.canvas_mouse_tools.map_point_from_matrix(
-        this.canvas_width - 1,
-        this.canvas_height - 1,
+        this.original_media_width - 1,
+        this.original_media_height - 1,
         transform
       );
 
@@ -5271,8 +5275,8 @@ export default Vue.extend({
         let new_bounds =
           this.canvas_mouse_tools.get_new_bounds_from_translate_x(
             movementX,
-            this.canvas_width - 1,
-            this.canvas_height - 1
+            this.original_media_width - 1,
+            this.original_media_height - 1
           );
 
         if (movementX < 0 && new_bounds.x_min > 0) {
@@ -5288,8 +5292,8 @@ export default Vue.extend({
         let new_bounds =
           this.canvas_mouse_tools.get_new_bounds_from_translate_y(
             movementY,
-            this.canvas_width - 1,
-            this.canvas_height - 1
+            this.original_media_width - 1,
+            this.original_media_height - 1
           );
 
         if (movementY < 0 && new_bounds.y_min > 0) {
@@ -5352,15 +5356,15 @@ export default Vue.extend({
       }
       if (
         this.current_polygon_point.x >=
-        this.canvas_width - this.snap_to_edges
+        this.original_media_width - this.snap_to_edges
       ) {
-        current_point.x = this.canvas_width - 1;
+        current_point.x = this.original_media_width - 1;
       }
       if (
         this.current_polygon_point.y >=
-        this.canvas_height - this.snap_to_edges
+        this.original_media_height - this.snap_to_edges
       ) {
-        current_point.y = this.canvas_height - 1;
+        current_point.y = this.original_media_height - 1;
       }
       return current_point;
     },
@@ -5934,13 +5938,13 @@ export default Vue.extend({
       //y_max = 99999
 
       // 480 is from 0 to 479.
-      if (this.canvas_width) {
-        if (x_max >= this.canvas_width) {
-          x_max = this.canvas_width - 1;
+      if (this.original_media_width) {
+        if (x_max >= this.original_media_width) {
+          x_max = this.original_media_width - 1;
         }
 
-        if (y_max >= this.canvas_height) {
-          y_max = this.canvas_height - 1;
+        if (y_max >= this.original_media_height) {
+          y_max = this.original_media_height - 1;
         }
       }
 
@@ -7118,8 +7122,8 @@ export default Vue.extend({
           }
           this.html_image = new_image;
           this.refresh = Date.now();
-          this.canvas_width = file.image.width;
-          this.canvas_height = file.image.height;
+          this.original_media_width = file.image.width;
+          this.original_media_height = file.image.height;
           this.update_canvas();
 
 
