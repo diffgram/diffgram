@@ -3343,29 +3343,6 @@ export default Vue.extend({
       this.$forceUpdate();
     },
 
-    async set_keypoints_instance_draw_mode() {
-      if (!this.current_instance_template || !this.is_keypoint_template) {
-        return
-      }
-      await this.$nextTick();
-      this.$refs.toolbar.set_mode(this.current_instance_template.mode)
-      if (this.current_instance_template.mode === 'guided' && this.draw_mode) {
-        this.show_snackbar_guided_keypoints_drawing(1);
-      }
-      if (this.current_instance_template.mode !== 'guided') {
-        this.show_custom_snackbar = false;
-      }
-      this.instance_context.keypoints_draw_mode = this.current_instance_template.mode
-    },
-    change_instance_type: function ($event) {
-      this.current_polygon_point_list = [];
-      this.cuboid_face_hover = undefined;
-      this.$store.commit("finish_draw");
-      this.$store.commit("set_last_selected_tool", this.instance_type);
-      this.$emit('change_instance_type', this.instance_type)
-      this.set_keypoints_instance_draw_mode();
-    },
-
     validate_sequences: function () {
       /* Constraints
        *    Check if the sequence already exists in the instance list
