@@ -5,12 +5,14 @@
       :project_string_id="project_string_id"
       :working_file="annotation_ui_context.working_file"
       :command_manager="annotation_ui_context.command_manager"
-      :label_file_colour_map="label_file_colour_map"
+      :label_settings="annotation_ui_context.image_annotation_ctx.label_settings"
       :label_schema="annotation_ui_context.label_schema"
+      :label_file_colour_map="label_file_colour_map"
       :label_list="label_list"
       :interface_type="interface_type"
       :filtered_instance_type_list_function="filtered_instance_type_list"
       :show_default_navigation="show_default_navigation"
+      :current_label_file="annotation_ui_context.current_label_file"
       @change_label_file="change_current_label_file_template($event)"
     />
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
@@ -33,32 +35,13 @@
       ref="sidebar_factory"
     />
 
-    <div :class="{'ma-auto': interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing}"
-         id="annotation_ui_factory" tabindex="0">
-      <v_error_multiple :error="error" />
-      <div v-if="!interface_type || !interface_type && !initializing">
-        <empty_file_editor_placeholder
-          :message="`File ID: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.id : 'N/A'}. File Type: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.type : 'N/A'}`"
-          :title="'Invalid File loaded'"
-        />
-      </div>
-      <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing" >
-        <empty_file_editor_placeholder
-          :message="'Try adding child files to this compound file.'"
-          :title="'This compound file has no child files.'" />
-      </div>
-      <div v-else-if="!credentials_granted && !initializing">
-        <empty_file_editor_placeholder
-          icon="mdi-account-cancel"
-          :loading="false"
-          :project_string_id="project_string_id"
-          :title="`Invalid credentials`"
-          :message="`You need more credentials to work on this task.`"
-          :show_upload="false"
-        />
-      </div>
+    <div 
+      :class="{'ma-auto': interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing}"
+      id="annotation_ui_factory" 
+      tabindex="0"
+    >
       <annotation_area_factory
-        v-else-if="annotation_ui_context && annotation_ui_context.working_file"
+        v-if="annotation_ui_context && annotation_ui_context.working_file"
         ref="annotation_area_factory"
         :interface_type="interface_type"
         :annotation_ui_context="annotation_ui_context"
@@ -103,6 +86,7 @@
         :changing_file="changing_file"
         :changing_task="changing_task"
         :task_error="task_error"
+        :error="error"
         :issues_ui_manager="annotation_ui_context.issues_ui_manager"
         @request_file_change="request_file_change"
         @change_label_schema="on_change_label_schema"

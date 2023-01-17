@@ -1166,13 +1166,13 @@ export default Vue.extend({
     },
   },
   async mounted() {
-    this.label_settings_local = this.$props.label_settings;
-    this.draw_mode_local = this.$props.draw_mode;
-    if(this.$props.file && this.$props.file.image){
-      this.rotation_degrees = this.$props.file.image.rotation_degrees
+    this.label_settings_local = this.label_settings;
+    this.draw_mode_local = this.draw_mode;
+    if(this.file && this.file.image){
+      this.rotation_degrees = this.file.image.rotation_degrees
     }
-    if(this.$props.task && this.$props.task.file && this.$props.task.file.image){
-      this.rotation_degrees = this.$props.task.file.image.rotation_degrees
+    if(this.task && this.task.file && this.task.file.image){
+      this.rotation_degrees = this.task.file.image.rotation_degrees
     }
     if(this.rotation_degrees == undefined){
       this.rotation_degrees = 0
