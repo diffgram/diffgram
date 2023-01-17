@@ -352,34 +352,28 @@
       <div>
         <standard_button
           tooltip_message="Previous File"
-          v-if="!task && file && file.id"
+          v-if="!task && working_file && working_file.id"
           @click="$emit('change_file', 'previous')"
-          :disabled="
-            loading || annotations_loading || full_file_loading || !file
-          "
+          :disabled="loading || annotations_loading || full_file_loading || !working_file"
           color="primary"
           icon="mdi-chevron-left-circle"
           :icon_style="true"
           :bottom="true"
-        >
-        </standard_button>
+        />
         <!-- TODO Move some of disabled logic into functions don't like having
             so much of it here as it gets more complext -->
       </div>
       <div>
         <standard_button
           tooltip_message="Next File"
-          v-if="!task && file && file.id"
+          v-if="!task && working_file && working_file.id"
           @click="$emit('change_file', 'next')"
-          :disabled="
-            loading || annotations_loading || full_file_loading || !file
-          "
+          :disabled="loading || annotations_loading || full_file_loading || !working_file"
           color="primary"
           icon="mdi-chevron-right-circle"
           :icon_style="true"
           :bottom="true"
-        >
-        </standard_button>
+        />
       </div>
 
 
@@ -1066,6 +1060,7 @@ export default Vue.extend({
     },
     task: {},
     file: {},
+    working_file: {},
     canvas_scale_local: {},
     label_list: {},
     label_file_colour_map: {},
