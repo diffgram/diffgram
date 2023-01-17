@@ -487,7 +487,7 @@
       >
         <template slot="content">
           <v-layout class="pb-4">
-            <div>
+            <!-- <div>
               <button_with_menu
                 datacy="open-annotation-show-menu"
                 v-if="annotation_show_on !== true"
@@ -535,7 +535,7 @@
                   :bottom="true"
                 />
               </ui_schema>
-            </div>
+            </div> -->
             <standard_button
               tooltip_message="Refresh Instances"
               v-if="$store.state.user.current.is_super_admin == true"
