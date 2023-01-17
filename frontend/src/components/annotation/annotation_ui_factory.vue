@@ -35,11 +35,45 @@
       ref="sidebar_factory"
     />
 
+<<<<<<< HEAD
     <div 
       :class="{'ma-auto': interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing}"
       id="annotation_ui_factory" 
       tabindex="0"
     >
+=======
+    <div :class="{'ma-auto': (interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing) || loading}"
+         id="annotation_ui_factory" tabindex="0">
+      <v_error_multiple :error="error" />
+      <div v-if="!interface_type || !interface_type && !initializing && loading">
+        <empty_file_editor_placeholder
+          style="width: 800px"
+          :loading="true"
+          :title="'Loading Annotation UI...'"
+        />
+      </div>
+      <div v-if="!interface_type && !initializing && !loading">
+        <empty_file_editor_placeholder
+          :message="`File ID: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.id : 'N/A'}. File Type: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.type : 'N/A'}`"
+          :title="'Invalid File loaded'"
+        />
+      </div>
+      <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing && !loading" >
+        <empty_file_editor_placeholder
+          :message="'Try adding child files to this compound file.'"
+          :title="'This compound file has no child files.'" />
+      </div>
+      <div v-else-if="!credentials_granted && !initializing">
+        <empty_file_editor_placeholder
+          icon="mdi-account-cancel"
+          :loading="false"
+          :project_string_id="project_string_id"
+          :title="`Invalid credentials`"
+          :message="`You need more credentials to work on this task.`"
+          :show_upload="false"
+        />
+      </div>
+>>>>>>> e460d9787937c912517f1d38e31fa87a2539b599
       <annotation_area_factory
         v-if="annotation_ui_context && annotation_ui_context.working_file"
         ref="annotation_area_factory"
@@ -52,12 +86,10 @@
         :url_instance_buffer="get_url_instance_buffer()"
         :submitted_to_review="submitted_to_review"
         :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
-        :loading="loading"
+        :loading="annotation_ui_context.image_annotation_ctx.loading"
         :filtered_instance_type_list_function="filtered_instance_type_list"
         :get_userscript="get_userscript"
         :save_loading_frames_list="save_loading_frames_list"
-        :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
-        :go_to_keyframe_loading="go_to_keyframe_loading"
         :has_changed="has_changed"
         :instance_buffer_metadata="annotation_ui_context.image_annotation_ctx.instance_buffer_metadata"
         :create_instance_template_url="create_instance_template_url"
@@ -111,11 +143,11 @@
         @trigger_refresh_current_instance="annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = $event"
         @selected_instance_for_history="annotation_ui_context.selected_instance_for_history = $event"
         @event_create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance = $event"
-        @loading_changed="annotation_ui_context.image_annotation_ctx.loading = $event"
         @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
         @open_issue_panel="handle_open_issue_panel"
         @instance_list_updated="update_current_instance_list"
         @instance_buffer_dict_updated="update_current_frame_buffer_dict"
+        @save_multiple_frames="save_multiple_frames"
       />
 
       <file_manager_sheet
@@ -338,7 +370,6 @@ export default Vue.extend({
       submitted_to_review: false,
       has_changed: false,
       save_loading_frames_list: [],
-      go_to_keyframe_loading: false,
       video_parent_file_instance_list: [],
       unsaved_frames: [],
       snackbar_success: false,
@@ -480,7 +511,12 @@ export default Vue.extend({
         return this.task.file
     },
     current_frame: function () {
-      return this.current_interface_ref.current_frame
+      // let current_interface = this.get_current_annotation_area_ref()
+      // if(current_interface){
+      //   return current_interface.current_frame
+      // }
+      return this.annotation_ui_context.image_annotation_ctx.current_frame
+
     },
     has_pending_frames: function () {
       return this.unsaved_frames.length > 0
@@ -559,7 +595,8 @@ export default Vue.extend({
     },
     update_current_frame_buffer_dict: function (instance_buffer_dict, file_id, file_type) {
       this.current_instance_buffer_dict = this.annotation_ui_context.instance_store.get_instance_list(file_id)
-      this.current_instance_list = this.current_instance_buffer_dict[this.annotation_ui_context.image_annotation_ctx.current_frame]
+      let ins_list = this.current_instance_buffer_dict[this.annotation_ui_context.image_annotation_ctx.current_frame]
+      this.current_instance_list = ins_list ? ins_list : []
     },
     on_draw_mode_changed: function (draw_mode) {
       this.annotation_ui_context.image_annotation_ctx.draw_mode = draw_mode
@@ -584,12 +621,10 @@ export default Vue.extend({
       }
     },
     handle_instance_update: function (update_data) {
-      console.log('INSTANCE UPDATE', update_data, this.interface_type)
       if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
       let current_interface = this.get_current_annotation_area_ref()
-      console.log('CURRENT INTERFACE', current_interface)
       if (current_interface) {
         current_interface.instance_update(update_data)
       }
@@ -617,8 +652,9 @@ export default Vue.extend({
       if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
-      if (this.current_interface_ref) {
-        this.current_interface_ref.focus_instance(focus)
+      let current_interface = this.get_current_annotation_area_ref()
+      if (current_interface) {
+        current_interface.focus_instance(focus)
       }
 
     },
@@ -629,6 +665,25 @@ export default Vue.extend({
       // For now just return computed prop. More complex logic might need to be added with file_id once compound file exists.
       return this.$refs.annotation_area_factory.current_interface_ref
     },
+    save_multiple_frames: async function (frames_list) {
+      try {
+
+        this.annotation_ui_context.image_annotation_ctx.save_multiple_frames_error = {};
+        for (let frame_number of frames_list){
+          let inst_list = this.annotation_ui_context.instance_store.get_instance_list(
+            this.annotation_ui_context.working_file.id,
+            frame_number
+          )
+
+          await this.save(false, frame_number, inst_list)
+        }
+        return true
+
+      } catch (err) {
+        this.annotation_ui_context.image_annotation_ctx.save_multiple_frames_error = this.$route_api_errors(err);
+        console.error(err);
+      }
+    },
     save: async function (
       and_complete = false,
       frame_number_param = undefined,
@@ -636,16 +691,15 @@ export default Vue.extend({
     ) {
       this.save_error = {}
       this.save_warning = {}
-
-      if (this.go_to_keyframe_loading) return
+      if (this.annotation_ui_context.image_annotation_ctx.go_to_keyframe_loading) return
       if (this.view_only_mode) return
-
 
       let frame_number;
       let instance_list;
-
       if (this.annotation_ui_context.image_annotation_ctx.video_mode) {
-        if (!frame_number_param) frame_number = parseInt(this.current_frame, 10);
+        if (!frame_number_param) {
+          frame_number = parseInt(this.current_frame, 10);
+        }
         else frame_number = parseInt(frame_number_param, 10);
 
         if (instance_list_param) instance_list = instance_list_param;
@@ -659,7 +713,6 @@ export default Vue.extend({
 
       if (this.get_save_loading(frame_number)) return
       if (this.any_loading) return
-
       if (
         this.annotation_ui_context.image_annotation_ctx.video_mode &&
         (
@@ -667,7 +720,6 @@ export default Vue.extend({
           this.annotation_ui_context.image_annotation_ctx.annotations_loading
         )
       ) return
-
       this.set_save_loading(true, frame_number);
       let [has_duplicate_instances, dup_ids, dup_indexes] =
         AnnotationSavePrechecks.has_duplicate_instances(instance_list);
