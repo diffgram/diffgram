@@ -20,6 +20,8 @@
       :save_loading="annotation_ui_context.image_annotation_ctx.video_mode ? any_frame_saving : save_loading_image"
       :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
       @save="save"
+      @redo="redo"
+      @undo="undo"
       @change_file="request_file_change"
       @edit_mode_toggle="on_draw_mode_changed"
       @change_instance_type="change_instance_type"
@@ -566,6 +568,18 @@ export default Vue.extend({
     },
   },
   methods: {
+    redo: function () {
+      if (!this.command_manager) return
+      const redone = this.command_manager.redo()
+      if (redone) this.set_has_changed(true)
+      this.update_canvas();
+    },
+    undo: function () {
+      if (!this.command_manager) return
+      const undone = this.command_manager.undo()
+      if (undone) this.set_has_changed(true)
+      this.update_canvas();
+    },
     change_instance_type: function(instance_type: string): void {
       this.$store.commit("finish_draw");
       this.$store.commit("set_last_selected_tool", this.instance_type);
