@@ -307,8 +307,7 @@
             :disabled="
               !has_changed ||
               save_loading ||
-              view_only_mode ||
-              (file == undefined && task == undefined)
+              view_only_mode
             "
             color="primary"
             icon="save"
