@@ -137,7 +137,6 @@ export default Vue.extend({
       instance_type_list: [
         {name: "box", display_name: "Box", icon: "mdi-checkbox-blank"},
         {name: "polygon", display_name: "Polygon", icon: "mdi-vector-polygon"},
-        {name: "tag", display_name: "Tag", icon: "mdi-tag"},
         {name: "point", display_name: "Point", icon: "mdi-circle-slice-8"},
         {name: "line", display_name: "Fixed Line", icon: "mdi-minus"},
         {name: "cuboid", display_name: "Cuboid 2D", icon: "mdi-cube-outline"},
