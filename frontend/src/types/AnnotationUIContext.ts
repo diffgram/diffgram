@@ -65,6 +65,8 @@ export class ImageAnnotationUIContext {
   annotations_loading: boolean
   go_to_keyframe_loading: boolean
   save_multiple_frames_error: object
+  container_width: number
+  container_height: number
 
   get_userscript: Function
 
@@ -85,6 +87,8 @@ export class ImageAnnotationUIContext {
     this.annotations_loading = false
     this.go_to_keyframe_loading = false
     this.save_multiple_frames_error = {}
+    this.container_width = 0
+    this.container_height = 0
   }
 
 }

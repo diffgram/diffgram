@@ -55,24 +55,22 @@
       </div>
 
       <panel_manager
-        v-else-if="annotation_ui_context && annotation_ui_context.working_file_list && annotation_ui_context.working_file_list.length > 0"
+        v-else-if="annotation_ui_context &&
+        annotation_ui_context.working_file_list &&
+        annotation_ui_context.working_file_list.length > 0 &&
+        child_annotation_ctx_list"
         :num_columns="annotation_ui_context.working_file_list.length"
         :num_rows="annotation_ui_context.num_rows"
-        @panes_resized="on_panes_resized"
+        @panels_resized="on_panes_resized"
+        ref="panels_manager"
       >
-<!--              <template v-for="(file, index) in annotation_ui_context.working_file_list"-->
-<!--                        v-slot:[`panel_${annotation_ui_context.num_rows}:${index+1}`]="">-->
-
-<!--                <img src="https://picsum.photos/seed/600/600" alt="">-->
-
-<!--              </template>-->
         <template v-for="(file, index) in annotation_ui_context.working_file_list"
                   v-slot:[`panel_${annotation_ui_context.num_rows}:${index+1}`]="">
 
                 <annotation_area_factory
                   ref="annotation_area_factory"
-                  :container_width="600"
-                  :container_height="600"
+                  :container_width="child_annotation_ctx_list[index].container_width"
+                  :container_height="child_annotation_ctx_list[index].container_height"
                   :use_full_window="annotation_ui_context.working_file_list.length === 1"
                   :interface_type="interface_type"
                   :show_toolbar="index === 0"
@@ -557,15 +555,27 @@ export default Vue.extend({
     },
   },
   methods: {
-    on_panes_resized: function(panes_list){
-      console.log('RESIZE', panes_list)
+    recalculate_pane_dimensions: function(row_index, panes_list){
+      let total_width = this.$refs.panels_manager.$el.clientWidth;
+      let total_height = this.$refs.panels_manager.$el.clientHeight
+      for(let i = 0 ; i < panes_list.length ; i++){
+        this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100)
+        this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[i].size / 100)
+      }
+    },
+    on_panes_resized: function(row_index, panes_list){
+      this.recalculate_pane_dimensions(row_index, panes_list)
     },
     populate_child_context_list: function(child_files){
       for(let file of child_files){
-        if(file.type === 'image'){
+
+        if(file.type === 'image' || file.type === 'video'){
+          this.annotation_ui_context.image_annotation_ctx.video_mode = file && file.type === 'video'
           this.child_annotation_ctx_list.push(new ImageAnnotationUIContext())
         }
       }
+      let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {return {size: 50}})
+      this.recalculate_pane_dimensions(1, default_pane_sizes)
     },
     get_slot_name(row, column) {
       return `panel_${row}:${column}`
@@ -1146,8 +1156,7 @@ export default Vue.extend({
       }
     },
     update_working_file: async function (file) {
-      this.annotation_ui_context.working_file = file
-      this.annotation_ui_context.image_annotation_ctx.video_mode = file && file.type === 'video'
+
       if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.project_string_id, file.id)
         if (err) {
@@ -1156,7 +1165,13 @@ export default Vue.extend({
         }
         this.annotation_ui_context.working_file_list = child_files
         this.set_working_file_from_child_file_list(child_files[0])
+        console.log('child files')
         this.populate_child_context_list(child_files)
+      } else{
+        this.annotation_ui_context.working_file = file
+
+        this.annotation_ui_context.working_file_list = [file]
+        this.populate_child_context_list(this.annotation_ui_context.working_file_list)
       }
     },
 

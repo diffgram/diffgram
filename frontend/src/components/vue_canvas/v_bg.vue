@@ -30,9 +30,6 @@
       "annotations_loading": {
         default: true
       },
-      "canvas_transform": {
-        default: true
-      },
       "canvas_element": {
         default: true
       },
@@ -68,11 +65,23 @@
           let ctx = canvas.getContext('2d')
           ctx.save()
           // ctx.clearRect(0, 0, canvas.width, canvas.height)
-
-          if (degrees === 0) {
-            ctx.drawImage(image, 0, 0)
-          }
-          else {
+          // if (degrees === 0) {
+          //   console.log('draw image0', image.width, image.height)
+          //   ctx.drawImage(image, 0, 0)
+          // }
+          // else {
+          //   canvas.width = this.canvas_width
+          //   canvas.height = this.canvas_height
+          //   ctx.translate(canvas.width / 2, canvas.height / 2)
+          //   ctx.rotate(degrees * Math.PI / 180)
+          //
+          //   if (Math.abs(degrees) === 180) {
+          //     ctx.drawImage(image, -this.canvas_width / 2, -this.canvas_height / 2, this.canvas_width, this.canvas_height)
+          //   }
+          //   else { // 90 or 270 degrees (values for width and height are swapped for these rotation positions)
+          //     ctx.drawImage(image, -this.canvas_height / 2, -this.canvas_width / 2, this.canvas_height, this.canvas_width)
+          //   }
+          // }
             canvas.width = this.canvas_width
             canvas.height = this.canvas_height
             ctx.translate(canvas.width / 2, canvas.height / 2)
@@ -84,7 +93,6 @@
             else { // 90 or 270 degrees (values for width and height are swapped for these rotation positions)
               ctx.drawImage(image, -this.canvas_height / 2, -this.canvas_width / 2, this.canvas_height, this.canvas_width)
             }
-          }
           ctx.restore()
 
           return canvas

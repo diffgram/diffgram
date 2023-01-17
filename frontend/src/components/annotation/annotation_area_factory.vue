@@ -241,6 +241,18 @@ export default Vue.extend({
     task_error: {
       type: Object,
       default: null
+    },
+    container_width: {
+      type: Number,
+      default: 600
+    },
+    container_height: {
+      type: Number,
+      default: 600
+    },
+    use_full_window: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {

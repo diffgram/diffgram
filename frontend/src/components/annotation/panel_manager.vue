@@ -1,9 +1,9 @@
 <template>
   <splitpanes @resize="on_panes_resized"
-              class="default-theme" horizontal :push-other-panes="false" style="height: 100%; border: 1px solid red">
+              class="default-theme" horizontal :push-other-panes="false" >
 
     <pane v-for="(row_index, i) in num_rows" :key="`row_${row_index}`">
-        <splitpanes>
+        <splitpanes  @resize="on_panes_resized(row_index, $event)">
             <pane v-for="(col_index, j) in parseInt(num_columns)" :key="`row_${row_index}_col_${col_index}`">
               <slot :name="`panel_${row_index}:${col_index}`">
                 <div style="width: 400px">
@@ -32,8 +32,8 @@ export default Vue.extend({
   },
   methods: {
 
-    on_panes_resized: function (panes_dimensions_list){
-      this.$emit('panes_resized', panes_dimensions_list)
+    on_panes_resized: function (row_index, panes_dimensions_list){
+      this.$emit('panels_resized', row_index, panes_dimensions_list)
     }
   }
 })
@@ -44,8 +44,16 @@ export default Vue.extend({
   display: flex;
   justify-content: center;
   align-items: center;
-  font-family: Helvetica, Arial, sans-serif;
+
   color: rgba(255, 255, 255, 0.6);
-  font-size: 5em;
+}
+.splitpanes--vertical > .splitpanes__splitter {
+  min-width: 6px;
+  background: linear-gradient(90deg, #ccc, #111) !important;
+}
+
+.splitpanes--horizontal > .splitpanes__splitter {
+  min-height: 6px;
+  background: linear-gradient(0deg, #ccc, #111) !important;
 }
 </style>

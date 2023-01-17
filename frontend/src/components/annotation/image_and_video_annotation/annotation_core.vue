@@ -300,7 +300,6 @@
               ref="autoborder_alert"
             >
             </autoborder_avaiable_alert>
-
             <ghost_canvas_available_alert
               :x_position="canvas_alert_x"
               :y_position="canvas_alert_y"
@@ -334,21 +333,19 @@
               v-canvas:cb="onRendered"
               :height="canvas_height_scaled"
               :width="canvas_width_scaled"
-              :mouse_position="mouse_position"
-              :canvas_transform="canvas_transform"
             >
               <v_bg
+                :auto_scale_bg="!use_full_window"
                 :image="html_image"
                 :current_file="working_file"
                 :refresh="refresh"
                 @update_canvas="update_canvas"
-                :canvas_transform="canvas_transform"
                 :canvas_filters="canvas_filters"
                 :canvas_element="canvas_element"
                 :ord="1"
                 :annotations_loading="any_loading"
-                :canvas_width="original_media_width"
-                :canvas_height="original_media_height"
+                :canvas_width="use_full_window ? original_media_width : canvas_width_scaled"
+                :canvas_height="use_full_window ? original_media_height : canvas_height_scaled"
                 :degrees="degrees"
               >
               </v_bg>
@@ -785,7 +782,7 @@ export default Vue.extend({
   },
   props: {
     project_string_id: {default: null, type: String},
-    use_full_window: {type: Boolean, default: 500},
+    use_full_window: {type: Boolean, default: true},
     container_width: {type: Number, default: 500},
     container_height: {type: Number, default: 500},
     has_pending_frames: {type: Boolean, default: false},
@@ -1300,7 +1297,7 @@ export default Vue.extend({
     current_keypoints_instance: function () {
       if (this.current_instance_template && this.current_instance_template.instance_list) {
         return this.current_instance_template.instance_list[0]
-      }canvas_scale_gl
+      }
 
     },
     any_frame_saving: function () {
@@ -1573,11 +1570,21 @@ export default Vue.extend({
     },
 
     canvas_width_scaled: function (): number {
-      return this.original_media_width * this.canvas_scale_global;
+      if(this.use_full_window){
+        return this.original_media_width * this.canvas_scale_global;
+      } else{
+        return this.container_width;
+      }
+
     },
 
     canvas_height_scaled: function (): number {
-      return this.original_media_height * this.canvas_scale_global;
+      if(this.use_full_window){
+        return this.original_media_height * this.canvas_scale_global;
+      } else{
+        return this.container_height;
+      }
+
     },
 
     canvas_scale_combined: function (): number {
@@ -1828,7 +1835,7 @@ export default Vue.extend({
     },
 
     canvas_style: function () {
-      return "width:" + this.canvas_width_scaled + "px";
+      return `width: ${this.canvas_width_scaled}px; height: ${this.canvas_height_scaled}px`;
     },
 
     style_max_width: function () {
@@ -3293,7 +3300,7 @@ export default Vue.extend({
       if (!this.filtered_instance_type_list.map(elm => elm.name).includes(last_selected_tool)) {
         return
       }
-      if (last_selected_tool) {
+      if (last_selected_tool && this.$refs.toolbar) {
         this.$refs.toolbar.set_instance_type(last_selected_tool)
       }
     },
