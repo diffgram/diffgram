@@ -13,6 +13,7 @@
       :filtered_instance_type_list_function="filtered_instance_type_list"
       :show_default_navigation="show_default_navigation"
       :current_label_file="annotation_ui_context.current_label_file"
+      @change_label_schema="on_change_label_schema"
       @change_label_file="change_current_label_file_template($event)"
     />
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
@@ -35,45 +36,11 @@
       ref="sidebar_factory"
     />
 
-<<<<<<< HEAD
     <div 
       :class="{'ma-auto': interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing}"
       id="annotation_ui_factory" 
       tabindex="0"
     >
-=======
-    <div :class="{'ma-auto': (interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing) || loading}"
-         id="annotation_ui_factory" tabindex="0">
-      <v_error_multiple :error="error" />
-      <div v-if="!interface_type || !interface_type && !initializing && loading">
-        <empty_file_editor_placeholder
-          style="width: 800px"
-          :loading="true"
-          :title="'Loading Annotation UI...'"
-        />
-      </div>
-      <div v-if="!interface_type && !initializing && !loading">
-        <empty_file_editor_placeholder
-          :message="`File ID: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.id : 'N/A'}. File Type: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.type : 'N/A'}`"
-          :title="'Invalid File loaded'"
-        />
-      </div>
-      <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing && !loading" >
-        <empty_file_editor_placeholder
-          :message="'Try adding child files to this compound file.'"
-          :title="'This compound file has no child files.'" />
-      </div>
-      <div v-else-if="!credentials_granted && !initializing">
-        <empty_file_editor_placeholder
-          icon="mdi-account-cancel"
-          :loading="false"
-          :project_string_id="project_string_id"
-          :title="`Invalid credentials`"
-          :message="`You need more credentials to work on this task.`"
-          :show_upload="false"
-        />
-      </div>
->>>>>>> e460d9787937c912517f1d38e31fa87a2539b599
       <annotation_area_factory
         v-if="annotation_ui_context && annotation_ui_context.working_file"
         ref="annotation_area_factory"
@@ -1172,6 +1139,7 @@ export default Vue.extend({
     },
 
     on_change_label_schema: function (schema) {
+      console.log("here")
       if (schema.id === this.annotation_ui_context.label_schema.id) {
         return
       }
