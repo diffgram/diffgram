@@ -7,12 +7,14 @@
       :command_manager="annotation_ui_context.command_manager"
       :label_settings="annotation_ui_context.image_annotation_ctx.label_settings"
       :label_schema="annotation_ui_context.label_schema"
+      :draw_mode="annotation_ui_context.image_annotation_ctx.draw_mode"
       :label_file_colour_map="label_file_colour_map"
       :label_list="label_list"
       :interface_type="interface_type"
       :filtered_instance_type_list_function="filtered_instance_type_list"
       :show_default_navigation="show_default_navigation"
       :current_label_file="annotation_ui_context.current_label_file"
+      @edit_mode_toggle="on_draw_mode_changed"
       @change_label_schema="on_change_label_schema"
       @change_label_file="change_current_label_file_template($event)"
     />
@@ -87,6 +89,7 @@
         :task_error="task_error"
         :error="error"
         :issues_ui_manager="annotation_ui_context.issues_ui_manager"
+        :draw_mode="annotation_ui_context.image_annotation_ctx.draw_mode"
         @request_file_change="request_file_change"
         @change_label_schema="on_change_label_schema"
         @set_file_list="set_file_list"
@@ -565,10 +568,13 @@ export default Vue.extend({
       let ins_list = this.current_instance_buffer_dict[this.annotation_ui_context.image_annotation_ctx.current_frame]
       this.current_instance_list = ins_list ? ins_list : []
     },
-    on_draw_mode_changed: function (draw_mode) {
-      this.annotation_ui_context.image_annotation_ctx.draw_mode = draw_mode
+    on_draw_mode_changed: function (draw_mode: boolean = undefined): void {
+      if (draw_mode !== undefined) {
+        this.annotation_ui_context.image_annotation_ctx.draw_mode = draw_mode
+      } else {
+        this.annotation_ui_context.image_annotation_ctx.draw_mode = !this.annotation_ui_context.image_annotation_ctx.draw_mode
+      }
     },
-
     handle_open_view_edit_panel: function (issue) {
       if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
@@ -1139,7 +1145,6 @@ export default Vue.extend({
     },
 
     on_change_label_schema: function (schema) {
-      console.log("here")
       if (schema.id === this.annotation_ui_context.label_schema.id) {
         return
       }

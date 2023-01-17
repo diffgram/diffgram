@@ -783,6 +783,10 @@ export default Vue.extend({
     task_status
   },
   props: {
+    draw_mode: {
+      type: Boolean,
+      default: true
+    },
     project_string_id: {default: null, type: String},
     has_pending_frames: {type: Boolean, default: false},
     video_parent_file_instance_list: {type: Array, default: []},
@@ -892,7 +896,7 @@ export default Vue.extend({
       if (newval) {
         this.update_canvas();
         this.issues_ui_manager.snackbar_issues = true;
-        this.draw_mode = false;
+        this.$emit('draw_mode_change', false)
         this.label_settings.allow_multiple_instance_select = true;
       } else {
         this.issues_ui_manager.snackbar_issues = false;
@@ -902,7 +906,7 @@ export default Vue.extend({
       if (newval) {
         this.update_canvas();
         this.snackbar_merge_polygon = true;
-        this.draw_mode = false;
+        this.$emit('draw_mode_change', false)
         this.instances_to_merge = [];
         this.label_settings.allow_multiple_instance_select = true;
       } else {
@@ -1151,7 +1155,6 @@ export default Vue.extend({
       },
 
       cuboid_current_rear_face: undefined,
-      draw_mode: true,
       cuboid_face_hover: undefined,
       alert_info_drawing: true,
 
@@ -2729,7 +2732,7 @@ export default Vue.extend({
 
       // Case for edit/view mode.
       this.annotation_ui_context.issues_ui_manager.current_issue = issue;
-      this.annotation_ui_context.issues_ui_manager.draw_mode = false;
+      this.$emit('draw_mode_change', false)
       this.label_settings.allow_multiple_instance_select = true;
       this.$store.commit("set_view_issue_mode", true);
       if (this.annotation_ui_context.image_annotation_ctx.video_mode) {
@@ -7339,7 +7342,6 @@ export default Vue.extend({
           return;
         }
 
-        this.draw_mode = !this.draw_mode;
         this.edit_mode_toggle(this.draw_mode);
         this.is_actively_drawing = false;
       }
@@ -7691,7 +7693,7 @@ export default Vue.extend({
     },
     edit_mode_toggle: function (draw_mode) {
       this.reset_drawing();
-      this.draw_mode = draw_mode; // context from external component like toolbar
+      this.$emit('draw_mode_change')
       this.update_draw_mode_on_instances(draw_mode);
       this.is_actively_drawing = false; // QUESTION do we want this as a toggle or just set to false to clear
       if (this.draw_mode && this.is_keypoint_template && this.current_instance_template.mode === 'guided') {

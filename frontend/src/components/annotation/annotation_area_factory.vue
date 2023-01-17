@@ -267,6 +267,10 @@ export default Vue.extend({
     error: {
       type: Object,
       default: null
+    },
+    draw_mode: {
+      type: Boolean,
+      default: true
     }
   },
   computed: {

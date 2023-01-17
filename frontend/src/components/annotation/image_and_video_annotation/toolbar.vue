@@ -285,15 +285,14 @@
       <ui_schema name="draw_edit">
         <div class="pl-3 pt-3 pr-2">
           <v-switch
-            v-if="view_only_mode != true"
-            :label_file="mode_text"
+            v-if="!view_only_mode"
             data-cy="edit_toggle"
+            :input-value="draw_mode"
+            :label_file="mode_text"
             :disabled="view_issue_mode"
-            v-model="draw_mode_local"
-            @change="$emit('edit_mode_toggle', draw_mode_local)"
             :label="mode_text"
-          >
-          </v-switch>
+            @change="$emit('edit_mode_toggle')"
+          />
         </div>
       </ui_schema>
 
@@ -1098,6 +1097,7 @@ export default Vue.extend({
       default: false,
     },
     draw_mode: {
+      type: Boolean,
       default: true,
     },
     full_file_loading: {},
@@ -1121,7 +1121,6 @@ export default Vue.extend({
       label_settings_local: {
         canvas_scale_global_is_automatic: true,
       },
-      draw_mode_local: true,
       loading_instance_type: true,
       instance_type: "box",
       numberValue: 1,
@@ -1161,13 +1160,9 @@ export default Vue.extend({
     label_settings(event) {
       this.label_settings_local = event;
     },
-    draw_mode(event) {
-      this.draw_mode_local = event;
-    },
   },
   async mounted() {
     this.label_settings_local = this.label_settings;
-    this.draw_mode_local = this.draw_mode;
     if(this.file && this.file.image){
       this.rotation_degrees = this.file.image.rotation_degrees
     }
@@ -1182,7 +1177,7 @@ export default Vue.extend({
 
   computed: {
     mode_text: function () {
-      if (this.draw_mode_local == true) {
+      if (this.draw_mode == true) {
         return "Drawing";
       } else {
         return "Editing";
@@ -1201,7 +1196,6 @@ export default Vue.extend({
       this.instance_type = inst_type
       this.$emit('change_instance_type', inst_type)
     },
-
     on_mode_set: function (mode) {
       this.$emit('keypoints_mode_set', mode)
     },
