@@ -3278,9 +3278,6 @@ export default Vue.extend({
       if (!this.filtered_instance_type_list.map(elm => elm.name).includes(last_selected_tool)) {
         return
       }
-      if (last_selected_tool) {
-        this.$refs.toolbar.set_instance_type(last_selected_tool)
-      }
     },
     fetch_model_run_list: async function () {
       if (!this.model_run_id_list || this.model_run_id_list.length === 0) return
