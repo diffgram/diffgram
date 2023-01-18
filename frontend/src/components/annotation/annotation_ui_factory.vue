@@ -26,6 +26,7 @@
       @edit_mode_toggle="on_draw_mode_changed"
       @change_instance_type="change_instance_type"
       @change_label_schema="on_change_label_schema"
+      @smooth_canvas_changed="update_smooth_canvas($event)"
       @change_label_file="change_current_label_file_template($event)"
     />
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
@@ -531,7 +532,6 @@ export default Vue.extend({
       }
       return file_id;
     },
-
     computed_project_string_id: function () {
       if (this.$props.project_string_id) {
         this.$store.commit(
@@ -579,6 +579,9 @@ export default Vue.extend({
       const undone = this.command_manager.undo()
       if (undone) this.set_has_changed(true)
       this.update_canvas();
+    },
+    update_smooth_canvas: function (event) {
+      this.$refs.annotation_area_factory.$refs.annotation_core.update_smooth_canvas(event)
     },
     change_instance_type: function(instance_type: string): void {
       this.$store.commit("finish_draw");
