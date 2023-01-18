@@ -74,25 +74,24 @@
 
                 <annotation_area_factory
                   ref="annotation_area_factory"
-                  :container_width="child_annotation_ctx_list[index].container_width"
-                  :container_height="child_annotation_ctx_list[index].container_height"
-                  :use_full_window="annotation_ui_context.working_file_list.length === 1"
+                  :use_full_window="true"
                   :interface_type="interface_type"
                   :show_toolbar="index === 0"
                   :annotation_ui_context="annotation_ui_context"
+                  :image_annotation_ctx="child_annotation_ctx_list[index]"
                   :working_file="file"
                   :credentials_granted="credentials_granted"
                   :initializing="initializing"
                   :save_loading_image="save_loading_image"
                   :url_instance_buffer="get_url_instance_buffer()"
                   :submitted_to_review="submitted_to_review"
-                  :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
-                  :loading="annotation_ui_context.image_annotation_ctx.loading"
+                  :annotations_loading="child_annotation_ctx_list[index].annotations_loading"
+                  :loading="child_annotation_ctx_list[index].loading"
                   :filtered_instance_type_list_function="filtered_instance_type_list"
                   :get_userscript="get_userscript"
                   :save_loading_frames_list="save_loading_frames_list"
                   :has_changed="has_changed"
-                  :instance_buffer_metadata="annotation_ui_context.image_annotation_ctx.instance_buffer_metadata"
+                  :instance_buffer_metadata="child_annotation_ctx_list[index].instance_buffer_metadata"
                   :create_instance_template_url="create_instance_template_url"
                   :video_parent_file_instance_list="video_parent_file_instance_list"
                   :has_pending_frames="has_pending_frames"
@@ -272,6 +271,7 @@ import {createDefaultLabelSettings} from "../../types/image_label_settings";
 import sidebar_factory from "./sidebar_factory.vue";
 import {Schema} from "../../types/Schema";
 import {get_child_files} from "../../services/fileServices";
+import {fromUserCoordinate} from "ol/proj";
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -481,6 +481,16 @@ export default Vue.extend({
     this.initializing = false
   },
   computed: {
+    annotation_area_container_max_height: function(){
+      let heightWindow = window.innerHeight && document.documentElement.clientHeight ?
+        Math.min(window.innerHeight, document.documentElement.clientHeight) :
+        window.innerHeight ||
+        document.documentElement.clientHeight ||
+        document.getElementsByTagName('body')[0].clientHeight;
+
+      let result = heightWindow - 200;
+      return `${result}px`
+    },
     annotation_area_container_width: function(){
       let result;
       if(!this.interface_type || !this.interface_type && !this.initializing && this.loading){
@@ -590,7 +600,7 @@ export default Vue.extend({
       console.log('TOTAL WIDT HEGITH', total_width, total_height)
       for(let i = 0 ; i < panes_list.length ; i++){
         this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100)
-        this.child_annotation_ctx_list[i].container_height = total_height;
+        this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[i].size / 100);
         console.log('I', i, 'width', this.child_annotation_ctx_list[i].container_width)
         console.log('I', i, 'height', this.child_annotation_ctx_list[i].container_height)
       }

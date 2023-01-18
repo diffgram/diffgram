@@ -5,7 +5,7 @@
     <div v-if="interface_type === 'image' || interface_type === 'video'">
       <v_annotation_core
         class="pt-1 pl-1"
-        v-if="!changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
+        v-if="!changing_file && !changing_task && image_annotation_ctx != undefined"
         v-bind="$props"
         v-on="$listeners"
         ref="annotation_core"
@@ -254,7 +254,8 @@ export default Vue.extend({
       type: Boolean,
       default: true
     },
-    show_toolbar: {type: Boolean}
+    show_toolbar: {type: Boolean},
+    image_annotation_ctx: {type: Object}
   },
   computed: {
 

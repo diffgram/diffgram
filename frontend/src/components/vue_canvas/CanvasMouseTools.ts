@@ -87,7 +87,6 @@ export class CanvasMouseTools {
     if(!canvas_element){
       return mouse_position
     }
-    console.log('getMousePos', event, mouse_position, canvas_element)
     let pos = this.getMousePos(canvas_element, event)
     let ctx = canvas_element.getContext('2d')
     var matrix = ctx.getTransform();         // W3C (future)
@@ -96,7 +95,6 @@ export class CanvasMouseTools {
     // apply to point:
     var x = pos.x * imatrix.a + pos.y * imatrix.c + imatrix.e;
     var y = pos.x * imatrix.b + pos.y * imatrix.d + imatrix.f;
-    console.log('result',pos)
     mouse_position.x = x
     mouse_position.y = y
     return mouse_position
