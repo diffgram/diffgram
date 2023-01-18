@@ -22,6 +22,7 @@
       @save="save"
       @redo="redo"
       @undo="undo"
+      @rotate_image="rotate_image"
       @change_file="request_file_change"
       @edit_mode_toggle="on_draw_mode_changed"
       @change_instance_type="change_instance_type"
@@ -579,6 +580,9 @@ export default Vue.extend({
       const undone = this.command_manager.undo()
       if (undone) this.set_has_changed(true)
       this.update_canvas();
+    },
+    rotate_image: function(event) {
+      this.$refs.annotation_area_factory.$refs.annotation_core.on_image_rotation(event)
     },
     update_smooth_canvas: function (event) {
       this.$refs.annotation_area_factory.$refs.annotation_core.update_smooth_canvas(event)
