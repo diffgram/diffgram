@@ -329,7 +329,7 @@
               data-cy="canvas"
               ref="canvas"
               v-show="!show_place_holder && !file_cant_be_accessed && !annotation_ui_context.image_annotation_ctx.loading"
-              id="my_canvas"
+              :id="canvas_id"
               v-canvas:cb="onRendered"
               :height="canvas_height_scaled"
               :width="canvas_width_scaled"
@@ -344,8 +344,8 @@
                 :canvas_element="canvas_element"
                 :ord="1"
                 :annotations_loading="any_loading"
-                :canvas_width="use_full_window ? original_media_width : canvas_width_scaled"
-                :canvas_height="use_full_window ? original_media_height : canvas_height_scaled"
+                :canvas_width="use_full_window ? original_media_width : original_media_width"
+                :canvas_height="use_full_window ? original_media_height : original_media_height"
                 :degrees="degrees"
               >
               </v_bg>
@@ -357,7 +357,6 @@
                 :ord="2"
                 :x="mouse_position.x"
                 :y="mouse_position.y"
-                :mouse_position="mouse_position"
                 :height="original_media_height"
                 :width="original_media_width"
                 :degrees="degrees"
@@ -825,6 +824,12 @@ export default Vue.extend({
     annotation_ui_context: {type: Object as BaseAnnotationUIContext, required: true},
   },
   watch: {
+    container_height: function(){
+      this.update_canvas()
+    },
+    container_width: function(){
+      this.update_canvas()
+    },
     event_create_instance: function (newVal) {
       this.$emit('event_create_instance', newVal)
     },
@@ -1269,6 +1274,9 @@ export default Vue.extend({
     };
   },
   computed: {
+    canvas_id: function(){
+      return `my_canvas_${this.working_file.id}`
+    },
     label_settings: {
       get: function () {
         return this.annotation_ui_context.image_annotation_ctx.label_settings
@@ -2644,7 +2652,7 @@ export default Vue.extend({
     },
     populate_canvas_element: function () {
       if (!this.canvas_element) {
-        this.canvas_element = document.getElementById("my_canvas");
+        this.canvas_element = document.getElementById(this.canvas_id);
       }
     },
     fetch_instance_template: async function () {
@@ -2652,7 +2660,7 @@ export default Vue.extend({
         return
       }
       this.loading_instance_templates = true;
-      this.canvas_element = document.getElementById("my_canvas");
+      this.canvas_element = document.getElementById(this.canvas_id);
       this.canvas_element_ctx = this.canvas_element.getContext("2d");
       const [data, error] = await getInstanceTemplatesFromProject(this.project_string_id, this.label_schema.id);
       if (data && data.instance_template_list) {
@@ -3354,7 +3362,7 @@ export default Vue.extend({
     },
     update_canvas: async function () {
       this.refresh = new Date();
-      this.canvas_element = document.getElementById("my_canvas");
+      this.canvas_element = document.getElementById(this.canvas_id);
       if (!this.canvas_element) {
         return
       }
@@ -5238,9 +5246,7 @@ export default Vue.extend({
       return this.canvas_mouse_tools.mouse_transform(
         event,
         mouse_position,
-        this.canvas_element,
-        this.update_canvas,
-        this.canvas_transform
+        this.canvas_element
       );
     },
 

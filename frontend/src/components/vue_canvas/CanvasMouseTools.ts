@@ -73,47 +73,78 @@ export class CanvasMouseTools {
   public pan_y(movement_y){
     this.canvas_ctx.translate(0, -movement_y);
   }
+  public  getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect(), // abs. size of element
+      scaleX = canvas.width / rect.width,    // relationship bitmap vs. element for x
+      scaleY = canvas.height / rect.height;  // relationship bitmap vs. element for y
 
+    return {
+      x: (evt.clientX - rect.left) * scaleX,   // scale mouse coordinates after they have
+      y: (evt.clientY - rect.top) * scaleY     // been adjusted to be relative to element
+    }
+  }
   public mouse_transform(event, mouse_position, canvas_element): void {
-    if (canvas_element) {
-      this.canvas_rectangle = canvas_element.getBoundingClientRect()
+    if(!canvas_element){
+      return mouse_position
     }
-    if (!this.canvas_rectangle) { return }
+    console.log('getMousePos', event, mouse_position, canvas_element)
+    let pos = this.getMousePos(canvas_element, event)
+    let ctx = canvas_element.getContext('2d')
+    var matrix = ctx.getTransform();         // W3C (future)
+    var imatrix = matrix.invertSelf();         // invert
 
-    let x_raw = (event.clientX - this.canvas_rectangle.left)
-    let y_raw = (event.clientY - this.canvas_rectangle.top)
-    event = event || window.event;
-    var target = event.target || event.srcElement,
-      style = target.currentStyle || window.getComputedStyle(target, null),
-      borderLeftWidth = parseInt(style["borderLeftWidth"], 10),
-      borderTopWidth = parseInt(style["borderTopWidth"], 10),
-      rect = target.getBoundingClientRect(),
-      offsetX = event.clientX - borderLeftWidth - rect.left,
-      offsetY = event.clientY - borderTopWidth - rect.top;
-    let canvas_width = target.width;
-    let canvas_height = target.height;
-    if(!canvas_width){
-      canvas_width = this.canvas_elm.width;
-      canvas_height = this.canvas_elm.height;
-    }
-    let x = (offsetX * canvas_width) / target.clientWidth;
-    let y = (offsetY * canvas_height) / target.clientHeight;
+    // apply to point:
+    var x = pos.x * imatrix.a + pos.y * imatrix.c + imatrix.e;
+    var y = pos.x * imatrix.b + pos.y * imatrix.d + imatrix.f;
+    console.log('result',pos)
+    mouse_position.x = x
+    mouse_position.y = y
+    return mouse_position
 
-    const ctx = this.canvas_ctx;
-    var transform = ctx.getTransform();
-    const invMat = transform.invertSelf();
-
-    x = x * invMat.a + y * invMat.c + invMat.e;
-    y = x * invMat.b + y * invMat.d + invMat.f;
-    // Note that we don't create a new object on purpose. We do this because we want to keep the reference on all the
-    // class intances that are on this.instance_list(). You can see the initialize_instance() function to see
-    // how the reference is passed.
-    mouse_position.x = x;
-    mouse_position.y = y;
-    mouse_position.raw.x = x_raw;
-    mouse_position.raw.y = y_raw;
-
-    return mouse_position;
+    // if (canvas_element) {
+    //   this.canvas_rectangle = canvas_element.getBoundingClientRect()
+    // }
+    // if (!this.canvas_rectangle) { return }
+    // console.log('REACTANGLE', this.canvas_rectangle)
+    // console.log('mouse_position', mouse_position.x,mouse_position.y)
+    // console.log('canvas_element', canvas_element)
+    // console.log('event', event.clientX, event.clientY)
+    // let x_raw = (event.clientX - this.canvas_rectangle.left)
+    // let y_raw = (event.clientY - this.canvas_rectangle.top)
+    // event = event || window.event;
+    // var target = event.target || event.srcElement,
+    //   style = target.currentStyle || window.getComputedStyle(target, null),
+    //   borderLeftWidth = parseInt(style["borderLeftWidth"], 10),
+    //   borderTopWidth = parseInt(style["borderTopWidth"], 10),
+    //   rect = target.getBoundingClientRect(),
+    //   offsetX = event.clientX - borderLeftWidth - rect.left,
+    //   offsetY = event.clientY - borderTopWidth - rect.top;
+    // console.log('borderLeftWidth', borderLeftWidth)
+    // console.log('borderTopWidth', borderTopWidth)
+    // let canvas_width = target.width;
+    // let canvas_height = target.height;
+    // if(!canvas_width){
+    //   canvas_width = this.canvas_elm.width;
+    //   canvas_height = this.canvas_elm.height;
+    // }
+    // let x = (offsetX * canvas_width) / target.clientWidth;
+    // let y = (offsetY * canvas_height) / target.clientHeight;
+    //
+    // const ctx = this.canvas_ctx;
+    // var transform = ctx.getTransform();
+    // const invMat = transform.invertSelf();
+    //
+    // x = x * invMat.a + y * invMat.c + invMat.e;
+    // y = x * invMat.b + y * invMat.d + invMat.f;
+    // // Note that we don't create a new object on purpose. We do this because we want to keep the reference on all the
+    // // class intances that are on this.instance_list(). You can see the initialize_instance() function to see
+    // // how the reference is passed.
+    // mouse_position.x = x;
+    // mouse_position.y = y;
+    // mouse_position.raw.x = x_raw;
+    // mouse_position.raw.y = y_raw;
+    //
+    // return mouse_position;
   }
 
   public map_point_from_matrix(x, y, matrix=this.canvas_ctx.getTransform()){

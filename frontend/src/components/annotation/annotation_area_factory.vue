@@ -253,7 +253,8 @@ export default Vue.extend({
     use_full_window: {
       type: Boolean,
       default: true
-    }
+    },
+    show_toolbar: {type: Boolean}
   },
   computed: {
 

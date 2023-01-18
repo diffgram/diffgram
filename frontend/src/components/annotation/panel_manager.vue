@@ -1,6 +1,9 @@
 <template>
   <splitpanes @resize="on_panes_resized"
-              class="default-theme" horizontal :push-other-panes="false" >
+              @ready="$emit('ready')"
+              class="default-theme"
+              :horizontal="layout_direction === 'horizontal'"
+              :push-other-panes="false" >
 
     <pane v-for="(row_index, i) in num_rows" :key="`row_${row_index}`">
         <splitpanes  @resize="on_panes_resized(row_index, $event)">
@@ -29,6 +32,7 @@ export default Vue.extend({
   props: {
     num_rows: {type: Number, required: true},
     num_columns: {type: Number, required: true},
+    layout_direction: {type: String, required: true, default: 'horizontal'},
   },
   methods: {
 
@@ -40,6 +44,9 @@ export default Vue.extend({
 </script>
 
 <style scoped>
+.splitpanes {
+
+}
 .splitpanes__pane {
   display: flex;
   justify-content: center;

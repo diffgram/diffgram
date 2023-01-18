@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex">
+  <div class="d-flex" style="height: 100%; width: 100%" id="annotation_factory_container">
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
     <sidebar_factory
       v-if="(interface_type === 'image' || interface_type === 'video') && !task_error.task_request && !changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
@@ -21,11 +21,14 @@
     ></sidebar_factory>
 
     <div
-      :class="{'ma-auto': (interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing) || loading}"
+      :style="`height: 100%; width: ${annotation_area_container_width}`"
+      :class="{'ma-auto': (interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing) || loading || !interface_type,}"
+
       id="annotation_ui_factory" tabindex="0">
       <v_error_multiple :error="error"/>
-      <div v-if="!interface_type || !interface_type && !initializing && loading">
+      <div v-if="!interface_type && !initializing && loading" class="ma-auto">
         <empty_file_editor_placeholder
+          class="ma-auto"
           style="width: 800px"
           :loading="true"
           :title="'Loading Annotation UI...'"
@@ -59,9 +62,11 @@
         annotation_ui_context.working_file_list &&
         annotation_ui_context.working_file_list.length > 0 &&
         child_annotation_ctx_list"
+        :layout_direction="layout_direction"
         :num_columns="annotation_ui_context.working_file_list.length"
         :num_rows="annotation_ui_context.num_rows"
         @panels_resized="on_panes_resized"
+        @ready="on_panes_ready"
         ref="panels_manager"
       >
         <template v-for="(file, index) in annotation_ui_context.working_file_list"
@@ -325,6 +330,7 @@ export default Vue.extend({
       snackbar_message: "",
       loading: true,
       loading_project: true,
+      layout_direction: 'horizontal',
 
       context: null,
       error: null,
@@ -475,6 +481,26 @@ export default Vue.extend({
     this.initializing = false
   },
   computed: {
+    annotation_area_container_width: function(){
+      let result;
+      if(!this.interface_type || !this.interface_type && !this.initializing && this.loading){
+        return '100%'
+      }
+      if(this.loading){
+        let widthWindow = window.innerWidth && document.documentElement.clientWidth ?
+          Math.min(window.innerWidth, document.documentElement.clientWidth) :
+          window.innerWidth ||
+          document.documentElement.clientWidth ||
+          document.getElementsByTagName('body')[0].clientWidth;
+        result = widthWindow - this.annotation_ui_context.image_annotation_ctx.label_settings.left_nav_width;
+      } else{
+        let elm = document.getElementById('annotation_factory_container')
+        result = elm.clientWidth - this.annotation_ui_context.image_annotation_ctx.label_settings.left_nav_width;
+      }
+
+      console.log('AREA WIDTH', result);
+      return result + 'px'
+    },
     interface_type: function (): string | null {
       if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) {
         return
@@ -556,24 +582,41 @@ export default Vue.extend({
   },
   methods: {
     recalculate_pane_dimensions: function(row_index, panes_list){
+      if(!this.$refs.panels_manager){
+        return
+      }
       let total_width = this.$refs.panels_manager.$el.clientWidth;
       let total_height = this.$refs.panels_manager.$el.clientHeight
+      console.log('TOTAL WIDT HEGITH', total_width, total_height)
       for(let i = 0 ; i < panes_list.length ; i++){
         this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100)
-        this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[i].size / 100)
+        this.child_annotation_ctx_list[i].container_height = total_height;
+        console.log('I', i, 'width', this.child_annotation_ctx_list[i].container_width)
+        console.log('I', i, 'height', this.child_annotation_ctx_list[i].container_height)
       }
+    },
+    on_panes_ready: function(){
+    console.log('ON PANES READY')
+      for (let i = 0; i < this.annotation_ui_context.num_rows; i++){
+        // TODO: filter this by row
+        let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {return {size: 50}})
+        this.recalculate_pane_dimensions(i, default_pane_sizes)
+      }
+
     },
     on_panes_resized: function(row_index, panes_list){
       this.recalculate_pane_dimensions(row_index, panes_list)
     },
     populate_child_context_list: function(child_files){
       for(let file of child_files){
-
+        console.log('FILE', file.id, this.child_annotation_ctx_list)
         if(file.type === 'image' || file.type === 'video'){
           this.annotation_ui_context.image_annotation_ctx.video_mode = file && file.type === 'video'
           this.child_annotation_ctx_list.push(new ImageAnnotationUIContext())
+          console.log('PUSHH')
         }
       }
+      console.log('child_annotation_ctx_list', this.child_annotation_ctx_list)
       let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {return {size: 50}})
       this.recalculate_pane_dimensions(1, default_pane_sizes)
     },
@@ -1156,7 +1199,9 @@ export default Vue.extend({
       }
     },
     update_working_file: async function (file) {
-
+      if(!file){
+        return
+      }
       if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.project_string_id, file.id)
         if (err) {
@@ -1165,7 +1210,7 @@ export default Vue.extend({
         }
         this.annotation_ui_context.working_file_list = child_files
         this.set_working_file_from_child_file_list(child_files[0])
-        console.log('child files')
+        console.log('child files', child_files)
         this.populate_child_context_list(child_files)
       } else{
         this.annotation_ui_context.working_file = file

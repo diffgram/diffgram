@@ -7,11 +7,10 @@
   export default Vue.extend({
       props: {
         "ord" : {},
-        "mouse_position": {},
-        "height": {},
-        "width": {},
         "x": {},
         "y": {},
+        "height": {},
+        "width": {},
         "show": {},
         "canvas_transform": {},
         "degrees": {
@@ -35,14 +34,14 @@
         draw: function (ctx, done) {
           if(!this.$props.canvas_element){return}
           if (this.show == true) {
-     
+
               if (this.width == 0) {
                 done()
                 return
               }
 
-              var x = this.mouse_position.x;
-              var y = this.mouse_position.y
+              var x = this.$props.x;
+              var y = this.$props.y
               let canvas = ctx.canvas
 
               if (this.$props.target_colour != undefined) {
