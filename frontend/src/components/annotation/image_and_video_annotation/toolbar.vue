@@ -764,7 +764,7 @@
 
             <!-- Clear unsaved -->
             <standard_button
-              @click="$emit('clear__new_and_no_ids')"
+              @click="$emit('clear_unsaved')"
               tooltip_message="Clear Unsaved"
               icon="mdi-close-circle-multiple"
               :icon_style="true"

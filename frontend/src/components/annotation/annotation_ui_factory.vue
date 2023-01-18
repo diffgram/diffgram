@@ -22,6 +22,7 @@
       @save="save"
       @redo="redo"
       @undo="undo"
+      @clear_unsaved="clear_unsaved"
       @rotate_image="rotate_image"
       @change_file="request_file_change"
       @edit_mode_toggle="on_draw_mode_changed"
@@ -580,6 +581,9 @@ export default Vue.extend({
       const undone = this.command_manager.undo()
       if (undone) this.set_has_changed(true)
       this.update_canvas();
+    },
+    clear_unsaved: function() {
+      this.$refs.annotation_area_factory.$refs.annotation_core.clear_unsaved()
     },
     rotate_image: function(event) {
       this.$refs.annotation_area_factory.$refs.annotation_core.on_image_rotation(event)

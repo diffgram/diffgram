@@ -1851,6 +1851,11 @@ export default Vue.extend({
   },
   // TODO 312 Methods!! refactor in multiple files and classes.
   methods: {
+    clear_unsaved: function() {
+      this.instance_list = this.annotation_ui_context.instance_store.clear_unsaved(this.working_file.id)
+
+      console.log(this.instance_list)
+    },
     cancel_polygon_merge: function () {
       this.polygon_merge_tool = null
     },
@@ -2138,15 +2143,6 @@ export default Vue.extend({
         e.preventDefault();
         // Chrome requires returnValue to be set
         e.returnValue = "";
-      }
-    },
-    clear__new_and_no_ids: function () {
-      // careful we start from top since we splice as we go
-      for (var i = this.instance_list.length - 1; i >= 0; i--) {
-        let current_instance = this.instance_list[i];
-        if (current_instance.id == undefined) {
-          this.instance_list.splice(i, 1);
-        }
       }
     },
 
