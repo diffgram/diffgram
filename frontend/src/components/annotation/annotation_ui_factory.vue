@@ -106,7 +106,7 @@
                   ref="annotation_area_factory"
                   :container_height="child_annotation_ctx_list[index].container_height"
                   :container_width="child_annotation_ctx_list[index].container_width"
-                  :use_full_window="false"
+                  :use_full_window="annotation_ui_context.working_file_list.length === 1"
                   :interface_type="interface_type"
                   :show_toolbar="index === 0"
                   :annotation_ui_context="annotation_ui_context"
