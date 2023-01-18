@@ -104,7 +104,9 @@
 
                 <annotation_area_factory
                   ref="annotation_area_factory"
-                  :use_full_window="true"
+                  :container_height="child_annotation_ctx_list[index].container_height"
+                  :container_width="child_annotation_ctx_list[index].container_width"
+                  :use_full_window="false"
                   :interface_type="interface_type"
                   :show_toolbar="index === 0"
                   :annotation_ui_context="annotation_ui_context"

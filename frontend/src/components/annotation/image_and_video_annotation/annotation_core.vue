@@ -335,7 +335,7 @@
               :width="canvas_width_scaled"
             >
               <v_bg
-                :auto_scale_bg="!use_full_window"
+                :auto_scale_bg="false"
                 :image="html_image"
                 :current_file="working_file"
                 :refresh="refresh"
@@ -344,8 +344,8 @@
                 :canvas_element="canvas_element"
                 :ord="1"
                 :annotations_loading="any_loading"
-                :canvas_width="use_full_window ? original_media_width : original_media_width"
-                :canvas_height="use_full_window ? original_media_height : original_media_height"
+                :canvas_width="original_media_width"
+                :canvas_height="original_media_height"
                 :degrees="degrees"
               >
               </v_bg>
@@ -1516,17 +1516,28 @@ export default Vue.extend({
        *
        * the goal of calculation is to make it relative to left and right panel
        */
+      let toolbar_height = 80;
+      let middle_pane_height, middle_pane_width;
       if(this.use_full_window){
+        middle_pane_width =
+          this.window_width_from_listener -
+          this.label_settings.left_nav_width -
+          this.magic_nav_spacer;
+
+        let middle_pane_height =
+          this.window_height_from_listener -
+          toolbar_height -
+          this.media_core_height -
+          this.magic_nav_spacer;
 
       } else{
-
+        middle_pane_width = this.container_width
+        middle_pane_height = this.container_height
       }
-      let middle_pane_width =
-        this.window_width_from_listener -
-        this.label_settings.left_nav_width -
-        this.magic_nav_spacer;
 
-      let toolbar_height = 80;
+
+
+
 
       // get media core height
       if (document.getElementById("media_core")) {
@@ -1539,12 +1550,6 @@ export default Vue.extend({
         this.magic_nav_spacer = 0;
       }
 
-      let middle_pane_height =
-        this.window_height_from_listener -
-        toolbar_height -
-        this.media_core_height -
-        this.magic_nav_spacer;
-
       if (this.image_annotation_ctx.video_mode == true) {
         // TEMP this is solving wrong problem
         // In preview mode it def makes more sense for sequences to be to the right of video
@@ -1554,7 +1559,10 @@ export default Vue.extend({
         } else {
           video_offset = 80;
         }
-        middle_pane_height = middle_pane_height - video_offset;
+        if(this.use_full_window){
+          middle_pane_height = middle_pane_height - video_offset;
+        }
+
       }
 
       // careful height comparison relative to height, width to width
@@ -1575,7 +1583,8 @@ export default Vue.extend({
       if(this.use_full_window){
         return this.original_media_width * this.canvas_scale_global;
       } else{
-        return this.container_width;
+        return this.original_media_width * this.canvas_scale_global;
+        // return this.container_width;
       }
 
     },
@@ -1584,7 +1593,8 @@ export default Vue.extend({
       if(this.use_full_window){
         return this.original_media_height * this.canvas_scale_global;
       } else{
-        return this.container_height;
+        // return this.container_height;
+        return this.original_media_height * this.canvas_scale_global;
       }
 
     },
