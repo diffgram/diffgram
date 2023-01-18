@@ -61,6 +61,7 @@
     "sillyname": "^0.1.0",
     "slugify": "^1.6.5",
     "sortablejs": "^1.12.0",
+    "splitpanes": "^2.4.1",
     "three": "0.137.0",
     "three-full": "^28.0.2",
     "tiptap": "^1.30.0",

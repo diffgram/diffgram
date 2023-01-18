@@ -1,11 +1,31 @@
 <template>
   <div>
-
-
+    <v_error_multiple :error="error" />
+    <div v-if="!interface_type || !interface_type && !initializing">
+      <empty_file_editor_placeholder
+        :message="`File ID: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.id : 'N/A'}. File Type: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.type : 'N/A'}`"
+        :title="'Invalid File loaded'"
+      />
+    </div>
+    <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing" >
+      <empty_file_editor_placeholder
+        :message="'Try adding child files to this compound file.'"
+        :title="'This compound file has no child files.'" />
+    </div>
+    <div v-else-if="!credentials_granted && !initializing">
+      <empty_file_editor_placeholder
+        icon="mdi-account-cancel"
+        :loading="false"
+        :project_string_id="project_string_id"
+        :title="`Invalid credentials`"
+        :message="`You need more credentials to work on this task.`"
+        :show_upload="false"
+      />
+    </div>
     <div v-if="interface_type === 'image' || interface_type === 'video'">
       <v_annotation_core
         class="pt-1 pl-1"
-        v-if="!changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
+        v-if="!changing_file && !changing_task && image_annotation_ctx != undefined"
         v-bind="$props"
         v-on="$listeners"
         ref="annotation_core"
@@ -46,6 +66,7 @@ import text_annotation_core from "./text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
 import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue"
 import sensor_fusion_annotation_core from './3d_annotation/sensor_fusion_editor.vue'
+import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue"
 
 
 export default Vue.extend({
@@ -56,6 +77,7 @@ export default Vue.extend({
     geo_annotation_core,
     audio_annotation_core,
     sensor_fusion_annotation_core,
+    empty_file_editor_placeholder
   },
   props: {
     project_string_id: {
@@ -241,7 +263,37 @@ export default Vue.extend({
     task_error: {
       type: Object,
       default: null
-    }
+    },
+    error: {
+      type: Object,
+      default: null
+    },
+    draw_mode: {
+      type: Boolean,
+      default: true
+    },
+    instance_type_list: {
+      type: Array,
+      default: []
+    },
+    instance_type: {
+      type: String,
+      default: "box"
+    },
+    container_width: {
+      type: Number,
+      default: 600
+    },
+    container_height: {
+      type: Number,
+      default: 600
+    },
+    use_full_window: {
+      type: Boolean,
+      default: true
+    },
+    show_toolbar: {type: Boolean},
+    image_annotation_ctx: {type: Object}
   },
   computed: {
 

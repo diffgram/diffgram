@@ -3,6 +3,12 @@ export default class InstanceStore {
   private _file_type: any = {};
   private instance_store: any = {};
 
+  clear_unsaved(file_id: number): any[] {
+    this.instance_store[file_id] = this.instance_store[file_id].filter((instance: any) => instance.id)
+
+    return this.instance_store[file_id]
+  }
+ 
   get_file_type(file_id: number): string {
     return this._file_type[file_id]
   }

@@ -13,7 +13,6 @@
       data-cy="canvas"
       v-canvas:cb="onRendered"
       :id="canvas_id"
-      :canvas_transform="canvas_transform"
       :height="canvas_height_scaled"
       :width="canvas_width_scaled">
       <slot :ord="3" name="instance_drawer" :canvas_transform="canvas_transform"></slot>
@@ -104,7 +103,7 @@
         default: "#000000"
       },
       rotation_degrees: {
-        default: "#000000"
+        default: 0
       },
       bg_color: {
         default: undefined
