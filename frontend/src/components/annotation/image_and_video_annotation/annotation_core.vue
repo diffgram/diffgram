@@ -1780,7 +1780,7 @@ export default Vue.extend({
         width: width,
         height: height,
         label_file: this.annotation_ui_context.current_label_file,
-        label_file_id: this.annotation_ui_context.current_label_file_id,
+        label_file_id: this.annotation_ui_context.current_label_file.id,
         selected: "false",
         number: number,
         machine_made: false,
