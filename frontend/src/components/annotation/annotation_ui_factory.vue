@@ -1,5 +1,36 @@
 <template>
   <div class="d-flex" style="height: 100%; width: 100%" id="annotation_factory_container">
+    <toolbar_factory
+      v-if="annotation_ui_context.working_file && annotation_ui_context.command_manager"
+      :project_string_id="project_string_id"
+      :working_file="annotation_ui_context.working_file"
+      :command_manager="annotation_ui_context.command_manager"
+      :label_settings="annotation_ui_context.image_annotation_ctx.label_settings"
+      :label_schema="annotation_ui_context.label_schema"
+      :draw_mode="annotation_ui_context.image_annotation_ctx.draw_mode"
+      :instance_type="annotation_ui_context.instance_type"
+      :label_file_colour_map="label_file_colour_map"
+      :label_list="label_list"
+      :interface_type="interface_type"
+      :instance_type_list="instance_type_list"
+      :filtered_instance_type_list_function="filtered_instance_type_list"
+      :show_default_navigation="show_default_navigation"
+      :current_label_file="annotation_ui_context.current_label_file"
+      :has_changed="has_changed || has_pending_frames"
+      :save_loading="annotation_ui_context.image_annotation_ctx.video_mode ? any_frame_saving : save_loading_image"
+      :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
+      @save="save"
+      @redo="redo"
+      @undo="undo"
+      @clear_unsaved="clear_unsaved"
+      @rotate_image="rotate_image"
+      @change_file="request_file_change"
+      @edit_mode_toggle="on_draw_mode_changed"
+      @change_instance_type="change_instance_type"
+      @change_label_schema="on_change_label_schema"
+      @smooth_canvas_changed="update_smooth_canvas($event)"
+      @change_label_file="change_current_label_file_template($event)"
+    />
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
     <sidebar_factory
       v-if="(interface_type === 'image' || interface_type === 'video') && !task_error.task_request && !changing_file && !changing_task && annotation_ui_context.image_annotation_ctx != undefined"
@@ -17,8 +48,7 @@
       @instance_update="handle_instance_update"
       @clear_selected_instances_image="handle_clear_selected_instances_image"
       @open_view_edit_panel="handle_open_view_edit_panel"
-      ref="sidebar_factory"
-    ></sidebar_factory>
+      ref="sidebar_factory"></sidebar_factory>
 
     <div
       :style="`height: 100%; width: ${annotation_area_container_width}`"
@@ -89,6 +119,7 @@
                   :loading="child_annotation_ctx_list[index].loading"
                   :filtered_instance_type_list_function="filtered_instance_type_list"
                   :get_userscript="get_userscript"
+                  :instance_type_list="instance_type_list"
                   :save_loading_frames_list="save_loading_frames_list"
                   :has_changed="has_changed"
                   :instance_buffer_metadata="child_annotation_ctx_list[index].instance_buffer_metadata"
@@ -117,7 +148,10 @@
                   :changing_file="changing_file"
                   :changing_task="changing_task"
                   :task_error="task_error"
+                  :error="error"
                   :issues_ui_manager="annotation_ui_context.issues_ui_manager"
+                  :draw_mode="annotation_ui_context.image_annotation_ctx.draw_mode"
+                  :instance_type="annotation_ui_context.instance_type"
                   @request_file_change="request_file_change"
                   @change_label_schema="on_change_label_schema"
                   @set_file_list="set_file_list"
@@ -150,7 +184,6 @@
 
         </template>
       </panel_manager>
-
 
       <file_manager_sheet
         v-if="!annotation_ui_context.task && context === 'file'"
@@ -253,12 +286,12 @@ import {user_has_credentials} from '../../services/userServices.js'
 import {Task} from "../../types/Task";
 import {get_labels, get_schemas} from '../../services/labelServices.js';
 import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices.js";
-import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue";
-import sensor_fusion_editor from './3d_annotation/sensor_fusion_editor.vue'
-import text_annotation_core from "./text_annotation/text_annotation_core.vue"
-import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
+import {CommandManagerAnnotationCore} from "./image_and_video_annotation/annotation_core_command_manager";
+
 import annotation_area_factory from "./annotation_area_factory.vue"
-import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue";
+import toolbar_factory from "./toolbar_factory.vue"
+import sidebar_factory from "./sidebar_factory.vue";
+
 import {duplicate_instance} from "../../utils/instance_utils";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
@@ -268,8 +301,6 @@ import {BaseAnnotationUIContext, ImageAnnotationUIContext} from '../../types/Ann
 import panel_manager from "./panel_manager.vue";
 import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServices"
 import {createDefaultLabelSettings} from "../../types/image_label_settings";
-import sidebar_factory from "./sidebar_factory.vue";
-import {Schema} from "../../types/Schema";
 import {get_child_files} from "../../services/fileServices";
 import {fromUserCoordinate} from "ol/proj";
 
@@ -280,12 +311,8 @@ export default Vue.extend({
     panel_manager,
     no_credentials_dialog,
     sidebar_factory,
-    sensor_fusion_editor,
-    text_annotation_core,
-    geo_annotation_core,
-    audio_annotation_core,
     annotation_area_factory,
-    empty_file_editor_placeholder
+    toolbar_factory
   },
   props: {
     project_string_id: {
@@ -309,7 +336,38 @@ export default Vue.extend({
       task_error: {
         task_request: null,
       },
+      annotation_ui_context: {
+        working_file: null,
+        command_manager: null,
+        task: null,
+        instance_type: 'box',
+        instance_store: null,
+        per_instance_attribute_groups_list: [],
+        global_attribute_groups_list: [],
+        current_global_instance: undefined,
+        label_schema: null,
+        current_label_file: null,
+        selected_instance_for_history: undefined,
+        model_run_list: null,
+        issues_ui_manager: null,
+        image_annotation_ctx: {
+          show_context_menu: false,
+          loading: false,
+          refresh: new Date(),
+          video_mode: false,
+          draw_mode: true,
+          current_frame: 0,
+          video_playing: false,
+          request_change_current_instance: null,
+          trigger_refresh_current_instance: new Date(),
+          event_create_instance: null,
+          get_userscript: this.get_userscript,
+          label_settings: createDefaultLabelSettings(),
+          instance_buffer_metadata: {},
+          annotations_loading: false,
+        },
 
+      } as BaseAnnotationUIContext,
       annotation_ui_context: new BaseAnnotationUIContext(),
       child_annotation_ctx_list: [],
       task_prefetcher: null,
@@ -331,7 +389,7 @@ export default Vue.extend({
       loading: true,
       loading_project: true,
       layout_direction: 'horizontal',
-
+      show_default_navigation: true,
       context: null,
       error: null,
       request_save: false,
@@ -356,11 +414,21 @@ export default Vue.extend({
       snackbar_success_text: null,
       current_instance_list: [],
       current_instance_buffer_dict: {},
-
-
+      instance_type_list: [
+        {name: "box", display_name: "Box", icon: "mdi-checkbox-blank"},
+        {name: "polygon", display_name: "Polygon", icon: "mdi-vector-polygon"},
+        {name: "point", display_name: "Point", icon: "mdi-circle-slice-8"},
+        {name: "line", display_name: "Fixed Line", icon: "mdi-minus"},
+        {name: "cuboid", display_name: "Cuboid 2D", icon: "mdi-cube-outline"},
+        {name: "ellipse", display_name: "Ellipse & Circle", icon: "mdi-ellipse-outline"},
+        {name: "curve", display_name: "Curve Quadratic", icon: "mdi-chart-bell-curve-cumulative"},
+      ],
     }
   },
   watch: {
+    'annotation_ui_context.working_file': function() {
+      this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
+    },
     '$route'(to, from) {
       if (from.name === 'task_annotation' && to.name === 'studio') {
         this.fetch_project_file_list();
@@ -511,18 +579,16 @@ export default Vue.extend({
       console.log('AREA WIDTH', result);
       return result + 'px'
     },
-    interface_type: function (): string | null {
-      if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) {
-        return
-      }
+    interface_type: function(): string | null {
+      if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) return
 
-      if (this.annotation_ui_context.working_file) {
+      if (this.annotation_ui_context.working_file)
         return this.annotation_ui_context.working_file.type
-      }
-      if (this.task && this.task.file) {
+
+      if (this.task && this.task.file)
         return this.task.file
-      }
     },
+
     current_frame: function () {
       // let current_interface = this.get_current_annotation_area_ref()
       // if(current_interface){
@@ -531,7 +597,6 @@ export default Vue.extend({
       return this.annotation_ui_context.image_annotation_ctx.current_frame
 
     },
-
     has_pending_frames: function () {
       return this.unsaved_frames.length > 0
     },
@@ -554,7 +619,6 @@ export default Vue.extend({
       }
       return file_id;
     },
-
     computed_project_string_id: function () {
       if (this.$props.project_string_id) {
         this.$store.commit(
@@ -633,8 +697,8 @@ export default Vue.extend({
     get_slot_name(row, column) {
       return `panel_${row}:${column}`
     },
-    handle_open_issue_panel: function (mouse_position) {
-      if (!this.$refs.sidebar_factory) {
+    handle_open_issue_panel: function(mouse_position){
+      if(!this.$refs.sidebar_factory){
         return
       }
       let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref()
@@ -642,6 +706,37 @@ export default Vue.extend({
         sidebar.open_issue_panel(mouse_position)
       }
     },
+    redo: function () {
+      if (!this.command_manager) return
+      const redone = this.command_manager.redo()
+      if (redone) this.set_has_changed(true)
+      this.update_canvas();
+    },
+    undo: function () {
+      if (!this.command_manager) return
+      const undone = this.command_manager.undo()
+      if (undone) this.set_has_changed(true)
+      this.update_canvas();
+    },
+    clear_unsaved: function() {
+      this.$refs.annotation_area_factory.$refs.annotation_core.clear_unsaved()
+    },
+    rotate_image: function(event) {
+      this.$refs.annotation_area_factory.$refs.annotation_core.on_image_rotation(event)
+    },
+    update_smooth_canvas: function (event) {
+      this.$refs.annotation_area_factory.$refs.annotation_core.update_smooth_canvas(event)
+    },
+    change_instance_type: function(instance_type: string): void {
+      this.$store.commit("finish_draw");
+      this.$store.commit("set_last_selected_tool", this.instance_type);
+      this.annotation_ui_context.instance_type = instance_type
+    },
+    change_current_label_file_template: function (label_file) {
+      this.annotation_ui_context.current_label_file = label_file;
+      this.$emit('change_current_label_file', this.annotation_ui_context.current_label_file)
+    },
+
     update_current_instance_list: function (instance_list, file_id, file_type) {
       this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file_id)
     },
@@ -650,10 +745,13 @@ export default Vue.extend({
       let ins_list = this.current_instance_buffer_dict[this.annotation_ui_context.image_annotation_ctx.current_frame]
       this.current_instance_list = ins_list ? ins_list : []
     },
-    on_draw_mode_changed: function (draw_mode) {
-      this.annotation_ui_context.image_annotation_ctx.draw_mode = draw_mode
+    on_draw_mode_changed: function (draw_mode: boolean = undefined): void {
+      if (draw_mode !== undefined) {
+        this.annotation_ui_context.image_annotation_ctx.draw_mode = draw_mode
+      } else {
+        this.annotation_ui_context.image_annotation_ctx.draw_mode = !this.annotation_ui_context.image_annotation_ctx.draw_mode
+      }
     },
-
     handle_open_view_edit_panel: function (issue) {
       if (this.interface_type != 'image' && this.interface_type != 'video') {
         return

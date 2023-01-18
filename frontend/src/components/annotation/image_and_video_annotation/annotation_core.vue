@@ -13,7 +13,7 @@
     </ui_schema_context_menu>
 
     <div style="position: relative">
-      <main_menu
+      <!-- <main_menu
         :height="`${show_default_navigation ? '100px' : '50px'}`"
         :show_default_navigation="show_default_navigation"
       >
@@ -81,7 +81,7 @@
           >
           </toolbar>
         </template>
-      </main_menu>
+      </main_menu> -->
 
       <!-- Errors / info -->
       <v-alert v-if="task_error.task_request" type="info">
@@ -595,8 +595,8 @@
             "
             :view_only_mode="view_only_mode"
             :current_video_file_id="current_video_file_id"
-            :current_frame="image_annotation_ctx.current_frame"
-            :label_file_id="current_label_file_id"
+            :current_frame="annotation_ui_context.image_annotation_ctx.current_frame"
+            :label_file_id="annotation_ui_context.current_label_file ? annotation_ui_context.current_label_file.id : undefined"
             :current_sequence_annotation_core_prop="
               current_sequence_annotation_core_prop
             "
@@ -608,7 +608,7 @@
             @keyframe_click="change_keyframe"
             @sequence_list="sequence_list_local_copy = $event"
             :task="task"
-            :current_label_file="current_label_file"
+            :current_label_file="annotation_ui_context.current_label_file"
             :video_playing="video_playing"
             :force_new_sequence_request="force_new_sequence_request"
             :label_file_list="label_list"
@@ -780,6 +780,18 @@ export default Vue.extend({
     task_status
   },
   props: {
+    draw_mode: {
+      type: Boolean,
+      default: true
+    },
+    instance_type_list: {
+      type: Array,
+      default: []
+    },
+    instance_type: {
+      type: String,
+      default: "box"
+    },
     project_string_id: {default: null, type: String},
     use_full_window: {type: Boolean, default: true},
     container_width: {type: Number, default: 500},
@@ -900,7 +912,7 @@ export default Vue.extend({
       if (newval) {
         this.update_canvas();
         this.issues_ui_manager.snackbar_issues = true;
-        this.draw_mode = false;
+        this.$emit('draw_mode_change', false)
         this.label_settings.allow_multiple_instance_select = true;
       } else {
         this.issues_ui_manager.snackbar_issues = false;
@@ -910,7 +922,7 @@ export default Vue.extend({
       if (newval) {
         this.update_canvas();
         this.snackbar_merge_polygon = true;
-        this.draw_mode = false;
+        this.$emit('draw_mode_change', false)
         this.instances_to_merge = [];
         this.label_settings.allow_multiple_instance_select = true;
       } else {
@@ -1123,21 +1135,6 @@ export default Vue.extend({
       annotation_show_timer: null,
       annotation_show_revert: 2,
 
-      // We could also use this dictionary for other parts
-      // that rely on type to specifcy an icon
-      instance_type_list: [
-        {name: "box", display_name: "Box", icon: "mdi-checkbox-blank"},
-        {name: "polygon", display_name: "Polygon", icon: "mdi-vector-polygon"},
-        {name: "tag", display_name: "Tag", icon: "mdi-tag"},
-        {name: "point", display_name: "Point", icon: "mdi-circle-slice-8"},
-        {name: "line", display_name: "Fixed Line", icon: "mdi-minus"},
-        {name: "cuboid", display_name: "Cuboid 2D", icon: "mdi-cube-outline"},
-        {name: "ellipse", display_name: "Ellipse & Circle", icon: "mdi-ellipse-outline"},
-        {name: "curve", display_name: "Curve Quadratic", icon: "mdi-chart-bell-curve-cumulative"},
-      ],
-
-      instance_type: "box", //"box" or "polygon" or... "text"... or "cuboid"
-
       polygon_type_list: ["closed"],
 
       instance_sub_type: "closed",
@@ -1159,7 +1156,6 @@ export default Vue.extend({
       },
 
       cuboid_current_rear_face: undefined,
-      draw_mode: true,
       cuboid_face_hover: undefined,
       alert_info_drawing: true,
 
@@ -1382,9 +1378,6 @@ export default Vue.extend({
         return false;
       }
       if (this.annotation_ui_context.show_context_menu) {
-        return false;
-      }
-      if (this.instance_type == "tag") {
         return false;
       }
 
@@ -1806,8 +1799,8 @@ export default Vue.extend({
         rear_face: rear_face,
         width: width,
         height: height,
-        label_file: this.current_label_file,
-        label_file_id: this.current_label_file_id,
+        label_file: this.annotation_ui_context.current_label_file,
+        label_file_id: this.annotation_ui_context.current_label_file.id,
         selected: "false",
         number: number,
         machine_made: false,
@@ -1828,8 +1821,8 @@ export default Vue.extend({
 
           Using this as a workaround into shared computed property
         */
-      if (this.current_label_file) {
-        return this.current_label_file.id;
+      if (this.annotation_ui_context.current_label_file) {
+        return this.annotation_ui_context.current_label_file.id;
       } else {
         return null;
       }
@@ -1878,6 +1871,11 @@ export default Vue.extend({
   },
   // TODO 312 Methods!! refactor in multiple files and classes.
   methods: {
+    clear_unsaved: function() {
+      this.instance_list = this.annotation_ui_context.instance_store.clear_unsaved(this.working_file.id)
+
+      console.log(this.instance_list)
+    },
     cancel_polygon_merge: function () {
       this.polygon_merge_tool = null
     },
@@ -2165,15 +2163,6 @@ export default Vue.extend({
         e.preventDefault();
         // Chrome requires returnValue to be set
         e.returnValue = "";
-      }
-    },
-    clear__new_and_no_ids: function () {
-      // careful we start from top since we splice as we go
-      for (var i = this.instance_list.length - 1; i >= 0; i--) {
-        let current_instance = this.instance_list[i];
-        if (current_instance.id == undefined) {
-          this.instance_list.splice(i, 1);
-        }
       }
     },
 
@@ -2698,10 +2687,6 @@ export default Vue.extend({
         });
         await this.$nextTick();
         if (this.filtered_instance_type_list && this.filtered_instance_type_list[0]) {
-          this.instance_type = this.filtered_instance_type_list[0].name;
-          if (this.$refs.toolbar) {
-            this.$refs.toolbar.instance_type = this.instance_type;
-          }
           this.set_default_tool()
 
         }
@@ -2749,7 +2734,7 @@ export default Vue.extend({
 
       // Case for edit/view mode.
       this.annotation_ui_context.issues_ui_manager.current_issue = issue;
-      this.annotation_ui_context.issues_ui_manager.draw_mode = false;
+      this.$emit('draw_mode_change', false)
       this.label_settings.allow_multiple_instance_select = true;
       this.$store.commit("set_view_issue_mode", true);
       if (this.image_annotation_ctx.video_mode) {
@@ -3309,9 +3294,6 @@ export default Vue.extend({
       if (!this.filtered_instance_type_list.map(elm => elm.name).includes(last_selected_tool)) {
         return
       }
-      if (last_selected_tool && this.$refs.toolbar) {
-        this.$refs.toolbar.set_instance_type(last_selected_tool)
-      }
     },
     fetch_model_run_list: async function () {
       if (!this.model_run_id_list || this.model_run_id_list.length === 0) return
@@ -3374,30 +3356,6 @@ export default Vue.extend({
       this.$forceUpdate();
     },
 
-    async set_keypoints_instance_draw_mode() {
-      if (!this.current_instance_template || !this.is_keypoint_template) {
-        return
-      }
-      await this.$nextTick();
-      this.$refs.toolbar.set_mode(this.current_instance_template.mode)
-      if (this.current_instance_template.mode === 'guided' && this.draw_mode) {
-        this.show_snackbar_guided_keypoints_drawing(1);
-      }
-      if (this.current_instance_template.mode !== 'guided') {
-        this.show_custom_snackbar = false;
-      }
-      this.instance_context.keypoints_draw_mode = this.current_instance_template.mode
-    },
-    change_instance_type: function ($event) {
-      this.instance_type = $event;
-      this.current_polygon_point_list = [];
-      this.cuboid_face_hover = undefined;
-      this.$store.commit("finish_draw");
-      this.$store.commit("set_last_selected_tool", this.instance_type);
-      this.$emit('change_instance_type', this.instance_type)
-      this.set_keypoints_instance_draw_mode();
-    },
-
     validate_sequences: function () {
       /* Constraints
        *    Check if the sequence already exists in the instance list
@@ -3423,7 +3381,7 @@ export default Vue.extend({
         if (
           this.instance_list[i].number ==
           this.current_sequence_from_sequence_component.number &&
-          this.instance_list[i].label_file_id == this.current_label_file.id
+          this.instance_list[i].label_file_id == this.annotation_ui_context.current_label_file.id
         ) {
           count += 1;
         }
@@ -3819,13 +3777,6 @@ export default Vue.extend({
           this.delete_single_instance(i);
         }
       }
-    },
-    change_current_label_file_template: function (label_file) {
-      this.current_label_file = label_file;
-      if (this.instance_type == "tag") {
-        this.insert_tag_type();
-      }
-      this.$emit('change_current_label_file', this.current_label_file)
     },
 
     insert_tag_type: function () {
@@ -6065,7 +6016,7 @@ export default Vue.extend({
       }
 
       // TODO clarify if we could just do this first check
-      if (!this.current_label_file || !this.current_label_file.id) {
+      if (!this.annotation_ui_context.current_label_file || !this.annotation_ui_context.current_label_file.id) {
         this.snackbar_warning = true;
         this.snackbar_warning_text = "Please select a label first";
         this.mouse_down_limits_result = false;
@@ -6258,8 +6209,8 @@ export default Vue.extend({
     instance_template_mouse_down: function () {
     },
     add_label_file_to_instance(instance) {
-      instance.label_file = this.current_label_file;
-      instance.label_file_id = this.current_label_file_id;
+      instance.label_file = this.annotation_ui_context.current_label_file;
+      instance.label_file_id = this.annotation_ui_context.current_label_file.id;
       return instance;
     },
     add_instance_template_to_instance_list(frame_number) {
@@ -6446,7 +6397,7 @@ export default Vue.extend({
     build_ann_event_ctx: function (): ImageAnnotationEventCtx {
       let ann_ctx: ImageAnnotationEventCtx = {
         polygon_point_hover_index: this.polygon_point_hover_index,
-        label_file: this.current_label_file as LabelFile,
+        label_file: this.annotation_ui_context.current_label_file as LabelFile,
         instance_type: this.instance_type,
         instance_list: this.instance_list as Instance[],
         draw_mode: this.draw_mode,
@@ -7364,7 +7315,6 @@ export default Vue.extend({
           return;
         }
 
-        this.draw_mode = !this.draw_mode;
         this.edit_mode_toggle(this.draw_mode);
         this.is_actively_drawing = false;
       }
@@ -7716,7 +7666,7 @@ export default Vue.extend({
     },
     edit_mode_toggle: function (draw_mode) {
       this.reset_drawing();
-      this.draw_mode = draw_mode; // context from external component like toolbar
+      this.$emit('draw_mode_change')
       this.update_draw_mode_on_instances(draw_mode);
       this.is_actively_drawing = false; // QUESTION do we want this as a toggle or just set to false to clear
       if (this.draw_mode && this.is_keypoint_template && this.current_instance_template.mode === 'guided') {

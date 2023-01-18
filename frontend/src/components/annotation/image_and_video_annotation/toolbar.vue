@@ -230,7 +230,8 @@
       <!-- TODO in task mode, this can be force set by Schema
           and optionally hidden-->
 
-      <ui_schema name="instance_selector" v-if="!loading_instance_type">
+
+      <ui_schema name="instance_selector">
         <div class="pl-3 pr-3 pt-4" style="max-width: 200px">
           <!-- instance_selector -->
           <diffgram_select
@@ -240,8 +241,7 @@
             label="New Instance Type"
             :disabled="loading || loading_instance_templates || view_only_mode"
             @change="$emit('change_instance_type', instance_type)"
-          >
-          </diffgram_select>
+          />
         </div>
       </ui_schema>
 
@@ -285,15 +285,14 @@
       <ui_schema name="draw_edit">
         <div class="pl-3 pt-3 pr-2">
           <v-switch
-            v-if="view_only_mode != true"
-            :label_file="mode_text"
+            v-if="!view_only_mode"
             data-cy="edit_toggle"
+            :input-value="draw_mode"
+            :label_file="mode_text"
             :disabled="view_issue_mode"
-            v-model="draw_mode_local"
-            @change="$emit('edit_mode_toggle', draw_mode_local)"
             :label="mode_text"
-          >
-          </v-switch>
+            @change="$emit('edit_mode_toggle')"
+          />
         </div>
       </ui_schema>
 
@@ -308,8 +307,7 @@
             :disabled="
               !has_changed ||
               save_loading ||
-              view_only_mode ||
-              (file == undefined && task == undefined)
+              view_only_mode
             "
             color="primary"
             icon="save"
@@ -354,34 +352,28 @@
       <div>
         <standard_button
           tooltip_message="Previous File"
-          v-if="!task && file && file.id"
+          v-if="!task && working_file && working_file.id"
           @click="$emit('change_file', 'previous')"
-          :disabled="
-            loading || annotations_loading || full_file_loading || !file
-          "
+          :disabled="loading || annotations_loading || full_file_loading || !working_file"
           color="primary"
           icon="mdi-chevron-left-circle"
           :icon_style="true"
           :bottom="true"
-        >
-        </standard_button>
+        />
         <!-- TODO Move some of disabled logic into functions don't like having
             so much of it here as it gets more complext -->
       </div>
       <div>
         <standard_button
           tooltip_message="Next File"
-          v-if="!task && file && file.id"
+          v-if="!task && working_file && working_file.id"
           @click="$emit('change_file', 'next')"
-          :disabled="
-            loading || annotations_loading || full_file_loading || !file
-          "
+          :disabled="loading || annotations_loading || full_file_loading || !working_file"
           color="primary"
           icon="mdi-chevron-right-circle"
           :icon_style="true"
           :bottom="true"
-        >
-        </standard_button>
+        />
       </div>
 
 
@@ -495,7 +487,7 @@
       >
         <template slot="content">
           <v-layout class="pb-4">
-            <div>
+            <!-- <div>
               <button_with_menu
                 datacy="open-annotation-show-menu"
                 v-if="annotation_show_on !== true"
@@ -543,7 +535,7 @@
                   :bottom="true"
                 />
               </ui_schema>
-            </div>
+            </div> -->
             <standard_button
               tooltip_message="Refresh Instances"
               v-if="$store.state.user.current.is_super_admin == true"
@@ -772,7 +764,7 @@
 
             <!-- Clear unsaved -->
             <standard_button
-              @click="$emit('clear__new_and_no_ids')"
+              @click="$emit('clear_unsaved')"
               tooltip_message="Clear Unsaved"
               icon="mdi-close-circle-multiple"
               :icon_style="true"
@@ -1068,6 +1060,7 @@ export default Vue.extend({
     },
     task: {},
     file: {},
+    working_file: {},
     canvas_scale_local: {},
     label_list: {},
     label_file_colour_map: {},
@@ -1098,6 +1091,7 @@ export default Vue.extend({
       default: false,
     },
     draw_mode: {
+      type: Boolean,
       default: true,
     },
     full_file_loading: {},
@@ -1121,7 +1115,6 @@ export default Vue.extend({
       label_settings_local: {
         canvas_scale_global_is_automatic: true,
       },
-      draw_mode_local: true,
       loading_instance_type: true,
       instance_type: "box",
       numberValue: 1,
@@ -1161,18 +1154,14 @@ export default Vue.extend({
     label_settings(event) {
       this.label_settings_local = event;
     },
-    draw_mode(event) {
-      this.draw_mode_local = event;
-    },
   },
   async mounted() {
-    this.label_settings_local = this.$props.label_settings;
-    this.draw_mode_local = this.$props.draw_mode;
-    if(this.$props.file && this.$props.file.image){
-      this.rotation_degrees = this.$props.file.image.rotation_degrees
+    this.label_settings_local = this.label_settings;
+    if(this.file && this.file.image){
+      this.rotation_degrees = this.file.image.rotation_degrees
     }
-    if(this.$props.task && this.$props.task.file && this.$props.task.file.image){
-      this.rotation_degrees = this.$props.task.file.image.rotation_degrees
+    if(this.task && this.task.file && this.task.file.image){
+      this.rotation_degrees = this.task.file.image.rotation_degrees
     }
     if(this.rotation_degrees == undefined){
       this.rotation_degrees = 0
@@ -1182,7 +1171,7 @@ export default Vue.extend({
 
   computed: {
     mode_text: function () {
-      if (this.draw_mode_local == true) {
+      if (this.draw_mode == true) {
         return "Drawing";
       } else {
         return "Editing";
@@ -1201,7 +1190,6 @@ export default Vue.extend({
       this.instance_type = inst_type
       this.$emit('change_instance_type', inst_type)
     },
-
     on_mode_set: function (mode) {
       this.$emit('keypoints_mode_set', mode)
     },

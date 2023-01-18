@@ -24,6 +24,7 @@ export class BaseAnnotationUIContext {
   selected_instance_for_history: Instance
   model_run_list: ModelRun[]
   issues_ui_manager: IssuesAnnotationUIManager
+  command_manager: any
 
   image_annotation_ctx: ImageAnnotationUIContext
   num_rows: number
