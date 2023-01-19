@@ -728,14 +728,14 @@ export default Vue.extend({
       this.snackbar_message="All Instances copied into clipboard."
     },
     redo: function () {
-      if (!this.command_manager) return
-      const redone = this.command_manager.redo()
+      if (!this.annotation_ui_context.command_manager) return
+      const redone = this.annotation_ui_context.command_manager.redo()
       if (redone) this.set_has_changed(true)
       this.update_canvas();
     },
     undo: function () {
-      if (!this.command_manager) return
-      const undone = this.command_manager.undo()
+      if (!this.annotation_ui_context.command_manager) return
+      const undone = this.annotation_ui_context.command_manager.undo()
       if (undone) this.set_has_changed(true)
       this.update_canvas();
     },
