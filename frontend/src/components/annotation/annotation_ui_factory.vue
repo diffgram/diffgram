@@ -1337,13 +1337,18 @@ export default Vue.extend({
       }
       if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.project_string_id, file.id)
+
         if (err) {
           console.error(err)
           return
         }
-        this.annotation_ui_context.working_file_list = child_files
-        this.set_working_file_from_child_file_list(child_files[0])
-        this.populate_child_context_list(child_files)
+        this.annotation_ui_context.working_file_list = child_files.sort((a, b) => {
+          if (a.id > b.id) return 1
+          if (a.id < b.id) return -1
+          return 0
+        })
+        this.set_working_file_from_child_file_list(this.annotation_ui_context.working_file_list[0])
+        this.populate_child_context_list(this.annotation_ui_context.working_file_list)
       } else{
         this.annotation_ui_context.working_file = file
 
