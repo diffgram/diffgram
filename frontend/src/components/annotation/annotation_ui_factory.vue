@@ -1,5 +1,5 @@
 <template>
-  <div class="d-flex">
+  <div class="d-flex" style="height: 100%; width: 100%" id="annotation_factory_container">
     <toolbar_factory
       v-if="annotation_ui_context.working_file && annotation_ui_context.command_manager"
       :project_string_id="project_string_id"
@@ -48,92 +48,148 @@
       @instance_update="handle_instance_update"
       @clear_selected_instances_image="handle_clear_selected_instances_image"
       @open_view_edit_panel="handle_open_view_edit_panel"
-      ref="sidebar_factory"
-    />
+      ref="sidebar_factory"></sidebar_factory>
 
-    <div 
-      :class="{'ma-auto': interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing}"
-      id="annotation_ui_factory" 
-      tabindex="0"
-    >
-      <annotation_area_factory
-        v-if="annotation_ui_context && annotation_ui_context.working_file"
-        ref="annotation_area_factory"
-        :interface_type="interface_type"
-        :annotation_ui_context="annotation_ui_context"
-        :working_file="annotation_ui_context.working_file"
-        :credentials_granted="credentials_granted"
-        :initializing="initializing"
-        :save_loading_image="save_loading_image"
-        :url_instance_buffer="get_url_instance_buffer()"
-        :submitted_to_review="submitted_to_review"
-        :annotations_loading="annotation_ui_context.image_annotation_ctx.annotations_loading"
-        :loading="annotation_ui_context.image_annotation_ctx.loading"
-        :filtered_instance_type_list_function="filtered_instance_type_list"
-        :instance_type_list="instance_type_list"
-        :get_userscript="get_userscript"
-        :save_loading_frames_list="save_loading_frames_list"
-        :has_changed="has_changed"
-        :instance_buffer_metadata="annotation_ui_context.image_annotation_ctx.instance_buffer_metadata"
-        :create_instance_template_url="create_instance_template_url"
-        :video_parent_file_instance_list="video_parent_file_instance_list"
-        :has_pending_frames="has_pending_frames"
-        :instance_store="annotation_ui_context.instance_store"
-        :project_string_id="computed_project_string_id"
-        :label_schema="annotation_ui_context.label_schema"
-        :model_run_id_list="model_run_id_list"
-        :model_run_color_list="model_run_color_list"
-        :task="annotation_ui_context.task"
-        :file="annotation_ui_context.working_file"
-        :task_id_prop="task_id_prop"
-        :request_save="request_save"
-        :job_id="job_id"
-        :view_only_mode="view_only"
-        :label_list="label_list"
-        :label_file_colour_map="label_file_colour_map"
-        :enabled_edit_schema="enabled_edit_schema"
-        :finish_annotation_show="show_snackbar"
-        :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
-        :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
-        :task_image="task_image"
-        :task_instances="task_instances"
-        :task_loading="task_loading"
-        :changing_file="changing_file"
-        :changing_task="changing_task"
-        :task_error="task_error"
-        :error="error"
-        :issues_ui_manager="annotation_ui_context.issues_ui_manager"
-        :draw_mode="annotation_ui_context.image_annotation_ctx.draw_mode"
-        :instance_type="annotation_ui_context.instance_type"
-        @request_file_change="request_file_change"
-        @change_label_schema="on_change_label_schema"
-        @set_file_list="set_file_list"
-        @request_new_task="change_task"
-        @replace_file="annotation_ui_context.working_file = $event"
-        @get_userscript="get_userscript"
-        @save_time_tracking="save_time_tracking"
-        @trigger_task_change="trigger_task_change"
-        @set_ui_schema="set_ui_schema"
-        @set_save_loading="set_save_loading"
-        @save="save"
-        @set_frame_pending_save="set_frame_pending_save"
-        @task_update="task_update"
-        @set_has_changed="set_has_changed"
-        @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
-        @model_run_list_loaded="annotation_ui_context.model_run_list = $event"
-        @draw_mode_change="on_draw_mode_changed"
-        @change_video_playing="annotation_ui_context.image_annotation_ctx.video_playing = $event"
-        @change_current_label_file="annotation_ui_context.current_label_file = $event"
-        @request_change_current_instance="annotation_ui_context.image_annotation_ctx.request_change_current_instance = $event"
-        @trigger_refresh_current_instance="annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = $event"
-        @selected_instance_for_history="annotation_ui_context.selected_instance_for_history = $event"
-        @event_create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance = $event"
-        @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
-        @open_issue_panel="handle_open_issue_panel"
-        @instance_list_updated="update_current_instance_list"
-        @instance_buffer_dict_updated="update_current_frame_buffer_dict"
-        @save_multiple_frames="save_multiple_frames"
-      />
+    <div
+      :style="`height: 100%; width: ${annotation_area_container_width}`"
+      :class="{'ma-auto': (interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing) || loading || !interface_type,}"
+
+      id="annotation_ui_factory" tabindex="0">
+      <v_error_multiple :error="error"/>
+      <div v-if="!interface_type && !initializing && loading" class="ma-auto">
+        <empty_file_editor_placeholder
+          class="ma-auto"
+          style="width: 800px"
+          :loading="true"
+          :title="'Loading Annotation UI...'"
+        />
+      </div>
+      <div v-if="!interface_type && !initializing && !loading">
+        <empty_file_editor_placeholder
+          :message="`File ID: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.id : 'N/A'}. File Type: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.type : 'N/A'}`"
+          :title="'Invalid File loaded'"
+        />
+      </div>
+      <div
+        v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing && !loading">
+        <empty_file_editor_placeholder
+          :message="'Try adding child files to this compound file.'"
+          :title="'This compound file has no child files.'"/>
+      </div>
+      <div v-else-if="!credentials_granted && !initializing">
+        <empty_file_editor_placeholder
+          icon="mdi-account-cancel"
+          :loading="false"
+          :project_string_id="project_string_id"
+          :title="`Invalid credentials`"
+          :message="`You need more credentials to work on this task.`"
+          :show_upload="false"
+        />
+      </div>
+
+      <panel_manager
+        v-else-if="annotation_ui_context &&
+        annotation_ui_context.working_file_list &&
+        annotation_ui_context.working_file_list.length > 0 &&
+        child_annotation_ctx_list"
+        :layout_direction="layout_direction"
+        :num_columns="annotation_ui_context.working_file_list.length"
+        :num_rows="annotation_ui_context.num_rows"
+        @panels_resized="on_panes_resized"
+        @ready="on_panes_ready"
+        @pane-click="on_panes_clicked"
+        ref="panels_manager"
+      >
+        <template v-for="(file, index) in annotation_ui_context.working_file_list"
+                  v-slot:[`panel_${annotation_ui_context.num_rows}:${index+1}`]="">
+
+                <div :class="{'selected-file': file.id === annotation_ui_context.working_file.id
+                                               && annotation_ui_context.working_file_list.length > 1}">
+                  <annotation_area_factory
+                    ref="annotation_area_factory"
+                    :container_height="child_annotation_ctx_list[index].container_height"
+                    :container_width="child_annotation_ctx_list[index].container_width"
+                    :use_full_window="annotation_ui_context.working_file_list.length === 1"
+                    :interface_type="interface_type"
+                    :show_toolbar="index === 0"
+                    :annotation_ui_context="annotation_ui_context"
+                    :image_annotation_ctx="child_annotation_ctx_list[index]"
+                    :working_file="file"
+                    :credentials_granted="credentials_granted"
+                    :initializing="initializing"
+                    :save_loading_image="save_loading_image"
+                    :url_instance_buffer="get_url_instance_buffer()"
+                    :submitted_to_review="submitted_to_review"
+                    :annotations_loading="child_annotation_ctx_list[index].annotations_loading"
+                    :loading="child_annotation_ctx_list[index].loading"
+                    :filtered_instance_type_list_function="filtered_instance_type_list"
+                    :get_userscript="get_userscript"
+                    :instance_type_list="instance_type_list"
+                    :save_loading_frames_list="save_loading_frames_list"
+                    :has_changed="has_changed"
+                    :instance_buffer_metadata="child_annotation_ctx_list[index].instance_buffer_metadata"
+                    :create_instance_template_url="create_instance_template_url"
+                    :video_parent_file_instance_list="video_parent_file_instance_list"
+                    :has_pending_frames="has_pending_frames"
+                    :instance_store="annotation_ui_context.instance_store"
+                    :project_string_id="computed_project_string_id"
+                    :label_schema="annotation_ui_context.label_schema"
+                    :model_run_id_list="model_run_id_list"
+                    :model_run_color_list="model_run_color_list"
+                    :task="annotation_ui_context.task"
+                    :task_id_prop="task_id_prop"
+                    :request_save="request_save"
+                    :job_id="job_id"
+                    :view_only_mode="view_only"
+                    :label_list="label_list"
+                    :label_file_colour_map="label_file_colour_map"
+                    :enabled_edit_schema="enabled_edit_schema"
+                    :finish_annotation_show="show_snackbar"
+                    :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
+                    :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
+                    :task_image="task_image"
+                    :task_instances="task_instances"
+                    :task_loading="task_loading"
+                    :changing_file="changing_file"
+                    :changing_task="changing_task"
+                    :task_error="task_error"
+                    :error="error"
+                    :issues_ui_manager="annotation_ui_context.issues_ui_manager"
+                    :draw_mode="annotation_ui_context.image_annotation_ctx.draw_mode"
+                    :instance_type="annotation_ui_context.instance_type"
+                    @request_file_change="request_file_change"
+                    @change_label_schema="on_change_label_schema"
+                    @set_file_list="set_file_list"
+                    @request_new_task="change_task"
+                    @replace_file="annotation_ui_context.working_file = $event"
+                    @get_userscript="get_userscript"
+                    @save_time_tracking="save_time_tracking"
+                    @trigger_task_change="trigger_task_change"
+                    @set_ui_schema="set_ui_schema"
+                    @set_save_loading="set_save_loading"
+                    @save="save"
+                    @set_frame_pending_save="set_frame_pending_save"
+                    @task_update="task_update"
+                    @set_has_changed="set_has_changed"
+                    @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
+                    @model_run_list_loaded="annotation_ui_context.model_run_list = $event"
+                    @draw_mode_change="on_draw_mode_changed"
+                    @change_video_playing="annotation_ui_context.image_annotation_ctx.video_playing = $event"
+                    @change_current_label_file="annotation_ui_context.current_label_file = $event"
+                    @request_change_current_instance="annotation_ui_context.image_annotation_ctx.request_change_current_instance = $event"
+                    @trigger_refresh_current_instance="annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = $event"
+                    @selected_instance_for_history="annotation_ui_context.selected_instance_for_history = $event"
+                    @event_create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance = $event"
+                    @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
+                    @open_issue_panel="handle_open_issue_panel"
+                    @instance_list_updated="update_current_instance_list"
+                    @instance_buffer_dict_updated="update_current_frame_buffer_dict"
+                    @save_multiple_frames="save_multiple_frames"
+                  />
+                </div>
+
+        </template>
+      </panel_manager>
 
       <file_manager_sheet
         v-if="!annotation_ui_context.task && context === 'file'"
@@ -247,16 +303,18 @@ import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
 import * as AnnotationSavePrechecks from '../annotation/image_and_video_annotation/utils/AnnotationSavePrechecks'
-import {BaseAnnotationUIContext} from '../../types/AnnotationUIContext'
-
+import {BaseAnnotationUIContext, ImageAnnotationUIContext} from '../../types/AnnotationUIContext'
+import panel_manager from "./panel_manager.vue";
 import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServices"
 import {createDefaultLabelSettings} from "../../types/image_label_settings";
 import {get_child_files} from "../../services/fileServices";
+import {fromUserCoordinate} from "ol/proj";
 
 export default Vue.extend({
   name: "annotation_ui_factory",
   components: {
     file_manager_sheet,
+    panel_manager,
     no_credentials_dialog,
     sidebar_factory,
     annotation_area_factory,
@@ -317,6 +375,7 @@ export default Vue.extend({
 
       } as BaseAnnotationUIContext,
       annotation_ui_context: new BaseAnnotationUIContext(),
+      child_annotation_ctx_list: [],
       task_prefetcher: null,
       task_image: null,
       task_instances: null,
@@ -335,8 +394,13 @@ export default Vue.extend({
       snackbar_message: "",
       loading: true,
       loading_project: true,
+<<<<<<< HEAD
       show_default_navigation: true,
 
+=======
+      layout_direction: 'horizontal',
+      show_default_navigation: true,
+>>>>>>> 71372d64c0863323be34036691dca6e02999b5c8
       context: null,
       error: null,
       request_save: false,
@@ -445,6 +509,7 @@ export default Vue.extend({
     } else {
       this.loading_project = false; // caution some assumptions around this flag for media loading
     }
+
     this.initializing = true
 
     this.get_model_runs_from_query(this.$route.query);
@@ -495,6 +560,47 @@ export default Vue.extend({
     this.initializing = false
   },
   computed: {
+<<<<<<< HEAD
+    interface_type: function(): string | null {
+      if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) return
+
+      if (this.annotation_ui_context.working_file)
+        return this.annotation_ui_context.working_file.type
+
+      if (this.task && this.task.file)
+        return this.task.file
+=======
+    annotation_area_container_max_height: function(){
+      let heightWindow = window.innerHeight && document.documentElement.clientHeight ?
+        Math.min(window.innerHeight, document.documentElement.clientHeight) :
+        window.innerHeight ||
+        document.documentElement.clientHeight ||
+        document.getElementsByTagName('body')[0].clientHeight;
+
+      let result = heightWindow - 200;
+      return `${result}px`
+    },
+    annotation_area_container_width: function(){
+      let result;
+      if(!this.interface_type || !this.interface_type && !this.initializing && this.loading){
+        return '100%'
+      }
+      if(this.loading){
+        let widthWindow = window.innerWidth && document.documentElement.clientWidth ?
+          Math.min(window.innerWidth, document.documentElement.clientWidth) :
+          window.innerWidth ||
+          document.documentElement.clientWidth ||
+          document.getElementsByTagName('body')[0].clientWidth;
+        result = widthWindow - this.annotation_ui_context.image_annotation_ctx.label_settings.left_nav_width;
+      } else{
+        let elm = document.getElementById('annotation_factory_container')
+        result = elm.clientWidth - this.annotation_ui_context.image_annotation_ctx.label_settings.left_nav_width;
+      }
+
+      console.log('AREA WIDTH', result);
+      return result + 'px'
+>>>>>>> 71372d64c0863323be34036691dca6e02999b5c8
+    },
     interface_type: function(): string | null {
       if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) return
 
@@ -504,6 +610,7 @@ export default Vue.extend({
       if (this.task && this.task.file)
         return this.task.file
     },
+
     current_frame: function () {
       // let current_interface = this.get_current_annotation_area_ref()
       // if(current_interface){
@@ -570,6 +677,92 @@ export default Vue.extend({
     },
   },
   methods: {
+<<<<<<< HEAD
+    redo: function () {
+      if (!this.command_manager) return
+      const redone = this.command_manager.redo()
+      if (redone) this.set_has_changed(true)
+      this.update_canvas();
+    },
+    undo: function () {
+      if (!this.command_manager) return
+      const undone = this.command_manager.undo()
+      if (undone) this.set_has_changed(true)
+      this.update_canvas();
+    },
+    clear_unsaved: function() {
+      this.$refs.annotation_area_factory.$refs.annotation_core.clear_unsaved()
+    },
+    rotate_image: function(event) {
+      this.$refs.annotation_area_factory.$refs.annotation_core.on_image_rotation(event)
+    },
+    update_smooth_canvas: function (event) {
+      this.$refs.annotation_area_factory.$refs.annotation_core.update_smooth_canvas(event)
+    },
+    change_instance_type: function(instance_type: string): void {
+      this.$store.commit("finish_draw");
+      this.$store.commit("set_last_selected_tool", this.instance_type);
+      this.annotation_ui_context.instance_type = instance_type
+    },
+    change_current_label_file_template: function (label_file) {
+      this.annotation_ui_context.current_label_file = label_file;
+      this.$emit('change_current_label_file', this.annotation_ui_context.current_label_file)
+=======
+    on_panes_clicked: function(row_index, panel){
+      console.log('PANEL CLICKED', panel)
+    },
+    recalculate_pane_dimensions: function(row_index, panes_list){
+      if(!this.$refs.panels_manager){
+        return
+      }
+      let total_width = this.$refs.panels_manager.$el.clientWidth;
+      let total_height = this.$refs.panels_manager.$el.clientHeight
+      console.log('TOTAL WIDT HEGITH', total_width, total_height)
+      for(let i = 0 ; i < panes_list.length ; i++){
+        this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100)
+        this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[i].size / 100);
+        console.log('I', i, 'width', this.child_annotation_ctx_list[i].container_width)
+        console.log('I', i, 'height', this.child_annotation_ctx_list[i].container_height)
+      }
+    },
+    on_panes_ready: function(){
+    console.log('ON PANES READY')
+      for (let i = 0; i < this.annotation_ui_context.num_rows; i++){
+        // TODO: filter this by row
+        let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {return {size: 50}})
+        this.recalculate_pane_dimensions(i, default_pane_sizes)
+      }
+
+    },
+    on_panes_resized: function(row_index, panes_list){
+      this.recalculate_pane_dimensions(row_index, panes_list)
+    },
+    populate_child_context_list: function(child_files){
+      for(let file of child_files){
+        console.log('FILE', file.id, this.child_annotation_ctx_list)
+        if(file.type === 'image' || file.type === 'video'){
+          this.annotation_ui_context.image_annotation_ctx.video_mode = file && file.type === 'video'
+          this.child_annotation_ctx_list.push(new ImageAnnotationUIContext())
+          console.log('PUSHH')
+        }
+      }
+      console.log('child_annotation_ctx_list', this.child_annotation_ctx_list)
+      let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {return {size: 50}})
+      this.recalculate_pane_dimensions(1, default_pane_sizes)
+    },
+    get_slot_name(row, column) {
+      return `panel_${row}:${column}`
+>>>>>>> 71372d64c0863323be34036691dca6e02999b5c8
+    },
+    handle_open_issue_panel: function(mouse_position){
+      if(!this.$refs.sidebar_factory){
+        return
+      }
+      let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref()
+      if (sidebar) {
+        sidebar.open_issue_panel(mouse_position)
+      }
+    },
     redo: function () {
       if (!this.command_manager) return
       const redone = this.command_manager.redo()
@@ -600,15 +793,7 @@ export default Vue.extend({
       this.annotation_ui_context.current_label_file = label_file;
       this.$emit('change_current_label_file', this.annotation_ui_context.current_label_file)
     },
-    handle_open_issue_panel: function(mouse_position){
-      if(!this.$refs.sidebar_factory){
-        return
-      }
-      let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref()
-      if(sidebar){
-        sidebar.open_issue_panel(mouse_position)
-      }
-    },
+
     update_current_instance_list: function (instance_list, file_id, file_type) {
       this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file_id)
     },
@@ -683,7 +868,7 @@ export default Vue.extend({
     set_has_changed: function (value) {
       this.has_changed = value
     },
-    get_current_annotation_area_ref(file_id, file_type){
+    get_current_annotation_area_ref(file_id, file_type) {
       // For now just return computed prop. More complex logic might need to be added with file_id once compound file exists.
       return this.$refs.annotation_area_factory.current_interface_ref
     },
@@ -691,7 +876,7 @@ export default Vue.extend({
       try {
 
         this.annotation_ui_context.image_annotation_ctx.save_multiple_frames_error = {};
-        for (let frame_number of frames_list){
+        for (let frame_number of frames_list) {
           let inst_list = this.annotation_ui_context.instance_store.get_instance_list(
             this.annotation_ui_context.working_file.id,
             frame_number
@@ -721,8 +906,7 @@ export default Vue.extend({
       if (this.annotation_ui_context.image_annotation_ctx.video_mode) {
         if (!frame_number_param) {
           frame_number = parseInt(this.current_frame, 10);
-        }
-        else frame_number = parseInt(frame_number_param, 10);
+        } else frame_number = parseInt(frame_number_param, 10);
 
         if (instance_list_param) instance_list = instance_list_param;
         else instance_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id, frame_number)
@@ -1172,17 +1356,33 @@ export default Vue.extend({
 
       return `/api/project/${this.project_string_id}/video/${this.annotation_ui_context.working_file.id}`
     },
-    set_working_file_from_child_file_list: function(file_to_set){
-      for(let file of this.annotation_ui_context.working_file_list){
-        if(file.id === file_to_set.id){
+    set_working_file_from_child_file_list: function (file_to_set) {
+      for (let file of this.annotation_ui_context.working_file_list) {
+        if (file.id === file_to_set.id) {
           this.annotation_ui_context.working_file = file
         }
       }
     },
-    update_working_file: async function  (file) {
-      this.annotation_ui_context.working_file = file
-      this.annotation_ui_context.image_annotation_ctx.video_mode = file && file.type === 'video'
-      if(file.type === 'compound'){
+    set_working_file_list: function(file_list){
+      let num_rows = this.annotation_ui_context.num_rows;
+      let num_cols = this.annotation_ui_context.num_cols;
+      let current_row = 0
+      let current_col = 0
+      for(let i = 0; i < file_list.length; i++){
+        console.log('index - row - col', i, current_row, current_col)
+        if(i % (num_rows) === 0){
+          current_row += 1
+          current_col = 0
+          continue
+        }
+        current_col +=1
+      }
+    },
+    update_working_file: async function (file) {
+      if(!file){
+        return
+      }
+      if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.project_string_id, file.id)
         if (err) {
           console.error(err)
@@ -1190,6 +1390,13 @@ export default Vue.extend({
         }
         this.annotation_ui_context.working_file_list = child_files
         this.set_working_file_from_child_file_list(child_files[0])
+        console.log('child files', child_files)
+        this.populate_child_context_list(child_files)
+      } else{
+        this.annotation_ui_context.working_file = file
+
+        this.annotation_ui_context.working_file_list = [file]
+        this.populate_child_context_list(this.annotation_ui_context.working_file_list)
       }
     },
 
@@ -1542,3 +1749,9 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style>
+.selected-file{
+  border: 4px solid #1565c0;
+}
+</style>
