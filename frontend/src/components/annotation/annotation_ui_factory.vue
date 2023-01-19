@@ -1342,7 +1342,6 @@ export default Vue.extend({
         }
         this.annotation_ui_context.working_file_list = child_files
         this.set_working_file_from_child_file_list(child_files[0])
-        console.log('child files', child_files)
         this.populate_child_context_list(child_files)
       } else{
         this.annotation_ui_context.working_file = file
