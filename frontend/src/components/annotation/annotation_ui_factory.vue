@@ -97,92 +97,96 @@
         :num_rows="annotation_ui_context.num_rows"
         @panels_resized="on_panes_resized"
         @ready="on_panes_ready"
+        @pane-click="on_panes_clicked"
         ref="panels_manager"
       >
         <template v-for="(file, index) in annotation_ui_context.working_file_list"
                   v-slot:[`panel_${annotation_ui_context.num_rows}:${index+1}`]="">
 
-                <annotation_area_factory
-                  ref="annotation_area_factory"
-                  :container_height="child_annotation_ctx_list[index].container_height"
-                  :container_width="child_annotation_ctx_list[index].container_width"
-                  :use_full_window="annotation_ui_context.working_file_list.length === 1"
-                  :interface_type="interface_type"
-                  :show_toolbar="index === 0"
-                  :annotation_ui_context="annotation_ui_context"
-                  :image_annotation_ctx="child_annotation_ctx_list[index]"
-                  :working_file="file"
-                  :credentials_granted="credentials_granted"
-                  :initializing="initializing"
-                  :save_loading_image="save_loading_image"
-                  :url_instance_buffer="get_url_instance_buffer()"
-                  :submitted_to_review="submitted_to_review"
-                  :annotations_loading="child_annotation_ctx_list[index].annotations_loading"
-                  :loading="child_annotation_ctx_list[index].loading"
-                  :filtered_instance_type_list_function="filtered_instance_type_list"
-                  :get_userscript="get_userscript"
-                  :instance_type_list="instance_type_list"
-                  :save_loading_frames_list="save_loading_frames_list"
-                  :has_changed="has_changed"
-                  :instance_buffer_metadata="child_annotation_ctx_list[index].instance_buffer_metadata"
-                  :create_instance_template_url="create_instance_template_url"
-                  :video_parent_file_instance_list="video_parent_file_instance_list"
-                  :has_pending_frames="has_pending_frames"
-                  :instance_store="annotation_ui_context.instance_store"
-                  :project_string_id="computed_project_string_id"
-                  :label_schema="annotation_ui_context.label_schema"
-                  :model_run_id_list="model_run_id_list"
-                  :model_run_color_list="model_run_color_list"
-                  :task="annotation_ui_context.task"
-                  :task_id_prop="task_id_prop"
-                  :request_save="request_save"
-                  :job_id="job_id"
-                  :view_only_mode="view_only"
-                  :label_list="label_list"
-                  :label_file_colour_map="label_file_colour_map"
-                  :enabled_edit_schema="enabled_edit_schema"
-                  :finish_annotation_show="show_snackbar"
-                  :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
-                  :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
-                  :task_image="task_image"
-                  :task_instances="task_instances"
-                  :task_loading="task_loading"
-                  :changing_file="changing_file"
-                  :changing_task="changing_task"
-                  :task_error="task_error"
-                  :error="error"
-                  :issues_ui_manager="annotation_ui_context.issues_ui_manager"
-                  :draw_mode="annotation_ui_context.image_annotation_ctx.draw_mode"
-                  :instance_type="annotation_ui_context.instance_type"
-                  @request_file_change="request_file_change"
-                  @change_label_schema="on_change_label_schema"
-                  @set_file_list="set_file_list"
-                  @request_new_task="change_task"
-                  @replace_file="annotation_ui_context.working_file = $event"
-                  @get_userscript="get_userscript"
-                  @save_time_tracking="save_time_tracking"
-                  @trigger_task_change="trigger_task_change"
-                  @set_ui_schema="set_ui_schema"
-                  @set_save_loading="set_save_loading"
-                  @save="save"
-                  @set_frame_pending_save="set_frame_pending_save"
-                  @task_update="task_update"
-                  @set_has_changed="set_has_changed"
-                  @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
-                  @model_run_list_loaded="annotation_ui_context.model_run_list = $event"
-                  @draw_mode_change="on_draw_mode_changed"
-                  @change_video_playing="annotation_ui_context.image_annotation_ctx.video_playing = $event"
-                  @change_current_label_file="annotation_ui_context.current_label_file = $event"
-                  @request_change_current_instance="annotation_ui_context.image_annotation_ctx.request_change_current_instance = $event"
-                  @trigger_refresh_current_instance="annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = $event"
-                  @selected_instance_for_history="annotation_ui_context.selected_instance_for_history = $event"
-                  @event_create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance = $event"
-                  @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
-                  @open_issue_panel="handle_open_issue_panel"
-                  @instance_list_updated="update_current_instance_list"
-                  @instance_buffer_dict_updated="update_current_frame_buffer_dict"
-                  @save_multiple_frames="save_multiple_frames"
-                />
+                <div :class="{'selected-file': file.id === annotation_ui_context.working_file.id
+                                               && annotation_ui_context.working_file_list.length > 1}">
+                  <annotation_area_factory
+                    ref="annotation_area_factory"
+                    :container_height="child_annotation_ctx_list[index].container_height"
+                    :container_width="child_annotation_ctx_list[index].container_width"
+                    :use_full_window="annotation_ui_context.working_file_list.length === 1"
+                    :interface_type="interface_type"
+                    :show_toolbar="index === 0"
+                    :annotation_ui_context="annotation_ui_context"
+                    :image_annotation_ctx="child_annotation_ctx_list[index]"
+                    :working_file="file"
+                    :credentials_granted="credentials_granted"
+                    :initializing="initializing"
+                    :save_loading_image="save_loading_image"
+                    :url_instance_buffer="get_url_instance_buffer()"
+                    :submitted_to_review="submitted_to_review"
+                    :annotations_loading="child_annotation_ctx_list[index].annotations_loading"
+                    :loading="child_annotation_ctx_list[index].loading"
+                    :filtered_instance_type_list_function="filtered_instance_type_list"
+                    :get_userscript="get_userscript"
+                    :instance_type_list="instance_type_list"
+                    :save_loading_frames_list="save_loading_frames_list"
+                    :has_changed="has_changed"
+                    :instance_buffer_metadata="child_annotation_ctx_list[index].instance_buffer_metadata"
+                    :create_instance_template_url="create_instance_template_url"
+                    :video_parent_file_instance_list="video_parent_file_instance_list"
+                    :has_pending_frames="has_pending_frames"
+                    :instance_store="annotation_ui_context.instance_store"
+                    :project_string_id="computed_project_string_id"
+                    :label_schema="annotation_ui_context.label_schema"
+                    :model_run_id_list="model_run_id_list"
+                    :model_run_color_list="model_run_color_list"
+                    :task="annotation_ui_context.task"
+                    :task_id_prop="task_id_prop"
+                    :request_save="request_save"
+                    :job_id="job_id"
+                    :view_only_mode="view_only"
+                    :label_list="label_list"
+                    :label_file_colour_map="label_file_colour_map"
+                    :enabled_edit_schema="enabled_edit_schema"
+                    :finish_annotation_show="show_snackbar"
+                    :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
+                    :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
+                    :task_image="task_image"
+                    :task_instances="task_instances"
+                    :task_loading="task_loading"
+                    :changing_file="changing_file"
+                    :changing_task="changing_task"
+                    :task_error="task_error"
+                    :error="error"
+                    :issues_ui_manager="annotation_ui_context.issues_ui_manager"
+                    :draw_mode="annotation_ui_context.image_annotation_ctx.draw_mode"
+                    :instance_type="annotation_ui_context.instance_type"
+                    @request_file_change="request_file_change"
+                    @change_label_schema="on_change_label_schema"
+                    @set_file_list="set_file_list"
+                    @request_new_task="change_task"
+                    @replace_file="annotation_ui_context.working_file = $event"
+                    @get_userscript="get_userscript"
+                    @save_time_tracking="save_time_tracking"
+                    @trigger_task_change="trigger_task_change"
+                    @set_ui_schema="set_ui_schema"
+                    @set_save_loading="set_save_loading"
+                    @save="save"
+                    @set_frame_pending_save="set_frame_pending_save"
+                    @task_update="task_update"
+                    @set_has_changed="set_has_changed"
+                    @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
+                    @model_run_list_loaded="annotation_ui_context.model_run_list = $event"
+                    @draw_mode_change="on_draw_mode_changed"
+                    @change_video_playing="annotation_ui_context.image_annotation_ctx.video_playing = $event"
+                    @change_current_label_file="annotation_ui_context.current_label_file = $event"
+                    @request_change_current_instance="annotation_ui_context.image_annotation_ctx.request_change_current_instance = $event"
+                    @trigger_refresh_current_instance="annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance = $event"
+                    @selected_instance_for_history="annotation_ui_context.selected_instance_for_history = $event"
+                    @event_create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance = $event"
+                    @refresh="annotation_ui_context.image_annotation_ctx.refresh = $event"
+                    @open_issue_panel="handle_open_issue_panel"
+                    @instance_list_updated="update_current_instance_list"
+                    @instance_buffer_dict_updated="update_current_frame_buffer_dict"
+                    @save_multiple_frames="save_multiple_frames"
+                  />
+                </div>
 
         </template>
       </panel_manager>
@@ -657,6 +661,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    on_panes_clicked: function(row_index, panel){
+      console.log('PANEL CLICKED', panel)
+    },
     recalculate_pane_dimensions: function(row_index, panes_list){
       if(!this.$refs.panels_manager){
         return
@@ -1308,6 +1315,21 @@ export default Vue.extend({
         }
       }
     },
+    set_working_file_list: function(file_list){
+      let num_rows = this.annotation_ui_context.num_rows;
+      let num_cols = this.annotation_ui_context.num_cols;
+      let current_row = 0
+      let current_col = 0
+      for(let i = 0; i < file_list.length; i++){
+        console.log('index - row - col', i, current_row, current_col)
+        if(i % (num_rows) === 0){
+          current_row += 1
+          current_col = 0
+          continue
+        }
+        current_col +=1
+      }
+    },
     update_working_file: async function (file) {
       if(!file){
         return
@@ -1679,3 +1701,9 @@ export default Vue.extend({
   },
 });
 </script>
+
+<style>
+.selected-file{
+  border: 4px solid #1565c0;
+}
+</style>

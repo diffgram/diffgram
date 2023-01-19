@@ -24,7 +24,6 @@
     </div>
     <div v-if="interface_type === 'image' || interface_type === 'video'">
       <v_annotation_core
-        class="pt-1 pl-1"
         v-if="!changing_file && !changing_task && image_annotation_ctx != undefined"
         v-bind="$props"
         v-on="$listeners"

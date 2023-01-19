@@ -1,5 +1,5 @@
 <template>
-  <div id="annotation_core">
+  <div id="annotation_core" class="pa-0">
     <ui_schema_context_menu
       v-if="show_ui_schema_context_menu"
       :schema_id="label_schema.id"
@@ -1524,7 +1524,7 @@ export default Vue.extend({
           this.label_settings.left_nav_width -
           this.magic_nav_spacer;
 
-        let middle_pane_height =
+        middle_pane_height =
           this.window_height_from_listener -
           toolbar_height -
           this.media_core_height -

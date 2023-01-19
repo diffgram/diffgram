@@ -28,6 +28,7 @@ export class BaseAnnotationUIContext {
 
   image_annotation_ctx: ImageAnnotationUIContext
   num_rows: number
+  num_cols: number
 
   constructor() {
     this.working_file = null
@@ -45,6 +46,7 @@ export class BaseAnnotationUIContext {
     this.issues_ui_manager = null
     this.image_annotation_ctx = new ImageAnnotationUIContext()
     this.num_rows = 1
+    this.num_cols = 4
   }
 
 }
