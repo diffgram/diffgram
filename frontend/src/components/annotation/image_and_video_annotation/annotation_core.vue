@@ -7627,20 +7627,6 @@ export default Vue.extend({
     on_context_menu_copy_instance: function (instance_index) {
       this.copy_instance(false, instance_index);
     },
-    copy_all_instances: function () {
-      let new_instance_list = [];
-      for (const instance of this.instance_list) {
-        if (instance.soft_delete) {
-          continue;
-        }
-        let instance_clipboard = duplicate_instance(instance, this);
-        instance_clipboard.selected = false;
-        instance_clipboard.original_frame_number = this.image_annotation_ctx.current_frame;
-        new_instance_list.push(instance_clipboard);
-      }
-      this.set_clipboard(new_instance_list);
-      this.show_snackbar("All Instances copied into clipboard.");
-    },
     copy_instance: function (
       hotkey_triggered = false,
       instance_index = undefined
