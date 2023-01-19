@@ -25,6 +25,7 @@
       @clear_unsaved="clear_unsaved"
       @rotate_image="rotate_image"
       @change_file="request_file_change"
+      @copy_all_instances="copy_all_instances"
       @edit_mode_toggle="on_draw_mode_changed"
       @change_instance_type="change_instance_type"
       @change_label_schema="on_change_label_schema"
@@ -683,15 +684,26 @@ export default Vue.extend({
         sidebar.open_issue_panel(mouse_position)
       }
     },
+    copy_all_instances: function () {
+      const new_instance_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id)
+      
+      this.$store.commit("set_clipboard", {
+        instance_list: new_instance_list.filter(instance => !instance.soft_delete),
+        file_id: this.annotation_ui_context.working_file.id,
+      });
+
+      this.show_snackbar=true;
+      this.snackbar_message="All Instances copied into clipboard."
+    },
     redo: function () {
-      if (!this.command_manager) return
-      const redone = this.command_manager.redo()
+      if (!this.annotation_ui_context.command_manager) return
+      const redone = this.annotation_ui_context.command_manager.redo()
       if (redone) this.set_has_changed(true)
       this.update_canvas();
     },
     undo: function () {
-      if (!this.command_manager) return
-      const undone = this.command_manager.undo()
+      if (!this.annotation_ui_context.command_manager) return
+      const undone = this.annotation_ui_context.command_manager.undo()
       if (undone) this.set_has_changed(true)
       this.update_canvas();
     },
@@ -752,6 +764,7 @@ export default Vue.extend({
         return
       }
       let current_interface = this.get_current_annotation_area_ref()
+
       if (current_interface) {
         current_interface.instance_update(update_data)
       }
@@ -788,9 +801,9 @@ export default Vue.extend({
     set_has_changed: function (value) {
       this.has_changed = value
     },
-    get_current_annotation_area_ref(file_id, file_type) {
+    get_current_annotation_area_ref: function(file_id, file_type) {
       // For now just return computed prop. More complex logic might need to be added with file_id once compound file exists.
-      return this.$refs.annotation_area_factory.current_interface_ref
+      return this.$refs.annotation_area_factory[0].$refs.annotation_core
     },
     save_multiple_frames: async function (frames_list) {
       try {
@@ -1313,10 +1326,18 @@ export default Vue.extend({
       }
       if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.project_string_id, file.id)
+
         if (err) {
           console.error(err)
           return
         }
+        this.annotation_ui_context.working_file_list = child_files.sort((a, b) => {
+          if (a.id > b.id) return 1
+          if (a.id < b.id) return -1
+          return 0
+        })
+        this.set_working_file_from_child_file_list(this.annotation_ui_context.working_file_list[0])
+        this.populate_child_context_list(this.annotation_ui_context.working_file_list)
         // Default Layout. Todo: Make this configurable.
         this.set_layout_panels(1, 4)
         this.set_working_file_list(child_files)
