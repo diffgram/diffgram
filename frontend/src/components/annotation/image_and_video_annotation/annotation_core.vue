@@ -859,7 +859,10 @@ export default Vue.extend({
       this.$emit('refresh', this.refresh)
     },
     instance_list: function (newVal) {
-      if (this.working_file.type === "image") {
+      if (
+        this.working_file.type === "image" &&
+        this.annotation_ui_context.working_file.id === this.working_file.id
+      ) {
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
         this.$emit('instance_list_updated', newVal, this.working_file.id, this.working_file.type)

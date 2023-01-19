@@ -784,6 +784,7 @@ export default Vue.extend({
         return
       }
       let current_interface = this.get_current_annotation_area_ref()
+
       if (current_interface) {
         current_interface.instance_update(update_data)
       }
@@ -820,9 +821,9 @@ export default Vue.extend({
     set_has_changed: function (value) {
       this.has_changed = value
     },
-    get_current_annotation_area_ref(file_id, file_type) {
+    get_current_annotation_area_ref: function(file_id, file_type) {
       // For now just return computed prop. More complex logic might need to be added with file_id once compound file exists.
-      return this.$refs.annotation_area_factory.current_interface_ref
+      return this.$refs.annotation_area_factory[0].$refs.annotation_core
     },
     save_multiple_frames: async function (frames_list) {
       try {
@@ -1336,14 +1337,18 @@ export default Vue.extend({
       }
       if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.project_string_id, file.id)
+
         if (err) {
           console.error(err)
           return
         }
-        this.annotation_ui_context.working_file_list = child_files
-        this.set_working_file_from_child_file_list(child_files[0])
-        console.log('child files', child_files)
-        this.populate_child_context_list(child_files)
+        this.annotation_ui_context.working_file_list = child_files.sort((a, b) => {
+          if (a.id > b.id) return 1
+          if (a.id < b.id) return -1
+          return 0
+        })
+        this.set_working_file_from_child_file_list(this.annotation_ui_context.working_file_list[0])
+        this.populate_child_context_list(this.annotation_ui_context.working_file_list)
       } else{
         this.annotation_ui_context.working_file = file
 
