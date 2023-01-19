@@ -686,7 +686,7 @@ export default Vue.extend({
     },
     copy_all_instances: function () {
       const new_instance_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id)
-      
+
       this.$store.commit("set_clipboard", {
         instance_list: new_instance_list.filter(instance => !instance.soft_delete),
         file_id: this.annotation_ui_context.working_file.id,
@@ -1314,7 +1314,11 @@ export default Vue.extend({
         file_list[i].row = current_row
         current_col +=1
       }
-      this.annotation_ui_context.working_file_list = file_list
+      this.annotation_ui_context.working_file_list = file_list.sort((a, b) => {
+        if (a.id > b.id) return 1
+        if (a.id < b.id) return -1
+        return 0
+      })
     },
     set_layout_panels: function(rows, cols){
       this.annotation_ui_context.num_cols = cols
@@ -1331,19 +1335,11 @@ export default Vue.extend({
           console.error(err)
           return
         }
-        this.annotation_ui_context.working_file_list = child_files.sort((a, b) => {
-          if (a.id > b.id) return 1
-          if (a.id < b.id) return -1
-          return 0
-        })
-        this.set_working_file_from_child_file_list(this.annotation_ui_context.working_file_list[0])
-        this.populate_child_context_list(this.annotation_ui_context.working_file_list)
-        // Default Layout. Todo: Make this configurable.
+
         this.set_layout_panels(1, 4)
         this.set_working_file_list(child_files)
-        this.set_working_file_from_child_file_list(child_files[0])
-
-        this.populate_child_context_list(child_files)
+        this.set_working_file_from_child_file_list(this.annotation_ui_context.working_file_list[0])
+        this.populate_child_context_list(this.annotation_ui_context.working_file_list)
       } else{
         this.annotation_ui_context.working_file = file
         // Set single layout
