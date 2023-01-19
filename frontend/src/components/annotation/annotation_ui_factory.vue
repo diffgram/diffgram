@@ -784,6 +784,7 @@ export default Vue.extend({
         return
       }
       let current_interface = this.get_current_annotation_area_ref()
+
       if (current_interface) {
         current_interface.instance_update(update_data)
       }
@@ -820,9 +821,9 @@ export default Vue.extend({
     set_has_changed: function (value) {
       this.has_changed = value
     },
-    get_current_annotation_area_ref(file_id, file_type) {
+    get_current_annotation_area_ref: function(file_id, file_type) {
       // For now just return computed prop. More complex logic might need to be added with file_id once compound file exists.
-      return this.$refs.annotation_area_factory.current_interface_ref
+      return this.$refs.annotation_area_factory[0].$refs.annotation_core
     },
     save_multiple_frames: async function (frames_list) {
       try {
