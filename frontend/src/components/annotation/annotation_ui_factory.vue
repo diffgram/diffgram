@@ -25,6 +25,7 @@
       @clear_unsaved="clear_unsaved"
       @rotate_image="rotate_image"
       @change_file="request_file_change"
+      @copy_all_instances="copy_all_instances"
       @edit_mode_toggle="on_draw_mode_changed"
       @change_instance_type="change_instance_type"
       @change_label_schema="on_change_label_schema"
@@ -715,15 +716,26 @@ export default Vue.extend({
         sidebar.open_issue_panel(mouse_position)
       }
     },
+    copy_all_instances: function () {
+      const new_instance_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id)
+      
+      this.$store.commit("set_clipboard", {
+        instance_list: new_instance_list.filter(instance => !instance.soft_delete),
+        file_id: this.annotation_ui_context.working_file.id,
+      });
+
+      this.show_snackbar=true;
+      this.snackbar_message="All Instances copied into clipboard."
+    },
     redo: function () {
-      if (!this.command_manager) return
-      const redone = this.command_manager.redo()
+      if (!this.annotation_ui_context.command_manager) return
+      const redone = this.annotation_ui_context.command_manager.redo()
       if (redone) this.set_has_changed(true)
       this.update_canvas();
     },
     undo: function () {
-      if (!this.command_manager) return
-      const undone = this.command_manager.undo()
+      if (!this.annotation_ui_context.command_manager) return
+      const undone = this.annotation_ui_context.command_manager.undo()
       if (undone) this.set_has_changed(true)
       this.update_canvas();
     },

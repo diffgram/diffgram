@@ -2272,7 +2272,7 @@ export default Vue.extend({
       }
 
       const command = new CreateInstanceCommand(new_instance, this, this.image_annotation_ctx.current_frame);
-      this.command_manager.executeCommand(command);
+      this.annotation_ui_context.command_manager.executeCommand(command);
 
       this.event_create_instance = new_instance;
 
@@ -2341,7 +2341,7 @@ export default Vue.extend({
       new_instance.type = "point";
       new_instance.points = [{x: x, y: y}];
       const command = new CreateInstanceCommand(new_instance, this, this.image_annotation_ctx.current_frame);
-      this.command_manager.executeCommand(command);
+      this.annotation_ui_context.command_manager.executeCommand(command);
       return new_instance
     },
 
@@ -2401,7 +2401,7 @@ export default Vue.extend({
       }
 
       const command = new CreateInstanceCommand(new_instance, this, this.image_annotation_ctx.current_frame);
-      this.command_manager.executeCommand(command);
+      this.annotation_ui_context.command_manager.executeCommand(command);
       this.event_create_instance = new_instance;
       return new_instance;
     },
@@ -2416,7 +2416,7 @@ export default Vue.extend({
       for (let keypoint of keypoints_list) {
         this.current_instance.points = [keypoint.position];
         const command = new CreateInstanceCommand(this.current_instance, this, this.image_annotation_ctx.current_frame);
-        this.command_manager.executeCommand(command);
+        this.annotation_ui_context.command_manager.executeCommand(command);
       }
     },
 
@@ -2710,20 +2710,20 @@ export default Vue.extend({
       this.loading_instance_templates = false;
     },
     redo: function () {
-      if (!this.command_manager) {
+      if (!this.annotation_ui_context.command_manager) {
         return;
       }
-      let redone = this.command_manager.redo();
+      let redone = this.annotation_ui_context.command_manager.redo();
       if (redone) {
         this.$emit('set_has_changed', true);
       }
       this.update_canvas();
     },
     undo: function () {
-      if (!this.command_manager) {
+      if (!this.annotation_ui_context.command_manager) {
         return;
       }
-      let undone = this.command_manager.undo();
+      let undone = this.annotation_ui_context.command_manager.undo();
       if (undone) {
         this.$emit('set_has_changed', true);
       }
@@ -3117,7 +3117,7 @@ export default Vue.extend({
         initial_instance,
         this
       );
-      this.command_manager.executeCommand(command);
+      this.annotation_ui_context.command_manager.executeCommand(command);
 
       if (update.list_type == "gold_standard") {
         this.gold_standard_file.instance_list.splice(index, 1, instance);
@@ -3128,7 +3128,7 @@ export default Vue.extend({
     created: function () {
       this.update_label_settings_from_schema()
       this.update_user_settings_from_store();
-      this.command_manager = new CommandManagerAnnotationCore();
+      this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore();
       // Initial File Set
       if (this.working_file) {
         this.on_change_current_file();
@@ -5497,7 +5497,7 @@ export default Vue.extend({
         this.current_polygon_point_list.length == 2
       ) {
         const command = new CreateInstanceCommand(this.current_instance, this, frame_number);
-        this.command_manager.executeCommand(command);
+        this.annotation_ui_context.command_manager.executeCommand(command);
         this.original_edit_instance = undefined;
         this.original_edit_instance_index = undefined;
         this.is_actively_drawing = false;
@@ -5521,7 +5521,7 @@ export default Vue.extend({
         this.original_edit_instance,
         this
       );
-      this.command_manager.executeCommand(command);
+      this.annotation_ui_context.command_manager.executeCommand(command);
 
       if (
         this.instance_hover_index != undefined &&
@@ -5552,7 +5552,7 @@ export default Vue.extend({
         this.original_edit_instance,
         this
       );
-      this.command_manager.executeCommand(command);
+      this.annotation_ui_context.command_manager.executeCommand(command);
       if (
         this.instance_hover_index != undefined &&
         typeof this.instance_list[this.instance_hover_index]["points"][
@@ -5582,7 +5582,7 @@ export default Vue.extend({
         this.original_edit_instance,
         this
       );
-      this.command_manager.executeCommand(command);
+      this.annotation_ui_context.command_manager.executeCommand(command);
       if (
         this.instance_hover_index != undefined &&
         typeof this.instance_list[this.instance_hover_index]["points"][
@@ -5612,7 +5612,7 @@ export default Vue.extend({
         this.original_edit_instance,
         this
       );
-      this.command_manager.executeCommand(command);
+      this.annotation_ui_context.command_manager.executeCommand(command);
       this.is_moving_cuboid_corner = false;
       this.original_edit_instance = undefined;
       this.original_edit_instance_index = undefined;
@@ -5633,7 +5633,7 @@ export default Vue.extend({
         this.original_edit_instance,
         this
       );
-      this.command_manager.executeCommand(command);
+      this.annotation_ui_context.command_manager.executeCommand(command);
       this.original_edit_instance = undefined;
       this.original_edit_instance_index = undefined;
     },
@@ -5654,7 +5654,7 @@ export default Vue.extend({
         this.original_edit_instance,
         this
       );
-      this.command_manager.executeCommand(command);
+      this.annotation_ui_context.command_manager.executeCommand(command);
       this.original_edit_instance = undefined;
       this.original_edit_instance_index = undefined;
     },
@@ -5807,7 +5807,7 @@ export default Vue.extend({
             this,
             locked_frame_number
           );
-          this.command_manager.executeCommand(command);
+          this.annotation_ui_context.command_manager.executeCommand(command);
           this.is_actively_drawing = false;
           this.current_polygon_point_list = [];
         }
@@ -5819,7 +5819,7 @@ export default Vue.extend({
             this,
             locked_frame_number
           );
-          this.command_manager.executeCommand(command);
+          this.annotation_ui_context.command_manager.executeCommand(command);
           this.current_polygon_point_list = [];
         }
 
@@ -5855,7 +5855,7 @@ export default Vue.extend({
         this.original_edit_instance,
         this
       );
-      this.command_manager.executeCommand(command);
+      this.annotation_ui_context.command_manager.executeCommand(command);
     },
     ellipse_mouse_up: function () {
       if (!this.ellipse_current_drawing_face && this.draw_mode) {
@@ -5881,7 +5881,7 @@ export default Vue.extend({
           this,
           frame_number
         );
-        this.command_manager.executeCommand(create_box_command);
+        this.annotation_ui_context.command_manager.executeCommand(create_box_command);
         this.cuboid_current_rear_face = undefined;
         this.cuboid_current_drawing_face = undefined;
         this.is_actively_drawing = false;
@@ -5957,7 +5957,7 @@ export default Vue.extend({
           this,
           frame_number
         );
-        this.command_manager.executeCommand(create_box_command);
+        this.annotation_ui_context.command_manager.executeCommand(create_box_command);
       }
     },
     cuboid_mouse_down: function () {
@@ -6262,7 +6262,7 @@ export default Vue.extend({
           frame_number
         );
         //const command = new CreateInstanceCommand(new_instance, this);
-        //this.command_manager.executeCommand(command);
+        //this.annotation_ui_context.command_manager.executeCommand(command);
       });
     },
     instance_template_has_keypoints_type: function (instance_template) {
@@ -6383,7 +6383,7 @@ export default Vue.extend({
         this.draw_mode,
         this.instance_type,
         canvas_mouse_ctx,
-        this.command_manager
+        this.annotation_ui_context.command_manager
       );
       return interaction_generator
 
@@ -7629,20 +7629,6 @@ export default Vue.extend({
     },
     on_context_menu_copy_instance: function (instance_index) {
       this.copy_instance(false, instance_index);
-    },
-    copy_all_instances: function () {
-      let new_instance_list = [];
-      for (const instance of this.instance_list) {
-        if (instance.soft_delete) {
-          continue;
-        }
-        let instance_clipboard = duplicate_instance(instance, this);
-        instance_clipboard.selected = false;
-        instance_clipboard.original_frame_number = this.image_annotation_ctx.current_frame;
-        new_instance_list.push(instance_clipboard);
-      }
-      this.set_clipboard(new_instance_list);
-      this.show_snackbar("All Instances copied into clipboard.");
     },
     copy_instance: function (
       hotkey_triggered = false,
