@@ -292,7 +292,8 @@ export default Vue.extend({
       default: true
     },
     show_toolbar: {type: Boolean},
-    image_annotation_ctx: {type: Object}
+    image_annotation_ctx: {type: Object},
+    is_active: {type: Boolean}
   },
   computed: {
 

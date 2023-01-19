@@ -101,12 +101,13 @@
         ref="panels_manager"
       >
         <template v-for="(file, index) in annotation_ui_context.working_file_list"
-                  v-slot:[`panel_${annotation_ui_context.num_rows}:${index+1}`]="">
+                  v-slot:[`panel_${file.row}:${file.column}`]="">
 
                 <div :class="{'selected-file': file.id === annotation_ui_context.working_file.id
                                                && annotation_ui_context.working_file_list.length > 1}">
                   <annotation_area_factory
                     ref="annotation_area_factory"
+                    :is_active="true"
                     :container_height="child_annotation_ctx_list[index].container_height"
                     :container_width="child_annotation_ctx_list[index].container_width"
                     :use_full_window="annotation_ui_context.working_file_list.length === 1"
@@ -342,38 +343,6 @@ export default Vue.extend({
       task_error: {
         task_request: null,
       },
-      annotation_ui_context: {
-        working_file: null,
-        command_manager: null,
-        task: null,
-        instance_type: 'box',
-        instance_store: null,
-        per_instance_attribute_groups_list: [],
-        global_attribute_groups_list: [],
-        current_global_instance: undefined,
-        label_schema: null,
-        current_label_file: null,
-        selected_instance_for_history: undefined,
-        model_run_list: null,
-        issues_ui_manager: null,
-        image_annotation_ctx: {
-          show_context_menu: false,
-          loading: false,
-          refresh: new Date(),
-          video_mode: false,
-          draw_mode: true,
-          current_frame: 0,
-          video_playing: false,
-          request_change_current_instance: null,
-          trigger_refresh_current_instance: new Date(),
-          event_create_instance: null,
-          get_userscript: this.get_userscript,
-          label_settings: createDefaultLabelSettings(),
-          instance_buffer_metadata: {},
-          annotations_loading: false,
-        },
-
-      } as BaseAnnotationUIContext,
       annotation_ui_context: new BaseAnnotationUIContext(),
       child_annotation_ctx_list: [],
       task_prefetcher: null,
@@ -458,8 +427,8 @@ export default Vue.extend({
         }
       },
     },
-    'annotation_ui_context.task'(newVal) {
-      this.update_working_file(newVal.file)
+    'annotation_ui_context.task': async function(newVal) {
+      await this.update_working_file(newVal.file)
       if (newVal && this.task_prefetcher && newVal.file.type === 'image') {
         Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
         this.task_prefetcher.update_tasks(newVal)
@@ -662,7 +631,12 @@ export default Vue.extend({
   },
   methods: {
     on_panes_clicked: function(row_index, panel){
-      console.log('PANEL CLICKED', panel)
+      console.log('PANEL CLICKED', row_index, panel.index, this.annotation_ui_context.working_file_list)
+      let selected_file = this.annotation_ui_context.working_file_list.filter(file => {
+        return file.row === row_index && file.column === panel.index
+      })
+      console.log('NEW SELECTED FILE', selected_file)
+      this.working_file = selected_file;
     },
     recalculate_pane_dimensions: function(row_index, panes_list){
       if(!this.$refs.panels_manager){
@@ -670,12 +644,9 @@ export default Vue.extend({
       }
       let total_width = this.$refs.panels_manager.$el.clientWidth;
       let total_height = this.$refs.panels_manager.$el.clientHeight
-      console.log('TOTAL WIDT HEGITH', total_width, total_height)
       for(let i = 0 ; i < panes_list.length ; i++){
         this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100)
         this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[i].size / 100);
-        console.log('I', i, 'width', this.child_annotation_ctx_list[i].container_width)
-        console.log('I', i, 'height', this.child_annotation_ctx_list[i].container_height)
       }
     },
     on_panes_ready: function(){
@@ -692,14 +663,11 @@ export default Vue.extend({
     },
     populate_child_context_list: function(child_files){
       for(let file of child_files){
-        console.log('FILE', file.id, this.child_annotation_ctx_list)
         if(file.type === 'image' || file.type === 'video'){
           this.annotation_ui_context.image_annotation_ctx.video_mode = file && file.type === 'video'
           this.child_annotation_ctx_list.push(new ImageAnnotationUIContext())
-          console.log('PUSHH')
         }
       }
-      console.log('child_annotation_ctx_list', this.child_annotation_ctx_list)
       let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {return {size: 50}})
       this.recalculate_pane_dimensions(1, default_pane_sizes)
     },
@@ -1320,15 +1288,24 @@ export default Vue.extend({
       let num_cols = this.annotation_ui_context.num_cols;
       let current_row = 0
       let current_col = 0
+      console.log('NUM COLS', num_cols)
       for(let i = 0; i < file_list.length; i++){
-        console.log('index - row - col', i, current_row, current_col)
-        if(i % (num_rows) === 0){
+
+        if(i > 0 && (i % (num_cols)) === 0){
           current_row += 1
           current_col = 0
           continue
         }
+        console.log('AAAA', i, current_row, current_col)
+        file_list[i].column = current_col
+        file_list[i].row = current_row
         current_col +=1
       }
+      this.annotation_ui_context.working_file_list = file_list
+    },
+    set_layout_panels: function(rows, cols){
+      this.annotation_ui_context.num_cols = cols
+      this.annotation_ui_context.num_rows = rows
     },
     update_working_file: async function (file) {
       if(!file){
@@ -1340,14 +1317,17 @@ export default Vue.extend({
           console.error(err)
           return
         }
-        this.annotation_ui_context.working_file_list = child_files
+        // Default Layout. Todo: Make this configurable.
+        this.set_layout_panels(1, 4)
+        this.set_working_file_list(child_files)
         this.set_working_file_from_child_file_list(child_files[0])
-        console.log('child files', child_files)
+
         this.populate_child_context_list(child_files)
       } else{
         this.annotation_ui_context.working_file = file
-
-        this.annotation_ui_context.working_file_list = [file]
+        // Set single layout
+        this.set_layout_panels(1, 1)
+        this.set_working_file_list([file])
         this.populate_child_context_list(this.annotation_ui_context.working_file_list)
       }
     },
@@ -1429,7 +1409,7 @@ export default Vue.extend({
 
     change_file: async function (file, model_runs, color_list) {
       this.changing_file = true
-      this.update_working_file(file)
+      await this.update_working_file(file)
       await this.$nextTick();
       let model_runs_data = "";
       if (model_runs) {
@@ -1477,12 +1457,12 @@ export default Vue.extend({
             true,
             this.$route.query.file
           );
-          this.update_working_file(file)
+          await this.update_working_file(file)
         }
       } else {
         if (this.$refs.file_manager_sheet) {
           let file = await this.$refs.file_manager_sheet.get_media();
-          this.update_working_file(file)
+          await this.update_working_file(file)
         }
       }
       this.loading = false;
@@ -1497,7 +1477,7 @@ export default Vue.extend({
 
       if (this.$refs.file_manager_sheet) {
         let file = await this.$refs.file_manager_sheet.get_media();
-        this.update_working_file(file);
+        await this.update_working_file(file);
       }
 
       this.loading = false;

@@ -5,9 +5,9 @@
               :horizontal="layout_direction === 'horizontal'"
               :push-other-panes="false" >
 
-    <pane v-for="(row_index, i) in num_rows" :key="`row_${row_index}`">
+    <pane v-for="(item, row_index) in num_rows" :key="`row_${row_index}`">
         <splitpanes  @pane-click="$emit('pane-click', row_index, $event)" @resize="on_panes_resized(row_index, $event)">
-            <pane v-for="(col_index, j) in parseInt(num_columns)" :key="`row_${row_index}_col_${col_index}`">
+            <pane v-for="(col, col_index) in parseInt(num_columns)" :key="`row_${row_index}_col_${col_index}`">
               <slot :name="`panel_${row_index}:${col_index}`">
                 <div style="width: 400px">
                   <h6 style="font-size: 36px" class="text--black">row: {{row_index}} col {{col_index}}</h6>

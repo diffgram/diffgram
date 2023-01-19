@@ -835,6 +835,7 @@ export default Vue.extend({
     issues_ui_manager: {type: Object as IssuesAnnotationUIManager, required: true},
     annotation_ui_context: {type: Object as BaseAnnotationUIContext, required: true},
     image_annotation_ctx: {type: Object as ImageAnnotationUIContext, required: true},
+    is_active: {type: Boolean, required: true, default: true},
   },
   watch: {
     container_height: function(){
@@ -2877,9 +2878,9 @@ export default Vue.extend({
     },
 
     contextmenu: function (e) {
-      /* contextmenu is built in event
-       * We assume a click here will open it
-       */
+      if(!this.is_active){
+        return
+      }
       e.preventDefault();
       this.open_context_menu();
     },
@@ -5283,6 +5284,7 @@ export default Vue.extend({
     },
 
     mouse_move: function (event) {
+
       if (this.z_key === true || this.mouse_wheel_button) {
         this.move_position_based_on_mouse(event.movementX, event.movementY);
         this.canvas_element.style.cursor = "move";
@@ -5713,7 +5715,9 @@ export default Vue.extend({
     },
 
     double_click: function (event) {
-
+      if(!this.is_active){
+        return
+      }
       this.mouse_position = this.mouse_transform(event, this.mouse_position);
       let ann_ctx = this.build_ann_event_ctx()
       let ann_tool_event: InteractionEvent = genImageAnnotationEvent(event, ann_ctx)
@@ -5735,6 +5739,9 @@ export default Vue.extend({
     },
 
     mouse_up: function (event) {
+      if(!this.is_active){
+        return
+      }
       // start LIMITS, returns immediately
       this.canvas_mouse_tools.mouse_is_down = false
 
@@ -6542,10 +6549,9 @@ export default Vue.extend({
       }
     },
     mouse_down: function (event) {
-      // TODO review using local variables instead of vuex
-      // here for performance
-      // TODO new method ie
-      // this.is_actively_drawing = true
+      if(!this.is_active){
+        return
+      }
       let locked_frame_number = this.image_annotation_ctx.current_frame;
       this.mouse_position = this.mouse_transform(event, this.mouse_position);
 
