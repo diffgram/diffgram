@@ -394,13 +394,8 @@ export default Vue.extend({
       snackbar_message: "",
       loading: true,
       loading_project: true,
-<<<<<<< HEAD
-      show_default_navigation: true,
-
-=======
       layout_direction: 'horizontal',
       show_default_navigation: true,
->>>>>>> 71372d64c0863323be34036691dca6e02999b5c8
       context: null,
       error: null,
       request_save: false,
@@ -560,16 +555,6 @@ export default Vue.extend({
     this.initializing = false
   },
   computed: {
-<<<<<<< HEAD
-    interface_type: function(): string | null {
-      if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) return
-
-      if (this.annotation_ui_context.working_file)
-        return this.annotation_ui_context.working_file.type
-
-      if (this.task && this.task.file)
-        return this.task.file
-=======
     annotation_area_container_max_height: function(){
       let heightWindow = window.innerHeight && document.documentElement.clientHeight ?
         Math.min(window.innerHeight, document.documentElement.clientHeight) :
@@ -599,7 +584,6 @@ export default Vue.extend({
 
       console.log('AREA WIDTH', result);
       return result + 'px'
->>>>>>> 71372d64c0863323be34036691dca6e02999b5c8
     },
     interface_type: function(): string | null {
       if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) return
@@ -677,37 +661,6 @@ export default Vue.extend({
     },
   },
   methods: {
-<<<<<<< HEAD
-    redo: function () {
-      if (!this.command_manager) return
-      const redone = this.command_manager.redo()
-      if (redone) this.set_has_changed(true)
-      this.update_canvas();
-    },
-    undo: function () {
-      if (!this.command_manager) return
-      const undone = this.command_manager.undo()
-      if (undone) this.set_has_changed(true)
-      this.update_canvas();
-    },
-    clear_unsaved: function() {
-      this.$refs.annotation_area_factory.$refs.annotation_core.clear_unsaved()
-    },
-    rotate_image: function(event) {
-      this.$refs.annotation_area_factory.$refs.annotation_core.on_image_rotation(event)
-    },
-    update_smooth_canvas: function (event) {
-      this.$refs.annotation_area_factory.$refs.annotation_core.update_smooth_canvas(event)
-    },
-    change_instance_type: function(instance_type: string): void {
-      this.$store.commit("finish_draw");
-      this.$store.commit("set_last_selected_tool", this.instance_type);
-      this.annotation_ui_context.instance_type = instance_type
-    },
-    change_current_label_file_template: function (label_file) {
-      this.annotation_ui_context.current_label_file = label_file;
-      this.$emit('change_current_label_file', this.annotation_ui_context.current_label_file)
-=======
     on_panes_clicked: function(row_index, panel){
       console.log('PANEL CLICKED', panel)
     },
@@ -752,7 +705,6 @@ export default Vue.extend({
     },
     get_slot_name(row, column) {
       return `panel_${row}:${column}`
->>>>>>> 71372d64c0863323be34036691dca6e02999b5c8
     },
     handle_open_issue_panel: function(mouse_position){
       if(!this.$refs.sidebar_factory){
