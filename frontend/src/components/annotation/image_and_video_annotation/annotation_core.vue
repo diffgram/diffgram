@@ -5287,7 +5287,9 @@ export default Vue.extend({
     },
 
     mouse_move: function (event) {
-
+      if(!this.is_active){
+        return
+      }
       if (this.z_key === true || this.mouse_wheel_button) {
         this.move_position_based_on_mouse(event.movementX, event.movementY);
         this.canvas_element.style.cursor = "move";

@@ -108,7 +108,7 @@
                                                && annotation_ui_context.working_file_list.length > 1}">
                   <annotation_area_factory
                     ref="annotation_area_factory"
-                    :is_active="true"
+                    :is_active="file.id === annotation_ui_context.working_file.id"
                     :container_height="child_annotation_ctx_list[index].container_height"
                     :container_width="child_annotation_ctx_list[index].container_width"
                     :use_full_window="annotation_ui_context.working_file_list.length === 1"
@@ -633,11 +633,13 @@ export default Vue.extend({
   methods: {
     on_panes_clicked: function(row_index, panel){
       console.log('PANEL CLICKED', row_index, panel.index, this.annotation_ui_context.working_file_list)
-      let selected_file = this.annotation_ui_context.working_file_list.filter(file => {
+      let selected_file = this.annotation_ui_context.working_file_list.find(file => {
         return file.row === row_index && file.column === panel.index
       })
-      console.log('NEW SELECTED FILE', selected_file)
-      this.working_file = selected_file;
+      if(selected_file){
+        this.annotation_ui_context.working_file = selected_file;
+      }
+
     },
     recalculate_pane_dimensions: function(row_index, panes_list){
       if(!this.$refs.panels_manager){
