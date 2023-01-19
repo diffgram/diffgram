@@ -595,7 +595,7 @@
             "
             :view_only_mode="view_only_mode"
             :current_video_file_id="current_video_file_id"
-            :current_frame="annotation_ui_context.image_annotation_ctx.current_frame"
+            :current_frame="annotation_ui_context.current_image_annotation_ctx.current_frame"
             :label_file_id="annotation_ui_context.current_label_file ? annotation_ui_context.current_label_file.id : undefined"
             :current_sequence_annotation_core_prop="
               current_sequence_annotation_core_prop
@@ -6554,6 +6554,7 @@ export default Vue.extend({
       }
     },
     mouse_down: function (event) {
+      console.log('MOUSEDOWN', this.is_active)
       if(!this.is_active){
         return
       }

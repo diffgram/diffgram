@@ -3,7 +3,7 @@
     permanent
     left
     style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; height: 100%"
-    :width="annotation_ui_context.image_annotation_ctx.label_settings.left_nav_width"
+    :width="annotation_ui_context.current_image_annotation_ctx.label_settings.left_nav_width"
   >
 
 
@@ -19,22 +19,22 @@
                                @show_all="$emit('focus_instance_show_all', $event)"
                                @update_canvas="$emit('update_canvas', $event)"
                                @instance_update="$emit('instance_update', $event)"
-                               :video_mode="annotation_ui_context.image_annotation_ctx.video_mode"
+                               :video_mode="annotation_ui_context.current_image_annotation_ctx.video_mode"
                                :task="annotation_ui_context.task"
                                :view_only_mode="annotation_ui_context.view_only_mode"
-                               :label_settings="annotation_ui_context.image_annotation_ctx.label_settings"
+                               :label_settings="annotation_ui_context.current_image_annotation_ctx.label_settings"
                                :label_list="label_list"
                                :project_string_id="project_string_id"
                                :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
                                :schema_id="annotation_ui_context.label_schema.id"
                                :current_global_instance="current_global_instance"
-                               :draw_mode="annotation_ui_context.image_annotation_ctx.draw_mode"
-                               :current_frame="annotation_ui_context.image_annotation_ctx.current_frame"
+                               :draw_mode="annotation_ui_context.current_image_annotation_ctx.draw_mode"
+                               :current_frame="annotation_ui_context.current_image_annotation_ctx.current_frame"
                                :current_video_file_id="annotation_ui_context.working_file.id"
                                :current_label_file_id="annotation_ui_context.current_label_file ? annotation_ui_context.current_label_file.id : undefined"
-                               :video_playing="annotation_ui_context.image_annotation_ctx.video_playing"
-                               :external_requested_index="annotation_ui_context.image_annotation_ctx.request_change_current_instance"
-                               :trigger_refresh_current_instance="annotation_ui_context.image_annotation_ctx.trigger_refresh_current_instance"
+                               :video_playing="annotation_ui_context.current_image_annotation_ctx.video_playing"
+                               :external_requested_index="annotation_ui_context.current_image_annotation_ctx.request_change_current_instance"
+                               :trigger_refresh_current_instance="annotation_ui_context.current_image_annotation_ctx.trigger_refresh_current_instance"
                                :current_file="annotation_ui_context.task ? annotation_ui_context.task : annotation_ui_context.working_file"
     >
     </instance_detail_list_view>
@@ -81,9 +81,9 @@
 
           <userscript
             :project_string_id_prop="project_string_id"
-            :create_instance="annotation_ui_context.image_annotation_ctx.event_create_instance"
-            :current_userscript_prop="() => annotation_ui_context.image_annotation_ctx.get_userscript($refs.userscript)"
-            :userscript_select_disabled="annotation_ui_context.image_annotation_ctx.userscript_select_disabled"
+            :create_instance="annotation_ui_context.current_image_annotation_ctx.event_create_instance"
+            :current_userscript_prop="() => annotation_ui_context.current_image_annotation_ctx.get_userscript($refs.userscript)"
+            :userscript_select_disabled="annotation_ui_context.current_image_annotation_ctx.userscript_select_disabled"
             :show_code_editor="!annotation_ui_context.task || !annotation_ui_context.task.id"
             :show_external_scripts="!annotation_ui_context.task || !annotation_ui_context.task.id"
             :show_save="!annotation_ui_context.task || !annotation_ui_context.task.id"
@@ -147,7 +147,7 @@
             :instance_list="instance_list"
             :task="annotation_ui_context.task"
             :file="annotation_ui_context.working_file"
-            :frame_number="annotation_ui_context.image_annotation_ctx.video_mode ? annotation_ui_context.image_annotation_ctx.current_frame : undefined"
+            :frame_number="annotation_ui_context.current_image_annotation_ctx.video_mode ? annotation_ui_context.current_image_annotation_ctx.current_frame : undefined"
             :mouse_position="annotation_ui_context.issues_ui_manager.issue_mouse_position"
             @new_issue_created="refresh_issues_sidepanel"
             @open_side_panel="open_issue_panel"
@@ -155,7 +155,7 @@
           />
 
           <view_edit_issue_panel
-            v-if="!annotation_ui_context.image_annotation_ctx.loading && annotation_ui_context.issues_ui_manager.show_modify_an_issue && annotation_ui_context.issues_ui_manager.current_issue"
+            v-if="!annotation_ui_context.current_image_annotation_ctx.loading && annotation_ui_context.issues_ui_manager.show_modify_an_issue && annotation_ui_context.issues_ui_manager.current_issue"
             :project_string_id="project_string_id ? project_string_id : this.$store.state.project.current.project_string_id"
             :task="annotation_ui_context.task"
             :instance_list="instance_list"
@@ -247,7 +247,7 @@ export default Vue.extend({
       this.annotation_ui_context.issues_ui_manager.issues_expansion_panel = 0;
 
       // Close context menu and set select instance mode
-      this.annotation_ui_context.image_annotation_ctx.show_context_menu = false;
+      this.annotation_ui_context.current_image_annotation_ctx.show_context_menu = false;
       this.$store.commit("set_instance_select_for_issue", true);
       // const issues_ui_mngr = this.annotation_ui_context.issues_ui_manager;
       // this.annotation_ui_context.image_annotation_ctx.issues_ui_manager = Object.create(issues_ui_mngr)
@@ -265,7 +265,7 @@ export default Vue.extend({
       this.annotation_ui_context.issues_ui_manager.current_issue = undefined;
       this.annotation_ui_context.issues_ui_manager.show_modify_an_issue = false;
       this.annotation_ui_context.issues_ui_manager.issue_mouse_position = undefined;
-      this.annotation_ui_context.image_annotation_ctx.label_settings.allow_multiple_instance_select = false;
+      this.annotation_ui_context.current_image_annotation_ctx.label_settings.allow_multiple_instance_select = false;
       this.$store.commit("set_view_issue_mode", false);
       this.$store.commit("set_instance_select_for_issue", false);
     },

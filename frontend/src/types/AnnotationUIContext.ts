@@ -26,7 +26,7 @@ export class BaseAnnotationUIContext {
   issues_ui_manager: IssuesAnnotationUIManager
   command_manager: any
 
-  image_annotation_ctx: ImageAnnotationUIContext
+  current_image_annotation_ctx: ImageAnnotationUIContext
   num_rows: number
   num_cols: number
 
@@ -44,7 +44,7 @@ export class BaseAnnotationUIContext {
     this.selected_instance_for_history = null
     this.model_run_list = null
     this.issues_ui_manager = null
-    this.image_annotation_ctx = new ImageAnnotationUIContext()
+    this.current_image_annotation_ctx = new ImageAnnotationUIContext()
     this.num_rows = 1
     this.num_cols = 4
   }
