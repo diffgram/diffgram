@@ -281,6 +281,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
   private check_box_hovered(ctx) {
     const prev_hover_point = this.box_edit_point_hover
     let box_hover_point = this.determine_movement_point_for_box()
+    console.log('this.is_mouse_in_path(ctx)', this.is_mouse_in_path(ctx))
     if (this.is_mouse_in_path(ctx) || box_hover_point != prev_hover_point) {
       if(!this.is_hovered){
         this.on_instance_hovered(this)

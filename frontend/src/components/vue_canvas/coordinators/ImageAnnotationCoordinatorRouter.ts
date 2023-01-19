@@ -110,6 +110,7 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
   generate_coordinator(): ImageAnnotationCoordinator {
     const instance = this.get_hovered_priority()
     let instance_type = null
+    console.log('INSTANCE GEN COORD', instance)
     if(instance){
       instance_type = instance.type
     }
