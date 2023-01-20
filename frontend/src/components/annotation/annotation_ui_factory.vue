@@ -9,6 +9,7 @@
       :label_schema="annotation_ui_context.label_schema"
       :draw_mode="annotation_ui_context.current_image_annotation_ctx.draw_mode"
       :instance_type="annotation_ui_context.instance_type"
+      :video_parent_file_instance_list="annotation_ui_context.current_image_annotation_ctx.video_parent_file_instance_list"
       :label_file_colour_map="label_file_colour_map"
       :label_list="label_list"
       :interface_type="interface_type"
@@ -42,6 +43,7 @@
       :label_list="label_list"
       :project_string_id="project_string_id"
       :current_global_instance="annotation_ui_context.current_global_instance"
+      :video_parent_file_instance_list="annotation_ui_context.current_image_annotation_ctx.video_parent_file_instance_list"
       :instance_list="current_instance_list"
       @toggle_instance_focus="handle_focus_image_instance"
       @close_instance_history_panel="annotation_ui_context.selected_instance_for_history= undefined"
@@ -136,7 +138,6 @@
                     :has_changed="annotation_ui_context.current_image_annotation_ctx.has_changed"
                     :instance_buffer_metadata="child_annotation_ctx_list[index].instance_buffer_metadata"
                     :create_instance_template_url="create_instance_template_url"
-                    :video_parent_file_instance_list="video_parent_file_instance_list"
                     :has_pending_frames="has_pending_frames"
                     :instance_store="annotation_ui_context.instance_store"
                     :project_string_id="computed_project_string_id"
@@ -387,7 +388,6 @@ export default Vue.extend({
       label_file_colour_map_from_project: null,
       save_loading_image: false,
       submitted_to_review: false,
-      video_parent_file_instance_list: [],
       snackbar_success: false,
       snackbar_success_text: null,
       current_instance_list: [],
@@ -739,7 +739,8 @@ export default Vue.extend({
       if(file_id !== this.annotation_ui_context.working_file.id){
         return
       }
-      this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file_id)
+      let inst_list = this.annotation_ui_context.instance_store.get_instance_list(file_id)
+      this.current_instance_list = inst_list ? inst_list : []
       this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file_id)
     },
     get_child_annotation_ctx: function(file): ImageAnnotationUIContext {
@@ -946,11 +947,12 @@ export default Vue.extend({
       const [result, error] = await this.save_request(payload)
 
       if (result) {
-        if (this.annotation_ui_context.current_image_annotation_ctx.video_mode && this.video_parent_file_instance_list.length > 0
+        // Save global instances video
+        if (this.annotation_ui_context.current_image_annotation_ctx.video_mode && this.annotation_ui_context.current_image_annotation_ctx.video_parent_file_instance_list.length > 0
           && this.annotation_ui_context.current_image_annotation_ctx.video_global_attribute_changed) {
           video_data.set_parent_instance_list = true
 
-          const video_payload = {...payload, instance_list: this.video_parent_file_instance_list}
+          const video_payload = {...payload, instance_list: this.annotation_ui_context.current_image_annotation_ctx.video_parent_file_instance_list}
           const [parent_result, parent_error] = await this.save_request(video_payload);
 
           if (parent_result) {
@@ -1331,10 +1333,12 @@ export default Vue.extend({
       return `/api/project/${this.project_string_id}/video/${this.annotation_ui_context.working_file.id}`
     },
     set_working_file_from_child_file_list: async function (file_to_set) {
+      let i = 0;
       for (let file of this.annotation_ui_context.working_file_list) {
         if (file.id === file_to_set.id) {
-          this.annotation_ui_context.working_file = file
+         this.change_active_working_file(file)
         }
+        i +=1;
       }
     },
     set_working_file_list: function(file_list){
@@ -1367,13 +1371,14 @@ export default Vue.extend({
       this.annotation_ui_context.working_file = file
       await this.$nextTick()
       let ann_ctx = this.get_child_annotation_ctx(file)
-      let ann_area_erf = this.get_current_annotation_area_ref()
       if(file.type === 'video' || file.type === 'image'){
         let frame_num;
         if(file.type === 'video'){
           frame_num = ann_ctx.current_frame
         }
         this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file.id, frame_num)
+        console.log('CURRENT INSTANCE LIST', file.id, this.current_instance_list)
+        console.log('STORE', file.id, this.annotation_ui_context.instance_store)
         this.annotation_ui_context.current_image_annotation_ctx = ann_ctx
         this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file.id)
       } else if(file.type === 'audio'){
@@ -1402,15 +1407,17 @@ export default Vue.extend({
 
         this.set_layout_panels(1, 4)
         this.set_working_file_list(child_files)
-        await this.set_working_file_from_child_file_list(this.annotation_ui_context.working_file_list[0])
         this.populate_child_context_list(this.annotation_ui_context.working_file_list)
+        await this.set_working_file_from_child_file_list(this.annotation_ui_context.working_file_list[0])
+
       } else{
 
         // Set single layout
         this.set_layout_panels(1, 1)
         this.set_working_file_list([file])
-        await this.set_working_file_from_child_file_list(file)
         this.populate_child_context_list(this.annotation_ui_context.working_file_list)
+        await this.set_working_file_from_child_file_list(file)
+
       }
     },
 

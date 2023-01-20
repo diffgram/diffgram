@@ -10,6 +10,7 @@
     <instance_detail_list_view ref="instance_detail_list"
                                v-show="!annotation_ui_context.issues_ui_manager.show_modify_an_issue"
                                :instance_list="instance_list"
+                               :video_parent_file_instance_list="video_parent_file_instance_list"
                                :instance_store="annotation_ui_context.instance_store"
                                :model_run_list="annotation_ui_context.model_run_list"
                                :label_file_colour_map="label_file_colour_map"
@@ -218,7 +219,8 @@ export default Vue.extend({
     label_list: {type: Array as LabelFile[], required: true},
     project_string_id: {type: String, required: true},
     current_global_instance: {type: String, required: true},
-    instance_list: {type: Array as Instance[], required: true},
+    instance_list: {type: Array as Instance[], required: true, default: ()=>{return[]}},
+    video_parent_file_instance_list: {type: Array as Instance[], required: true, default: ()=>{return[]}},
   },
   computed: {
     userscript_select_disabled: function () {

@@ -77,6 +77,7 @@ export class ImageAnnotationUIContext {
   has_pending_frames: boolean
   unsaved_frames: number[]
   video_global_attribute_changed: boolean
+  video_parent_file_instance_list: Instance[]
 
   get_userscript: Function
 
@@ -105,6 +106,7 @@ export class ImageAnnotationUIContext {
     this.has_pending_frames = false
     this.video_global_attribute_changed = false
     this.unsaved_frames = []
+    this.video_parent_file_instance_list = []
   }
 
 }
