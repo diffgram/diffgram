@@ -798,7 +798,6 @@ export default Vue.extend({
     container_height: {type: Number, default: 500},
     has_pending_frames: {type: Boolean, default: false},
     show_toolbar: {type: Boolean, default: false},
-    video_parent_file_instance_list: {type: Array, default: []},
     create_instance_template_url: {type: String, required: true},
     instance_buffer_metadata: {type: Object, default: {}},
     get_userscript: {type: Function, required: true},
@@ -2961,7 +2960,7 @@ export default Vue.extend({
         instance = this.gold_standard_file.instance_list[index]
       } else if (update.list_type == "global") {
         if (this.image_annotation_ctx.video_mode) {
-          instance = this.video_parent_file_instance_list[index]
+          instance = this.image_annotation_ctx.video_parent_file_instance_list[index]
         } else {
           instance = this.instance_list[index]
         }
@@ -6716,7 +6715,7 @@ export default Vue.extend({
       }
     },
     set_global_instance_on_parent_instance_list: function () {
-      this.get_and_set_global_instance(this.video_parent_file_instance_list)
+      this.get_and_set_global_instance(this.image_annotation_ctx.video_parent_file_instance_list)
     },
     get_instances: async function (play_after_success = false) {
       if (this.image_annotation_ctx.annotations_loading) {

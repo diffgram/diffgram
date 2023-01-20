@@ -566,7 +566,8 @@ export default Vue.extend({
       'global_attribute_groups_list',
       'current_global_instance',
       'schema_id',
-      'per_instance_attribute_groups_list'
+      'per_instance_attribute_groups_list',
+      'video_parent_file_instance_list'
 
     ],
     watch: {
@@ -702,9 +703,13 @@ export default Vue.extend({
     computed: {
 
       current_global_instance_index: function(){
-        console.log('COMPUTED', this.instance_list)
-        for(let i = 0; i < this.instance_list.length; i++){
-          let inst = this.instance_list[i]
+        let instance_list = this.instance_list;
+        if(this.video_mode){
+          instance_list = this.video_parent_file_instance_list
+        }
+        console.log('VIDEO', this.video_mode, this.video_parent_file_instance_list)
+        for(let i = 0; i < instance_list.length; i++){
+          let inst = instance_list[i]
           if(inst.type === 'global'){
             return i
           }

@@ -162,7 +162,7 @@ export default Vue.extend({
     },
     video_parent_file_instance_list: {
       type: Array,
-      default: []
+      default: () => {return []}
     },
     has_pending_frames: {
       type: Boolean,
