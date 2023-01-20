@@ -27,7 +27,8 @@
         v-if="!changing_file && !changing_task && image_annotation_ctx != undefined"
         v-bind="$props"
         v-on="$listeners"
-        ref="annotation_core"
+        :class="`annotation_core_${working_file.id}`"
+        :ref="`annotation_core_${working_file.id}`"
       />
     </div>
     <div v-else-if="interface_type === 'sensor_fusion'">
@@ -35,24 +36,28 @@
         ref="sensor_fusion_editor"
         v-bind="$props"
         v-on="$listeners"
+        :ref="`3d_annotation_core_${working_file.id}`"
       />
     </div>
     <div v-else-if="interface_type === 'text'">
       <text_annotation_core
         v-bind="$props"
         v-on="$listeners"
+        :ref="`text_annotation_core_${working_file.id}`"
       />
     </div>
     <div v-else-if="interface_type === 'geospatial'">
       <geo_annotation_core
         v-bind="$props"
         v-on="$listeners"
+        :ref="`geo_annotation_core_${working_file.id}`"
       />
     </div>
     <div v-else-if="interface_type === 'audio'">
       <audio_annotation_core
         v-bind="$props"
         v-on="$listeners"
+        :ref="`audio_annotation_core_${working_file.id}`"
       />
     </div>
   </div>

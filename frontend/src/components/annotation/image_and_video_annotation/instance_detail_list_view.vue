@@ -702,6 +702,7 @@ export default Vue.extend({
     computed: {
 
       current_global_instance_index: function(){
+        console.log('COMPUTED', this.instance_list)
         for(let i = 0; i < this.instance_list.length; i++){
           let inst = this.instance_list[i]
           if(inst.type === 'global'){
@@ -989,6 +990,7 @@ export default Vue.extend({
       },
 
       global_attribute_change: function (attribute) {
+        console.log('global_attribute_change current_global_instance_index', this.current_global_instance_index)
         this.instance_update(
           "attribute_change",
           this.current_global_instance_index,

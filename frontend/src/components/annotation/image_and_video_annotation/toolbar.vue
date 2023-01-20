@@ -1034,7 +1034,7 @@ import task_status from "./task_status.vue"
 import Guided_1_click_mode_selector from "../../instance_templates/guided_1_click_mode_selector.vue";
 
 export default Vue.extend({
-  name: "toolbar",
+  name: "image_and_video_toolbar",
   components: {
     Guided_1_click_mode_selector,
     label_select_annotation,

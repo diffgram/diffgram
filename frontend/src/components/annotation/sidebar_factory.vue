@@ -46,6 +46,7 @@ export default Vue.extend({
       if(this.interface_type === 'image' || this.interface_type === 'video'){
         return this.$refs.sidebar_image
       }
+      // TODO: ADD OTHER INTERFACE TYPES HERE.
     }
   },
 })

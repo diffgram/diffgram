@@ -109,14 +109,7 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
         instance = hovered_instance
       }
     }
-    console.log('should_select_instance instance', instance)
-    if(instance){
-      console.log('selected', instance.selected)
-      console.log('selected', instance.is_hovered)
-      console.log('draw_mode', annotation_event.annotation_ctx.draw_mode)
-      console.log('view_issue_mode', annotation_event.annotation_ctx.view_issue_mode)
-      console.log('view_only_mode', annotation_event.annotation_ctx.view_only_mode)
-    }
+
     return this.is_mouse_down_event(annotation_event) &&
       instance &&
       !instance.selected &&

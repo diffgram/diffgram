@@ -37,7 +37,7 @@ export class BaseAnnotationUIContext {
     this.instance_type = 'box'
     this.instance_store = null
     this.per_instance_attribute_groups_list = []
-    this.global_attribute_groups_list = []
+    this.global_attribute_groups_list = undefined
     this.current_global_instance = undefined
     this.label_schema = null
     this.current_label_file = null
@@ -66,15 +66,24 @@ export class ImageAnnotationUIContext {
   label_settings: ImageLabelSettings
   instance_buffer_metadata: object
   annotations_loading: boolean
+  any_frame_saving: boolean
+  save_loading_frames_list: object[]
   go_to_keyframe_loading: boolean
   save_multiple_frames_error: object
   container_width: number
   container_height: number
 
+  has_changed: boolean
+  has_pending_frames: boolean
+  unsaved_frames: number[]
+  video_global_attribute_changed: boolean
+
   get_userscript: Function
 
   constructor() {
     this.show_context_menu = false
+    this.any_frame_saving = false
+    this.save_loading_frames_list = []
     this.loading = false
     this.refresh = new Date()
     this.video_mode = false
@@ -92,6 +101,10 @@ export class ImageAnnotationUIContext {
     this.save_multiple_frames_error = {}
     this.container_width = 0
     this.container_height = 0
+    this.has_changed = false
+    this.has_pending_frames = false
+    this.video_global_attribute_changed = false
+    this.unsaved_frames = []
   }
 
 }

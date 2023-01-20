@@ -838,6 +838,9 @@ export default Vue.extend({
     is_active: {type: Boolean, required: true, default: true},
   },
   watch: {
+    global_instance: function(){
+      this.$emit('global_instance_changed', this.working_file.id,  this.global_instance)
+    },
     container_height: function(){
       this.update_canvas()
     },
@@ -964,6 +967,7 @@ export default Vue.extend({
       degrees: 0,
       n_key: false,
       mouse_wheel_button: false,
+      global_instance: undefined,
 
       locked_editing_instance: null as Instance,
       current_instance_v2: null as Instance,
@@ -974,7 +978,6 @@ export default Vue.extend({
       guided_nodes_ordinal: 1,
       instance_rotate_control_mouse_hover: null,
       actively_drawing_instance_template: null,
-      video_global_attribute_changed: false,
       z_key: false,
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
@@ -1888,7 +1891,6 @@ export default Vue.extend({
     clear_unsaved: function() {
       this.instance_list = this.annotation_ui_context.instance_store.clear_unsaved(this.working_file.id)
 
-      console.log(this.instance_list)
     },
     cancel_polygon_merge: function () {
       this.polygon_merge_tool = null
@@ -2193,6 +2195,7 @@ export default Vue.extend({
     },
 
     get_and_set_global_instance: function (instance_list) {
+
       if (!this.global_attribute_groups_list) {
         return
       }
@@ -2201,11 +2204,12 @@ export default Vue.extend({
       }
       let existing_global_instance = instance_list.find(inst => inst.type === 'global');
       if (existing_global_instance) {
-        this.annotation_ui_context.current_global_instance = existing_global_instance;
+        this.global_instance = existing_global_instance;
       } else {
-        this.annotation_ui_context.current_global_instance = this.new_global_instance();
-        instance_list.push(this.annotation_ui_context.current_global_instance)
+        this.global_instance = this.new_global_instance();
+        instance_list.push(this.global_instance)
       }
+      this.annotation_ui_context.instance_store.set_global_instance(this.working_file.id, this.global_instance)
 
     },
     new_global_instance: function () {
@@ -2508,7 +2512,6 @@ export default Vue.extend({
 
     },
     instance_selected: function (instance) {
-      console.log('INSTANCE SELECTED', instance)
       // Callback for when an instance is selected
       // This is a WIP that will be used for all the class Instance Types
       // For now we only have Keypoints instance using this.
@@ -2938,7 +2941,7 @@ export default Vue.extend({
       // Main communication point for actions taken on instance list
       // propagating to main
       // Once the list is updated here it filters back to instance_list component
-
+      console.log('instance_update ANN CORE', update)
       if (this.view_only_mode == true) {
         return;
       }
@@ -3033,6 +3036,7 @@ export default Vue.extend({
 
 
       if (update.mode == "attribute_change") {
+        console.log('ATTRIBUTE CHANGE ANN CORE', instance)
         /*
          *   We expect the event to supply a group_id
          *   which we use as the key to set this.
@@ -3049,16 +3053,6 @@ export default Vue.extend({
           instance.attribute_groups = {};
         }
 
-        /* key on group id to avoid having to iterate through stuff
-         * assume allow only one per group...
-         * otherwise could be a list
-         *
-         * In the past we recevied a single attribute here
-         * However now that a group can have many attributes as the value
-         * (ie for multiple select)
-         * we pass the "value" concept here...
-         */
-
         let group = update.payload[0];
         let value = update.payload[1];
 
@@ -3071,14 +3065,14 @@ export default Vue.extend({
 
         if (instance.type === "global") {
 
-          this.annotation_ui_context.current_global_instance = instance
+          this.global_instance = instance
+          this.annotation_ui_context.instance_store.set_global_instance(this.working_file.id, this.global_instance)
         }
-        //console.debug(group, value)
       }
 
       // end instance update
       if (instance.type === 'global' && this.image_annotation_ctx.video_mode) {
-        this.video_global_attribute_changed = true;
+        this.image_annotation_ctx.video_global_attribute_changed = true;
       }
       if (!this.image_annotation_ctx.video_mode) {
         let insert_instance_result = this.insert_instance(
@@ -3109,7 +3103,7 @@ export default Vue.extend({
 
     insert_instance(index, instance, initial_instance, update) {
       // Use index = ` -1 ` if New instnace
-
+      console.log('INSERT INSTANCE', index, instance, initial_instance, update)
       // use splice to update, directly updating propery doesn't detect change vue js stuff
       //  question, this extra update step is only needed for the attribute stuff right?
       const command = new UpdateInstanceCommand(
@@ -6554,7 +6548,6 @@ export default Vue.extend({
       }
     },
     mouse_down: function (event) {
-      console.log('MOUSEDOWN', this.is_active)
       if(!this.is_active){
         return
       }
@@ -6624,7 +6617,7 @@ export default Vue.extend({
 
       // since may use in other contexts
       this.show_annotations = true
-      this.annotation_ui_context.current_global_instance = null // reset
+      this.global_instance = null // reset
 
       // Not sure if a "silent" null check is right here
       if (response.data['file_serialized']) {
