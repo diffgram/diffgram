@@ -38,6 +38,7 @@
       @update_label_file_visibility="update_label_file_visible($event)"
       @task_update_toggle_incomplete="() => task_update('incomplete')"
       @task_update_toggle_deferred="() => task_update('toggle_deferred')"
+      @change_task="(event) => trigger_task_change(event, annotation_ui_context.task, false)"
       @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
     />
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
