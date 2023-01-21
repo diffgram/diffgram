@@ -36,6 +36,9 @@
       @smooth_canvas_changed="update_smooth_canvas($event)"
       @change_label_file="change_current_label_file_template($event)"
       @update_label_file_visibility="update_label_file_visible($event)"
+      @task_update_toggle_incomplete="() => task_update('incomplete')"
+      @task_update_toggle_deferred="() => task_update('toggle_deferred')"
+      @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
     />
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
     <sidebar_factory
