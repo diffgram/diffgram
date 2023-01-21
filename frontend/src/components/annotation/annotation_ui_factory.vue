@@ -419,7 +419,7 @@ export default Vue.extend({
       }
       if (from.name === 'studio' && to.name === 'task_annotation') {
         this.working_file = null;
-        this.fetch_single_task(this.$props.task_id_prop);
+        this.fetch_single_task(this.task_id_prop);
         this.$refs.file_manager_sheet.hide_file_manager_sheet()
       }
       this.get_model_runs_from_query(to.query);
@@ -457,10 +457,10 @@ export default Vue.extend({
       !this.$store.getters.is_on_public_project ||
       this.$store.state.user.current.is_super_admin == true
     ) {
-      if (this.$props.task_id_prop) {
+      if (this.task_id_prop) {
         this.context = 'task'
         this.add_visit_history_event("task");
-      } else if (this.$props.file_id_prop) {
+      } else if (this.file_id_prop) {
         this.add_visit_history_event("file");
       } else {
         this.add_visit_history_event("page");
@@ -473,7 +473,7 @@ export default Vue.extend({
     this.annotation_ui_context.get_userscript = this.get_userscript
     Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
     this.annotation_ui_context.issues_ui_manager = new IssuesAnnotationUIManager()
-    if (!this.$props.task_id_prop) {
+    if (!this.task_id_prop) {
       await this.get_project();
     } else {
       this.loading_project = false; // caution some assumptions around this flag for media loading
@@ -501,9 +501,9 @@ export default Vue.extend({
       }
 
     } else {
-      if (this.$props.task_id_prop) {
+      if (this.task_id_prop) {
         this.changing_task = true
-        await this.fetch_single_task(this.$props.task_id_prop);
+        await this.fetch_single_task(this.task_id_prop);
         await this.check_credentials();
         await this.$nextTick()
         this.credentials_granted = this.has_credentials_or_admin();
@@ -511,7 +511,7 @@ export default Vue.extend({
           this.show_missing_credentials_dialog();
         }
         this.changing_task = false
-      } else if (this.$props.file_id_prop) {
+      } else if (this.file_id_prop) {
         await this.fetch_schema_list()
         await this.fetch_single_file();
       } else {
@@ -592,19 +592,19 @@ export default Vue.extend({
       return this.loading || this.loading_project || this.initializing
     },
     file_id: function () {
-      let file_id = this.$props.file_id_prop;
+      let file_id = this.file_id_prop;
       if (this.$route.query.file) {
         file_id = this.$route.query.file;
       }
       return file_id;
     },
     computed_project_string_id: function () {
-      if (this.$props.project_string_id) {
+      if (this.project_string_id) {
         this.$store.commit(
           "set_project_string_id",
-          this.$props.project_string_id
+          this.project_string_id
         );
-        return this.$props.project_string_id;
+        return this.project_string_id;
       }
       return this.$store.state.project.current.project_string_id;
     },
@@ -1760,18 +1760,18 @@ export default Vue.extend({
 
     add_visit_history_event: async function (object_type) {
       let page_name = "data_explorer";
-      if (this.$props.file_id_prop) {
+      if (this.file_id_prop) {
         page_name = "file_detail";
       }
-      if (this.$props.task_id_prop) {
+      if (this.task_id_prop) {
         page_name = "task_detail";
       }
-      if (this.$props.task_id_prop === -1 || this.$props.task_id_prop === '-1') {
+      if (this.task_id_prop === -1 || this.task_id_prop === '-1') {
         return
       }
       const event_data = await create_event(this.computed_project_string_id, {
-        file_id: this.$props.file_id_prop,
-        task_id: this.$props.task_id_prop,
+        file_id: this.file_id_prop,
+        task_id: this.task_id_prop,
         page_name: page_name,
         object_type: object_type,
         user_visit: "user_visit",
