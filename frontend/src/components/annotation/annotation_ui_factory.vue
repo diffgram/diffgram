@@ -1608,7 +1608,7 @@ export default Vue.extend({
             ]);
             this.$refs.file_manager_sheet.hide_file_manager_sheet();
           }
-          this.annotation_ui_context.task = response.data.annotation_ui_context.task;
+          this.annotation_ui_context.task = response.data.task;
           this.annotation_ui_context.label_schema = this.annotation_ui_context.task.job.label_schema;
           await this.get_project(this.annotation_ui_context.task.project_string_id);
         }
