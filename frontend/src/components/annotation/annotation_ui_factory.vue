@@ -2,6 +2,7 @@
   <div class="d-flex" style="height: 100%; width: 100%" id="annotation_factory_container">
     <toolbar_factory
       v-if="annotation_ui_context.working_file && annotation_ui_context.command_manager"
+      :task="annotation_ui_context.task"
       :project_string_id="project_string_id"
       :working_file="annotation_ui_context.working_file"
       :command_manager="annotation_ui_context.command_manager"
