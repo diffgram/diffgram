@@ -412,7 +412,7 @@
                 :annotations_loading="image_annotation_ctx.annotations_loading"
                 :label_file_colour_map="label_file_colour_map"
                 :instance_focused_index="instance_focused_index"
-                :hidden_label_id_list="hidden_label_id_list"
+                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"
                 :is_actively_resizing="is_actively_resizing"
                 :emit_instance_hover="!draw_mode || emit_instance_hover"
                 :zoom_value="zoom_value"
@@ -435,7 +435,7 @@
                 :show_annotations="show_annotations"
                 :annotations_loading="image_annotation_ctx.annotations_loading"
                 :label_file_colour_map="label_file_colour_map"
-                :hidden_label_id_list="hidden_label_id_list"
+                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"
                 :is_actively_resizing="is_actively_resizing"
                 :emit_instance_hover="true"
                 @instance_hover_update="
@@ -472,7 +472,7 @@
                 :annotations_loading="image_annotation_ctx.annotations_loading"
                 :label_file_colour_map="label_file_colour_map"
                 :is_actively_resizing="is_actively_resizing"
-                :hidden_label_id_list="hidden_label_id_list"
+                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"
               >
               </canvas_instance_list>
 
@@ -1079,7 +1079,6 @@ export default Vue.extend({
 
       magic_nav_spacer: 80,
 
-      hidden_label_id_list: [],
       space_bar: false,
 
       mouse_down_limits_result: true,
@@ -3682,15 +3681,6 @@ export default Vue.extend({
       this.update_canvas();
     },
 
-    update_label_file_visible: function (label_file) {
-      if (label_file.is_visible == true) {
-        let index = this.hidden_label_id_list.indexOf(label_file.id);
-        this.hidden_label_id_list.splice(index, 1);
-      } else {
-        this.hidden_label_id_list.push(label_file.id);
-      }
-    },
-
     issue_hover_update: function (index: Number) {
       if (index != null) {
         this.issue_hover_index = parseInt(index);
@@ -4253,7 +4243,7 @@ export default Vue.extend({
       if (instance != undefined) {
         let has_figures =
           instance.points.filter((p) => p.figure_id != undefined).length > 0;
-        if (!this.hidden_label_id_list.includes(instance.label_file_id)) {
+        if (!this.annotation_ui_context.hidden_label_id_list.includes(instance.label_file_id)) {
           // Polygon might have multiple figures.
           if (!has_figures) {
             this.check_polygon_intersection_on_points(

@@ -30,6 +30,8 @@ export class BaseAnnotationUIContext {
   num_rows: number
   num_cols: number
 
+  hidden_label_id_list: number[]
+
   constructor() {
     this.working_file = null
     this.working_file_list = []
@@ -47,6 +49,7 @@ export class BaseAnnotationUIContext {
     this.current_image_annotation_ctx = new ImageAnnotationUIContext()
     this.num_rows = 1
     this.num_cols = 4
+    this.hidden_label_id_list = []
   }
 
 }

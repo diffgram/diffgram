@@ -33,6 +33,7 @@
       @change_label_schema="on_change_label_schema"
       @smooth_canvas_changed="update_smooth_canvas($event)"
       @change_label_file="change_current_label_file_template($event)"
+      @update_label_file_visibility="update_label_file_visible($event)"
     />
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
     <sidebar_factory
@@ -632,6 +633,15 @@ export default Vue.extend({
     },
   },
   methods: {
+    update_label_file_visible: function (label_file) {
+      if (this.annotation_ui_context.hidden_label_id_list.includes(label_file.id)) {
+        const index = this.annotation_ui_context.hidden_label_id_list.indexOf(label_file.id);
+        this.annotation_ui_context.hidden_label_id_list.splice(index, 1);
+      }
+      else {
+        this.annotation_ui_context.hidden_label_id_list.push(label_file.id)
+      }
+    },
     on_global_instance_changed: function(file_id, global_instance){
       this.annotation_ui_context.instance_store.set_global_instance(file_id, global_instance)
       if(file_id === this.annotation_ui_context.working_file.id){
