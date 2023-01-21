@@ -373,7 +373,7 @@
                 :target_type="target_reticle_type"
                 :canvas_transform="canvas_transform"
                 :reticle_size="label_settings.target_reticle_size"
-                :zoom_value="zoom_value"
+                :zoom_value="image_annotation_ctx.zoom_value"
               >
               </target_reticle>
 
@@ -415,7 +415,7 @@
                 :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"
                 :is_actively_resizing="is_actively_resizing"
                 :emit_instance_hover="!draw_mode || emit_instance_hover"
-                :zoom_value="zoom_value"
+                :zoom_value="image_annotation_ctx.zoom_value"
               >
               </canvas_instance_list>
 
@@ -441,7 +441,7 @@
                 @instance_hover_update="
                   ghost_instance_hover_update($event[0], $event[1], $event[2])
                 "
-                :zoom_value="zoom_value"
+                :zoom_value="image_annotation_ctx.zoom_value"
               >
               </ghost_instance_list_canvas>
 
@@ -484,7 +484,7 @@
                 :draw_mode="draw_mode"
                 :is_actively_drawing="is_actively_drawing"
                 :label_file_colour_map="label_file_colour_map"
-                :zoom_value="zoom_value"
+                :zoom_value="image_annotation_ctx.zoom_value"
               >
               </canvas_current_instance>
               <current_instance_template
@@ -1252,7 +1252,6 @@ export default Vue.extend({
       full_file_loading: false, // For controlling the loading of the entire file + instances when changing a file.
 
       canvas_scale_local: 1, // for actually scaling dimensions within canvas
-      zoom_value: 1, // for display only
 
       canvas_translate: {
         x: 0,
@@ -1983,10 +1982,11 @@ export default Vue.extend({
         this.$refs.instance_detail_list.show_all();
 
       }
-      this.zoom_value = this.canvas_mouse_tools.scale;
+      this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
     },
     on_canvas_scale_global_changed: async function (new_scale) {
+      console.log("here")
       if (!new_scale) {
         return;
       }
@@ -2011,7 +2011,7 @@ export default Vue.extend({
 
       await this.$nextTick();
       this.canvas_mouse_tools.reset_transform_with_global_scale();
-      this.zoom_value = this.canvas_mouse_tools.scale;
+      this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
     },
     on_set_ui_schema: function (ui_schema) {
@@ -3563,7 +3563,7 @@ export default Vue.extend({
     zoom_wheel_scroll_canvas_transform_update: function (event) {
       this.hide_context_menu();
       this.canvas_mouse_tools.zoom_wheel(event);
-      this.zoom_value = this.canvas_mouse_tools.scale;
+      this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
     },
 
@@ -3677,7 +3677,7 @@ export default Vue.extend({
 
       let scale = this.get_zoom_region_of_instance(instance);
       this.canvas_mouse_tools.zoom_to_point(point, scale);
-      this.zoom_value = this.canvas_mouse_tools.scale;
+      this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
     },
 
@@ -3854,7 +3854,7 @@ export default Vue.extend({
       }
       // Careful this is effected by scale
       // bool, true if point if intersecting circle
-      let radius_scaled = radius / this.zoom_value;
+      let radius_scaled = radius / this.image_annotation_ctx.zoom_value;
       const result =
         Math.sqrt((point.x - mouse.x) ** 2 + (mouse.y - point.y) ** 2) <
         radius_scaled; // < number == circle.radius

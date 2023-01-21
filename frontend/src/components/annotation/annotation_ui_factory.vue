@@ -21,6 +21,7 @@
       :save_loading="annotation_ui_context.current_image_annotation_ctx.video_mode ?
       annotation_ui_context.current_image_annotation_ctx.save_loading_frames_list.length > 0 : save_loading_image"
       :annotations_loading="annotation_ui_context.current_image_annotation_ctx.annotations_loading"
+      :canvas_scale_local="annotation_ui_context.current_image_annotation_ctx.zoom_value"
       @save="save"
       @redo="redo"
       @undo="undo"

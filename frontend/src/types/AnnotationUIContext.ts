@@ -56,6 +56,7 @@ export class BaseAnnotationUIContext {
 
 export class ImageAnnotationUIContext {
   show_context_menu: boolean
+  zoom_value: number
   loading: boolean
   refresh: Date
   video_mode: boolean
@@ -86,6 +87,7 @@ export class ImageAnnotationUIContext {
 
   constructor() {
     this.show_context_menu = false
+    this.zoom_value = 1
     this.any_frame_saving = false
     this.save_loading_frames_list = []
     this.loading = false
