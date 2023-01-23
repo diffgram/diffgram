@@ -1986,7 +1986,6 @@ export default Vue.extend({
       this.update_canvas();
     },
     on_canvas_scale_global_changed: async function (new_scale) {
-      console.log("here")
       if (!new_scale) {
         return;
       }
