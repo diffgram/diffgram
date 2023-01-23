@@ -852,9 +852,6 @@ export default Vue.extend({
     selected_instance_for_history: function (newVal) {
       this.$emit('selected_instance_for_history', newVal)
     },
-    request_change_current_instance: function (newVal) {
-      this.$emit('request_change_current_instance', newVal)
-    },
     video_playing: function (newVal) {
       this.$emit('change_video_playing', newVal)
     },
@@ -863,7 +860,6 @@ export default Vue.extend({
     },
     instance_list: function (newVal) {
       if (this.working_file.type === "image") {
-        console.log('SET INSTANCE STORE', this.working_file.id, newVal)
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
         this.$emit('instance_list_updated', newVal, this.working_file.id, this.working_file.type)
@@ -1031,8 +1027,6 @@ export default Vue.extend({
       show_snackbar_paste: false,
 
       sequence_list_local_copy: null,
-
-      request_change_current_instance: null,
       current_issue: undefined,
       share_dialog_open: false,
       show_modify_an_issue: false,
@@ -4325,7 +4319,7 @@ export default Vue.extend({
 
       const instance_to_select = this.instance_list[this.instance_hover_index];
       if (instance_to_select && !SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance_to_select.type)) {
-        this.request_change_current_instance = this.instance_hover_index;
+        this.image_annotation_ctx.request_change_current_instance = this.instance_hover_index;
         this.image_annotation_ctx.trigger_refresh_current_instance = Date.now(); // decouple, for case of file changing but instance list being the same index
 
       }
@@ -6037,14 +6031,15 @@ export default Vue.extend({
     ) {
 
       this.event_create_instance = {...this.current_instance};
-      this.request_change_current_instance = instance_index;
+      this.image_annotation_ctx.request_change_current_instance = instance_index;
+      console.log('ann core request_change_current_instance', this.image_annotation_ctx.request_change_current_instance)
       this.image_annotation_ctx.trigger_refresh_current_instance = Date.now();
       this.update_canvas()
     },
 
     unset_instance_list_sidebar: function () {
       this.event_create_instance = null;
-      this.request_change_current_instance = null;
+      this.image_annotation_ctx.request_change_current_instance = null;
       this.image_annotation_ctx.trigger_refresh_current_instance = Date.now();
     },
     polygon_mid_point_mouse_down: function () {

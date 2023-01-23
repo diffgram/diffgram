@@ -590,6 +590,7 @@ export default Vue.extend({
       },
 
       trigger_refresh_current_instance: function () {
+        console.log('Trigger refresh current instance', this.instance_list, this.external_requested_index)
         if (this.instance_list) {
           this.change_instance(
             this.instance_list[this.external_requested_index],
@@ -1021,7 +1022,7 @@ export default Vue.extend({
       },
 
       change_instance: function (instance, index) {
-
+        console.log('CHANGE INSTANCE', instance, index)
         if (!instance) {
           instance = {}
         }  // to avoid having as many exists/ doesn't exist checks elsewhere

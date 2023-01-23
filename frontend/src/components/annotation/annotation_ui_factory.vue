@@ -190,7 +190,6 @@
                     @draw_mode_change="on_draw_mode_changed"
                     @change_video_playing="annotation_ui_context.current_image_annotation_ctx.video_playing = $event"
                     @change_current_label_file="annotation_ui_context.current_label_file = $event"
-                    @request_change_current_instance="annotation_ui_context.current_image_annotation_ctx.request_change_current_instance = $event"
                     @trigger_refresh_current_instance="annotation_ui_context.current_image_annotation_ctx.trigger_refresh_current_instance = $event"
                     @selected_instance_for_history="annotation_ui_context.selected_instance_for_history = $event"
                     @event_create_instance="annotation_ui_context.current_image_annotation_ctx.event_create_instance = $event"
@@ -690,6 +689,9 @@ export default Vue.extend({
         if(file.type === 'image' || file.type === 'video'){
           this.annotation_ui_context.current_image_annotation_ctx.video_mode = file && file.type === 'video'
           this.child_annotation_ctx_list.push(new ImageAnnotationUIContext())
+        } else {
+          // Other type don't have context yet.
+          this.child_annotation_ctx_list.push({})
         }
       }
       let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {return {size: 50}})
@@ -1390,13 +1392,21 @@ export default Vue.extend({
         this.annotation_ui_context.current_image_annotation_ctx = ann_ctx
         this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file.id)
       } else if(file.type === 'audio'){
-        throw Error('Not implemented for audio yet.')
+        this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file.id)
+        this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file.id)
+        this.annotation_ui_context.current_audio_annotation_ctx = ann_ctx
       } else if(file.type === 'text'){
-        throw Error('Not implemented for text yet.')
+        this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file.id)
+        this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file.id)
+        this.annotation_ui_context.current_text_annotation_ctx = ann_ctx
       }else if(file.type === 'geospatial'){
-        throw Error('Not implemented for geospatial yet.')
+        this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file.id)
+        this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file.id)
+        this.annotation_ui_context.current_geo_annotation_ctx = ann_ctx
       }else if(file.type === 'sensor_fusion'){
-        throw Error('Not implemented for sensor_fusion yet.')
+        this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file.id)
+        this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file.id)
+        this.annotation_ui_context.current_sensor_fusion_annotation_ctx = ann_ctx
       }
 
 

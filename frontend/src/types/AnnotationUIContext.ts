@@ -27,6 +27,10 @@ export class BaseAnnotationUIContext {
   command_manager: any
 
   current_image_annotation_ctx: ImageAnnotationUIContext
+  current_audio_annotation_ctx: AudioAnnotationUIContext
+  current_text_annotation_ctx: TextAnnotationUIContext
+  current_sensor_fusion_annotation_ctx: SensorFusion3DAnnotationUIContext
+  current_geo_annotation_ctx: GeoAnnotationUIContext
   num_rows: number
   num_cols: number
 
@@ -112,6 +116,62 @@ export class ImageAnnotationUIContext {
     this.video_global_attribute_changed = false
     this.unsaved_frames = []
     this.video_parent_file_instance_list = []
+  }
+
+}
+
+
+export class SensorFusion3DAnnotationUIContext {
+
+  container_width: number
+  container_height: number
+
+  get_userscript: Function
+
+  constructor() {
+    this.container_width = 0
+    this.container_height = 0
+  }
+
+}
+
+export class GeoAnnotationUIContext {
+
+  container_width: number
+  container_height: number
+
+  get_userscript: Function
+
+  constructor() {
+    this.container_width = 0
+    this.container_height = 0
+  }
+
+}
+
+export class TextAnnotationUIContext {
+
+  container_width: number
+  container_height: number
+
+  get_userscript: Function
+
+  constructor() {
+    this.container_width = 0
+    this.container_height = 0
+  }
+
+}
+export class AudioAnnotationUIContext {
+
+  container_width: number
+  container_height: number
+
+  get_userscript: Function
+
+  constructor() {
+    this.container_width = 0
+    this.container_height = 0
   }
 
 }

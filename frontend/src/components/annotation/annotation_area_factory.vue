@@ -138,7 +138,7 @@ export default Vue.extend({
     },
     save_loading_frames_list: {
       type: Array,
-      default: []
+      default: () => {return[]}
     },
     video_mode: {
       type: Boolean,
@@ -154,7 +154,7 @@ export default Vue.extend({
     },
     instance_buffer_metadata: {
       type: Object,
-      default: {}
+      default: () => {return {}}
     },
     create_instance_template_url: {
       type: String,
