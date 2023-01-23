@@ -733,13 +733,13 @@ export default Vue.extend({
       this.update_canvas();
     },
     clear_unsaved: function() {
-      this.$refs.annotation_area_factory.$refs.annotation_core.clear_unsaved()
+      this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].clear_unsaved()
     },
     rotate_image: function(event) {
-      this.$refs.annotation_area_factory.$refs.annotation_core.on_image_rotation(event)
+      this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].on_image_rotation(event)
     },
     update_smooth_canvas: function (event) {
-      this.$refs.annotation_area_factory.$refs.annotation_core.update_smooth_canvas(event)
+      this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].update_smooth_canvas(event)
     },
     change_instance_type: function(instance_type: string): void {
       this.$store.commit("finish_draw");
