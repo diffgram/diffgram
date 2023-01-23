@@ -19,4 +19,3 @@ coverage/
 .idea/*
 cypress/videos/*
 cypress/screenshots/*
-test/.minio/*

@@ -172,3 +172,4 @@ default/play_and_scripts/client_stats_lb.py
 run_dev_public/*
 
 default/play_and_scripts/migrate_file_aggregate_table.py
+test/.minio/*
