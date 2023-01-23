@@ -639,7 +639,6 @@ export default Vue.extend({
       }
     },
     on_panes_clicked: async function(row_index, panel){
-      console.log('PANEL CLICKED', row_index, panel.index, this.annotation_ui_context.working_file_list)
       let selected_file = this.annotation_ui_context.working_file_list.find(file => {
         return file.row === row_index && file.column === panel.index
       })
@@ -660,7 +659,6 @@ export default Vue.extend({
       }
     },
     on_panes_ready: function(){
-    console.log('ON PANES READY')
       for (let i = 0; i < this.annotation_ui_context.num_rows; i++){
         // TODO: filter this by row
         let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {return {size: 50}})
@@ -786,7 +784,6 @@ export default Vue.extend({
       }
     },
     handle_instance_update: function (update_data) {
-      console.log('INSTANCE UPDATEE', update_data)
       if (this.interface_type != 'image' && this.interface_type != 'video') {
         return
       }
@@ -826,7 +823,6 @@ export default Vue.extend({
 
     },
     set_has_changed: function (value) {
-      console.log('HASE CHANGEEED', value)
       this.annotation_ui_context.current_image_annotation_ctx.has_changed = value
     },
     get_current_annotation_area_ref: function() {
@@ -885,7 +881,6 @@ export default Vue.extend({
           else return elm
         });
       }
-
       if (this.get_save_loading(frame_number)) return
       if (this.any_loading) return
       if (
@@ -945,7 +940,6 @@ export default Vue.extend({
       }
 
       const [result, error] = await this.save_request(payload)
-
       if (result) {
         // Save global instances video
         if (this.annotation_ui_context.current_image_annotation_ctx.video_mode && this.annotation_ui_context.current_image_annotation_ctx.video_parent_file_instance_list.length > 0
@@ -1215,9 +1209,9 @@ export default Vue.extend({
     set_save_loading: function (value, frame) {
       if (this.annotation_ui_context.current_image_annotation_ctx.video_mode) {
         if (value) {
-          this.current_image_annotation_ctx.save_loading_frames_list.push(frame)
+          this.annotation_ui_context.current_image_annotation_ctx.save_loading_frames_list.push(frame)
         } else {
-          this.current_image_annotation_ctx.save_loading_frames_list = this.current_image_annotation_ctx.save_loading_frames_list.filter(elm => elm != frame)
+          this.annotation_ui_context.current_image_annotation_ctx.save_loading_frames_list = this.annotation_ui_context.current_image_annotation_ctx.save_loading_frames_list.filter(elm => elm != frame)
         }
 
       } else {
@@ -1377,8 +1371,6 @@ export default Vue.extend({
           frame_num = ann_ctx.current_frame
         }
         this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file.id, frame_num)
-        console.log('CURRENT INSTANCE LIST', file.id, this.current_instance_list)
-        console.log('STORE', file.id, this.annotation_ui_context.instance_store)
         this.annotation_ui_context.current_image_annotation_ctx = ann_ctx
         this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file.id)
       } else if(file.type === 'audio'){

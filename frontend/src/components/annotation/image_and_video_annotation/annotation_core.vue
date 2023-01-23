@@ -866,6 +866,7 @@ export default Vue.extend({
         this.working_file.type === "image" &&
         this.annotation_ui_context.working_file.id === this.working_file.id
       ) {
+        console.log('SET INSTANCE STORE', this.working_file.id, newVal)
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
         this.$emit('instance_list_updated', newVal, this.working_file.id, this.working_file.type)
@@ -2940,7 +2941,6 @@ export default Vue.extend({
       // Main communication point for actions taken on instance list
       // propagating to main
       // Once the list is updated here it filters back to instance_list component
-      console.log('instance_update ANN CORE', update)
       if (this.view_only_mode == true) {
         return;
       }
@@ -3035,7 +3035,6 @@ export default Vue.extend({
 
 
       if (update.mode == "attribute_change") {
-        console.log('ATTRIBUTE CHANGE ANN CORE', instance)
         /*
          *   We expect the event to supply a group_id
          *   which we use as the key to set this.
@@ -3102,7 +3101,6 @@ export default Vue.extend({
 
     insert_instance(index, instance, initial_instance, update) {
       // Use index = ` -1 ` if New instnace
-      console.log('INSERT INSTANCE', index, instance, initial_instance, update)
       // use splice to update, directly updating propery doesn't detect change vue js stuff
       //  question, this extra update step is only needed for the attribute stuff right?
       const command = new UpdateInstanceCommand(
