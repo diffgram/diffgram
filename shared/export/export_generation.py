@@ -615,6 +615,8 @@ def build_text_packet(
 
                 instance_dict_list.append(out)
 
+    instance_dict_list = instance_dict_list + relations_list
+
     return {'file': {
         'id': file.id,
         'original_filename': file.original_filename,
