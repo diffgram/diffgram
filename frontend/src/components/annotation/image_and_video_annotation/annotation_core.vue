@@ -373,7 +373,7 @@
                 :target_type="target_reticle_type"
                 :canvas_transform="canvas_transform"
                 :reticle_size="label_settings.target_reticle_size"
-                :zoom_value="zoom_value"
+                :zoom_value="image_annotation_ctx.zoom_value"
               >
               </target_reticle>
 
@@ -412,10 +412,10 @@
                 :annotations_loading="image_annotation_ctx.annotations_loading"
                 :label_file_colour_map="label_file_colour_map"
                 :instance_focused_index="instance_focused_index"
-                :hidden_label_id_list="hidden_label_id_list"
+                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"
                 :is_actively_resizing="is_actively_resizing"
                 :emit_instance_hover="!draw_mode || emit_instance_hover"
-                :zoom_value="zoom_value"
+                :zoom_value="image_annotation_ctx.zoom_value"
               >
               </canvas_instance_list>
 
@@ -435,13 +435,13 @@
                 :show_annotations="show_annotations"
                 :annotations_loading="image_annotation_ctx.annotations_loading"
                 :label_file_colour_map="label_file_colour_map"
-                :hidden_label_id_list="hidden_label_id_list"
+                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"
                 :is_actively_resizing="is_actively_resizing"
                 :emit_instance_hover="true"
                 @instance_hover_update="
                   ghost_instance_hover_update($event[0], $event[1], $event[2])
                 "
-                :zoom_value="zoom_value"
+                :zoom_value="image_annotation_ctx.zoom_value"
               >
               </ghost_instance_list_canvas>
 
@@ -472,7 +472,7 @@
                 :annotations_loading="image_annotation_ctx.annotations_loading"
                 :label_file_colour_map="label_file_colour_map"
                 :is_actively_resizing="is_actively_resizing"
-                :hidden_label_id_list="hidden_label_id_list"
+                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"
               >
               </canvas_instance_list>
 
@@ -484,7 +484,7 @@
                 :draw_mode="draw_mode"
                 :is_actively_drawing="is_actively_drawing"
                 :label_file_colour_map="label_file_colour_map"
-                :zoom_value="zoom_value"
+                :zoom_value="image_annotation_ctx.zoom_value"
               >
               </canvas_current_instance>
               <current_instance_template
@@ -1080,7 +1080,6 @@ export default Vue.extend({
 
       magic_nav_spacer: 80,
 
-      hidden_label_id_list: [],
       space_bar: false,
 
       mouse_down_limits_result: true,
@@ -1254,7 +1253,6 @@ export default Vue.extend({
       full_file_loading: false, // For controlling the loading of the entire file + instances when changing a file.
 
       canvas_scale_local: 1, // for actually scaling dimensions within canvas
-      zoom_value: 1, // for display only
 
       canvas_translate: {
         x: 0,
@@ -1985,7 +1983,7 @@ export default Vue.extend({
         this.$refs.instance_detail_list.show_all();
 
       }
-      this.zoom_value = this.canvas_mouse_tools.scale;
+      this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
     },
     on_canvas_scale_global_changed: async function (new_scale) {
@@ -2013,7 +2011,7 @@ export default Vue.extend({
 
       await this.$nextTick();
       this.canvas_mouse_tools.reset_transform_with_global_scale();
-      this.zoom_value = this.canvas_mouse_tools.scale;
+      this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
     },
     on_set_ui_schema: function (ui_schema) {
@@ -3562,7 +3560,7 @@ export default Vue.extend({
     zoom_wheel_scroll_canvas_transform_update: function (event) {
       this.hide_context_menu();
       this.canvas_mouse_tools.zoom_wheel(event);
-      this.zoom_value = this.canvas_mouse_tools.scale;
+      this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
     },
 
@@ -3676,17 +3674,8 @@ export default Vue.extend({
 
       let scale = this.get_zoom_region_of_instance(instance);
       this.canvas_mouse_tools.zoom_to_point(point, scale);
-      this.zoom_value = this.canvas_mouse_tools.scale;
+      this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
-    },
-
-    update_label_file_visible: function (label_file) {
-      if (label_file.is_visible == true) {
-        let index = this.hidden_label_id_list.indexOf(label_file.id);
-        this.hidden_label_id_list.splice(index, 1);
-      } else {
-        this.hidden_label_id_list.push(label_file.id);
-      }
     },
 
     issue_hover_update: function (index: Number) {
@@ -3862,7 +3851,7 @@ export default Vue.extend({
       }
       // Careful this is effected by scale
       // bool, true if point if intersecting circle
-      let radius_scaled = radius / this.zoom_value;
+      let radius_scaled = radius / this.image_annotation_ctx.zoom_value;
       const result =
         Math.sqrt((point.x - mouse.x) ** 2 + (mouse.y - point.y) ** 2) <
         radius_scaled; // < number == circle.radius
@@ -4251,7 +4240,7 @@ export default Vue.extend({
       if (instance != undefined) {
         let has_figures =
           instance.points.filter((p) => p.figure_id != undefined).length > 0;
-        if (!this.hidden_label_id_list.includes(instance.label_file_id)) {
+        if (!this.annotation_ui_context.hidden_label_id_list.includes(instance.label_file_id)) {
           // Polygon might have multiple figures.
           if (!has_figures) {
             this.check_polygon_intersection_on_points(

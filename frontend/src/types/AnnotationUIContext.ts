@@ -30,6 +30,8 @@ export class BaseAnnotationUIContext {
   num_rows: number
   num_cols: number
 
+  hidden_label_id_list: number[]
+
   constructor() {
     this.working_file = null
     this.working_file_list = []
@@ -47,12 +49,14 @@ export class BaseAnnotationUIContext {
     this.current_image_annotation_ctx = new ImageAnnotationUIContext()
     this.num_rows = 1
     this.num_cols = 4
+    this.hidden_label_id_list = []
   }
 
 }
 
 export class ImageAnnotationUIContext {
   show_context_menu: boolean
+  zoom_value: number
   loading: boolean
   refresh: Date
   video_mode: boolean
@@ -83,6 +87,7 @@ export class ImageAnnotationUIContext {
 
   constructor() {
     this.show_context_menu = false
+    this.zoom_value = 1
     this.any_frame_saving = false
     this.save_loading_frames_list = []
     this.loading = false

@@ -2,6 +2,7 @@
   <div class="d-flex" style="height: 100%; width: 100%" id="annotation_factory_container">
     <toolbar_factory
       v-if="annotation_ui_context.working_file && annotation_ui_context.command_manager"
+      :task="annotation_ui_context.task"
       :project_string_id="project_string_id"
       :working_file="annotation_ui_context.working_file"
       :command_manager="annotation_ui_context.command_manager"
@@ -21,6 +22,7 @@
       :save_loading="annotation_ui_context.current_image_annotation_ctx.video_mode ?
       annotation_ui_context.current_image_annotation_ctx.save_loading_frames_list.length > 0 : save_loading_image"
       :annotations_loading="annotation_ui_context.current_image_annotation_ctx.annotations_loading"
+      :canvas_scale_local="annotation_ui_context.current_image_annotation_ctx.zoom_value"
       @save="save"
       @redo="redo"
       @undo="undo"
@@ -33,6 +35,11 @@
       @change_label_schema="on_change_label_schema"
       @smooth_canvas_changed="update_smooth_canvas($event)"
       @change_label_file="change_current_label_file_template($event)"
+      @update_label_file_visibility="update_label_file_visible($event)"
+      @task_update_toggle_incomplete="() => task_update('incomplete')"
+      @task_update_toggle_deferred="() => task_update('toggle_deferred')"
+      @change_task="(event) => trigger_task_change(event, annotation_ui_context.task, false)"
+      @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
     />
     <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
     <sidebar_factory
@@ -417,7 +424,7 @@ export default Vue.extend({
       }
       if (from.name === 'studio' && to.name === 'task_annotation') {
         this.working_file = null;
-        this.fetch_single_task(this.$props.task_id_prop);
+        this.fetch_single_task(this.task_id_prop);
         this.$refs.file_manager_sheet.hide_file_manager_sheet()
       }
       this.get_model_runs_from_query(to.query);
@@ -455,10 +462,10 @@ export default Vue.extend({
       !this.$store.getters.is_on_public_project ||
       this.$store.state.user.current.is_super_admin == true
     ) {
-      if (this.$props.task_id_prop) {
+      if (this.task_id_prop) {
         this.context = 'task'
         this.add_visit_history_event("task");
-      } else if (this.$props.file_id_prop) {
+      } else if (this.file_id_prop) {
         this.add_visit_history_event("file");
       } else {
         this.add_visit_history_event("page");
@@ -471,7 +478,7 @@ export default Vue.extend({
     this.annotation_ui_context.get_userscript = this.get_userscript
     Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
     this.annotation_ui_context.issues_ui_manager = new IssuesAnnotationUIManager()
-    if (!this.$props.task_id_prop) {
+    if (!this.task_id_prop) {
       await this.get_project();
     } else {
       this.loading_project = false; // caution some assumptions around this flag for media loading
@@ -499,9 +506,9 @@ export default Vue.extend({
       }
 
     } else {
-      if (this.$props.task_id_prop) {
+      if (this.task_id_prop) {
         this.changing_task = true
-        await this.fetch_single_task(this.$props.task_id_prop);
+        await this.fetch_single_task(this.task_id_prop);
         await this.check_credentials();
         await this.$nextTick()
         this.credentials_granted = this.has_credentials_or_admin();
@@ -509,7 +516,7 @@ export default Vue.extend({
           this.show_missing_credentials_dialog();
         }
         this.changing_task = false
-      } else if (this.$props.file_id_prop) {
+      } else if (this.file_id_prop) {
         await this.fetch_schema_list()
         await this.fetch_single_file();
       } else {
@@ -590,19 +597,19 @@ export default Vue.extend({
       return this.loading || this.loading_project || this.initializing
     },
     file_id: function () {
-      let file_id = this.$props.file_id_prop;
+      let file_id = this.file_id_prop;
       if (this.$route.query.file) {
         file_id = this.$route.query.file;
       }
       return file_id;
     },
     computed_project_string_id: function () {
-      if (this.$props.project_string_id) {
+      if (this.project_string_id) {
         this.$store.commit(
           "set_project_string_id",
-          this.$props.project_string_id
+          this.project_string_id
         );
-        return this.$props.project_string_id;
+        return this.project_string_id;
       }
       return this.$store.state.project.current.project_string_id;
     },
@@ -632,6 +639,15 @@ export default Vue.extend({
     },
   },
   methods: {
+    update_label_file_visible: function (label_file) {
+      if (this.annotation_ui_context.hidden_label_id_list.includes(label_file.id)) {
+        const index = this.annotation_ui_context.hidden_label_id_list.indexOf(label_file.id);
+        this.annotation_ui_context.hidden_label_id_list.splice(index, 1);
+      }
+      else {
+        this.annotation_ui_context.hidden_label_id_list.push(label_file.id)
+      }
+    },
     on_global_instance_changed: function(file_id, global_instance){
       this.annotation_ui_context.instance_store.set_global_instance(file_id, global_instance)
       if(file_id === this.annotation_ui_context.working_file.id){
@@ -715,13 +731,13 @@ export default Vue.extend({
       this.update_canvas();
     },
     clear_unsaved: function() {
-      this.$refs.annotation_area_factory.$refs.annotation_core.clear_unsaved()
+      this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].clear_unsaved()
     },
     rotate_image: function(event) {
-      this.$refs.annotation_area_factory.$refs.annotation_core.on_image_rotation(event)
+      this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].on_image_rotation(event)
     },
     update_smooth_canvas: function (event) {
-      this.$refs.annotation_area_factory.$refs.annotation_core.update_smooth_canvas(event)
+      this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].update_smooth_canvas(event)
     },
     change_instance_type: function(instance_type: string): void {
       this.$store.commit("finish_draw");
@@ -1589,7 +1605,7 @@ export default Vue.extend({
             ]);
             this.$refs.file_manager_sheet.hide_file_manager_sheet();
           }
-          this.annotation_ui_context.task = response.data.annotation_ui_context.task;
+          this.annotation_ui_context.task = response.data.task;
           this.annotation_ui_context.label_schema = this.annotation_ui_context.task.job.label_schema;
           await this.get_project(this.annotation_ui_context.task.project_string_id);
         }
@@ -1741,18 +1757,18 @@ export default Vue.extend({
 
     add_visit_history_event: async function (object_type) {
       let page_name = "data_explorer";
-      if (this.$props.file_id_prop) {
+      if (this.file_id_prop) {
         page_name = "file_detail";
       }
-      if (this.$props.task_id_prop) {
+      if (this.task_id_prop) {
         page_name = "task_detail";
       }
-      if (this.$props.task_id_prop === -1 || this.$props.task_id_prop === '-1') {
+      if (this.task_id_prop === -1 || this.task_id_prop === '-1') {
         return
       }
       const event_data = await create_event(this.computed_project_string_id, {
-        file_id: this.$props.file_id_prop,
-        task_id: this.$props.task_id_prop,
+        file_id: this.file_id_prop,
+        task_id: this.task_id_prop,
         page_name: page_name,
         object_type: object_type,
         user_visit: "user_visit",
