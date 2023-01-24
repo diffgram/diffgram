@@ -622,6 +622,27 @@ def build_relation(relation: Instance):
     return out
 
 
+def base_instance_packet(instance):
+    return {
+        'id': instance.id,
+        'type': instance.type,
+        'label_file_id': instance.label_file_id,
+        'frame_number': instance.frame_number,
+        'global_frame_number': instance.global_frame_number,
+        'number': instance.number,
+        'x_min': instance.x_min,
+        'y_min': instance.y_min,
+        'x_max': instance.x_max,
+        'y_max': instance.y_max,
+        'radius': instance.radius,
+        'bounds': instance.bounds,
+        'angle': instance.angle,
+        'attribute_groups': attribute_groups,
+        'interpolated': instance.interpolated,
+        # 'local_sequence_number' : instance.number,
+    }
+
+
 def build_instance(instance, include_label = False):
     """
     instance.attribute_groups is a SQL Alchemy type mutable dict
@@ -654,11 +675,8 @@ def build_instance(instance, include_label = False):
         'y_min': instance.y_min,
         'x_max': instance.x_max,
         'y_max': instance.y_max,
-        'lonlat': instance.lonlat,
-        'coords': instance.coords,
         'radius': instance.radius,
         'bounds': instance.bounds,
-        'bounds_lonlat': instance.bounds_lonlat,
         'angle': instance.angle,
         'attribute_groups': attribute_groups,
         'interpolated': instance.interpolated,
@@ -669,6 +687,12 @@ def build_instance(instance, include_label = False):
          out['p1'] = instance.p1
          out['p2'] = instance.p2
          out['cp'] = instance.cp
+
+    if instance.type in ['geo_point', 'geo_circle', 'geo_polyline', 'geo_polygon', 'geo_box']:
+        out['lonlat'] = instance.lonlat
+        out['coords'] = instance.coords
+        out['bounds_lonlat'] = instance.bounds_lonlat
+
     # Limit output, eg so an instance ina frame doesn't have a ton
     # of extra tokens
     # TODO refactor to own functions, eg
