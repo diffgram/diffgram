@@ -1,4 +1,3 @@
-# OPENCORE - ADD
 import time
 import json
 from shared.database.export import Export
@@ -7,7 +6,6 @@ from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.source_control.file import File
 from shared.database.project import Project
 from shared.database.annotation.instance import Instance
-from shared.database.source_control.file_diff import file_difference
 from shared.machine_learning.semantic_segmentation_data_prep import Semantic_segmentation_data_prep
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.video.sequence import Sequence
@@ -279,7 +277,6 @@ def annotation_export_core(
             export.percent_complete = (index / export.file_list_length) * 100
 
             if index % 10 == 0:
-                # TODO would need to commit the session for this to be useful right?
                 logger.info(f"Percent done {export.percent_complete}")
                 try_to_commit(session = session)  # push update
 
@@ -374,24 +371,6 @@ def build_geopacket(file, session, file_comparison_mode = "latest"):
                 continue
             relations_list.append(build_relation(relation = relation))
 
-    if file_comparison_mode == "vs_original":
-        # We could use the raw dict of the {'unchanged', 'added', 'deleted'}
-        # sets BUT then it would make the below a little different
-        # TODO review this
-        #
-
-        result, instance_dict = file_difference(
-            session = session,
-            file_id_alpha = file.id,
-            file_id_bravo = file.root_id)
-
-        for change_type in instance_dict.keys():
-            for instance in instance_dict[change_type]:
-                out = build_instance(instance)
-
-                out['change_type'] = change_type
-
-                instance_dict_list.append(out)
 
     return {'file': {
         'id': file.id,
@@ -522,24 +501,6 @@ def build_image_packet(
         for instance in instance_list:
             instance_dict_list.append(build_instance(instance))
 
-    if file_comparison_mode == "vs_original":
-        # We could use the raw dict of the {'unchanged', 'added', 'deleted'}
-        # sets BUT then it would make the below a little different
-        # TODO review this
-        #
-
-        result, instance_dict = file_difference(
-            session = session,
-            file_id_alpha = file.id,
-            file_id_bravo = file.root_id)
-
-        for change_type in instance_dict.keys():
-            for instance in instance_dict[change_type]:
-                out = build_instance(instance)
-
-                out['change_type'] = change_type
-
-                instance_dict_list.append(out)
 
     return {'file': {
         'id': file.id,
@@ -588,24 +549,6 @@ def build_text_packet(
                 continue
             relations_list.append(build_relation(relation = relation))
 
-    if file_comparison_mode == "vs_original":
-        # We could use the raw dict of the {'unchanged', 'added', 'deleted'}
-        # sets BUT then it would make the below a little different
-        # TODO review this
-        #
-
-        result, instance_dict = file_difference(
-            session = session,
-            file_id_alpha = file.id,
-            file_id_bravo = file.root_id)
-
-        for change_type in instance_dict.keys():
-            for instance in instance_dict[change_type]:
-                out = build_instance(instance)
-
-                out['change_type'] = change_type
-
-                instance_dict_list.append(out)
 
     instance_dict_list = instance_dict_list + relations_list
 
@@ -649,24 +592,6 @@ def build_sensor_fusion_packet(
         for instance in instance_list:
             instance_dict_list.append(build_instance(instance))
 
-    if file_comparison_mode == "vs_original":
-        # We could use the raw dict of the {'unchanged', 'added', 'deleted'}
-        # sets BUT then it would make the below a little different
-        # TODO review this
-        #
-
-        result, instance_dict = file_difference(
-            session = session,
-            file_id_alpha = file.id,
-            file_id_bravo = file.root_id)
-
-        for change_type in instance_dict.keys():
-            for instance in instance_dict[change_type]:
-                out = build_instance(instance)
-
-                out['change_type'] = change_type
-
-                instance_dict_list.append(out)
 
     return {
         'file': {
