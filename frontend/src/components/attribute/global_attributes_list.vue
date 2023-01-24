@@ -5,10 +5,10 @@
     :accordion="true"
     :inset="false"
     :multiple="false"
-    :focusable="false"
+    :focusable="true"
     :disabled="false"
     :flat="true"
-    :hover="false"
+    :hover="true"
     :tile="true"
   >
     <v-expansion-panel>
@@ -118,9 +118,6 @@ export default Vue.extend( {
 </script>
 
 <style scoped>
-.sidebar-accordeon-header{
-  background: #e0e0e0;
-  border-bottom: 1px solid  #c0c0c0;
-}
+
 </style>
 
