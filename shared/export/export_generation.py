@@ -607,6 +607,11 @@ def build_relation(relation: Instance):
 
 
 def base_instance_packet(instance):
+
+    attribute_groups = instance.attribute_groups
+    if attribute_groups:
+        attribute_groups = dict(attribute_groups)     # Cast from SQLAlchemy to serializable form 
+
     return {
         'id': instance.id,
         'type': instance.type,
@@ -616,10 +621,6 @@ def base_instance_packet(instance):
 
 
 def build_instance(instance, file, include_label = False):
-
-    attribute_groups = instance.attribute_groups
-    if attribute_groups:
-        attribute_groups = dict(attribute_groups)     # Cast from SQLAlchemy to serializable form 
 
     out = base_instance_packet(instance)
 
