@@ -7040,8 +7040,6 @@ export default Vue.extend({
       }
       this.reset_for_file_change_context();
 
-      this.$addQueriesToLocation({file: this.working_file.id});
-
       await this.refresh_attributes_from_current_file(this.working_file);
 
       this.current_file_updates(this.working_file);

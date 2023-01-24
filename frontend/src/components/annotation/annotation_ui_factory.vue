@@ -438,7 +438,7 @@ export default Vue.extend({
       }
       this.get_model_runs_from_query(to.query);
     },
-    working_file: {
+    root_file: {
       handler(newVal, oldVal) {
         if (newVal && newVal != oldVal) {
           Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
