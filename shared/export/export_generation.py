@@ -360,7 +360,7 @@ def build_geopacket(file, session):
     for instance in instance_list:
         if instance.type == 'relation':
             continue
-        instance_dict_list.append(build_instance(instance))
+        instance_dict_list.append(build_instance(instance, file))
 
     for relation in instance_list:
         if relation.type != 'relation':
@@ -405,8 +405,8 @@ def build_video_packet(file, session):
         limit = None
     )
     parent_instance_list_serialized = []
-    for inst in parent_instance_list:
-        parent_instance_list_serialized.append(build_instance(inst))
+    for instance in parent_instance_list:
+        parent_instance_list_serialized.append(build_instance(instance, file))
 
     # Context of making it easier to inspect and download media
     mp4_video_signed_url = file.video.file_signed_url
@@ -446,7 +446,7 @@ def build_video_packet(file, session):
         # Each instance has it's frame number
         for instance in instance_list:
             instance_list_serialized.append(
-                build_instance(instance, include_label = False))
+                build_instance(instance, file, include_label = False))
 
         sequence_dict['instance_list'] = instance_list_serialized
         sequence_list_serialized.append(sequence_dict)
@@ -491,7 +491,7 @@ def build_image_packet(
         session = session,
         file_id = file.id)
     for instance in instance_list:
-        instance_dict_list.append(build_instance(instance))
+        instance_dict_list.append(build_instance(instance, file))
 
 
     return {'file': {
@@ -532,7 +532,7 @@ def build_text_packet(
     for instance in instance_list:
         if instance.type == 'relation':
             continue
-        instance_dict_list.append(build_instance(instance))
+        instance_dict_list.append(build_instance(instance, file))
 
     for relation in instance_list:
         if relation.type != 'relation':
@@ -578,7 +578,7 @@ def build_sensor_fusion_packet(
         file_id = file.id)
 
     for instance in instance_list:
-        instance_dict_list.append(build_instance(instance))
+        instance_dict_list.append(build_instance(instance, file))
 
 
     return {
@@ -596,16 +596,12 @@ def build_sensor_fusion_packet(
 
 
 def build_relation(relation: Instance):
-    out = {  # 'hash'  : instance.hash,
+    out = {
         'type': relation.type,
-        'label_file_id': relation.label_file_id,  # for images
-        'frame_number': relation.frame_number,
-        'global_frame_number': relation.global_frame_number,
-        'number': relation.number,
+        'label_file_id': relation.label_file_id, 
         'attribute_groups': relation.attribute_groups,
         'from_instance_id': relation.from_instance_id,
-        'to_instance_id': relation.to_instance_id,
-        # 'local_sequence_number' : instance.number,
+        'to_instance_id': relation.to_instance_id
     }
     return out
 
@@ -614,45 +610,40 @@ def base_instance_packet(instance):
     return {
         'id': instance.id,
         'type': instance.type,
-        'label_file_id': instance.label_file_id,
-        'frame_number': instance.frame_number,
-        'global_frame_number': instance.global_frame_number,
-        'number': instance.number,
-        'x_min': instance.x_min,
-        'y_min': instance.y_min,
-        'x_max': instance.x_max,
-        'y_max': instance.y_max,
-        'radius': instance.radius,
-        'bounds': instance.bounds,
-        'angle': instance.angle,
         'attribute_groups': attribute_groups,
-        'interpolated': instance.interpolated,
-        # 'local_sequence_number' : instance.number,
+        'label_file_id': instance.label_file_id
     }
 
 
-def build_instance(instance, include_label = False):
-    """
-    instance.attribute_groups is a SQL Alchemy type mutable dict
-    it does not serialize by default
-    so we cast it to a new thing using dict() which is basically
-    just copying key values
+def build_instance(instance, file, include_label = False):
 
-    instance.attribute_groups may be None
-    if it's None then dict() thing appears to fail
-
-    using dict() is preffered to json dumps as that seems to create
-    a bunch of random slashes.
-    """
     attribute_groups = instance.attribute_groups
     if attribute_groups:
-        attribute_groups = dict(attribute_groups)
-
-    # Warning: Add new instance types in conditional
-    # Don't add them here - otherwise this creates a lot of 
-    # not needed data
+        attribute_groups = dict(attribute_groups)     # Cast from SQLAlchemy to serializable form 
 
     out = base_instance_packet(instance)
+
+    if file.type == 'video':
+        out['frame_number'] = instance.frame_number
+        out['global_frame_number'] = instance.global_frame_number
+        out['local_sequence_number'] = instance.number
+        out['number'] = instance.number     # legacy
+        out['interpolated'] = instance.interpolated
+
+    if instance.radius:
+         out['radius'] = instance.radius
+
+    if instance.bounds:
+         out['bounds'] = instance.bounds
+
+    if instance.angle:
+         out['angle'] = instance.angle
+
+    if instance.x_min or instance.y_min or instance.x_max or instance.y_max:
+         out['x_min'] = instance.x_min
+         out['y_min'] = instance.y_min
+         out['x_max'] = instance.x_max
+         out['y_max'] = instance.y_max
 
     if instance.type == 'curve':
          out['p1'] = instance.p1
@@ -663,13 +654,6 @@ def build_instance(instance, include_label = False):
         out['lonlat'] = instance.lonlat
         out['coords'] = instance.coords
         out['bounds_lonlat'] = instance.bounds_lonlat
-
-    # Limit output, eg so an instance ina frame doesn't have a ton
-    # of extra tokens
-    # TODO refactor to own functions, eg
-    # right now text tokens now display x_min when it's not needed
-    # TODO also check if this applies to other serialization forms
-    # eg in instance.py
 
     if instance.type == 'cuboid':
         out['front_face'] = instance.front_face
