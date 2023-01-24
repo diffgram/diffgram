@@ -644,6 +644,7 @@ def build_instance(instance, include_label = False):
     # not needed data
 
     out = {  # 'hash'  : instance.hash,
+        'id': instance.id,
         'type': instance.type,
         'label_file_id': instance.label_file_id,  # for images
         'frame_number': instance.frame_number,
@@ -658,15 +659,16 @@ def build_instance(instance, include_label = False):
         'radius': instance.radius,
         'bounds': instance.bounds,
         'bounds_lonlat': instance.bounds_lonlat,
-        'p1': instance.p1,
-        'p2': instance.p2,
-        'cp': instance.cp,
         'angle': instance.angle,
         'attribute_groups': attribute_groups,
         'interpolated': instance.interpolated,
         # 'local_sequence_number' : instance.number,
     }
 
+    if instance.type == 'curve':
+         out['p1'] = instance.p1
+         out['p2'] = instance.p2
+         out['cp'] = instance.cp
     # Limit output, eg so an instance ina frame doesn't have a ton
     # of extra tokens
     # TODO refactor to own functions, eg
