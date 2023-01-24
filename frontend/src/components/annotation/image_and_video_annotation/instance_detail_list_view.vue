@@ -1136,4 +1136,8 @@ export default Vue.extend({
 .v-expansion-panel-content__wrap {
   padding: 0 !important;
 }
+.sidebar-accordeon-header{
+  background: #e0e0e0;
+  border-bottom: 1px solid  #c0c0c0;
+}
 </style>

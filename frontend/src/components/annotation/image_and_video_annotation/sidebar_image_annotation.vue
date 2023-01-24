@@ -65,7 +65,7 @@
 
         <v-expansion-panel-header
           data-cy="show_userscript_panel_button"
-          class="d-flex justify-start pa-0 pr-1 align-center"
+          class="d-flex justify-start pa-0 pr-1 align-center sidebar-accordeon-header"
           style="border-top: 1px solid #e0e0e0;border-bottom: 1px solid #e0e0e0">
 
           <v-icon left class="ml-4 flex-grow-0" color="primary" size="18">
@@ -294,5 +294,8 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-
+.sidebar-accordeon-header{
+  background: #e0e0e0;
+  border-bottom: 1px solid  #c0c0c0;
+}
 </style>

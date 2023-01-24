@@ -2899,10 +2899,11 @@ export default Vue.extend({
       // this.instance_list[index].focused = True
       // careful can't use id, since newly created instances won't have an ID!
       this.instance_focused_index = focus.index;
+      let instance_to_focus = this.instance_list[this.instance_focused_index]
       this.selected_instance_list = [
-        this.instance_list[this.instance_focused_index],
+        instance_to_focus,
       ];
-      this.snap_to_instance(this.selected_instance);
+      this.snap_to_instance(instance_to_focus);
       this.$forceUpdate();
     },
 
@@ -2911,6 +2912,7 @@ export default Vue.extend({
       this.snapped_to_instance = undefined;
       this.selected_instance_list = [];
       this.reset_to_full();
+      this.update_canvas()
     },
 
     instance_update: function (update) {
@@ -3557,8 +3559,8 @@ export default Vue.extend({
 
     reset_to_full: function () {
       this.canvas_mouse_tools.reset_transform_with_global_scale();
-      this.canvas_mouse_tools.scale =
-        this.canvas_mouse_tools.canvas_scale_global;
+      this.canvas_mouse_tools.scale = this.canvas_mouse_tools.canvas_scale_global;
+      this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
       this.update_canvas();
     },
 
@@ -3653,11 +3655,11 @@ export default Vue.extend({
         return;
       }
 
-      this.$refs.instance_detail_list.focus_mode = true;
-      this.$refs.instance_detail_list.change_instance(
-        instance,
-        this.instance_focused_index
-      );
+      // this.$refs.instance_detail_list.focus_mode = true;
+      // this.$refs.instance_detail_list.change_instance(
+      //   instance,
+      //   this.instance_focused_index
+      // );
 
       this.snapped_to_instance = instance;
 
@@ -7259,9 +7261,7 @@ export default Vue.extend({
         if (this.instance_hover_index != undefined) {
           this.focus_instance({index: this.instance_hover_index})
         } else {
-          if (this.$refs.instance_detail_list) {
-            this.$refs.instance_detail_list.show_all();
-          }
+          this.focus_instance_show_all()
         }
       }
     },
