@@ -86,12 +86,23 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             'user': self.project_data['users'][0],
             'files': [file]
         }, self.session)
+
+        mock_latlong = [
+                  -93.68304405433852,
+                  38.78108423264749
+                ]
+        mock_coords = [
+                  -93.68304405433852,
+                  1
+                ]
+
         instance1 = data_mocking.create_instance(
             {'file_id': file.id, 
              'label_file_id': label_file.id, 
              'type': 'geo_box', 
-             'lonlat': 1, 
-             'coords': 1},
+             'lonlat': mock_latlong, 
+             'coords': mock_coords
+            },
             self.session
         )
         export = data_mocking.create_export({
@@ -120,8 +131,8 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             self.assertTrue('attribute_groups_reference' in export_data)
             self.assertTrue(file.id in export_data)
             self.assertEqual(len(export_data[file.id]['instance_list']), 1)
-            self.assertEqual(export_data[file.id]['instance_list'][0]['lonlat'], 1)
-            self.assertEqual(export_data[file.id]['instance_list'][0]['coords'], 1)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['lonlat'], mock_latlong)
+            self.assertEqual(export_data[file.id]['instance_list'][0]['coords'], mock_coords)
 
 
 
