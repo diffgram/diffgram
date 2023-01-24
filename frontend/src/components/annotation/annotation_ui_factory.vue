@@ -1453,7 +1453,7 @@ export default Vue.extend({
         return
       }
       if (file.type === 'compound') {
-        let [child_files, err] = await get_child_files(this.project_string_id, file.id)
+        let [child_files, err] = await get_child_files(this.computed_project_string_id, file.id)
 
         if (err) {
           console.error(err)
