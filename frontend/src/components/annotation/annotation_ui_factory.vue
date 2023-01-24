@@ -3,7 +3,7 @@
     <toolbar_factory
       v-if="annotation_ui_context.working_file && annotation_ui_context.command_manager"
       :task="annotation_ui_context.task"
-      :project_string_id="project_string_id"
+      :project_string_id="computed_project_string_id"
       :working_file="annotation_ui_context.working_file"
       :command_manager="annotation_ui_context.command_manager"
       :label_settings="annotation_ui_context.current_image_annotation_ctx.label_settings"
@@ -48,7 +48,7 @@
       :interface_type="interface_type"
       :label_file_colour_map="label_file_colour_map"
       :label_list="label_list"
-      :project_string_id="project_string_id"
+      :project_string_id="computed_project_string_id"
       :current_global_instance="annotation_ui_context.current_global_instance"
       :video_parent_file_instance_list="annotation_ui_context.current_image_annotation_ctx.video_parent_file_instance_list"
       :instance_list="current_instance_list"
@@ -1453,7 +1453,7 @@ export default Vue.extend({
         return
       }
       if (file.type === 'compound') {
-        let [child_files, err] = await get_child_files(this.project_string_id, file.id)
+        let [child_files, err] = await get_child_files(this.computed_project_string_id, file.id)
 
         if (err) {
           console.error(err)

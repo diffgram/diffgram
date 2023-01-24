@@ -193,7 +193,7 @@ export default Vue.extend({
       default: null
     },
     task_id_prop: {
-      type: Number,
+      type: String,
       default: null
     },
     request_save: {
