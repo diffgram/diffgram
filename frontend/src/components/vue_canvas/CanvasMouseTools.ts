@@ -268,9 +268,13 @@ export class CanvasMouseTools {
   }
 
   private raw_point(event) {
-    let x_raw = (event.clientX - this.canvas_rectangle.left)
-    let y_raw = (event.clientY - this.canvas_rectangle.top)
-    let point = {'x': x_raw, 'y': y_raw}
+    console.log('EVENT POINT', event)
+    var rect = event.target.getBoundingClientRect();
+    var x = event.clientX - rect.left; //x position within the element.
+    var y = event.clientY - rect.top;  //y position within the element.
+    // let x_raw = (event.clientX - this.canvas_rectangle.left)
+    // let y_raw = (event.clientY - this.canvas_rectangle.top)
+    let point = {'x': x, 'y': y}
     return point
   }
 }

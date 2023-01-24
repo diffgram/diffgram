@@ -272,7 +272,7 @@
 
           <div
             contenteditable="true"
-            id="canvas_wrapper"
+            :id="`canvas_wrapper_${working_file.id}`"
             style="position: relative"
             @mousemove="mouse_move"
             @mousedown="mouse_down"
@@ -3200,7 +3200,7 @@ export default Vue.extend({
        *
        */
 
-      this.canvas_wrapper = document.getElementById("canvas_wrapper");
+      this.canvas_wrapper = document.getElementById(`canvas_wrapper_${this.working_file.id}`);
       // rather have canvas_wrapper inside this functionsss in case it needs to "refresh" it
 
       this.annotation_area = document.getElementById("annotation");
@@ -3538,6 +3538,10 @@ export default Vue.extend({
     },
     // todo why not make this part of rest of event stuff
     wheel: function (event) {
+      console.log('MOUSE WHEEL', event, this.is_active, this.working_file.id)
+      if(!this.is_active){
+        return
+      }
       if (this.annotation_ui_context.show_context_menu == true) {
         return;
       } // becasue could have own menus that scroll
