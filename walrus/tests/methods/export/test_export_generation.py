@@ -79,7 +79,7 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
 
     def test_new_geo_external_export(self):
 
-        file = data_mocking.create_file({'project_id': self.project.id, 'type': 'geo'}, self.session)
+        file = data_mocking.create_file({'project_id': self.project.id, 'type': 'geospatial'}, self.session)
         label_file = data_mocking.create_file({'project_id': self.project.id}, self.session)
         source_directory = data_mocking.create_directory({
             'project': self.project,
