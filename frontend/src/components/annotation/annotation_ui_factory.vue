@@ -106,6 +106,7 @@
         && annotation_ui_context.global_attribute_groups_list"
         :layout_direction="layout_direction"
         :num_columns="annotation_ui_context.working_file_list.length"
+        :root_file="root_file"
         :num_rows="annotation_ui_context.num_rows"
         @panels_resized="on_panes_resized"
         @ready="on_panes_ready"
@@ -131,6 +132,7 @@
                     :annotation_ui_context="annotation_ui_context"
                     :image_annotation_ctx="child_annotation_ctx_list[index]"
                     :working_file="file"
+                    :file="file"
                     :credentials_granted="credentials_granted"
                     :initializing="initializing"
                     :save_loading_image="save_loading_image"
@@ -317,7 +319,14 @@ import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
 import * as AnnotationSavePrechecks from '../annotation/image_and_video_annotation/utils/AnnotationSavePrechecks'
-import {BaseAnnotationUIContext, ImageAnnotationUIContext} from '../../types/AnnotationUIContext'
+import {
+  BaseAnnotationUIContext,
+  GeoAnnotationUIContext,
+  TextAnnotationUIContext,
+  AudioAnnotationUIContext,
+  SensorFusion3DAnnotationUIContext,
+  ImageAnnotationUIContext
+} from '../../types/AnnotationUIContext'
 import panel_manager from "./panel_manager.vue";
 import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServices"
 import {createDefaultLabelSettings} from "../../types/image_label_settings";
@@ -358,6 +367,7 @@ export default Vue.extend({
       },
       annotation_ui_context: new BaseAnnotationUIContext(),
       child_annotation_ctx_list: [],
+      root_file: [],
       task_prefetcher: null,
       task_image: null,
       task_instances: null,
@@ -545,19 +555,21 @@ export default Vue.extend({
     },
     annotation_area_container_width: function(){
       let result;
-      if(!this.interface_type || !this.interface_type && !this.initializing && this.loading){
+      if(!this.annotation_ui_context.current_image_annotation_ctx.label_settings || !this.interface_type || !this.interface_type && !this.initializing && this.loading){
         return '100%'
       }
-      if(this.loading){
-        let widthWindow = window.innerWidth && document.documentElement.clientWidth ?
-          Math.min(window.innerWidth, document.documentElement.clientWidth) :
-          window.innerWidth ||
-          document.documentElement.clientWidth ||
-          document.getElementsByTagName('body')[0].clientWidth;
-        result = widthWindow - this.annotation_ui_context.current_image_annotation_ctx.label_settings.left_nav_width;
-      } else{
+      let widthWindow = window.innerWidth && document.documentElement.clientWidth ?
+        Math.min(window.innerWidth, document.documentElement.clientWidth) :
+        window.innerWidth ||
+        document.documentElement.clientWidth ||
+        document.getElementsByTagName('body')[0].clientWidth;
+      result = widthWindow - this.annotation_ui_context.current_image_annotation_ctx.label_settings.left_nav_width;
+      if(!this.loading){
         let elm = document.getElementById('annotation_factory_container')
-        result = elm.clientWidth - this.annotation_ui_context.current_image_annotation_ctx.label_settings.left_nav_width;
+        if(elm){
+          result = elm.clientWidth - this.annotation_ui_context.current_image_annotation_ctx.label_settings.left_nav_width;
+        }
+
       }
 
       return result + 'px'
@@ -581,6 +593,15 @@ export default Vue.extend({
 
     },
     has_pending_frames: function () {
+      if(!this.annotation_ui_context){
+        return false
+      }
+      if(!this.annotation_ui_context.current_image_annotation_ctx){
+        return false
+      }
+      if(!this.annotation_ui_context.current_image_annotation_ctx.unsaved_frames){
+        return false
+      }
       return this.annotation_ui_context.current_image_annotation_ctx.unsaved_frames.length > 0
     },
     save_request: function (): Function {
@@ -685,15 +706,29 @@ export default Vue.extend({
       this.recalculate_pane_dimensions(row_index, panes_list)
     },
     populate_child_context_list: function(child_files){
+      let new_child_list = []
       for(let file of child_files){
         if(file.type === 'image' || file.type === 'video'){
           this.annotation_ui_context.current_image_annotation_ctx.video_mode = file && file.type === 'video'
-          this.child_annotation_ctx_list.push(new ImageAnnotationUIContext())
-        } else {
+          new_child_list.push(new ImageAnnotationUIContext())
+        } else if (file.type === 'text'){
           // Other type don't have context yet.
-          this.child_annotation_ctx_list.push({})
+          new_child_list.push(new TextAnnotationUIContext())
+        } else if (file.type === 'audio'){
+          // Other type don't have context yet.
+          new_child_list.push(new AudioAnnotationUIContext())
+        }else if (file.type === 'geo'){
+          // Other type don't have context yet.
+          new_child_list.push(new GeoAnnotationUIContext())
+        }else if (file.type === 'sensor_fusion'){
+          // Other type don't have context yet.
+          new_child_list.push(new SensorFusion3DAnnotationUIContext())
+        } else {
+          new_child_list.push({})
         }
+
       }
+      this.child_annotation_ctx_list = new_child_list
       let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {return {size: 50}})
       this.recalculate_pane_dimensions(1, default_pane_sizes)
     },
@@ -1437,6 +1472,7 @@ export default Vue.extend({
         await this.set_working_file_from_child_file_list(file)
 
       }
+      this.root_file = file
     },
 
     on_change_label_schema: function (schema) {
@@ -1516,7 +1552,9 @@ export default Vue.extend({
 
     change_file: async function (file, model_runs, color_list) {
       this.changing_file = true
+      this.loading = true
       await this.update_root_file(file)
+      this.loading = false
       await this.$nextTick();
       let model_runs_data = "";
       if (model_runs) {
@@ -1524,6 +1562,7 @@ export default Vue.extend({
       }
       this.get_model_runs_from_query(model_runs_data);
       this.changing_file = false;
+
     },
 
     get_labels_from_project: async function () {

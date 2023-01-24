@@ -18,7 +18,7 @@
             :label_list="label_list"
             :label_file_colour_map="label_file_colour_map"
             :task="task"
-            :file="file"
+            :file="working_file"
             :search_mode="search_mode"
             :bulk_mode="bulk_label"
             @change_label_schema="on_change_label_schema"
@@ -74,11 +74,11 @@
       <div style="width: 100%; display: flex; flex-direction: column">
         <v-progress-linear
           v-if="!fetching_error && (resizing || rendering)"
-          indeterminate 
+          indeterminate
         />
-        <v_error_multiple 
+        <v_error_multiple
           v-if="fetching_error"
-          :error="['Error occured while dowloading text file']" 
+          :error="['Error occured while dowloading text file']"
         />
         <svg
           ref="initial_svg_element"
@@ -287,7 +287,7 @@ import { Instance } from "../../vue_canvas/instances/Instance";
 import { v4 as uuidv4 } from 'uuid'
 
 export default Vue.extend({
-  name: "text_token_core",
+  name: "text_annotation_core",
   components: {
     text_toolbar,
     text_sidebar,
@@ -297,7 +297,7 @@ export default Vue.extend({
     relation_in_progress
   },
   props: {
-    file: {
+    working_file: {
       type: Object,
       default: undefined
     },
@@ -452,7 +452,7 @@ export default Vue.extend({
     }
   },
   watch: {
-    file: function () {
+    working_file: function () {
       this.rendering = true
       this.instance_list = [];
       this.text = null;
@@ -783,15 +783,15 @@ export default Vue.extend({
           const {nltk: {words}} = await getTextService(this.task.file.text.tokens_url_signed)
           set_words = words
         } else {
-          const {nltk: {words}} = await getTextService(this.file.text.tokens_url_signed)
+          const {nltk: {words}} = await getTextService(this.working_file.text.tokens_url_signed)
           set_words = words
         }
-        
+
         this.command_manager = new CommandManagerAnnotationCore()
         // New command pattern
         this.new_history = new History()
         this.new_command_manager = new CommandManager(this.new_history)
-  
+
         this.initial_words_measures = set_words
         setTimeout(() => this.initialize_token_render(), 1000)
         this.initialize_instance_list()
@@ -802,7 +802,7 @@ export default Vue.extend({
     initialize_token_render: async function () {
       if (!this.$refs.initial_svg_element) return
 
-      
+
       const fixed_svg_width = this.$refs.initial_svg_element.clientWidth;
       const tokens = [];
       let token_x_position = 40;
@@ -1020,7 +1020,7 @@ export default Vue.extend({
           attached_to_job: this.task.file.attached_to_job,
         }
       } else {
-        url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
+        url = `/api/project/${this.$props.project_string_id}/file/${this.$props.working_file.id}/annotation/list`;
         payload = {}
       }
       let instance_list = await getInstanceList(url, payload)
@@ -1036,7 +1036,7 @@ export default Vue.extend({
       if (this.task && this.task.id) {
         url = `/api/v1/task/${this.task.id}/annotation/update`;
       } else {
-        url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
+        url = `/api/project/${this.project_string_id}/file/${this.working_file.id}/annotation/update`
       }
       // if (!this.instance_in_progress) {
         const res = await postInstanceList(url, this.new_instance_list.get_for_save())

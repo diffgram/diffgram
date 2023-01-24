@@ -3,6 +3,7 @@
               @ready="$emit('ready')"
               class="default-theme"
               :horizontal="layout_direction === 'horizontal'"
+              v-if="root_file.type === 'compound' || root_file.type === 'video' || root_file.type === 'image'"
               :push-other-panes="false" >
 
     <pane v-for="(item, row_index) in num_rows" :key="`row_${row_index}`">
@@ -11,7 +12,6 @@
               <slot :name="`panel_${row_index}:${col_index}`">
                 <div style="width: 400px">
                   <h6 style="font-size: 36px" class="text--black">row: {{row_index}} col {{col_index}}</h6>
-                  <v-icon size="46" color="success">mdi-check</v-icon>
                 </div>
               </slot>
             </pane>
@@ -19,6 +19,11 @@
 
     </pane>
   </splitpanes>
+  <div v-else>
+    <slot :name="`panel_${0}:${0}`">
+
+    </slot>
+  </div>
 </template>
 
 <script>
@@ -33,6 +38,7 @@ export default Vue.extend({
     num_rows: {type: Number, required: true},
     num_columns: {type: Number, required: true},
     layout_direction: {type: String, required: true, default: 'horizontal'},
+    root_file: {type: Object, required: true},
   },
   methods: {
 
