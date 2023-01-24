@@ -75,9 +75,6 @@ def new_external_export(
 
             file_list = [export.task.file]
 
-    # While job could be None and still get files
-    # if we do have a job id we may want to get
-    # files not replaced in the directory yet.
     if export.source == "job":
 
         status = None
@@ -97,9 +94,7 @@ def new_external_export(
             file_list.append(task.file)
 
     if export.source == "directory":
-        # Question, why are we declaring this here?
-        # Doesn't really make sense as export already has
-        # it when created?
+
         export.working_dir_id = working_dir.id
 
         file_list = WorkingDirFileLink.file_list(
@@ -265,8 +260,6 @@ def annotation_export_core(
         annotations['label_map'] = export_label_map
         annotations['label_colour_map'] = build_label_colour_map(session, export_label_map)
 
-        # TODO maybe, would like "annotations"
-        # To be one layer "deeper" in terms of nesting.
         annotations['export_info'] = export.serialize_for_inside_export_itself()
 
         # Other / shared stuff
@@ -276,7 +269,6 @@ def annotation_export_core(
 
         for index, file in enumerate(file_list):
 
-            # Image URL?
             packet = build_packet(
                 file = file,
                 session = session,
