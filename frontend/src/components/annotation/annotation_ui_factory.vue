@@ -1406,11 +1406,7 @@ export default Vue.extend({
         file_list[i].row = current_row
         current_col +=1
       }
-      this.annotation_ui_context.working_file_list = file_list.sort((a, b) => {
-        if (a.id > b.id) return 1
-        if (a.id < b.id) return -1
-        return 0
-      })
+      this.annotation_ui_context.working_file_list = file_list
     },
     set_layout_panels: function(rows, cols){
       this.annotation_ui_context.num_cols = cols
