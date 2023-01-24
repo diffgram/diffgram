@@ -93,7 +93,7 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
                 ]
         mock_coords = [
                   -93.68304405433852,
-                  1
+                  1.0
                 ]
 
         instance1 = data_mocking.create_instance(
