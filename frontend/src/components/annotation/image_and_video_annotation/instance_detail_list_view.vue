@@ -77,7 +77,6 @@
 
             <attribute_group_list
               :project_string_id="project_string_id"
-              style="overflow-y:auto; max-height: 400px"
               v-if="attribute_group_list_computed.length !== 0 || (current_instance && current_instance.attribute_groups)"
               :mode="'annotate'"
               :view_only_mode="view_only_mode"

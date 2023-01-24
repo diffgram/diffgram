@@ -2,7 +2,7 @@
   <v-navigation-drawer
     permanent
     left
-    style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; height: 100%"
+    style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; height: 89vh"
     :width="annotation_ui_context.current_image_annotation_ctx.label_settings.left_nav_width"
   >
 
@@ -54,7 +54,7 @@
       :accordion="true"
       :inset="false"
       :multiple="false"
-      :focusable="true"
+      :focusable="false"
       :disabled="false"
       :flat="true"
       :hover="false"
@@ -296,6 +296,6 @@ export default Vue.extend({
 <style scoped>
 .sidebar-accordeon-header{
   background: #e0e0e0;
-  border-bottom: 1px solid  #c0c0c0;
+  border-bottom: 1px solid  #c0c0c0 !important;
 }
 </style>
