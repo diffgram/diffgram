@@ -641,6 +641,8 @@ def create_instance(instance_data, session):
         y_max = instance_data.get('y_max'),
         width = instance_data.get('width'),
         height = instance_data.get('height'),
+        lonlat = instance_data.get('lonlat'),
+        coords = instance_data.get('coords'),
         preview_image_url = instance_data.get('preview_image_url'),
         preview_image_blob_dir = instance_data.get('preview_image_blob_dir'),
         preview_image_url_expiry = instance_data.get('preview_image_url_expiry'),

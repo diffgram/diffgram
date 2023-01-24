@@ -87,7 +87,11 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             'files': [file]
         }, self.session)
         instance1 = data_mocking.create_instance(
-            {'file_id': file.id, 'label_file_id': label_file.id, 'lonlat': 1, 'coords': 1},
+            {'file_id': file.id, 
+             'label_file_id': label_file.id, 
+             'type': 'geo_box', 
+             'lonlat': 1, 
+             'coords': 1},
             self.session
         )
         export = data_mocking.create_export({
