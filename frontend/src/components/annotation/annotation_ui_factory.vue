@@ -332,6 +332,7 @@ import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServi
 import {createDefaultLabelSettings} from "../../types/image_label_settings";
 import {get_child_files} from "../../services/fileServices";
 import {fromUserCoordinate} from "ol/proj";
+import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue"
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -341,7 +342,8 @@ export default Vue.extend({
     no_credentials_dialog,
     sidebar_factory,
     annotation_area_factory,
-    toolbar_factory
+    toolbar_factory,
+    empty_file_editor_placeholder
   },
   props: {
     project_string_id: {
