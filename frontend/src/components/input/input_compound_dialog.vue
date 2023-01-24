@@ -10,6 +10,7 @@
             :show_filters="false"
             :show_status_filter="false"
             :project_string_id="project_string_id"
+            :request_refresh="request_refresh"
             :compound_file_id="selected_input.file_id">
 
           </input_view>
@@ -37,7 +38,8 @@ export default Vue.extend({
       return {
         loading: false,
         is_open: false,
-        input: undefined
+        input: undefined,
+        request_refresh: new Date(),
       }
     },
     watch: {

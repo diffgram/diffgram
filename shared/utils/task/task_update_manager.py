@@ -109,12 +109,4 @@ class Task_Update():
 
         self.task.status = TASK_STATUSES['deferred']
 
-        review_task = create_review_sub_task(
-            session = self.session,
-            job = self.task.job,
-            root_task = self.task,
-            guide_id = self.task.job.guide_review_id,
-            create_new_file = False
-        )
-
         self.log['success'] = True
