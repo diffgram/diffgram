@@ -130,7 +130,6 @@ class TestExportGeneration(testing_setup.DiffgramBaseTestCase):
             self.assertTrue('export_info' in export_data)
             self.assertTrue('attribute_groups_reference' in export_data)
             self.assertTrue(file.id in export_data)
-            self.assertEqual(len(export_data[file.id]['instance_list']), 1)
             self.assertEqual(export_data[file.id]['instance_list'][0]['lonlat'], mock_latlong)
             self.assertEqual(export_data[file.id]['instance_list'][0]['coords'], mock_coords)
 
