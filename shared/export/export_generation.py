@@ -269,8 +269,7 @@ def annotation_export_core(
 
             packet = build_packet(
                 file = file,
-                session = session,
-                file_comparison_mode = export.file_comparison_mode)
+                session = session)
 
             annotations[file.id] = packet
 
@@ -306,40 +305,38 @@ def build_attribute_groups_reference(session: 'Session', project: Project):
 
 
 def build_packet(file,
-                 session = None,
-                 file_comparison_mode = "latest"):
+                 session = None):
     if file.type == "video":
         return build_video_packet(file, session)
 
     if file.type == "geospatial":
-        return build_geopacket(file, session, file_comparison_mode)
+        return build_geopacket(file, session)
 
     if file.type == "image":
-        return build_image_packet(file, session, file_comparison_mode)
+        return build_image_packet(file, session)
 
     if file.type == "text":
-        return build_text_packet(file, session, file_comparison_mode)
+        return build_text_packet(file, session)
 
     if file.type == "sensor_fusion":
-        return build_sensor_fusion_packet(file, session, file_comparison_mode)
+        return build_sensor_fusion_packet(file, session)
 
     if file.type == "compound":
-        return build_compound_file_packet(file, session, file_comparison_mode)
+        return build_compound_file_packet(file, session)
 
 
-def build_compound_file_packet(file: File, session: Session, file_comparison_mode: str):
+def build_compound_file_packet(file: File, session: Session):
     child_files = file.get_child_files(session = session)
     result = {
         'file': file.serialize_base_file()
     }
     for child_file in child_files:
         result[child_file.id] = build_packet(file = child_file,
-                                             session = session,
-                                             file_comparison_mode = file_comparison_mode)
+                                             session = session)
     return result
 
 
-def build_geopacket(file, session, file_comparison_mode = "latest"):
+def build_geopacket(file, session):
     geo_assets = file.get_geo_assets(session = session)
     assets_serialized = []
 
@@ -355,21 +352,20 @@ def build_geopacket(file, session, file_comparison_mode = "latest"):
 
     instance_dict_list = []
     relations_list = []
-    if file_comparison_mode == "latest":
 
-        instance_list = Instance.list(
-            session = session,
-            file_id = file.id)
+    instance_list = Instance.list(
+        session = session,
+        file_id = file.id)
 
-        for instance in instance_list:
-            if instance.type == 'relation':
-                continue
-            instance_dict_list.append(build_instance(instance))
+    for instance in instance_list:
+        if instance.type == 'relation':
+            continue
+        instance_dict_list.append(build_instance(instance))
 
-        for relation in instance_list:
-            if relation.type != 'relation':
-                continue
-            relations_list.append(build_relation(relation = relation))
+    for relation in instance_list:
+        if relation.type != 'relation':
+            continue
+        relations_list.append(build_relation(relation = relation))
 
 
     return {'file': {
@@ -384,8 +380,6 @@ def build_geopacket(file, session, file_comparison_mode = "latest"):
 
 def build_video_packet(file, session):
     """
-    Assumes it's "latest" and doesn't do vs_orignal yet
-
     * Serializes video information
     * Gets all frames *with instances* for the video FILE
     * Each frame it gets the instance list
@@ -476,8 +470,7 @@ def build_video_packet(file, session):
 
 def build_image_packet(
     file,
-    session = None,
-    file_comparison_mode = None):
+    session = None):
     """
     Generic method to generate a dict of information given a file
     """
@@ -493,13 +486,12 @@ def build_image_packet(
 
     instance_dict_list = []
 
-    if file_comparison_mode == "latest":
 
-        instance_list = Instance.list(
-            session = session,
-            file_id = file.id)
-        for instance in instance_list:
-            instance_dict_list.append(build_instance(instance))
+    instance_list = Instance.list(
+        session = session,
+        file_id = file.id)
+    for instance in instance_list:
+        instance_dict_list.append(build_instance(instance))
 
 
     return {'file': {
@@ -516,8 +508,7 @@ def build_image_packet(
 
 def build_text_packet(
     file,
-    session = None,
-    file_comparison_mode = None):
+    session = None):
     """
     Generic method to generate a dict of information given a file
     """
@@ -533,21 +524,20 @@ def build_text_packet(
 
     instance_dict_list = []
     relations_list = []
-    if file_comparison_mode == "latest":
 
-        instance_list = Instance.list(
-            session = session,
-            file_id = file.id)
+    instance_list = Instance.list(
+        session = session,
+        file_id = file.id)
 
-        for instance in instance_list:
-            if instance.type == 'relation':
-                continue
-            instance_dict_list.append(build_instance(instance))
+    for instance in instance_list:
+        if instance.type == 'relation':
+            continue
+        instance_dict_list.append(build_instance(instance))
 
-        for relation in instance_list:
-            if relation.type != 'relation':
-                continue
-            relations_list.append(build_relation(relation = relation))
+    for relation in instance_list:
+        if relation.type != 'relation':
+            continue
+        relations_list.append(build_relation(relation = relation))
 
 
     instance_dict_list = instance_dict_list + relations_list
@@ -566,8 +556,7 @@ def build_text_packet(
 
 def build_sensor_fusion_packet(
     file,
-    session = None,
-    file_comparison_mode = None):
+    session = None):
     """
     Generic method to generate a dict of information given a file
     """
@@ -583,14 +572,13 @@ def build_sensor_fusion_packet(
 
     instance_dict_list = []
 
-    if file_comparison_mode == "latest":
 
-        instance_list = Instance.list(
-            session = session,
-            file_id = file.id)
+    instance_list = Instance.list(
+        session = session,
+        file_id = file.id)
 
-        for instance in instance_list:
-            instance_dict_list.append(build_instance(instance))
+    for instance in instance_list:
+        instance_dict_list.append(build_instance(instance))
 
 
     return {
@@ -664,24 +652,7 @@ def build_instance(instance, include_label = False):
     # Don't add them here - otherwise this creates a lot of 
     # not needed data
 
-    out = {  # 'hash'  : instance.hash,
-        'id': instance.id,
-        'type': instance.type,
-        'label_file_id': instance.label_file_id,  # for images
-        'frame_number': instance.frame_number,
-        'global_frame_number': instance.global_frame_number,
-        'number': instance.number,
-        'x_min': instance.x_min,
-        'y_min': instance.y_min,
-        'x_max': instance.x_max,
-        'y_max': instance.y_max,
-        'radius': instance.radius,
-        'bounds': instance.bounds,
-        'angle': instance.angle,
-        'attribute_groups': attribute_groups,
-        'interpolated': instance.interpolated,
-        # 'local_sequence_number' : instance.number,
-    }
+    out = base_instance_packet(instance)
 
     if instance.type == 'curve':
          out['p1'] = instance.p1
