@@ -95,20 +95,10 @@ class Instance(Base):
 
     pause_object = Column(Boolean)
 
-    # TODO review interpolated
-    # And other options in relation to say box
     machine_made = Column(Boolean)
     interpolated = Column(Boolean)
 
-    # Should this be machine_made_type?
-    fan_made = Column(Boolean)
-
     verified = Column(Boolean)
-
-    #  this is part of attributes now, delete?
-    # TODO, do we want user selectable bools?
-    occluded = Column(String())  # "full", "partial" ...
-    # Other?
 
     soft_delete = Column(Boolean)  # This is just for working dir
 
@@ -169,7 +159,6 @@ class Instance(Base):
 
     rear_face = Column(MutableDict.as_mutable(JSONEncodedDict))
 
-    # CAREFUL renamed these
     preview_image_url = Column(String())
     preview_image_blob_dir = Column(String())
     preview_image_url_expiry = Column(Integer)
@@ -454,7 +443,6 @@ class Instance(Base):
             'model_id': self.model_id,
             'model_run_id': self.model_run_id,
             'sequence_id': self.sequence_id,
-            'fan_made': self.fan_made,
             'points': points,
             'front_face': self.front_face,
             'rear_face': self.rear_face,
@@ -518,7 +506,6 @@ class Instance(Base):
             'width': self.width,
             'height': self.height,
             'number': self.number,
-            'fan_made': self.fan_made,
             'sequence_id': self.sequence_id,
             'points': self.points.get('points', None),
             'front_face': self.front_face,
