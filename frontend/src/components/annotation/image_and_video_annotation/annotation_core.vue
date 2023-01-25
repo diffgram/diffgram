@@ -3174,7 +3174,7 @@ export default Vue.extend({
       document.removeEventListener("mousedown", this.mouse_events_global_down);
       // window.removeEventListener("keydown", this.keyboard_events_global_down);
 
-      window.removeEventListener("keyup", this.keyboard_events_global_up);
+      // window.removeEventListener("keyup", this.keyboard_events_global_up);
       window.removeEventListener(
         "resize",
         this.update_window_size_from_listener
@@ -3213,7 +3213,7 @@ export default Vue.extend({
       );
       // window.addEventListener("keydown", this.keyboard_events_global_down);
       document.addEventListener("mousedown", this.mouse_events_global_down);
-      window.addEventListener("keyup", this.keyboard_events_global_up);
+      // window.addEventListener("keyup", this.keyboard_events_global_up);
       window.addEventListener("resize", this.update_window_size_from_listener);
 
       this.update_window_size_from_listener(); // Initial size (resize doesn't fire on first load)
@@ -7381,7 +7381,6 @@ export default Vue.extend({
         ) {
           return;
         }
-
         this.$emit('save', true); // and_complete == true
       }
 
@@ -7404,7 +7403,6 @@ export default Vue.extend({
       }
       if (this.shift_key && event.keyCode === 82) { // CTRL + r
         this.annotation_show_activate(!this.task && this.working_file && this.working_file.id ? 'file' : 'task')
-
       }
       if (event.keyCode === 90 && this.ctrl_key) {
         // ctrl + z

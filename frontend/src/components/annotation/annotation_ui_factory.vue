@@ -426,7 +426,12 @@ export default Vue.extend({
     'annotation_ui_context.working_file': function() {
       this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
       if (this.annotation_ui_context && this.hotkey_manager) {
-        this.hotkey_manager.activate(this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down)
+        const listener_map = {
+          "keydown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down,
+          "keyup": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_up
+        }
+
+        this.hotkey_manager.activate(listener_map)
       }
     },
     '$route'(to, from) {
@@ -554,8 +559,13 @@ export default Vue.extend({
       this.task_prefetcher.update_tasks(this.annotation_ui_context.task)
     }
 
+    const listener_map = {
+      "keydown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down,
+      "keyup": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_up
+    }
+
     this.hotkey_manager = new HotKeyManager()
-    this.hotkey_manager.activate(this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down)
+    this.hotkey_manager.activate(listener_map)
 
     this.initializing = false
   },

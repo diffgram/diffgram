@@ -1,16 +1,20 @@
 export default class HotKeyManager {
   annotation_type: String
   context: String
-  key_down_handler: (this: Window, ev: KeyboardEvent) => void
+  key_listeners_map: any
 
   deactivate(): void {
-    window.removeEventListener("keydown", this.key_down_handler)
+    if (this.key_listeners_map) {
+      window.removeEventListener("keydown", this.key_listeners_map["keydown"])
+      window.removeEventListener("keyup", this.key_listeners_map["keyup"])
+    }
   }
 
-  activate(key_down_handler: (this: Window, ev: KeyboardEvent) => void): void {
+  activate(key_listeners_map: any): void {
     this.deactivate()
-    
-    this.key_down_handler = key_down_handler
-    window.addEventListener("keydown", this.key_down_handler)
+
+    this.key_listeners_map = key_listeners_map
+    window.addEventListener("keydown", key_listeners_map["keydown"])
+    window.addEventListener("keyup", key_listeners_map["keyup"])
   }
 }
