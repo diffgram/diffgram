@@ -425,6 +425,9 @@ export default Vue.extend({
   watch: {
     'annotation_ui_context.working_file': function() {
       this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
+      if (this.annotation_ui_context && this.hotkey_manager) {
+        this.hotkey_manager.activate(this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down)
+      }
     },
     '$route'(to, from) {
       if (from.name === 'task_annotation' && to.name === 'studio') {
@@ -551,8 +554,8 @@ export default Vue.extend({
       this.task_prefetcher.update_tasks(this.annotation_ui_context.task)
     }
 
-    this.hotkey_manager = new HotKeyManager(this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down)
-    this.hotkey_manager.activate()
+    this.hotkey_manager = new HotKeyManager()
+    this.hotkey_manager.activate(this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down)
 
     this.initializing = false
   },
@@ -1779,7 +1782,6 @@ export default Vue.extend({
         ) {
           return;
         }
-
         if (!local_project_string_id) {
           return
         }

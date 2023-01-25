@@ -3,16 +3,14 @@ export default class HotKeyManager {
   context: String
   key_down_handler: (this: Window, ev: KeyboardEvent) => void
 
-  constructor(key_down_handler: (this: Window, ev: KeyboardEvent) => void) {
-    this.key_down_handler = key_down_handler
-  }
-
   deactivate(): void {
     window.removeEventListener("keydown", this.key_down_handler)
   }
 
-  activate(): void {
+  activate(key_down_handler: (this: Window, ev: KeyboardEvent) => void): void {
     this.deactivate()
+    
+    this.key_down_handler = key_down_handler
     window.addEventListener("keydown", this.key_down_handler)
   }
 }

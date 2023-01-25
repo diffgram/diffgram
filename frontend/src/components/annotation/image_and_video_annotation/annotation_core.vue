@@ -7319,7 +7319,6 @@ export default Vue.extend({
     },
 
     keyboard_events_global_down: function (event) {
-      console.log("THIS IS IT")
       var ctrlKey = 17,
         cmdKey = 91,
         shiftKey = 16,
