@@ -783,7 +783,6 @@ class File(Base, Caching):
                     frame_number = instance.frame_number,
                     global_frame_number = instance.global_frame_number,
                     machine_made = instance.machine_made,
-                    fan_made = instance.fan_made,
                     points = instance.points,
                     soft_delete = instance.soft_delete,
                     center_x = instance.center_x,

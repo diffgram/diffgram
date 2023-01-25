@@ -1,4 +1,3 @@
-# OPENCORE - ADD
 import time
 import json
 from shared.database.export import Export
@@ -7,7 +6,6 @@ from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.source_control.file import File
 from shared.database.project import Project
 from shared.database.annotation.instance import Instance
-from shared.database.source_control.file_diff import file_difference
 from shared.machine_learning.semantic_segmentation_data_prep import Semantic_segmentation_data_prep
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
 from shared.database.video.sequence import Sequence
@@ -75,9 +73,6 @@ def new_external_export(
 
             file_list = [export.task.file]
 
-    # While job could be None and still get files
-    # if we do have a job id we may want to get
-    # files not replaced in the directory yet.
     if export.source == "job":
 
         status = None
@@ -97,9 +92,7 @@ def new_external_export(
             file_list.append(task.file)
 
     if export.source == "directory":
-        # Question, why are we declaring this here?
-        # Doesn't really make sense as export already has
-        # it when created?
+
         export.working_dir_id = working_dir.id
 
         file_list = WorkingDirFileLink.file_list(
@@ -265,8 +258,6 @@ def annotation_export_core(
         annotations['label_map'] = export_label_map
         annotations['label_colour_map'] = build_label_colour_map(session, export_label_map)
 
-        # TODO maybe, would like "annotations"
-        # To be one layer "deeper" in terms of nesting.
         annotations['export_info'] = export.serialize_for_inside_export_itself()
 
         # Other / shared stuff
@@ -276,18 +267,15 @@ def annotation_export_core(
 
         for index, file in enumerate(file_list):
 
-            # Image URL?
             packet = build_packet(
                 file = file,
-                session = session,
-                file_comparison_mode = export.file_comparison_mode)
+                session = session)
 
             annotations[file.id] = packet
 
             export.percent_complete = (index / export.file_list_length) * 100
 
             if index % 10 == 0:
-                # TODO would need to commit the session for this to be useful right?
                 logger.info(f"Percent done {export.percent_complete}")
                 try_to_commit(session = session)  # push update
 
@@ -317,40 +305,38 @@ def build_attribute_groups_reference(session: 'Session', project: Project):
 
 
 def build_packet(file,
-                 session = None,
-                 file_comparison_mode = "latest"):
+                 session = None):
     if file.type == "video":
         return build_video_packet(file, session)
 
     if file.type == "geospatial":
-        return build_geopacket(file, session, file_comparison_mode)
+        return build_geopacket(file, session)
 
     if file.type == "image":
-        return build_image_packet(file, session, file_comparison_mode)
+        return build_image_packet(file, session)
 
     if file.type == "text":
-        return build_text_packet(file, session, file_comparison_mode)
+        return build_text_packet(file, session)
 
     if file.type == "sensor_fusion":
-        return build_sensor_fusion_packet(file, session, file_comparison_mode)
+        return build_sensor_fusion_packet(file, session)
 
     if file.type == "compound":
-        return build_compound_file_packet(file, session, file_comparison_mode)
+        return build_compound_file_packet(file, session)
 
 
-def build_compound_file_packet(file: File, session: Session, file_comparison_mode: str):
+def build_compound_file_packet(file: File, session: Session):
     child_files = file.get_child_files(session = session)
     result = {
         'file': file.serialize_base_file()
     }
     for child_file in child_files:
         result[child_file.id] = build_packet(file = child_file,
-                                             session = session,
-                                             file_comparison_mode = file_comparison_mode)
+                                             session = session)
     return result
 
 
-def build_geopacket(file, session, file_comparison_mode = "latest"):
+def build_geopacket(file, session):
     geo_assets = file.get_geo_assets(session = session)
     assets_serialized = []
 
@@ -366,40 +352,21 @@ def build_geopacket(file, session, file_comparison_mode = "latest"):
 
     instance_dict_list = []
     relations_list = []
-    if file_comparison_mode == "latest":
 
-        instance_list = Instance.list(
-            session = session,
-            file_id = file.id)
+    instance_list = Instance.list(
+        session = session,
+        file_id = file.id)
 
-        for instance in instance_list:
-            if instance.type == 'relation':
-                continue
-            instance_dict_list.append(build_instance(instance))
+    for instance in instance_list:
+        if instance.type == 'relation':
+            continue
+        instance_dict_list.append(build_instance(instance, file))
 
-        for relation in instance_list:
-            if relation.type != 'relation':
-                continue
-            relations_list.append(build_relation(relation = relation))
+    for relation in instance_list:
+        if relation.type != 'relation':
+            continue
+        relations_list.append(build_relation(relation = relation))
 
-    if file_comparison_mode == "vs_original":
-        # We could use the raw dict of the {'unchanged', 'added', 'deleted'}
-        # sets BUT then it would make the below a little different
-        # TODO review this
-        #
-
-        result, instance_dict = file_difference(
-            session = session,
-            file_id_alpha = file.id,
-            file_id_bravo = file.root_id)
-
-        for change_type in instance_dict.keys():
-            for instance in instance_dict[change_type]:
-                out = build_instance(instance)
-
-                out['change_type'] = change_type
-
-                instance_dict_list.append(out)
 
     return {'file': {
         'id': file.id,
@@ -413,8 +380,6 @@ def build_geopacket(file, session, file_comparison_mode = "latest"):
 
 def build_video_packet(file, session):
     """
-    Assumes it's "latest" and doesn't do vs_orignal yet
-
     * Serializes video information
     * Gets all frames *with instances* for the video FILE
     * Each frame it gets the instance list
@@ -440,8 +405,8 @@ def build_video_packet(file, session):
         limit = None
     )
     parent_instance_list_serialized = []
-    for inst in parent_instance_list:
-        parent_instance_list_serialized.append(build_instance(inst))
+    for instance in parent_instance_list:
+        parent_instance_list_serialized.append(build_instance(instance, file))
 
     # Context of making it easier to inspect and download media
     mp4_video_signed_url = file.video.file_signed_url
@@ -481,7 +446,7 @@ def build_video_packet(file, session):
         # Each instance has it's frame number
         for instance in instance_list:
             instance_list_serialized.append(
-                build_instance(instance, include_label = False))
+                build_instance(instance, file, include_label = False))
 
         sequence_dict['instance_list'] = instance_list_serialized
         sequence_list_serialized.append(sequence_dict)
@@ -505,8 +470,7 @@ def build_video_packet(file, session):
 
 def build_image_packet(
     file,
-    session = None,
-    file_comparison_mode = None):
+    session = None):
     """
     Generic method to generate a dict of information given a file
     """
@@ -522,32 +486,13 @@ def build_image_packet(
 
     instance_dict_list = []
 
-    if file_comparison_mode == "latest":
 
-        instance_list = Instance.list(
-            session = session,
-            file_id = file.id)
-        for instance in instance_list:
-            instance_dict_list.append(build_instance(instance))
+    instance_list = Instance.list(
+        session = session,
+        file_id = file.id)
+    for instance in instance_list:
+        instance_dict_list.append(build_instance(instance, file))
 
-    if file_comparison_mode == "vs_original":
-        # We could use the raw dict of the {'unchanged', 'added', 'deleted'}
-        # sets BUT then it would make the below a little different
-        # TODO review this
-        #
-
-        result, instance_dict = file_difference(
-            session = session,
-            file_id_alpha = file.id,
-            file_id_bravo = file.root_id)
-
-        for change_type in instance_dict.keys():
-            for instance in instance_dict[change_type]:
-                out = build_instance(instance)
-
-                out['change_type'] = change_type
-
-                instance_dict_list.append(out)
 
     return {'file': {
         'id': file.id,
@@ -563,8 +508,7 @@ def build_image_packet(
 
 def build_text_packet(
     file,
-    session = None,
-    file_comparison_mode = None):
+    session = None):
     """
     Generic method to generate a dict of information given a file
     """
@@ -580,40 +524,23 @@ def build_text_packet(
 
     instance_dict_list = []
     relations_list = []
-    if file_comparison_mode == "latest":
 
-        instance_list = Instance.list(
-            session = session,
-            file_id = file.id)
+    instance_list = Instance.list(
+        session = session,
+        file_id = file.id)
 
-        for instance in instance_list:
-            if instance.type == 'relation':
-                continue
-            instance_dict_list.append(build_instance(instance))
+    for instance in instance_list:
+        if instance.type == 'relation':
+            continue
+        instance_dict_list.append(build_instance(instance, file))
 
-        for relation in instance_list:
-            if relation.type != 'relation':
-                continue
-            relations_list.append(build_relation(relation = relation))
+    for relation in instance_list:
+        if relation.type != 'relation':
+            continue
+        relations_list.append(build_relation(relation = relation))
 
-    if file_comparison_mode == "vs_original":
-        # We could use the raw dict of the {'unchanged', 'added', 'deleted'}
-        # sets BUT then it would make the below a little different
-        # TODO review this
-        #
 
-        result, instance_dict = file_difference(
-            session = session,
-            file_id_alpha = file.id,
-            file_id_bravo = file.root_id)
-
-        for change_type in instance_dict.keys():
-            for instance in instance_dict[change_type]:
-                out = build_instance(instance)
-
-                out['change_type'] = change_type
-
-                instance_dict_list.append(out)
+    instance_dict_list = instance_dict_list + relations_list
 
     return {'file': {
         'id': file.id,
@@ -629,8 +556,7 @@ def build_text_packet(
 
 def build_sensor_fusion_packet(
     file,
-    session = None,
-    file_comparison_mode = None):
+    session = None):
     """
     Generic method to generate a dict of information given a file
     """
@@ -646,33 +572,14 @@ def build_sensor_fusion_packet(
 
     instance_dict_list = []
 
-    if file_comparison_mode == "latest":
 
-        instance_list = Instance.list(
-            session = session,
-            file_id = file.id)
+    instance_list = Instance.list(
+        session = session,
+        file_id = file.id)
 
-        for instance in instance_list:
-            instance_dict_list.append(build_instance(instance))
+    for instance in instance_list:
+        instance_dict_list.append(build_instance(instance, file))
 
-    if file_comparison_mode == "vs_original":
-        # We could use the raw dict of the {'unchanged', 'added', 'deleted'}
-        # sets BUT then it would make the below a little different
-        # TODO review this
-        #
-
-        result, instance_dict = file_difference(
-            session = session,
-            file_id_alpha = file.id,
-            file_id_bravo = file.root_id)
-
-        for change_type in instance_dict.keys():
-            for instance in instance_dict[change_type]:
-                out = build_instance(instance)
-
-                out['change_type'] = change_type
-
-                instance_dict_list.append(out)
 
     return {
         'file': {
@@ -689,71 +596,65 @@ def build_sensor_fusion_packet(
 
 
 def build_relation(relation: Instance):
-    out = {  # 'hash'  : instance.hash,
+    out = {
         'type': relation.type,
-        'label_file_id': relation.label_file_id,  # for images
-        'frame_number': relation.frame_number,
-        'global_frame_number': relation.global_frame_number,
-        'number': relation.number,
+        'label_file_id': relation.label_file_id, 
         'attribute_groups': relation.attribute_groups,
         'from_instance_id': relation.from_instance_id,
-        'to_instance_id': relation.to_instance_id,
-        # 'local_sequence_number' : instance.number,
+        'to_instance_id': relation.to_instance_id
     }
     return out
 
 
-def build_instance(instance, include_label = False):
-    """
-    instance.attribute_groups is a SQL Alchemy type mutable dict
-    it does not serialize by default
-    so we cast it to a new thing using dict() which is basically
-    just copying key values
+def base_instance_packet(instance):
 
-    instance.attribute_groups may be None
-    if it's None then dict() thing appears to fail
-
-    using dict() is preffered to json dumps as that seems to create
-    a bunch of random slashes.
-    """
     attribute_groups = instance.attribute_groups
     if attribute_groups:
-        attribute_groups = dict(attribute_groups)
+        attribute_groups = dict(attribute_groups)     # Cast from SQLAlchemy to serializable form 
 
-    # Warning: Add new instance types in conditional
-    # Don't add them here - otherwise this creates a lot of 
-    # not needed data
-
-    out = {  # 'hash'  : instance.hash,
+    return {
+        'id': instance.id,
         'type': instance.type,
-        'label_file_id': instance.label_file_id,  # for images
-        'frame_number': instance.frame_number,
-        'global_frame_number': instance.global_frame_number,
-        'number': instance.number,
-        'x_min': instance.x_min,
-        'y_min': instance.y_min,
-        'x_max': instance.x_max,
-        'y_max': instance.y_max,
-        'lonlat': instance.lonlat,
-        'coords': instance.coords,
-        'radius': instance.radius,
-        'bounds': instance.bounds,
-        'bounds_lonlat': instance.bounds_lonlat,
-        'p1': instance.p1,
-        'p2': instance.p2,
-        'cp': instance.cp,
-        'angle': instance.angle,
         'attribute_groups': attribute_groups,
-        'interpolated': instance.interpolated,
-        # 'local_sequence_number' : instance.number,
+        'label_file_id': instance.label_file_id
     }
 
-    # Limit output, eg so an instance ina frame doesn't have a ton
-    # of extra tokens
-    # TODO refactor to own functions, eg
-    # right now text tokens now display x_min when it's not needed
-    # TODO also check if this applies to other serialization forms
-    # eg in instance.py
+
+def build_instance(instance, file, include_label = False):
+
+    out = base_instance_packet(instance)
+
+    if file.type == 'video':
+        out['frame_number'] = instance.frame_number
+        out['global_frame_number'] = instance.global_frame_number
+        out['local_sequence_number'] = instance.number
+        out['number'] = instance.number     # legacy
+        out['interpolated'] = instance.interpolated
+
+    if instance.radius:
+         out['radius'] = instance.radius
+
+    if instance.bounds:
+         out['bounds'] = instance.bounds
+
+    if instance.angle:
+         out['angle'] = instance.angle
+
+    if instance.x_min or instance.y_min or instance.x_max or instance.y_max:
+         out['x_min'] = instance.x_min
+         out['y_min'] = instance.y_min
+         out['x_max'] = instance.x_max
+         out['y_max'] = instance.y_max
+
+    if instance.type == 'curve':
+         out['p1'] = instance.p1
+         out['p2'] = instance.p2
+         out['cp'] = instance.cp
+
+    if instance.type in ['geo_point', 'geo_circle', 'geo_polyline', 'geo_polygon', 'geo_box']:
+        out['lonlat'] = instance.lonlat
+        out['coords'] = instance.coords
+        out['bounds_lonlat'] = instance.bounds_lonlat
 
     if instance.type == 'cuboid':
         out['front_face'] = instance.front_face
