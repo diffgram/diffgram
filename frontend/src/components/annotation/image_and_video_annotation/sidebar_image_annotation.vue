@@ -54,10 +54,10 @@
       :accordion="true"
       :inset="false"
       :multiple="false"
-      :focusable="false"
+      :focusable="true"
       :disabled="false"
       :flat="true"
-      :hover="false"
+      :hover="true"
       :tile="true"
       v-show="!annotation_ui_context.issues_ui_manager.show_modify_an_issue"
     >
@@ -106,7 +106,7 @@
       :focusable="true"
       :disabled="false"
       :flat="true"
-      :hover="false"
+      :hover="true"
       :tile="true"
     >
       <v-expansion-panel>
@@ -196,6 +196,7 @@ import Vue from "vue";
 import instance_detail_list_view from "./instance_detail_list_view.vue";
 import view_edit_issue_panel from "../../discussions/view_edit_issue_panel.vue";
 import issues_sidepanel from "../../discussions/issues_sidepanel.vue";
+import userscript from "./userscript/userscript.vue";
 import {types} from "sass";
 import String = types.String;
 import {LabelFile} from "../../../types/label";
@@ -210,6 +211,7 @@ export default Vue.extend({
     instance_detail_list_view,
     view_edit_issue_panel,
     issues_sidepanel,
+    userscript,
     create_issue_panel,
     instance_history_sidepanel
   },

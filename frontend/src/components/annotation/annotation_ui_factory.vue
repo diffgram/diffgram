@@ -107,6 +107,8 @@
         :layout_direction="layout_direction"
         :num_columns="annotation_ui_context.working_file_list.length"
         :root_file="root_file"
+        :selected_row="annotation_ui_context.working_file.row"
+        :selected_col="annotation_ui_context.working_file.column"
         :num_rows="annotation_ui_context.num_rows"
         @panels_resized="on_panes_resized"
         @ready="on_panes_ready"
@@ -118,8 +120,8 @@
                   v-slot:[`panel_${file.row}:${file.column}`]="">
 
                 <div  :key="`area_factory_container_${file.id}`"
-                      :class="{'selected-file': file.id === annotation_ui_context.working_file.id
-                                               && annotation_ui_context.working_file_list.length > 1}">
+                      :class="`${file.id === annotation_ui_context.working_file.id
+                                               && annotation_ui_context.working_file_list.length > 1 ? 'selected-file': 'unselected-file'}`">
                   <annotation_area_factory
                     :key="`annotation_area_factory_${file.id}`"
                     :ref="`annotation_area_factory_${file.id}`"
@@ -737,7 +739,7 @@ export default Vue.extend({
         } else if (file.type === 'audio'){
           // Other type don't have context yet.
           new_child_list.push(new AudioAnnotationUIContext())
-        }else if (file.type === 'geo'){
+        }else if (file.type === 'geospatial'){
           // Other type don't have context yet.
           new_child_list.push(new GeoAnnotationUIContext())
         }else if (file.type === 'sensor_fusion'){
@@ -1845,6 +1847,11 @@ export default Vue.extend({
 
 <style>
 .selected-file{
-  border: 4px solid #1565c0;
+  transition: ease 0.1s;
+  border: 6px solid #1565c0;
 }
+.unselected-file:hover{
+  cursor: pointer !important;
+}
+
 </style>

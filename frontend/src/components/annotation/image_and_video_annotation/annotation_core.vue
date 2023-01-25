@@ -354,6 +354,7 @@
           reactive changes. ie :x = mouse_position.x -->
 
               <target_reticle
+                :is_active="is_active"
                 :ord="2"
                 :x="mouse_position.x"
                 :y="mouse_position.y"
@@ -362,7 +363,7 @@
                 :degrees="degrees"
                 :canvas_element="canvas_element"
                 :canvas_mouse_tools="canvas_mouse_tools"
-                :show="show_target_reticle"
+                :show="show_target_reticle && is_active"
                 :target_colour="
                   current_label_file ? current_label_file.colour : undefined
                 "
@@ -837,6 +838,9 @@ export default Vue.extend({
     is_active: {type: Boolean, required: true, default: true},
   },
   watch: {
+    is_active: function (){
+      this.canvas_element.style.cursor = ''
+    },
     global_instance: function(){
       this.$emit('global_instance_changed', this.working_file.id,  this.global_instance)
     },
@@ -2534,7 +2538,6 @@ export default Vue.extend({
 
       let index = this.instance_list.indexOf(instance)
       if (index === this.instance_hover_index || this.instance_hover_index == undefined) {
-
         this.refresh_instance_list_sidebar(index)
         this.image_annotation_ctx.trigger_refresh_current_instance = Date.now(); // decouple, for case of file changing but instance list being the same index
       }
@@ -2562,6 +2565,9 @@ export default Vue.extend({
        This is a WIP that will be used for all the class Instance Types
        For now we only have Kepoints & Box instance using this
        */
+      if(!this.is_active){
+        return;
+      }
       if (!this.instance_list) {
         return;
       }
@@ -2571,14 +2577,23 @@ export default Vue.extend({
         ) {
           this.instance_hover_index = i;
           this.instance_hover_type = instance.type
-          if (instance.type === 'box') {
-            let box: BoxInstance = instance
-            box.set_default_hover_in_style(box)
+          if(!this.draw_mode){
+            if (instance.type === 'box') {
+              let box: BoxInstance = instance
+              box.set_default_hover_in_style(box)
+            } else if(instance.type === 'polygon'){
+              let poly: PolygonInstance = instance
+              poly.set_default_hover_in_style(poly)
+            }
           }
+
         }
       }
     },
     instance_unhovered: function (instance) {
+      if(!this.is_active){
+        return;
+      }
       if (this.instance_hover_index == undefined) {
         return;
       }
@@ -2590,6 +2605,9 @@ export default Vue.extend({
       if (instance.type === 'box' && !instance.selected) {
         let box: BoxInstance = instance
         box.set_default_hover_out_style(box)
+      } else if(instance.type === 'polygon'){
+        let poly: PolygonInstance = instance
+        poly.set_default_hover_out_style(poly)
       }
     },
     create_instance_list_with_class_types: function (instance_list) {

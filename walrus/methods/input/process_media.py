@@ -939,7 +939,11 @@ class Process_Media():
         # From the file directory, get all related jobs.
         # TODO confirm how this works for pre processing case
         # Whitelist for allow types here, otherwise it opens a ton of connections while say processing frames
-        if self.input.media_type not in ['image', 'video', 'sensor_fusion']:
+        if self.input.media_type not in ['image', 'video', 'sensor_fusion', 'text', 'audio', 'geospatial']:
+            return
+
+        if self.input.file.parent_id is not None:
+            # Avoid adding child of a compound file
             return
 
         directory = self.input.directory
