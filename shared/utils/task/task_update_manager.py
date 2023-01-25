@@ -1,5 +1,4 @@
 from shared.database.task.task import Task, TASK_STATUSES
-from shared.utils.task.task_new import create_review_sub_task
 from shared.database.task.task_event import TaskEvent
 from shared.regular import regular_methods, regular_log
 from dataclasses import dataclass

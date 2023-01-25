@@ -361,7 +361,7 @@ export default Vue.extend({
       default: false,
     },
   },
-  data() {
+  data: function() {
     return {
       task_error: {
         task_request: null,
@@ -371,6 +371,7 @@ export default Vue.extend({
       child_annotation_ctx_list: [],
       root_file: [],
       task_prefetcher: null,
+      all_panes_list: {},
       task_image: null,
       task_instances: null,
       task_loading: false,
@@ -485,7 +486,15 @@ export default Vue.extend({
       this.view_only = true;
     }
   },
+  beforeDestroy() {
+    window.removeEventListener(
+      "resize",
+      this.update_window_size_from_listener
+    );
+
+  },
   async mounted() {
+    window.addEventListener("resize", this.update_window_size_from_listener);
     this.annotation_ui_context.get_userscript = this.get_userscript
     Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
     this.annotation_ui_context.issues_ui_manager = new IssuesAnnotationUIManager()
@@ -664,8 +673,11 @@ export default Vue.extend({
     },
   },
   methods: {
-    hotkeys_test: function() {
-      console.log("Keydown")
+    update_window_size_from_listener: function(){
+      console.log('RESIZE', this.all_panes_list)
+        for(let key_row of Object.keys(this.all_panes_list)){
+          this.recalculate_pane_dimensions(key_row, this.all_panes_list[key_row])
+        }
     },
     update_label_file_visible: function (label_file) {
       if (this.annotation_ui_context.hidden_label_id_list.includes(label_file.id)) {
@@ -698,19 +710,22 @@ export default Vue.extend({
       let total_width = this.$refs.panels_manager.$el.clientWidth;
       let total_height = this.$refs.panels_manager.$el.clientHeight
       for(let i = 0 ; i < panes_list.length ; i++){
-        this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100)
-        this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[i].size / 100);
+        // We substract 50 px to leave a small padding when calculating new scale of images
+        this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100) - 50
+        this.child_annotation_ctx_list[i].container_height = total_height - 50;
       }
     },
     on_panes_ready: function(){
       for (let i = 0; i < this.annotation_ui_context.num_rows; i++){
         // TODO: filter this by row
-        let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {return {size: 50}})
+        let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {return {size: 100 / this.child_annotation_ctx_list.length}})
+        this.all_panes_list[i] = default_pane_sizes
         this.recalculate_pane_dimensions(i, default_pane_sizes)
       }
 
     },
     on_panes_resized: function(row_index, panes_list){
+      this.all_panes_list = {[row_index]: panes_list}
       this.recalculate_pane_dimensions(row_index, panes_list)
     },
     populate_child_context_list: function(child_files){
