@@ -1877,7 +1877,6 @@ export default Vue.extend({
   methods: {
     clear_unsaved: function() {
       this.instance_list = this.annotation_ui_context.instance_store.clear_unsaved(this.working_file.id)
-
     },
     cancel_polygon_merge: function () {
       this.polygon_merge_tool = null
@@ -3171,7 +3170,7 @@ export default Vue.extend({
 
       // global
       window.removeEventListener("beforeunload", this.warn_user_unload);
-      document.removeEventListener("mousedown", this.mouse_events_global_down);
+      // document.removeEventListener("mousedown", this.mouse_events_global_down);
       // window.removeEventListener("keydown", this.keyboard_events_global_down);
 
       // window.removeEventListener("keyup", this.keyboard_events_global_up);
@@ -3212,7 +3211,7 @@ export default Vue.extend({
         this.keyboard_events_local_down
       );
       // window.addEventListener("keydown", this.keyboard_events_global_down);
-      document.addEventListener("mousedown", this.mouse_events_global_down);
+      // document.addEventListener("mousedown", this.mouse_events_global_down);
       // window.addEventListener("keyup", this.keyboard_events_global_up);
       window.addEventListener("resize", this.update_window_size_from_listener);
 

@@ -426,12 +426,7 @@ export default Vue.extend({
     'annotation_ui_context.working_file': function() {
       this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
       if (this.annotation_ui_context && this.hotkey_manager) {
-        const listener_map = {
-          "keydown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down,
-          "keyup": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_up
-        }
-
-        this.hotkey_manager.activate(listener_map)
+        this.hotkey_manager.activate(this.listeners_map)
       }
     },
     '$route'(to, from) {
@@ -559,17 +554,21 @@ export default Vue.extend({
       this.task_prefetcher.update_tasks(this.annotation_ui_context.task)
     }
 
-    const listener_map = {
-      "keydown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down,
-      "keyup": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_up
-    }
-
     this.hotkey_manager = new HotKeyManager()
-    this.hotkey_manager.activate(listener_map)
+    this.hotkey_manager.activate(this.listeners_map)
 
     this.initializing = false
   },
   computed: {
+    listeners_map: function() {
+      const listener_map = {
+        "keydown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down,
+        "keyup": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_up,
+        "mousedown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].mouse_events_global_down,
+      }
+
+      return listener_map
+    },
     annotation_area_container_max_height: function(){
       let heightWindow = window.innerHeight && document.documentElement.clientHeight ?
         Math.min(window.innerHeight, document.documentElement.clientHeight) :
@@ -687,7 +686,6 @@ export default Vue.extend({
   },
   methods: {
     update_window_size_from_listener: function(){
-      console.log('RESIZE', this.all_panes_list)
         for(let key_row of Object.keys(this.all_panes_list)){
           this.recalculate_pane_dimensions(key_row, this.all_panes_list[key_row])
         }

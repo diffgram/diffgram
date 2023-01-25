@@ -7,6 +7,7 @@ export default class HotKeyManager {
     if (this.key_listeners_map) {
       window.removeEventListener("keydown", this.key_listeners_map["keydown"])
       window.removeEventListener("keyup", this.key_listeners_map["keyup"])
+      window.removeEventListener("mousedown", this.key_listeners_map["mousedown"])
     }
   }
 
@@ -16,5 +17,6 @@ export default class HotKeyManager {
     this.key_listeners_map = key_listeners_map
     window.addEventListener("keydown", key_listeners_map["keydown"])
     window.addEventListener("keyup", key_listeners_map["keyup"])
+    window.addEventListener("mousedown", key_listeners_map["mousedown"])
   }
 }
