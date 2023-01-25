@@ -329,10 +329,9 @@ import {
 } from '../../types/AnnotationUIContext'
 import panel_manager from "./panel_manager.vue";
 import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServices"
-import {createDefaultLabelSettings} from "../../types/image_label_settings";
 import {get_child_files} from "../../services/fileServices";
-import {fromUserCoordinate} from "ol/proj";
 import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue"
+import HotKeyManager from "./hotkeys/HotKeysManager"
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -367,6 +366,7 @@ export default Vue.extend({
       task_error: {
         task_request: null,
       },
+      hotkey_manager: null,
       annotation_ui_context: new BaseAnnotationUIContext(),
       child_annotation_ctx_list: [],
       root_file: [],
@@ -542,6 +542,9 @@ export default Vue.extend({
       this.task_prefetcher.update_tasks(this.annotation_ui_context.task)
     }
 
+    this.hotkey_manager = new HotKeyManager(this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down)
+    this.hotkey_manager.activate()
+
     this.initializing = false
   },
   computed: {
@@ -661,6 +664,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    hotkeys_test: function() {
+      console.log("Keydown")
+    },
     update_label_file_visible: function (label_file) {
       if (this.annotation_ui_context.hidden_label_id_list.includes(label_file.id)) {
         const index = this.annotation_ui_context.hidden_label_id_list.indexOf(label_file.id);

@@ -3174,7 +3174,7 @@ export default Vue.extend({
       // global
       window.removeEventListener("beforeunload", this.warn_user_unload);
       document.removeEventListener("mousedown", this.mouse_events_global_down);
-      window.removeEventListener("keydown", this.keyboard_events_global_down);
+      // window.removeEventListener("keydown", this.keyboard_events_global_down);
 
       window.removeEventListener("keyup", this.keyboard_events_global_up);
       window.removeEventListener(
@@ -3213,7 +3213,7 @@ export default Vue.extend({
         "keydown",
         this.keyboard_events_local_down
       );
-      window.addEventListener("keydown", this.keyboard_events_global_down);
+      // window.addEventListener("keydown", this.keyboard_events_global_down);
       document.addEventListener("mousedown", this.mouse_events_global_down);
       window.addEventListener("keyup", this.keyboard_events_global_up);
       window.addEventListener("resize", this.update_window_size_from_listener);
@@ -7323,6 +7323,7 @@ export default Vue.extend({
     },
 
     keyboard_events_global_down: function (event) {
+      console.log("THIS IS IT")
       var ctrlKey = 17,
         cmdKey = 91,
         shiftKey = 16,
