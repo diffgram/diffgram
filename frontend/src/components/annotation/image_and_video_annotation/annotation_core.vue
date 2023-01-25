@@ -1881,7 +1881,6 @@ export default Vue.extend({
   methods: {
     clear_unsaved: function() {
       this.instance_list = this.annotation_ui_context.instance_store.clear_unsaved(this.working_file.id)
-
     },
     cancel_polygon_merge: function () {
       this.polygon_merge_tool = null
@@ -3188,15 +3187,15 @@ export default Vue.extend({
        */
 
       // global
-      window.removeEventListener("beforeunload", this.warn_user_unload);
-      document.removeEventListener("mousedown", this.mouse_events_global_down);
-      window.removeEventListener("keydown", this.keyboard_events_global_down);
+      // window.removeEventListener("beforeunload", this.warn_user_unload);
+      // document.removeEventListener("mousedown", this.mouse_events_global_down);
+      // window.removeEventListener("keydown", this.keyboard_events_global_down);
 
-      window.removeEventListener("keyup", this.keyboard_events_global_up);
-      window.removeEventListener(
-        "resize",
-        this.update_window_size_from_listener
-      );
+      // window.removeEventListener("keyup", this.keyboard_events_global_up);
+      // window.removeEventListener(
+      //   "resize",
+      //   this.update_window_size_from_listener
+      // );
 
       // local
       this.annotation_area.removeEventListener(
@@ -3220,7 +3219,7 @@ export default Vue.extend({
       // rather have canvas_wrapper inside this functionsss in case it needs to "refresh" it
 
       this.annotation_area = document.getElementById("annotation");
-      window.addEventListener("beforeunload", this.warn_user_unload);
+      // window.addEventListener("beforeunload", this.warn_user_unload);
       this.annotation_area.addEventListener(
         "keyup",
         this.keyboard_events_local_up
@@ -3229,10 +3228,10 @@ export default Vue.extend({
         "keydown",
         this.keyboard_events_local_down
       );
-      window.addEventListener("keydown", this.keyboard_events_global_down);
-      document.addEventListener("mousedown", this.mouse_events_global_down);
-      window.addEventListener("keyup", this.keyboard_events_global_up);
-      window.addEventListener("resize", this.update_window_size_from_listener);
+      // window.addEventListener("keydown", this.keyboard_events_global_down);
+      // document.addEventListener("mousedown", this.mouse_events_global_down);
+      // window.addEventListener("keyup", this.keyboard_events_global_up);
+      // window.addEventListener("resize", this.update_window_size_from_listener);
 
       this.update_window_size_from_listener(); // Initial size (resize doesn't fire on first load)
 
@@ -7399,7 +7398,6 @@ export default Vue.extend({
         ) {
           return;
         }
-
         this.$emit('save', true); // and_complete == true
       }
 
@@ -7422,7 +7420,6 @@ export default Vue.extend({
       }
       if (this.shift_key && event.keyCode === 82) { // CTRL + r
         this.annotation_show_activate(!this.task && this.working_file && this.working_file.id ? 'file' : 'task')
-
       }
       if (event.keyCode === 90 && this.ctrl_key) {
         // ctrl + z

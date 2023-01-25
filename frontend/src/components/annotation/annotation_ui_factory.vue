@@ -331,10 +331,9 @@ import {
 } from '../../types/AnnotationUIContext'
 import panel_manager from "./panel_manager.vue";
 import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServices"
-import {createDefaultLabelSettings} from "../../types/image_label_settings";
 import {get_child_files} from "../../services/fileServices";
-import {fromUserCoordinate} from "ol/proj";
 import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue"
+import HotKeyManager from "./hotkeys/HotKeysManager"
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -369,6 +368,7 @@ export default Vue.extend({
       task_error: {
         task_request: null,
       },
+      hotkey_manager: null,
       annotation_ui_context: new BaseAnnotationUIContext(),
       child_annotation_ctx_list: [],
       root_file: [],
@@ -427,6 +427,9 @@ export default Vue.extend({
   watch: {
     'annotation_ui_context.working_file': function() {
       this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
+      if (this.annotation_ui_context && this.hotkey_manager) {
+        this.hotkey_manager.activate(this.listeners_map)
+      }
     },
     '$route'(to, from) {
       if (from.name === 'task_annotation' && to.name === 'studio') {
@@ -553,9 +556,23 @@ export default Vue.extend({
       this.task_prefetcher.update_tasks(this.annotation_ui_context.task)
     }
 
+    this.hotkey_manager = new HotKeyManager()
+    this.hotkey_manager.activate(this.listeners_map)
+
     this.initializing = false
   },
   computed: {
+    listeners_map: function() {
+      const listener_map = {
+        "beforeunload": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].warn_user_unload,
+        "keydown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down,
+        "keyup": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_up,
+        "mousedown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].mouse_events_global_down,
+        "resize": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].update_window_size_from_listener,
+      }
+
+      return listener_map
+    },
     annotation_area_container_max_height: function(){
       let heightWindow = window.innerHeight && document.documentElement.clientHeight ?
         Math.min(window.innerHeight, document.documentElement.clientHeight) :
@@ -673,7 +690,6 @@ export default Vue.extend({
   },
   methods: {
     update_window_size_from_listener: function(){
-      console.log('RESIZE', this.all_panes_list)
         for(let key_row of Object.keys(this.all_panes_list)){
           this.recalculate_pane_dimensions(key_row, this.all_panes_list[key_row])
         }
@@ -1778,7 +1794,6 @@ export default Vue.extend({
         ) {
           return;
         }
-
         if (!local_project_string_id) {
           return
         }
