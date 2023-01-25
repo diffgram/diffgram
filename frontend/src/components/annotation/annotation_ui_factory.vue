@@ -562,9 +562,11 @@ export default Vue.extend({
   computed: {
     listeners_map: function() {
       const listener_map = {
+        "beforeunload": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].warn_user_unload,
         "keydown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down,
         "keyup": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_up,
         "mousedown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].mouse_events_global_down,
+        "resize": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].update_window_size_from_listener,
       }
 
       return listener_map

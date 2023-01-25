@@ -3169,15 +3169,15 @@ export default Vue.extend({
        */
 
       // global
-      window.removeEventListener("beforeunload", this.warn_user_unload);
+      // window.removeEventListener("beforeunload", this.warn_user_unload);
       // document.removeEventListener("mousedown", this.mouse_events_global_down);
       // window.removeEventListener("keydown", this.keyboard_events_global_down);
 
       // window.removeEventListener("keyup", this.keyboard_events_global_up);
-      window.removeEventListener(
-        "resize",
-        this.update_window_size_from_listener
-      );
+      // window.removeEventListener(
+      //   "resize",
+      //   this.update_window_size_from_listener
+      // );
 
       // local
       this.annotation_area.removeEventListener(
@@ -3201,7 +3201,7 @@ export default Vue.extend({
       // rather have canvas_wrapper inside this functionsss in case it needs to "refresh" it
 
       this.annotation_area = document.getElementById("annotation");
-      window.addEventListener("beforeunload", this.warn_user_unload);
+      // window.addEventListener("beforeunload", this.warn_user_unload);
       this.annotation_area.addEventListener(
         "keyup",
         this.keyboard_events_local_up
@@ -3213,7 +3213,7 @@ export default Vue.extend({
       // window.addEventListener("keydown", this.keyboard_events_global_down);
       // document.addEventListener("mousedown", this.mouse_events_global_down);
       // window.addEventListener("keyup", this.keyboard_events_global_up);
-      window.addEventListener("resize", this.update_window_size_from_listener);
+      // window.addEventListener("resize", this.update_window_size_from_listener);
 
       this.update_window_size_from_listener(); // Initial size (resize doesn't fire on first load)
 
