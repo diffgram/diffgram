@@ -692,8 +692,9 @@ export default Vue.extend({
       let total_width = this.$refs.panels_manager.$el.clientWidth;
       let total_height = this.$refs.panels_manager.$el.clientHeight
       for(let i = 0 ; i < panes_list.length ; i++){
-        this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100)
-        this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[i].size / 100);
+        // We substract 50 px to leave a small padding when calculating new scale of images
+        this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100) - 50
+        this.child_annotation_ctx_list[i].container_height = total_height - 50;
       }
     },
     on_panes_ready: function(){

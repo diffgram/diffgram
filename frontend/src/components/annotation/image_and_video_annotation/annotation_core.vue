@@ -1560,14 +1560,12 @@ export default Vue.extend({
         }
 
       }
-
-      // careful height comparison relative to height, width to width
+      // careful height comparison middle_pane_width to height, width to width
       let height_scaled = middle_pane_height / image_size_height;
       let width_scaled = middle_pane_width / image_size_width;
 
       // careful to do the scale first, so we do the min of scaled values
       let lowest_size = Math.min(height_scaled, width_scaled);
-
       let new_size = Math.round(lowest_size * 100) / 100;
 
       this.label_settings.canvas_scale_global_setting = new_size;
@@ -3538,7 +3536,6 @@ export default Vue.extend({
     },
     // todo why not make this part of rest of event stuff
     wheel: function (event) {
-      console.log('MOUSE WHEEL', event, this.is_active, this.working_file.id)
       if(!this.is_active){
         return
       }
@@ -6038,7 +6035,6 @@ export default Vue.extend({
 
       this.event_create_instance = {...this.current_instance};
       this.image_annotation_ctx.request_change_current_instance = instance_index;
-      console.log('ann core request_change_current_instance', this.image_annotation_ctx.request_change_current_instance)
       this.image_annotation_ctx.trigger_refresh_current_instance = Date.now();
       this.update_canvas()
     },
