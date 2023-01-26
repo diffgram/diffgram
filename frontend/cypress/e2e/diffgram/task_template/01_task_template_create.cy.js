@@ -8,9 +8,7 @@ describe('Task Template Creation', () => {
   context('It creates a task template with the wizard', () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
-      Cypress.Cookies.defaults({
-        preserve: ['session']
-      })
+
       // login before all tests
       cy.loginByForm(testUser.email, testUser.password);
       cy.gotToProject(testUser.project_string_id);

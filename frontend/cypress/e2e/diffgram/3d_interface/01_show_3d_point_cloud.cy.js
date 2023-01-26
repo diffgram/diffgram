@@ -6,9 +6,7 @@ describe('Annotation 3D Interface display', () => {
   context('3D Interface display', () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
-      Cypress.Cookies.defaults({
-        preserve: ['session']
-      })
+
       // login before all tests
       cy.loginByForm(testUser.email, testUser.password)
         .gotToProject(testUser.project_string_id)
@@ -17,11 +15,12 @@ describe('Annotation 3D Interface display', () => {
     })
 
     it('Displays a 3D file', () => {
-      cy.upload_3d_file(testUser.project_string_id);
-      cy.get('[data-cy="3d-editor-container"]').should('be.visible');
-      cy.get('[data-cy="sidebar-left-container"]').should('be.visible');
-      cy.get('[data-cy="secondary_3d_canvas_container"]').should('be.visible');
-      cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
+      cy.upload_3d_file(testUser.project_string_id)
+      .wait(3000)
+      .get('[data-cy="3d-editor-container"]').should('be.visible')
+      .get('[data-cy="sidebar-left-container"]').should('be.visible')
+      .get('[data-cy="secondary_3d_canvas_container"]').should('be.visible')
+      .get('[data-cy="minimize-file-explorer-button"]').click({force: true})
 
 
     })

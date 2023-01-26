@@ -107,6 +107,8 @@
         :layout_direction="layout_direction"
         :num_columns="annotation_ui_context.working_file_list.length"
         :root_file="root_file"
+        :selected_row="annotation_ui_context.working_file.row"
+        :selected_col="annotation_ui_context.working_file.column"
         :num_rows="annotation_ui_context.num_rows"
         @panels_resized="on_panes_resized"
         @ready="on_panes_ready"
@@ -118,8 +120,8 @@
                   v-slot:[`panel_${file.row}:${file.column}`]="">
 
                 <div  :key="`area_factory_container_${file.id}`"
-                      :class="{'selected-file': file.id === annotation_ui_context.working_file.id
-                                               && annotation_ui_context.working_file_list.length > 1}">
+                      :class="`${file.id === annotation_ui_context.working_file.id
+                                               && annotation_ui_context.working_file_list.length > 1 ? 'selected-file': 'unselected-file'}`">
                   <annotation_area_factory
                     :key="`annotation_area_factory_${file.id}`"
                     :ref="`annotation_area_factory_${file.id}`"
@@ -564,12 +566,15 @@ export default Vue.extend({
       if (!this.annotation_ui_context) return null
       if (!this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`]) return null
 
+      let ref = this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`]
+      if(!ref) return null
+
       const listener_map = {
-        "beforeunload": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].warn_user_unload,
-        "keydown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down,
-        "keyup": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_up,
-        "mousedown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].mouse_events_global_down,
-        "resize": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].update_window_size_from_listener,
+        "beforeunload": ref.warn_user_unload,
+        "keydown": ref.keyboard_events_global_down,
+        "keyup": ref.keyboard_events_global_up,
+        "mousedown": ref.mouse_events_global_down,
+        "resize": ref.update_window_size_from_listener,
       }
 
       return listener_map
@@ -594,7 +599,10 @@ export default Vue.extend({
         window.innerWidth ||
         document.documentElement.clientWidth ||
         document.getElementsByTagName('body')[0].clientWidth;
-      result = widthWindow - this.annotation_ui_context.current_image_annotation_ctx.label_settings.left_nav_width;
+      // TODO: Create a generic logic for each interface rendering
+      if(this.annotation_ui_context.working_file.type === 'sensor_fusion'){
+        return '100%'
+      }
       if(!this.loading){
         let elm = document.getElementById('annotation_factory_container')
         if(elm){
@@ -756,7 +764,7 @@ export default Vue.extend({
         } else if (file.type === 'audio'){
           // Other type don't have context yet.
           new_child_list.push(new AudioAnnotationUIContext())
-        }else if (file.type === 'geo'){
+        }else if (file.type === 'geospatial'){
           // Other type don't have context yet.
           new_child_list.push(new GeoAnnotationUIContext())
         }else if (file.type === 'sensor_fusion'){
@@ -1863,6 +1871,11 @@ export default Vue.extend({
 
 <style>
 .selected-file{
-  border: 4px solid #1565c0;
+  transition: ease 0.1s;
+  border: 6px solid #1565c0;
 }
+.unselected-file:hover{
+  cursor: pointer !important;
+}
+
 </style>

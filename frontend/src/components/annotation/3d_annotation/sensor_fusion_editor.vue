@@ -14,11 +14,11 @@
             :annotations_loading="false"
             :loading="false"
             :view_only_mode="false"
-            :label_settings="editor_3d_settings"
+            :label_settings="label_settings"
             :label_schema="label_schema"
             :project_string_id="project_string_id"
             :task="task"
-            :file="file"
+            :file="working_file"
             :canvas_scale_local="canvas_scale_local"
             :has_changed="has_changed"
             :label_list="label_list"
@@ -58,10 +58,10 @@
     <div class="editor-body d-flex">
 
       <div data-cy="sidebar-left-container" class="sidebar-left-container"
-           :style="{width: `${editor_3d_settings.left_nav_width}px`, overflow: 'hidden', paddingLeft: '12px'}">
+           :style="{width: `${label_settings.left_nav_width}px`}">
         <instance_detail_list_view ref="instance_detail_list"
                                    data-cy="instance_detail_list"
-                                   v-if="(file || task) && current_label_file && label_file_colour_map"
+                                   v-if="(working_file || task) && current_label_file && label_file_colour_map"
                                    :instance_list="instance_list"
                                    :model_run_list="undefined"
                                    :label_file_colour_map="label_file_colour_map"
@@ -79,14 +79,14 @@
                                    :schema_id="label_schema.id"
                                    :draw_mode="draw_mode"
                                    :current_frame="current_frame"
-                                   :current_video_file_id="file ? file.id : task.file.id"
+                                   :current_video_file_id="working_file ? working_file.id : task.file.id"
                                    :global_attribute_groups_list="global_attribute_groups_list"
                                    :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
                                    :current_label_file_id="current_label_file.id"
                                    :video_playing="video_playing"
                                    :external_requested_index="request_change_current_instance"
                                    :trigger_refresh_current_instance="trigger_refresh_current_instance"
-                                   :current_file="file ? file : task.file"
+                                   :current_file="working_file ? working_file : task.file"
         >
         </instance_detail_list_view>
 
@@ -102,8 +102,8 @@
             :width="main_canvas_width"
             :point_cloud_mesh="point_cloud_mesh"
             :height="main_canvas_height"
-            :zoom_speed="editor_3d_settings.zoom_speed"
-            :pan_speed="editor_3d_settings.pan_speed"
+            :zoom_speed="label_settings.zoom_speed"
+            :pan_speed="label_settings.pan_speed"
             :allow_navigation="true"
             :instance_list="instance_list"
             :current_label_file="current_label_file"
@@ -116,6 +116,7 @@
             @instance_unhovered="on_instance_unhovered"
             @instance_selected="on_instance_selected"
             @scene_ready="on_scene_ready"
+            @clear_point_cloud="point_cloud_mesh = undefined"
             @instance_updated="on_instance_updated">
 
           </canvas_3d>
@@ -269,7 +270,7 @@
       'project_string_id': {
         default: null
       },
-      'file': {
+      'working_file': {
         default: null
       },
       'task': {
@@ -301,7 +302,7 @@
       }
 
     },
-    data() {
+    data: function() {
       return {
         instance_type_list: [
           {
@@ -311,6 +312,7 @@
           },
         ],
         error: null,
+        refresh: new Date(),
         warning: null,
         percentage: 0,
         has_changed: false,
@@ -350,7 +352,7 @@
           y: 0
         },
 
-        editor_3d_settings: {
+        label_settings: {
           show_text: true,
           show_label_text: true,
           show_attribute_text: true,
@@ -421,11 +423,11 @@
         }
       },
       pcd_url: function () {
-        if (!this.$props.file && !this.$props.task) {
+        if (!this.$props.working_file && !this.$props.task) {
           return
         }
-        if (this.$props.file) {
-          return this.$props.file.point_cloud.url_signed;
+        if (this.$props.working_file) {
+          return this.$props.working_file.point_cloud.url_signed;
         }
         if (this.$props.task) {
           return this.$props.task.file.point_cloud.url_signed;
@@ -434,7 +436,7 @@
       },
     },
     watch: {
-      file: function (new_val, old_val) {
+      working_file: function (new_val, old_val) {
         if (new_val != old_val) {
           this.reload_file_data();
         }
@@ -595,7 +597,7 @@
         let file_data;
         this.instance_list.length = 0;
         if (this.file) {
-          file_data = await instanceServices.get_instance_list_from_file(this.project_string_id, this.file.id)
+          file_data = await instanceServices.get_instance_list_from_file(this.project_string_id, this.working_file.id)
         } else if (this.task) {
           file_data = await instanceServices.get_instance_list_from_task(this.project_string_id, this.task.id)
         } else {
@@ -723,8 +725,8 @@
         // a video file can now be
         // saved from file id + frame, so the current file
         let current_file_id = null;
-        if (this.$props.file) {
-          current_file_id = this.$props.file.id;
+        if (this.$props.working_file) {
+          current_file_id = this.$props.working_file.id;
         } else if (this.$props.task) {
           current_file_id = this.$props.task.file.id
         } else {
@@ -900,7 +902,7 @@
       calculate_main_canvas_dimension: function () {
         let main_3d_canvas_container = document.getElementById('main_3d_canvas_container')
         if (main_3d_canvas_container) {
-          this.main_canvas_width = parseInt(window.innerWidth - this.editor_3d_settings.left_nav_width);
+          this.main_canvas_width = parseInt(window.innerWidth - this.label_settings.left_nav_width);
           this.main_canvas_height = parseInt(window.innerHeight * 0.65);
         }
       },

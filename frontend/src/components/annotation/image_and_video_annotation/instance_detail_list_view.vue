@@ -54,6 +54,8 @@
         v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups)"
         v-model="instance_detail_open"
         accordion
+        :focusable="true"
+        :hover="true"
         flat
       >
         <v-expansion-panel>
@@ -95,7 +97,7 @@
       </v-expansion-panels>
 
 
-      <v-expansion-panels accordion flat v-model="panels">
+      <v-expansion-panels :focusable="true" :hover="true" accordion flat v-model="panels">
         <v-expansion-panel v-for="grouped_list in filtered_instance_set" >
 
           <v-expansion-panel-header class="d-flex justify-start pa-0 sidebar-accordeon-header" v-if="grouped_list.model_run">

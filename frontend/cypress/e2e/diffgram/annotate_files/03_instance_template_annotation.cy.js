@@ -9,7 +9,6 @@ describe('Instance Template Annotation', () => {
 
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
-      Cypress.Cookies.defaults({preserve: ['session']})
 
       cy.loginByForm(testUser.email, testUser.password);
       cy.gotToProject(testUser.project_string_id);

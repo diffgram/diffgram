@@ -227,7 +227,7 @@
             delete this.scene_controller.scene;
 
             this.renderer = undefined;
-            this.point_cloud_mesh = undefined;
+            this.$emit('clear_point_cloud');
 
             this.scene_controller = undefined;
           }

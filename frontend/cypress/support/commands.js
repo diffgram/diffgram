@@ -400,45 +400,48 @@ Cypress.Commands.add('loginByForm', function (email, password, redirect = undefi
     name: 'loginByForm',
     message: `${email} | ${password}`,
   })
-  let path = 'http://localhost:8085/user/login'
-  if (redirect != undefined) {
-    path += redirect    // eg `?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e`
-  }
-  cy.visit(path)
-  let LOCAL_STORAGE_MEMORY = {};
-
-  const getInitialStore = () => cy.window().its('app.$store')
-
-  getInitialStore().its('state.user.logged_in').then((user_logged_in) => {
-
-    if (user_logged_in == false) {
-      cy.wait(3000);
-      cy.window().then(window => {
-
-
-        cy.get('[data-cy=email]')
-          .type(email)
-          .should('have.value', email)
-        cy.wait(1000);
-        if (window.LoginComponent.mailgun) {
-          cy.get('[data-cy=type-password-btn]').click({force: true})
-        }
-        cy.get('[data-cy=password]')
-          .type(password)
-          .should('have.value', password)
-        cy.get('[data-cy=login]').click();
-        cy.wait(3000);
-        Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
-          localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
-        });
-        const getStore = () => cy.window().its('app.$store')
-        getStore().its('state.user.logged_in').should('eq', true);
-
-      })
-
+  cy.session([email, password], () => {
+    let path = 'http://localhost:8085/user/login'
+    if (redirect != undefined) {
+      path += redirect    // eg `?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e`
     }
+    cy.visit(path)
+    let LOCAL_STORAGE_MEMORY = {};
 
-  })
+    const getInitialStore = () => cy.window().its('app.$store')
+
+    getInitialStore().its('state.user.logged_in').then((user_logged_in) => {
+
+      if (user_logged_in == false) {
+        cy.wait(3000);
+        cy.window().then(window => {
+
+
+          cy.get('[data-cy=email]')
+            .type(email)
+            .should('have.value', email)
+          cy.wait(1000);
+          if (window.LoginComponent.mailgun) {
+            cy.get('[data-cy=type-password-btn]').click({force: true})
+          }
+          cy.get('[data-cy=password]')
+            .type(password)
+            .should('have.value', password)
+          cy.get('[data-cy=login]').click();
+          cy.wait(3000);
+          Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
+            localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
+          });
+          const getStore = () => cy.window().its('app.$store')
+          getStore().its('state.user.logged_in').should('eq', true);
+
+        })
+
+      }
+
+    })
+  }, {cacheAcrossSpecs: true})
+
 });
 
 Cypress.Commands.add('gotToProject', function (project_string_id) {
@@ -751,11 +754,15 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
     data.append("dzchunkbyteoffset", 0);
     data.append("directory_id", store.state.project.current_directory.directory_id);
     data.append("source", 'from_sensor_fusion_json');
-    cy.server()
-      .route({
-        method: "POST",
-        url: `/api/walrus/project/${project_string_id}/upload/large`,
-      })
+    cy.intercept(
+      "POST",
+      `/api/walrus/project/${project_string_id}/upload/large`,
+      (req) => {
+        req.on('response', (resp) => {
+
+        })
+      }
+    )
       .as('upload_large')
       .then(() => {
         cy.fixture(file_path, 'utf8')
@@ -935,7 +942,7 @@ Cypress.Commands.add('create_task_template', function () {
     .get('[data-cy="credential-checkbox-0"]').click({force: true})
     .get('[data-cy="requires-button"]').click()
     .get('[data-cy="task-template-credentials-step"] [data-cy="wizard_navigation_next"]').click({force: true})
-    return cy.wrap(task_template_name)
+  return cy.wrap(task_template_name)
 })
 
 Cypress.Commands.add('createLabelSchema', function (schema_name) {

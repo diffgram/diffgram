@@ -1,5 +1,6 @@
 <template>
   <div ref="userscript"
+       class="pr-6 pl-6"
        v-cloak
        >
 
@@ -23,7 +24,7 @@
                            >
         </userscript_select>
 
-        <div class="pa-1"
+        <div class="pa-1 d-flex align-center"
              v-if="show_other_controls">
           <v-layout>
 
@@ -73,7 +74,7 @@
                 <div v-if="userscript_literal.is_public">
                     Public
                 </div> <div v-else>
-                    Not Public
+                    <p class="ma-0" style="font-size: 10px">Not Public</p>
                 </div>
             </div>
 

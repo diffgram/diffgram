@@ -8,7 +8,9 @@
 
     <pane v-for="(item, row_index) in num_rows" :key="`row_${row_index}`">
         <splitpanes  @pane-click="$emit('pane-click', row_index, $event)" @resize="on_panes_resized(row_index, $event)">
-            <pane v-for="(col, col_index) in parseInt(num_columns)" :key="`row_${row_index}_col_${col_index}`">
+            <pane v-for="(col, col_index) in parseInt(num_columns)"
+                  :key="`row_${row_index}_col_${col_index}`"
+                  :class="{'pane-container-unselected': selected_row !== row_index || selected_col !== col_index}">
               <slot :name="`panel_${row_index}:${col_index}`">
                 <div style="width: 400px">
                   <h6 style="font-size: 36px" class="text--black">row: {{row_index}} col {{col_index}}</h6>
@@ -36,6 +38,8 @@ export default Vue.extend({
   components: { Splitpanes, Pane },
   props: {
     num_rows: {type: Number, required: true},
+    selected_row: {type: Number},
+    selected_col: {type: Number},
     num_columns: {type: Number, required: true},
     layout_direction: {type: String, required: true, default: 'horizontal'},
     root_file: {type: Object, required: true},
@@ -68,5 +72,11 @@ export default Vue.extend({
 .splitpanes--horizontal > .splitpanes__splitter {
   min-height: 6px;
   background: linear-gradient(0deg, #ccc, #111) !important;
+}
+.pane-container-unselected:hover{
+  transition: .3s ease;
+  box-shadow: 0 0 0 6px #b0b0b0;
+  opacity: 0.8;
+  cursor: pointer;
 }
 </style>
