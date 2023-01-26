@@ -125,12 +125,14 @@ export class SensorFusion3DAnnotationUIContext {
 
   container_width: number
   container_height: number
+  label_settings: ImageLabelSettings
 
   get_userscript: Function
 
   constructor() {
     this.container_width = 0
     this.container_height = 0
+    this.label_settings = createDefaultLabelSettings()
   }
 
 }

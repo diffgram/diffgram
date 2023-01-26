@@ -16,9 +16,7 @@ describe('Autoborder', () => {
     before(function () {
 
       Cypress.Cookies.debug(true, {verbose: true})
-      Cypress.Cookies.defaults({
-        preserve: ['session']
-      })
+
       // Straight to studio from login
       cy.loginByForm(testUser.email, testUser.password, "?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e");
       cy.createLabels(labelsForAttributes)

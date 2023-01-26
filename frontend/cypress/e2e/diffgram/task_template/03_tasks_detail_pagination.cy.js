@@ -5,9 +5,7 @@ describe('tasks_detail_pagination', () => {
   context('tasks_detail_pagination', () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
-      Cypress.Cookies.defaults({
-        preserve: ['session']
-      })
+
       cy.createSampleTasksUsingBackend(10)
         .loginByForm(testUser.email, testUser.password)
         .gotToProject(testUser.project_string_id)

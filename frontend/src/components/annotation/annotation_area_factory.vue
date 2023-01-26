@@ -68,6 +68,7 @@ import Vue from "vue"
 import image_and_audio_annotation_core from "./image_and_video_annotation/annotation_core.vue"
 import text_annotation_core from "./text_annotation/text_annotation_core.vue"
 import geo_annotation_core from "./geo_annotation/geo_annotation_core.vue"
+import sensor_fusion_editor from "./3d_annotation/sensor_fusion_editor.vue"
 import audio_annotation_core from "./audio_annotation/audio_annotation_core.vue"
 import sensor_fusion_annotation_core from './3d_annotation/sensor_fusion_editor.vue'
 import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue"
@@ -79,6 +80,7 @@ export default Vue.extend({
     image_and_audio_annotation_core,
     text_annotation_core,
     geo_annotation_core,
+    sensor_fusion_editor,
     audio_annotation_core,
     sensor_fusion_annotation_core,
     empty_file_editor_placeholder

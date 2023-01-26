@@ -563,12 +563,16 @@ export default Vue.extend({
   },
   computed: {
     listeners_map: function() {
+      let ref = this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`]
+      if(!ref){
+        return {}
+      }
       const listener_map = {
-        "beforeunload": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].warn_user_unload,
-        "keydown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down,
-        "keyup": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_up,
-        "mousedown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].mouse_events_global_down,
-        "resize": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].update_window_size_from_listener,
+        "beforeunload": ref.warn_user_unload,
+        "keydown": ref.keyboard_events_global_down,
+        "keyup": ref.keyboard_events_global_up,
+        "mousedown": ref.mouse_events_global_down,
+        "resize": ref.update_window_size_from_listener,
       }
 
       return listener_map
@@ -593,7 +597,10 @@ export default Vue.extend({
         window.innerWidth ||
         document.documentElement.clientWidth ||
         document.getElementsByTagName('body')[0].clientWidth;
-      result = widthWindow - this.annotation_ui_context.current_image_annotation_ctx.label_settings.left_nav_width;
+      // TODO: Create a generic logic for each interface rendering
+      if(this.annotation_ui_context.working_file.type === 'sensor_fusion'){
+        return '100%'
+      }
       if(!this.loading){
         let elm = document.getElementById('annotation_factory_container')
         if(elm){

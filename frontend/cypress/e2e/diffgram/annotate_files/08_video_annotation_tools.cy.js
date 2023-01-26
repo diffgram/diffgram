@@ -7,9 +7,6 @@ describe('Annotate Files Tests', () => {
   context('Test Video Annotation', () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
-      Cypress.Cookies.defaults({
-        preserve: ['session']
-      })
       // login before all tests
       cy.loginByForm(testUser.email, testUser.password)
       .gotToProject(testUser.project_string_id)
