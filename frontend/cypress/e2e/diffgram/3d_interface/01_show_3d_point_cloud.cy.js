@@ -1,7 +1,7 @@
 import testUser from '../../../fixtures/users.json';
 import testLabels from "../../../fixtures/labels.json";
 
-describe('Annotation 3D Interface display', () => {
+describe('Annotation 3D Interface display', {testIsolation: false}, () => {
 
   context('3D Interface display', () => {
     before(function () {
