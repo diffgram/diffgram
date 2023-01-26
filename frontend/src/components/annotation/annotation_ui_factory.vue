@@ -563,10 +563,12 @@ export default Vue.extend({
   },
   computed: {
     listeners_map: function() {
+      if (!this.annotation_ui_context) return null
+      if (!this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`]) return null
+
       let ref = this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`]
-      if(!ref){
-        return {}
-      }
+      if(!ref) return null
+
       const listener_map = {
         "beforeunload": ref.warn_user_unload,
         "keydown": ref.keyboard_events_global_down,
