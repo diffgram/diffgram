@@ -427,7 +427,7 @@ export default Vue.extend({
   watch: {
     'annotation_ui_context.working_file': function() {
       this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
-      if (this.annotation_ui_context && this.hotkey_manager) {
+      if (this.annotation_ui_context && this.hotkey_manager && this.listeners_map) {
         this.hotkey_manager.activate(this.listeners_map)
       }
     },
