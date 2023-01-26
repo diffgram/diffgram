@@ -44,9 +44,15 @@ describe('Annotate Files Tests', () => {
 
         .document().then((doc) => {
           cy.window().then((window) => {
-            const canvas_wrapper = doc.getElementById('canvas_wrapper');
-            const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
+
             const annCore = window.AnnotationCore;
+            let canvas_wrapper_id = `canvas_wrapper`
+            if(annCore){
+              canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+            }
+
+            const canvas_wrapper = doc.getElementById();
+            const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
             const min_clientX = min_x + canvas_client_box.x;
             const min_clientY = min_y + canvas_client_box.y;
             cy.log(`min client_x ${min_clientX} min client y ${min_clientY}`)
@@ -90,9 +96,14 @@ describe('Annotate Files Tests', () => {
         cy.wait(1000);
         cy.document().then((doc) => {
           cy.window().then((window) => {
-            const canvas_wrapper = doc.getElementById('canvas_wrapper');
-            const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
             const annCore = window.AnnotationCore;
+            let canvas_wrapper_id = `canvas_wrapper`
+            if(annCore){
+              canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+            }
+            const canvas_wrapper = doc.getElementById(canvas_wrapper_id);
+            const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
+
 
             const clientX = point.x + canvas_client_box.x;
             const clientY = point.y + canvas_client_box.y;
@@ -124,9 +135,14 @@ describe('Annotate Files Tests', () => {
 
         cy.document().then((doc) => {
           cy.window().then((window) => {
-            const canvas_wrapper = doc.getElementById('canvas_wrapper');
-            const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
             const annCore = window.AnnotationCore;
+            let canvas_wrapper_id = `canvas_wrapper`
+            if(annCore){
+              canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+            }
+            const canvas_wrapper = doc.getElementById(canvas_wrapper_id);
+            const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
+
             expect(annCore.instance_list[1]).to.exist;
 
             // We want to skip the last point since that is the initial point. That's why its length - 1
@@ -167,14 +183,19 @@ describe('Annotate Files Tests', () => {
         cy.mouseupcanvas()
         cy.document().then((doc) => {
           cy.window().then((window) => {
-            const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
             const annCore = window.AnnotationCore;
+            let canvas_wrapper_id = `canvas_wrapper`
+            if(annCore){
+              canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+            }
+            const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
+
             expect(annCore.instance_list[4]).to.exist;
 
 
             let clientX = rear_top_left.x + canvas_client_box.x;
             let clientY = rear_top_left.y + canvas_client_box.y;
-            const canvas_wrapper = doc.getElementById('canvas_wrapper');
+            const canvas_wrapper = doc.getElementById(canvas_wrapper_id);
             let box_point = get_transformed_coordinates({
               x: clientX,
               y: clientY
@@ -226,9 +247,13 @@ describe('Annotate Files Tests', () => {
 
         cy.document().then((doc) => {
           cy.window().then((window) => {
-            const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
             const annCore = window.AnnotationCore;
-            const canvas_wrapper = doc.getElementById('canvas_wrapper');
+            let canvas_wrapper_id = `canvas_wrapper`
+            if(annCore){
+              canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+            }
+            const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
+            const canvas_wrapper = doc.getElementById(canvas_wrapper_id);
             expect(annCore.instance_list[5]).to.exist;
 
 

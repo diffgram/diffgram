@@ -9,10 +9,10 @@ describe('Annotate Files Tests', () => {
       Cypress.Cookies.debug(true, {verbose: true})
       // login before all tests
       cy.loginByForm(testUser.email, testUser.password)
-      .gotToProject(testUser.project_string_id)
-      .createLabels(testLabels)
-      .uploadAndViewSampleVideo(testUser.project_string_id)
-      .wait(8500);
+        .gotToProject(testUser.project_string_id)
+        .createLabels(testLabels)
+        .uploadAndViewSampleVideo(testUser.project_string_id)
+        .wait(8500);
 
     })
 
@@ -22,27 +22,27 @@ describe('Annotate Files Tests', () => {
         cy.intercept(url).as('save_instances')
         cy.window().then(window => {
           cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-          .select_label()
-          .wait(3000)
-          .mousedowncanvas(75, 75)
-          .wait(500)
+            .select_label()
+            .wait(3000)
+            .mousedowncanvas(75, 75)
+            .wait(500)
 
-          .mouseupcanvas()
-          .wait(1000)
+            .mouseupcanvas()
+            .wait(1000)
 
-          .mousedowncanvas(160, 160)
-          .wait(500)
-          .mouseupcanvas()
-          .wait(1000)
-          .get('[data-cy="save_button"]').click({force: true})
-          .wait(7000)
-          .wait('@save_instances', {timeout: 60000}).should(({request, response}) => {
+            .mousedowncanvas(160, 160)
+            .wait(500)
+            .mouseupcanvas()
+            .wait(1000)
+            .get('[data-cy="save_button"]').click({force: true})
+            .wait(7000)
+            .wait('@save_instances', {timeout: 60000}).should(({request, response}) => {
             expect(request.method).to.equal('POST')
             expect(response.statusCode, 'response status').to.eq(200)
 
           })
 
-          .wrap(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).should('equal', true);
+            .wrap(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).should('equal', true);
         });
 
       })
@@ -50,12 +50,12 @@ describe('Annotate Files Tests', () => {
 
         cy.window().then(window => {
           cy.wait(1000)
-          .get('[data-cy="forward_1_frame"]').click({force: true})
-          .wait(7000)
-          .get('[data-cy=ghost_instance_ok]').click({force: true})
-          .wait(7000)
-          .get('[data-cy="back_1_frame"]').click({force: true})
-          .wait(8000)
+            .get('[data-cy="forward_1_frame"]').click({force: true})
+            .wait(7000)
+            .get('[data-cy=ghost_instance_ok]').click({force: true})
+            .wait(7000)
+            .get('[data-cy="back_1_frame"]').click({force: true})
+            .wait(8000)
 
             .wrap(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).should('exist')
           // expect(window.AnnotationCore.instance_list[0].x_min).to.equal(true);
@@ -72,9 +72,9 @@ describe('Annotate Files Tests', () => {
           .get('[data-cy=ghost_instance_ok]').click({force: true})
 
           .window().then(window => {
-            expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
+          expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
 
-          })
+        })
           .wait(7000)
           .get('[data-cy="back_1_frame"]').click({force: true})
 
@@ -83,7 +83,7 @@ describe('Annotate Files Tests', () => {
       it('Moves Box and change frames', () => {
         let url = '/api/project/*/file/*/annotation/update'
         cy.intercept(url).as('save_instances')
-        // Select Element
+          // Select Element
           .get('[data-cy="edit_toggle"]').parent().parent().find('label').should('have.text', 'Editing')
           .wait(2000)
         cy.mousedowncanvas(100, 100)
@@ -94,21 +94,20 @@ describe('Annotate Files Tests', () => {
         cy.wait(2500)
         cy.get('[data-cy=save_button]').click({force: true})
           .wait('@save_instances').should(({request, response}) => {
-            expect(request.method).to.equal('POST')
-            expect(response.statusCode, 'response status').to.eq(200)
+          expect(request.method).to.equal('POST')
+          expect(response.statusCode, 'response status').to.eq(200)
 
-          })
+        })
           .get('[data-cy="forward_1_frame"]').click({force: true})
           .wait(7000)
           .get('[data-cy="back_1_frame"]').click({force: true})
           .wait(7000)
           .window().then(window => {
 
-            expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
-          });
+          expect(window.AnnotationCore.test_instance_list_and_list_in_buffer_by_ref()).to.equal(true);
+        });
 
       })
-
 
 
     })
@@ -146,20 +145,37 @@ describe('Annotate Files Tests', () => {
           .mouseupcanvas()
           .wait(1000)
           .window().then(window => {
-            cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-            // Move 5 frames
+          const annCore = window.AnnotationCore;
+          let canvas_wrapper_id = `canvas_wrapper`
+          if(annCore){
+            canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+          }
+          cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
+          // Move 5 frames
 
             // Copy and paste on next frame Paste
-            .get(`#canvas_wrapper`).type('{ctrl} + c',{force: true})
+            .get(`#${canvas_wrapper_id}`).type('{ctrl} + c', {force: true})
             .wait(2000)
             .get('[data-cy="forward_1_frame"]').click({force: true})
-            .wait(2000).then(() =>{
-                let instance_dup = {...window.AnnotationCore.instance_buffer_dict[6][0]};
-                window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({...instance_dup, id: null}));
-                window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({...instance_dup, id: null}));
-                window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({...instance_dup, id: null}));
-                window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({...instance_dup, id: null}));
-                window.AnnotationCore.has_changed = true;
+            .wait(2000).then(() => {
+              let instance_dup = {...window.AnnotationCore.instance_buffer_dict[6][0]};
+              window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({
+                ...instance_dup,
+                id: null
+              }));
+              window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({
+                ...instance_dup,
+                id: null
+              }));
+              window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({
+                ...instance_dup,
+                id: null
+              }));
+              window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({
+                ...instance_dup,
+                id: null
+              }));
+              window.AnnotationCore.has_changed = true;
 
             })
             .wait(5000)

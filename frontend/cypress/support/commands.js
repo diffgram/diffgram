@@ -35,137 +35,169 @@ import "cypress-real-events/support";
 
 Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   cy.document().then((doc) => {
-    const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
-    const real_x = x + canvas_client_box.x;
-    const real_y = y + canvas_client_box.y;
-    cy.get('#canvas_wrapper').then(($el) => {
-      cy.wrap($el)
-        .trigger('mouseover', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_x,
-          clientY: real_y,
-          force: true
-        })
-        .trigger('mousemove', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_x,
-          clientY: real_y,
-          force: true
-        })
-        .trigger('mouseover', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_x,
-          clientY: real_y,
-          force: true
-        })
-        .trigger('contextmenu', {
-          clientX: real_x,
-          clientY: real_y,
-          force: true
-        })
+    cy.window().then((window) => {
+      const annCore = window.AnnotationCore;
+      let canvas_wrapper_id = `canvas_wrapper`
+      if(annCore){
+        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+      }
+      const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
+      const real_x = x + canvas_client_box.x;
+      const real_y = y + canvas_client_box.y;
+      cy.get(`#${canvas_wrapper_id}`).then(($el) => {
+        cy.wrap($el)
+          .trigger('mouseover', {
+            eventConstructor: 'MouseEvent',
+            clientX: real_x,
+            clientY: real_y,
+            force: true
+          })
+          .trigger('mousemove', {
+            eventConstructor: 'MouseEvent',
+            clientX: real_x,
+            clientY: real_y,
+            force: true
+          })
+          .trigger('mouseover', {
+            eventConstructor: 'MouseEvent',
+            clientX: real_x,
+            clientY: real_y,
+            force: true
+          })
+          .trigger('contextmenu', {
+            clientX: real_x,
+            clientY: real_y,
+            force: true
+          })
+      })
     })
+
   })
 })
 
 
 Cypress.Commands.add('mousedowncanvas', function (x, y) {
   cy.document().then((doc) => {
-    const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
-    const real_x = x + canvas_client_box.left;
-    const real_y = y + canvas_client_box.top;
-    cy.get('#canvas_wrapper').then(($el) => {
-      cy.wrap($el)
-        .trigger('mousemove', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_x,
-          clientY: real_y,
-          force: true
-        })
-        .trigger('mousedown', {
-          button: 0,
-          eventConstructor: 'MouseEvent',
-          clientX: real_x,
-          clientY: real_y,
-          force: true
-        })
+    cy.window().then((window) => {
+      const annCore = window.AnnotationCore;
+      let canvas_wrapper_id = `canvas_wrapper`
+      if(annCore){
+        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+      }
+      const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
+      const real_x = x + canvas_client_box.left;
+      const real_y = y + canvas_client_box.top;
+      cy.get(`#${canvas_wrapper_id}`).then(($el) => {
+        cy.wrap($el)
+          .trigger('mousemove', {
+            eventConstructor: 'MouseEvent',
+            clientX: real_x,
+            clientY: real_y,
+            force: true
+          })
+          .trigger('mousedown', {
+            button: 0,
+            eventConstructor: 'MouseEvent',
+            clientX: real_x,
+            clientY: real_y,
+            force: true
+          })
+      })
     })
+
   })
 })
 
 Cypress.Commands.add('dragcanvas', function (from_x, from_y, to_x, to_y) {
   cy.document().then((doc) => {
-    const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
-    const real_from_x = from_x + canvas_client_box.x;
-    const real_from_y = from_y + canvas_client_box.y;
-    const real_to_x = to_x + canvas_client_box.x;
-    const real_to_y = to_y + canvas_client_box.y;
-    const movementX = real_to_x - real_from_x;
-    const movementY = real_to_y - real_from_y;
-    cy.get('#canvas_wrapper').then(($el) => {
-      cy.wrap($el)
-        .trigger('mouseover', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_from_x,
-          clientY: real_from_y,
-          force: true
-        })
-        .trigger('mousemove', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_from_x,
-          clientY: real_from_y,
-          force: true
-        })
-        .trigger('mousedown', {
-          button: 0,
-          eventConstructor: 'MouseEvent',
-          clientX: real_from_x,
-          clientY: real_from_y,
-          force: true,
-        })
-        .trigger('mousemove', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_to_x,
-          clientY: real_to_y,
-          force: true
-        })
-        .trigger('mousemove', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_to_x,
-          clientY: real_to_y,
-          force: true
-        })
-        .trigger('mousemove', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_to_x,
-          clientY: real_to_y,
-          force: true
-        })
-        .trigger('mouseup', {
-          eventConstructor: 'MouseEvent',
-          clientX: real_to_x,
-          clientY: real_to_y,
-          force: true
-        })
+    cy.window().then((window) => {
+      const annCore = window.AnnotationCore;
+      let canvas_wrapper_id = `canvas_wrapper`
+      if(annCore){
+        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+      }
+      const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
+      const real_from_x = from_x + canvas_client_box.x;
+      const real_from_y = from_y + canvas_client_box.y;
+      const real_to_x = to_x + canvas_client_box.x;
+      const real_to_y = to_y + canvas_client_box.y;
+      const movementX = real_to_x - real_from_x;
+      const movementY = real_to_y - real_from_y;
+      cy.get().then(($el) => {
+        cy.wrap($el)
+          .trigger('mouseover', {
+            eventConstructor: 'MouseEvent',
+            clientX: real_from_x,
+            clientY: real_from_y,
+            force: true
+          })
+          .trigger('mousemove', {
+            eventConstructor: 'MouseEvent',
+            clientX: real_from_x,
+            clientY: real_from_y,
+            force: true
+          })
+          .trigger('mousedown', {
+            button: 0,
+            eventConstructor: 'MouseEvent',
+            clientX: real_from_x,
+            clientY: real_from_y,
+            force: true,
+          })
+          .trigger('mousemove', {
+            eventConstructor: 'MouseEvent',
+            clientX: real_to_x,
+            clientY: real_to_y,
+            force: true
+          })
+          .trigger('mousemove', {
+            eventConstructor: 'MouseEvent',
+            clientX: real_to_x,
+            clientY: real_to_y,
+            force: true
+          })
+          .trigger('mousemove', {
+            eventConstructor: 'MouseEvent',
+            clientX: real_to_x,
+            clientY: real_to_y,
+            force: true
+          })
+          .trigger('mouseup', {
+            eventConstructor: 'MouseEvent',
+            clientX: real_to_x,
+            clientY: real_to_y,
+            force: true
+          })
+      })
     })
+
   })
 })
 
 Cypress.Commands.add('mouseovercanvas', function (x, y) {
 
   cy.document().then((doc) => {
-    const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
-    const real_x = x + canvas_client_box.x;
-    const real_y = y + canvas_client_box.y;
-    cy.get('#canvas_wrapper').then(($el) => {
-      cy.wrap($el)
-        .trigger('mouseover', {
-          button: 0,
-          eventConstructor: 'MouseEvent',
-          clientX: real_x,
-          clientY: real_y,
-          force: true
-        })
+    cy.window().then((window) => {
+      const annCore = window.AnnotationCore;
+      let canvas_wrapper_id = `canvas_wrapper`
+      if(annCore){
+        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+      }
+      const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
+      const real_x = x + canvas_client_box.x;
+      const real_y = y + canvas_client_box.y;
+      cy.get(`#${canvas_wrapper_id}`).then(($el) => {
+        cy.wrap($el)
+          .trigger('mouseover', {
+            button: 0,
+            eventConstructor: 'MouseEvent',
+            clientX: real_x,
+            clientY: real_y,
+            force: true
+          })
+      })
     })
+
   })
 
 })
@@ -173,27 +205,43 @@ Cypress.Commands.add('mouseovercanvas', function (x, y) {
 Cypress.Commands.add('mousemovecanvas', function (x, y) {
 
   cy.document().then((doc) => {
-    const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
-    const real_x = x + canvas_client_box.x;
-    const real_y = y + canvas_client_box.y;
-    cy.get('#canvas_wrapper').then(($el) => {
-      cy.wrap($el)
-        .trigger('mousemove', {
-          button: 0,
-          eventConstructor: 'MouseEvent',
-          clientX: real_x,
-          clientY: real_y,
-          force: true
-        })
+    cy.window().then((window) => {
+      const annCore = window.AnnotationCore;
+      let canvas_wrapper_id = `canvas_wrapper`
+      if(annCore){
+        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+      }
+      const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
+      const real_x = x + canvas_client_box.x;
+      const real_y = y + canvas_client_box.y;
+      cy.get(`#${canvas_wrapper_id}`).then(($el) => {
+        cy.wrap($el)
+          .trigger('mousemove', {
+            button: 0,
+            eventConstructor: 'MouseEvent',
+            clientX: real_x,
+            clientY: real_y,
+            force: true
+          })
+      })
     })
+
   })
 
 })
 Cypress.Commands.add('mouseupcanvas', function (x, y) {
-  cy.get('#canvas_wrapper').then(($el) => {
-    cy.wrap($el)
-      .trigger('mouseup', {force: true})
+  cy.window().then((window) => {
+    const annCore = window.AnnotationCore;
+    let canvas_wrapper_id = `canvas_wrapper`
+    if(annCore){
+      canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+    }
+    cy.get(`#${canvas_wrapper_id}`).then(($el) => {
+      cy.wrap($el)
+        .trigger('mouseup', {force: true})
+    })
   })
+
 })
 Cypress.Commands.add('registerDataPlatformTestUser', function () {
 
@@ -334,9 +382,14 @@ Cypress.Commands.add('selectDrawValidatePolygon', function (points = undefined) 
 Cypress.Commands.add('isValidPolygonTestOracle', function (points) {
   cy.document().then((doc) => {
     cy.window().then((window) => {
-      const canvas_wrapper = doc.getElementById('canvas_wrapper');
-      const canvas_client_box = doc.getElementById('canvas_wrapper').getBoundingClientRect();
       const annCore = window.AnnotationCore;
+      let canvas_wrapper_id = `canvas_wrapper`
+      if(annCore){
+        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+      }
+      const canvas_wrapper = doc.getElementById(canvas_wrapper_id);
+      const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
+
 
       const expected_polygon = annCore.instance_list.find(x => x.type == 'polygon')
       expect(expected_polygon).to.exist;
