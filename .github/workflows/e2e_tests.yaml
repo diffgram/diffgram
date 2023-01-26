@@ -137,7 +137,7 @@ jobs:
         record: true
         parallel: true
         group: "UI - Chrome"
-        config-file: ../cypress.config.ts
+        config-file: ./cypress.config.ts
         working-directory: frontend
       env:
         # Recommended: pass the GitHub token lets this action correctly
