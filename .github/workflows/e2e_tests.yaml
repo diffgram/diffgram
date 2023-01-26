@@ -143,6 +143,7 @@ jobs:
         # determine the unique run id necessary to re-run the checks
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NODE_ENV: development
+        DEBUG: '@cypress/github-action'
         DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
         PYTHONPATH: /__w/diffgram
         DIFFGRAM_SYSTEM_MODE: testing_e2e
