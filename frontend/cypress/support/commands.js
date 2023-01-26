@@ -38,7 +38,7 @@ Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -81,7 +81,7 @@ Cypress.Commands.add('mousedowncanvas', function (x, y) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -113,7 +113,7 @@ Cypress.Commands.add('dragcanvas', function (from_x, from_y, to_x, to_y) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -180,7 +180,7 @@ Cypress.Commands.add('mouseovercanvas', function (x, y) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -208,7 +208,7 @@ Cypress.Commands.add('mousemovecanvas', function (x, y) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -233,7 +233,7 @@ Cypress.Commands.add('mouseupcanvas', function (x, y) {
   cy.window().then((window) => {
     const annCore = window.AnnotationCore;
     let canvas_wrapper_id = `canvas_wrapper`
-    if(annCore){
+    if (annCore) {
       canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
     }
     cy.get(`#${canvas_wrapper_id}`).then(($el) => {
@@ -384,7 +384,7 @@ Cypress.Commands.add('isValidPolygonTestOracle', function (points) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_wrapper = doc.getElementById(canvas_wrapper_id);
@@ -453,47 +453,56 @@ Cypress.Commands.add('loginByForm', function (email, password, redirect = undefi
     name: 'loginByForm',
     message: `${email} | ${password}`,
   })
+  let path = 'http://localhost:8085/user/login'
+  if (redirect != undefined) {
+    path += redirect    // eg `?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e`
+  }
+  cy.visit(path)
   cy.session([email, password], () => {
-    let path = 'http://localhost:8085/user/login'
-    if (redirect != undefined) {
-      path += redirect    // eg `?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e`
-    }
-    cy.visit(path)
-    let LOCAL_STORAGE_MEMORY = {};
 
-    const getInitialStore = () => cy.window().its('app.$store')
+      let LOCAL_STORAGE_MEMORY = {};
 
-    getInitialStore().its('state.user.logged_in').then((user_logged_in) => {
+      const getInitialStore = () => cy.window().its('app.$store')
 
-      if (user_logged_in == false) {
-        cy.wait(3000);
-        cy.window().then(window => {
+      getInitialStore().its('state.user.logged_in').then((user_logged_in) => {
 
-
-          cy.get('[data-cy=email]')
-            .type(email)
-            .should('have.value', email)
-          cy.wait(1000);
-          if (window.LoginComponent.mailgun) {
-            cy.get('[data-cy=type-password-btn]').click({force: true})
-          }
-          cy.get('[data-cy=password]')
-            .type(password)
-            .should('have.value', password)
-          cy.get('[data-cy=login]').click();
+        if (user_logged_in == false) {
           cy.wait(3000);
-          Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
-            localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
-          });
-          const getStore = () => cy.window().its('app.$store')
-          getStore().its('state.user.logged_in').should('eq', true);
+          cy.window().then(window => {
 
-        })
+
+            cy.get('[data-cy=email]')
+              .type(email)
+              .should('have.value', email)
+            cy.wait(1000);
+            if (window.LoginComponent.mailgun) {
+              cy.get('[data-cy=type-password-btn]').click({force: true})
+            }
+            cy.get('[data-cy=password]')
+              .type(password)
+              .should('have.value', password)
+            cy.get('[data-cy=login]').click();
+            cy.wait(3000);
+            Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
+              localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
+            });
+            const getStore = () => cy.window().its('app.$store')
+            getStore().its('state.user.logged_in').should('eq', true);
+
+          })
+
+        }
+
+      })
+    },
+    {
+
+      validate: function () {
+        // cy.request('POST','http://localhost:8085/api/v1/project/list', {}).its('status').should('eq', 200)
 
       }
-
-    })
-  }, {cacheAcrossSpecs: true})
+    }
+  )
 
 });
 
