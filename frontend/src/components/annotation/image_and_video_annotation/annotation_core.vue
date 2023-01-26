@@ -1877,7 +1877,9 @@ export default Vue.extend({
     }
     this.mounted();
 
-    if (this.annotation_ui_context.working_file_list[0].id === this.annotation_ui_context.working_file.id) {
+    if (
+      this.annotation_ui_context.working_file_list[0].id === this.annotation_ui_context.working_file.id
+    ) {
       this.$emit('activate_hotkeys')
     }
   },

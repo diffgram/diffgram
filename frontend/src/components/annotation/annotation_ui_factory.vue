@@ -430,8 +430,12 @@ export default Vue.extend({
   watch: {
     'annotation_ui_context.working_file': function() {
       this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
-      if (this.annotation_ui_context && this.hotkey_manager && this.listeners_map()) {
-        console.log(this.listeners_map())
+      if (
+        this.annotation_ui_context && 
+        this.hotkey_manager && 
+        this.listeners_map() &&
+        this.annotation_ui_context.working_file_list.length > 1
+      ) {
         this.hotkey_manager.activate(this.listeners_map())
       }
     },
@@ -563,6 +567,7 @@ export default Vue.extend({
     }
 
     this.hotkey_manager = new HotKeyManager()
+    this.activate_hotkeys()
     this.initializing = false
   },
   computed: {
@@ -686,14 +691,16 @@ export default Vue.extend({
   },
   methods: {
     activate_hotkeys: function() {
-      console.log("--->", this.listeners_map())
+      if (this.hotkey_manager) {
+        this.hotkey_manager.activate(this.listeners_map())
+      }
     },
     listeners_map: function() {
       if (!this.annotation_ui_context) return null
       if (!this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`]) return null
 
       let ref = this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`]
-      if(!ref) return null
+      if (!ref) return null
 
       const listener_map = {
         "beforeunload": ref.warn_user_unload,
