@@ -176,6 +176,7 @@
                     :issues_ui_manager="annotation_ui_context.issues_ui_manager"
                     :draw_mode="annotation_ui_context.current_image_annotation_ctx.draw_mode"
                     :instance_type="annotation_ui_context.instance_type"
+                    @activate_hotkeys="activate_hotkeys"
                     @request_file_change="request_file_change"
                     @change_label_schema="on_change_label_schema"
                     @set_file_list="set_file_list"
@@ -429,8 +430,13 @@ export default Vue.extend({
   watch: {
     'annotation_ui_context.working_file': function() {
       this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
-      if (this.annotation_ui_context && this.hotkey_manager && this.listeners_map) {
-        this.hotkey_manager.activate(this.listeners_map)
+      if (
+        this.annotation_ui_context && 
+        this.hotkey_manager && 
+        this.listeners_map() &&
+        this.annotation_ui_context.working_file_list.length > 1
+      ) {
+        this.hotkey_manager.activate(this.listeners_map())
       }
     },
     '$route'(to, from) {
@@ -561,28 +567,10 @@ export default Vue.extend({
     }
 
     this.hotkey_manager = new HotKeyManager()
-    this.hotkey_manager.activate(this.listeners_map)
-
+    this.activate_hotkeys()
     this.initializing = false
   },
   computed: {
-    listeners_map: function() {
-      if (!this.annotation_ui_context) return null
-      if (!this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`]) return null
-
-      let ref = this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`]
-      if(!ref) return null
-
-      const listener_map = {
-        "beforeunload": ref.warn_user_unload,
-        "keydown": ref.keyboard_events_global_down,
-        "keyup": ref.keyboard_events_global_up,
-        "mousedown": ref.mouse_events_global_down,
-        "resize": ref.update_window_size_from_listener,
-      }
-
-      return listener_map
-    },
     annotation_area_container_max_height: function(){
       let heightWindow = this.window_height && document.documentElement.clientHeight ?
         Math.min(this.window_height, document.documentElement.clientHeight) :
@@ -702,6 +690,28 @@ export default Vue.extend({
     },
   },
   methods: {
+    activate_hotkeys: function() {
+      if (this.hotkey_manager) {
+        this.hotkey_manager.activate(this.listeners_map())
+      }
+    },
+    listeners_map: function() {
+      if (!this.annotation_ui_context) return null
+      if (!this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`]) return null
+
+      let ref = this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`]
+      if (!ref) return null
+
+      const listener_map = {
+        "beforeunload": ref.warn_user_unload,
+        "keydown": ref.keyboard_events_global_down,
+        "keyup": ref.keyboard_events_global_up,
+        "mousedown": ref.mouse_events_global_down,
+        "resize": ref.update_window_size_from_listener,
+      }
+
+      return listener_map
+    },
     update_window_size_from_listener: function(){
         this.window_width = window.innerWidth
         this.window_height = window.innerHeight
