@@ -561,6 +561,9 @@ export default Vue.extend({
   },
   computed: {
     listeners_map: function() {
+      if (!this.annotation_ui_context) return null
+      if (!this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`]) return null
+
       const listener_map = {
         "beforeunload": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].warn_user_unload,
         "keydown": this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].keyboard_events_global_down,
