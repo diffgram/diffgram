@@ -369,6 +369,8 @@ export default Vue.extend({
         task_request: null,
       },
       hotkey_manager: null,
+      window_width: 0,
+      window_height: 0,
       annotation_ui_context: new BaseAnnotationUIContext(),
       child_annotation_ctx_list: [],
       root_file: [],
@@ -499,6 +501,8 @@ export default Vue.extend({
 
   },
   async mounted() {
+    this.window_width = window.innerWidth
+    this.window_height = window.innerHeight
     window.addEventListener("resize", this.update_window_size_from_listener);
     this.annotation_ui_context.get_userscript = this.get_userscript
     Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
@@ -580,9 +584,9 @@ export default Vue.extend({
       return listener_map
     },
     annotation_area_container_max_height: function(){
-      let heightWindow = window.innerHeight && document.documentElement.clientHeight ?
-        Math.min(window.innerHeight, document.documentElement.clientHeight) :
-        window.innerHeight ||
+      let heightWindow = this.window_height && document.documentElement.clientHeight ?
+        Math.min(this.window_height, document.documentElement.clientHeight) :
+        this.window_height ||
         document.documentElement.clientHeight ||
         document.getElementsByTagNameget_child_annotation_ctx('body')[0].clientHeight;
 
@@ -594,9 +598,9 @@ export default Vue.extend({
       if(!this.annotation_ui_context.current_image_annotation_ctx.label_settings || !this.interface_type || !this.interface_type && !this.initializing && this.loading){
         return '100%'
       }
-      let widthWindow = window.innerWidth && document.documentElement.clientWidth ?
-        Math.min(window.innerWidth, document.documentElement.clientWidth) :
-        window.innerWidth ||
+      let widthWindow = this.window_width && document.documentElement.clientWidth ?
+        Math.min(this.window_width, document.documentElement.clientWidth) :
+        this.window_width ||
         document.documentElement.clientWidth ||
         document.getElementsByTagName('body')[0].clientWidth;
       // TODO: Create a generic logic for each interface rendering
@@ -699,6 +703,8 @@ export default Vue.extend({
   },
   methods: {
     update_window_size_from_listener: function(){
+        this.window_width = window.innerWidth
+        this.window_height = window.innerHeight
         for(let key_row of Object.keys(this.all_panes_list)){
           this.recalculate_pane_dimensions(key_row, this.all_panes_list[key_row])
         }
@@ -1515,6 +1521,7 @@ export default Vue.extend({
         await this.set_working_file_from_child_file_list(file)
 
       }
+      this.on_panes_ready()
       this.root_file = file
     },
 
