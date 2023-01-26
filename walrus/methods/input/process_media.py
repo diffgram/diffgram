@@ -128,7 +128,7 @@ def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
             logger.warning('Rejected Item: processing, data stopped. Waiting for termination...')
             break
 
-        check_and_wait_for_memory(memory_limit_float = 75.0)
+        check_and_wait_for_memory(memory_limit_float = 85.0)
 
         logger.info("[Media Queue Heartbeat]")
         try:
@@ -394,7 +394,7 @@ class Process_Media():
 
         start_time = time.time()
 
-        check_and_wait_for_memory(memory_limit_float = 75.0)
+        check_and_wait_for_memory(memory_limit_float = 85.0)
 
         ### Warm up
         self.get_input_with_retry()

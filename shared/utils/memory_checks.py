@@ -30,7 +30,7 @@ def is_memory_available(memory_limit_float = 75.0):
     return True
 
 
-def check_and_wait_for_memory(memory_limit_float = 75.0, check_interval = 5):
+def check_and_wait_for_memory(memory_limit_float = 85.0, check_interval = 5):
     while True:
         if is_memory_available(memory_limit_float = memory_limit_float):
             return True

@@ -143,7 +143,7 @@ jobs:
         # determine the unique run id necessary to re-run the checks
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         NODE_ENV: development
-        DEBUG: '@cypress/github-action'
+        DEBUG: 'cypress:server:util:process_profiler'
         DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
         PYTHONPATH: /__w/diffgram
         DIFFGRAM_SYSTEM_MODE: testing_e2e
@@ -159,3 +159,9 @@ jobs:
         DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
         DIFFGRAM_VERSION_TAG: ${{ secrets.DIFFGRAM_VERSION_TAG }}
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
+    - name: Cypress debug logs 📝
+      uses: ./
+      env:
+        DEBUG: '@cypress/github-action'
+      with:
+        working-directory: examples/basic
