@@ -3170,6 +3170,9 @@ export default Vue.extend({
     },
 
     update_window_size_from_listener() {
+      if(!this.use_full_window){
+        return
+      }
       // function so we can destroy it after
       this.window_width_from_listener = window.innerWidth;
       this.window_height_from_listener = window.innerHeight;
@@ -3192,10 +3195,10 @@ export default Vue.extend({
       // window.removeEventListener("keydown", this.keyboard_events_global_down);
 
       // window.removeEventListener("keyup", this.keyboard_events_global_up);
-      // window.removeEventListener(
-      //   "resize",
-      //   this.update_window_size_from_listener
-      // );
+      window.removeEventListener(
+        "resize",
+        this.update_window_size_from_listener
+      );
 
       // local
       this.annotation_area.removeEventListener(
@@ -3231,7 +3234,7 @@ export default Vue.extend({
       // window.addEventListener("keydown", this.keyboard_events_global_down);
       // document.addEventListener("mousedown", this.mouse_events_global_down);
       // window.addEventListener("keyup", this.keyboard_events_global_up);
-      // window.addEventListener("resize", this.update_window_size_from_listener);
+      window.addEventListener("resize", this.update_window_size_from_listener);
 
       this.update_window_size_from_listener(); // Initial size (resize doesn't fire on first load)
 
