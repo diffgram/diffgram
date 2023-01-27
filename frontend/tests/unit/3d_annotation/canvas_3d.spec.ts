@@ -1,9 +1,9 @@
 import Vuex from "vuex";
 import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
-import canvas_3d from "../../../src/components/3d_annotation/canvas_3d.vue";
+import canvas_3d from "../../../src/components/annotation/3d_annotation/canvas_3d.vue";
 import 'jest-canvas-mock';
 import * as THREE from "three";
-import {WEBGL} from "../../../src/components/3d_annotation/WebGL";
+import {WEBGL} from "../../../src/components/annotation/3d_annotation/WebGL";
 import mock = jest.mock;
 
 jest.mock("three/src/renderers/WebGLRenderer"); // this happens automatically with automocking

@@ -703,10 +703,12 @@
 
         // not sure if this is right thing to watch
         current_instance() {
+
           this.set_existing_selected()
         },
 
         group() {
+
           // for "resesting" it.
           // we want a newly created group to be different
           // vue js being a bit fiddly here
@@ -929,6 +931,7 @@
 
            *
            */
+
           this.$emit('attribute_change', [this.group, this.export_internal_selected])
 
         },
@@ -943,14 +946,13 @@
         },
 
         format_default: function () {
-
           if ([null, "select", "radio"].includes(this.group.kind)) {
             let default_attribute = {}
             default_attribute.id = this.group.default_id
             return default_attribute
           }
           if (this.group.kind == 'multiple_select'){
-            return [this.group.default_id]  // note array formatting, assumed to be single ID for now
+            return [{id:this.group.default_id}]  // note array formatting, assumed to be single ID for now
           }
           if (this.group.kind == 'text'){
             return this.group.default_value
@@ -987,28 +989,26 @@
           this.internal_selected = []
           this.internal_selected_names = []
 
-          if (this.group.kind === 'date') this.internal_selected = ''
+          if (this.group.kind === 'date') {
+            this.internal_selected = ''
+          }
 
           // set existing if applicable
           if (!this.current_instance) {
             return
           }
-          if(!this.current_instance.attribute_groups){
+          if (!this.current_instance.attribute_groups) {
             return
           }
 
           let value = null    // shared with existing and default
           let existing_value = null
           let default_value = null
-
-          if (this.current_instance.attribute_groups) {
+          if (this.current_instance.attribute_groups && this.current_instance.attribute_groups[this.group.id]) {
             existing_value = this.current_instance.attribute_groups[this.group.id]
           }
-          if ((existing_value != null && this.group.kind != 'multiple_select' )
-            || (this.group.kind === 'multiple_select' && existing_value && existing_value.length > 0)){
-            value = existing_value
-          }
           else  {
+
             // If not existing value, check for default
             // We must be careful here, we don't want to "reset" to the default value
             // if there was an existing value. We only set default when it's null.
@@ -1019,6 +1019,11 @@
             } else {
               value = this.format_default()
             }
+          }
+          // Populate existing value.
+          if ((existing_value != null && this.group.kind != 'multiple_select' )
+            || (this.group.kind === 'multiple_select' && existing_value && existing_value.length > 0)){
+            value = existing_value
           }
           // Code below is for LOADING VALUES / formatting.
           // At this point we around know the value itself as ( existing_value )

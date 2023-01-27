@@ -6,9 +6,7 @@ describe("manual_user_assignment", () => {
 
 
       Cypress.Cookies.debug(true, { verbose: true });
-      Cypress.Cookies.defaults({
-        preserve: ["session"]
-      });
+
       cy.loginByForm(testUser.email, testUser.password)
       .gotToProject(testUser.project_string_id)
       .createSampleTasksUsingBackend(10)

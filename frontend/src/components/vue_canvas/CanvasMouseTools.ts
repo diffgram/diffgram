@@ -73,13 +73,22 @@ export class CanvasMouseTools {
   public pan_y(movement_y){
     this.canvas_ctx.translate(0, -movement_y);
   }
+  public  getMousePos(canvas, evt) {
+    var rect = canvas.getBoundingClientRect(), // abs. size of element
+      scaleX = canvas.width / rect.width,    // relationship bitmap vs. element for x
+      scaleY = canvas.height / rect.height;  // relationship bitmap vs. element for y
 
+    return {
+      x: (evt.clientX - rect.left) * scaleX,   // scale mouse coordinates after they have
+      y: (evt.clientY - rect.top) * scaleY     // been adjusted to be relative to element
+    }
+  }
   public mouse_transform(event, mouse_position, canvas_element): void {
+
     if (canvas_element) {
       this.canvas_rectangle = canvas_element.getBoundingClientRect()
     }
     if (!this.canvas_rectangle) { return }
-
     let x_raw = (event.clientX - this.canvas_rectangle.left)
     let y_raw = (event.clientY - this.canvas_rectangle.top)
     event = event || window.event;
@@ -259,9 +268,13 @@ export class CanvasMouseTools {
   }
 
   private raw_point(event) {
-    let x_raw = (event.clientX - this.canvas_rectangle.left)
-    let y_raw = (event.clientY - this.canvas_rectangle.top)
-    let point = {'x': x_raw, 'y': y_raw}
+    console.log('EVENT POINT', event)
+    var rect = event.target.getBoundingClientRect();
+    var x = event.clientX - rect.left; //x position within the element.
+    var y = event.clientY - rect.top;  //y position within the element.
+    // let x_raw = (event.clientX - this.canvas_rectangle.left)
+    // let y_raw = (event.clientY - this.canvas_rectangle.top)
+    let point = {'x': x, 'y': y}
     return point
   }
 }

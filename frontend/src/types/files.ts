@@ -1,4 +1,3 @@
-
 export type File = {
   id: number,
   original_filename: string,
@@ -19,7 +18,9 @@ export type File = {
   audio?: Audio
   sensor_fusion?: SensorFusion
 
+  row?: number
 
+  column?: number
 }
 export type Video = {
   id: number

@@ -1,5 +1,24 @@
 import axios from './customInstance'
 import {File} from '../types/files'
+
+export const regenerate_cache = async (
+  project_string: string, 
+  file_id: number, 
+  frame_number: number
+) => {
+  try {
+    const response = await axios.post(
+      `/api/v1/project/${project_string}/file/${file_id}/regenerate-cache`,
+      { frame_number }
+    );
+
+    return [response.data, null]
+  }
+  catch(e) {
+    return [null, e]
+  }
+}
+
 export const get_file_list = async (project_string_id, user_name, metadata) => {
   let url = `/api/project/${project_string_id}/user/${user_name}/file/list`
   try {

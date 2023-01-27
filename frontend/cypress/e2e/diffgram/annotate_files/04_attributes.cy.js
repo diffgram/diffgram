@@ -7,16 +7,13 @@ describe('Annotate Files Tests', () => {
   context('Test Annotate Files Attributes Feature', () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
-      Cypress.Cookies.defaults({
-        preserve: ['session']
-      })
-      // login before all tests
-      cy.loginByForm(testUser.email, testUser.password);
-      cy.gotToProject(testUser.project_string_id);
-      cy.createLabels(labelsForAttributes)
-      cy.uploadAndViewSampleImage(testUser.project_string_id);
 
-      cy.goToSchemaFromToolbar()
+      // login before all tests
+      cy.loginByForm(testUser.email, testUser.password)
+        .gotToProject(testUser.project_string_id)
+        .createLabels(labelsForAttributes)
+        .uploadAndViewSampleImage(testUser.project_string_id)
+        .goToSchemaFromToolbar()
 
     })
     const next_wizard_step = '[data-cy=wizard_navigation_next]'

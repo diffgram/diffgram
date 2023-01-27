@@ -155,6 +155,7 @@ export abstract class InstanceImage2D extends Instance {
 
 
     ctx.fillStyle = get_sequence_color(this.sequence_id)
+
     this.draw_text(ctx, message, x, y, ctx.font,
       '255, 255, 255,',
       this.image_label_settings.font_background_opacity);

@@ -4,8 +4,8 @@ import {CanvasMouseCtx} from "../../../../types/mouse_position";
 import {BoxInstance} from "../../instances/BoxInstance";
 import {GLOBAL_SELECTED_COLOR, Instance} from "../../instances/Instance";
 import {InstanceImage2D} from "../../instances/InstanceImage2D";
-import {CreateInstanceCommand} from "../../../annotation/commands/create_instance_command";
-import {UpdateInstanceCommand} from "../../../annotation/commands/update_instance_command";
+import {CreateInstanceCommand} from "../../../annotation/image_and_video_annotation/commands/create_instance_command";
+import {UpdateInstanceCommand} from "../../../annotation/image_and_video_annotation/commands/update_instance_command";
 import {PolygonInstance} from "../../instances/PolygonInstance";
 
 export abstract class ImageAnnotationCoordinator extends Coordinator {
@@ -109,13 +109,13 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
         instance = hovered_instance
       }
     }
+
     return this.is_mouse_down_event(annotation_event) &&
       instance &&
       !instance.selected &&
       instance.is_hovered &&
       !annotation_event.annotation_ctx.draw_mode &&
       !annotation_event.annotation_ctx.view_issue_mode &&
-      !annotation_event.annotation_ctx.instance_select_for_issue &&
       !annotation_event.annotation_ctx.view_only_mode &&
       allow_select_in_merge
   }
@@ -133,6 +133,13 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
         instance = hovered_instance
       }
     }
+    // Deselection Allowed in issue creation mode
+    if(this.is_mouse_down_event(annotation_event) &&
+      instance &&
+      instance.selected
+      && annotation_event.annotation_ctx.instance_select_for_issue){
+      return true
+    }
     return this.is_mouse_down_event(annotation_event) &&
       instance &&
       instance.selected &&
@@ -141,7 +148,6 @@ export abstract class ImageAnnotationCoordinator extends Coordinator {
       (!instance.is_hovered || (polygon_merge_tool && allow_select_in_merge )) &&
       !annotation_event.annotation_ctx.draw_mode &&
       !annotation_event.annotation_ctx.view_issue_mode &&
-      !annotation_event.annotation_ctx.instance_select_for_issue &&
       !annotation_event.annotation_ctx.view_only_mode
   }
 

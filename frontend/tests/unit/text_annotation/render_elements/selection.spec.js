@@ -1,4 +1,4 @@
-import selection from "../../../../src/components/text_annotation/render_elements/selection.vue"
+import selection from "../../../../src/components/annotation/text_annotation/render_elements/selection.vue"
 import { shallowMount } from "@vue/test-utils";
 
 describe("Tests for selection.vue", () => {   

@@ -4,15 +4,13 @@ import testLabels from "../../../fixtures/labels.json";
 describe("Test set for QA slideshow", () => {
   before(function() {
     Cypress.Cookies.debug(true, { verbose: true });
-    Cypress.Cookies.defaults({
-      preserve: ["session"]
-    });
-    // login before all tests
-    cy.loginByForm(testUser.email, testUser.password);
-    cy.gotToProject(testUser.project_string_id);
-    cy.createLabels(testLabels);
-    cy.uploadAndViewSampleImage(testUser.project_string_id);
-    cy.wait(3000);
+
+    // login before all test
+    cy.loginByForm(testUser.email, testUser.password)
+      .gotToProject(testUser.project_string_id)
+      .createLabels(testLabels)
+      .uploadAndViewSampleImage(testUser.project_string_id)
+      .wait(3000);
     for (let i = 0; i < 3; i++) {
       cy.select_label("car");
       cy.mousedowncanvas(75, 75);

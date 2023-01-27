@@ -8,17 +8,17 @@
     :focusable="true"
     :disabled="false"
     :flat="true"
-    :hover="false"
+    :hover="true"
     :tile="true"
   >
     <v-expansion-panel>
-      <v-expansion-panel-header 
+      <v-expansion-panel-header
         class="d-flex justify-start pa-0 sidebar-accordeon-header"
       >
-        <v-icon 
-          left 
-          class="ml-5 flex-grow-0" 
-          color="primary" 
+        <v-icon
+          left
+          class="ml-5 flex-grow-0"
+          color="primary"
           size="18"
         >
           mdi-file
@@ -28,14 +28,14 @@
 
         <v-spacer></v-spacer>
 
-        <v-chip 
-          x-small 
+        <v-chip
+          x-small
           class="d-flex justify-center flex-grow-0"
         >
             {{ global_attribute_groups_list.length }}
         </v-chip>
       </v-expansion-panel-header>
-      
+
       <v-expansion-panel-content>
         <attribute_group_list
           v-if="current_global_instance && global_attribute_groups_list && global_attribute_groups_list.length != 0"
@@ -57,7 +57,7 @@
 
 <script lang="ts">
 import attribute_group_list from './attribute_group_list.vue';
-import Vue from "vue"; 
+import Vue from "vue";
 
 export default Vue.extend( {
    name: 'global_attributes_list',
@@ -99,7 +99,7 @@ export default Vue.extend( {
       open_state: function(newVal, oldVal) {
         if (newVal) {
           this.open = 0
-        } 
+        }
         else {
           this.open = undefined
         }
@@ -108,18 +108,16 @@ export default Vue.extend( {
     mounted() {
       if (this.open_state === undefined) {
         if(this.global_attribute_groups_list.length > 0) this.open = 0
-      } 
+      }
       else {
         this.open = this.open_state ? 0 : undefined
       }
     }
   }
-) 
+)
 </script>
 
 <style scoped>
-.sidebar-accordeon-header{
-  border-bottom: 1px solid #e0e0e0;
-}
+
 </style>
 

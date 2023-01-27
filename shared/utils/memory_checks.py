@@ -18,7 +18,7 @@ def get_memory_percent():
     return memory_percent
 
 
-def is_memory_available(memory_limit_float = 75.0):
+def is_memory_available(memory_limit_float = 85.0):
     memory_percent = get_memory_percent()
     logger.info(f'Checking for memory {memory_percent}%')
     if memory_percent is None: return True  # Don't stop if this check fails
@@ -30,7 +30,7 @@ def is_memory_available(memory_limit_float = 75.0):
     return True
 
 
-def check_and_wait_for_memory(memory_limit_float = 75.0, check_interval = 5):
+def check_and_wait_for_memory(memory_limit_float = 85.0, check_interval = 5):
     while True:
         if is_memory_available(memory_limit_float = memory_limit_float):
             return True

@@ -847,6 +847,7 @@ export default Vue.extend({
         }
         this.selected_compound_input = input
         this.$refs.input_compound_dialog.open()
+        this.$refs.input_compound_dialog.request_refresh = new Date()
       },
       open_free_tier_limit_dialog: function (message, details) {
         this.message_free_tier_limit = message

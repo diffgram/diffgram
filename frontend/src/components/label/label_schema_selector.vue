@@ -68,7 +68,10 @@ export default {
     on_change_schema: function(schema){
       this.$emit('change', schema);
       document.activeElement.blur()
-      this.$refs.schema_select.blur()
+      if(this.$refs.schema_select){
+        this.$refs.schema_select.blur()
+      }
+
     },
     on_filter_schemas: function(item, query_text, item_text){
       return item.name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())

@@ -1,4 +1,4 @@
-import text_sidebar from "../../../src/components/text_annotation/text_sidebar.vue"
+import text_sidebar from "../../../src/components/annotation/text_annotation/text_sidebar.vue"
 import { shallowMount, createLocalVue } from "@vue/test-utils";
 import { instance_list } from "./text_test_data"
 import { TextAnnotationInstance } from "../../../src/components/vue_canvas/instances/TextInstance";
@@ -39,7 +39,7 @@ describe("text_sidebar.vue", () => {
 
         wrapper = shallowMount(text_sidebar, props, localVue)
     })
-    
+
     it("Should not return id column if the user is not a super_admin", () => {
         props.mocks.$store.state.user.current.is_super_admin = false
 
@@ -58,7 +58,7 @@ describe("text_sidebar.vue", () => {
         wrapper.setData({
             open_panels: [1]
         })
-        
+
         wrapper.vm.on_change_expansion(0)
         expect(wrapper.vm.open_panels).toContain(0)
         wrapper.vm.on_change_expansion(0)
@@ -69,7 +69,7 @@ describe("text_sidebar.vue", () => {
         wrapper.vm.on_hover_item(test_instance)
         expect(wrapper.emitted('on_instance_hover')).toBeTruthy()
     })
-    
+
     it("Should emit on_instance_stop_hover on on_stop_hover_item", () => {
         wrapper.vm.on_stop_hover_item()
         expect(wrapper.emitted('on_instance_stop_hover')).toBeTruthy()
@@ -91,7 +91,7 @@ describe("text_sidebar.vue", () => {
         local_wrapper = shallowMount(text_sidebar, props, localVue)
         result = local_wrapper.vm.attribute_group_list_prop()
         expect(result).toEqual([])
-        
+
         props.propsData.label_list = [1]
         local_wrapper = shallowMount(text_sidebar, props, localVue)
         result = local_wrapper.vm.attribute_group_list_prop()

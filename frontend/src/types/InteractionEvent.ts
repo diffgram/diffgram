@@ -56,6 +56,7 @@ export interface ImageAnnotationEventCtx extends AnnotationEventCtx {
   auto_border_context: AutoBorderContext
   polygon_merge_tool: PolygonMergeTool
 
+
 }
 export interface AudioAnnotationEvent extends AnnotationEventCtx{
 

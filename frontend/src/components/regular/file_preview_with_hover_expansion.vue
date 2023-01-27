@@ -5,9 +5,9 @@
 
     <template v-slot:activator="{on}">
 
-      <div v-on="on">
+      <div v-on="on" class="d-flex justify-center" >
         <file_preview
-          v-if="file.instance_list && (file.type === 'image' || file.type === 'video' || file.type === 'compound')"
+          v-if="(file.type === 'image' || file.type === 'video' || file.type === 'compound')"
           :class="`d-flex file-preview ${file.type}-preview`"
           :file_preview_width="file_preview_width"
           :file_preview_height="file_preview_height"
@@ -16,14 +16,15 @@
           :key="file.id"
           :project_string_id="project_string_id"
           :file="file"
-          :instance_list="file.instance_list"
+          :instance_list="file.instance_list ? file.instance_list : []"
           :show_ground_truth="true"
           :show_video_nav_bar="false"
           :enable_go_to_file_on_click="false"
         ></file_preview>
-        <v-icon v-if="file.type === 'sensor_fusion'" size="64" color="primary">mdi-printer-3d</v-icon>
-        <v-icon v-if="file.type === 'text'" size="64" color="primary">mdi-text-long</v-icon>
-        <v-icon v-if="file.type === 'geospatial'" size="64" color="primary">mdi-map-search-outline</v-icon>
+        <v-icon v-if="file.type === 'sensor_fusion'" size="96" color="primary">mdi-printer-3d</v-icon>
+        <v-icon v-if="file.type === 'text'" size="96" color="primary">mdi-text-long</v-icon>
+        <v-icon v-if="file.type === 'geospatial'" size="96" color="primary">mdi-map-search-outline</v-icon>
+        <v-icon v-if="file.type === 'audio'" size="96" color="primary">mdi-music-box</v-icon>
        </div>
 
     </template>
@@ -55,7 +56,7 @@
 import Vue from "vue";
 
 export default Vue.extend( {
-  name: 'hover_preview_card',
+  name: 'file_preview_with_hover_expansion',
   props: {
     'file_preview_width': {
       default: 150

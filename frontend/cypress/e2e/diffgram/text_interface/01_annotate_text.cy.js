@@ -6,13 +6,11 @@ describe('Annotation Text Interface display', () => {
   context('Text Interface display', () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
-      Cypress.Cookies.defaults({
-        preserve: ['session']
-      })
+
       // login before all tests
-      cy.loginByForm(testUser.email, testUser.password);
-      cy.gotToProject(testUser.project_string_id);
-      cy.createLabels(testLabels)
+      cy.loginByForm(testUser.email, testUser.password)
+        .gotToProject(testUser.project_string_id)
+        .createLabels(testLabels)
 
     })
 
@@ -29,9 +27,9 @@ describe('Annotation Text Interface display', () => {
       cy.realType("2");
       cy.get('[data-cy="text_label_1"]').should('be.visible')
     })
-    
-    it('Creates relations between text tokens', () => {     
-      cy.wait(500) 
+
+    it('Creates relations between text tokens', () => {
+      cy.wait(500)
       cy.get('[data-cy="text_label_0"]').click({force: true})
       cy.get('[data-cy="text_label_1"]').click({force: true})
       cy.realType("3");
@@ -39,7 +37,7 @@ describe('Annotation Text Interface display', () => {
     })
 
     it('Deletes instance from the context menu', () => {
-      cy.wait(500) 
+      cy.wait(500)
       cy.get('[data-cy="text_label_0"]').rightclick({force: true})
       cy.get('[data-cy="delete-instance-from-context"]').click({force: true})
       cy.get('[data-cy="text_label_1"]').should('not.exist')

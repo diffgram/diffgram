@@ -1,5 +1,4 @@
 from shared.database.task.task import Task, TASK_STATUSES
-from shared.utils.task.task_new import create_review_sub_task
 from shared.database.task.task_event import TaskEvent
 from shared.regular import regular_methods, regular_log
 from dataclasses import dataclass
@@ -108,13 +107,5 @@ class Task_Update():
             return
 
         self.task.status = TASK_STATUSES['deferred']
-
-        review_task = create_review_sub_task(
-            session = self.session,
-            job = self.task.job,
-            root_task = self.task,
-            guide_id = self.task.job.guide_review_id,
-            create_new_file = False
-        )
 
         self.log['success'] = True

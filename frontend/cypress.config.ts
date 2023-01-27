@@ -5,11 +5,13 @@ export default defineConfig({
   viewportWidth: 1200,
   viewportHeight: 900,
   pageLoadTimeout: 180000,
+
   retries: {
     runMode: 5,
     openMode: 0,
   },
   e2e: {
+    testIsolation: false,
     // We've imported your old cypress plugins here.
     // You may want to clean this up later by importing these.
     setupNodeEvents(on, config) {

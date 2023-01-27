@@ -219,7 +219,7 @@ class New_video():
         num_cores = os.cpu_count()
         logger.info(f"Num Core to write video: {num_cores}")
 
-        check_and_wait_for_memory(memory_limit_float=75.0)
+        check_and_wait_for_memory(memory_limit_float=85.0)
 
         if settings.PROCESS_MEDIA_TRY_BLOCK_ON is True:
             try:

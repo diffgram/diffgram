@@ -1,6 +1,6 @@
 import * as THREE from 'three';
-import AnnotationScene3D from "../../3d_annotation/AnnotationScene3D";
-import {getCenterPoint} from "../../3d_annotation/utils_3d";
+import AnnotationScene3D from "../../annotation/3d_annotation/AnnotationScene3D";
+import {getCenterPoint} from "../../annotation/3d_annotation/utils_3d";
 import {LabelColourMap} from "../../../types/label_colour_map";
 import {LabelFile} from "../../../types/label";
 import {MousePosition, Point} from "../../../types/mouse_position";
@@ -35,7 +35,7 @@ export class Instance {
   public edges: any[] = [];
   public front_face: object = null;
   public angle: number = 0;
-  public attribute_groups: any = null;
+  public attribute_groups: any = {};
   public rear_face: number = null;
   public override_color: string = null;
   public model_run_id: number = null;

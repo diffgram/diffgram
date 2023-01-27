@@ -39,14 +39,6 @@ def provision_root_tasks(session,
             for reviewer in default_reviewers:
                 root_task.add_reviewer(session, reviewer)
 
-        if review_frequncy:
-            if (index + 1) % review_frequncy == 0:
-                review_task = create_review_sub_task(
-                    session = session,
-                    job = job,
-                    root_task = root_task,
-                    guide_id = job.guide_review_id)
-
     return True
 
 
@@ -171,57 +163,3 @@ def copy_file(session,
     assert new_file != file
 
     return new_file
-
-
-def create_review_sub_task(session,
-                           job,
-                           root_task,
-                           guide_id,
-                           create_new_file = False):
-    """
-
-    Assumes job has already been added to session
-
-    """
-
-    # Copy shared data from root task / job
-
-    # Full access to labels?
-
-    task = task_new(session = session,
-                    job = job,
-                    file_id = root_task.file_id,
-                    file_original_id = root_task.file_original_id,
-                    guide_id = guide_id,
-                    label_dict = job.label_dict,
-                    task_type = 'review'
-                    )
-
-    # Declare what's different about this task
-
-    # TODO handling difference between
-    # root and parent for future tasks further down the graph
-    session.flush()
-
-    # We don't move to available until first task is done
-    task.status = 'created'
-    task.parent_id = root_task.id
-    task.root_id = root_task.id
-    root_task.child_primary_id = task.id
-
-    job.stat_count_tasks += 1
-
-    # Caution!!! does not fully support video yet. See sequence thing.
-    if create_new_file is True:
-        task.file = File.copy_file_from_existing(
-            session = session,
-            working_dir = None,
-            existing_file = root_task.file,
-            copy_instance_list = True,
-            add_link = False,
-            remove_link = False,
-            deep_copy = True
-        )
-        session.add(task)
-
-    return task

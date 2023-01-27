@@ -119,6 +119,7 @@ export function route_errors (error) {
     }
 
     else {
+      let result = {...error}
       if (error.response.data && typeof error.response.data === 'object') {
         result = {
           ...error.response.data,

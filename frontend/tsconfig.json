@@ -2,6 +2,9 @@
   "compilerOptions": {
 
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "node_modules/vuetify/src/globals.d.ts"
+  ],
   "exclude": ["node_modules", "src/**/*.spec.ts"]
 }
