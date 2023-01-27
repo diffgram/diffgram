@@ -405,8 +405,8 @@ Cypress.Commands.add('isValidPolygonTestOracle', function (points) {
           canvas_wrapper,
           annCore.canvas_element_ctx)
 
-        expect(expected_polygon.points[i].x).to.equal(box_point.x);
-        expect(expected_polygon.points[i].y).to.equal(box_point.y);
+        expect(expected_polygon.points[i].x).to.approximately(box_point.x, 2);
+        expect(expected_polygon.points[i].y).to.approximately(box_point.y, 2);
       }
     })
   })

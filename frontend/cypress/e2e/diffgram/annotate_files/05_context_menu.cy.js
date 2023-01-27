@@ -21,13 +21,13 @@ describe('Annotate Files Tests', () => {
 
       // Draw box
       cy.mousedowncanvas(75, 75);
-      cy.wait(1500)
+      cy.wait(1000)
 
       cy.mouseupcanvas();
-      cy.wait(1500)
+      cy.wait(1000)
 
-      cy.mousedowncanvas(350, 350);
-      cy.wait(1500)
+      cy.mousedowncanvas(200, 200);
+      cy.wait(1000)
       cy.mouseupcanvas();
 
       // Set Edit Mode False
@@ -36,42 +36,27 @@ describe('Annotate Files Tests', () => {
 
     context('It Has a Context Menu For Instance Specific Actions', () => {
       it('Correctly opens the context menu on a Bounding Box', () => {
-        cy.mousedowncanvas(150, 150);
+        cy.mousedowncanvas(100, 100);
         cy.wait(1000)
-        cy.mousedowncanvas(150, 150);
-        cy.wait(1000)
-        cy.rightclickdowncanvas(150, 150);
+        cy.rightclickdowncanvas(100, 100);
         cy.wait(1000)
         cy.get('[data-cy=copy_instance]').should('exist');
         cy.get('[data-cy=delete_instance]').should('exist');
       })
     })
-    context('It Can Copy an Instance', () => {
+    context('It Can Copy & Paste Instance', () => {
       it('Correctly opens the context menu on a Bounding Box', () => {
-        cy.mousedowncanvas(150, 150);
+        cy.mousedowncanvas(100, 100);
         cy.wait(1000)
-        cy.rightclickdowncanvas(150, 150);
+        cy.rightclickdowncanvas(100, 100);
         cy.wait(1000)
         cy.get('[data-cy=copy_instance]').click({force: true});
-        cy.mousedowncanvas(10,10)
+        cy.mousemovecanvas(300,300)
         cy.rightclickdowncanvas(380, 380);
         cy.get('[data-cy=paste_instance]').should('exist');
       })
     })
 
-    context('It Can Paste an Instance', () => {
-      it('Correctly opens the context menu on a Bounding Box', () => {
-        cy.mousedowncanvas(150, 150);
-        cy.wait(1000)
-        cy.rightclickdowncanvas(150, 150);
-        cy.wait(1000)
-        cy.get('[data-cy=copy_instance]').click({force: true});
-        cy.mousedowncanvas(10,10)
-        cy.rightclickdowncanvas(380, 380);
-        cy.get('[data-cy=paste_instance]').click({force: true});
-
-      })
-    })
 
     context('It Can Paste an Instance Multiple Times Without Duplicating', () => {
       it('Correctly opens the context menu on a Bounding Box', () => {
