@@ -10,9 +10,9 @@ describe('Task Template Creation', () => {
       Cypress.Cookies.debug(true, {verbose: true})
 
       // login before all tests
-      cy.loginByForm(testUser.email, testUser.password);
-      cy.gotToProject(testUser.project_string_id);
-      cy.createLabels(testLabels)
+      cy.loginByForm(testUser.email, testUser.password)
+        .gotToProject(testUser.project_string_id)
+        .createLabels(testLabels)
     })
     let url = '/api/v1/project/*/job/update'
     let url_launch = '/api/v1/job/launch'

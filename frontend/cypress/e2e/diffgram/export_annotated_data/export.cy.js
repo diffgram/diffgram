@@ -10,7 +10,7 @@ describe('Export to Cloud Provider', () => {
     beforeEach(function () {
       // login before each test
       cy.loginByForm(testUser.email, testUser.password)
-      cy.gotToProject(testUser.project_string_id);
+        .gotToProject(testUser.project_string_id)
     })
 
     it('Correctly sends a Job export to AWS Connection', () => {

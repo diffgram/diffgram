@@ -9,15 +9,15 @@ describe('Annotate Files Tests', () => {
       Cypress.Cookies.debug(true, {verbose: true})
 
       // login before all tests
-      cy.loginByForm(testUser.email, testUser.password);
-      cy.gotToProject(testUser.project_string_id);
-      cy.createLabels(testLabels)
-      cy.uploadAndViewSampleImage(testUser.project_string_id);
-      // Minimize file explorer
-      cy.wait(3000)
-      .get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-      // Select Label
-      .select_label()
+      cy.loginByForm(testUser.email, testUser.password)
+        .gotToProject(testUser.project_string_id)
+        .createLabels(testLabels)
+        .uploadAndViewSampleImage(testUser.project_string_id)
+        // Minimize file explorer
+        .wait(3000)
+        .get('[data-cy="minimize-file-explorer-button"]').click({force: true})
+        // Select Label
+        .select_label()
     })
 
     context('Undo/Redo All Instance Type Creations', () => {

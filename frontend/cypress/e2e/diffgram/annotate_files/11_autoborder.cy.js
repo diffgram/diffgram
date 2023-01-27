@@ -18,11 +18,11 @@ describe('Autoborder', () => {
       Cypress.Cookies.debug(true, {verbose: true})
 
       // Straight to studio from login
-      cy.loginByForm(testUser.email, testUser.password, "?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e");
-      cy.createLabels(labelsForAttributes)
-      cy.uploadAndViewSampleImage(testUser.project_string_id);
-      cy.uploadAndViewSampleImage(testUser.project_string_id);
-      cy.wait(15000)
+      cy.loginByForm(testUser.email, testUser.password, "?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e")
+        .createLabels(labelsForAttributes)
+        .uploadAndViewSampleImage(testUser.project_string_id)
+        .uploadAndViewSampleImage(testUser.project_string_id)
+        .wait(15000)
     })
 
     it('[Prep] Create a Polygon to Prepare', () => {

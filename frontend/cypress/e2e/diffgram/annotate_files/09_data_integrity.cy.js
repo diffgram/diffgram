@@ -9,10 +9,10 @@ describe('Annotate Files Tests', () => {
       Cypress.Cookies.debug(true, {verbose: true})
 
       // login before all tests
-      cy.loginByForm(testUser.email, testUser.password);
-      cy.gotToProject(testUser.project_string_id);
-      cy.createLabels(testLabels)
-      cy.uploadAndViewSampleVideo(testUser.project_string_id);
+      cy.loginByForm(testUser.email, testUser.password)
+        .gotToProject(testUser.project_string_id)
+        .createLabels(testLabels)
+        .uploadAndViewSampleVideo(testUser.project_string_id);
 
     })
 
@@ -43,8 +43,9 @@ describe('Annotate Files Tests', () => {
             max_y: 320,
           }
         ]
-        cy.wait(1000)
+
         for (let box of boxes) {
+          cy.wait(2000)
           cy.mousedowncanvas(box.min_x, box.min_x);
           cy.wait(500)
 
@@ -55,8 +56,8 @@ describe('Annotate Files Tests', () => {
           cy.wait(500)
           cy.mouseupcanvas();
           cy.wait(500)
-          cy.get('[data-cy="save_button"]').click({force: true})
-          cy.wait(2000)
+
+
 
         }
 
@@ -76,16 +77,16 @@ describe('Annotate Files Tests', () => {
           const box = {
             min_x: 175,
             min_y: 175,
-            max_x: 224,
-            max_y: 224,
+            max_x: 225,
+            max_y: 225,
           }
-          cy.mousedowncanvas(box.min_x, box.min_x);
+          cy.mousedowncanvas(box.min_x, box.min_y);
           cy.wait(500)
 
           cy.mouseupcanvas();
           cy.wait(1000)
 
-          cy.mousedowncanvas(box.max_x, box.max_x);
+          cy.mousedowncanvas(box.max_x, box.max_y);
           cy.wait(500)
           cy.mouseupcanvas();
 
@@ -203,12 +204,11 @@ describe('Annotate Files Tests', () => {
                     expect(xhrs[0].response, 'request status').to.have.property('statusCode', 200)
                     expect(xhrs[0].request.body.video_data.current_frame, 'request status').to.equal(0)
 
-                    cy.window().its('AnnotationCore').then(annotation_core => {
-                      cy.log('annotation_core0aassd', annotation_core)
-                      expect(annotation_core.unsaved_frames.length).to.equal(0)
-                      let pending_save_frames = Object.keys(annotation_core.instance_buffer_metadata);
+                    cy.window().its('AnnotationUIFactory').then(ui_factory => {
+                      expect(ui_factory.annotation_ui_context.current_image_annotation_ctx.unsaved_frames.length).to.equal(0)
+                      let pending_save_frames = Object.keys(ui_factory.annotation_ui_context.current_image_annotation_ctx.instance_buffer_metadata);
                       for(let key of pending_save_frames){
-                        expect(annotation_core.instance_buffer_metadata[key].pending_save).to.satisfy(val => {
+                        expect(ui_factory.annotation_ui_context.current_image_annotation_ctx.instance_buffer_metadata[key].pending_save).to.satisfy(val => {
                           return val === false || val === undefined
                         });
 

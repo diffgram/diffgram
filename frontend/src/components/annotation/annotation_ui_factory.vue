@@ -509,6 +509,9 @@ export default Vue.extend({
 
   },
   async mounted() {
+    if (window.Cypress) {
+      window.AnnotationUIFactory = this;
+    }
     this.window_width = window.innerWidth
     this.window_height = window.innerHeight
     window.addEventListener("resize", this.update_window_size_from_listener);

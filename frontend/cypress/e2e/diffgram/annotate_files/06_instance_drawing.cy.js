@@ -9,11 +9,11 @@ describe('Annotate Files Tests', () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
 
-      // login before all tests
-      cy.loginByForm(testUser.email, testUser.password);
-      cy.gotToProject(testUser.project_string_id);
-      cy.createLabels(testLabels)
-      cy.uploadAndViewSampleImage(testUser.project_string_id);
+      // login before all test
+      cy.loginByForm(testUser.email, testUser.password)
+        .gotToProject(testUser.project_string_id)
+        .createLabels(testLabels)
+        .uploadAndViewSampleImage(testUser.project_string_id);
     })
 
     it('Correctly creates a bounding box.', () => {

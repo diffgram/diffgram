@@ -9,29 +9,29 @@ describe('Annotate Files Tests', () => {
       Cypress.Cookies.debug(true, {verbose: true})
 
       // login before all tests
-      cy.loginByForm(testUser.email, testUser.password);
-      cy.gotToProject(testUser.project_string_id);
-      cy.createLabels(testLabels)
-      cy.uploadAndViewSampleImage(testUser.project_string_id);
-      cy.wait(5000);
+      cy.loginByForm(testUser.email, testUser.password)
+        .gotToProject(testUser.project_string_id)
+        .createLabels(testLabels)
+        .uploadAndViewSampleImage(testUser.project_string_id)
+        .wait(5000)
       // Minimize file explorer
-      cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
+        .get('[data-cy="minimize-file-explorer-button"]').click({force: true})
       // Select Label
-      cy.select_label()
+        .select_label()
 
       // Draw box
-      cy.mousedowncanvas(75, 75);
-      cy.wait(1000)
+        .mousedowncanvas(75, 75)
+        .wait(1000)
 
-      cy.mouseupcanvas();
-      cy.wait(1000)
+        .mouseupcanvas()
+        .wait(1000)
 
-      cy.mousedowncanvas(200, 200);
-      cy.wait(1000)
-      cy.mouseupcanvas();
+        .mousedowncanvas(200, 200)
+        .wait(1000)
+        .mouseupcanvas()
 
       // Set Edit Mode False
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
+        .get('[data-cy="edit_toggle"]').click({force: true})
     })
 
     context('It Has a Context Menu For Instance Specific Actions', () => {
