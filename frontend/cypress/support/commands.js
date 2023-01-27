@@ -123,7 +123,7 @@ Cypress.Commands.add('dragcanvas', function (from_x, from_y, to_x, to_y) {
       const real_to_y = to_y + canvas_client_box.y;
       const movementX = real_to_x - real_from_x;
       const movementY = real_to_y - real_from_y;
-      cy.get().then(($el) => {
+      cy.get(`#${canvas_wrapper_id}`).then(($el) => {
         cy.wrap($el)
           .trigger('mouseover', {
             eventConstructor: 'MouseEvent',
