@@ -204,6 +204,7 @@
                     @instance_buffer_dict_updated="update_current_frame_buffer_dict"
                     @save_multiple_frames="save_multiple_frames"
                     @global_instance_changed="on_global_instance_changed"
+                    @change_task="(event) => trigger_task_change(event, annotation_ui_context.task, false)"
                   />
                 </div>
 
