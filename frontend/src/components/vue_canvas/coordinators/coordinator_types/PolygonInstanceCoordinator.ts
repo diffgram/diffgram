@@ -34,6 +34,11 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
       && annotation_event.annotation_ctx.draw_mode
   }
 
+  private should_detect_other_polygon_points(annotation_event: ImageInteractionEvent){
+    return this.is_mouse_move_event(annotation_event)
+      && annotation_event.annotation_ctx.is_actively_drawing
+
+  }
   private should_set_autoborder_point_index(annotation_event: ImageInteractionEvent) {
     return this.is_mouse_down_event(annotation_event) &&
       annotation_event.annotation_ctx.is_actively_drawing
@@ -377,7 +382,6 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
   }
 
   private add_point_turbo_mode(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
-    // this.detect_other_polygon_points();
     let mouse_position = annotation_event.annotation_ctx.mouse_position
     let mouse_down_position = annotation_event.annotation_ctx.mouse_down_position
     let current_polygon_point_list = annotation_event.annotation_ctx.current_drawing_instance.points
@@ -391,9 +395,6 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
   }
 
   private detect_other_polygon_points(coordinator_result: CoordinatorProcessResult, annotation_event: ImageInteractionEvent) {
-    if (!annotation_event.annotation_ctx.is_actively_drawing) {
-      return;
-    }
     const polygons_list = annotation_event.annotation_ctx.instance_list.filter(
       (x) => x.type == "polygon"
     );
@@ -529,6 +530,9 @@ export class PolygonInstanceCoordinator extends ImageAnnotationCoordinator {
     }
 
     // Autoborder
+    if(this.should_detect_other_polygon_points(annotation_event)){
+      this.detect_other_polygon_points(result, annotation_event)
+    }
     if (this.should_set_autoborder_point_index(annotation_event)) {
       this.polygon_auto_border_set_indexes(result, annotation_event)
     }
