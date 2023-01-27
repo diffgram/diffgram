@@ -453,13 +453,13 @@ Cypress.Commands.add('loginByForm', function (email, password, redirect = undefi
     name: 'loginByForm',
     message: `${email} | ${password}`,
   })
-  let path = 'http://localhost:8085/user/login'
-  if (redirect != undefined) {
-    path += redirect    // eg `?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e`
-  }
-  cy.visit(path)
-  cy.session([email, password], () => {
 
+  cy.session([email, password], () => {
+      let path = 'http://localhost:8085/user/login'
+      if (redirect != undefined) {
+        path += redirect    // eg `?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e`
+      }
+      cy.visit(path)
       let LOCAL_STORAGE_MEMORY = {};
 
       const getInitialStore = () => cy.window().its('app.$store')
