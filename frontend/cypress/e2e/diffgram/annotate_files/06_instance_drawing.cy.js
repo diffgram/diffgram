@@ -22,7 +22,7 @@ describe('Annotate Files Tests', () => {
       const max_x = 120;
       const max_y = 120;
       cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-      .wait(3000)
+      .wait(5000)
       .select_label()
 
       .mousemovecanvas(min_x, min_y)

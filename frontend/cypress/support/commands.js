@@ -246,44 +246,44 @@ Cypress.Commands.add('mouseupcanvas', function (x, y) {
 })
 Cypress.Commands.add('registerDataPlatformTestUser', function () {
 
-  cy.visit('http://localhost:8085/user/new', {timeout: 18000});
-  cy.wait(5000);
-  cy.get('[data-cy=email-input]').click({force: true});
-  cy.get('[data-cy=email-input]').type(testUser.email);
-  cy.get('[data-cy=password1]').click();
-  cy.get('[data-cy=password1]').type('diffgram123');
-  cy.get('[data-cy=password2]').click();
-  cy.get('[data-cy=password2]').type('diffgram123');
-  cy.get('[data-cy="create-user-button"] > .v-btn__content').click();
-  cy.wait(500);
-  // cy.get('[data-cy="error-email"]').should('not.be.visible');
-  cy.wait(3500);
-  cy.wait(2000);
-  cy.url().should('eq', 'http://localhost:8085/user/builder/signup')
-  cy.wait(2000)
-  cy.get('[data-cy=first_name]').click();
-  cy.get('[data-cy=first_name]').type('Diffgram');
-  cy.get('[data-cy=last_name]').type('e2e');
-  cy.get('[data-cy=how_hear_about_us]').type('Testing');
-  cy.get('[data-cy=city]').type('Testing City');
-  cy.get('[data-cy=role]').click()
-  cy.get('.v-list.v-select-list div').contains('Other').click({force: true})
-  cy.get('[data-cy=company]').click();
-  cy.get('[data-cy=company]').type('Diffgram');
-  cy.get('.v-slider__tick:nth-child(2)').click();
-  cy.get('[data-cy=finish_signup_button]').click();
-  cy.wait(3000);
-  // Create test Project
-  cy.visit('http://localhost:8085/a/project/new');
-  cy.get('.v-card:nth-child(2)').click();
-  cy.get('[data-cy=project_name]').click();
-  for (let i = 0; i < 40; i++) {
-    cy.get('[data-cy=project_name]').type('{backspace}');
-  }
-  cy.get('[data-cy=project_name]').type('Diffgram Testing E2E');
-  cy.get('[data-cy=project_goal]').type('For e2e testing');
-  cy.get('[data-cy="create_project_button"] > .v-btn__content').click();
-  cy.loginByForm(testUser.email, testUser.password)
+  cy.visit('http://localhost:8085/user/new', {timeout: 18000})
+    .wait(5000)
+    .get('[data-cy=email-input]').click({force: true})
+    .get('[data-cy=email-input]').type(testUser.email)
+    .get('[data-cy=password1]').click()
+    .get('[data-cy=password1]').type('diffgram123')
+    .get('[data-cy=password2]').click()
+    .get('[data-cy=password2]').type('diffgram123')
+    .get('[data-cy="create-user-button"] > .v-btn__content').click()
+    .wait(6000)
+    .url().should('eq', 'http://localhost:8085/user/builder/signup')
+    .wait(2000)
+    .get('[data-cy=first_name]').click()
+    .get('[data-cy=first_name]').type('Diffgram')
+    .get('[data-cy=last_name]').type('e2e')
+    .get('[data-cy=how_hear_about_us]').type('Testing')
+    .get('[data-cy=city]').type('Testing City')
+    .get('[data-cy=role]').click()
+    .get('.v-list.v-select-list div').contains('Other').click({force: true})
+    .get('[data-cy=company]').click()
+    .get('[data-cy=company]').type('Diffgram')
+    .get('.v-slider__tick:nth-child(2)').click()
+    .get('[data-cy=finish_signup_button]').click()
+    .wait(3000)
+    // Create test Project
+    .visit('http://localhost:8085/a/project/new')
+    .get('.v-card:nth-child(2)').click()
+    .get('[data-cy=project_name]').click()
+    .then(function(){
+      for (let i = 0; i < 40; i++) {
+        cy.get('[data-cy=project_name]').type('{backspace}')
+      }
+    })
+    .get('[data-cy=project_name]').type('Diffgram Testing E2E')
+    .get('[data-cy=project_goal]').type('For e2e testing')
+    .get('[data-cy="create_project_button"] > .v-btn__content').click()
+    .visit('http://localhost:8085/user/logout')
+    .loginByForm(testUser.email, testUser.password)
 })
 
 
