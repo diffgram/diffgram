@@ -3,6 +3,9 @@ import Vuetify from "vuetify";
 import {shallowMount, createLocalVue} from "@vue/test-utils";
 import annotation_core from "@/components/annotation/image_and_video_annotation/annotation_core.vue";
 import * as InstanceUtils from "@/utils/instance_utils";
+import {
+  BaseAnnotationUIContext,
+} from '../../../src/types/AnnotationUIContext'
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -19,6 +22,22 @@ describe("Test annotation_core", () => {
         label_schema:{
           id: 1,
           name: 'test'
+        },
+        task_error: {},
+        image_annotation_ctx: {
+          label_settings: {},
+        },
+        issues_ui_manager: {},
+        annotation_ui_context: {
+          current_image_annotation_ctx: {},
+          working_file: {
+            id: 1
+          },
+          working_file_list: [
+            {
+              id: 1
+            }
+          ]
         },
         global_attribute_groups_list: [],
         working_file: {
