@@ -1023,7 +1023,6 @@ export default Vue.extend({
       },
 
       change_instance: function (instance, index) {
-        console.log('CHANGE INSTANCE', instance, index)
         if (!instance) {
           instance = {}
         }  // to avoid having as many exists/ doesn't exist checks elsewhere

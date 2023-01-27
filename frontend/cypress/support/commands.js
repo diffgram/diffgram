@@ -463,55 +463,32 @@ Cypress.Commands.add('loginByForm', function (email, password, redirect = undefi
       cy.visit(path)
       let LOCAL_STORAGE_MEMORY = {};
 
-      const getInitialStore = () => cy.window().its('app.$store')
 
-      getInitialStore().its('state.user.logged_in').then((user_logged_in) => {
-
-        if (user_logged_in == false) {
-          cy.wait(3000);
-          cy.window().then(window => {
+      cy.window().then(window => {
 
 
-            cy.get('[data-cy=email]')
-              .type(email)
-              .should('have.value', email)
-            cy.wait(1000);
-            if (window.LoginComponent.mailgun) {
-              cy.get('[data-cy=type-password-btn]').click({force: true})
-            }
-            cy.get('[data-cy=password]')
-              .type(password)
-              .should('have.value', password)
-            cy.get('[data-cy=login]').click();
-            cy.wait(3000);
-            Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
-              localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
-            });
-            const getStore = () => cy.window().its('app.$store')
-            getStore().its('state.user.logged_in').should('eq', true);
-
-          })
-
+        cy.get('[data-cy=email]')
+          .type(email)
+          .should('have.value', email)
+        cy.wait(1000);
+        if (window.LoginComponent.mailgun) {
+          cy.get('[data-cy=type-password-btn]').click({force: true})
         }
-
+        cy.get('[data-cy=password]')
+          .type(password)
+          .should('have.value', password)
+        cy.get('[data-cy=login]').click();
+        cy.wait(3000);
+        Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
+          localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
+        });
       })
+
     },
     {
       validate: function (){
-        let project_string = testUser.project_string_id
-        try{
-          cy.request('POST', `http://localhost:8085/api/walrus/v1/project/${project_string}/input/view/list`, {
-            limit: 10,
-            show_archived: false,
-            show_deferred: false,
-            status_filter: 'All',
-          })
-            .its('status').should('eq', 200)
-          return true
-        } catch (e){
-          return false
-        }
-
+        const getStore = () => cy.window().its('app.$store')
+        getStore().its('state.user.logged_in').should('eq', true);
       }
     }
   )
