@@ -3,6 +3,9 @@ import Vuetify from "vuetify";
 import {shallowMount, createLocalVue} from "@vue/test-utils";
 import annotation_core from "@/components/annotation/image_and_video_annotation/annotation_core.vue";
 import * as InstanceUtils from "@/utils/instance_utils";
+import {
+  BaseAnnotationUIContext,
+} from '../../types/AnnotationUIContext'
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -20,6 +23,7 @@ describe("Test annotation_core", () => {
           id: 1,
           name: 'test'
         },
+        annotation_ui_context: new BaseAnnotationUIContext(),
         global_attribute_groups_list: [],
         working_file: {
           id: 1
