@@ -5,7 +5,7 @@ import annotation_core from "@/components/annotation/image_and_video_annotation/
 import * as InstanceUtils from "@/utils/instance_utils";
 import {
   BaseAnnotationUIContext,
-} from '../../types/AnnotationUIContext'
+} from '../../../src/types/AnnotationUIContext'
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -23,7 +23,22 @@ describe("Test annotation_core", () => {
           id: 1,
           name: 'test'
         },
-        annotation_ui_context: new BaseAnnotationUIContext(),
+        task_error: {},
+        image_annotation_ctx: {
+          label_settings: {},
+        },
+        issues_ui_manager: {},
+        annotation_ui_context: {
+          current_image_annotation_ctx: {},
+          working_file: {
+            id: 1
+          },
+          working_file_list: [
+            {
+              id: 1
+            }
+          ]
+        },
         global_attribute_groups_list: [],
         working_file: {
           id: 1
