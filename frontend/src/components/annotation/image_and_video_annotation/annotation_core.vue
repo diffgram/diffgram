@@ -6477,6 +6477,8 @@ export default Vue.extend({
       instance.on('hover_in', this.instance_hovered)
       instance.on('hover_out', this.instance_unhovered)
       this.update_canvas()
+      this.has_changed = true
+      this.$emit('set_has_changed', true);
     },
     mouse_down_v2_handler: function (event) {
 

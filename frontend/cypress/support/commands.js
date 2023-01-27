@@ -84,6 +84,7 @@ Cypress.Commands.add('mousedowncanvas', function (x, y) {
       if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
+      cy.log(canvas_wrapper_id)
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
       const real_x = x + canvas_client_box.left;
       const real_y = y + canvas_client_box.top;
@@ -453,7 +454,7 @@ Cypress.Commands.add('loginByForm', function (email, password, redirect = undefi
     name: 'loginByForm',
     message: `${email} | ${password}`,
   })
-
+  Cypress.session.clearAllSavedSessions()
   cy.session([email, password], () => {
       let path = 'http://localhost:8085/user/login'
       if (redirect != undefined) {
