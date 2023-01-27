@@ -3,9 +3,6 @@ import Vuetify from "vuetify";
 import {shallowMount, createLocalVue} from "@vue/test-utils";
 import annotation_core from "@/components/annotation/image_and_video_annotation/annotation_core.vue";
 import * as InstanceUtils from "@/utils/instance_utils";
-import {
-  BaseAnnotationUIContext,
-} from '../../../src/types/AnnotationUIContext'
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -118,64 +115,65 @@ describe("Test annotation_core", () => {
     expect(result2).toBe(true)
   });
 
-  it("Tests if has_pending_frames returns correct value", () => {
+  it("Tests if has_pending_frames returns correct value", async () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
     let result = wrapper.vm.has_pending_frames;
 
     expect(result).toBe(false)
 
-    wrapper.setData({
-      unsaved_frames: [1, 2, 3]
+    await wrapper.setProps({
+      has_pending_frames: true
     })
     let result2 = wrapper.vm.has_pending_frames;
 
     expect(result2).toBe(true)
   });
 
-  it("Tests correctly calls get_save_loading", () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+  // THIS WAS MOVED OUT OF annoattion_core
+  // it("Tests correctly calls get_save_loading", () => {
+  //   const wrapper = shallowMount(annotation_core, props, localVue);
 
-    // Image Case
-    let result = wrapper.vm.get_save_loading();
-    expect(result).toBe(false)
-    wrapper.setData({
-      save_loading_image: true
-    })
-    result = wrapper.vm.get_save_loading();
-    expect(result).toBe(true)
+  //   // Image Case
+  //   let result = wrapper.vm.get_save_loading();
+  //   expect(result).toBe(false)
+  //   wrapper.setData({
+  //     save_loading_image: true
+  //   })
+  //   result = wrapper.vm.get_save_loading();
+  //   expect(result).toBe(true)
 
-    // Video Case
-    wrapper.setData({
-      save_loading_frames_list: [1, 2, 3],
-      video_mode: true
-    });
-    result = wrapper.vm.get_save_loading(2);
-    expect(result).toBe(true)
+  //   // Video Case
+  //   wrapper.setData({
+  //     save_loading_frames_list: [1, 2, 3],
+  //     video_mode: true
+  //   });
+  //   result = wrapper.vm.get_save_loading(2);
+  //   expect(result).toBe(true)
 
-  });
+  // });
 
-  it("Tests correctly calls set_save_loading", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+  // it("Tests correctly calls set_save_loading", async () => {
+  //   const wrapper = shallowMount(annotation_core, props, localVue);
 
-    // Image Case
-    wrapper.vm.set_save_loading(true);
-    expect(wrapper.vm.save_loading_image).toBe(true)
+  //   // Image Case
+  //   wrapper.vm.set_save_loading(true);
+  //   expect(wrapper.vm.save_loading_image).toBe(true)
 
-    wrapper.vm.set_save_loading(false);
-    expect(wrapper.vm.save_loading_image).toBe(false)
+  //   wrapper.vm.set_save_loading(false);
+  //   expect(wrapper.vm.save_loading_image).toBe(false)
 
-    // Video Case
-    wrapper.setData({
-      video_mode: true
-    })
+  //   // Video Case
+  //   wrapper.setData({
+  //     video_mode: true
+  //   })
 
-    wrapper.vm.set_save_loading(true, 5);
-    expect(wrapper.vm.save_loading_frames_list[0]).toBe(5)
+  //   wrapper.vm.set_save_loading(true, 5);
+  //   expect(wrapper.vm.save_loading_frames_list[0]).toBe(5)
 
-    wrapper.vm.set_save_loading(false, 5);
-    expect(wrapper.vm.save_loading_frames_list).toEqual([])
+  //   wrapper.vm.set_save_loading(false, 5);
+  //   expect(wrapper.vm.save_loading_frames_list).toEqual([])
 
-  });
+  // });
 
   it("correctly calls create_instance_from_keypoints()", async () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
@@ -206,10 +204,10 @@ describe("Test annotation_core", () => {
   it("correctly calls set_keyframe_loading()", async () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
     wrapper.vm.set_keyframe_loading(true);
-    expect(wrapper.vm.go_to_keyframe_loading).toEqual(true)
+    expect(wrapper.vm.image_annotation_ctx.go_to_keyframe_loading).toEqual(true)
 
     wrapper.vm.set_keyframe_loading(false);
-    expect(wrapper.vm.go_to_keyframe_loading).toEqual(false)
+    expect(wrapper.vm.image_annotation_ctx.go_to_keyframe_loading).toEqual(false)
 
   });
 
@@ -240,11 +238,9 @@ describe("Test annotation_core", () => {
     wrapper.vm.ghost_refresh_instances = () => {
     };
     const spy2 = jest.spyOn(wrapper.vm, 'get_instances')
-    const spy3 = jest.spyOn(wrapper.vm, 'ghost_refresh_instances')
     await wrapper.vm.load_frame_instances('https://google.com');
     expect(spy2).toHaveBeenCalled();
-    expect(spy3).toHaveBeenCalled();
-
+    expect(wrapper.emitted().ghost_refresh_instances).toBeTruthy()
   });
 
   it("correctly calls add_image_process()", async () => {
@@ -273,42 +269,48 @@ describe("Test annotation_core", () => {
 
   });
 
-  it("correctly calls set_frame_pending_save()", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+  // THIS WAS MOVED OUT OF annotation_core
+  // it("correctly calls set_frame_pending_save()", async () => {
+  //   const wrapper = shallowMount(annotation_core, props, localVue);
 
-    wrapper.vm.set_frame_pending_save(true, 95);
+  //   wrapper.vm.set_frame_pending_save(true, 95);
 
-    expect(wrapper.vm.instance_buffer_metadata[95].pending_save).toEqual(true);
-    expect(wrapper.vm.unsaved_frames[0]).toEqual(95);
+  //   expect(wrapper.vm.instance_buffer_metadata[95].pending_save).toEqual(true);
+  //   expect(wrapper.vm.unsaved_frames[0]).toEqual(95);
 
-    wrapper.vm.set_frame_pending_save(false, 95);
+  //   wrapper.vm.set_frame_pending_save(false, 95);
 
-    expect(wrapper.vm.instance_buffer_metadata[95].pending_save).toEqual(false);
-    expect(wrapper.vm.unsaved_frames).toEqual([]);
+  //   expect(wrapper.vm.instance_buffer_metadata[95].pending_save).toEqual(false);
+  //   expect(wrapper.vm.unsaved_frames).toEqual([]);
 
-  });
+  // });
 
   it("correctly calls add_instance_to_frame_buffer()", async () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
     wrapper.setData({
-      video_mode: true,
+      image_annotation_ctx: {
+        label_settings: {},
+        video_mode: true,
+      },
       instance_buffer_dict: {}
     })
     let test_instance = {};
     let frame_num = 6;
-    const spy = jest.spyOn(wrapper.vm, 'set_frame_pending_save');
-    wrapper.vm.add_instance_to_frame_buffer(test_instance, frame_num);
+    await wrapper.vm.add_instance_to_frame_buffer(test_instance, frame_num);
     expect(test_instance.creation_ref_id).toBeDefined();
     expect(test_instance.client_created_time).toBeDefined();
     expect(wrapper.vm.instance_buffer_dict[6][0]).toEqual(test_instance);
-    expect(spy).toHaveBeenCalled();
 
+    expect(wrapper.emitted().set_frame_pending_save).toBeTruthy()
   });
 
   it("correctly calls add_instance_to_file()", async () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
     wrapper.setData({
-      video_mode: true,
+      image_annotation_ctx: {
+        video_mode: true,
+        label_settings: {},
+      },
       instance_buffer_dict: {}
     })
     let test_instance = {};
@@ -319,7 +321,10 @@ describe("Test annotation_core", () => {
     expect(spy).toHaveBeenCalled();
 
     wrapper.setData({
-      video_mode: false,
+      image_annotation_ctx: {
+        video_mode: false,
+        label_settings: {},
+      },
       instance_buffer_dict: {}
     })
     wrapper.vm.add_instance_to_file(test_instance, frame_num);
@@ -383,6 +388,8 @@ describe("Test annotation_core", () => {
   it("correctly calls paste_instance()", async () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
     wrapper.vm.$store.commit = () => {}
+
+    wrapper.setData({full_file_loading: false})
 
     wrapper.vm.add_pasted_instance_to_instance_list = () => {}
 
