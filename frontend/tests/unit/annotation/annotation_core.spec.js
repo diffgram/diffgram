@@ -384,8 +384,7 @@ describe("Test annotation_core", () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
     wrapper.vm.$store.commit = () => {}
 
-    wrapper.vm.add_pasted_instance_to_instance_list = () => {
-    }
+    wrapper.vm.add_pasted_instance_to_instance_list = () => {}
 
     let test_instance = {};
     let frame_num = 6;

@@ -55,7 +55,6 @@ describe("Test sensor_fusion_editor.vue", () => {
       localVue: localVue,
       store: store,
       propsData: {
-
         view_only_mode: false
       },
       mocks: {}
@@ -386,7 +385,7 @@ describe("Test sensor_fusion_editor.vue", () => {
 
 
   it("correctly calls load_instance_list()", async () => {
-    options.propsData.file = {
+    options.propsData.working_file = {
       point_cloud: {
         url_signed: 'https://github.com/mrdoob/three.js/raw/master/examples/models/pcd/binary/Zaghetto.pcd'
       },
@@ -613,7 +612,7 @@ describe("Test sensor_fusion_editor.vue", () => {
   });
 
   it("correctly calls save()", async () => {
-    options.propsData.file = {
+    options.propsData.working_file = {
       point_cloud: {
         url_signed: 'https://github.com/mrdoob/three.js/raw/master/examples/models/pcd/binary/Zaghetto.pcd'
       },
@@ -754,7 +753,7 @@ describe("Test sensor_fusion_editor.vue", () => {
     let spy2 = jest.spyOn(wrapper.vm.$refs.instance_detail_list, 'change_instance')
     wrapper.vm.calculate_main_canvas_dimension(instance, index)
 
-    expect(wrapper.vm.main_canvas_width).toBe(parseInt(window.innerWidth - wrapper.vm.editor_3d_settings.left_nav_width))
+    expect(wrapper.vm.main_canvas_width).toBe(parseInt(window.innerWidth - wrapper.vm.label_settings.left_nav_width))
     expect(wrapper.vm.main_canvas_height).toBe(parseInt(window.innerHeight * 0.65))
   });
 

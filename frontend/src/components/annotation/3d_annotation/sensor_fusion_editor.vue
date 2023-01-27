@@ -596,7 +596,7 @@
       load_instance_list: async function () {
         let file_data;
         this.instance_list.length = 0;
-        if (this.file) {
+        if (this.working_file) {
           file_data = await instanceServices.get_instance_list_from_file(this.project_string_id, this.working_file.id)
         } else if (this.task) {
           file_data = await instanceServices.get_instance_list_from_task(this.project_string_id, this.task.id)
