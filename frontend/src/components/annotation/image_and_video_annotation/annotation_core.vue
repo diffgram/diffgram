@@ -7271,7 +7271,7 @@ export default Vue.extend({
           if (!this.task) {
             this.change_file("previous");
           } else {
-            this.trigger_task_change("previous", this.task, false)
+            this.$emit("change_task", "previous", this.task, false)
           }
         } else {
           if (this.annotation_show_on) {
@@ -7299,7 +7299,7 @@ export default Vue.extend({
           if (!this.task) {
             this.change_file("next");
           } else {
-            this.trigger_task_change("next", this.task, false)
+            this.$emit("change_task", "next", this.task, false)
           }
 
         } else {
