@@ -499,13 +499,19 @@ Cypress.Commands.add('loginByForm', function (email, password, redirect = undefi
     {
       validate: function (){
         let project_string = testUser.project_string_id
-        cy.request('POST', `http://localhost:8085/api/walrus/v1/project/${project_string}/input/view/list`, {
-          limit: 10,
-          show_archived: false,
-          show_deferred: false,
-          status_filter: 'All',
-        })
-          .its('status').should('eq', 200)
+        try{
+          cy.request('POST', `http://localhost:8085/api/walrus/v1/project/${project_string}/input/view/list`, {
+            limit: 10,
+            show_archived: false,
+            show_deferred: false,
+            status_filter: 'All',
+          })
+            .its('status').should('eq', 200)
+          return true
+        } catch (e){
+          return false
+        }
+
       }
     }
   )
