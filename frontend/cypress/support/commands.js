@@ -38,7 +38,7 @@ Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -81,7 +81,7 @@ Cypress.Commands.add('mousedowncanvas', function (x, y) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -113,7 +113,7 @@ Cypress.Commands.add('dragcanvas', function (from_x, from_y, to_x, to_y) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -123,7 +123,7 @@ Cypress.Commands.add('dragcanvas', function (from_x, from_y, to_x, to_y) {
       const real_to_y = to_y + canvas_client_box.y;
       const movementX = real_to_x - real_from_x;
       const movementY = real_to_y - real_from_y;
-      cy.get().then(($el) => {
+      cy.get(`#${canvas_wrapper_id}`).then(($el) => {
         cy.wrap($el)
           .trigger('mouseover', {
             eventConstructor: 'MouseEvent',
@@ -180,7 +180,7 @@ Cypress.Commands.add('mouseovercanvas', function (x, y) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -208,7 +208,7 @@ Cypress.Commands.add('mousemovecanvas', function (x, y) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -233,7 +233,7 @@ Cypress.Commands.add('mouseupcanvas', function (x, y) {
   cy.window().then((window) => {
     const annCore = window.AnnotationCore;
     let canvas_wrapper_id = `canvas_wrapper`
-    if(annCore){
+    if (annCore) {
       canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
     }
     cy.get(`#${canvas_wrapper_id}`).then(($el) => {
@@ -384,7 +384,7 @@ Cypress.Commands.add('isValidPolygonTestOracle', function (points) {
     cy.window().then((window) => {
       const annCore = window.AnnotationCore;
       let canvas_wrapper_id = `canvas_wrapper`
-      if(annCore){
+      if (annCore) {
         canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
       }
       const canvas_wrapper = doc.getElementById(canvas_wrapper_id);
@@ -405,8 +405,8 @@ Cypress.Commands.add('isValidPolygonTestOracle', function (points) {
           canvas_wrapper,
           annCore.canvas_element_ctx)
 
-        expect(expected_polygon.points[i].x).to.equal(box_point.x);
-        expect(expected_polygon.points[i].y).to.equal(box_point.y);
+        expect(expected_polygon.points[i].x).to.approximately(box_point.x, 2);
+        expect(expected_polygon.points[i].y).to.approximately(box_point.y, 2);
       }
     })
   })
@@ -453,47 +453,49 @@ Cypress.Commands.add('loginByForm', function (email, password, redirect = undefi
     name: 'loginByForm',
     message: `${email} | ${password}`,
   })
+
   cy.session([email, password], () => {
-    let path = 'http://localhost:8085/user/login'
-    if (redirect != undefined) {
-      path += redirect    // eg `?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e`
-    }
-    cy.visit(path)
-    let LOCAL_STORAGE_MEMORY = {};
-
-    const getInitialStore = () => cy.window().its('app.$store')
-
-    getInitialStore().its('state.user.logged_in').then((user_logged_in) => {
-
-      if (user_logged_in == false) {
-        cy.wait(3000);
-        cy.window().then(window => {
-
-
-          cy.get('[data-cy=email]')
-            .type(email)
-            .should('have.value', email)
-          cy.wait(1000);
-          if (window.LoginComponent.mailgun) {
-            cy.get('[data-cy=type-password-btn]').click({force: true})
-          }
-          cy.get('[data-cy=password]')
-            .type(password)
-            .should('have.value', password)
-          cy.get('[data-cy=login]').click();
-          cy.wait(3000);
-          Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
-            localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
-          });
-          const getStore = () => cy.window().its('app.$store')
-          getStore().its('state.user.logged_in').should('eq', true);
-
-        })
-
+      let path = 'http://localhost:8085/user/login'
+      if (redirect != undefined) {
+        path += redirect    // eg `?redirect=%2Fstudio%2Fannotate%2Fdiffgram-testing-e2e`
       }
+      cy.visit(path)
+      let LOCAL_STORAGE_MEMORY = {};
 
-    })
-  }, {cacheAcrossSpecs: true})
+      const getInitialStore = () => cy.window().its('app.$store')
+
+      getInitialStore().its('state.user.logged_in').then((user_logged_in) => {
+
+        if (user_logged_in == false) {
+          cy.wait(3000);
+          cy.window().then(window => {
+
+
+            cy.get('[data-cy=email]')
+              .type(email)
+              .should('have.value', email)
+            cy.wait(1000);
+            if (window.LoginComponent.mailgun) {
+              cy.get('[data-cy=type-password-btn]').click({force: true})
+            }
+            cy.get('[data-cy=password]')
+              .type(password)
+              .should('have.value', password)
+            cy.get('[data-cy=login]').click();
+            cy.wait(3000);
+            Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
+              localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
+            });
+            const getStore = () => cy.window().its('app.$store')
+            getStore().its('state.user.logged_in').should('eq', true);
+
+          })
+
+        }
+
+      })
+    },
+  )
 
 });
 

@@ -431,8 +431,8 @@ export default Vue.extend({
     'annotation_ui_context.working_file': function() {
       this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
       if (
-        this.annotation_ui_context && 
-        this.hotkey_manager && 
+        this.annotation_ui_context &&
+        this.hotkey_manager &&
         this.listeners_map() &&
         this.annotation_ui_context.working_file_list.length > 1
       ) {
@@ -500,6 +500,7 @@ export default Vue.extend({
     }
   },
   beforeDestroy() {
+    this.hotkey_manager.deactivate()
     window.removeEventListener(
       "resize",
       this.update_window_size_from_listener
@@ -691,6 +692,11 @@ export default Vue.extend({
   },
   methods: {
     activate_hotkeys: function() {
+      if (this.hotkey_manager) {
+        this.hotkey_manager.activate(this.listeners_map())
+      }
+    },
+    remove_hotkeys: function() {
       if (this.hotkey_manager) {
         this.hotkey_manager.activate(this.listeners_map())
       }

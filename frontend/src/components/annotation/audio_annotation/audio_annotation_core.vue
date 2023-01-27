@@ -49,12 +49,12 @@
         @delete_instance="delete_instance"
         @on_update_attribute="update_attribute"
       />
-      <waveform_selector 
-        v-if="instance_list" 
+      <waveform_selector
+        v-if="instance_list"
         :force_watch_trigger="force_watch_trigger"
         :instance_list="instance_list.get()"
-        :current_label="current_label" 
-        :audio_file="task ? task.file : file" 
+        :current_label="current_label"
+        :audio_file="task ? task.file : file"
         :invisible_labels="invisible_labels"
         @asign_wavesurfer_id="asign_wavesurfer_id"
         @instance_create_update="instance_create_update"
@@ -169,6 +169,9 @@ export default {
     this.initialize_interface_data()
     this.start_autosave()
     this.hot_key_listeners()
+  },
+  beforeDestroy() {
+    this.remove_listeners()
   },
   methods: {
     initialize_interface_data: async function() {
@@ -349,6 +352,9 @@ export default {
     hot_key_listeners: function() {
       window.removeEventListener("keydown", this.keydown_event_listeners)
       window.addEventListener("keydown", this.keydown_event_listeners)
+    },
+    remove_listeners: function() {
+      window.removeEventListener("keydown", this.keydown_event_listeners)
     },
     keydown_event_listeners: async function(e) {
       if (e.keyCode === 83) {

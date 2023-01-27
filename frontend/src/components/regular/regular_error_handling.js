@@ -120,7 +120,7 @@ export function route_errors (error) {
 
     else {
       if (error.response.data && typeof error.response.data === 'object') {
-        result = {
+        let result = {
           ...error.response.data,
           ...result
         }

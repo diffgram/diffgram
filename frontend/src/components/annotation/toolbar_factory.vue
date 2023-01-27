@@ -140,6 +140,11 @@ export default Vue.extend({
       default: "box"
     },
   },
+  mounted() {
+    if (window.Cypress) {
+      window.AnnotationCoreToolbar = this;
+    }
+  },
   computed: {
     show_default_navigation: function(): Boolean {
       if (!this.task) return true

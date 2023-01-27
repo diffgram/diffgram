@@ -205,6 +205,8 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
   }
 
   public add_point(point: PolygonPoint) {
+    point.x = Math.round(point.x)
+    point.y = Math.round(point.y)
     this.points.push({...point} as PolygonPoint)
   }
 
