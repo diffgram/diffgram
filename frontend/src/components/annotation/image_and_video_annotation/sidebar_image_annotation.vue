@@ -50,7 +50,7 @@
 
     <v-divider></v-divider>
 
-    <v-expansion-panels
+    <!-- <v-expansion-panels
       :accordion="true"
       :inset="false"
       :multiple="false"
@@ -96,7 +96,7 @@
         </v-expansion-panel-content>
 
       </v-expansion-panel>
-    </v-expansion-panels>
+    </v-expansion-panels> -->
 
     <v-expansion-panels
       v-model="annotation_ui_context.issues_ui_manager.issues_expansion_panel"
