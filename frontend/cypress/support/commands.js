@@ -463,15 +463,14 @@ Cypress.Commands.add('loginByForm', function (email, password, redirect = undefi
       }
       cy.visit(path)
       let LOCAL_STORAGE_MEMORY = {};
-
-
+      cy.wait(3000);
       cy.window().then(window => {
-
 
         cy.get('[data-cy=email]')
           .type(email)
           .should('have.value', email)
-        cy.wait(1000);
+
+        cy.log(`MAILGUN ISS ${window.LoginComponent.mode}`)
         if (window.LoginComponent.mailgun) {
           cy.get('[data-cy=type-password-btn]').click({force: true})
         }
