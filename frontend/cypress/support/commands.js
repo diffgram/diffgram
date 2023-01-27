@@ -495,13 +495,6 @@ Cypress.Commands.add('loginByForm', function (email, password, redirect = undefi
 
       })
     },
-    {
-
-      validate: function () {
-        // cy.request('POST','http://localhost:8085/api/v1/project/list', {}).its('status').should('eq', 200)
-
-      }
-    }
   )
 
 });

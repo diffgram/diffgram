@@ -2,17 +2,17 @@ import testUser from '../../../fixtures/users.json';
 import testLabels from "../../../fixtures/labels.json";
 
 describe('Annotation 3D Interface display', () => {
-  before(function () {
-    Cypress.Cookies.debug(true, {verbose: true})
 
-    // login before all tests
-    cy.loginByForm(testUser.email, testUser.password)
-      .gotToProject(testUser.project_string_id)
-      .createLabels(testLabels)
-
-  })
   context('3D Interface display', () => {
+    before(function () {
+      Cypress.Cookies.debug(true, {verbose: true})
 
+      // login before all tests
+      cy.loginByForm(testUser.email, testUser.password)
+        .gotToProject(testUser.project_string_id)
+        .createLabels(testLabels)
+
+    })
 
     it('Displays a 3D file', () => {
       cy.upload_3d_file(testUser.project_string_id)
