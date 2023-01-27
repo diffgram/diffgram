@@ -283,7 +283,7 @@ Cypress.Commands.add('registerDataPlatformTestUser', function () {
   cy.get('[data-cy=project_name]').type('Diffgram Testing E2E');
   cy.get('[data-cy=project_goal]').type('For e2e testing');
   cy.get('[data-cy="create_project_button"] > .v-btn__content').click();
-  cy.loginByForm()
+  cy.loginByForm(testUser.email, testUser.password)
 })
 
 

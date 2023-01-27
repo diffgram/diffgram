@@ -16,7 +16,7 @@ describe('Annotation Text Interface display', () => {
 
     it('Creates text token instances', () => {
       cy.upload_text_file(testUser.project_string_id);
-      cy.wait(500)
+      cy.wait(3000)
       cy.get('[data-cy="token_1_line_1"]').should('be.visible');
       cy.get('[data-cy="token_1_line_1"]').realMouseDown().realMouseUp();
       cy.realType("1");
@@ -38,6 +38,7 @@ describe('Annotation Text Interface display', () => {
 
     it('Deletes instance from the context menu', () => {
       cy.wait(500)
+      cy.get('[data-cy="text_label_0"]').click({force: true})
       cy.get('[data-cy="text_label_0"]').rightclick({force: true})
       cy.get('[data-cy="delete-instance-from-context"]').click({force: true})
       cy.get('[data-cy="text_label_1"]').should('not.exist')
