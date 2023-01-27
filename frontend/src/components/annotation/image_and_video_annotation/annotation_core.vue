@@ -6944,6 +6944,7 @@ export default Vue.extend({
 
     },
     annotation_show_activate(show_type) {
+      return
       this.annotation_show_on = !this.annotation_show_on
       this.annotation_show_type = show_type
       if (this.$refs.qa_carrousel && this.annotation_show_on) {
