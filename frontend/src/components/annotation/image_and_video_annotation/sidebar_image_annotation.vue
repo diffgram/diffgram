@@ -296,8 +296,5 @@ export default Vue.extend({
 </script>
 
 <style scoped>
-.sidebar-accordeon-header{
-  background: #e0e0e0;
-  border-bottom: 1px solid  #c0c0c0 !important;
-}
+
 </style>
