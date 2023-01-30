@@ -160,9 +160,3 @@ jobs:
         DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
         DIFFGRAM_VERSION_TAG: ${{ secrets.DIFFGRAM_VERSION_TAG }}
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
-    - name: Cypress debug logs 📝
-      uses: ./
-      env:
-        DEBUG: '@cypress/github-action'
-      with:
-        working-directory: examples/basic
