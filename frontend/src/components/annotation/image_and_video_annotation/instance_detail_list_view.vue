@@ -53,10 +53,10 @@
       <v-expansion-panels
         v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups)"
         v-model="instance_detail_open"
-        accordion
+        accordion                         
+        :tile="true"
         :focusable="true"
         :hover="true"
-        flat
       >
         <v-expansion-panel>
 
@@ -96,6 +96,7 @@
         </v-expansion-panel>
       </v-expansion-panels>
 
+    <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups)"></v-divider>
 
       <v-expansion-panels :focusable="true" :hover="true" accordion flat v-model="panels">
         <v-expansion-panel v-for="grouped_list in filtered_instance_set" >
@@ -1135,9 +1136,5 @@ export default Vue.extend({
 
 .v-expansion-panel-content__wrap {
   padding: 0 !important;
-}
-.sidebar-accordeon-header{
-  background: #e0e0e0;
-  border-bottom: 1px solid  #c0c0c0;
 }
 </style>
