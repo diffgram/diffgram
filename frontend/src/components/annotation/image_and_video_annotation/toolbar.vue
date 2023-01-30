@@ -10,7 +10,7 @@
   >
     <v-toolbar-items>
       <v-chip
-        v-if="file && file.state === 'removed'"
+        v-if="working_file && working_file.state === 'removed'"
         color="error"
         small
         class="mt-3"
@@ -109,7 +109,7 @@
       <v_is_complete
         v-if="task && task.status !== 'complete'"
         :project_string_id="project_string_id"
-        :current_file="file ? file : task.file"
+        :current_file="working_file ? working_file : task.file"
         :task="task"
         @replace_file="$emit('replace_file', $event)"
         @on_next="$emit('change_task', 'next')"
@@ -118,7 +118,7 @@
         "
         :save_and_complete="true"
         :loading="save_loading"
-        :disabled="save_loading || view_only_mode || (!file && !task)"
+        :disabled="save_loading || view_only_mode || (!working_file && !task)"
         :view_only_mode="view_only_mode"
         :task_id="task ? task.id : undefined"
       >
@@ -132,7 +132,7 @@
             :disabled="
               save_loading ||
               view_only_mode ||
-              (file == undefined && task == undefined)
+              (working_file == undefined && task == undefined)
             "
             color="primary"
             :icon_style="true"
@@ -153,7 +153,7 @@
             :disabled="
               save_loading ||
               view_only_mode ||
-              (file == undefined && task == undefined)
+              (working_file == undefined && task == undefined)
             "
             color="primary"
             :icon_style="true"
@@ -643,7 +643,7 @@
 
             <!-- show_file_information -->
             <button_with_menu
-              v-if="file && !task"
+              v-if="working_file && !task"
               datacy="show_file_information"
               tooltip_message="View File Information"
               icon="mdi-information"
@@ -651,10 +651,10 @@
             >
               <template slot="content">
                 <file_meta_data_card
-                  v-if="file && !task"
-                  :video="file"
+                  v-if="working_file && !task"
+                  :video="working_file"
                   :elevation="0"
-                  :file="file"
+                  :file="working_file"
                   :project_string_id="
                     project_string_id
                       ? project_string_id
@@ -667,7 +667,7 @@
 
             <!-- show_linked_relations_file -->
             <button_with_menu
-              v-if="file && !task"
+              v-if="working_file && !task"
               datacy="show_linked_relations_file"
               tooltip_message="View Task Relations"
               icon="mdi-link-box-variant"
@@ -675,8 +675,8 @@
             >
               <template slot="content">
                 <file_relations_card
-                  v-if="file"
-                  :file="file"
+                  v-if="working_file"
+                  :file="working_file"
                   :project_string_id="
                     project_string_id
                       ? project_string_id
@@ -1059,7 +1059,6 @@ export default Vue.extend({
       default: null,
     },
     task: {},
-    file: {},
     working_file: {},
     canvas_scale_local: {},
     label_list: {},
@@ -1157,8 +1156,8 @@ export default Vue.extend({
   },
   async mounted() {
     this.label_settings_local = this.label_settings;
-    if(this.file && this.file.image){
-      this.rotation_degrees = this.file.image.rotation_degrees
+    if(this.working_file && this.working_file.image){
+      this.rotation_degrees = this.working_file.image.rotation_degrees
     }
     if(this.task && this.task.file && this.task.file.image){
       this.rotation_degrees = this.task.file.image.rotation_degrees
