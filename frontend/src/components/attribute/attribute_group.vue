@@ -1225,7 +1225,8 @@
               min_value: min_value,
               max_value: max_value,
               mode: mode,
-              is_global: this.group.is_global
+              is_global: this.group.is_global,
+              global_type: this.group.global_type
             }).then(response => {
 
             //this.group = response.data.group

@@ -57,6 +57,7 @@ class Attribute_Template_Group(Base):
                                         foreign_keys = [default_external_map_id])
 
     is_global = Column(Boolean, default = False)
+    # Allowed Values: [compound_file, file]
     global_type = Column(String(), default = 'file')  # Expansion direction eg for frame, series, etc.
 
     @staticmethod

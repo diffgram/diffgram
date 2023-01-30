@@ -123,6 +123,13 @@ def api_get_labels(project_string_id):
         
         global_attribute_groups_serialized_list = project.get_global_attributes(
             session = session, schema_id = schema.id)
+        global_attributes_normal_files = []
+        global_attributes_compound_files = []
+        for attr in global_attribute_groups_serialized_list:
+            if attr['global_type'] == 'compound_file':
+                global_attributes_compound_files.append(attr)
+            else:
+                global_attributes_normal_files.append(attr)
 
         attribute_groups_serialized_list = project.get_attributes(session = session, schema_id = schema.id)
         
@@ -133,7 +140,8 @@ def api_get_labels(project_string_id):
 
         return jsonify(labels_out = labels_out,
                        label_file_colour_map = directory.label_file_colour_map,
-                       global_attribute_groups_list = global_attribute_groups_serialized_list,
+                       global_attribute_groups_list = global_attributes_normal_files,
+                       global_attribute_groups_list_compound = global_attributes_compound_files,
                        attribute_groups = attribute_groups_serialized_list,
                        log = log
                        ), 200

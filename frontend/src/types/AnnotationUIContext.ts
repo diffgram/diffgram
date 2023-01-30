@@ -8,6 +8,7 @@ import IssuesAnnotationUIManager from "../components/annotation/issues/IssuesAnn
 import {ModelRun} from "./models";
 import {Task} from "./Task";
 import {createDefaultLabelSettings, ImageLabelSettings} from "./image_label_settings";
+import {AttributeTemplateGroup} from "./attributes/AttributeTemplateGroup";
 
 
 export class BaseAnnotationUIContext {
@@ -17,7 +18,9 @@ export class BaseAnnotationUIContext {
   instance_type: string
   instance_store: InstanceStore
   per_instance_attribute_groups_list: object[]
-  global_attribute_groups_list: object[]
+  global_attribute_groups_list: AttributeTemplateGroup[]
+
+  global_attribute_groups_list_compound: AttributeTemplateGroup[]
   current_global_instance: object
   label_schema: Schema
   current_label_file: LabelFile
@@ -44,6 +47,7 @@ export class BaseAnnotationUIContext {
     this.instance_store = null
     this.per_instance_attribute_groups_list = []
     this.global_attribute_groups_list = undefined
+    this.global_attribute_groups_list_compound = undefined
     this.current_global_instance = undefined
     this.label_schema = null
     this.current_label_file = null

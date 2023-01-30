@@ -522,6 +522,8 @@ class Project(Base, Caching):
 
         return global_attribute_groups_serialized_list
 
+
+
     def get_attributes(self, session, schema_id = None):
 
         attribute_group_list = Attribute_Template_Group.list(
