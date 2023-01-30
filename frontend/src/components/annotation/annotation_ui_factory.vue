@@ -696,7 +696,7 @@ export default Vue.extend({
   },
   methods: {
     activate_hotkeys: function() {
-      if (this.hotkey_manager) {
+      if (this.hotkey_manager && this.listeners_map()) {
         this.hotkey_manager.activate(this.listeners_map())
       }
     },
@@ -708,6 +708,7 @@ export default Vue.extend({
     listeners_map: function() {
       if (!this.annotation_ui_context) return null
       if (!this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`]) return null
+      if (!this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0]) return null
 
       let ref = this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`]
       if (!ref) return null
