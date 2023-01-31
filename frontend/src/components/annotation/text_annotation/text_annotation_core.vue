@@ -864,7 +864,8 @@ export default Vue.extend({
         inst.type === "relation" &&
         inst.from_instance_id === this.instance_in_progress.start_instance &&
         inst.to_instance_id === this.instance_in_progress.end_instance &&
-        !inst.soft_delete
+        !inst.soft_delete &&
+        inst.label_file_id === label.id
       )
       if (this.instance_in_progress.start_instance !== this.instance_in_progress.end_instance && !relation_already_exists) {
         const created_instance = new TextRelationInstance();
@@ -947,9 +948,15 @@ export default Vue.extend({
     on_finish_draw_instance: async function (label) {
       if (!this.instance_in_progress.start_token && this.instance_in_progress.start_token !== 0) return
       const instance_exists = this.new_instance_list.get().find(instance =>
-        instance.start_token === this.instance_in_progress.start_token && instance.end_token === this.instance_in_progress.end_token && !instance.soft_delete
+        instance.start_token === this.instance_in_progress.start_token && 
+        instance.end_token === this.instance_in_progress.end_token &&
+        !instance.soft_delete &&
+        instance.label_file_id === label.id
         ||
-        instance.end_token === this.instance_in_progress.start_token && instance.start_token === this.instance_in_progress.end_token && !instance.soft_delete
+        instance.end_token === this.instance_in_progress.start_token && 
+        instance.start_token === this.instance_in_progress.end_token && 
+        !instance.soft_delete &&
+        instance.label_file_id === label.id
       )
       if (!instance_exists) {
         const created_instance = new TextAnnotationInstance();

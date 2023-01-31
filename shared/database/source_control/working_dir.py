@@ -517,7 +517,8 @@ class WorkingDirFileLink(Base):
                   file_view_mode = False,
                   ignore_id_list = None,
                   original_filename = None,
-                  original_filename_match_type = "ilike"  # Set to None to get exact match
+                  original_filename_match_type = "ilike", # Set to None to get exact match
+                  include_children_compound = False
                   ):
         """
 
@@ -536,12 +537,10 @@ class WorkingDirFileLink(Base):
         if job_id:
             if not order_by_class_and_attribute:
                 query = session.query(File).distinct(File.id).filter(
-                    File.parent_id.is_(None),
                     File.job_id == job_id
                 )
             else:
                 query = session.query(File).filter(
-                    File.parent_id.is_(None),
                     File.job_id == job_id
                 )
 
@@ -559,14 +558,14 @@ class WorkingDirFileLink(Base):
 
             if not order_by_class_and_attribute:
                 query = session.query(File).distinct(File.id).filter(
-                    File.parent_id.is_(None),
                     File.id == file_link_sub_query.c.file_id
                 )
             else:
                 query = session.query(File).filter(
-                    File.parent_id.is_(None),
                     File.id == file_link_sub_query.c.file_id
                 )
+        if not include_children_compound:
+            query = query.filter(File.parent_id.is_(None))
 
         if exclude_removed is True:
             query = query.filter(File.state != "removed")

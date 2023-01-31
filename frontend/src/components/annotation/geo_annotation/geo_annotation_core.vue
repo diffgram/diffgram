@@ -693,7 +693,7 @@ export default Vue.extend({
         },
         draw_instance: function(e) {
             if (!this.draw_mode) return;
-            if (e.path[0].tagName.toLowerCase() !== "canvas") return
+            if (e.srcElement.tagName.toLowerCase() !== "canvas") return
             if (this.moving) return
             this.current_instance = null
             this.draw_instances
