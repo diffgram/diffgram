@@ -228,7 +228,6 @@ class Update_Input():
             self.session.add(task)
 
     def remove_compound_child_files(self, input_obj: Input) -> None:
-        if input_obj.file.type == 'compound':
         if input_obj.file.type != 'compound':
             return
         child_files = input_obj.file.get_child_files(session = self.session)
