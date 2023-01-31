@@ -100,7 +100,8 @@ def new_external_export(
             working_dir_id = working_dir.id,
             limit = None,
             root_files_only = True,
-            ann_is_complete = export.ann_is_complete
+            ann_is_complete = export.ann_is_complete,
+            include_children_compound = True
         )
 
     result, annotations = annotation_export_core(
@@ -266,19 +267,20 @@ def annotation_export_core(
             project = project)
 
         for index, file in enumerate(file_list):
+            try:
+                packet = build_packet(
+                    file = file,
+                    session = session)
 
-            packet = build_packet(
-                file = file,
-                session = session)
+                annotations[file.id] = packet
 
-            annotations[file.id] = packet
+                export.percent_complete = (index / export.file_list_length) * 100
 
-            export.percent_complete = (index / export.file_list_length) * 100
-
-            if index % 10 == 0:
-                logger.info(f"Percent done {export.percent_complete}")
-                try_to_commit(session = session)  # push update
-
+                if index % 10 == 0:
+                    logger.info(f"Percent done {export.percent_complete}")
+                    try_to_commit(session = session)  # push update
+            except Exception as e:
+                declare_export_failed(export = export, reason = str(e), session = session)
     export.status = "complete"
     export.percent_complete = 100
 
