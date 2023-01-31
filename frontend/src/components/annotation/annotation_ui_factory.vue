@@ -609,6 +609,9 @@ export default Vue.extend({
       if(!this.annotation_ui_context.current_image_annotation_ctx.label_settings || !this.interface_type || !this.interface_type && !this.initializing && this.loading){
         return '100%'
       }
+
+      if (this.interface_type !== 'image' || this.interface_type !== 'video') return "100%"
+
       let widthWindow = this.window_width && document.documentElement.clientWidth ?
         Math.min(this.window_width, document.documentElement.clientWidth) :
         this.window_width ||
@@ -626,7 +629,7 @@ export default Vue.extend({
 
       }
 
-      return result + 'px'
+      return `${result}px`
     },
     interface_type: function(): string | null {
       if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) return
