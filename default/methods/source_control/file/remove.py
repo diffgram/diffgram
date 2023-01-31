@@ -75,7 +75,7 @@ def remove_core(session: Session, working_dir: WorkingDir, existing_file: File, 
     if cascade_archive_tasks:
         archive_related_tasks(session, existing_file)
     session.add(new_file)
-    if new_file.parent_id is not None:
+    if new_file.type == 'compound':
         child_file_list = existing_file.get_child_files(session = session)
         for child in child_file_list:
             remove_core(session = session,
