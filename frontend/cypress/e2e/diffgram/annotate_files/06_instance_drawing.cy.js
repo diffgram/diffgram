@@ -1,4 +1,4 @@
- import testUser from '../../../fixtures/users.json';
+import testUser from '../../../fixtures/users.json';
 import testLabels from '../../../fixtures/labels.json';
 import {get_transformed_coordinates} from '../../../support/utils'
 
@@ -22,30 +22,30 @@ describe('Annotate Files Tests', () => {
       const max_x = 120;
       const max_y = 120;
       cy.get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-      .wait(5000)
-      .select_label()
+        .wait(5000)
+        .select_label()
 
-      .mousemovecanvas(min_x, min_y)
-      .mousedowncanvas(min_x, min_y)
-      .wait(500)
+        .mousemovecanvas(min_x, min_y)
+        .mousedowncanvas(min_x, min_y)
+        .wait(500)
 
-      .mouseupcanvas()
-      .wait(500)
-      .mousemovecanvas(max_x, max_y)
-      .wait(500)
+        .mouseupcanvas()
+        .wait(500)
+        .mousemovecanvas(max_x, max_y)
+        .wait(500)
 
-      .mousedowncanvas(max_x, max_y)
-      .wait(500)
-      .mouseupcanvas()
+        .mousedowncanvas(max_x, max_y)
+        .wait(500)
+        .mouseupcanvas()
 
-      .wait(2000)
+        .wait(2000)
 
-      .document().then((doc) => {
+        .document().then((doc) => {
         cy.window().then((window) => {
 
           const annCore = window.AnnotationCore;
           let canvas_wrapper_id = `canvas_wrapper`
-          if(annCore){
+          if (annCore) {
             canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
           }
 
@@ -78,7 +78,7 @@ describe('Annotate Files Tests', () => {
 
     it('Correctly creates a polygon.', () => {
       cy.wait(3000)
-      cy.mousemovecanvas(0,0)
+      cy.mousemovecanvas(0, 0)
       cy.selectDrawValidatePolygon()
 
     })
@@ -96,7 +96,7 @@ describe('Annotate Files Tests', () => {
         cy.window().then((window) => {
           const annCore = window.AnnotationCore;
           let canvas_wrapper_id = `canvas_wrapper`
-          if(annCore){
+          if (annCore) {
             canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
           }
           const canvas_wrapper = doc.getElementById(canvas_wrapper_id);
@@ -135,7 +135,7 @@ describe('Annotate Files Tests', () => {
         cy.window().then((window) => {
           const annCore = window.AnnotationCore;
           let canvas_wrapper_id = `canvas_wrapper`
-          if(annCore){
+          if (annCore) {
             canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
           }
           const canvas_wrapper = doc.getElementById(canvas_wrapper_id);
@@ -183,7 +183,7 @@ describe('Annotate Files Tests', () => {
         cy.window().then((window) => {
           const annCore = window.AnnotationCore;
           let canvas_wrapper_id = `canvas_wrapper`
-          if(annCore){
+          if (annCore) {
             canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
           }
           const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -247,7 +247,7 @@ describe('Annotate Files Tests', () => {
         cy.window().then((window) => {
           const annCore = window.AnnotationCore;
           let canvas_wrapper_id = `canvas_wrapper`
-          if(annCore){
+          if (annCore) {
             canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
           }
           const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -274,7 +274,7 @@ describe('Annotate Files Tests', () => {
       cy.wait(2000)
         .intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
         .window().then((window) => {
-        window.AnnotationCore.has_changed = true;
+            window.AnnotationUIFactory.set_has_changed(true)
       })
         .get('[data-cy="save_button"]').click({force: true})
         .wait('@annotation_update')
@@ -352,11 +352,10 @@ describe('Annotate Files Tests', () => {
 
     it('Correctly Saves The edited instances', () => {
       cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
-      .wait(5000)
       .window().then((window) => {
-        window.AnnotationCore.has_changed = true;
-        window.AnnotationCoreToolbar.has_changed = true;
+        window.AnnotationUIFactory.set_has_changed(true)
       })
+      .wait(2000)
       .then(() => {
         cy.get('[data-cy="save_button"]').click({force: true})
           .wait('@annotation_update', {timeout: 10000})
@@ -366,11 +365,10 @@ describe('Annotate Files Tests', () => {
             // as the 2nd argument to expect()
             expect(response.statusCode, 'response status').to.eq(200)
           })
-      })
+    })
 
     })
   })
-
 
 
 })

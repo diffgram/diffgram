@@ -2,6 +2,7 @@
   <splitpanes @resize="on_panes_resized"
               @ready="$emit('ready')"
               class="default-theme"
+              style="width: 100%"
               :horizontal="layout_direction === 'horizontal'"
               v-if="root_file.type === 'compound' || root_file.type === 'video' || root_file.type === 'image'"
               :push-other-panes="false" >

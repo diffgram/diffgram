@@ -1,5 +1,17 @@
 <template>
+
   <div class="d-flex" style="height: 100%; width: 100%" id="annotation_factory_container">
+    <ui_schema_context_menu
+      v-if="show_ui_schema_context_menu && annotation_ui_context.label_schema"
+      :schema_id="annotation_ui_context.label_schema.id"
+      :show_context_menu="show_ui_schema_context_menu"
+      :project_string_id="computed_project_string_id"
+      :label_settings="annotation_ui_context.current_image_annotation_ctx.label_settings"
+      @close_context_menu="show_ui_schema_context_menu = false"
+      @start_edit_ui_schema="edit_ui_schema()"
+      @set_ui_schema="on_set_ui_schema()"
+    >
+    </ui_schema_context_menu>
     <toolbar_factory
       v-if="annotation_ui_context.working_file && annotation_ui_context.command_manager"
       :task="annotation_ui_context.task"
@@ -313,7 +325,7 @@ import {Task} from "../../types/Task";
 import {get_labels, get_schemas} from '../../services/labelServices.js';
 import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices.js";
 import {CommandManagerAnnotationCore} from "./image_and_video_annotation/annotation_core_command_manager";
-
+import ui_schema_context_menu from "../ui_schema/ui_schema_context_menu.vue";
 import annotation_area_factory from "./annotation_area_factory.vue"
 import toolbar_factory from "./toolbar_factory.vue"
 import sidebar_factory from "./sidebar_factory.vue";
@@ -341,6 +353,7 @@ export default Vue.extend({
   name: "annotation_ui_factory",
   components: {
     file_manager_sheet,
+    ui_schema_context_menu,
     panel_manager,
     no_credentials_dialog,
     sidebar_factory,
@@ -370,6 +383,7 @@ export default Vue.extend({
       task_error: {
         task_request: null,
       },
+      show_ui_schema_context_menu: false,
       hotkey_manager: null,
       window_width: 0,
       window_height: 0,
@@ -499,6 +513,9 @@ export default Vue.extend({
     } else {
       this.view_only = true;
     }
+    if (this.enabled_edit_schema == true) {
+      this.edit_ui_schema()
+    }
   },
   beforeDestroy() {
     this.hotkey_manager.deactivate()
@@ -508,6 +525,7 @@ export default Vue.extend({
     );
 
   },
+
   async mounted() {
     if (window.Cypress) {
       window.AnnotationUIFactory = this;
@@ -591,6 +609,9 @@ export default Vue.extend({
       if(!this.annotation_ui_context.current_image_annotation_ctx.label_settings || !this.interface_type || !this.interface_type && !this.initializing && this.loading){
         return '100%'
       }
+
+      if (this.interface_type !== 'image' || this.interface_type !== 'video') return "100%"
+
       let widthWindow = this.window_width && document.documentElement.clientWidth ?
         Math.min(this.window_width, document.documentElement.clientWidth) :
         this.window_width ||
@@ -608,7 +629,7 @@ export default Vue.extend({
 
       }
 
-      return result + 'px'
+      return `${result}px`
     },
     interface_type: function(): string | null {
       if (!this.annotation_ui_context.working_file && !this.annotation_ui_context.task) return
@@ -695,6 +716,23 @@ export default Vue.extend({
     },
   },
   methods: {
+    initialize_ui_schema_data: function () {
+      let ui_schema_loaded = this.$store.state.ui_schema.current;
+      if (ui_schema_loaded && ui_schema_loaded.label_settings && ui_schema_loaded.label_settings.default_settings) {
+        this.label_settings = ui_schema_loaded.label_settings.default_settings
+      }
+
+    },
+    on_set_ui_schema: function (ui_schema) {
+      this.initialize_ui_schema_data();
+    },
+    edit_ui_schema: function (event) {
+      this.$store.commit("set_ui_schema_editing_state", true);
+      this.show_ui_schema_context_menu = true;
+
+    },
+
+
     activate_hotkeys: function() {
       if (this.hotkey_manager && this.listeners_map()) {
         this.hotkey_manager.activate(this.listeners_map())
@@ -706,11 +744,15 @@ export default Vue.extend({
       }
     },
     listeners_map: function() {
+      if(!this.annotation_ui_context.working_file){
+        return null
+      }
+      let file_id = this.annotation_ui_context.working_file.id
       if (!this.annotation_ui_context) return null
-      if (!this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`]) return null
-      if (!this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0]) return null
+      if (!this.$refs[`annotation_area_factory_${file_id}`]) return null
+      if (!this.$refs[`annotation_area_factory_${file_id}`][0]) return null
 
-      let ref = this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`]
+      let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`annotation_core_${file_id}`]
       if (!ref) return null
 
       const listener_map = {
