@@ -15,6 +15,7 @@
     <toolbar_factory
       v-if="annotation_ui_context.working_file && annotation_ui_context.command_manager"
       :task="annotation_ui_context.task"
+      :annotation_ui_context="annotation_ui_context"
       :project_string_id="computed_project_string_id"
       :working_file="annotation_ui_context.working_file"
       :command_manager="annotation_ui_context.command_manager"

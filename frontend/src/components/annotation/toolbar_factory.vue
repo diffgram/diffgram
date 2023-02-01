@@ -156,6 +156,10 @@ export default Vue.extend({
       type: String,
       default: "box"
     },
+    annotation_ui_context: {
+      type: Object,
+      required: true
+    },
   },
   mounted() {
     if (window.Cypress) {
