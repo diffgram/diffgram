@@ -14,6 +14,7 @@
     @instance_update="$emit('instance_update', $event)"
     @open_view_edit_panel="$emit('open_view_edit_panel', $event)"
     @clear_selected_instances_image="$emit('clear_selected_instances_image', $event)"
+    @global_compound_attribute_change="$emit('global_compound_attribute_change', $event)"
     ref="sidebar_image"
   ></sidebar_image_annotation>
 </template>

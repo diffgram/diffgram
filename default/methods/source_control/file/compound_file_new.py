@@ -67,7 +67,10 @@ def file_compound_new_core(session: Session,
         log['error']['directory_id'] = msg
 
         return None, log
-    existing_file = File.get_by_name_and_directory(session = session, directory_id = directory_id, file_name = name)
+    existing_file = File.get_by_name_and_directory(session = session,
+                                                   directory_id = directory_id,
+                                                   file_name = name,
+                                                   with_deleted = False)
     if existing_file is not None:
         msg = f'File name: {name} already exists in dataset {dataset.nickname}<id={dataset.id}>'
         log['error']['directory_id'] = msg

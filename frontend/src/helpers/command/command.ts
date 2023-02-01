@@ -5,9 +5,9 @@ import InstanceList from "../instance_list";
 import { CommandInterface } from "../interfaces/Command";
 import { InstanceInterface } from "../interfaces/InstanceData";
 import { Instance } from "../../components/vue_canvas/instances/Instance";
-import { GlobalAnnotationInstance } from "../../components/vue_canvas/instances/GlobalInstance";
+import { GlobalInstance } from "../../components/vue_canvas/instances/GlobalInstance";
 
-export abstract class Command implements CommandInterface {   
+export abstract class Command implements CommandInterface {
     protected instances: Array<InstanceInterface>;
     protected instance_list: InstanceList;
     protected replacement_indexes: Array<number> = [];
@@ -52,25 +52,25 @@ export abstract class Command implements CommandInterface {
             initializedInstance = new GeoCircle()
         }
 
-        if (instance.type === "geo_polyline" || 
-            instance.type === "geo_polygon" || 
+        if (instance.type === "geo_polyline" ||
+            instance.type === "geo_polygon" ||
             instance.type === "geo_box"
         ) {
             initializedInstance = new GeoPoly(instance.type)
         }
 
         if (instance.type === "global") {
-            initializedInstance = new GlobalAnnotationInstance()
+            initializedInstance = new GlobalInstance()
         }
 
         initializedInstance.populate_from_instance_obj(newInstance)
         return initializedInstance;
-    };
+    }
 
     protected get_instances_ids(): Array<string | number> {
         const id_list: Array<string | number> = this.instances.map(instance => instance.get_instance_data().id)
         return id_list
-    };
+    }
 
     abstract execute(): void;
     abstract undo(): void;

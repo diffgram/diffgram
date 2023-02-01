@@ -24,7 +24,7 @@
           mdi-file
         </v-icon>
 
-        <h4>Globals</h4>
+        <h4>{{ title }}</h4>
 
         <v-spacer></v-spacer>
 
@@ -32,13 +32,13 @@
           x-small
           class="d-flex justify-center flex-grow-0"
         >
-            {{ global_attribute_groups_list.length }}
+          {{ global_attribute_groups_list.length }}
         </v-chip>
       </v-expansion-panel-header>
 
       <v-expansion-panel-content>
         <attribute_group_list
-          v-if="current_global_instance && global_attribute_groups_list && global_attribute_groups_list.length != 0"
+          v-if="current_global_instance && global_attribute_groups_list && global_attribute_groups_list.length !== 0"
           style="overflow-y:auto; max-height: 400px"
           mode="annotate"
           key="global_attribute_groups_list"
@@ -59,36 +59,19 @@
 import attribute_group_list from './attribute_group_list.vue';
 import Vue from "vue";
 
-export default Vue.extend( {
-   name: 'global_attributes_list',
-   components: {
-     attribute_group_list: attribute_group_list
+export default Vue.extend({
+    name: 'global_attributes_list',
+    components: {
+      attribute_group_list: attribute_group_list
     },
     props: {
-      global_attribute_groups_list : {
-        type: Array,
-        default: null
-      },
-      current_global_instance:{
-        type: Object,
-        default: null
-      },
-      view_only_mode: {
-        type: Boolean,
-        default: false
-      },
-      schema_id: {
-        type: Number,
-        required: true
-      },
-      project_string_id:{
-        type: String,
-        required: true
-      },
-      open_state: {
-        type: Boolean || undefined,
-        default: undefined
-      }
+      global_attribute_groups_list: {type: Array, default: null},
+      current_global_instance: {type: Object, default: null},
+      view_only_mode: {type: Boolean, default: false},
+      schema_id: {type: Number, required: true},
+      project_string_id: {type: String, required: true},
+      open_state: {type: Boolean || undefined, default: undefined},
+      title: {type: String, default: 'Active File Attributes:'},
     },
     data() {
       return {
@@ -96,20 +79,18 @@ export default Vue.extend( {
       }
     },
     watch: {
-      open_state: function(newVal, oldVal) {
+      open_state: function (newVal, oldVal) {
         if (newVal) {
           this.open = 0
-        }
-        else {
+        } else {
           this.open = undefined
         }
       }
     },
     mounted() {
       if (this.open_state === undefined) {
-        if(this.global_attribute_groups_list.length > 0) this.open = 0
-      }
-      else {
+        if (this.global_attribute_groups_list.length > 0) this.open = 0
+      } else {
         this.open = this.open_state ? 0 : undefined
       }
     }

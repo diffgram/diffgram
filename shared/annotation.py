@@ -638,7 +638,7 @@ class Annotation_Update():
         """
         if not self.file:
             return
-
+        print('FILEEE CAHCEEEEE', self.file.id, self.instance_list_kept_serialized)
         self.file.set_cache_by_key(
             cache_key = 'instance_list',
             value = self.instance_list_kept_serialized
@@ -2187,14 +2187,17 @@ def task_annotation_update(
 
     # TODO Why are we adding this to session here? not clear
     session.add(task)
-
+    child_file_save_id = input.get('child_file_save_id')
     project = task.project
 
     instance_list_new = untrusted_input.get('instance_list', None)
     gold_standard_file = untrusted_input.get('gold_standard_file', None)
+    print('child_file_save_id', child_file_save_id)
     try:
-        file = File.get_by_id(session = session, file_id = task.file_id)
-
+        if child_file_save_id is None:
+            file = File.get_by_id(session = session, file_id = task.file_id)
+        else:
+            file = File.get_by_id(session = session, file_id = child_file_save_id)
     except Exception as e:
         trace = traceback.format_exc()
         logger.error(f"File {task.file_id} is Locked")

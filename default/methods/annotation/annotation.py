@@ -60,6 +60,10 @@ def task_annotation_update_api(task_id):
 
     spec_list = [{"instance_list": None},
                  {"and_complete": bool},
+                 {"child_file_save_id": {
+                     "required": False,
+                     "kind": int
+                 }},
                  {"video_data": {
                      'kind': dict,
                      'default': None

@@ -1077,14 +1077,19 @@ class File(Base, Caching):
         return res
 
     @staticmethod
-    def get_by_name_and_directory(session, directory_id, file_name):
+    def get_by_name_and_directory(session, directory_id, file_name, with_deleted = True):
         from shared.database.source_control.working_dir import WorkingDirFileLink
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory_id).subquery('working_dir_sub_query')
-
-        file = session.query(File).filter(
-            File.id == working_dir_sub_query.c.file_id,
-            File.original_filename == file_name).first()
+        if with_deleted:
+            file = session.query(File).filter(
+                File.id == working_dir_sub_query.c.file_id,
+                File.original_filename == file_name).first()
+        else:
+            file = session.query(File).filter(
+                File.id == working_dir_sub_query.c.file_id,
+                File.state != 'removed',
+                File.original_filename == file_name).first()
         return file
 
     @staticmethod
