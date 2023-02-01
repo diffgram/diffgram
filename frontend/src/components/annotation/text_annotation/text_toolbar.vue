@@ -1,7 +1,7 @@
 <template>
   <v-toolbar
     dense
-    width="100%"
+    width="100vw"
     elevation="0"
     fixed
     :height="height"

@@ -1,6 +1,6 @@
 <template>
   <div style="display: flex; flex-direction: column">
-    <div style="position: relative">
+    <!-- <div style="position: relative">
       <main_menu
         :height="`${!task ? '100px' : '50px'}`"
         :show_default_navigation="!task"
@@ -34,7 +34,7 @@
           />
         </template>
       </main_menu>
-    </div>
+    </div> -->
     <div style="display: flex; flex-direction: row">
       <text_sidebar
         :instance_list="new_instance_list ? new_instance_list.get().filter(instance => !instance.soft_delete) : []"
@@ -264,8 +264,6 @@ import text_selection_svg from "./render_elements/selection.vue"
 import text_fast_label from "./render_elements/fast_label_menu.vue"
 import text_context_menu from "./render_elements/text_context_menu.vue"
 import relation_in_progress from "./render_elements/relation_in_progress.vue"
-import {CommandManagerAnnotationCore} from "../image_and_video_annotation/annotation_core_command_manager"
-import {CreateInstanceCommand as CreateInstanceCommandLegacy} from "../image_and_video_annotation/commands/create_instance_command.ts";
 import {TextAnnotationInstance, TextRelationInstance} from "../../vue_canvas/instances/TextInstance"
 import {postInstanceList, getInstanceList} from "../../../services/instanceList"
 import getTextService from "../../../services/getTextService"
@@ -332,6 +330,22 @@ export default Vue.extend({
     label_schema: {
       type: Object,
       default: {}
+    },
+    command_manager: {
+      type: Object,
+      default: null
+    },
+    history: {
+      type: Object,
+      default: null
+    },
+    has_changed: {
+      type: Boolean,
+      default: false
+    },
+    save_loading: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -372,14 +386,8 @@ export default Vue.extend({
       current_global_instance: null,
       instance_list_global: [],
 
-      // Command
-      command_manager: undefined,
-      has_changed: false,
-      save_loading: false,
       // New command pattern
       new_instance_list: undefined,
-      new_command_manager: undefined,
-      new_history: undefined,
     }
   },
   mounted() {
@@ -445,10 +453,10 @@ export default Vue.extend({
       }
     },
     undo_disabled: function () {
-      return !this.new_history || !this.new_history.undo_posible
+      return !this.history || !this.history.undo_posible
     },
     redo_disabled: function () {
-      return !this.new_history || !this.new_history.redo_posible
+      return !this.history || !this.history.redo_posible
     }
   },
   watch: {
@@ -456,7 +464,6 @@ export default Vue.extend({
       this.rendering = true
       this.instance_list = [];
       this.text = null;
-      this.command_manager = null;
       this.initial_words_measures = [];
       this.lines = []
       this.show_label_selection = false
@@ -467,7 +474,6 @@ export default Vue.extend({
       this.rendering = true
       this.instance_list = [];
       this.text = null;
-      this.command_manager = null;
       this.initial_words_measures = [];
       this.lines = []
       this.show_label_selection = false
@@ -530,27 +536,27 @@ export default Vue.extend({
     on_change_label_schema: function(schema){
       this.$emit('change_label_schema', schema)
     },
-    on_task_annotation_complete_and_save: async function () {
-      await this.save();
-      await this.save();
-      const response = await finishTaskAnnotation(this.task.id);
-      const new_status = response.data.task.status;
-      this.task.status = new_status;
-      if (new_status !== "complete") {
-        this.submitted_to_review = true;
-      }
-      if (this.$props.task && this.$props.task.id) {
-        this.save_loading_image = false;
-        this.trigger_task_change("next", this.$props.task, true);
-      }
-    },
-    defer_task: async function () {
-      const defered = await deferTask({
-        task_id: this.task.id,
-        mode: "toggle_deferred"
-      })
-      this.trigger_task_change('next')
-    },
+    // on_task_annotation_complete_and_save: async function () {
+    //   await this.save();
+    //   await this.save();
+    //   const response = await finishTaskAnnotation(this.task.id);
+    //   const new_status = response.data.task.status;
+    //   this.task.status = new_status;
+    //   if (new_status !== "complete") {
+    //     this.submitted_to_review = true;
+    //   }
+    //   if (this.task && this.task.id) {
+    //     this.save_loading_image = false;
+    //     this.trigger_task_change("next", this.task, true);
+    //   }
+    // },
+    // defer_task: async function () {
+    //   const defered = await deferTask({
+    //     task_id: this.task.id,
+    //     mode: "toggle_deferred"
+    //   })
+    //   this.trigger_task_change('next')
+    // },
     bulk_labeling: function (instance_id) {
       const instance = this.new_instance_list.get().find(inst => {
         const {id} = inst.get_instance_data()
@@ -583,18 +589,18 @@ export default Vue.extend({
       if (newly_created_instances.length > 0) {
         this.new_instance_list.push(newly_created_instances)
         const new_command = new CreateInstanceCommand(newly_created_instances, this.new_instance_list)
-        this.new_command_manager.executeCommand(new_command)
+        this.command_manager.executeCommand(new_command)
 
         this.has_changed = true
       }
     },
-    trigger_task_change: async function (direction, assign_to_user = false) {
-      if (this.has_changed) {
-        await this.save();
-        await this.save();
-      }
-      this.$emit("request_new_task", direction, this.task, assign_to_user);
-    },
+    // trigger_task_change: async function (direction, assign_to_user = false) {
+    //   if (this.has_changed) {
+    //     await this.save();
+    //     await this.save();
+    //   }
+    //   this.$emit("request_new_task", direction, this.task, assign_to_user);
+    // },
     remove_hotkeys_listeners: function() {
       window.removeEventListener("keydown", this.keydown_event_listeners)
       window.removeEventListener("keyup", this.keyup_event_listeners)
@@ -787,10 +793,9 @@ export default Vue.extend({
           set_words = words
         }
 
-        this.command_manager = new CommandManagerAnnotationCore()
         // New command pattern
-        this.new_history = new History()
-        this.new_command_manager = new CommandManager(this.new_history)
+        this.history = new History()
+        this.command_manager = new CommandManager(this.history)
 
         this.initial_words_measures = set_words
         setTimeout(() => this.initialize_token_render(), 1000)
@@ -875,12 +880,10 @@ export default Vue.extend({
           {...label}
         )
         this.new_instance_list.push([created_instance])
-        const command = new CreateInstanceCommandLegacy(created_instance, this)
-        this.command_manager.executeCommand(command)
 
         //New command pattern
         const new_command = new CreateInstanceCommand([created_instance], this.new_instance_list)
-        this.new_command_manager.executeCommand(new_command)
+        this.command_manager.executeCommand(new_command)
 
         this.has_changed = true
       }
@@ -966,12 +969,10 @@ export default Vue.extend({
           {...label}
         )
         this.new_instance_list.push([created_instance])
-        const command = new CreateInstanceCommandLegacy(created_instance, this)
-        this.command_manager.executeCommand(command)
 
         //New command pattern
         const new_command = new CreateInstanceCommand([created_instance], this.new_instance_list)
-        this.new_command_manager.executeCommand(new_command)
+        this.command_manager.executeCommand(new_command)
         this.has_changed = true
       }
       // this.remove_browser_selection()
@@ -995,7 +996,7 @@ export default Vue.extend({
       const {instance, label} = event
       const new_command = new UpdateInstanceLabelCommand([instance], this.new_instance_list)
       new_command.set_new_label(label)
-      this.new_command_manager.executeCommand(new_command)
+      this.command_manager.executeCommand(new_command)
       this.has_changed = true
     },
     delete_instance: async function (instance) {
@@ -1004,7 +1005,7 @@ export default Vue.extend({
         this.current_instance = null
       }
       const new_delete_command = new DeleteInstanceCommand([instance], this.new_instance_list)
-      this.new_command_manager.executeCommand(new_delete_command)
+      this.command_manager.executeCommand(new_delete_command)
       this.has_changed = true
       this.context_menu = null
     },
@@ -1027,7 +1028,7 @@ export default Vue.extend({
           attached_to_job: this.task.file.attached_to_job,
         }
       } else {
-        url = `/api/project/${this.$props.project_string_id}/file/${this.$props.working_file.id}/annotation/list`;
+        url = `/api/project/${this.project_string_id}/file/${this.working_file.id}/annotation/list`;
         payload = {}
       }
       let instance_list = await getInstanceList(url, payload)
@@ -1071,17 +1072,17 @@ export default Vue.extend({
       this.save_loading = false
     },
     undo: function () {
-      if (!this.new_history.undo_posible) return;
+      if (!this.history.undo_posible) return;
 
-      let undone = this.new_command_manager.undo();
+      let undone = this.command_manager.undo();
       this.current_instance = null
 
       if (undone) this.has_changed = true;
     },
     redo: function () {
-      if (!this.new_history.redo_posible) return;
+      if (!this.history.redo_posible) return;
 
-      let redone = this.new_command_manager.redo();
+      let redone = this.command_manager.redo();
       this.current_instance = null
 
       if (redone) this.has_changed = true;
@@ -1184,7 +1185,7 @@ export default Vue.extend({
       else attribute_to_pass = {...attribute[1]}
       
       command.set_new_attribute(attribute[0].id, attribute_to_pass)
-      this.new_command_manager.executeCommand(command)
+      this.command_manager.executeCommand(command)
       this.has_changed = true
     },
     get_and_set_global_instance: function (instance_list) {

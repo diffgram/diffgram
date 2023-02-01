@@ -18,6 +18,7 @@
       :project_string_id="computed_project_string_id"
       :working_file="annotation_ui_context.working_file"
       :command_manager="annotation_ui_context.command_manager"
+      :history="annotation_ui_context.history"
       :label_settings="annotation_ui_context.current_image_annotation_ctx.label_settings"
       :label_schema="annotation_ui_context.label_schema"
       :draw_mode="annotation_ui_context.current_image_annotation_ctx.draw_mode"
@@ -327,6 +328,8 @@ import {Task} from "../../types/Task";
 import {get_labels, get_schemas} from '../../services/labelServices.js';
 import {trackTimeTask, finishTaskAnnotation} from "../../services/tasksServices.js";
 import {CommandManagerAnnotationCore} from "./image_and_video_annotation/annotation_core_command_manager";
+import CommandManager from "../../helpers/command/command_manager"
+import History from "../../helpers/history"
 import ui_schema_context_menu from "../ui_schema/ui_schema_context_menu.vue";
 import annotation_area_factory from "./annotation_area_factory.vue"
 import toolbar_factory from "./toolbar_factory.vue"
@@ -448,7 +451,15 @@ export default Vue.extend({
   },
   watch: {
     'annotation_ui_context.working_file': function () {
-      this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
+      if (this.interface_type === 'image' || this.interface_type === 'video') {
+        this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
+      }
+      else if (this.interface_type === 'text') {
+        this.annotation_ui_context.history = new History()
+        this.annotation_ui_context.command_manager = new CommandManager(this.annotation_ui_context.history)
+      }
+
+
       if (
         this.annotation_ui_context &&
         this.hotkey_manager &&

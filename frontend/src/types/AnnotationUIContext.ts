@@ -49,6 +49,8 @@ export class BaseAnnotationUIContext {
 
   hidden_label_id_list: number[]
 
+  history: any
+
   public get_current_ann_ctx(): AnyAnnotationCtx {
     if (!this.working_file) {
       return undefined
@@ -85,6 +87,7 @@ export class BaseAnnotationUIContext {
     this.num_rows = 1
     this.num_cols = 4
     this.hidden_label_id_list = []
+    this.history = null
   }
 
 }
