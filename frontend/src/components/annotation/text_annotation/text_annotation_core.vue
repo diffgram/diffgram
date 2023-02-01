@@ -1177,9 +1177,12 @@ export default Vue.extend({
         command = new UpdateInstanceAttributeCommand([this.new_instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.new_instance_list)
       }
 
-      if (["slider", "text", "time", "date"].includes(attribute[0].kind)) attribute_to_pass = attribute[1]
+      let attribute_to_pass
 
-      const attribute_to_pass = Array.isArray(attribute[1]) ? [...attribute[1]] : {...attribute[1]}
+      if (["slider", "text", "time", "date"].includes(attribute[0].kind)) attribute_to_pass = attribute[1]
+      else if (Array.isArray(attribute[1])) attribute_to_pass = [...attribute[1]]
+      else attribute_to_pass = {...attribute[1]}
+      
       command.set_new_attribute(attribute[0].id, attribute_to_pass)
       this.new_command_manager.executeCommand(command)
       this.has_changed = true
