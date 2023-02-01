@@ -52,6 +52,7 @@ export class Instance {
   public is_hovered: boolean = false;
   public is_resizing: boolean = false;
   public interpolated: boolean = false;
+  public prev_attribute: any = undefined;
   public status: string = '';
 
   public on_instance_updated: Function = undefined;
@@ -68,6 +69,17 @@ export class Instance {
 
   public get_label_file_colour_map(): LabelColourMap {
     return this.label_file_colour_map
+  }
+  public set_attribute(group_id, value){
+    if (!this.attribute_groups) {
+      this.attribute_groups = {};
+    }
+    // we assume this represents a group
+    this.prev_attribute = {
+      group: group_id,
+      value: {...this.attribute_groups[group_id]},
+    };
+    this.attribute_groups[group_id] = value;
   }
 
   // Returns any just to avoid warnings in the new Command pattern related class. Need to be replaces with the interface

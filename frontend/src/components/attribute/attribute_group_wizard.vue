@@ -187,6 +187,15 @@
                    Per File
 
                 </v-btn>
+
+                <v-btn>
+                  <v-icon left color="primary" size="18">
+                    mdi-file-table-box-multiple
+                  </v-icon>
+
+                  Per Root Compound File
+
+                </v-btn>
               </v-btn-toggle>
             </v-layout>
 
@@ -651,6 +660,10 @@ export default Vue.extend( {
     set_is_global: function(value, group){
       if(value === 1){
         group.is_global = true
+        group.global_type = 'file'
+      } else if(value === 2){
+        group.is_global = true
+        group.global_type = 'compound_file'
       }
       else{
         group.is_global = false

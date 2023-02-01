@@ -8,7 +8,14 @@ import IssuesAnnotationUIManager from "../components/annotation/issues/IssuesAnn
 import {ModelRun} from "./models";
 import {Task} from "./Task";
 import {createDefaultLabelSettings, ImageLabelSettings} from "./image_label_settings";
+import {AttributeTemplateGroup} from "./attributes/AttributeTemplateGroup";
 
+type AnyAnnotationCtx =
+  ImageAnnotationUIContext
+  | AudioAnnotationUIContext
+  | TextAnnotationUIContext
+  | GeoAnnotationUIContext
+  | SensorFusion3DAnnotationUIContext
 
 export class BaseAnnotationUIContext {
   working_file: File
@@ -17,7 +24,13 @@ export class BaseAnnotationUIContext {
   instance_type: string
   instance_store: InstanceStore
   per_instance_attribute_groups_list: object[]
-  global_attribute_groups_list: object[]
+  global_attribute_groups_list: AttributeTemplateGroup[]
+
+  global_attribute_groups_list_compound: AttributeTemplateGroup[]
+  compound_global_attributes_instance_list: Instance[]
+  compound_global_instance_id: number
+  compound_global_instance_index: number
+  compound_global_instance: Instance
   current_global_instance: object
   label_schema: Schema
   current_label_file: LabelFile
@@ -36,6 +49,21 @@ export class BaseAnnotationUIContext {
 
   hidden_label_id_list: number[]
 
+  public get_current_ann_ctx(): AnyAnnotationCtx {
+    if (!this.working_file) {
+      return undefined
+    }
+    let ref_name_map = {
+      'image': this.current_image_annotation_ctx,
+      'video': this.current_image_annotation_ctx,
+      'audio': this.current_audio_annotation_ctx,
+      'text': this.current_text_annotation_ctx,
+      'geospatial': this.current_geo_annotation_ctx,
+      'sensor_fusion': this.current_sensor_fusion_annotation_ctx,
+    }
+    return ref_name_map[this.working_file.type]
+  }
+
   constructor() {
     this.working_file = null
     this.working_file_list = []
@@ -43,8 +71,11 @@ export class BaseAnnotationUIContext {
     this.instance_type = 'box'
     this.instance_store = null
     this.per_instance_attribute_groups_list = []
+    this.compound_global_attributes_instance_list = []
     this.global_attribute_groups_list = undefined
+    this.global_attribute_groups_list_compound = undefined
     this.current_global_instance = undefined
+    this.compound_global_instance = undefined
     this.label_schema = null
     this.current_label_file = null
     this.selected_instance_for_history = null
@@ -122,7 +153,7 @@ export class ImageAnnotationUIContext {
 
 
 export class SensorFusion3DAnnotationUIContext {
-
+  has_changed: boolean
   container_width: number
   container_height: number
   label_settings: ImageLabelSettings
@@ -138,7 +169,7 @@ export class SensorFusion3DAnnotationUIContext {
 }
 
 export class GeoAnnotationUIContext {
-
+  has_changed: boolean
   container_width: number
   container_height: number
 
@@ -152,7 +183,7 @@ export class GeoAnnotationUIContext {
 }
 
 export class TextAnnotationUIContext {
-
+  has_changed: boolean
   container_width: number
   container_height: number
 
@@ -164,8 +195,9 @@ export class TextAnnotationUIContext {
   }
 
 }
-export class AudioAnnotationUIContext {
 
+export class AudioAnnotationUIContext {
+  has_changed: boolean
   container_width: number
   container_height: number
 

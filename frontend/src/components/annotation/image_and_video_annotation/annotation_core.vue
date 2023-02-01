@@ -650,6 +650,7 @@ import {
 import {CoordinatorProcessResult} from "../../vue_canvas/coordinators/Coordinator";
 import {Interaction} from "../../../types/Interaction";
 import {BoxInstance} from "../../vue_canvas/instances/BoxInstance";
+import {GlobalInstance} from "../../vue_canvas/instances/GlobalInstance";
 import {LabelColourMap} from "../../../types/label_colour_map";
 import {CanvasMouseCtx, MousePosition} from "../../../types/mouse_position";
 import {ImageCanvasTransform} from "../../../types/CanvasTransform";
@@ -2116,8 +2117,7 @@ export default Vue.extend({
     },
     new_global_instance: function () {
 
-      let new_instance = new Instance();
-      new_instance.type = 'global'
+      let new_instance = new GlobalInstance();
       return new_instance
 
     },
@@ -2965,6 +2965,7 @@ export default Vue.extend({
          *    For the event to propogate this we must set a key
          *    ie :key="attribute_template.id"
          */
+        // TODO: REFACTOR THIS CODE to instance.set_attribute_value() when all instances have class types.
         if (!instance.attribute_groups) {
           instance.attribute_groups = {};
         }
@@ -6276,7 +6277,7 @@ export default Vue.extend({
         instance_selected: () => this.instance_selected,
         instance_deselected: () => this.instance_deselected,
         new_global_instance: () => {
-          return new Instance()
+          return new GlobalInstance()
         },
         mouse_down_delta_event: this.mouse_down_delta_event,
         mouse_down_position: this.mouse_down_position,
@@ -6551,9 +6552,7 @@ export default Vue.extend({
       }
 
       if (this.$store.getters.is_on_public_project) {
-        url = `/api/project/${this.project_string_id}/file/${String(
-          this.working_file.id
-        )}/annotation/list`;
+        url = `/api/project/${this.project_string_id}/file/${String(this.working_file.id)}/annotation/list`;
 
         const response = await axios.post(url, {
           directory_id:
@@ -6581,6 +6580,7 @@ export default Vue.extend({
             directory_id:
             this.$store.state.project.current_directory.directory_id,
             job_id: this.job_id,
+            task_child_file_id: this.working_file.id,
             attached_to_job: file.attached_to_job,
           });
           this.get_instances_core(response);
