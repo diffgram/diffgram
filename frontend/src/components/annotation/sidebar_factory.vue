@@ -6,6 +6,7 @@
     :project_string_id="project_string_id"
     :label_list="label_list"
     :current_global_instance="current_global_instance"
+    :compound_global_instance="compound_global_instance"
     :video_parent_file_instance_list="video_parent_file_instance_list"
     :instance_list="instance_list"
     @toggle_instance_focus="$emit('toggle_instance_focus', $event)"
@@ -38,6 +39,7 @@ export default Vue.extend({
     label_list: {type: Array as LabelFile[], required: true},
     project_string_id: {type: String, required: true},
     current_global_instance: {type: Object, required: false},
+    compound_global_instance: {type: Object, required: false},
     instance_list: {type: Array as Instance[], required: false},
     video_parent_file_instance_list: {type: Array as Instance[], required: false},
   },

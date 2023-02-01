@@ -329,8 +329,15 @@ def build_packet(file,
 
 def build_compound_file_packet(file: File, session: Session):
     child_files = file.get_child_files(session = session)
+    instance_list = Instance.list(
+        session = session,
+        file_id = file.id)
+    instance_dict_list = []
+    for instance in instance_list:
+        instance_dict_list.append(build_instance(instance, file))
     result = {
-        'file': file.serialize_base_file()
+        'file': file.serialize_base_file(),
+        'instance_list': instance_dict_list
     }
     for child_file in child_files:
         result[child_file.id] = build_packet(file = child_file,

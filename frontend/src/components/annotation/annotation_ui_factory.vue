@@ -62,6 +62,7 @@
       :label_list="label_list"
       :project_string_id="computed_project_string_id"
       :current_global_instance="annotation_ui_context.current_global_instance"
+      :compound_global_instance="annotation_ui_context.compound_global_instance"
       :video_parent_file_instance_list="annotation_ui_context.current_image_annotation_ctx.video_parent_file_instance_list"
       :instance_list="current_instance_list"
       @toggle_instance_focus="handle_focus_image_instance"
@@ -392,7 +393,7 @@ export default Vue.extend({
       window_height: 0,
       annotation_ui_context: new BaseAnnotationUIContext(),
       child_annotation_ctx_list: [],
-      root_file: [],
+      root_file: {},
       task_prefetcher: null,
       all_panes_list: {},
       task_image: null,
@@ -725,6 +726,7 @@ export default Vue.extend({
       let value = attribute_payload[1];
       let idx = this.annotation_ui_context.compound_global_instance_index
       let instance = this.annotation_ui_context.compound_global_attributes_instance_list[idx]
+      this.annotation_ui_context.compound_global_instance = instance
       instance.set_attribute(group.id, value)
       this.set_has_changed(true)
     },
@@ -1043,7 +1045,6 @@ export default Vue.extend({
       }
     },
     save_compound_global_attributes: async function(and_complete, video_data){
-      console.log('ROOT FILE SAVE ATTRI', this.root_file.id, this.annotation_ui_context.compound_global_attributes_instance_list)
       const payload = {
         instance_list: this.annotation_ui_context.compound_global_attributes_instance_list,
         and_complete: and_complete,
@@ -1179,7 +1180,6 @@ export default Vue.extend({
           this.get_current_annotation_area_ref().update_sequence_data(instance_list, frame_number, result);
         }
         // Save Global Compound Instance
-        console.log('ROOTE', this.root_file)
         if(this.root_file && this.root_file.type === 'compound'){
           await this.save_compound_global_attributes(and_complete, video_data)
         }
@@ -1603,23 +1603,23 @@ export default Vue.extend({
 
     },
     set_compound_global_attributes_instance_list: async function (file) {
-      let file_data = get_instance_list_from_file(this.computed_project_string_id, file.id)
+      let file_data = await get_instance_list_from_file(this.computed_project_string_id, file.id)
       let instance_list = []
       if(file_data.file_serialized && file_data.file_serialized.instance_list){
         instance_list = file_data.file_serialized.instance_list
       }
       if (instance_list.length >= 1) {
         this.annotation_ui_context.compound_global_attributes_instance_list = instance_list;
-        if (instance_list > 0) {
-          this.annotation_ui_context.compound_global_instance_id = instance_list[0].id
-          this.annotation_ui_context.compound_global_instance_index = 0
-        }
+        this.annotation_ui_context.compound_global_instance_id = instance_list[0].id
+        this.annotation_ui_context.compound_global_instance_index = 0
+        this.annotation_ui_context.compound_global_instance = instance_list[0]
 
       } else {
         let instance = new GlobalInstance()
         this.annotation_ui_context.compound_global_attributes_instance_list = [instance]
         this.annotation_ui_context.compound_global_instance_id = instance.id
         this.annotation_ui_context.compound_global_instance_index = 0
+        this.annotation_ui_context.compound_global_instance = instance
       }
       file.instance_list = this.annotation_ui_context.compound_global_attributes_instance_list
     },

@@ -42,7 +42,7 @@
       <global_attributes_list
         v-if="global_attribute_groups_list_compound && global_attribute_groups_list_compound.length > 0"
         :global_attribute_groups_list="global_attribute_groups_list_compound"
-        :current_global_instance="current_global_instance"
+        :current_global_instance="compound_global_instance"
         :schema_id="schema_id"
         :project_string_id="project_string_id"
         :view_only_mode="view_only_mode"
@@ -582,6 +582,7 @@ export default Vue.extend({
       'schema_id',
       'per_instance_attribute_groups_list',
       'video_parent_file_instance_list',
+      'compound_global_instance',
 
 
     ],
@@ -605,7 +606,6 @@ export default Vue.extend({
       },
 
       trigger_refresh_current_instance: function () {
-        console.log('Trigger refresh current instance', this.instance_list, this.external_requested_index)
         if (this.instance_list) {
           this.change_instance(
             this.instance_list[this.external_requested_index],
@@ -723,7 +723,6 @@ export default Vue.extend({
         if(this.video_mode){
           instance_list = this.video_parent_file_instance_list
         }
-        console.log('VIDEO', this.video_mode, this.video_parent_file_instance_list)
         for(let i = 0; i < instance_list.length; i++){
           let inst = instance_list[i]
           if(inst.type === 'global'){

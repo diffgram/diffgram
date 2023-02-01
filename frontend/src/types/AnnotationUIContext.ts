@@ -30,6 +30,7 @@ export class BaseAnnotationUIContext {
   compound_global_attributes_instance_list: Instance[]
   compound_global_instance_id: number
   compound_global_instance_index: number
+  compound_global_instance: Instance
   current_global_instance: object
   label_schema: Schema
   current_label_file: LabelFile
@@ -74,6 +75,7 @@ export class BaseAnnotationUIContext {
     this.global_attribute_groups_list = undefined
     this.global_attribute_groups_list_compound = undefined
     this.current_global_instance = undefined
+    this.compound_global_instance = undefined
     this.label_schema = null
     this.current_label_file = null
     this.selected_instance_for_history = null
