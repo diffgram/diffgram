@@ -1,5 +1,5 @@
 <template>
-  <splitpanes @resize="on_panes_resized"
+  <splitpanes @resize="on_rows_resized"
               @ready="$emit('ready')"
               class="default-theme"
               style="width: 100%"
@@ -8,10 +8,11 @@
               :push-other-panes="false" >
 
     <pane v-for="(item, row_index) in num_rows" :key="`row_${row_index}`">
-        <splitpanes  @pane-click="$emit('pane-click', row_index, $event)" @resize="on_panes_resized(row_index, $event)">
+        <splitpanes  @pane-click="$emit('pane-click', row_index, $event)" @resize="on_col_resized(row_index, $event)">
             <pane v-for="(col, col_index) in parseInt(num_columns)"
                   :key="`row_${row_index}_col_${col_index}`"
-                  :class="{'pane-container-unselected': selected_row !== row_index || selected_col !== col_index}">
+                  :class="{'pane-container-unselected': selected_row !== row_index || selected_col !== col_index, 'pane-container': true}">
+
               <slot :name="`panel_${row_index}:${col_index}`">
                 <div style="width: 400px">
                   <h6 style="font-size: 36px" class="text--black">row: {{row_index}} col {{col_index}}</h6>
@@ -47,8 +48,11 @@ export default Vue.extend({
   },
   methods: {
 
-    on_panes_resized: function (row_index, panes_dimensions_list){
-      this.$emit('panels_resized', row_index, panes_dimensions_list)
+    on_col_resized: function (row_index, panes_dimensions_list){
+      this.$emit('cols_resized', row_index, panes_dimensions_list)
+    },
+    on_rows_resized: function (panes_dimensions_list){
+      this.$emit('rows_resized', panes_dimensions_list)
     }
   }
 })
@@ -79,5 +83,8 @@ export default Vue.extend({
   box-shadow: 0 0 0 6px #b0b0b0;
   opacity: 0.8;
   cursor: pointer;
+}
+.pane-container{
+  position: relative;
 }
 </style>

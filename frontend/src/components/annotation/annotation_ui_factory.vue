@@ -119,12 +119,13 @@
         child_annotation_ctx_list
         && annotation_ui_context.global_attribute_groups_list"
         :layout_direction="layout_direction"
-        :num_columns="annotation_ui_context.working_file_list.length"
+        :num_columns="annotation_ui_context.panel_settings.columns"
         :root_file="root_file"
         :selected_row="annotation_ui_context.working_file.row"
         :selected_col="annotation_ui_context.working_file.column"
-        :num_rows="annotation_ui_context.num_rows"
-        @panels_resized="on_panes_resized"
+        :num_rows="annotation_ui_context.panel_settings.rows"
+        @cols_resized="on_panes_columns_resized"
+        @rows_resized="on_panes_columns_resized"
         @ready="on_panes_ready"
         @pane-click="on_panes_clicked"
         ref="panels_manager"
@@ -132,10 +133,11 @@
         <template v-for="(file, index) in annotation_ui_context.working_file_list"
 
                   v-slot:[`panel_${file.row}:${file.column}`]="">
-
+          <panel_metadata :file="file" class="panel-metadata"></panel_metadata>
           <div :key="`area_factory_container_${file.id}`"
                :class="`${file.id === annotation_ui_context.working_file.id
-                                               && annotation_ui_context.working_file_list.length > 1 ? 'selected-file': 'unselected-file'}`">
+                         && annotation_ui_context.working_file_list.length > 1 ? 'selected-file': 'unselected-file'} annotation-area-container`">
+
             <annotation_area_factory
               :key="`annotation_area_factory_${file.id}`"
               :ref="`annotation_area_factory_${file.id}`"
@@ -331,6 +333,7 @@ import ui_schema_context_menu from "../ui_schema/ui_schema_context_menu.vue";
 import annotation_area_factory from "./annotation_area_factory.vue"
 import toolbar_factory from "./toolbar_factory.vue"
 import sidebar_factory from "./sidebar_factory.vue";
+import panel_metadata from "./panel_metadata.vue";
 
 import {duplicate_instance} from "../../utils/instance_utils";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
@@ -363,6 +366,7 @@ export default Vue.extend({
     sidebar_factory,
     annotation_area_factory,
     toolbar_factory,
+    panel_metadata,
     empty_file_editor_placeholder
   },
   props: {
@@ -809,16 +813,28 @@ export default Vue.extend({
       }
 
     },
-    recalculate_pane_dimensions: function (row_index, panes_list) {
+    recalculate_pane_dimensions: function (row_index, panes_list, direction = 'columns') {
       if (!this.$refs.panels_manager) {
         return
       }
       let total_width = this.$refs.panels_manager.$el.clientWidth;
       let total_height = this.$refs.panels_manager.$el.clientHeight
+      console.log('PANELS LIST', panes_list)
       for (let i = 0; i < panes_list.length; i++) {
-        // We substract 50 px to leave a small padding when calculating new scale of images
-        this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100) - 50
-        this.child_annotation_ctx_list[i].container_height = total_height - 50;
+        // Set default initial values.
+        if(this.child_annotation_ctx_list[i].container_height === 0){
+          // We substract 50 px to leave a small padding when calculating new scale of images
+          this.child_annotation_ctx_list[i].container_height = Math.round(total_height  - 50);
+        }
+        if(this.child_annotation_ctx_list[i].container_width === 0){
+          this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100) - 50
+        }
+
+        if(direction === 'columns'){
+          this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100) - 50
+        } else{
+          this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[i].size / 100) - 50
+        }
       }
     },
     on_panes_ready: function () {
@@ -832,9 +848,13 @@ export default Vue.extend({
       }
 
     },
-    on_panes_resized: function (row_index, panes_list) {
+    on_panes_rows_resized: function (row_index, panes_list) {
       this.all_panes_list = {[row_index]: panes_list}
-      this.recalculate_pane_dimensions(row_index, panes_list)
+      this.recalculate_pane_dimensions(row_index, panes_list, 'rows')
+    },
+    on_panes_columns_resized: function (row_index, panes_list) {
+      this.all_panes_list = {[row_index]: panes_list}
+      this.recalculate_pane_dimensions(row_index, panes_list, 'columns')
     },
     populate_child_context_list: function (child_files) {
       let new_child_list = []
@@ -863,7 +883,7 @@ export default Vue.extend({
       let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {
         return {size: 50}
       })
-      this.recalculate_pane_dimensions(1, default_pane_sizes)
+      this.recalculate_pane_dimensions(1, default_pane_sizes, 'columns')
     },
     get_slot_name(row, column) {
       return `panel_${row}:${column}`
@@ -1549,20 +1569,23 @@ export default Vue.extend({
       }
     },
     set_working_file_list: function (file_list) {
-      let num_rows = this.annotation_ui_context.num_rows;
-      let num_cols = this.annotation_ui_context.num_cols;
+      let num_rows = this.annotation_ui_context.panel_settings.rows;
+      let num_cols = this.annotation_ui_context.panel_settings.columns;
       let current_row = 0
       let current_col = 0
       for (let i = 0; i < file_list.length; i++) {
 
+
+        console.log('AAAA', current_row,current_col, 'index:', i)
+        file_list[i].column = current_col
+        file_list[i].row = current_row
         if (i > 0 && (i % (num_cols)) === 0) {
           current_row += 1
           current_col = 0
-          continue
+        } else{
+          current_col += 1
         }
-        file_list[i].column = current_col
-        file_list[i].row = current_row
-        current_col += 1
+
       }
       this.annotation_ui_context.working_file_list = file_list
     },
@@ -1623,6 +1646,9 @@ export default Vue.extend({
       }
       file.instance_list = this.annotation_ui_context.compound_global_attributes_instance_list
     },
+    set_default_layout_for_child_files: function(child_files){
+      this.annotation_ui_context.panel_settings.set_cols_and_rows_from_total_items(4, child_files.length)
+    },
     update_root_file: async function (file) {
       if (!file) {
         return
@@ -1635,7 +1661,7 @@ export default Vue.extend({
           return
         }
 
-        this.set_layout_panels(1, 4)
+        this.set_default_layout_for_child_files(child_files)
         this.set_working_file_list(child_files)
         this.populate_child_context_list(this.annotation_ui_context.working_file_list)
         await this.set_working_file_from_child_file_list(this.annotation_ui_context.working_file_list[0])
@@ -2014,5 +2040,12 @@ export default Vue.extend({
 .unselected-file:hover {
   cursor: pointer !important;
 }
-
+.annotation-area-container{
+  position: relative;
+}
+.panel-metadata{
+  position: absolute;
+  right: 0;
+  bottom: 0;
+}
 </style>
