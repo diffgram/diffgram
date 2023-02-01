@@ -359,7 +359,6 @@ export default Vue.extend({
       initial_words_measures: [],
       lines: [],
       tokens: [],
-      instance_list: [],
       invisible_labels: [],
       current_instance: null,
       //Modes
@@ -462,7 +461,6 @@ export default Vue.extend({
   watch: {
     working_file: function () {
       this.rendering = true
-      this.instance_list = [];
       this.text = null;
       this.initial_words_measures = [];
       this.lines = []
@@ -472,7 +470,6 @@ export default Vue.extend({
     },
     task: function () {
       this.rendering = true
-      this.instance_list = [];
       this.text = null;
       this.initial_words_measures = [];
       this.lines = []
