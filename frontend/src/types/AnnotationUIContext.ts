@@ -195,6 +195,7 @@ export class TextAnnotationUIContext {
   constructor() {
     this.container_width = 0
     this.container_height = 0
+    this.has_changed = false
   }
 
 }

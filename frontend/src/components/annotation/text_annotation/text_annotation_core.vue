@@ -597,7 +597,7 @@ export default Vue.extend({
         const new_command = new CreateInstanceCommand(newly_created_instances, this.instance_list)
         this.annotation_ui_context.command_manager.executeCommand(new_command)
 
-        this.has_changed = true
+        this.$emit('set_has_changed', true)
       }
     },
     // trigger_task_change: async function (direction, assign_to_user = false) {
@@ -887,7 +887,7 @@ export default Vue.extend({
         const new_command = new CreateInstanceCommand([created_instance], this.instance_list)
         this.annotation_ui_context.command_manager.executeCommand(new_command)
 
-        this.has_changed = true
+        this.$emit('set_has_changed', true)
       }
       this.relation_drawing = false;
       this.instance_in_progress = null;
@@ -975,7 +975,7 @@ export default Vue.extend({
         //New command pattern
         const new_command = new CreateInstanceCommand([created_instance], this.instance_list)
         this.annotation_ui_context.command_manager.executeCommand(new_command)
-        this.has_changed = true
+        this.$emit('set_has_changed', true)
       }
       // this.remove_browser_selection()
     },
@@ -999,7 +999,7 @@ export default Vue.extend({
       const new_command = new UpdateInstanceLabelCommand([instance], this.instance_list)
       new_command.set_new_label(label)
       this.annotation_ui_context.command_manager.executeCommand(new_command)
-      this.has_changed = true
+      this.$emit('set_has_changed', true)
     },
     delete_instance: async function (instance) {
       this.hover_instance = null
@@ -1008,7 +1008,7 @@ export default Vue.extend({
       }
       const new_delete_command = new DeleteInstanceCommand([instance], this.instance_list)
       this.annotation_ui_context.command_manager.executeCommand(new_delete_command)
-      this.has_changed = true
+      this.$emit('set_has_changed', true)
       this.context_menu = null
     },
     change_label_visibility: async function (label) {
@@ -1040,7 +1040,7 @@ export default Vue.extend({
       this.instance_list = new InstanceList(instance_list)
     },
     save: async function () {
-      this.has_changed = false
+      this.$emit('set_has_changed', false)
       this.save_loading = true
       let url;
       if (this.task && this.task.id) {
@@ -1079,7 +1079,7 @@ export default Vue.extend({
       let undone = this.annotation_ui_context.command_manager.undo();
       this.current_instance = null
 
-      if (undone) this.has_changed = true;
+      if (undone) this.$emit('set_has_changed', true);
     },
     redo: function () {
       if (!this.history.redo_posible) return;
@@ -1087,7 +1087,7 @@ export default Vue.extend({
       let redone = this.annotation_ui_context.command_manager.redo();
       this.current_instance = null
 
-      if (redone) this.has_changed = true;
+      if (redone) this.$emit('set_has_changed', true);
     },
     change_file(direction, file) {
       if (direction == "next" || direction == "previous") {
@@ -1188,7 +1188,7 @@ export default Vue.extend({
       
       command.set_new_attribute(attribute[0].id, attribute_to_pass)
       this.annotation_ui_context.command_manager.executeCommand(command)
-      this.has_changed = true
+      this.$emit('set_has_changed', true)
     },
     get_and_set_global_instance: function (instance_list) {
       if(!this.global_attribute_groups_list){
