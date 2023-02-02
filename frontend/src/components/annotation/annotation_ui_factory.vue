@@ -34,7 +34,7 @@
       :current_label_file="annotation_ui_context.current_label_file"
       :has_changed="annotation_ui_context.get_current_ann_ctx().has_changed || has_pending_frames"
       :save_loading="annotation_ui_context.current_image_annotation_ctx.video_mode ?
-        annotation_ui_context.current_image_annotation_ctx.save_loading_frames_list.length > 0 : save_loading_image"
+        annotation_ui_context.current_image_annotation_ctx.save_loading_frames_list.length > 0 : annotation_ui_context.get_current_ann_ctx().save_loading"
       :annotations_loading="annotation_ui_context.current_image_annotation_ctx.annotations_loading"
       :canvas_scale_local="annotation_ui_context.current_image_annotation_ctx.zoom_value"
       @save="save"
@@ -153,7 +153,8 @@
               :file="file"
               :credentials_granted="credentials_granted"
               :initializing="initializing"
-              :save_loading_image="save_loading_image"
+              :save_loading="annotation_ui_context.current_image_annotation_ctx.video_mode ?
+                  annotation_ui_context.current_image_annotation_ctx.save_loading_frames_list.length > 0 : annotation_ui_context.get_current_ann_ctx().save_loading"
               :url_instance_buffer="get_url_instance_buffer()"
               :submitted_to_review="submitted_to_review"
               :annotations_loading="child_annotation_ctx_list[index].annotations_loading"
@@ -1076,8 +1077,10 @@ export default Vue.extend({
       frame_number_param = undefined,
       instance_list_param = undefined
     ) {
+      this.set_save_loading(true)
       this.save_error = {}
       this.save_warning = {}
+
       if (this.annotation_ui_context.current_image_annotation_ctx.go_to_keyframe_loading) return
       if (this.view_only_mode) return
 
@@ -1173,7 +1176,7 @@ export default Vue.extend({
           }
         }
 
-        this.save_loading_image = false
+        this.set_save_loading(false)
         this.annotation_ui_context.current_image_annotation_ctx.has_changed = false
         this.save_count += 1;
 
@@ -1429,7 +1432,8 @@ export default Vue.extend({
           return false
         }
         return this.current_image_annotation_ctx.save_loading_frames_list.includes(frame_number)
-      } else return this.save_loading_image
+      } 
+      else return this.annotation_ui_context.get_current_ann_ctx().save_loading
     },
     set_save_loading: function (value, frame) {
       if (this.annotation_ui_context.current_image_annotation_ctx.video_mode) {
@@ -1440,7 +1444,8 @@ export default Vue.extend({
         }
 
       } else {
-        this.save_loading_image = value;
+        const ann_ctx = this.annotation_ui_context.get_current_ann_ctx()
+        ann_ctx.save_loading = value
       }
 
       this.$forceUpdate();
@@ -1506,7 +1511,7 @@ export default Vue.extend({
       if (new_status !== "complete") this.submitted_to_review = true;
 
       if (this.annotation_ui_context.task && this.annotation_ui_context.task.id) {
-        this.save_loading_image = false;
+        this.set_save_loading(false)
         this.trigger_task_change("next", this.annotation_ui_context.task, true);
       }
     },

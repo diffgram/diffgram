@@ -116,6 +116,7 @@ export class ImageAnnotationUIContext {
   container_height: number
 
   has_changed: boolean
+  save_loading: boolean
   has_pending_frames: boolean
   unsaved_frames: number[]
   video_global_attribute_changed: boolean
@@ -146,6 +147,7 @@ export class ImageAnnotationUIContext {
     this.container_width = 0
     this.container_height = 0
     this.has_changed = false
+    this.save_loading = false
     this.has_pending_frames = false
     this.video_global_attribute_changed = false
     this.unsaved_frames = []
@@ -187,6 +189,7 @@ export class GeoAnnotationUIContext {
 
 export class TextAnnotationUIContext {
   has_changed: boolean
+  save_loading: boolean
   container_width: number
   container_height: number
 
@@ -196,6 +199,7 @@ export class TextAnnotationUIContext {
     this.container_width = 0
     this.container_height = 0
     this.has_changed = false
+    this.save_loading = false
   }
 
 }

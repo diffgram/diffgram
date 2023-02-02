@@ -1041,6 +1041,7 @@ export default Vue.extend({
     },
     save: async function () {
       this.$emit('set_has_changed', false)
+      this.$emit('set_save_loading', true)
       this.save_loading = true
       let url;
       if (this.task && this.task.id) {
@@ -1071,7 +1072,7 @@ export default Vue.extend({
             })
         })
       // }
-      this.save_loading = false
+      this.$emit('set_save_loading', false)
     },
     undo: function () {
       if (!this.history.undo_posible) return;
