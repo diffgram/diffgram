@@ -32,9 +32,9 @@
       :filtered_instance_type_list_function="filtered_instance_type_list"
       :show_default_navigation="show_default_navigation"
       :current_label_file="annotation_ui_context.current_label_file"
-      :has_changed="annotation_ui_context.get_current_ann_ctx().has_changed || has_pending_frames"
+      :has_changed="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().has_changed || has_pending_frames"
       :save_loading="annotation_ui_context.current_image_annotation_ctx.video_mode ?
-        annotation_ui_context.current_image_annotation_ctx.save_loading_frames_list.length > 0 : annotation_ui_context.get_current_ann_ctx().save_loading"
+        annotation_ui_context.current_image_annotation_ctx.save_loading_frames_list.length > 0 : annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().save_loading"
       :annotations_loading="annotation_ui_context.current_image_annotation_ctx.annotations_loading"
       :canvas_scale_local="annotation_ui_context.current_image_annotation_ctx.zoom_value"
       @save="save"
