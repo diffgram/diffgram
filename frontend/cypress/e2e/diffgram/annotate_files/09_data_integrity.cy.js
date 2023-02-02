@@ -19,8 +19,8 @@ describe('Annotate Files Tests', () => {
     context('It Correctly raises an error when frontend sends invalid instance list.', () => {
       it('Correctly raises an instance_list integrity error.', () => {
         cy.wait(1000)
-        cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
-
+        cy.intercept(`http://localhost:8085/api/project/*/file/*/annotation/update`).as('annotation_update')
+          .get('[data-cy="minimize-file-explorer-button"]').click({force: true})
 
         // Draw 3 boxes
         const boxes = [
@@ -113,7 +113,7 @@ describe('Annotate Files Tests', () => {
 
     context('It Correctly saves in parellel all frames when pasting to multiple frames', () => {
       it('Correctly raises an instance_list integrity error.', () => {
-        cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
+        cy.intercept(`http://localhost:8085/api/project/*/file/*/annotation/update`).as('annotation_update')
 
 
         // Draw 1 boxes
@@ -140,16 +140,24 @@ describe('Annotate Files Tests', () => {
         }
         cy.wait(7000)
           .get('[data-cy="edit_toggle"]').click({force: true})
-          .mousedowncanvas(300, 300)
+          .mousemovecanvas(500, 300)
+          .mousedowncanvas(500, 300)
           .wait(500)
           .mouseupcanvas()
           .wait(1000)
-          .rightclickdowncanvas(300, 300)
+          .mousemovecanvas(500, 300)
+          .mousedowncanvas(500, 300)
+          .wait(500)
+          .mouseupcanvas()
+          .wait(500)
+          .mousemovecanvas(500, 300)
+          .wait(500)
+          .rightclickdowncanvas(500, 300)
           .wait(1000)
           .get('[data-cy=copy_instance]').should('exist')
           .get('[data-cy=copy_instance]').click({force: true})
           .wait(1000)
-          .rightclickdowncanvas(300, 300)
+          .rightclickdowncanvas(500, 300)
           .get('[data-cy=show_menu_paste_next_frames]').click({force: true})
           .wait(500)
           .get('[data-cy=paste_frame_count').type('{backspace}5')
@@ -170,7 +178,7 @@ describe('Annotate Files Tests', () => {
 
     context('It Correctly saves all pending frames when fetching a new frame buffer.', () => {
       it('Checks no frames are pending save when re fetching frame buffer.', () => {
-        cy.intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
+        cy.intercept(`http://localhost:8085/api/project/*/file/*/annotation/update`).as('annotation_update')
         // Draw 1 boxes
         cy.wait(2000)
           .get('[data-cy="edit_toggle"]').click({force: true})
@@ -192,7 +200,7 @@ describe('Annotate Files Tests', () => {
             .mouseupcanvas()
             .wait(2000)
         }
-        cy.wait(5000)
+        cy.wait(1000)
           .window().its('video_player').then(video_player_component => {
             const slider_component = video_player_component.$refs.slider;
             slider_component.$emit('start');
