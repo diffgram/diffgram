@@ -63,8 +63,6 @@
         :label_list="label_list"
         @create_instance="on_popup_create_instance"
         @create_relation="create_relation"
-        @remove_listeners="remove_hotkeys_listeners"
-        @add_listeners="add_hotkeys_listeners"
       />
       <text_context_menu
         v-if="context_menu"
