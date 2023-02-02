@@ -192,7 +192,7 @@ describe('Annotate Files Tests', () => {
             .mouseupcanvas()
             .wait(2000)
         }
-        cy.wait(5000)
+        cy.wait(5000  )
           .window().its('video_player').then(video_player_component => {
             const slider_component = video_player_component.$refs.slider;
             slider_component.$emit('start');
