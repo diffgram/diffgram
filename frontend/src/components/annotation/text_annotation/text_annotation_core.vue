@@ -855,9 +855,6 @@ export default Vue.extend({
       this.rendering = false
       this.resizing = false
     },
-    change_label_file: function (event) {
-      this.current_label = event
-    },
     // function to draw relations between instances
     on_trigger_instance_click: function (e, instance_id) {
       const context = e.ctrlKey && e.button === 0 || e.button === 2
@@ -1039,62 +1036,51 @@ export default Vue.extend({
       // New command pattern
       this.instance_list = new InstanceList(instance_list)
     },
-    save: async function () {
-      this.$emit('set_has_changed', false)
-      this.$emit('set_save_loading', true)
-      this.save_loading = true
-      let url;
-      if (this.task && this.task.id) {
-        url = `/api/v1/task/${this.task.id}/annotation/update`;
-      } else {
-        url = `/api/project/${this.project_string_id}/file/${this.working_file.id}/annotation/update`
-      }
-      // if (!this.instance_in_progress) {
-        const res = await postInstanceList(url, this.instance_list.get_for_save())
-        const {added_instances} = res
-        added_instances.map(add_instance => {
-          if (add_instance.type === "global") return
-          const old_instance = this.instance_list.get_all().find(instance => instance.creation_ref_id === add_instance.creation_ref_id)
-          const old_id = old_instance.get_instance_data().id
-          this.instance_list.get_all().find(instance => instance.creation_ref_id === add_instance.creation_ref_id).id = add_instance.id
-          if (this.instance_in_progress) {
-            this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_instance.id : this.instance_in_progress.start_instance
-          }
-          this.instance_list.get_all()
-            .filter(instance => {
-              const {from_instance_id, to_instance_id} = instance.get_instance_data()
-              return instance.type === "relation" && (from_instance_id === old_id || to_instance_id === old_id)
-            })
-            .map(instance => {
-              const {from_instance_id} = instance.get_instance_data()
-              if (from_instance_id === old_id) instance.from_instance_id = add_instance.id
-              else instance.to_instance_id = add_instance.id
-            })
+    after_save: async function (updated_instances) {
+      updated_instances.map(add_instance => {
+        if (add_instance.type === "global") return
+
+        const old_instance = this.instance_list.get_all().find(instance => instance.creation_ref_id === add_instance.creation_ref_id)
+        const old_id = old_instance.get_instance_data().id
+          
+        this.instance_list.get_all().find(instance => instance.creation_ref_id === add_instance.creation_ref_id).id = add_instance.id
+        if (this.instance_in_progress) {
+          this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_instance.id : this.instance_in_progress.start_instance
+        }
+        
+        this.instance_list.get_all()
+          .filter(instance => {
+            const {from_instance_id, to_instance_id} = instance.get_instance_data()
+            return instance.type === "relation" && (from_instance_id === old_id || to_instance_id === old_id)
+          })
+          .map(instance => {
+            const {from_instance_id} = instance.get_instance_data()
+            if (from_instance_id === old_id) instance.from_instance_id = add_instance.id
+            else instance.to_instance_id = add_instance.id
+          })
         })
-      // }
-      this.$emit('set_save_loading', false)
     },
-    undo: function () {
-      if (!this.history.undo_posible) return;
+    // undo: function () {
+    //   if (!this.history.undo_posible) return;
 
-      let undone = this.annotation_ui_context.command_manager.undo();
-      this.current_instance = null
+    //   let undone = this.annotation_ui_context.command_manager.undo();
+    //   this.current_instance = null
 
-      if (undone) this.$emit('set_has_changed', true);
-    },
-    redo: function () {
-      if (!this.history.redo_posible) return;
+    //   if (undone) this.$emit('set_has_changed', true);
+    // },
+    // redo: function () {
+    //   if (!this.history.redo_posible) return;
 
-      let redone = this.annotation_ui_context.command_manager.redo();
-      this.current_instance = null
+    //   let redone = this.annotation_ui_context.command_manager.redo();
+    //   this.current_instance = null
 
-      if (redone) this.$emit('set_has_changed', true);
-    },
-    change_file(direction, file) {
-      if (direction == "next" || direction == "previous") {
-        this.$emit("request_file_change", direction, file);
-      }
-    },
+    //   if (redone) this.$emit('set_has_changed', true);
+    // },
+    // change_file(direction, file) {
+    //   if (direction == "next" || direction == "previous") {
+    //     this.$emit("request_file_change", direction, file);
+    //   }
+    // },
     // Find intersection and update level of the instance
     find_intersections: function (rects_to_draw) {
       rects_to_draw.map((rect, index) => {

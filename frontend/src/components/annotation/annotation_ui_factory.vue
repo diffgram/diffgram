@@ -357,6 +357,7 @@ import {get_child_files} from "../../services/fileServices";
 import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue"
 import HotKeyManager from "./hotkeys/HotKeysManager"
 import {GlobalInstance} from "../vue_canvas/instances/GlobalInstance";
+import {postInstanceList} from "../../services/instanceList"
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -1077,7 +1078,30 @@ export default Vue.extend({
       frame_number_param = undefined,
       instance_list_param = undefined
     ) {
+      this.set_has_changed(false)
       this.set_save_loading(true)
+
+      if (this.annotation_ui_context.working_file.type === 'text') {
+        const file_id = this.annotation_ui_context.working_file.id
+        let url
+
+        if (this.task && this.task.id) {
+          url = `/api/v1/task/${this.task.id}/annotation/update`;
+        } else {
+          url = `/api/project/${this.project_string_id}/file/${file_id}/annotation/update`
+        }
+
+        const { global_instance ,instance_list } = this.annotation_ui_context.instance_store.get_instance_list(file_id)
+        
+        const res = await postInstanceList(url, [...instance_list, global_instance])
+        const { added_instances } = res
+
+        this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].after_save(added_instances)
+
+        this.set_save_loading(false)
+        return
+      }
+
       this.save_error = {}
       this.save_warning = {}
 
@@ -1099,8 +1123,10 @@ export default Vue.extend({
           else return elm
         });
       }
+      
       if (this.get_save_loading(frame_number)) return
       if (this.any_loading) return
+      
       if (
         this.annotation_ui_context.current_image_annotation_ctx.video_mode &&
         (
