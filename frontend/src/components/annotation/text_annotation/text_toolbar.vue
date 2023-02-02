@@ -390,7 +390,7 @@ export default Vue.extend({
       default: false
     },
     height: {
-      type: String,
+      type: String | Number,
       default: '50px'
     },
     project_string_id: {
