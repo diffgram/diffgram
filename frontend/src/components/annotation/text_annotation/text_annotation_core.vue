@@ -265,12 +265,10 @@ import text_fast_label from "./render_elements/fast_label_menu.vue"
 import text_context_menu from "./render_elements/text_context_menu.vue"
 import relation_in_progress from "./render_elements/relation_in_progress.vue"
 import {TextAnnotationInstance, TextRelationInstance} from "../../vue_canvas/instances/TextInstance"
-import {postInstanceList, getInstanceList} from "../../../services/instanceList"
+import {getInstanceList} from "../../../services/instanceList"
 import getTextService from "../../../services/getTextService"
-import {deferTask, finishTaskAnnotation} from "../../../services/tasksServices"
 // New command pattern
 import InstanceList from "../../../helpers/instance_list"
-import History from "../../../helpers/history"
 import {
   CreateInstanceCommand,
   DeleteInstanceCommand,
@@ -392,13 +390,8 @@ export default Vue.extend({
     }
   },
   mounted() {
-    this.on_unload_listener()
-    this.remove_hotkeys_listeners()
-    this.add_hotkeys_listeners()
     this.on_mount()
     this.start_autosave()
-
-    window.addEventListener("keyup", this.key_up_unremovable_listeners)
   },
   computed: {
     render_rects: function () {
@@ -542,27 +535,6 @@ export default Vue.extend({
     on_change_label_schema: function(schema){
       this.$emit('change_label_schema', schema)
     },
-    // on_task_annotation_complete_and_save: async function () {
-    //   await this.save();
-    //   await this.save();
-    //   const response = await finishTaskAnnotation(this.task.id);
-    //   const new_status = response.data.task.status;
-    //   this.task.status = new_status;
-    //   if (new_status !== "complete") {
-    //     this.submitted_to_review = true;
-    //   }
-    //   if (this.task && this.task.id) {
-    //     this.save_loading_image = false;
-    //     this.trigger_task_change("next", this.task, true);
-    //   }
-    // },
-    // defer_task: async function () {
-    //   const defered = await deferTask({
-    //     task_id: this.task.id,
-    //     mode: "toggle_deferred"
-    //   })
-    //   this.trigger_task_change('next')
-    // },
     bulk_labeling: function (instance_id) {
       const instance = this.instance_list.get().find(inst => {
         const {id} = inst.get_instance_data()
@@ -600,25 +572,6 @@ export default Vue.extend({
         this.$emit('set_has_changed', true)
       }
     },
-    // trigger_task_change: async function (direction, assign_to_user = false) {
-    //   if (this.has_changed) {
-    //     await this.save();
-    //     await this.save();
-    //   }
-    //   this.$emit("request_new_task", direction, this.task, assign_to_user);
-    // },
-    remove_hotkeys_listeners: function() {
-      window.removeEventListener("keydown", this.keydown_event_listeners)
-      window.removeEventListener("keyup", this.keyup_event_listeners)
-    },
-    add_hotkeys_listeners: function() {
-      window.addEventListener("keydown", this.keydown_event_listeners)
-      window.addEventListener("keyup", this.keyup_event_listeners)
-    },
-    on_unload_listener: function () {
-      window.addEventListener("beforeunload", this.leave_listener);
-      window.addEventListener("resize", this.resize_listener)
-    },
     resize_listener: function () {
       this.resizing = true
       this.lines = []
@@ -639,8 +592,7 @@ export default Vue.extend({
     },
     keydown_event_listeners: async function (e) {
       if (e.keyCode === 83) {
-        await this.save();
-        await this.save();
+        this.$emit('save')
       } else if (e.keyCode === 71 && !this.search_mode) {
         this.search_mode = true;
       } else if (e.keyCode === 66 && !this.bulk_label) {
@@ -653,6 +605,8 @@ export default Vue.extend({
       } else if (e.keyCode === 66) {
         this.bulk_label = false;
       }
+
+      this.key_up_unremovable_listeners(e)
     },
     key_up_unremovable_listeners: function(e) {
       if (e.keyCode === 27) {
@@ -698,8 +652,7 @@ export default Vue.extend({
     },
     detect_is_ok_to_save: async function () {
       if (this.has_changed && !this.instance_in_progress) {
-        await this.save();
-        await this.save();
+        this.$emit('save')
       }
     },
     trigger_mousedown: function(e) {
@@ -1060,27 +1013,6 @@ export default Vue.extend({
           })
         })
     },
-    // undo: function () {
-    //   if (!this.history.undo_posible) return;
-
-    //   let undone = this.annotation_ui_context.command_manager.undo();
-    //   this.current_instance = null
-
-    //   if (undone) this.$emit('set_has_changed', true);
-    // },
-    // redo: function () {
-    //   if (!this.history.redo_posible) return;
-
-    //   let redone = this.annotation_ui_context.command_manager.redo();
-    //   this.current_instance = null
-
-    //   if (redone) this.$emit('set_has_changed', true);
-    // },
-    // change_file(direction, file) {
-    //   if (direction == "next" || direction == "previous") {
-    //     this.$emit("request_file_change", direction, file);
-    //   }
-    // },
     // Find intersection and update level of the instance
     find_intersections: function (rects_to_draw) {
       rects_to_draw.map((rect, index) => {

@@ -772,23 +772,40 @@ export default Vue.extend({
       }
     },
     listeners_map: function () {
-      if (!this.annotation_ui_context.working_file) {
-        return null
-      }
+      let listener_map = null;
+      
+      if (!this.annotation_ui_context.working_file) return listener_map
+
       let file_id = this.annotation_ui_context.working_file.id
+      let file_type = this.annotation_ui_context.working_file.type
       if (!this.annotation_ui_context) return null
+
       if (!this.$refs[`annotation_area_factory_${file_id}`]) return null
       if (!this.$refs[`annotation_area_factory_${file_id}`][0]) return null
+      
+      if (file_type === 'image' || file_type === 'video') {
+        let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`annotation_core_${file_id}`]
+        if (!ref) return null
+  
+        listener_map = {
+          "beforeunload": ref.warn_user_unload,
+          "keydown": ref.keyboard_events_global_down,
+          "keyup": ref.keyboard_events_global_up,
+          "mousedown": ref.mouse_events_global_down,
+          "resize": ref.update_window_size_from_listener,
+        }
+      }
 
-      let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`annotation_core_${file_id}`]
-      if (!ref) return null
+      else if (file_type === 'text') {
+        let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`]
+        if (!ref) return null
 
-      const listener_map = {
-        "beforeunload": ref.warn_user_unload,
-        "keydown": ref.keyboard_events_global_down,
-        "keyup": ref.keyboard_events_global_up,
-        "mousedown": ref.mouse_events_global_down,
-        "resize": ref.update_window_size_from_listener,
+        listener_map = {
+          "beforeunload": ref.leave_listener,
+          "keydown": ref.keydown_event_listeners,
+          "keyup": ref.keyup_event_listeners,
+          "resize": ref.resize_listener,
+        }
       }
 
       return listener_map
