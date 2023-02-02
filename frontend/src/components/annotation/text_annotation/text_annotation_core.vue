@@ -1,40 +1,5 @@
 <template>
   <div style="display: flex; flex-direction: column">
-    <!-- <div style="position: relative">
-      <main_menu
-        :height="`${!task ? '100px' : '50px'}`"
-        :show_default_navigation="!task"
-      >
-        <template slot="second_row">
-          <text_toolbar
-            :undo_disabled="undo_disabled"
-            :redo_disabled="redo_disabled"
-            :has_changed="has_changed"
-            :label_schema="label_schema"
-            :save_loading="save_loading"
-            :fetching_error="fetching_error"
-            :loading="rendering && !fetching_error"
-            :project_string_id="project_string_id"
-            :label_list="label_list"
-            :label_file_colour_map="label_file_colour_map"
-            :task="task"
-            :file="working_file"
-            :search_mode="search_mode"
-            :bulk_mode="bulk_label"
-            @change_label_schema="on_change_label_schema"
-            @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
-            @task_update_toggle_deferred="defer_task"
-            @change_label_file="change_label_file"
-            @change_label_visibility="change_label_visibility"
-            @change_file="change_file"
-            @save="save"
-            @change_task="trigger_task_change"
-            @undo="undo()"
-            @redo="redo()"
-          />
-        </template>
-      </main_menu>
-    </div> -->
     <div style="display: flex; flex-direction: row">
       <text_sidebar
         :instance_list="instance_list ? instance_list.get().filter(instance => !instance.soft_delete) : []"
