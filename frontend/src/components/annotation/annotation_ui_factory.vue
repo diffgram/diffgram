@@ -338,7 +338,7 @@ import toolbar_factory from "./toolbar_factory.vue"
 import sidebar_factory from "./sidebar_factory.vue";
 import panel_metadata from "./panel_metadata.vue";
 
-import {duplicate_instance} from "../../utils/instance_utils";
+import {duplicate_instance, initialize_instance_object} from "../../utils/instance_utils";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
@@ -739,6 +739,7 @@ export default Vue.extend({
       let idx = this.annotation_ui_context.compound_global_instance_index
       let instance = this.annotation_ui_context.compound_global_attributes_instance_list[idx]
       this.annotation_ui_context.compound_global_instance = instance
+      console.log('instance to set attribute', instance)
       instance.set_attribute(group.id, value)
       this.set_has_changed(true)
     },
@@ -797,6 +798,7 @@ export default Vue.extend({
       for (let key_row of Object.keys(this.columns_panes_size)) {
         this.recalculate_pane_column_dimensions(key_row, this.columns_panes_size[key_row])
       }
+      this.recalculate_pane_rows_dimensions(this.rows_panes_size)
     },
     update_label_file_visible: function (label_file) {
       if (this.annotation_ui_context.hidden_label_id_list.includes(label_file.id)) {
@@ -821,26 +823,31 @@ export default Vue.extend({
       }
 
     },
-    recalculate_pane_rows_dimensions: function (panes_list, direction = 'columns') {
+    recalculate_pane_rows_dimensions: function (panes_list) {
       if (!this.$refs.panels_manager) {
         return
       }
-      let total_width = this.$refs.panels_manager.$el.clientWidth;
       let total_height = this.$refs.panels_manager.$el.clientHeight
       let total_rows = this.annotation_ui_context.panel_settings.rows
-      console.log('PANELS LIST resize', panes_list, 'direction', direction)
-      for (let i = 0; i < this.child_annotation_ctx_list.length; i++) {
-        // Set default initial values.
-        if(this.child_annotation_ctx_list[i].container_height === 0){
-          // We substract 50 px to leave a small padding when calculating new scale of images
-          if(total_rows === 1){
-            this.child_annotation_ctx_list[i].container_height = Math.round(total_height  - 50);
-          } else{
-            this.child_annotation_ctx_list[i].container_height = 500
-          }
+      console.log('PANELS LIST resize', panes_list, this.annotation_ui_context.working_file_list, this.child_annotation_ctx_list)
+      for (let row_index = 0; row_index < panes_list.length; row_index++) {
+        let row_files = this.annotation_ui_context.working_file_list.filter(file => file.row === row_index)
+        for(let file of row_files){
+          let i = this.annotation_ui_context.working_file_list.indexOf(file)
+          console.log('Iindex', i)
+          // Set default initial values.
+          if(this.child_annotation_ctx_list[i].container_height === 0){
+            // We substract 50 px to leave a small padding when calculating new scale of images
+            if(total_rows === 1){
+              this.child_annotation_ctx_list[i].container_height = Math.round(total_height  - 50);
+            } else{
+              this.child_annotation_ctx_list[i].container_height = 500
+            }
 
+          }
+          this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[row_index].size / 100) - 50
         }
-        this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[i].size / 100) - 50
+
       }
     },
     recalculate_pane_column_dimensions: function (row_index, panes_list) {
@@ -848,28 +855,34 @@ export default Vue.extend({
         return
       }
       let total_width = this.$refs.panels_manager.$el.clientWidth;
-      console.log('PANELS LIST COLUM resize', panes_list)
-      for (let i = 0; i < this.annotation_ui_context.working_file_list.length; i++) {
-        let file = this.annotation_ui_context.working_file_list[i]
-        if(file.row !== row_index){
-          continue
-        }
+
+      let row_files = this.annotation_ui_context.working_file_list.filter(f => f.row === row_index)
+      console.log('PANELS LIST COLUM resize', row_index, panes_list, row_files)
+      for (let file_index = 0; file_index < row_files.length; file_index++) {
+        let file = row_files[file_index]
+        let i = this.annotation_ui_context.working_file_list.indexOf(file)
         // Set default initial values.
         if(this.child_annotation_ctx_list[i].container_width === 0){
-          this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100) - 50
+          this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[file_index].size / 100) - 50
         }
-        this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[i].size / 100) - 50
+        this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[file_index].size / 100) - 50
       }
     },
     on_panes_ready: function () {
       for (let i = 0; i < this.annotation_ui_context.panel_settings.rows; i++) {
         // TODO: filter this by row
-        let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {
+        let default_pane_sizes_cols = this.child_annotation_ctx_list.map(elm => {
           return {size: 100 / this.annotation_ui_context.panel_settings.columns}
         })
-        this.columns_panes_size[i] = default_pane_sizes
-        this.recalculate_pane_column_dimensions(i, default_pane_sizes)
+        this.columns_panes_size[i] = default_pane_sizes_cols
+        this.recalculate_pane_column_dimensions(i, default_pane_sizes_cols)
       }
+      let default_pane_sizes_rows = this.child_annotation_ctx_list.map(elm => {
+        return {size: 100 / this.annotation_ui_context.panel_settings.rows}
+      })
+      this.rows_panes_size = default_pane_sizes_rows
+      this.recalculate_pane_rows_dimensions(default_pane_sizes_rows)
+
 
     },
     on_panes_rows_resized: function (panes_list) {
@@ -904,10 +917,6 @@ export default Vue.extend({
 
       }
       this.child_annotation_ctx_list = new_child_list
-      let default_pane_sizes = this.child_annotation_ctx_list.map(elm => {
-        return {size: 50}
-      })
-      this.recalculate_pane_column_dimensions(default_pane_sizes, 'columns')
     },
     get_slot_name(row, column) {
       return `panel_${row}:${column}`
@@ -1600,11 +1609,16 @@ export default Vue.extend({
       for (let i = 0; i < file_list.length; i++) {
         file_list[i].column = current_col
         file_list[i].row = current_row
+
         if (current_col > 0 && (current_col % (num_cols - 1)) === 0) {
           current_row += 1
           current_col = 0
         } else{
           current_col += 1
+          if(num_cols === 1){
+            current_col = 0;
+            current_row += 1
+          }
         }
 
       }
@@ -1657,6 +1671,11 @@ export default Vue.extend({
         this.annotation_ui_context.compound_global_instance_id = instance_list[0].id
         this.annotation_ui_context.compound_global_instance_index = 0
         this.annotation_ui_context.compound_global_instance = instance_list[0]
+        for(let i = 0; i< this.annotation_ui_context.compound_global_attributes_instance_list.length; i++){
+          let inst = this.annotation_ui_context.compound_global_attributes_instance_list[i]
+          this.annotation_ui_context.compound_global_attributes_instance_list[i] = initialize_instance_object(inst, this)
+        }
+
 
       } else {
         let instance = new GlobalInstance()

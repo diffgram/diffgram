@@ -13,6 +13,7 @@ import {LabelFileMap} from "../types/label";
 import {v4 as uuidv4} from 'uuid';
 import {PolygonInstance} from "../components/vue_canvas/instances/PolygonInstance";
 import {CanvasMouseTools} from "../components/vue_canvas/CanvasMouseTools";
+import {GlobalInstance} from "../components/vue_canvas/instances/GlobalInstance";
 
 export const duplicate_for_undo = function() {
   let duplicate_instance = new BoxInstance(
@@ -188,7 +189,7 @@ export const initialize_instance_object = function (instance, component_ctx: Can
     }
     return initialized_instance
   } else if (instance.type === 'global') {
-    let new_global_instance = component_ctx.new_global_instance();
+    let new_global_instance = new GlobalInstance()
     new_global_instance.populate_from_instance_obj(instance)
     return new_global_instance
   } else {
