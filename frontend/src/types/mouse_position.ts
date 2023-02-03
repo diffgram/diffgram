@@ -1,6 +1,7 @@
 import {Instance} from "../components/vue_canvas/instances/Instance";
 import {ImageCanvasTransform} from "./CanvasTransform";
 import {createDefaultLabelSettings, ImageLabelSettings} from "./image_label_settings";
+import {GlobalInstance} from "../components/vue_canvas/instances/GlobalInstance";
 
 
 export type Point = {
@@ -55,7 +56,7 @@ export function newEmptyCanvasMouseCtx(): CanvasMouseCtx {
     trigger_instance_changed: () => {},
     instance_selected: () => {},
     instance_deselected: () => {},
-    new_global_instance: () => {return new Instance()},
+    new_global_instance: () => {return new GlobalInstance()},
     mouse_down_delta_event: {
       x: 0,
       y: 0

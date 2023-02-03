@@ -126,7 +126,7 @@
 <script lang="ts">
 import draggable from 'vuedraggable'
 import attribute_group from './attribute_group.vue'
-import { attribute_group_list, archive_attribute_group } from '../../services/attributesService'
+import { attribute_group_list, archive_attribute_group } from '../../services/attributesService.js'
 import attribute_kind_icons from './attribute_kind_icons.vue'
 import attribute_group_new from './attribute_group_new.vue'
 import Vue from "vue"

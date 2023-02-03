@@ -120,9 +120,9 @@ describe('Annotate Files Tests', () => {
         const boxes = [
           {
             min_x: 400,
-            min_y: 200,
+            min_y: 100,
             max_x: 600,
-            max_y: 400,
+            max_y: 250,
           },
         ]
         for (let box of boxes) {
@@ -140,24 +140,28 @@ describe('Annotate Files Tests', () => {
         }
         cy.wait(7000)
           .get('[data-cy="edit_toggle"]').click({force: true})
-          .mousemovecanvas(500, 300)
-          .mousedowncanvas(500, 300)
+          .wait(500)
+          .mousemovecanvas(500, 150)
+          .mousedowncanvas(500, 150)
           .wait(500)
           .mouseupcanvas()
           .wait(1000)
-          .mousemovecanvas(500, 300)
-          .mousedowncanvas(500, 300)
+          .mousemovecanvas(500, 150)
+          .mousedowncanvas(500, 150)
           .wait(500)
           .mouseupcanvas()
           .wait(500)
-          .mousemovecanvas(500, 300)
+          .mousemovecanvas(500, 150)
           .wait(500)
-          .rightclickdowncanvas(500, 300)
+          .rightclickdowncanvas(500, 150)
           .wait(1000)
           .get('[data-cy=copy_instance]').should('exist')
           .get('[data-cy=copy_instance]').click({force: true})
           .wait(1000)
-          .rightclickdowncanvas(500, 300)
+          .mousemovecanvas(500, 150)
+          .wait(500)
+          .rightclickdowncanvas(500, 150)
+          .wait(500)
           .get('[data-cy=show_menu_paste_next_frames]').click({force: true})
           .wait(500)
           .get('[data-cy=paste_frame_count').type('{backspace}5')
@@ -200,7 +204,7 @@ describe('Annotate Files Tests', () => {
             .mouseupcanvas()
             .wait(2000)
         }
-        cy.wait(1000)
+        cy.wait(3000)
           .window().its('video_player').then(video_player_component => {
             const slider_component = video_player_component.$refs.slider;
             slider_component.$emit('start');
