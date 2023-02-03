@@ -921,9 +921,11 @@ export default Vue.extend({
     },
     delete_instance: async function (instance) {
       this.annotation_ui_context.get_current_ann_ctx().hover_instance = null
+      
       if (this.annotation_ui_context.get_current_ann_ctx().current_instance && instance.creation_ref_id === this.annotation_ui_context.get_current_ann_ctx().current_instance.creation_ref_id) {
         this.annotation_ui_context.get_current_ann_ctx().current_instance = null
       }
+      
       const new_delete_command = new DeleteInstanceCommand([instance], this.instance_list)
       this.annotation_ui_context.command_manager.executeCommand(new_delete_command)
       this.$emit('set_has_changed', true)

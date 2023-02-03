@@ -77,7 +77,13 @@
       @clear_selected_instances_image="handle_clear_selected_instances_image"
       @open_view_edit_panel="handle_open_view_edit_panel"
       @global_compound_attribute_change="on_global_compound_attribute_change"
-      ref="sidebar_factory"></sidebar_factory>
+
+      @delete_text_instance="delete_text_instance"
+      @hover_text_instance="hover_text_instance"
+      @stop_hover_text_instance="stop_hover_text_instance"
+
+      ref="sidebar_factory"
+    />
 
     <div
       :style="`height: 100%; width: ${annotation_area_container_width}`"
@@ -362,6 +368,13 @@ import empty_file_editor_placeholder from "./image_and_video_annotation/empty_fi
 import HotKeyManager from "./hotkeys/HotKeysManager"
 import {GlobalInstance} from "../vue_canvas/instances/GlobalInstance";
 import {postInstanceList} from "../../services/instanceList"
+import {
+  CreateInstanceCommand,
+  DeleteInstanceCommand,
+  UpdateInstanceLabelCommand,
+  UpdateInstanceAttributeCommand,
+  UpdateGlobalAttributeCommand
+} from "../../helpers/command/available_commands"
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -2066,7 +2079,34 @@ export default Vue.extend({
         user_visit: "user_visit",
       });
     },
-  },
+
+    delete_text_instance: function (instance) {
+      const file_id = this.annotation_ui_context.working_file.id
+
+      this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].delete_instance(instance)
+    },
+
+    hover_text_instance: function (instance_id) {
+      const file_id = this.annotation_ui_context.working_file.id
+
+      this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].on_instance_hover(instance_id)
+    },
+    
+    stop_hover_text_instance: function () {
+      const file_id = this.annotation_ui_context.working_file.id
+
+      this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].on_instance_stop_hover()
+    },
+
+    update_text_attribute: function() {
+      console.log("update text attribute")
+    },
+
+    change_text_instance_lable: function() {
+      console.log("change instance label")
+    }
+
+  }
 });
 </script>
 

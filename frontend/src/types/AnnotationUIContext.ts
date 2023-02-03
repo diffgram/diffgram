@@ -199,7 +199,8 @@ export class TextAnnotationUIContext {
 
   bulk_mode: boolean
   search_mode: boolean
-
+  
+  context_menu: any
   current_instance: any
   hover_instance: any
 
@@ -212,6 +213,7 @@ export class TextAnnotationUIContext {
     this.search_mode = false
     this.current_instance = null
     this.hover_instance = null
+    this.context_menu = null
 
     this.rendering = true
     this.resizing = false
