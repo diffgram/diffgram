@@ -1,6 +1,7 @@
 <template>
   <div class="splitpanes-container" v-if="root_file.type === 'compound' || root_file.type === 'video' || root_file.type === 'image'">
     <panel_manager_toolbar
+      v-if="root_file.type === 'compound'"
       @grid_changed="$emit('grid_changed')"
       :panel_settings="panel_settings" class="toolbar"></panel_manager_toolbar>
     <splitpanes @resize="on_rows_resized"
