@@ -669,7 +669,8 @@ export default Vue.extend({
       } else if (document.selection) {  // IE?
         document.selection.empty();
       }
-      this.search_mode = false
+
+      this.annotation_ui_context.get_current_ann_ctx().search_mode = false
     },
     on_draw_text_token: function (e) {
       if (this.instance_in_progress && this.instance_in_progress.type === "relation" || !window.getSelection().anchorNode) return
