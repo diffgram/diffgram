@@ -1695,11 +1695,13 @@ export default Vue.extend({
       }
       if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.computed_project_string_id, file.id)
-
         if (err) {
           console.error(err)
           return
         }
+        child_files = child_files.sort((a, b) => {
+          return a.id - b.id
+        })
 
         this.set_default_layout_for_child_files(child_files)
         this.set_working_file_list(child_files)
