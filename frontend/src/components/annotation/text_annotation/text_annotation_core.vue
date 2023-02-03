@@ -786,9 +786,7 @@ export default Vue.extend({
       const context = e.ctrlKey && e.button === 0 || e.button === 2
       if (context) return
 
-      console.log("here we go")
       if (this.bulk_mode) return this.bulk_labeling(instance_id)
-      console.log("skip bulk", this.bulk_mode)
       
       this.on_draw_relation(instance_id)
     },
