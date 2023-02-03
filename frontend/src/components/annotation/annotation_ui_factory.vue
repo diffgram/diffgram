@@ -827,7 +827,7 @@ export default Vue.extend({
       let total_width = this.$refs.panels_manager.$el.clientWidth;
       let total_height = this.$refs.panels_manager.$el.clientHeight
       let total_rows = this.annotation_ui_context.panel_settings.rows
-      console.log('PANELS LIST', panes_list)
+      console.log('PANELS LIST resize', panes_list, 'direction', direction)
       for (let i = 0; i < panes_list.length; i++) {
         // Set default initial values.
         if(this.child_annotation_ctx_list[i].container_height === 0){

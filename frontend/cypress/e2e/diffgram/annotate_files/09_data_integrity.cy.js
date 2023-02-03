@@ -140,6 +140,7 @@ describe('Annotate Files Tests', () => {
         }
         cy.wait(7000)
           .get('[data-cy="edit_toggle"]').click({force: true})
+          .wait(500)
           .mousedowncanvas(300, 300)
           .wait(500)
           .mouseupcanvas()
