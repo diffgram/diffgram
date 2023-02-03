@@ -26,7 +26,7 @@
     :label_list="label_list"
     :current_global_instance="current_global_instance"
     :compound_global_instance="compound_global_instance"
-    :instance_list="instance_list.instance_list"
+    :instance_list="instance_list.instance_list.filter(inst => !inst.soft_delete)"
     :label_file_colour_map="label_file_colour_map"
     :toolbar_height="`${!annotation_ui_context.task ? '100px' : '50px'}`"
     :attribute_group_list_prop="label_list"
@@ -39,8 +39,8 @@
     @delete_instance="(e) => $emit('delete_text_instance', e)"
     @on_instance_hover="(e) => $emit('hover_text_instance', e)"
     @on_instance_stop_hover="$emit('stop_hover_text_instance')"
-    @on_update_attribute="on_update_attribute"
-    @change_instance_label="change_instance_label"
+    @on_update_attribute="update_text_attribute"
+    @change_instance_label="(e) => $emit('change_text_instance_lable', e)"
     ref="sidebar_text"
   />
 </div>

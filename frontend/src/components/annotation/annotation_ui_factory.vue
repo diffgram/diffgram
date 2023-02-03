@@ -81,6 +81,8 @@
       @delete_text_instance="delete_text_instance"
       @hover_text_instance="hover_text_instance"
       @stop_hover_text_instance="stop_hover_text_instance"
+      @update_text_attribute="update_text_attribute"
+      @change_text_instance_lable="change_text_instance_lable"
 
       ref="sidebar_factory"
     />
@@ -2098,12 +2100,16 @@ export default Vue.extend({
       this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].on_instance_stop_hover()
     },
 
-    update_text_attribute: function() {
-      console.log("update text attribute")
+    update_text_attribute: function(event, is_global) {
+      const file_id = this.annotation_ui_context.working_file.id
+
+      this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].on_update_attribute(event, is_global)
     },
 
-    change_text_instance_lable: function() {
-      console.log("change instance label")
+    change_text_instance_lable: function(event) {
+      const file_id = this.annotation_ui_context.working_file.id
+
+      this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].change_instance_label(event)
     }
 
   }
