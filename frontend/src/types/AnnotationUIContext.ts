@@ -195,11 +195,16 @@ export class TextAnnotationUIContext {
 
   get_userscript: Function
 
+  bulk_mode: boolean
+  search_mode: boolean
+
   constructor() {
     this.container_width = 0
     this.container_height = 0
     this.has_changed = false
     this.save_loading = false
+    this.bulk_mode = false
+    this.search_mode = false
   }
 
 }

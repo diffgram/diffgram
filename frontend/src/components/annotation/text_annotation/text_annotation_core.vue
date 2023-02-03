@@ -310,7 +310,15 @@ export default Vue.extend({
     save_loading: {
       type: Boolean,
       default: false
-    }
+    },
+    bulk_mode: {
+      type: Boolean,
+      default: false
+    },
+    search_mode: {
+      type: Boolean,
+      default: false
+    },
   },
   data() {
     return {
@@ -325,9 +333,6 @@ export default Vue.extend({
       tokens: [],
       invisible_labels: [],
       current_instance: null,
-      //Modes
-      search_mode: false,
-      bulk_label: false,
       //effects
       hover_instance: null,
       //Helpers
@@ -499,6 +504,7 @@ export default Vue.extend({
       this.$emit('change_label_schema', schema)
     },
     bulk_labeling: function (instance_id) {
+      console.log("here")
       const instance = this.instance_list.get().find(inst => {
         const {id} = inst.get_instance_data()
         if (id === instance_id) return inst
@@ -554,19 +560,22 @@ export default Vue.extend({
       }
     },
     keydown_event_listeners: async function (e) {
+      const current_context = this.annotation_ui_context.get_current_ann_ctx()
       if (e.keyCode === 83) {
         this.$emit('save')
-      } else if (e.keyCode === 71 && !this.search_mode) {
-        this.search_mode = true;
-      } else if (e.keyCode === 66 && !this.bulk_label) {
-        this.bulk_label = true;
+      } else if (e.keyCode === 71) {
+        current_context.search_mode = true;
+      } else if (e.keyCode === 66) {
+        current_context.bulk_mode = true
       }
     },
     keyup_event_listeners: function (e) {
+      const current_context = this.annotation_ui_context.get_current_ann_ctx()
+
       if (e.keyCode === 71) {
-        this.search_mode = false;
+        current_context.search_mode = false;
       } else if (e.keyCode === 66) {
-        this.bulk_label = false;
+        current_context.bulk_mode = false
       }
 
       this.key_up_unremovable_listeners(e)
@@ -664,7 +673,7 @@ export default Vue.extend({
     },
     on_draw_text_token: function (e) {
       if (this.instance_in_progress && this.instance_in_progress.type === "relation" || !window.getSelection().anchorNode) return
-      if (this.bulk_label) return
+      if (this.bulk_mode) return
       this.context_menu = null
 
       const selection = window.getSelection()
@@ -776,7 +785,10 @@ export default Vue.extend({
       const context = e.ctrlKey && e.button === 0 || e.button === 2
       if (context) return
 
-      if (this.bulk_label) return this.bulk_labeling(instance_id)
+      console.log("here we go")
+      if (this.bulk_mode) return this.bulk_labeling(instance_id)
+      console.log("skip bulk", this.bulk_mode)
+      
       this.on_draw_relation(instance_id)
     },
     create_relation: function(label) {

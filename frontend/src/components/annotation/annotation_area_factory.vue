@@ -300,7 +300,15 @@ export default Vue.extend({
     },
     show_toolbar: {type: Boolean},
     image_annotation_ctx: {type: Object},
-    is_active: {type: Boolean}
+    is_active: {type: Boolean},
+    bulk_mode: {
+      type: Boolean,
+      default: false
+    },
+    search_mode: {
+      type: Boolean,
+      default: false
+    },
   },
   computed: {
 

@@ -160,6 +160,14 @@ export default Vue.extend({
       type: Object,
       required: true
     },
+    bulk_mode: {
+      type: Boolean,
+      default: false
+    },
+    search_mode: {
+      type: Boolean,
+      default: false
+    },
   },
   mounted() {
     if (window.Cypress) {
