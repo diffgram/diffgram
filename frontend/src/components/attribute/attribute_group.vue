@@ -1226,7 +1226,7 @@
               max_value: max_value,
               mode: mode,
               is_global: this.group.is_global,
-              global_type: this.group.global_type
+              global_type: this.group.global_type ? this.group.global_type : 'file',
             }).then(response => {
 
             //this.group = response.data.group
