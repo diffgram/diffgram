@@ -1,7 +1,7 @@
 <template>
   <div style="display: flex; flex-direction: column">
     <div style="display: flex; flex-direction: row">
-      <text_sidebar
+      <!-- <text_sidebar
         :instance_list="instance_list ? instance_list.get().filter(instance => !instance.soft_delete) : []"
         :label_list="label_list"
         :loading="rendering"
@@ -20,7 +20,7 @@
         @on_instance_stop_hover="on_instance_stop_hover"
         @on_update_attribute="on_update_attribute"
         @change_instance_label="change_instance_label"
-      />
+      /> -->
       <text_fast_label
         v-if="show_label_selection"
         :rects="selection_rects"
