@@ -188,6 +188,8 @@ export class GeoAnnotationUIContext {
 }
 
 export class TextAnnotationUIContext {
+  rendering: boolean
+  resizing: boolean
   has_changed: boolean
   save_loading: boolean
   container_width: number
@@ -198,6 +200,9 @@ export class TextAnnotationUIContext {
   bulk_mode: boolean
   search_mode: boolean
 
+  current_instance: any
+  hover_instance: any
+
   constructor() {
     this.container_width = 0
     this.container_height = 0
@@ -205,6 +210,11 @@ export class TextAnnotationUIContext {
     this.save_loading = false
     this.bulk_mode = false
     this.search_mode = false
+    this.current_instance = null
+    this.hover_instance = null
+
+    this.rendering = true
+    this.resizing = false
   }
 
 }

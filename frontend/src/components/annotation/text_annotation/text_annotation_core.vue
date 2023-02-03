@@ -36,7 +36,7 @@
       />
       <div style="width: 100%; display: flex; flex-direction: column">
         <v-progress-linear
-          v-if="!fetching_error && (resizing || rendering)"
+          v-if="!fetching_error && (annotation_ui_context.get_current_ann_ctx().resizing || annotation_ui_context.get_current_ann_ctx().rendering)"
           indeterminate
         />
         <v_error_multiple
@@ -54,7 +54,7 @@
           @mouseup="trigger_mouseup"
           @mousedown="trigger_mousedown"
         >
-          <g v-if="rendering" transform="translate(0, 23.5)">
+          <g v-if="annotation_ui_context.get_current_ann_ctx().rendering" transform="translate(0, 23.5)">
             <text
               v-for="(word, index) in initial_words_measures"
               :key="word.value + index"
@@ -66,7 +66,7 @@
               {{ word.value }}
             </text>
           </g>
-          <g v-if="resizing" transform="translate(0, 23.5)">
+          <g v-if="annotation_ui_context.get_current_ann_ctx().resizing" transform="translate(0, 23.5)">
             <text
               v-for="(word, index) in initial_words_measures"
               :key="word.value + index"
@@ -92,7 +92,7 @@
                   v-if="get_instance_rects(instance)"
                   :x="get_instance_rects(instance).x"
                   :y="get_instance_rects(instance).y - 15"
-                  :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'rgba(255, 0, 0, 0.2)' : `rgba(${instance.label_file.colour.rgba.r}, ${instance.label_file.colour.rgba.g}, ${instance.label_file.colour.rgba.b}, 0.2)`"
+                  :fill="annotation_ui_context.get_current_ann_ctx().hover_instance && (annotation_ui_context.get_current_ann_ctx().hover_instance.get_instance_data().id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.from_instance_id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.to_instance_id === instance.get_instance_data().id) ? 'rgba(255, 0, 0, 0.2)' : `rgba(${instance.label_file.colour.rgba.r}, ${instance.label_file.colour.rgba.g}, ${instance.label_file.colour.rgba.b}, 0.2)`"
                   :width="instance.label_file.label.name.length * 8"
                   :height="15"
                   @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
@@ -112,7 +112,7 @@
                   :data-cy="`text_label_${instance_index}`"
                   :x="get_instance_rects(instance).x + 2"
                   :y="get_instance_rects(instance).y - 3"
-                  :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                  :fill="annotation_ui_context.get_current_ann_ctx().hover_instance && (annotation_ui_context.get_current_ann_ctx().hover_instance.get_instance_data().id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.from_instance_id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                   @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
                   @mousedown="(e) => on_trigger_instance_click(e, instance.get_instance_data().id)"
                   @mouseleave="on_instance_stop_hover"
@@ -133,7 +133,7 @@
                   <rect
                     :x="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x"
                     :y="render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y"
-                    :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                    :fill="annotation_ui_context.get_current_ann_ctx().hover_instance && (annotation_ui_context.get_current_ann_ctx().hover_instance.get_instance_data().id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.from_instance_id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                     :width="1"
                     :height="10"
                     @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
@@ -146,14 +146,14 @@
                   <circle
                     :cx="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width"
                     :cy="insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10"
-                    :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                    :fill="annotation_ui_context.get_current_ann_ctx().hover_instance && (annotation_ui_context.get_current_ann_ctx().hover_instance.get_instance_data().id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.from_instance_id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                     r="2"
                     class="unselectable"
                   />
                   <rect
                     :x="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width"
                     :y="render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y"
-                    :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                    :fill="annotation_ui_context.get_current_ann_ctx().hover_instance && (annotation_ui_context.get_current_ann_ctx().hover_instance.get_instance_data().id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.from_instance_id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                     :width="1"
                     :height="10"
                     @mouseenter="() => on_instance_hover(instance.get_instance_data().id)"
@@ -164,7 +164,7 @@
                   />
                   <path
                     :d="`M ${!insatance_orientation_direct(instance) ? get_instance_rects(instance).x : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).x + render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).width} ${!insatance_orientation_direct(instance) ? render_rects.find(rect => rect.instance_id === instance.get_instance_data().id).y + 10 : render_rects.filter(rect => rect.instance_id === instance.get_instance_data().id).at(-1).y + 10} l -5, -5 l 10, 0 l -5, 5`"
-                    :fill="hover_instance && (hover_instance.get_instance_data().id === instance.get_instance_data().id || hover_instance.from_instance_id === instance.get_instance_data().id || hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
+                    :fill="annotation_ui_context.get_current_ann_ctx().hover_instance && (annotation_ui_context.get_current_ann_ctx().hover_instance.get_instance_data().id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.from_instance_id === instance.get_instance_data().id || annotation_ui_context.get_current_ann_ctx().hover_instance.to_instance_id === instance.get_instance_data().id) ? 'red' : instance.label_file.colour.hex"
                     class="unselectable"
                   />
                 </g>
@@ -172,7 +172,7 @@
               <rect
                 v-for="rect in render_rects"
                 :key="`rect_x_${rect.x}_y_${rect.y}_width_${rect.width}`"
-                :fill="hover_instance && (hover_instance.get_instance_data().id === rect.instance_id || hover_instance.from_instance_id === rect.instance_id || hover_instance.to_instance_id === rect.instance_id) ? 'red' : rect.color"
+                :fill="annotation_ui_context.get_current_ann_ctx().hover_instance && (annotation_ui_context.get_current_ann_ctx().hover_instance.get_instance_data().id === rect.instance_id || annotation_ui_context.get_current_ann_ctx().hover_instance.from_instance_id === rect.instance_id || annotation_ui_context.get_current_ann_ctx().hover_instance.to_instance_id === rect.instance_id) ? 'red' : rect.color"
                 :x="rect.x"
                 :y="rect.y"
                 :width="rect.width"
@@ -196,10 +196,10 @@
                 :key="`line_${index}token_${token_index}`"
                 :data-cy="`token_${token_index}_line_${index}`"
                 :x="token.start_x"
-                :fill="hover_instance &&
+                :fill="annotation_ui_context.get_current_ann_ctx().hover_instance &&
                               (
-                                  (hover_instance.start_token <= token.id && token.id <= hover_instance.end_token) ||
-                                  (hover_instance.start_token >= token.id && token.id >= hover_instance.end_token)
+                                  (annotation_ui_context.get_current_ann_ctx().hover_instance.start_token <= token.id && token.id <= annotation_ui_context.get_current_ann_ctx().hover_instance.end_token) ||
+                                  (annotation_ui_context.get_current_ann_ctx().hover_instance.start_token >= token.id && token.id >= annotation_ui_context.get_current_ann_ctx().hover_instance.end_token)
                               ) ? 'red' : 'black'"
               >
                 {{ token.word }}
@@ -325,16 +325,11 @@ export default Vue.extend({
       fetching_error: false,
       text: null,
       current_label: null,
-      rendering: true,
-      resizing: false,
       relation_drawing: false,
       initial_words_measures: [],
       lines: [],
       tokens: [],
       invisible_labels: [],
-      current_instance: null,
-      //effects
-      hover_instance: null,
       //Helpers
       instance_in_progress: null,
       path: {},
@@ -363,7 +358,7 @@ export default Vue.extend({
   },
   computed: {
     render_rects: function () {
-      if (this.rendering || this.resizing) return [];
+      if (this.annotation_ui_context.get_current_ann_ctx().rendering || this.annotation_ui_context.get_current_ann_ctx().resizing) return [];
       if (this.tokens.length === 0) return [];
 
       let rects_to_draw = [];
@@ -430,7 +425,7 @@ export default Vue.extend({
       }
     },
     working_file: function () {
-      this.rendering = true
+      this.annotation_ui_context.get_current_ann_ctx().rendering = true
       this.text = null;
       this.initial_words_measures = [];
       this.lines = []
@@ -439,7 +434,7 @@ export default Vue.extend({
       this.on_mount()
     },
     task: function () {
-      this.rendering = true
+      this.annotation_ui_context.get_current_ann_ctx().rendering = true
       this.text = null;
       this.initial_words_measures = [];
       this.lines = []
@@ -498,13 +493,12 @@ export default Vue.extend({
       }
       this.selection_rects = null
       this.show_label_selection = false
-      this.current_instance = instance
+      this.annotation_ui_context.get_current_ann_ctx().current_instance = instance
     },
     on_change_label_schema: function(schema){
       this.$emit('change_label_schema', schema)
     },
     bulk_labeling: function (instance_id) {
-      console.log("here")
       const instance = this.instance_list.get().find(inst => {
         const {id} = inst.get_instance_data()
         if (id === instance_id) return inst
@@ -542,7 +536,7 @@ export default Vue.extend({
       }
     },
     resize_listener: function () {
-      this.resizing = true
+      this.annotation_ui_context.get_current_ann_ctx().resizing = true
       this.lines = []
       this.tokens = []
       this.selection_rects = null
@@ -582,7 +576,7 @@ export default Vue.extend({
     },
     key_up_unremovable_listeners: function(e) {
       if (e.keyCode === 27) {
-        this.current_instance = null
+        this.annotation_ui_context.get_current_ann_ctx().current_instance = null
         this.instance_in_progress = null
         this.path = {};
         this.unselectable = false
@@ -778,8 +772,8 @@ export default Vue.extend({
 
 
       this.tokens = tokens
-      this.rendering = false
-      this.resizing = false
+      this.annotation_ui_context.get_current_ann_ctx().rendering = false
+      this.annotation_ui_context.get_current_ann_ctx().resizing = false
     },
     // function to draw relations between instances
     on_trigger_instance_click: function (e, instance_id) {
@@ -853,10 +847,10 @@ export default Vue.extend({
     //function to hover on instance
     on_instance_hover: function (instance_id) {
       const instance = this.instance_list.get().find(instance => instance.get_instance_data().id === instance_id)
-      this.hover_instance = instance
+      this.annotation_ui_context.get_current_ann_ctx().hover_instance = instance
     },
     on_instance_stop_hover: function () {
-      this.hover_instance = null
+      this.annotation_ui_context.get_current_ann_ctx().hover_instance = null
     },
     // function to initialize drawing new instance
     on_start_draw_instance: function (start_token_id, end_token_id) {
@@ -926,9 +920,9 @@ export default Vue.extend({
       this.$emit('set_has_changed', true)
     },
     delete_instance: async function (instance) {
-      this.hover_instance = null
-      if (this.current_instance && instance.creation_ref_id === this.current_instance.creation_ref_id) {
-        this.current_instance = null
+      this.annotation_ui_context.get_current_ann_ctx().hover_instance = null
+      if (this.annotation_ui_context.get_current_ann_ctx().current_instance && instance.creation_ref_id === this.annotation_ui_context.get_current_ann_ctx().current_instance.creation_ref_id) {
+        this.annotation_ui_context.get_current_ann_ctx().current_instance = null
       }
       const new_delete_command = new DeleteInstanceCommand([instance], this.instance_list)
       this.annotation_ui_context.command_manager.executeCommand(new_delete_command)
@@ -1062,7 +1056,7 @@ export default Vue.extend({
       return starting_token.id < end_token.id
     },
     on_select_instance: function(instance) {
-      this.current_instance = instance
+      this.annotation_ui_context.get_current_ann_ctx().current_instance = instance
     },
     on_update_attribute: function(event, is_global) {
       const attribute = event
@@ -1070,7 +1064,7 @@ export default Vue.extend({
       if (is_global) {
         command = new UpdateGlobalAttributeCommand([this.instance_list.get_global_instance()], this.instance_list, true)
       } else {
-        command = new UpdateInstanceAttributeCommand([this.instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.instance_list)
+        command = new UpdateInstanceAttributeCommand([this.instance_list.get().find(inst => inst.creation_ref_id === this.annotation_ui_context.get_current_ann_ctx().current_instance.creation_ref_id)], this.instance_list)
       }
 
       let attribute_to_pass

@@ -959,6 +959,7 @@ export default Vue.extend({
         return
       }
       let inst_list = this.annotation_ui_context.instance_store.get_instance_list(file_id)
+      console.log(inst_list)
       this.current_instance_list = inst_list ? inst_list : []
       this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file_id)
     },
