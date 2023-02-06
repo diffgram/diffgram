@@ -28,7 +28,6 @@
     :compound_global_instance="compound_global_instance"
     :instance_list="instance_list.instance_list.filter(inst => !inst.soft_delete)"
     :label_file_colour_map="label_file_colour_map"
-    :toolbar_height="`${!annotation_ui_context.task ? '100px' : '50px'}`"
     :attribute_group_list_prop="label_list"
     :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
     :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"

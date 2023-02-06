@@ -174,7 +174,7 @@ export default Vue.extend({
         },
         toolbar_height: {
             type: String,
-            default: '100px'
+            default: '0px'
         },
         loading: {
             type: Boolean,
