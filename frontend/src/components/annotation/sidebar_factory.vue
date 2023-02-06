@@ -34,11 +34,11 @@
     :schema_id="annotation_ui_context.label_schema.id"
     :loading="annotation_ui_context.get_current_ann_ctx().rendering"
     :current_instance="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().current_instance"
-    @on_select_instance="on_select_instance"
+    @on_select_instance="(e) => $emit('on_select_text_instance', e)"
     @delete_instance="(e) => $emit('delete_text_instance', e)"
     @on_instance_hover="(e) => $emit('hover_text_instance', e)"
     @on_instance_stop_hover="$emit('stop_hover_text_instance')"
-    @on_update_attribute="update_text_attribute"
+    @on_update_attribute="(e, is_global) => $emit('update_text_attribute', e, is_global)"
     @change_instance_label="(e) => $emit('change_text_instance_lable', e)"
     ref="sidebar_text"
   />

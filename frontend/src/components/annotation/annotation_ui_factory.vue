@@ -83,6 +83,7 @@
       @stop_hover_text_instance="stop_hover_text_instance"
       @update_text_attribute="update_text_attribute"
       @change_text_instance_lable="change_text_instance_lable"
+      @on_select_text_instance="on_select_text_instance"
 
       ref="sidebar_factory"
     />
@@ -2160,6 +2161,12 @@ export default Vue.extend({
       const file_id = this.annotation_ui_context.working_file.id
 
       this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].on_instance_hover(instance_id)
+    },
+
+    on_select_text_instance: function (instance) {
+      const file_id = this.annotation_ui_context.working_file.id
+
+      this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].on_select_instance(instance)
     },
     
     stop_hover_text_instance: function () {
