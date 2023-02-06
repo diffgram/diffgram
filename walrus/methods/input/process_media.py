@@ -1529,6 +1529,7 @@ class Process_Media():
                 project_id = self.project_id,
                 input_id = self.input.id,
                 file_metadata = self.input.file_metadata,
+                ordinal = self.input.ordinal,
             )
 
             if self.input.status != "failed":
@@ -1585,6 +1586,7 @@ class Process_Media():
                 parent_id = self.input.parent_file_id,
                 text_file_id = self.new_text_file.id,
                 original_filename = self.input.original_filename,
+                ordinal = self.input.ordinal,
                 project_id = self.project_id,
                 input_id = self.input.id,
                 file_metadata = self.input.file_metadata,
@@ -1700,6 +1702,7 @@ class Process_Media():
             connection_id = self.input.connection_id,
             bucket_name = self.input.bucket_name,
             file_metadata = self.input.file_metadata,
+            ordinal = self.input.ordinal,
 
         )
         return self.input.file
