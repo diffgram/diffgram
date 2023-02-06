@@ -1,26 +1,6 @@
 <template>
   <div style="display: flex; flex-direction: column">
     <div style="display: flex; flex-direction: row">
-      <!-- <text_sidebar
-        :instance_list="instance_list ? instance_list.get().filter(instance => !instance.soft_delete) : []"
-        :label_list="label_list"
-        :loading="rendering"
-        :label_file_colour_map="label_file_colour_map"
-        :toolbar_height="`${!task ? '100px' : '50px'}`"
-        :project_string_id="project_string_id"
-        :schema_id="label_schema.id"
-        :current_instance="current_instance"
-        :attribute_group_list_prop="label_list"
-        :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-        :global_attribute_groups_list="global_attribute_groups_list"
-        :current_global_instance="instance_list && instance_list.get_global_instance() && instance_list.get_global_instance().get_instance_data()"
-        @on_select_instance="on_select_instance"
-        @delete_instance="delete_instance"
-        @on_instance_hover="on_instance_hover"
-        @on_instance_stop_hover="on_instance_stop_hover"
-        @on_update_attribute="on_update_attribute"
-        @change_instance_label="change_instance_label"
-      /> -->
       <text_fast_label
         v-if="show_label_selection"
         :rects="selection_rects"
@@ -44,7 +24,7 @@
           :error="['Error occured while dowloading text file']"
         />
         <svg
-          ref="initial_svg_element"
+          :ref="`initial_svg_element_${working_file.id}`"
           version="1.1"
           xmlns="http://www.w3.org/2000/svg"
           direction="ltr"
@@ -58,7 +38,7 @@
             <text
               v-for="(word, index) in initial_words_measures"
               :key="word.value + index"
-              :ref="`word_${index}`"
+              :ref="`word_${index}_file_${working_file.id}`"
               x="40"
               y="5"
               fill="white"
@@ -70,7 +50,7 @@
             <text
               v-for="(word, index) in initial_words_measures"
               :key="word.value + index"
-              :ref="`word_${index}`"
+              :ref="`word_${index}_file_${working_file.id}`"
               x="40"
               y="5"
               fill="white"
@@ -727,15 +707,14 @@ export default Vue.extend({
       }
     },
     initialize_token_render: async function () {
-      if (!this.$refs.initial_svg_element) return
+      if (!this.$refs[`initial_svg_element_${this.working_file.id}`]) return
 
-
-      const fixed_svg_width = this.$refs.initial_svg_element.clientWidth;
+      const fixed_svg_width = this.$refs[`initial_svg_element_${this.working_file.id}`].clientWidth;
       const tokens = [];
       let token_x_position = 40;
 
       this.initial_words_measures.map((word, index) => {
-        const current_token_width = this.$refs[`word_${index}`][0].getBoundingClientRect().width
+        const current_token_width = this.$refs[`word_${index}_file_${this.working_file.id}`][0].getBoundingClientRect().width
 
         if (this.lines.length === 0) {
           this.lines.push({id: 0, y: 5, initial_y: 5})
@@ -770,10 +749,9 @@ export default Vue.extend({
         token_x_position = word.tag !== 'word' ? token_x_position + current_token_width + 5 : token_x_position + current_token_width
       })
 
-
       this.tokens = tokens
-      this.annotation_ui_context.get_current_ann_ctx().rendering = false
-      this.annotation_ui_context.get_current_ann_ctx().resizing = false
+      // this.annotation_ui_context.get_current_ann_ctx().rendering = false
+      // this.annotation_ui_context.get_current_ann_ctx().resizing = false
     },
     // function to draw relations between instances
     on_trigger_instance_click: function (e, instance_id) {
