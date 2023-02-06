@@ -146,14 +146,19 @@
         @grid_changed="on_grid_changed"
         ref="panels_manager"
       >
-        <template v-for="(file, index) in annotation_ui_context.working_file_list"
-
-                  v-slot:[`panel_${file.row}:${file.column}`]="">
-          <panel_metadata :file="file" class="panel-metadata"></panel_metadata>
-          <div :key="`area_factory_container_${file.id}`"
-               :class="`${file.id === annotation_ui_context.working_file.id
+        <template 
+          v-for="(file, index) in annotation_ui_context.working_file_list"
+          v-slot:[`panel_${file.row}:${file.column}`]=""
+        >
+          <panel_metadata 
+            :file="file" 
+            class="panel-metadata"
+            :key="`area_metadata_${file.id}`"
+          />
+          <div 
+            :key="`area_factory_container_${file.id}`"
+            :class="`${file.id === annotation_ui_context.working_file.id
                          && annotation_ui_context.working_file_list.length > 1 ? 'selected-file': 'unselected-file'} annotation-area-container`">
-
             <annotation_area_factory
               :key="`annotation_area_factory_${file.id}`"
               :ref="`annotation_area_factory_${file.id}`"
