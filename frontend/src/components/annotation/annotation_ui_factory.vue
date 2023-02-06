@@ -773,7 +773,6 @@ export default Vue.extend({
       let idx = this.annotation_ui_context.compound_global_instance_index
       let instance = this.annotation_ui_context.compound_global_attributes_instance_list[idx]
       this.annotation_ui_context.compound_global_instance = instance
-      console.log('instance to set attribute', instance)
       instance.set_attribute(group.id, value)
       this.set_has_changed(true)
     },
@@ -880,12 +879,10 @@ export default Vue.extend({
       }
       let total_height = this.$refs.panels_manager.$el.clientHeight
       let total_rows = this.annotation_ui_context.panel_settings.rows
-      console.log('PANELS LIST resize', panes_list, this.annotation_ui_context.working_file_list, this.child_annotation_ctx_list)
       for (let row_index = 0; row_index < panes_list.length; row_index++) {
         let row_files = this.annotation_ui_context.working_file_list.filter(file => file.row === row_index)
         for(let file of row_files){
           let i = this.annotation_ui_context.working_file_list.indexOf(file)
-          console.log('Iindex', i)
           // Set default initial values.
           if(this.child_annotation_ctx_list[i].container_height === 0){
             // We substract 50 px to leave a small padding when calculating new scale of images
@@ -908,7 +905,6 @@ export default Vue.extend({
       let total_width = this.$refs.panels_manager.$el.clientWidth;
 
       let row_files = this.annotation_ui_context.working_file_list.filter(f => f.row === row_index)
-      console.log('PANELS LIST COLUM resize', row_index, panes_list, row_files)
       for (let file_index = 0; file_index < row_files.length; file_index++) {
         let file = row_files[file_index]
         let i = this.annotation_ui_context.working_file_list.indexOf(file)
@@ -1028,7 +1024,6 @@ export default Vue.extend({
         return
       }
       let inst_list = this.annotation_ui_context.instance_store.get_instance_list(file_id)
-      console.log(inst_list)
       this.current_instance_list = inst_list ? inst_list : []
       this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file_id)
     },

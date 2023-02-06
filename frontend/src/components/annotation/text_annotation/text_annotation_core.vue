@@ -418,7 +418,7 @@ export default Vue.extend({
   },
   watch: {
     instance_list: function (newVal) {
-      if (this.working_file.type === "text") {
+      if (this.working_file.type === "text" && newVal) {
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
         this.$emit('instance_list_updated', newVal, this.working_file.id, this.working_file.type)
@@ -1063,8 +1063,11 @@ export default Vue.extend({
     on_update_attribute: function(event, is_global) {
       const attribute = event
       let command
+
+      const global_instance = this.annotation_ui_context.instance_store.instance_store[this.working_file.id].global_instance
+      
       if (is_global) {
-        command = new UpdateGlobalAttributeCommand([this.instance_list.get_global_instance()], this.instance_list, true)
+        command = new UpdateGlobalAttributeCommand([global_instance], this.instance_list, true)
       } else {
         command = new UpdateInstanceAttributeCommand([this.instance_list.get().find(inst => inst.creation_ref_id === this.annotation_ui_context.get_current_ann_ctx().current_instance.creation_ref_id)], this.instance_list)
       }
