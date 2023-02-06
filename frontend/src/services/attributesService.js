@@ -47,9 +47,10 @@ export const archive_attribute_group = async (project_string_id, group) => {
     const payload = {
       group_id: Number(group.id),
       mode: 'ARCHIVE',
-      kind: group.kind
+      kind: group.kind,
+      global_type: group.global_type ? group.global_type : 'file'
     }
-    
+
     const { data } = await axios.post(`/api/v1/project/${project_string_id}/attribute/group/update`, payload)
 
     return [data, null]

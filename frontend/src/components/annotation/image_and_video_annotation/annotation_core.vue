@@ -2031,7 +2031,7 @@ export default Vue.extend({
       const [result] = await regenerate_cache(project_string, file_id, frame_number)
 
       if (result) {
-        this.has_changed = false;
+        this.$emit('set_has_changed', false);
         location.reload();
       }
     },
@@ -6375,7 +6375,6 @@ export default Vue.extend({
       instance.on('hover_in', this.instance_hovered)
       instance.on('hover_out', this.instance_unhovered)
       this.update_canvas()
-      this.has_changed = true
       this.$emit('set_has_changed', true);
     },
     mouse_down_v2_handler: function (event) {

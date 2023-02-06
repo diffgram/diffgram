@@ -324,12 +324,15 @@ def validate_input_from_blob_path(project: Project, input: dict, session: Sessio
         log['error'] = {}
         log['error']['connection_id'] = 'Provide a connection ID'
     connection = Connection.get_by_id(session, id = input.get('connection_id'))
-    connector, log = get_custom_url_supported_connector(session = session, log = log, connection_id = connection.id)
-    if regular_log.log_has_error(log):
-        return log
+
     if connection is None:
         log['error'] = {}
         log['error']['connection_id'] = 'Connection ID does not exist'
+        return log
+
+    connector, log = get_custom_url_supported_connector(session = session, log = log, connection_id = connection.id)
+    if regular_log.log_has_error(log):
+        return log
 
     if connection.project_id != project.id:
         log['error'] = {}

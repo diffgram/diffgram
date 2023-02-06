@@ -9,6 +9,7 @@ import {ModelRun} from "./models";
 import {Task} from "./Task";
 import {createDefaultLabelSettings, ImageLabelSettings} from "./image_label_settings";
 import {AttributeTemplateGroup} from "./attributes/AttributeTemplateGroup";
+import {PanelsSettings} from "./attributes/PanelsSettings";
 
 type AnyAnnotationCtx =
   ImageAnnotationUIContext
@@ -44,6 +45,7 @@ export class BaseAnnotationUIContext {
   current_text_annotation_ctx: TextAnnotationUIContext
   current_sensor_fusion_annotation_ctx: SensorFusion3DAnnotationUIContext
   current_geo_annotation_ctx: GeoAnnotationUIContext
+  panel_settings: PanelsSettings
   num_rows: number
   num_cols: number
 
@@ -84,6 +86,7 @@ export class BaseAnnotationUIContext {
     this.model_run_list = null
     this.issues_ui_manager = null
     this.current_image_annotation_ctx = new ImageAnnotationUIContext()
+    this.panel_settings = new PanelsSettings(1, 4)
     this.num_rows = 1
     this.num_cols = 4
     this.hidden_label_id_list = []
