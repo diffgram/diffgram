@@ -187,6 +187,7 @@ class Video(Base):
         parent_input_id: int = None,  # WIP
         parent_video_split_duration: int = None,
         file_metadata: dict = None,
+        ordinal: int = 0
     ):
         # Does it make sense for this to be here
         # or would it make more sense for this to
@@ -234,7 +235,8 @@ class Video(Base):
             video_id = video.id,
             parent_id = parent_file_id,
             original_filename = filename,
-            file_metadata = file_metadata
+            file_metadata = file_metadata,
+            ordinal = ordinal
         )
 
         return video, file

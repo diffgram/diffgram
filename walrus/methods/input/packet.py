@@ -53,6 +53,10 @@ def input_packet(project_string_id):
                      "required": False,
                      "kind": int
                  }},
+                 {'ordinal': {
+                     "required": False,
+                     "kind": int
+                 }},
                  {'connection_id': {
                      "required": False,
                      "kind": int
@@ -85,7 +89,6 @@ def input_packet(project_string_id):
         return jsonify(log = log), 400
 
     # log = {"success" : False, "errors" : []}
-
     # Careful, getting this from headers...
     # TODO: Remove usage of directory ID in headers.
     directory_id = request.headers.get('directory_id', None)
@@ -134,7 +137,6 @@ def input_packet(project_string_id):
             return jsonify(log = log), 400
         log = regular_log.default()
         connection_id_access_token = get_session_string()
-        print('NEW !!!!!', input.get('parent_file_id'))
         diffgram_input = enqueue_packet(project_string_id = project_string_id,
                                         session = session,
                                         media_url = media_url,
@@ -148,6 +150,7 @@ def input_packet(project_string_id):
                                         raw_data_blob_path = input.get('raw_data_blob_path', None),
                                         bucket_name = input.get('bucket_name', None),
                                         connection_id = input.get('connection_id', None),
+                                        ordinal = input.get('ordinal', 0),
                                         video_split_duration = video_split_duration,
                                         frame_packet_map = untrusted_input.get('frame_packet_map', None),
                                         batch_id = untrusted_input.get('batch_id', None),
@@ -214,7 +217,8 @@ def enqueue_packet(project_string_id,
                    auto_correct_instances_from_image_metadata = False,
                    extract_labels_from_batch = False,
                    connection_id_access_token = False,
-                   member = None):
+                   member = None,
+                   ordinal: int = 0):
     """
             Creates Input() object and enqueues it for media processing
         Returns Input() object that was created
@@ -266,6 +270,7 @@ def enqueue_packet(project_string_id,
         file_id = file_id,
         task_id = task_id,
         batch_id = batch_id,
+        ordinal = ordinal,
         parent_file_id = parent_file_id,
         raw_data_blob_path = raw_data_blob_path,
         video_parent_length = video_parent_length,
