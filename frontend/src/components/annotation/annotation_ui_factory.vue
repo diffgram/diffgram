@@ -1686,7 +1686,8 @@ export default Vue.extend({
       file.instance_list = this.annotation_ui_context.compound_global_attributes_instance_list
     },
     set_default_layout_for_child_files: function(child_files){
-      this.annotation_ui_context.panel_settings.set_cols_and_rows_from_total_items(4, child_files.length)
+      let cols = child_files.length < 4 ? child_files.length : 4
+      this.annotation_ui_context.panel_settings.set_cols_and_rows_from_total_items(cols, child_files.length)
     },
     update_root_file: async function (file) {
       if (!file) {
