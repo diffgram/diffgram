@@ -16,7 +16,7 @@
       />
       <div style="width: 100%; display: flex; flex-direction: column">
         <v-progress-linear
-          v-if="!fetching_error && (annotation_ui_context.get_current_ann_ctx().resizing || annotation_ui_context.get_current_ann_ctx().rendering)"
+          v-if="!fetching_error && (image_annotation_ctx.resizing || image_annotation_ctx.rendering)"
           indeterminate
         />
         <v_error_multiple
@@ -29,12 +29,12 @@
           xmlns="http://www.w3.org/2000/svg"
           direction="ltr"
           id="svg0:60"
-          :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${text_field_width}`"
+          :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${container_width - 150}px`"
           :class="unselectable && 'unselectable'"
           @mouseup="trigger_mouseup"
           @mousedown="trigger_mousedown"
         >
-          <g v-if="annotation_ui_context.get_current_ann_ctx().rendering" transform="translate(0, 23.5)">
+          <g v-if="image_annotation_ctx.rendering" transform="translate(0, 23.5)">
             <text
               v-for="(word, index) in initial_words_measures"
               :key="word.value + index"
@@ -46,7 +46,7 @@
               {{ word.value }}
             </text>
           </g>
-          <g v-if="annotation_ui_context.get_current_ann_ctx().resizing" transform="translate(0, 23.5)">
+          <g v-if="image_annotation_ctx.resizing" transform="translate(0, 23.5)">
             <text
               v-for="(word, index) in initial_words_measures"
               :key="word.value + index"
@@ -235,6 +235,10 @@ export default Vue.extend({
     relation_in_progress
   },
   props: {
+    image_annotation_ctx: {
+      type: Object,
+      required: true
+    },
     instance_store: {
       type: Object,
       required: true
@@ -299,6 +303,10 @@ export default Vue.extend({
       type: Boolean,
       default: false
     },
+    container_width: {
+      type: Number,
+      default: 600
+    },
   },
   data() {
     return {
@@ -338,7 +346,7 @@ export default Vue.extend({
   },
   computed: {
     render_rects: function () {
-      if (this.annotation_ui_context.get_current_ann_ctx().rendering || this.annotation_ui_context.get_current_ann_ctx().resizing) return [];
+      if (this.image_annotation_ctx.rendering || this.image_annotation_ctx.resizing) return [];
       if (this.tokens.length === 0) return [];
 
       let rects_to_draw = [];
@@ -405,7 +413,7 @@ export default Vue.extend({
       }
     },
     working_file: function () {
-      this.annotation_ui_context.get_current_ann_ctx().rendering = true
+      this.image_annotation_ctx.rendering = true
       this.text = null;
       this.initial_words_measures = [];
       this.lines = []
@@ -414,7 +422,7 @@ export default Vue.extend({
       this.on_mount()
     },
     task: function () {
-      this.annotation_ui_context.get_current_ann_ctx().rendering = true
+      this.image_annotation_ctx.rendering = true
       this.text = null;
       this.initial_words_measures = [];
       this.lines = []
@@ -750,8 +758,8 @@ export default Vue.extend({
       })
 
       this.tokens = tokens
-      // this.annotation_ui_context.get_current_ann_ctx().rendering = false
-      // this.annotation_ui_context.get_current_ann_ctx().resizing = false
+      this.image_annotation_ctx.rendering = false
+      this.image_annotation_ctx.resizing = false
     },
     // function to draw relations between instances
     on_trigger_instance_click: function (e, instance_id) {
