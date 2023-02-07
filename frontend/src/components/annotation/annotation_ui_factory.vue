@@ -857,7 +857,7 @@ export default Vue.extend({
       let total_width = this.$refs.panels_manager.$el.clientWidth;
 
       let row_files = this.annotation_ui_context.working_file_list.filter(f => f.row === row_index)
-      console.log('PANELS LIST COLUM resize', row_index, panes_list, row_files)
+
       for (let file_index = 0; file_index < row_files.length; file_index++) {
         let file = row_files[file_index]
         let i = this.annotation_ui_context.working_file_list.indexOf(file)
