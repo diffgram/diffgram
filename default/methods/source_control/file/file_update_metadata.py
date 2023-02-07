@@ -9,12 +9,14 @@ except:
     from default.methods.source_control.file.file_browser import File_Browser
 
 from sqlalchemy.orm.session import Session
+from flasgger import swag_from
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/file/<int:file_id>/update-metadata', methods = ['PUT'])
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
+@swag_from('../../docs/file_update_metadata.yml')
 def api_file_update_metadata(project_string_id: str, file_id: int):
     """
         Updates a file ID metadata.
@@ -23,7 +25,10 @@ def api_file_update_metadata(project_string_id: str, file_id: int):
     :return:
     """
 
-    spec_list = [{'rotation_degrees': {'type': int, 'required': False}}]
+    spec_list = [
+        {'rotation_degrees': {'type': int, 'required': False}},
+        {'ordinal': {'type': int, 'required': False}}
+    ]
 
     log, input, untrusted_input = regular_input.master(request = request,
                                                        spec_list = spec_list)
@@ -40,6 +45,7 @@ def api_file_update_metadata(project_string_id: str, file_id: int):
             project = project,
             file_id = file_id,
             rotation_degrees = input['rotation_degrees'],
+            ordinal = input['ordinal'],
             log = log
         )
 
@@ -53,6 +59,7 @@ def file_update_metadata_core(session: Session,
                               project: Project,
                               file_id: int,
                               rotation_degrees: int,
+                              ordinal: int,
                               log: dict = regular_log.default()):
     file = File.get_by_id(session = session, file_id = file_id)
     if file.project_id != project.id:
@@ -67,6 +74,8 @@ def file_update_metadata_core(session: Session,
                 return None, log
             file.image.rotation_degrees = rotation_degrees
             session.add(file.image)
+    if ordinal is not None:
+        file.ordinal = ordinal
     session.add(file)
     result = file.serialize_with_type(session = session, regen_url = False)
     return result, log

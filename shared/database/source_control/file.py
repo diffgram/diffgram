@@ -178,6 +178,9 @@ class File(Base, Caching):
 
     parent_id = Column(BIGINT, ForeignKey('file.id'))  # Updated
 
+    # Ordinal is used to control order of child files in the context of a compound file.
+    ordinal = Column(BIGINT, default = 0)
+
     def previous(self, session):  # Legacy
         return session.query(File).filter(File.id == self.parent_id).first()
 
@@ -332,7 +335,8 @@ class File(Base, Caching):
             'connection_id': self.connection_id,
             'video_id': self.video_id,
             'video_parent_file_id': self.video_parent_file_id,
-            'count_instances_changed': self.count_instances_changed
+            'count_instances_changed': self.count_instances_changed,
+            'ordinal': self.ordinal
         }
 
     def get_signed_url(self, session):
@@ -878,7 +882,8 @@ class File(Base, Caching):
             input_id = None,
             parent_id = None,
             task = None,
-            file_metadata = None
+            file_metadata = None,
+            ordinal: int = None
             ):
         """
         "file_added" case
@@ -929,7 +934,8 @@ class File(Base, Caching):
             parent_id = parent_id,
             task = task,
             file_metadata = file_metadata,
-            text_tokenizer = text_tokenizer
+            text_tokenizer = text_tokenizer,
+            ordinal = ordinal
         )
 
         File.new_file_new_frame(file, video_parent_file)

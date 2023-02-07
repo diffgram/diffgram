@@ -4,7 +4,7 @@ name: Sync Open API Specs to ReadMe.io
 on:
   push:
     branches:
-      - main
+      - master
 jobs:
   build:
     runs-on: ubuntu-latest
