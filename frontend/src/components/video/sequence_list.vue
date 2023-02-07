@@ -1,5 +1,5 @@
 <template>
-  <div v-cloak v-if="video_mode == true && !video_playing" class="pa-0 ma-0">
+  <div v-cloak v-if="video_mode == true && !video_playing"  style="height: 200px;">
 
     <v-alert type="info" v-if="sequence_list && sequence_list.length > 200"
               max-width="600"
@@ -25,7 +25,7 @@
       Export data to see more results. Need more? Contact us support@diffgram.com
     </v-alert>
 
-    <v-card-title class="pa-0">
+    <div class="d-flex align-center">
 
       <!-- Highlight current one ?
             wrap chip in this element if want
@@ -37,7 +37,7 @@
       </v-badge>
       -->
 
-      Sequences
+      <h3 class="font-weight-normal" style="font-size: 1rem">Sequences</h3>
 
       <div class="pl-4">
         <v-tooltip bottom>
@@ -45,8 +45,9 @@
             <v-chip v-if="current_sequence"
                     :color="$get_sequence_color(current_sequence.id)"
                     text-color="white"
+                    small
                     v-on="on"
-                    >
+            >
               <h2> {{current_sequence_number_local}} </h2>
             </v-chip>
           </template>
@@ -58,20 +59,21 @@
       </div>
 
 
-        <!-- Given we now allow a person
-            to "stay" on acurrent sequence,
-            the relevant thing here is the number
-            not the id -->
+      <!-- Given we now allow a person
+          to "stay" on acurrent sequence,
+          the relevant thing here is the number
+          not the id -->
 
       <standard_button
-          tooltip_message="New Sequence (F)"
-          @click="force_new_sequence"
-          :disabled="current_sequence.number == highest_sequence_number + 1
+        :small="true"
+        tooltip_message="New Sequence (F)"
+        @click="force_new_sequence"
+        :disabled="current_sequence.number == highest_sequence_number + 1
                     || sequence_list.length >= 250"
-          icon="add"
-          :text_style="true"
-          :large="true"
-          color="primary">
+        icon="add"
+        :text_style="true"
+        :large="true"
+        color="primary">
       </standard_button>
 
       <!-- Change sequence number
@@ -81,6 +83,7 @@
         already exists
         -->
       <button_with_menu
+        :small="true"
         tooltip_message="Change Sequence Number"
         icon="mdi-arrow-up"
         color="primary"
@@ -88,7 +91,7 @@
         action_icon="check"
         :commit_menu_status="true"
         :close_by_button="true"
-            >
+      >
 
         <template slot="content">
 
@@ -108,12 +111,13 @@
 
 
       <standard_button
-          tooltip_message="Sequence & Video Help"
-          href="https://diffgram.readme.io/docs/video-introduction"
-          icon="mdi-lifebuoy"
-          :text_style="true"
-          target="_blank"
-                      >
+        :small="true"
+        tooltip_message="Sequence & Video Help"
+        href="https://diffgram.readme.io/docs/video-introduction"
+        icon="mdi-lifebuoy"
+        :text_style="true"
+        target="_blank"
+      >
       </standard_button>
 
 
@@ -124,8 +128,7 @@
                     single-line
                     hide-details></v-text-field>
         -->
-    </v-card-title>
-
+    </div>
     <v_info_multiple
         :info="info"
         @input="info = {}"
@@ -158,12 +161,13 @@
 
       -->
     <v-skeleton-loader
+        style="overflow-y: auto"
         :loading="loading"
         type="table"
       >
 
       <v-data-table
-                    style="overflow-y:auto; max-height: 400px;"
+                    style="height: 160px;"
                     :headers="header_with_perms"
                     :items="sequence_list"
                     item-key="id"
@@ -368,7 +372,10 @@
     </v-data-table>
   </v-skeleton-loader>
 
-</div>
+  </div>
+  <div v-else-if="video_mode && video_playing" style="height: 225px; background: #f2f2f2">
+
+  </div>
 </template>
 
 <script lang="ts">
