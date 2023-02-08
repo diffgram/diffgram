@@ -75,7 +75,7 @@ export default Vue.extend({
     
                 return {
                     top: top + container_height + 100 < window.innerHeight ? top : top - container_height - 50,
-                    left: left + 260 < window.innerWidth ? left : left - 260
+                    left: left < window.innerWidth ? left - 350 : left - 260
                 }
             } else {
                 return {
