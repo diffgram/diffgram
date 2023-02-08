@@ -527,7 +527,6 @@ export default Vue.extend({
       }
     },
     resize_listener: function () {
-      this.
       this.annotation_ui_context.get_current_ann_ctx().resizing = true
       this.lines = []
       this.tokens = []

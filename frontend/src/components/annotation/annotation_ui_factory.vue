@@ -931,8 +931,6 @@ export default Vue.extend({
       })
       this.rows_panes_size = default_pane_sizes_rows
       this.recalculate_pane_rows_dimensions(default_pane_sizes_rows)
-
-
     },
     on_panes_rows_resized: function (panes_list) {
       this.rows_panes_size = panes_list
@@ -941,6 +939,8 @@ export default Vue.extend({
     on_panes_columns_resized: function (row_index, panes_list) {
       this.columns_panes_size = {[row_index]: panes_list}
       this.recalculate_pane_column_dimensions(row_index, panes_list)
+
+      console.log(this.listeners_map()['resize']())
     },
     populate_child_context_list: function (child_files) {
       let new_child_list = []
