@@ -2,12 +2,13 @@
   <div v-cloak style="position:relative;">
     <v-card v-if="video_mode == true && show_video_nav_bar == true"
             :max-height="player_height"
-            elevation="1"
+            style="border-bottom: 1px solid #e0e0e0"
+            elevation="0"
 
             :width="player_width ? player_width: undefined">
-      <v-container fluid >
+      <v-container fluid class="pa-0 ma-0 pl-2 pr-2" >
 
-      <v-row :style="{overflow: 'hidden'}" class="pt-2">
+      <v-row :style="{overflow: 'hidden'}" class="d-flex justify-center pt-2">
 
         <!-- Previous Frame -->
 
@@ -376,6 +377,7 @@
     <video ref="video_source_ref"
             :width="0"
             height="0"
+           style="display: none;"
             :id="video_primary_id">
 
       Your browser does not support the video tag.

@@ -31,6 +31,7 @@ jobs:
         DIFFGRAM_MINIO_ACCESS_KEY_SECRET: actionskeye2etests
         ML__DIFFGRAM_S3_BUCKET_NAME: foo
         DIFFGRAM_MINIO_ENDPOINT_URL: http://minio:9000
+        ML__DIFFGRAM_AZURE_CONTAINER_NAME: testsgithubactions
         CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
