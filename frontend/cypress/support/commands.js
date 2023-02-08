@@ -872,16 +872,16 @@ Cypress.Commands.add('uploadCompoundFileImages', function (project_string_id, fi
                   type: 'image'
                 },
                 ordinal: i,
-                type: 'image',
+                type: 'from_url',
                 directory_id: 1,
                 parent_file_id: root_id,
                 original_filename: `Child file ${i}.jpg`
               })
             }
             cy.wrap(files).each((file_data) => {
-              cy.request('POST', `http://localhost:8085/api/walrus/v1/project/${project_string_id}/input/packet`, {file_data}).then(
+              cy.request('POST', `http://localhost:8085/api/walrus/v1/project/${project_string_id}/input/packet`, file_data).then(
                 (resp) => {
-                  expect(resp.status).toBe(200)
+                  expect(resp.status).to.equal(200)
                 }
               )
             })

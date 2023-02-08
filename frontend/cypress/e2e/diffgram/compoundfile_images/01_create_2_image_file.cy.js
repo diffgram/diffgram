@@ -14,12 +14,8 @@ describe('Create 2 image compound file', () => {
     })
 
     it('Correctly Renders 2 panels for compound file.', () => {
-      cy.createInstanceTemplate('instance template 1', {
-        nodes: [{x: 100, y: 100}, {x: 300, y: 300}, {x: 400, y: 400}, {x: 75, y: 150}],
-        edges: [[0, 1], [0, 2], [0, 3]],
-      });
-      cy.get('[data-cy=save_instance_template_button]').click({force: true});
-      cy.wait(5000);
+      cy.wait(3000)
+        .get('.pane-container').should('have.length', 2)
     })
   })
 })
