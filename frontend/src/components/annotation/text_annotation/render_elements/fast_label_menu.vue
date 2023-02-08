@@ -80,7 +80,7 @@ export default Vue.extend({
             } else {
                 return {
                     top: this.arrow_position.y + 25,
-                    left: this.arrow_position.x + 350,
+                    left: this.arrow_position.x,
                 }
             }
         }

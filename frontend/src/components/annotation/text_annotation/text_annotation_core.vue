@@ -369,11 +369,13 @@ export default Vue.extend({
     },
     render_drawing_arrow: function () {
       if (!this.instance_in_progress) return {}
+
       const scroll_y = window.pageYOffset || document.documentElement.scrollTop
       const inst = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
 
       if (!inst) return {}
-      const {x, y} = inst
+
+      const { x, y} = inst
 
       const top_offset = this.task && this.task.id ? 50 : 100
 
@@ -384,10 +386,10 @@ export default Vue.extend({
             y
           },
           arrow: {
-            x: this.path.x - 350,
+            x: this.path.x - 350 + this.container_width/20,
             y: this.path.y - top_offset + scroll_y - 23.5 + 5
           },
-          path: `M ${x} ${y} Q ${this.path.x - 350 - 100} ${this.path.y - top_offset + scroll_y - 23.5 - 30} ${this.path.x - 350} ${this.path.y - top_offset + scroll_y - 23.5}`
+          path: `M ${x} ${y} Q ${this.path.x - 350 - 100} ${this.path.y - top_offset + scroll_y - 23.5 - 30} ${this.path.x - 350 + this.container_width/20} ${this.path.y - top_offset + scroll_y - 23.5}`
         }
       }
 
