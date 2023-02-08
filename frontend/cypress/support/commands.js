@@ -856,6 +856,50 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
 
 });
 
+Cypress.Commands.add('uploadCompoundFileImages', function (project_string_id, file_name = `${uuidv4()}.diffgram`, num_files=2) {
+  cy.window().then(async window => {
+    let file_path = 'compound_files/root_file_payload.json';
+    cy.fixture(file_path, 'utf-8').then((rootFilePayload) => {
+      rootFilePayload.name = file_name
+      cy.request('POST', `http://localhost:8085/api/v1/project/${project_string_id}/file/new-compound`, rootFilePayload).then(
+        (response) => {
+            let root_id = response.body.file.id;
+            let files = [];
+            for(let i =0; i < num_files; i++){
+              files.push({
+                media: {
+                  url:  'https://picsum.photos/800',
+                  type: 'image'
+                },
+                ordinal: i,
+                type: 'image',
+                directory_id: 1,
+                parent_file_id: root_id,
+                original_filename: `Child file ${i}.jpg`
+              })
+            }
+            cy.wrap(files).each((file_data) => {
+              cy.request('POST', `http://localhost:8085/api/walrus/v1/project/${project_string_id}/input/packet`, {file_data}).then(
+                (resp) => {
+                  expect(resp.status).toBe(200)
+                }
+              )
+            })
+            .then(() => {
+              cy.wait(2000)
+              cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`)
+              cy.wait(1000)
+              cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
+            })
+        }
+      )
+    })
+
+  })
+
+
+});
+
 Cypress.Commands.add('upload_text_file', function (project_string_id, file_name = `${uuidv4()}.txt`) {
   cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`);
   cy.get('[data-cy=start_upload_wizard]').click({force: true});
