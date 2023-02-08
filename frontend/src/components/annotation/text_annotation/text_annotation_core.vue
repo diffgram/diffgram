@@ -29,7 +29,7 @@
           xmlns="http://www.w3.org/2000/svg"
           direction="ltr"
           id="svg0:60"
-          :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${container_width - container_width/10}px`"
+          :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${container_width - container_width/5}px`"
           :class="unselectable && 'unselectable'"
           @mouseup="trigger_mouseup"
           @mousedown="trigger_mousedown"
