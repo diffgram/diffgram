@@ -900,7 +900,11 @@ export default Vue.extend({
       if (!this.$refs.panels_manager) {
         return
       }
-      let total_width = this.$refs.panels_manager.$el.clientWidth - 350;
+
+      let total_width = this.$refs.panels_manager.$el.clientWidth;
+
+      // This is for text initial rendering. The sidebar width is fixed and equal to 350 and initially not rendered
+      if (this.annotation_ui_context.working_file.type && !this.$refs.sidebar_factory.$refs.sidebar_text) total_width -= 350
 
       let row_files = this.annotation_ui_context.working_file_list.filter(f => f.row === row_index)
       for (let file_index = 0; file_index < row_files.length; file_index++) {
