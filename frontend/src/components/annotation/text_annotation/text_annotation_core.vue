@@ -223,6 +223,7 @@ import DrawRects from "./text_utils/draw_rects";
 import closest_token from "./text_utils/closest_token"
 import { Instance } from "../../vue_canvas/instances/Instance";
 import { v4 as uuidv4 } from 'uuid'
+import { construct_tree } from "../../../helpers/tree_view/construct_tree";
 
 export default Vue.extend({
   name: "text_annotation_core",
@@ -477,7 +478,7 @@ export default Vue.extend({
       e.preventDefault()
       this.context_menu = {
         x: e.clientX - bounding_rect.x,
-        y: e.clientY - 85,
+        y: e.clientY - 85 + window.pageYOffset,
         instance
       }
       this.selection_rects = null
