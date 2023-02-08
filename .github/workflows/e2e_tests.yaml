@@ -144,7 +144,6 @@ jobs:
 
           minio.make_bucket('foo')
           minio.make_bucket('bar')
-          minio.make_bucket('bar')
           print(f'{minio.list_buckets()}')
           EOF
           yarn --cwd run dev
