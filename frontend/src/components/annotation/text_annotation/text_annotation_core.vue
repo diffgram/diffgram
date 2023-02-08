@@ -34,7 +34,7 @@
           @mouseup="trigger_mouseup"
           @mousedown="trigger_mousedown"
         >
-          <g v-if="image_annotation_ctx.rendering" transform="translate(0, 23.5)">
+          <g v-if="image_annotation_ctx.rendering" :transform="`translate(0, ${render_offset})`">
             <text
               v-for="(word, index) in initial_words_measures"
               :key="word.value + index"
@@ -46,7 +46,7 @@
               {{ word.value }}
             </text>
           </g>
-          <g v-if="image_annotation_ctx.resizing" transform="translate(0, 23.5)">
+          <g v-if="image_annotation_ctx.resizing" :transform="`translate(0, ${render_offset})`">
             <text
               v-for="(word, index) in initial_words_measures"
               :key="word.value + index"
@@ -58,7 +58,7 @@
               {{ word.value }}
             </text>
           </g>
-          <g ref="main-text-container" transform="translate(0, 23.5)" v-else>
+          <g ref="main-text-container" :transform="`translate(0, ${render_offset})`" v-else>
             <relation_in_progress
               v-if="relation_drawing"
               :render_drawing_arrow="render_drawing_arrow"
@@ -223,7 +223,6 @@ import DrawRects from "./text_utils/draw_rects";
 import closest_token from "./text_utils/closest_token"
 import { Instance } from "../../vue_canvas/instances/Instance";
 import { v4 as uuidv4 } from 'uuid'
-import { construct_tree } from "../../../helpers/tree_view/construct_tree";
 
 export default Vue.extend({
   name: "text_annotation_core",
@@ -333,6 +332,7 @@ export default Vue.extend({
       show_label_selection: false,
       moving_border: false,
       context_menu: null,
+      render_offset: 23.5,
 
       current_global_instance: null,
       instance_list_global: [],
@@ -370,14 +370,13 @@ export default Vue.extend({
     render_drawing_arrow: function () {
       if (!this.instance_in_progress) return {}
 
-      const scroll_y = window.pageYOffset || document.documentElement.scrollTop
       const inst = this.render_rects.find(rect => rect.instance_id === this.instance_in_progress.start_instance)
 
       if (!inst) return {}
 
-      const { x, y} = inst
+      const bounding_rect = this.$refs[`initial_svg_element_${this.working_file.id}`].getBoundingClientRect()
 
-      const top_offset = this.task && this.task.id ? 50 : 100
+      const { x, y} = inst
 
       if (this.path.x && this.path.y) {
         return {
@@ -386,10 +385,10 @@ export default Vue.extend({
             y
           },
           arrow: {
-            x: this.path.x - 350 + this.container_width/20,
-            y: this.path.y - top_offset + scroll_y - 23.5 + 5
+            x: this.path.x - bounding_rect.x,
+            y: this.path.y - bounding_rect.y - this.render_offset + 5
           },
-          path: `M ${x} ${y} Q ${this.path.x - 350 - 100} ${this.path.y - top_offset + scroll_y - 23.5 - 30} ${this.path.x - 350 + this.container_width/20} ${this.path.y - top_offset + scroll_y - 23.5}`
+          path: `M ${x} ${y} Q ${this.path.x - bounding_rect.x - 100} ${this.path.y - bounding_rect.y - 30} ${this.path.x - bounding_rect.x} ${this.path.y - bounding_rect.y - this.render_offset}`
         }
       }
 
