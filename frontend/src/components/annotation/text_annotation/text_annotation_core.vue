@@ -29,7 +29,7 @@
           xmlns="http://www.w3.org/2000/svg"
           direction="ltr"
           id="svg0:60"
-          :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${container_width - container_width/5}px`"
+          :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${container_width}px`"
           :class="unselectable && 'unselectable'"
           @mouseup="trigger_mouseup"
           @mousedown="trigger_mousedown"
@@ -527,6 +527,7 @@ export default Vue.extend({
       }
     },
     resize_listener: function () {
+      this.
       this.annotation_ui_context.get_current_ann_ctx().resizing = true
       this.lines = []
       this.tokens = []
@@ -730,7 +731,7 @@ export default Vue.extend({
         if (this.lines.length === 0) {
           this.lines.push({id: 0, y: 5, initial_y: 5})
         }
-        if (token_x_position + current_token_width > fixed_svg_width) {
+        if (token_x_position + current_token_width > this.container_width) {
           this.lines.push({
             id: this.lines.length,
             y: this.lines[this.lines.length - 1].y + 40,

@@ -33,7 +33,6 @@
     </div>
     <div v-else-if="interface_type === 'sensor_fusion'">
       <sensor_fusion_editor
-        ref="sensor_fusion_editor"
         v-bind="$props"
         v-on="$listeners"
         :ref="`3d_annotation_core_${working_file.id}`"

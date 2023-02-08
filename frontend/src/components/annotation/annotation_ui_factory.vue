@@ -382,13 +382,6 @@ import empty_file_editor_placeholder from "./image_and_video_annotation/empty_fi
 import HotKeyManager from "./hotkeys/HotKeysManager"
 import {GlobalInstance} from "../vue_canvas/instances/GlobalInstance";
 import {postInstanceList} from "../../services/instanceList"
-import {
-  CreateInstanceCommand,
-  DeleteInstanceCommand,
-  UpdateInstanceLabelCommand,
-  UpdateInstanceAttributeCommand,
-  UpdateGlobalAttributeCommand
-} from "../../helpers/command/available_commands"
 
 export default Vue.extend({
   name: "annotation_ui_factory",
@@ -907,7 +900,7 @@ export default Vue.extend({
       if (!this.$refs.panels_manager) {
         return
       }
-      let total_width = this.$refs.panels_manager.$el.clientWidth;
+      let total_width = this.$refs.panels_manager.$el.clientWidth - 350;
 
       let row_files = this.annotation_ui_context.working_file_list.filter(f => f.row === row_index)
       for (let file_index = 0; file_index < row_files.length; file_index++) {
