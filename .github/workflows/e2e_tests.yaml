@@ -85,23 +85,19 @@ jobs:
     - run: pip3 install pytest sqlalchemy-utils
     - run: mkdir /gcp
     - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
+
     # Frontend Dependencies
+    - name: Bootstrap MinIO System
+      run: |
+        docker run -d -p 9000:9000 --name minio -e "MINIO_ACCESS_KEY=minioadmin" -e "MINIO_SECRET_KEY=minioadmin" -v /tmp/data:/data -v /tmp/config:/root/.minio minio/minio server /data
+        && wget https://dl.min.io/client/mc/release/linux-amd64/mc
+        && chmod +x mc
+        && mv mc /usr/local/bin/mc
+        && mc mb /data/testbucket &
+
     - run: yarn --cwd frontend/ install
     #    - run: yarn --cwd frontend/ run cypress install
     - run: yarn --cwd frontend/ build
-
-    - name: Bootstrap MinIO System
-      run: |
-        docker run -d -p 9000:9000 --name minio \
-                   -e "MINIO_ACCESS_KEY=minioadmin" \
-                   -e "MINIO_SECRET_KEY=minioadmin" \
-                   -v /tmp/data:/data \
-                   -v /tmp/config:/root/.minio \
-                   minio/minio server /data
-        & wget https://dl.min.io/client/mc/release/linux-amd64/mc
-        & chmod +x mc
-        & mv mc /usr/local/bin/mc
-        & mc mb /data/testbucket &
     # Populate DB
     - run: cd default/play_and_scripts/scripts; python setup_database_e2e_tests.py
     - name: "UI Tests - Chrome"
