@@ -777,6 +777,23 @@ Cypress.Commands.add('select_label', function (label_name) {
   cy.get('.v-list-item.v-list-item--link').not(':contains("attributes")').contains(label_name).click({force: true})
 });
 
+Cypress.Commands.add('createCompoundGlobalAttribute', function (attr_name, type) {
+  const next_wizard_step = '[data-cy=wizard_navigation_next]'
+  const wizard_step_container =  (step) => {return `[data-cy=attribute_wizard_step_${step}]`};
+  cy.goToSchemaFromToolbar()
+    .get('[data-cy="tab__Attributes"]').first().click({force: true})
+    .get(`[data-cy=new_attribute_button]`).click({force: true})
+    .get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).first().click({force: true})
+    .get('[data-cy=attribute_kind_select]').click({force: true})
+    .get('.v-list.v-select-list div').contains('Radio').click({force: true})
+    .get(`${wizard_step_container(1)} ${next_wizard_step}`).click({force: true})
+    .typesAttributePrompt(attr_name)
+    .get(`${wizard_step_container(2)} ${next_wizard_step}`).click({force: true})
+    .selectLabel(type)
+    .get(`${wizard_step_container(3)} ${next_wizard_step}`).click({force: true})
+
+});
+
 Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = `${uuidv4()}.json`) {
   cy.window().then(async window => {
     let store = window.app.$store;

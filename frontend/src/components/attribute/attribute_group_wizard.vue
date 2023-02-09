@@ -172,14 +172,14 @@
 
             <v-layout class="justify-center align-center">
               <v-btn-toggle color="secondary" v-model="toggle_global_attribute" @change="set_is_global($event, group)">
-                <v-btn>
+                <v-btn data-cy="instance-attribute-button">
                   <v-icon left color="primary" size="18">
                     mdi-brush
                   </v-icon>
                   Per Annotation (Default)
                 </v-btn>
 
-                <v-btn>
+                <v-btn data-cy="global-attribute-button">
                   <v-icon left color="primary" size="18">
                     mdi-file
                   </v-icon>
@@ -188,7 +188,7 @@
 
                 </v-btn>
 
-                <v-btn>
+                <v-btn data-cy="global-compound-attribute-button">
                   <v-icon left color="primary" size="18">
                     mdi-file-table-box-multiple
                   </v-icon>
