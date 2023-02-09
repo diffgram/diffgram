@@ -79,26 +79,6 @@ jobs:
         ports:
           - 5672
     steps:
-    - run: pip3 install minio
-    - run: |
-          python3 - <<'EOF'
-          from minio import Minio
-          from minio.error import InvalidResponseError
-
-          try:
-              minio = Minio(
-                  'minio:9000',
-                  access_key='root',
-                  secret_key='actionskeye2etests',
-                  secure=False
-              )
-          except Exception as ex:
-              raise
-
-          minio.make_bucket('foo')
-          minio.make_bucket('bar')
-          print(f'{minio.list_buckets()}')
-          EOF
     - uses: actions/setup-node@v2
     - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
     - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
@@ -120,12 +100,31 @@ jobs:
     - run: yarn --cwd frontend/ build
     # Populate DB
     - run: cd default/play_and_scripts/scripts; python setup_database_e2e_tests.py
+    - run: pip3 install minio
+    - run: |
+          python3 - <<'EOF'
+          from minio import Minio
+          from minio.error import InvalidResponseError
 
+          try:
+              minio = Minio(
+                  'minio:9000',
+                  access_key='root',
+                  secret_key='actionskeye2etests',
+                  secure=False
+              )
+          except Exception as ex:
+              raise
+
+          minio.make_bucket('foo')
+          minio.make_bucket('bar')
+          print(f'{minio.list_buckets()}')
+          EOF
     - name: "UI Tests - Chrome"
       uses: cypress-io/github-action@v4.0.0
       with:
         # we have already installed all dependencies above
-        install: true
+        install: false
         start: |
           yarn --cwd run dev
           python3 ../default/main.py
