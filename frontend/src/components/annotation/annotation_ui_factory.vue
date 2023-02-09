@@ -128,10 +128,10 @@
 
       <panel_manager
         v-else-if="annotation_ui_context &&
-        annotation_ui_context.working_file_list &&
-        annotation_ui_context.working_file_list.length > 0 &&
-        child_annotation_ctx_list
-        && annotation_ui_context.global_attribute_groups_list"
+          annotation_ui_context.working_file_list &&
+          annotation_ui_context.working_file_list.length > 0 &&
+          child_annotation_ctx_list && 
+          annotation_ui_context.global_attribute_groups_list"
         :layout_direction="layout_direction"
         :num_columns="annotation_ui_context.panel_settings.columns"
         :root_file="root_file"
@@ -139,6 +139,7 @@
         :selected_row="annotation_ui_context.working_file.row"
         :selected_col="annotation_ui_context.working_file.column"
         :num_rows="annotation_ui_context.panel_settings.rows"
+        :working_file_list="annotation_ui_context.working_file_list"
         @cols_resized="on_panes_columns_resized"
         @rows_resized="on_panes_rows_resized"
         @ready="on_panes_ready"
