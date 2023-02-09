@@ -88,13 +88,14 @@ jobs:
 
     # Frontend Dependencies
     - name: Bootstrap MinIO System
+      run: docker run -d -p 9000:9000 --name minio -e "MINIO_ACCESS_KEY=minioadmin" -e "MINIO_SECRET_KEY=minioadmin" -v /tmp/data:/data -v /tmp/config:/root/.minio minio/minio server /data &
+
+    - name: Create buckets
       run: |
-        docker run -d -p 9000:9000 --name minio -e "MINIO_ACCESS_KEY=minioadmin" -e "MINIO_SECRET_KEY=minioadmin" -v /tmp/data:/data -v /tmp/config:/root/.minio minio/minio server /data
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
         chmod +x mc
         mv mc /usr/local/bin/mc
-        mc mb /data/testbucket &
-
+        mc mb /data/testbucket
     - run: yarn --cwd frontend/ install
     #    - run: yarn --cwd frontend/ run cypress install
     - run: yarn --cwd frontend/ build
@@ -134,7 +135,7 @@ jobs:
         SAME_HOST: True
         DIFFGRAM_MINIO_ACCESS_KEY_ID: root
         DIFFGRAM_MINIO_ACCESS_KEY_SECRET: actionskeye2etests
-        DIFFGRAM_MINIO_ENDPOINT_URL: http://localhost:9000
+        DIFFGRAM_MINIO_ENDPOINT_URL: http://127.0.0.0:9000
         CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
