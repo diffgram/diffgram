@@ -105,7 +105,7 @@ jobs:
         export AWS_EC2_METADATA_DISABLED=true
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
         chmod +x mc
-        sudo mv mc /usr/local/bin/mc
+        mv mc /usr/local/bin/mc
         mc mb --with-locks /data/testbucket
         
 
