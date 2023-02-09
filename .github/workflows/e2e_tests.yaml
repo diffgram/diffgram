@@ -127,6 +127,7 @@ jobs:
         # we have already installed all dependencies above
         install: true
         start: |
+          pip install minio
           python3 - <<'EOF'
           from minio import Minio
           from minio.error import InvalidResponseError
