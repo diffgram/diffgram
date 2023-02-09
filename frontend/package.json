@@ -154,7 +154,6 @@
     "eslint-plugin-vuetify": "^1.0.0-beta.7",
     "expect": "^25.5.0",
     "extract-text-webpack-plugin": "^4.0.0-beta.0",
-    "fibers": "^5.0.0",
     "file-loader": "^5.1.0",
     "flush-promises": "^1.0.2",
     "friendly-errors-webpack-plugin": "^1.7.0",
