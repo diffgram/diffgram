@@ -90,10 +90,10 @@ jobs:
     - name: Bootstrap MinIO System
       run: |
         docker run -d -p 9000:9000 --name minio -e "MINIO_ACCESS_KEY=minioadmin" -e "MINIO_SECRET_KEY=minioadmin" -v /tmp/data:/data -v /tmp/config:/root/.minio minio/minio server /data
-        && wget https://dl.min.io/client/mc/release/linux-amd64/mc
-        && chmod +x mc
-        && mv mc /usr/local/bin/mc
-        && mc mb /data/testbucket &
+        wget https://dl.min.io/client/mc/release/linux-amd64/mc
+        chmod +x mc
+        mv mc /usr/local/bin/mc
+        mc mb /data/testbucket &
 
     - run: yarn --cwd frontend/ install
     #    - run: yarn --cwd frontend/ run cypress install
