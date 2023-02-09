@@ -127,25 +127,6 @@ jobs:
         # we have already installed all dependencies above
         install: true
         start: |
-          pip install minio
-          python3 - <<'EOF'
-          from minio import Minio
-          from minio.error import InvalidResponseError
-
-          try:
-              minio = Minio(
-                  'minio:9000',
-                  access_key='root',
-                  secret_key='actionskeye2etests',
-                  secure=False
-              )
-          except Exception as ex:
-              raise
-
-          minio.make_bucket('foo')
-          minio.make_bucket('bar')
-          print(f'{minio.list_buckets()}')
-          EOF
           yarn --cwd run dev
           python3 ../default/main.py
           python3 ../walrus/main.py
