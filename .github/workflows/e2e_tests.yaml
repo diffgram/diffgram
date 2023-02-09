@@ -89,37 +89,19 @@ jobs:
     - run: yarn --cwd frontend/ install
     #    - run: yarn --cwd frontend/ run cypress install
     - run: yarn --cwd frontend/ build
-    - uses: JarvusInnovations/background-action@v1
+
     - name: Bootstrap MinIO System
-      with:
-        run: |
-          docker run -d -p 9000:9000 --name minio \
-           -e "MINIO_ACCESS_KEY=minioadmin" \
-           -e "MINIO_SECRET_KEY=minioadmin" \
-           -v /tmp/data:/data \
-           -v /tmp/config:/root/.minio \
-           minio/minio server /data
-          wget https://dl.min.io/client/mc/release/linux-amd64/mc
-          chmod +x mc
-          mv mc /usr/local/bin/mc
-          mc mb /data/testbucket
-        # your step-level and job-level environment variables are available to your commands as-is
-        # npm install will count towards the wait-for timeout
-        # whenever possible, move unrelated scripts to a different step
-        # to background multiple processes: add & to the end of the command
-        wait-on: |
-          http://localhost:9090
-        # IMPORTANT: to use environment variables in wait-on, you must use this form: ${{ env.VAR }}
-        # See wait-on section below for all resource types and prefixes
-        tail: true # true = stderr,stdout
-        # This will allow you to monitor the progress live
-        log-output-resume: stderr
-        # Eliminates previosuly output stderr log entries from post-run output
-        wait-for: 5m
-        log-output: stderr,stdout # same as true
-        log-output-if: failure
-        # failure = exit-early or timeout
-        working-directory: backend
+      run: |
+        docker run -d -p 9000:9000 --name minio \
+                   -e "MINIO_ACCESS_KEY=minioadmin" \
+                   -e "MINIO_SECRET_KEY=minioadmin" \
+                   -v /tmp/data:/data \
+                   -v /tmp/config:/root/.minio \
+                   minio/minio server /data
+        & wget https://dl.min.io/client/mc/release/linux-amd64/mc
+        & chmod +x mc
+        & mv mc /usr/local/bin/mc
+        & mc mb /data/testbucket &
     # Populate DB
     - run: cd default/play_and_scripts/scripts; python setup_database_e2e_tests.py
     - name: "UI Tests - Chrome"
