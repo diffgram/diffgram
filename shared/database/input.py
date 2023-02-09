@@ -119,6 +119,7 @@ class Input(Base):
     task = relationship("Task", foreign_keys = [task_id])
     task_action = Column(String())
 
+    ordinal = Column(Integer, default = 0)
     # Connection ID where the file is stored (if no connection provided will use default storage provider from env vars)
     connection_id = Column(Integer, ForeignKey('connection_base.id'))
     connection = relationship("Connection", foreign_keys = [connection_id])
@@ -225,7 +226,8 @@ class Input(Base):
         batch_id: int = None,
         video_split_duration: int = None,
         file_metadata: dict = None,
-        member_created_id: int = None
+        member_created_id: int = None,
+        ordinal: int = 0
     ):
         """
         Helps insure not forgetting stuff...
@@ -249,6 +251,7 @@ class Input(Base):
             mode = mode,
             newly_copied_file_id = newly_copied_file_id,
             media_type = media_type,
+            ordinal = ordinal,
             allow_duplicates = allow_duplicates,
             type = type,
             url = url,

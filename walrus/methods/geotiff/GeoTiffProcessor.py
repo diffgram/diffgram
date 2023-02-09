@@ -64,7 +64,8 @@ class GeoTiffProcessor:
             original_filename = self.input.original_filename,
             project_id = self.input.project_id,
             input_id = self.input.id,
-            file_metadata = self.input.file_metadata
+            file_metadata = self.input.file_metadata,
+            ordinal = self.input.ordinal
         )
         self.input.file_id = file.id
         return file
@@ -72,19 +73,19 @@ class GeoTiffProcessor:
     def __reproject_tiff_file(self, path_to_file: str) -> str:
         timestamp = datetime.timestamp(datetime.now())
         temp_foleder_name = f"temp_geo_{timestamp}"
-        
+
         os.mkdir(temp_foleder_name)
 
         filename = f"{temp_foleder_name}/{self.input.original_filename}"
 
         input_raster = gdal.Open(path_to_file)
-        gdal.Warp(filename, input_raster, dstSRS='EPSG:3857')
+        gdal.Warp(filename, input_raster, dstSRS = 'EPSG:3857')
 
         return {
             "filename": filename,
             "folder": temp_foleder_name
         }
-    
+
     def __covert_to_cog(self, path_to_file: str) -> str:
         timestamp = datetime.timestamp(datetime.now())
         temp_foleder_name = f"temp_cog_{timestamp}"
@@ -95,9 +96,9 @@ class GeoTiffProcessor:
 
         input_raster = gdal.Open(path_to_file)
         gdal.Translate(
-            destName=filename, 
-            srcDS=input_raster, 
-            options='-of COG -co COMPRESS=LZW'
+            destName = filename,
+            srcDS = input_raster,
+            options = '-of COG -co COMPRESS=LZW'
         )
 
         return {
@@ -120,7 +121,7 @@ class GeoTiffProcessor:
         path_to_file_with_proper_projection = self.__reproject_tiff_file(self.input.temp_dir_path_and_filename)
 
         valid = self.__validate_COG_tiff()
-        
+
         if not valid:
             path_to_cog_file = self.__covert_to_cog(path_to_file_with_proper_projection["filename"])
             final_file_path = path_to_cog_file['filename']

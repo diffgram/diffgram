@@ -82,7 +82,8 @@ class SensorFusionFileProcessor:
             original_filename = self.input.original_filename,
             project_id = self.input.project_id,
             input_id = self.input.id,
-            file_metadata = self.input.file_metadata
+            file_metadata = self.input.file_metadata,
+            ordinal = self.input.ordinal
         )
 
         return file
