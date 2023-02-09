@@ -9,6 +9,7 @@
     :compound_global_instance="compound_global_instance"
     :video_parent_file_instance_list="video_parent_file_instance_list"
     :instance_list="instance_list"
+    :root_file="root_file"
     @toggle_instance_focus="$emit('toggle_instance_focus', $event)"
     @focus_instance_show_all="$emit('focus_instance_show_all', $event)"
     @update_canvas="$emit('update_canvas', $event)"
@@ -42,6 +43,7 @@ export default Vue.extend({
     compound_global_instance: {type: Object, required: false},
     instance_list: {type: Array as Instance[], required: false},
     video_parent_file_instance_list: {type: Array as Instance[], required: false},
+    root_file: {type: Object, required: true},
   },
   data: function () {
     return {}

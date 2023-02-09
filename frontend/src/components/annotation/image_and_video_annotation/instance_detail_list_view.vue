@@ -40,7 +40,8 @@
 
 
       <global_attributes_list
-        v-if="global_attribute_groups_list_compound && global_attribute_groups_list_compound.length > 0"
+        data-cy="global-attributes-compound-list"
+        v-if="global_attribute_groups_list_compound && global_attribute_groups_list_compound.length > 0 && root_file.type === 'compound'"
         :global_attribute_groups_list="global_attribute_groups_list_compound"
         :current_global_instance="compound_global_instance"
         :schema_id="schema_id"
@@ -583,6 +584,7 @@ export default Vue.extend({
       'per_instance_attribute_groups_list',
       'video_parent_file_instance_list',
       'compound_global_instance',
+      'root_file',
 
 
     ],

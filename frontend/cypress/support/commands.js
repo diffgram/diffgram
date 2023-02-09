@@ -777,7 +777,12 @@ Cypress.Commands.add('select_label', function (label_name) {
   cy.get('.v-list-item.v-list-item--link').not(':contains("attributes")').contains(label_name).click({force: true})
 });
 
-Cypress.Commands.add('createCompoundGlobalAttribute', function (attr_name, type) {
+Cypress.Commands.add('chooseCompoundAttributeTypeOnWizard', function () {
+  // hook for future
+  cy.get('[data-cy=global-compound-attribute-button]').click({force: true})
+});
+
+Cypress.Commands.add('createCompoundGlobalAttribute', function (attr_name, type, options) {
   const next_wizard_step = '[data-cy=wizard_navigation_next]'
   const wizard_step_container =  (step) => {return `[data-cy=attribute_wizard_step_${step}]`};
   cy.goToSchemaFromToolbar()
@@ -789,9 +794,10 @@ Cypress.Commands.add('createCompoundGlobalAttribute', function (attr_name, type)
     .get(`${wizard_step_container(1)} ${next_wizard_step}`).click({force: true})
     .typesAttributePrompt(attr_name)
     .get(`${wizard_step_container(2)} ${next_wizard_step}`).click({force: true})
-    .selectLabel(type)
+    .chooseCompoundAttributeTypeOnWizard(type)
     .get(`${wizard_step_container(3)} ${next_wizard_step}`).click({force: true})
-
+    .get(`${wizard_step_container(4)} ${next_wizard_step}`).click({force: true})
+    .createAttributeOptions(options)
 });
 
 Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = `${uuidv4()}.json`) {

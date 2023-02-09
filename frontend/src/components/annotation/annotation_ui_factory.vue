@@ -58,6 +58,7 @@
       v-if="(interface_type === 'image' || interface_type === 'video') && !task_error.task_request && !changing_file && !changing_task && annotation_ui_context.current_image_annotation_ctx != undefined"
       :annotation_ui_context="annotation_ui_context"
       :interface_type="interface_type"
+      :root_file="root_file"
       :label_file_colour_map="label_file_colour_map"
       :label_list="label_list"
       :project_string_id="computed_project_string_id"
