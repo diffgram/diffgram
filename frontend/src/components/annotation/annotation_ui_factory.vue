@@ -170,6 +170,7 @@
               :show_toolbar="index === 0"
               :annotation_ui_context="annotation_ui_context"
               :image_annotation_ctx="child_annotation_ctx_list[index]"
+              :child_annotation_ctx_list="child_annotation_ctx_list"
               :working_file="file"
               :file="file"
               :credentials_granted="credentials_granted"
@@ -827,14 +828,22 @@ export default Vue.extend({
       }
 
       else if (file_type === 'text') {
+        const file_ids = this.annotation_ui_context.working_file_list.map(working_file => working_file.id)
+        
+        const refs = []
+        file_ids.map(working_file_id => {
+          const ref = this.$refs[`annotation_area_factory_${working_file_id}`][0].$refs[`text_annotation_core_${working_file_id}`]
+          if (ref) refs.push(ref)
+        })
         let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`]
-        if (!ref) return null
+
+        const text_resize_listener = () => refs.map(refrence => refrence.resize_listener())
 
         listener_map = {
           "beforeunload": ref.leave_listener,
           "keydown": ref.keydown_event_listeners,
           "keyup": ref.keyup_event_listeners,
-          "resize": ref.resize_listener,
+          "resize": text_resize_listener,
         }
       }
 
@@ -935,12 +944,14 @@ export default Vue.extend({
     on_panes_rows_resized: function (panes_list) {
       this.rows_panes_size = panes_list
       this.recalculate_pane_rows_dimensions(panes_list)
+
+      this.listeners_map()['resize']()
     },
     on_panes_columns_resized: function (row_index, panes_list) {
       this.columns_panes_size = {[row_index]: panes_list}
       this.recalculate_pane_column_dimensions(row_index, panes_list)
 
-      console.log(this.listeners_map()['resize']())
+      this.listeners_map()['resize']()
     },
     populate_child_context_list: function (child_files) {
       let new_child_list = []

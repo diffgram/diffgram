@@ -307,6 +307,10 @@ export default Vue.extend({
       type: Number,
       default: 600
     },
+    child_annotation_ctx_list: {
+      type: Array,
+      default: []
+    }
   },
   data() {
     return {
@@ -527,7 +531,9 @@ export default Vue.extend({
       }
     },
     resize_listener: function () {
-      this.annotation_ui_context.get_current_ann_ctx().resizing = true
+      this.child_annotation_ctx_list.map(child_context => {
+        child_context.resizing = true
+      })
       this.lines = []
       this.tokens = []
       this.selection_rects = null
@@ -718,9 +724,9 @@ export default Vue.extend({
       }
     },
     initialize_token_render: async function () {
+      console.log("Initial for ", this.working_file.id)
       if (!this.$refs[`initial_svg_element_${this.working_file.id}`]) return
 
-      const fixed_svg_width = this.$refs[`initial_svg_element_${this.working_file.id}`].clientWidth;
       const tokens = [];
       let token_x_position = 40;
 

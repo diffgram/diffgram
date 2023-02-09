@@ -308,6 +308,10 @@ export default Vue.extend({
       type: Boolean,
       default: false
     },
+    child_annotation_ctx_list: {
+      type: Array,
+      default: []
+    }
   },
   computed: {
 
