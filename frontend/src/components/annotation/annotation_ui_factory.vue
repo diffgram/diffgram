@@ -766,6 +766,8 @@ export default Vue.extend({
     on_grid_changed: function(){
       this.set_working_file_list(this.annotation_ui_context.working_file_list)
       this.on_panes_ready()
+
+      this.listeners_map()['resize']()
     },
     on_global_compound_attribute_change: function (attribute_payload) {
       let group = attribute_payload[0];
@@ -951,6 +953,8 @@ export default Vue.extend({
     on_panes_columns_resized: function (row_index, panes_list) {
       this.columns_panes_size = {[row_index]: panes_list}
       this.recalculate_pane_column_dimensions(row_index, panes_list)
+
+      console.log("here")
 
       this.listeners_map()['resize']()
     },
@@ -1717,6 +1721,8 @@ export default Vue.extend({
     set_layout_panels: function (rows, cols) {
       this.annotation_ui_context.panel_settings.rows = rows
       this.annotation_ui_context.panel_settings.columns = cols
+
+      this.listeners_map()['resize']()
     },
     change_active_working_file: async function (file) {
       this.annotation_ui_context.working_file = file
