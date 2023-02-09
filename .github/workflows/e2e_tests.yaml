@@ -60,17 +60,6 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-      minio:
-        image: lazybit/minio
-        ports:
-          - 9000:9000
-        env:
-          MINIO_ACCESS_KEY: root
-          MINIO_SECRET_KEY: actionskeye2etests
-        volumes:
-          - ${{ github.workspace }}/data:/data
-        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
-
       rabbitmq:
         image: rabbitmq:3.10-rc-management-alpine
         env:
@@ -100,27 +89,21 @@ jobs:
     - run: yarn --cwd frontend/ build
     # Populate DB
     - run: cd default/play_and_scripts/scripts; python setup_database_e2e_tests.py
-    - run: pip3 install minio
-    - run: ulimit -n 530000
-    - run: |
-          python3 - <<'EOF'
-          from minio import Minio
-          from minio.error import InvalidResponseError
+    - name: Setup minio
+      run: |
+        docker run -d -p 9000:9000 --name minio \
+                   -e "MINIO_ACCESS_KEY=minioadmin" \
+                   -e "MINIO_SECRET_KEY=minioadmin" \
+                   -v /tmp/data:/data \
+                   -v /tmp/config:/root/.minio \
+                   minio/minio server /data
 
-          try:
-              minio = Minio(
-                  'minio:9000',
-                  access_key='root',
-                  secret_key='actionskeye2etests',
-                  secure=False
-              )
-          except Exception as ex:
-              raise
+        export AWS_ACCESS_KEY_ID=root
+        export AWS_SECRET_ACCESS_KEY=actionskeye2etests
+        export AWS_EC2_METADATA_DISABLED=true
 
-          minio.make_bucket('foo')
-          minio.make_bucket('bar')
-          print(f'{minio.list_buckets()}')
-          EOF
+        aws --endpoint-url http://127.0.0.1:9000/ s3 mb s3://testbucket
+
     - name: "UI Tests - Chrome"
       uses: cypress-io/github-action@v4.0.0
       with:
@@ -150,12 +133,12 @@ jobs:
         DIFFGRAM_SYSTEM_MODE: testing_e2e
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
         DIFFGRAM_STATIC_STORAGE_PROVIDER: minio
-        DIFFGRAM_S3_BUCKET_NAME: foo
-        ML__DIFFGRAM_S3_BUCKET_NAME: foo
+        DIFFGRAM_S3_BUCKET_NAME: testbucket
+        ML__DIFFGRAM_S3_BUCKET_NAME: testbucket
         SAME_HOST: True
         DIFFGRAM_MINIO_ACCESS_KEY_ID: root
         DIFFGRAM_MINIO_ACCESS_KEY_SECRET: actionskeye2etests
-        DIFFGRAM_MINIO_ENDPOINT_URL: http://minio:9000
+        DIFFGRAM_MINIO_ENDPOINT_URL: http://127.0.0.1:9000
         CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
