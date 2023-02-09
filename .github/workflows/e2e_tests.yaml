@@ -101,6 +101,7 @@ jobs:
     # Populate DB
     - run: cd default/play_and_scripts/scripts; python setup_database_e2e_tests.py
     - run: pip3 install minio
+    - run: ulimit -n 530000
     - run: |
           python3 - <<'EOF'
           from minio import Minio
