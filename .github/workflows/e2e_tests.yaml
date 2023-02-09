@@ -143,7 +143,7 @@ jobs:
         SAME_HOST: True
         DIFFGRAM_MINIO_ACCESS_KEY_ID: root
         DIFFGRAM_MINIO_ACCESS_KEY_SECRET: actionskeye2etests
-        DIFFGRAM_MINIO_ENDPOINT_URL: http://127.0.0.1:9000
+        DIFFGRAM_MINIO_ENDPOINT_URL: http://localhost:9000
         CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
