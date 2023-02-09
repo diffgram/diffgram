@@ -103,7 +103,10 @@ jobs:
         export AWS_ACCESS_KEY_ID=root
         export AWS_SECRET_ACCESS_KEY=actionskeye2etests
         export AWS_EC2_METADATA_DISABLED=true
-        docker run minio -t -i minio mc mb --with-locks /data/testbucket
+        wget https://dl.min.io/client/mc/release/linux-amd64/mc
+        chmod +x mc
+        sudo mv mc /usr/local/bin/mc
+        mc mb --with-locks /data/testbucket
         
 
     - name: "UI Tests - Chrome"
