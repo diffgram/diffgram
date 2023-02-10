@@ -90,7 +90,7 @@ export default Vue.extend({
             } else {
                 return {
                     top: this.arrow_position.y + 25,
-                    left: this.arrow_position.x,
+                    left: this.arrow_position.x + this.menu_width < element_bounding_box.width ? this.arrow_position.x : this.arrow_position.x - this.menu_width,
                 }
             }
         }
