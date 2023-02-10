@@ -159,7 +159,7 @@
           <div 
             :key="`area_factory_container_${file.id}`"
             :class="`${file.id === annotation_ui_context.working_file.id
-                         && annotation_ui_context.working_file_list.length > 1 ? 'selected-file': 'unselected-file'} annotation-area-container`">
+                         && annotation_ui_context.working_file_list.length >= 1 ? 'selected-file': 'unselected-file'} annotation-area-container`">
             <annotation_area_factory
               :key="`annotation_area_factory_${file.id}`"
               :ref="`annotation_area_factory_${file.id}`"
@@ -918,7 +918,11 @@ export default Vue.extend({
       let total_width = this.$refs.panels_manager.$el.clientWidth;
 
       // This is for text initial rendering. The sidebar width is fixed and equal to 350 and initially not rendered
-      if (this.annotation_ui_context.working_file.type && !this.$refs.sidebar_factory.$refs.sidebar_text) total_width -= 350
+
+      if (
+        this.annotation_ui_context.working_file.type && 
+        (!this.$refs.sidebar_factory || !this.$refs.sidebar_factory.$refs.sidebar_text)
+      ) total_width -= 350
 
       let row_files = this.annotation_ui_context.working_file_list.filter(f => f.row === row_index)
       for (let file_index = 0; file_index < row_files.length; file_index++) {
