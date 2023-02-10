@@ -102,7 +102,7 @@ jobs:
         mv mc /usr/local/bin/mc
         mc alias set myminio http://minio:9000 minioadmin minioadmin
         mc admin info myminio
-        mc mb --with-lock /data/testbucket
+        mc mb /data/testbucket -l
     - name: Check processes
       run: |
         docker ps
