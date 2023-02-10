@@ -709,13 +709,8 @@ export default Vue.extend({
       let set_words;
 
       try {
-        if (this.task) {
-          const {nltk: {words}} = await getTextService(this.task.file.text.tokens_url_signed)
-          set_words = words
-        } else {
-          const {nltk: {words}} = await getTextService(this.working_file.text.tokens_url_signed)
-          set_words = words
-        }
+        const {nltk: {words}} = await getTextService(this.working_file.text.tokens_url_signed)
+        set_words = words
 
         this.initial_words_measures = set_words
         setTimeout(() => this.initialize_token_render(), 1000)

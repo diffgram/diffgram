@@ -1189,18 +1189,22 @@ export default Vue.extend({
         const file_id = this.annotation_ui_context.working_file.id
         let url
 
-        if (this.task && this.task.id) {
-          url = `/api/v1/task/${this.task.id}/annotation/update`;
+
+        if (this.annotation_ui_context.task && this.annotation_ui_context.task.id) {
+          url = `/api/v1/task/${this.annotation_ui_context.task.id}/annotation/update`;
         } else {
           url = `/api/project/${this.project_string_id}/file/${file_id}/annotation/update`
         }
 
         const { global_instance ,instance_list } = this.annotation_ui_context.instance_store.get_instance_list(file_id)
         
-        const res = await postInstanceList(url, [...instance_list, global_instance])
-        const { added_instances } = res
+        const res = await postInstanceList(url, [...instance_list, global_instance], file_id)
 
-        this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].after_save(added_instances)
+        if (res) {
+          const { added_instances } = res
+  
+          this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].after_save(added_instances)
+        }
 
         this.set_save_loading(false)
         return
