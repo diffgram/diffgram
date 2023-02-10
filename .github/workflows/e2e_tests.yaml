@@ -10,9 +10,9 @@ jobs:
   E2E-Tests:
     runs-on: k8s-diffgram-runner
     # Service containers to run with `container-job`
-    strategy:
-      matrix:
-        # run copies of the current job in parallel
+#    strategy:
+#      matrix:
+#        # run copies of the current job in parallel
 #        containers: [1,2,3,4,5,6, 7]
     container:
       image: diffgram/cypress-e2e:latest
