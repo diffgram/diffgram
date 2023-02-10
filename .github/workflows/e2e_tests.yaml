@@ -37,7 +37,7 @@ jobs:
         DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
         DIFFGRAM_VERSION_TAG: ${{ secrets.DIFFGRAM_VERSION_TAG }}
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
-        USERUSER: root
+        USER: root
         RUNNER_ALLOW_RUNASROOT: true
         RUNNER_TOOL_CACHE: /opt/hostedtoolcache
         AGENT_TOOLSDIRECTORY: /opt/hostedtoolcache
@@ -99,7 +99,7 @@ jobs:
       run: |
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
         chmod +x mc
-        mv mc /usr/local/bin/mc
+        mv mc /usr/local/bin/mc 
         mc config host add myminio http://minio:9000 minioadmin minioadmin
         mc mb myminio/testbucket
         mc policy set policy myminio/testbucket
