@@ -67,6 +67,16 @@ jobs:
           RABBITMQ_DEFAULT_PASS: diffgram
         ports:
           - 5672
+      minio:
+        image: lazybit/minio
+        ports:
+          - 9000:9000
+        env:
+          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
+          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+        volumes:
+          - ${{ github.workspace }}/data:/data
+        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
     steps:
     - uses: actions/setup-node@v3
       with:
@@ -137,7 +147,7 @@ jobs:
         SAME_HOST: True
         DIFFGRAM_MINIO_ACCESS_KEY_ID: root
         DIFFGRAM_MINIO_ACCESS_KEY_SECRET: actionskeye2etests
-        DIFFGRAM_MINIO_ENDPOINT_URL: http://localhost:9000
+        DIFFGRAM_MINIO_ENDPOINT_URL: http://minio:9000
         CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
