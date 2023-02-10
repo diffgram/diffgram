@@ -68,7 +68,7 @@ jobs:
         ports:
           - 5672
       minio:
-        image: lazybit/minio
+        image: quay.io/minio/minio
         ports:
           - 9000:9000
         env:
