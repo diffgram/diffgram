@@ -937,13 +937,15 @@ export default Vue.extend({
         payload = {
           directory_id: this.$store.state.project.current_directory.directory_id,
           job_id: this.job_id,
-          attached_to_job: this.task.file.attached_to_job,
+          task_child_file_id: this.working_file.id,
+          attached_to_job: this.working_file.attached_to_job,
         }
       } else {
         url = `/api/project/${this.project_string_id}/file/${this.working_file.id}/annotation/list`;
         payload = {}
       }
       let instance_list = await getInstanceList(url, payload)
+
       instance_list = this.get_and_set_global_instance(instance_list)
 
       // New command pattern
