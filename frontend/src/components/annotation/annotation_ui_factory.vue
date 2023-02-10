@@ -859,6 +859,8 @@ export default Vue.extend({
         this.recalculate_pane_column_dimensions(key_row, this.columns_panes_size[key_row])
       }
       this.recalculate_pane_rows_dimensions(this.rows_panes_size)
+
+      this.listeners_map()['resize']()
     },
     update_label_file_visible: function (label_file) {
       if (this.annotation_ui_context.hidden_label_id_list.includes(label_file.id)) {
@@ -953,8 +955,6 @@ export default Vue.extend({
     on_panes_columns_resized: function (row_index, panes_list) {
       this.columns_panes_size = {[row_index]: panes_list}
       this.recalculate_pane_column_dimensions(row_index, panes_list)
-
-      console.log("here")
 
       this.listeners_map()['resize']()
     },
