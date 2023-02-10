@@ -100,8 +100,7 @@ jobs:
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
         chmod +x mc
         mv mc /usr/local/bin/mc
-        mc alias set myminio http://minio:9000 minioadmin minioadmin
-        mc admin info myminio
+        mc config host add myminio http://minio:9000 minioadmin minioadmin
         mc mb myminio/testbucket -l
         mc policy set policy myminio/testbucket
     - name: Check processes
