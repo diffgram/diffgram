@@ -484,7 +484,7 @@ export default Vue.extend({
       const bounding_rect = this.$refs[`initial_svg_element_${this.working_file.id}`].getBoundingClientRect()
       e.preventDefault()
       this.context_menu = {
-        x: e.clientX - bounding_rect.x,
+        x: e.clientX - bounding_rect.left + 200 < bounding_rect.width ? e.clientX - bounding_rect.x : e.clientX - bounding_rect.x - 200,
         y: e.clientY - 85 + window.pageYOffset,
         instance
       }

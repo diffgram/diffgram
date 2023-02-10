@@ -1,7 +1,12 @@
 <template>
     <div 
         class="fast-menu-element"
-        :style="`top: ${context_menu.y}px; left: ${context_menu.x}px`" 
+        :style="`
+            top: ${context_menu.y}px; 
+            left: ${context_menu.x}px
+            width: ${menu_width}px;
+            max-width: ${menu_width}px
+        `" 
     >
         <v-card
             class="mx-auto"
@@ -41,6 +46,15 @@ export default Vue.extend({
         context_menu: {
             type: Object,
             required: true
+        },
+        svg_ref: {
+            type: SVGSVGElement,
+            required: true
+        }
+    },
+    data() {
+        return {
+            menu_width: 200
         }
     },
     computed: {
