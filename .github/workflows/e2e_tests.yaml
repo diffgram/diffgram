@@ -72,8 +72,8 @@ jobs:
         ports:
           - 9000:9000
         env:
-          MINIO_ACCESS_KEY: ${{ secrets.MINIO_ACCESS_KEY }}
-          MINIO_SECRET_KEY: ${{ secrets.MINIO_SECRET_KEY }}
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
         volumes:
           - ${{ github.workspace }}/data:/data
         options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
@@ -95,11 +95,6 @@ jobs:
     - run: pip3 install pytest sqlalchemy-utils
     - run: mkdir /gcp
     - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
-
-    # Frontend Dependencies
-    - name: Bootstrap MinIO System
-      run: docker run -d -p 9000:9000 --name minio -e "MINIO_ACCESS_KEY=minioadmin" -e "MINIO_SECRET_KEY=minioadmin" -v /tmp/data:/data -v /tmp/config:/root/.minio minio/minio server /data &
-
     - name: Create buckets
       run: |
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
