@@ -99,14 +99,14 @@ jobs:
       run: |
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
         chmod +x mc
+        chown 1001 myminio
         mv mc /usr/local/bin/mc 
         mc config host add myminio http://minio:9000 minioadmin minioadmin
         mc mb myminio/testbucket
         mc policy set policy myminio/testbucket
     - name: Check processes
       run: |
-        docker ps
-        mc admin info myminio
+        ls -a
     - run: yarn --cwd frontend/ install
     #    - run: yarn --cwd frontend/ run cypress install
     - run: yarn --cwd frontend/ build
