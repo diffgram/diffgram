@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         # run copies of the current job in parallel
-        containers: [1,2,3,4,5,6, 7]
+#        containers: [1,2,3,4,5,6, 7]
     container:
       image: diffgram/cypress-e2e:latest
       options: --user root --shm-size 4gb
@@ -117,7 +117,7 @@ jobs:
         wait-on-timeout: 40
         browser: chrome
         record: true
-        parallel: true
+#        parallel: true
         group: "UI - Chrome"
         config-file: ./cypress.config.ts
         working-directory: frontend
