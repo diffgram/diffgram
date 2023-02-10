@@ -96,6 +96,8 @@ jobs:
         chmod +x mc
         mv mc /usr/local/bin/mc
         mc mb /data/testbucket
+    - name: Check processes
+      run: docker ps
     - run: yarn --cwd frontend/ install
     #    - run: yarn --cwd frontend/ run cypress install
     - run: yarn --cwd frontend/ build
