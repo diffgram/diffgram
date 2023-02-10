@@ -84,7 +84,7 @@ export default Vue.extend({
                 const container_height = this.search_label ? this.search_label.slice(0, 9).length * 40 + 50 : 0
     
                 return {
-                    top: top + container_height + 100 < window.innerHeight ? top : top - container_height - 50,
+                    top: top + container_height - 150 - window.scrollY < window.innerHeight ? top : top - container_height - 50,
                     left: left + this.menu_width > element_bounding_box.width ? left - this.menu_width : left
                 }
             } else {
