@@ -6,6 +6,7 @@
         :rects="selection_rects"
         :arrow_position="render_drawing_arrow && render_drawing_arrow.arrow ? render_drawing_arrow.arrow : null"
         :label_list="label_list"
+        :svg_ref="$refs[`initial_svg_element_${this.working_file.id}`]"
         @create_instance="on_popup_create_instance"
         @create_relation="create_relation"
       />

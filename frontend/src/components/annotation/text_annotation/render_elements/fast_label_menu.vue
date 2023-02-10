@@ -1,7 +1,12 @@
 <template>
     <div 
         class="fast-menu-element"
-        :style="`top: ${position.top}px; left: ${position.left}px`" 
+        :style="`
+            top: ${position.top}px; 
+            left: ${position.left}px;
+            width: ${menu_width}px;
+            max-width: ${menu_width}px
+        `" 
     >
         <v-card
             class="mx-auto"
@@ -59,23 +64,28 @@ export default Vue.extend({
         label_list: {
             type: Array,
             required: true
+        },
+        svg_ref: {
+            type: SVGSVGElement,
+            required: true
         }
     },
     computed: {
         position: function() {
+            const element_bounding_box = this.svg_ref.getBoundingClientRect()
             if (!this.rects && !this.arrow_position) return;
 
             if (this.rects) {
                 const last_element_index = this.rects.length - 1
     
                 const top = this.rects[last_element_index].y + 50
-                const left = this.rects[last_element_index].x + this.rects[last_element_index].width + 360
+                const left = this.rects[last_element_index].x + this.rects[last_element_index].width
     
                 const container_height = this.search_label ? this.search_label.slice(0, 9).length * 40 + 50 : 0
     
                 return {
                     top: top + container_height + 100 < window.innerHeight ? top : top - container_height - 50,
-                    left: left < window.innerWidth ? left - 350 : left - 260
+                    left: left + this.menu_width > element_bounding_box.width ? left - this.menu_width : left
                 }
             } else {
                 return {
@@ -89,7 +99,8 @@ export default Vue.extend({
         return {
             search_value: "",
             search_label: null,
-            blured: true
+            blured: true,
+            menu_width: 260
         }
     },
     watch: {
