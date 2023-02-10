@@ -188,6 +188,7 @@
             <text_selection_svg
               v-if="selection_rects"
               :rects="selection_rects"
+              :svg_ref="$refs[`initial_svg_element_${this.working_file.id}`]"
               @on_change_selection_border="on_change_selection_border"
               @on_start_moving_borders="on_start_moving_borders"
               @on_selection_click="on_selection_click"
@@ -380,7 +381,7 @@ export default Vue.extend({
 
       const bounding_rect = this.$refs[`initial_svg_element_${this.working_file.id}`].getBoundingClientRect()
 
-      const { x, y} = inst
+      const { x, y } = inst
 
       if (this.path.x && this.path.y) {
         return {
@@ -724,7 +725,6 @@ export default Vue.extend({
       }
     },
     initialize_token_render: async function () {
-      console.log("Initial for ", this.working_file.id)
       if (!this.$refs[`initial_svg_element_${this.working_file.id}`]) return
 
       const tokens = [];
