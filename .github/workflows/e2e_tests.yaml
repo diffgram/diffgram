@@ -99,6 +99,8 @@ jobs:
       run: |
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
         chmod +x mc
+        pwd
+        ls -a
         mkdir ${{ github.workspace }}/data
         chmod -R 777 ${{ github.workspace }}/data
         mv mc /usr/local/bin/mc 
