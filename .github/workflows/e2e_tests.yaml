@@ -75,7 +75,7 @@ jobs:
           MINIO_ACCESS_KEY: minioadmin
           MINIO_SECRET_KEY: minioadmin
         volumes:
-          - ${{ github.workspace }}/data:/data
+          - /__w/diffgram/diffgram/data:/data
         options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
     steps:
     - uses: actions/setup-node@v3
@@ -101,8 +101,8 @@ jobs:
         chmod +x mc
         pwd
         ls -a
-        mkdir ${{ github.workspace }}/data
-        chmod -R 777 ${{ github.workspace }}/data
+        mkdir /__w/diffgram/diffgram/data
+        chmod -R 777 /__w/diffgram/diffgram/data
         mv mc /usr/local/bin/mc 
         mc config host add myminio http://minio:9000 minioadmin minioadmin
         mc mb myminio/testbucket
