@@ -99,6 +99,7 @@ jobs:
       run: |
         wget https://dl.min.io/client/mc/release/linux-amd64/mc
         chmod +x mc
+        mkdir ${{ github.workspace }}/data
         chmod -R 777 ${{ github.workspace }}/data
         mv mc /usr/local/bin/mc 
         mc config host add myminio http://minio:9000 minioadmin minioadmin
