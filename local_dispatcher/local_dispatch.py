@@ -50,7 +50,7 @@ def route_same_host(path):
         headers = [(name, value) for (name, value) in resp.raw.headers.items()
                    if name.lower() not in excluded_headers]
         return Response(resp.content, resp.status_code, headers)
-    
+
     if path[: 10] == "api/walrus":
         host_reached = 'walrus'
         host = 'http://127.0.0.1:8082/'
