@@ -146,7 +146,7 @@ jobs:
         IS_DIFFGRAM_S3_V4_SIGNATURE: True
         DIFFGRAM_MINIO_ACCESS_KEY_ID: minioadmin
         DIFFGRAM_MINIO_ACCESS_KEY_SECRET: minioadmin
-        DIFFGRAM_MINIO_ENDPOINT_URL: http://minio:9000
+        DIFFGRAM_MINIO_ENDPOINT_URL: http://localhost:9000
         CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
