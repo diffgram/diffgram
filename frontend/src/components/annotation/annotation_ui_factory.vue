@@ -911,11 +911,11 @@ export default Vue.extend({
       }
     },
     recalculate_pane_column_dimensions: function (row_index, panes_list) {
-      if (!this.$refs.panels_manager) {
-        return
-      }
+      if (!this.$refs.panels_manager) return
 
       let total_width = this.$refs.panels_manager.$el.clientWidth;
+
+      if (!total_width) return 
 
       // This is for text initial rendering. The sidebar width is fixed and equal to 350 and initially not rendered
       if (
