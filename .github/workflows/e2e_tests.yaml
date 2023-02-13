@@ -69,15 +69,13 @@ jobs:
           - 5672
       minio:
         image: minio/minio:edge-cicd
+
         ports:
           - 9000:9000
         env:
           MINIO_ACCESS_KEY: minioadmin
           MINIO_SECRET_KEY: minioadmin
-        volumes:
-          - ./test/.minio/data:/export
-          - ./test/.minio/config:/root/.minio
-        options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
+        options: --health-cmd "curl -s http://localhost:9000/minio/health/live"
     steps:
     - uses: actions/setup-node@v3
       with:
@@ -96,20 +94,14 @@ jobs:
     - run: pip3 install pytest sqlalchemy-utils
     - run: mkdir /gcp
     - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
-    - name: Create buckets
-      run: |
-        wget https://dl.min.io/client/mc/release/linux-amd64/mc
-        chmod +x mc
-        pwd
-        ls -a
-        mv mc /usr/local/bin/mc 
-        mc config host add myminio http://minio:9000 minioadmin minioadmin
-        mc mb myminio/testbucket
-        ls -a
-        mc policy set policy myminio/testbucket
+    - name: Fetch mc client
+      run: curl -o ./mc -# https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x ./mc
+    - name: Create the dev bucket
+      run: ./mc alias set minio http://minio:9000 minioadmin minioadmin && ./mc mb minio/testbucket
+    - name: Set policy
+      run: ./mc policy set policy minio/testbucket
     - name: Check processes
-      run: |
-        ls -a
+      run: ls -a
     - run: yarn --cwd frontend/ install
     #    - run: yarn --cwd frontend/ run cypress install
     - run: yarn --cwd frontend/ build
