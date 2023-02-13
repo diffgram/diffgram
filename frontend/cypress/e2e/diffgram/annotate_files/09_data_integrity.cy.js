@@ -205,7 +205,11 @@ describe('Annotate Files Tests', () => {
             .wait(2000)
         }
         cy.wait(3000)
+          .window().then(window => {
+          window.AnnotationUIFactory.set_has_changed(true)
+           })
           .window().its('video_player').then(video_player_component => {
+
             const slider_component = video_player_component.$refs.slider;
             slider_component.$emit('start');
             cy.wait(1000).then(() => {
