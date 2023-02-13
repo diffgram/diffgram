@@ -490,12 +490,11 @@ export default Vue.extend({
         this.annotation_ui_context.command_manager = new CommandManager(this.annotation_ui_context.history)
       }
 
-
       if (
         this.annotation_ui_context &&
         this.hotkey_manager &&
         this.listeners_map() &&
-        this.annotation_ui_context.working_file_list.length > 1
+        this.annotation_ui_context.working_file_list.length >= 1
       ) {
         this.hotkey_manager.activate(this.listeners_map())
       }
@@ -808,18 +807,19 @@ export default Vue.extend({
     listeners_map: function () {
       let listener_map = null;
       
+      if (!this.annotation_ui_context) return listener_map
       if (!this.annotation_ui_context.working_file) return listener_map
 
       let file_id = this.annotation_ui_context.working_file.id
       let file_type = this.annotation_ui_context.working_file.type
-      if (!this.annotation_ui_context) return null
 
-      if (!this.$refs[`annotation_area_factory_${file_id}`]) return null
-      if (!this.$refs[`annotation_area_factory_${file_id}`][0]) return null
+      if (!this.$refs[`annotation_area_factory_${file_id}`]) return listener_map
+      if (!this.$refs[`annotation_area_factory_${file_id}`][0]) return listener_map
+
       
       if (file_type === 'image' || file_type === 'video') {
         let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`annotation_core_${file_id}`]
-        if (!ref) return null
+        if (!ref) return listener_map
   
         listener_map = {
           "beforeunload": ref.warn_user_unload,
@@ -860,7 +860,7 @@ export default Vue.extend({
       }
       this.recalculate_pane_rows_dimensions(this.rows_panes_size)
 
-      this.listeners_map()['resize']()
+      if (this.listeners_map()) this.listeners_map()['resize']()
     },
     update_label_file_visible: function (label_file) {
       if (this.annotation_ui_context.hidden_label_id_list.includes(label_file.id)) {
@@ -918,13 +918,12 @@ export default Vue.extend({
       let total_width = this.$refs.panels_manager.$el.clientWidth;
 
       // This is for text initial rendering. The sidebar width is fixed and equal to 350 and initially not rendered
-
       if (
         this.annotation_ui_context.working_file.type && 
         (!this.$refs.sidebar_factory || !this.$refs.sidebar_factory.$refs.sidebar_text)
       ) total_width -= 350
 
-      let row_files = this.annotation_ui_context.working_file_list.filter(f => f.row === row_index)
+      let row_files = this.annotation_ui_context.working_file_list.filter(f => f.row === parseInt(row_index))
       for (let file_index = 0; file_index < row_files.length; file_index++) {
         let file = row_files[file_index]
         let i = this.annotation_ui_context.working_file_list.indexOf(file)
