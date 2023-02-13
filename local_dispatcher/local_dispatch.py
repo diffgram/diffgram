@@ -47,7 +47,16 @@ def route_same_host(path):
         return requests.get(f"http://localhost:8081/{path_with_params}").text
 
     # https://stackoverflow.com/questions/6656363/proxying-to-another-web-service-with-flask
+    if path.startswith('minio'):
+        dict_value = dict(parse.parse_qsl(parse.urlsplit(request.url).query))
+        str_path = f"http://minio:9000{path_with_params.replace('minio', '').split('?')[0]}"
+        str_path = urllib.parse.unquote(str_path)
 
+        resp = requests.get(str_path, params = dict_value)
+        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+        headers = [(name, value) for (name, value) in resp.raw.headers.items()
+                   if name.lower() not in excluded_headers]
+        return Response(resp.content, resp.status_code, headers)
     try:
 
         resp = requests.request(
