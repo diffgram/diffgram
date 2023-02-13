@@ -14,7 +14,7 @@
                 v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
                 :project_string_id="project_string_id"
                 :global_attribute_groups_list="global_attribute_groups_list"
-                :current_global_instance="current_global_instance"
+                :current_global_instance="current_global_instance()"
                 :schema_id="schema_id"
                 :view_only_mode="false"
                 @attribute_change="attribute_change($event, true)"
@@ -184,8 +184,10 @@ export default Vue.extend({
             type: Array,
             default: null
         },
-        current_global_instance: {
-        }
+        annotation_ui_context: {
+            type: Object, 
+            required: true
+        },
     },
     data() {
         return {
@@ -281,6 +283,11 @@ export default Vue.extend({
       attribute_change: function(event, is_global = false) {
           this.$emit('on_update_attribute', event, is_global)
       },
+      current_global_instance: function() {
+        const global_instance = this.annotation_ui_context.instance_store.instance_store[this.annotation_ui_context.working_file.id].global_instance
+
+        return global_instance
+      }
     }
 })
 </script>
