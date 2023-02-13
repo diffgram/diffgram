@@ -75,6 +75,9 @@ jobs:
         env:
           MINIO_ACCESS_KEY: minioadmin
           MINIO_SECRET_KEY: minioadmin
+        volumes:
+          - /__w/diffgram/diffgram/myminio/.minio/data:/export
+          - /__w/diffgram/diffgram/myminio/.minio/data:/root/.minio
         options: --health-cmd "curl -s http://localhost:9000/minio/health/live"
     steps:
     - uses: actions/setup-node@v3
