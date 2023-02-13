@@ -766,7 +766,7 @@ export default Vue.extend({
       this.set_working_file_list(this.annotation_ui_context.working_file_list)
       this.on_panes_ready()
 
-      this.listeners_map()['resize']()
+      if (this.listeners_map()) this.listeners_map()['resize']()
     },
     on_global_compound_attribute_change: function (attribute_payload) {
       let group = attribute_payload[0];
@@ -953,13 +953,13 @@ export default Vue.extend({
       this.rows_panes_size = panes_list
       this.recalculate_pane_rows_dimensions(panes_list)
 
-      this.listeners_map()['resize']()
+      if (this.listeners_map()) this.listeners_map()['resize']()
     },
     on_panes_columns_resized: function (row_index, panes_list) {
       this.columns_panes_size = {[row_index]: panes_list}
       this.recalculate_pane_column_dimensions(row_index, panes_list)
 
-      this.listeners_map()['resize']()
+      if (this.listeners_map()) this.listeners_map()['resize']()
     },
     populate_child_context_list: function (child_files) {
       let new_child_list = []
@@ -1729,7 +1729,7 @@ export default Vue.extend({
       this.annotation_ui_context.panel_settings.rows = rows
       this.annotation_ui_context.panel_settings.columns = cols
 
-      this.listeners_map()['resize']()
+      if (this.listeners_map()) this.listeners_map()['resize']()
     },
     change_active_working_file: async function (file) {
       this.annotation_ui_context.working_file = file
