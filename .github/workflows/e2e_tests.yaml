@@ -75,7 +75,8 @@ jobs:
           MINIO_ACCESS_KEY: minioadmin
           MINIO_SECRET_KEY: minioadmin
         volumes:
-          - /__w/diffgram/diffgram/data:/data
+          - ./test/.minio/data:/export
+          - ./test/.minio/config:/root/.minio
         options: --name=minio --health-cmd "curl http://localhost:9000/minio/health/live"
     steps:
     - uses: actions/setup-node@v3
@@ -101,13 +102,10 @@ jobs:
         chmod +x mc
         pwd
         ls -a
-        mkdir /__w/diffgram/diffgram/data
-        chmod -R 777 /__w/diffgram/diffgram/data
         mv mc /usr/local/bin/mc 
         mc config host add myminio http://minio:9000 minioadmin minioadmin
         mc mb myminio/testbucket
-        ls -a /__w/diffgram/diffgram/data
-        chmod -R 777 /__w/diffgram/diffgram/data/testbucket
+        ls -a
         mc policy set policy myminio/testbucket
     - name: Check processes
       run: |
