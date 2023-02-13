@@ -37,15 +37,6 @@ def route_same_host(path):
     url_parsed = urllib.parse.urlparse(request.url)
     path_with_params = f"{path}?{urllib.parse.unquote(url_parsed.query)}"
     # Walrus
-    if path[: 10] == "api/walrus":
-        host_reached = 'walrus'
-        host = 'http://127.0.0.1:8082/'
-
-    # JS local dev server
-    if path[: 3] != "api" or path[: 6] == "static":
-        host_reached = 'frontend'
-        return requests.get(f"http://localhost:8081/{path_with_params}").text
-
     print('SAMEE HOSSSSSST', path)
     # https://stackoverflow.com/questions/6656363/proxying-to-another-web-service-with-flask
     if path.startswith('minio'):
@@ -59,6 +50,17 @@ def route_same_host(path):
         headers = [(name, value) for (name, value) in resp.raw.headers.items()
                    if name.lower() not in excluded_headers]
         return Response(resp.content, resp.status_code, headers)
+    
+    if path[: 10] == "api/walrus":
+        host_reached = 'walrus'
+        host = 'http://127.0.0.1:8082/'
+
+    # JS local dev server
+    if path[: 3] != "api" or path[: 6] == "static":
+        host_reached = 'frontend'
+        return requests.get(f"http://localhost:8081/{path_with_params}").text
+
+
     try:
 
         resp = requests.request(
