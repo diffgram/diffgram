@@ -106,6 +106,8 @@ jobs:
         mv mc /usr/local/bin/mc 
         mc config host add myminio http://minio:9000 minioadmin minioadmin
         mc mb myminio/testbucket
+        ls -a /__w/diffgram/diffgram/data
+        chmod -R 777 /__w/diffgram/diffgram/data/testbucket
         mc policy set policy myminio/testbucket
     - name: Check processes
       run: |
