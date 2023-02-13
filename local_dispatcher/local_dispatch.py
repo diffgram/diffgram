@@ -37,10 +37,8 @@ def route_same_host(path):
     url_parsed = urllib.parse.urlparse(request.url)
     path_with_params = f"{path}?{urllib.parse.unquote(url_parsed.query)}"
     # Walrus
-    print('SAMEE HOSSSSSST', path)
     # https://stackoverflow.com/questions/6656363/proxying-to-another-web-service-with-flask
     if path.startswith('minio'):
-        print('MINIOOO CASEEE')
         dict_value = dict(parse.parse_qsl(parse.urlsplit(request.url).query))
         str_path = f"http://minio:9000{path_with_params.replace('minio', '').split('?')[0]}"
         str_path = urllib.parse.unquote(str_path)
