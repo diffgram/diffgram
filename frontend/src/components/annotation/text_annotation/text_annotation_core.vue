@@ -30,7 +30,7 @@
           xmlns="http://www.w3.org/2000/svg"
           direction="ltr"
           id="svg0:60"
-          :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${container_width}px`"
+          :style="`height: ${lines && lines.length > 0 ? lines[lines.length - 1].y + 60 : 10}px; width: ${real_container_width}px`"
           :class="unselectable && 'unselectable'"
           @mouseup="trigger_mouseup"
           @mousedown="trigger_mousedown"
@@ -355,6 +355,10 @@ export default Vue.extend({
     this.start_autosave()
   },
   computed: {
+    real_container_width: function() {
+      if (this.container_width) return this.container_width
+      else window.innerWidth - 350
+    },
     render_rects: function () {
       if (this.image_annotation_ctx.rendering || this.image_annotation_ctx.resizing) return [];
       if (this.tokens.length === 0) return [];
@@ -735,7 +739,7 @@ export default Vue.extend({
         if (this.lines.length === 0) {
           this.lines.push({id: 0, y: 5, initial_y: 5})
         }
-        if (token_x_position + current_token_width > this.container_width) {
+        if (token_x_position + current_token_width > this.real_container_width) {
           this.lines.push({
             id: this.lines.length,
             y: this.lines[this.lines.length - 1].y + 40,
