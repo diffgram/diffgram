@@ -347,6 +347,9 @@ export default Vue.extend({
       instance_list: undefined,
     }
   },
+  beforeMount() {
+    this.resize_listener()
+  },
   mounted() {
     this.on_mount()
     this.start_autosave()
