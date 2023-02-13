@@ -9,7 +9,7 @@ on:
 jobs:
   E2E-Tests:
     runs-on: k8s-diffgram-runner
-     Service containers to run with `container-job`
+#     Service containers to run with `container-job`
     strategy:
       matrix:
         # run copies of the current job in parallel
