@@ -723,7 +723,6 @@ export default Vue.extend({
         set_words = words
 
         this.initial_words_measures = set_words
-        setTimeout(() => this.initialize_token_render(), 1000)
         this.initialize_instance_list()
       } catch(e) {
         this.fetching_error = true
@@ -731,11 +730,11 @@ export default Vue.extend({
     },
     initialize_token_render: async function () {
       if (!this.$refs[`initial_svg_element_${this.working_file.id}`]) return
-
+      
       const tokens = [];
       let token_x_position = 40;
 
-      this.initial_words_measures.map((word, index) => {
+      this.initial_words_measures.map((word, index) => {   
         const current_token_width = this.$refs[`word_${index}_file_${this.working_file.id}`][0].getBoundingClientRect().width
 
         if (this.lines.length === 0) {
@@ -770,7 +769,6 @@ export default Vue.extend({
         tokens.push(token)
         token_x_position = word.tag !== 'word' ? token_x_position + current_token_width + 5 : token_x_position + current_token_width
       })
-
       this.tokens = tokens
       this.image_annotation_ctx.rendering = false
       this.image_annotation_ctx.resizing = false
