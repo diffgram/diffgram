@@ -11,7 +11,7 @@
       <v_error_multiple :error="save_error"></v_error_multiple>
       <v_error_multiple :error="image_annotation_ctx.save_multiple_frames_error"></v_error_multiple>
       <v_error_multiple
-        :error="save_warning"
+        :error="image_annotation_ctx.save_warning"
         type="warning"
         data-cy="save_warning"
       >
@@ -990,7 +990,6 @@ export default Vue.extend({
       issue_mouse_position: undefined,
 
       lock_point_hover_change: false,
-      save_warning: {},
 
       magic_nav_spacer: 80,
 
