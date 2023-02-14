@@ -26,13 +26,13 @@
     :label_list="label_list"
     :current_global_instance="current_global_instance"
     :compound_global_instance="compound_global_instance"
-    :instance_list="instance_list.instance_list.filter(inst => !inst.soft_delete)"
+    :instance_list="instance_list && instance_list.instance_list ? instance_list.instance_list.filter(inst => !inst.soft_delete) : []"
     :label_file_colour_map="label_file_colour_map"
     :attribute_group_list_prop="label_list"
     :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
     :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list"
     :schema_id="annotation_ui_context.label_schema.id"
-    :loading="annotation_ui_context.get_current_ann_ctx().rendering"
+    :loading="annotation_ui_context.get_current_ann_ctx() ? annotation_ui_context.get_current_ann_ctx().rendering :  true"
     :current_instance="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().current_instance"
     @on_select_instance="(e) => $emit('on_select_text_instance', e)"
     @delete_instance="(e) => $emit('delete_text_instance', e)"
@@ -88,11 +88,10 @@ export default Vue.extend({
     },
     compound_global_instance: {
       type: Object, 
-      required: false
+      default: () => {}
     },
     instance_list: {
-      type: Array as Instance[], 
-      required: false
+      required: true
     },
     video_parent_file_instance_list: {
       type: Array as Instance[], 

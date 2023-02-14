@@ -202,7 +202,7 @@ export default Vue.extend({
         },
         compound_global_instance: {
             type: Object,
-            required: true
+            default: () => {}
         },
     },
     data() {

@@ -764,7 +764,7 @@ export default Vue.extend({
   },
   methods: {
     trigger_listeners_setup: function() {
-      this.hotkey_manager.activate(this.listeners_map())
+      if (this.hotkey_manager) this.hotkey_manager.activate(this.listeners_map())
     },
     on_grid_changed: function(){
       this.set_working_file_list(this.annotation_ui_context.working_file_list)
