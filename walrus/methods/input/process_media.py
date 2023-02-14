@@ -1,3 +1,5 @@
+import uuid
+
 from methods.regular.regular_api import *
 from methods.video.video import New_video
 
@@ -1739,9 +1741,13 @@ class Process_Media():
         result = self.read_raw_file()
         if result is False:
             return False
+        if settings.DIFFGRAM_SYSTEM_MODE == 'testing_e2e':
+            self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
+                                                  str(self.project_id) + "/" + str(uuid.uuid4()) + "/" + str(self.new_image.id)
 
-        self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
-                                              str(self.project_id) + "/" + str(self.new_image.id)
+        else:
+            self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
+                                                  str(self.project_id) + "/" + str(self.new_image.id)
 
         self.try_to_commit()
 

@@ -9,7 +9,7 @@ on:
 jobs:
   E2E-Tests:
     runs-on: k8s-diffgram-runner
-    # Service containers to run with `container-job`
+#     Service containers to run with `container-job`
     strategy:
       matrix:
         # run copies of the current job in parallel
@@ -25,6 +25,7 @@ jobs:
         GOOGLE_APPLICATION_CREDENTIALS: /gcp/gcloud-service-key.json
         DIFFGRAM_STATIC_STORAGE_PROVIDER: minio
         SAME_HOST: True
+        IS_DIFFGRAM_S3_V4_SIGNATURE: True
         DIFFGRAM_S3_BUCKET_NAME: foo
         DIFFGRAM_MINIO_ACCESS_KEY_ID: root
         DIFFGRAM_MINIO_ACCESS_KEY_SECRET: actionskeye2etests
@@ -37,7 +38,7 @@ jobs:
         DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
         DIFFGRAM_VERSION_TAG: ${{ secrets.DIFFGRAM_VERSION_TAG }}
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
-        USERUSER: root
+        USER: root
         RUNNER_ALLOW_RUNASROOT: true
         RUNNER_TOOL_CACHE: /opt/hostedtoolcache
         AGENT_TOOLSDIRECTORY: /opt/hostedtoolcache
@@ -67,13 +68,27 @@ jobs:
           RABBITMQ_DEFAULT_PASS: diffgram
         ports:
           - 5672
+      minio:
+        image: minio/minio:edge-cicd
+
+        ports:
+          - 9000:9000
+        env:
+          MINIO_ACCESS_KEY: minioadmin
+          MINIO_SECRET_KEY: minioadmin
+        volumes:
+          - /__w/diffgram/diffgram/myminio/.minio/data:/export
+          - /__w/diffgram/diffgram/myminio/.minio/data:/root/.minio
+        options: --health-cmd "curl -s http://localhost:9000/minio/health/live"
     steps:
-    - uses: actions/setup-node@v2
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
     - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
     - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
     - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
     - name: Check out repository code
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - run: cp -rf . /__w/diffgram
     - run: cd /__w/diffgram
     - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
@@ -83,27 +98,19 @@ jobs:
     - run: pip3 install pytest sqlalchemy-utils
     - run: mkdir /gcp
     - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
-    # Frontend Dependencies
+    - name: Fetch mc client
+      run: curl -o ./mc -# https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x ./mc
+    - name: Create the dev bucket
+      run: ./mc alias set minio http://minio:9000 minioadmin minioadmin && ./mc mb minio/testbucket
+    - name: Set policy
+      run: ./mc policy set policy minio/testbucket
+    - name: Check processes
+      run: ls -a
     - run: yarn --cwd frontend/ install
     #    - run: yarn --cwd frontend/ run cypress install
     - run: yarn --cwd frontend/ build
     # Populate DB
     - run: cd default/play_and_scripts/scripts; python setup_database_e2e_tests.py
-    - name: Setup minio
-      run: |
-        docker run -d -p 9000:9000 --name minio \
-                   -e "MINIO_ACCESS_KEY=minioadmin" \
-                   -e "MINIO_SECRET_KEY=minioadmin" \
-                   -v /tmp/data:/data \
-                   -v /tmp/config:/root/.minio \
-                   minio/minio server /data
-
-        export AWS_ACCESS_KEY_ID=root
-        export AWS_SECRET_ACCESS_KEY=actionskeye2etests
-        export AWS_EC2_METADATA_DISABLED=true
-
-        aws --endpoint-url http://127.0.0.1:9000/ s3 mb s3://testbucket
-
     - name: "UI Tests - Chrome"
       uses: cypress-io/github-action@v4.0.0
       with:
@@ -136,9 +143,10 @@ jobs:
         DIFFGRAM_S3_BUCKET_NAME: testbucket
         ML__DIFFGRAM_S3_BUCKET_NAME: testbucket
         SAME_HOST: True
-        DIFFGRAM_MINIO_ACCESS_KEY_ID: root
-        DIFFGRAM_MINIO_ACCESS_KEY_SECRET: actionskeye2etests
-        DIFFGRAM_MINIO_ENDPOINT_URL: http://127.0.0.1:9000
+        IS_DIFFGRAM_S3_V4_SIGNATURE: True
+        DIFFGRAM_MINIO_ACCESS_KEY_ID: minioadmin
+        DIFFGRAM_MINIO_ACCESS_KEY_SECRET: minioadmin
+        DIFFGRAM_MINIO_ENDPOINT_URL: http://minio:9000
         CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID }}
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
