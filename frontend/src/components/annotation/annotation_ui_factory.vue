@@ -1118,7 +1118,7 @@ export default Vue.extend({
       instance_list_param = undefined
     ) {
       this.save_error = {}
-      this.save_warning = {}
+      this.annotation_ui_context.current_image_annotation_ctx.save_warning = {}
       if (this.annotation_ui_context.current_image_annotation_ctx.go_to_keyframe_loading) return
       if (this.view_only_mode) return
 
@@ -1162,11 +1162,11 @@ export default Vue.extend({
       });
 
       if (has_duplicate_instances) {
-        this.save_warning = {
+        this.annotation_ui_context.current_image_annotation_ctx.save_warning = {
           duplicate_instances: `Instance list has duplicates: ${dup_ids}. Please move the instance before saving.`,
         };
         // We want to focus the most recent instance, if we focus the older one we can produce an error.
-        this.get_current_annotation_area_ref().$refs.instance_detail_list.toggle_instance_focus(
+        this.$refs.sidebar_factory.get_current_sidebar_ref().$refs.instance_detail_list.toggle_instance_focus(
           dup_instance_list[0].original_index,
           undefined
         );
