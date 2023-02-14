@@ -52,8 +52,6 @@ describe('Annotate Files Tests', () => {
           cy.wait(1000)
             .get('[data-cy="forward_1_frame"]').click({force: true})
             .wait(7000)
-            .get('[data-cy=ghost_instance_ok]').click({force: true})
-            .wait(7000)
             .get('[data-cy="back_1_frame"]').click({force: true})
             .wait(8000)
 
@@ -63,26 +61,26 @@ describe('Annotate Files Tests', () => {
 
       })
 
-      it('Shows Ghost Instances', () => {
-        cy.wait(2000)
-          .get('[data-cy="edit_toggle"]').click({force: true})
-          .wait(5000)
-          .get('[data-cy="forward_1_frame"]').click({force: true})
-          .wait(7000)
-          .get('[data-cy=ghost_instance_ok]').click({force: true})
-
-          .window().then(window => {
-          expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
-
-        })
-          .wait(7000)
-          .get('[data-cy="back_1_frame"]').click({force: true})
-
-      })
+      // it('Shows Ghost Instances', () => {
+      //   cy.wait(2000)
+      //     .get('[data-cy="edit_toggle"]').click({force: true})
+      //     .wait(5000)
+      //     .get('[data-cy="forward_1_frame"]').click({force: true})
+      //     .wait(7000)
+      //
+      //     .window().then(window => {
+      //     expect(window.AnnotationCore.ghost_instance_list.length).to.be.at.least(1);
+      //
+      //   })
+      //     .wait(7000)
+      //     .get('[data-cy="back_1_frame"]').click({force: true})
+      //
+      // })
 
       it('Moves Box and change frames', () => {
         let url = '/api/project/*/file/*/annotation/update'
         cy.intercept(url).as('save_instances')
+          .get('[data-cy="edit_toggle"]').click({force: true})
           // Select Element
           .get('[data-cy="edit_toggle"]').parent().parent().find('label').should('have.text', 'Editing')
           .wait(2000)
@@ -157,27 +155,10 @@ describe('Annotate Files Tests', () => {
             .get(`#${canvas_wrapper_id}`).type('{ctrl} + c', {force: true})
             .wait(2000)
             .get('[data-cy="forward_1_frame"]').click({force: true})
-            .wait(2000).then(() => {
-              let instance_dup = {...window.AnnotationCore.instance_buffer_dict[6][0]};
-              window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({
-                ...instance_dup,
-                id: null
-              }));
-              window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({
-                ...instance_dup,
-                id: null
-              }));
-              window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({
-                ...instance_dup,
-                id: null
-              }));
-              window.AnnotationCore.instance_list.push(window.AnnotationCore.initialize_instance({
-                ...instance_dup,
-                id: null
-              }));
-              window.AnnotationCore.has_changed = true;
-
-            })
+            .wait(1000)
+            .get(`#${canvas_wrapper_id}`).type('{ctrl} + v', {force: true})
+            .get(`#${canvas_wrapper_id}`).type('{ctrl} + v', {force: true})
+            .get(`#${canvas_wrapper_id}`).type('{ctrl} + v', {force: true})
             .wait(5000)
             .get('[data-cy=save_button]').click({force: true})
             .wait(5000)

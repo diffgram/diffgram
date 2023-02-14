@@ -107,6 +107,7 @@ export class ImageAnnotationUIContext {
   event_create_instance: Instance
   label_settings: ImageLabelSettings
   instance_buffer_metadata: object
+  save_warning: object
   annotations_loading: boolean
   any_frame_saving: boolean
   save_loading_frames_list: object[]
@@ -140,6 +141,7 @@ export class ImageAnnotationUIContext {
     this.get_userscript = null
     this.label_settings = createDefaultLabelSettings()
     this.instance_buffer_metadata = {}
+    this.save_warning = {}
     this.annotations_loading = false
     this.go_to_keyframe_loading = false
     this.save_multiple_frames_error = {}
