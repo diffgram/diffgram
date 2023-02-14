@@ -1214,12 +1214,7 @@ export default Vue.extend({
       }
 
       this.save_error = {}
-<<<<<<< HEAD
-      this.save_warning = {}
-
-=======
       this.annotation_ui_context.current_image_annotation_ctx.save_warning = {}
->>>>>>> 8d48cc3212f448537e3bc1d755cfd8b81f1ac945
       if (this.annotation_ui_context.current_image_annotation_ctx.go_to_keyframe_loading) return
       if (this.view_only_mode) return
 
