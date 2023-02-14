@@ -353,6 +353,8 @@ export default Vue.extend({
   mounted() {
     this.on_mount()
     this.start_autosave()
+
+    this.$emit('trigger_listeners_setup')
   },
   computed: {
     real_container_width: function() {

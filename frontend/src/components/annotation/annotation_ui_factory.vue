@@ -247,6 +247,7 @@
               @save_multiple_frames="save_multiple_frames"
               @global_instance_changed="on_global_instance_changed"
               @change_task="(event) => trigger_task_change(event, annotation_ui_context.task, false)"
+              @trigger_listeners_setup="trigger_listeners_setup"
             />
           </div>
 
@@ -762,6 +763,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    trigger_listeners_setup: function() {
+      this.hotkey_manager.activate(this.listeners_map())
+    },
     on_grid_changed: function(){
       this.set_working_file_list(this.annotation_ui_context.working_file_list)
       this.on_panes_ready()
