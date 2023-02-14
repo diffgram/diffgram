@@ -36,10 +36,10 @@ import "cypress-real-events/support";
 Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   cy.document().then((doc) => {
     cy.window().then((window) => {
-      const annCore = window.AnnotationCore;
+      const annCore = window.AnnotationUIFactory;
       let canvas_wrapper_id = `canvas_wrapper`
       if (annCore) {
-        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+        canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
       const real_x = x + canvas_client_box.x;
@@ -79,10 +79,10 @@ Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
 Cypress.Commands.add('mousedowncanvas', function (x, y) {
   cy.document().then((doc) => {
     cy.window().then((window) => {
-      const annCore = window.AnnotationCore;
+      const annCore = window.AnnotationUIFactory;
       let canvas_wrapper_id = `canvas_wrapper`
       if (annCore) {
-        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+        canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
       }
       cy.log(canvas_wrapper_id)
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -112,10 +112,10 @@ Cypress.Commands.add('mousedowncanvas', function (x, y) {
 Cypress.Commands.add('dragcanvas', function (from_x, from_y, to_x, to_y) {
   cy.document().then((doc) => {
     cy.window().then((window) => {
-      const annCore = window.AnnotationCore;
+      const annCore = window.AnnotationUIFactory;
       let canvas_wrapper_id = `canvas_wrapper`
       if (annCore) {
-        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+        canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
       const real_from_x = from_x + canvas_client_box.x;
@@ -179,10 +179,10 @@ Cypress.Commands.add('mouseovercanvas', function (x, y) {
 
   cy.document().then((doc) => {
     cy.window().then((window) => {
-      const annCore = window.AnnotationCore;
+      const annCore = window.AnnotationUIFactory;
       let canvas_wrapper_id = `canvas_wrapper`
       if (annCore) {
-        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+        canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
       const real_x = x + canvas_client_box.x;
@@ -207,10 +207,10 @@ Cypress.Commands.add('mousemovecanvas', function (x, y) {
 
   cy.document().then((doc) => {
     cy.window().then((window) => {
-      const annCore = window.AnnotationCore;
+      const annCore = window.AnnotationUIFactory;
       let canvas_wrapper_id = `canvas_wrapper`
       if (annCore) {
-        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+        canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
       const real_x = x + canvas_client_box.x;
@@ -232,10 +232,10 @@ Cypress.Commands.add('mousemovecanvas', function (x, y) {
 })
 Cypress.Commands.add('mouseupcanvas', function (x, y) {
   cy.window().then((window) => {
-    const annCore = window.AnnotationCore;
+    const annCore = window.AnnotationUIFactory;
     let canvas_wrapper_id = `canvas_wrapper`
     if (annCore) {
-      canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+      canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
     }
     cy.get(`#${canvas_wrapper_id}`).then(($el) => {
       cy.wrap($el)
