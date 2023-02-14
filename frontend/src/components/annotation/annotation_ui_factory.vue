@@ -769,6 +769,7 @@ export default Vue.extend({
       if (this.listeners_map()) this.listeners_map()['resize']()
     },
     on_global_compound_attribute_change: function (attribute_payload) {
+      console.log('here')
       let group = attribute_payload[0];
       let value = attribute_payload[1];
       let idx = this.annotation_ui_context.compound_global_instance_index
@@ -1207,6 +1208,10 @@ export default Vue.extend({
           const { added_instances } = res
   
           this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].after_save(added_instances)
+        }
+
+        if(this.root_file && this.root_file.type === 'compound'){
+          await this.save_compound_global_attributes(and_complete)
         }
 
         this.set_save_loading(false)

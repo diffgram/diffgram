@@ -8,8 +8,20 @@
         `"
     >
         <v-expansion-panels multiple style="width: 350px;" accordion :value="open_panels">
+            <v-expansion-panel @change="on_change_expansion(0)">
+              <global_attributes_list
+                v-if="annotation_ui_context.global_attribute_groups_list_compound && annotation_ui_context.global_attribute_groups_list_compound.length > 0"
+                :global_attribute_groups_list="annotation_ui_context.global_attribute_groups_list_compound"
+                :current_global_instance="compound_global_instance"
+                :schema_id="schema_id"
+                :project_string_id="project_string_id"
+                :view_only_mode="false"
+                :title="'Compound Files Attribute'"
+                @attribute_change="compound_global_attribute_change($event)"
+            />
+        </v-expansion-panel>
 
-          <v-expansion-panel @change="on_change_expansion(0)">
+          <v-expansion-panel @change="on_change_expansion(1)">
               <global_attributes_list
                 v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
                 :project_string_id="project_string_id"
@@ -21,7 +33,7 @@
               />
           </v-expansion-panel>
 
-            <v-expansion-panel @change="on_change_expansion(1)" :disabled="!current_instance">
+            <v-expansion-panel @change="on_change_expansion(2)" :disabled="!current_instance">
 
                 <v-expansion-panel-header>
                     <strong>Attributes {{ !current_instance ? "(select instance)" : null }}</strong>
@@ -40,7 +52,7 @@
                     />
                 </v-expansion-panel-content>
             </v-expansion-panel>
-            <v-expansion-panel data-cy="instance-expansion-panel" @change="on_change_expansion(2)">
+            <v-expansion-panel data-cy="instance-expansion-panel" @change="on_change_expansion(3)">
                     <v-expansion-panel-header>
                         <strong>Instances</strong>
                     </v-expansion-panel-header>
@@ -188,6 +200,10 @@ export default Vue.extend({
             type: Object, 
             required: true
         },
+        compound_global_instance: {
+            type: Object,
+            required: true
+        },
     },
     data() {
         return {
@@ -282,6 +298,9 @@ export default Vue.extend({
       },
       attribute_change: function(event, is_global = false) {
           this.$emit('on_update_attribute', event, is_global)
+      },
+      compound_global_attribute_change: function(attribute){
+        this.$emit('global_compound_attribute_change', attribute)
       },
       current_global_instance: function() {
         const global_instance = this.annotation_ui_context.instance_store.instance_store[this.annotation_ui_context.working_file.id].global_instance

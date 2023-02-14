@@ -40,6 +40,7 @@
     @on_instance_stop_hover="$emit('stop_hover_text_instance')"
     @on_update_attribute="(e, is_global) => $emit('update_text_attribute', e, is_global)"
     @change_instance_label="(e) => $emit('change_text_instance_lable', e)"
+    @global_compound_attribute_change="$emit('global_compound_attribute_change', $event)"
     ref="sidebar_text"
   />
 </div>
