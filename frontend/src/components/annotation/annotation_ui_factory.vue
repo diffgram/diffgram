@@ -830,12 +830,12 @@ export default Vue.extend({
       }
       let total_height = this.$refs.panels_manager.$el.clientHeight
       let total_rows = this.annotation_ui_context.panel_settings.rows
-      console.log('PANELS LIST resize', panes_list, this.annotation_ui_context.working_file_list, this.child_annotation_ctx_list)
+      console.log('TOTAL HEIGHT', total_height)
       for (let row_index = 0; row_index < panes_list.length; row_index++) {
         let row_files = this.annotation_ui_context.working_file_list.filter(file => file.row === row_index)
         for(let file of row_files){
           let i = this.annotation_ui_context.working_file_list.indexOf(file)
-          console.log('Iindex', i)
+
           // Set default initial values.
           if(this.child_annotation_ctx_list[i].container_height === 0){
             // We substract 50 px to leave a small padding when calculating new scale of images
@@ -847,6 +847,7 @@ export default Vue.extend({
 
           }
           this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[row_index].size / 100) - 50
+          console.log('container_height', i, this.child_annotation_ctx_list[i].container_height )
         }
 
       }
