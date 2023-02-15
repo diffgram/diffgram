@@ -580,6 +580,7 @@ export default Vue.extend({
       if (this.task_id_prop) {
         this.changing_task = true
         await this.fetch_single_task(this.task_id_prop);
+        this.update_root_file(this.annotation_ui_context.task.file)
         await this.check_credentials();
         await this.$nextTick()
         this.credentials_granted = this.has_credentials_or_admin();

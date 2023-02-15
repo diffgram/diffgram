@@ -214,8 +214,9 @@ describe('Annotate Files Tests', () => {
             slider_component.$emit('start');
             cy.wait(1000).then(() => {
               slider_component.$emit('end', 65);
-              cy.wait(2000).then(() => {
-                  cy.get('@annotation_update.all').should('have.length.at.least', 1)
+            }).then(() =>{
+              cy.wait(1000).then(() => {
+                cy.get('@annotation_update.all').should('have.length.at.least', 1)
                   .then((xhrs) => {
                     expect(xhrs[0].response, 'request status').to.have.property('statusCode', 200)
                     expect(xhrs[0].request.body.video_data.current_frame, 'request status').to.equal(0)
