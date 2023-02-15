@@ -1,4 +1,11 @@
 <template>
+<div style="display: flex; flex-direction: row">
+  <conversational_meta
+    v-if="working_file && global_attribute_groups_list && annotation_ui_context"
+    :workign_file="working_file"
+    :global_attribute_groups_list="global_attribute_groups_list"
+    :annotation_ui_context="annotation_ui_context"
+  />
   <div style="display: flex; flex-direction: column">
     <div style="display: flex; flex-direction: row">
       <text_fast_label
@@ -199,6 +206,7 @@
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script>
@@ -209,6 +217,7 @@ import text_selection_svg from "./render_elements/selection.vue"
 import text_fast_label from "./render_elements/fast_label_menu.vue"
 import text_context_menu from "./render_elements/text_context_menu.vue"
 import relation_in_progress from "./render_elements/relation_in_progress.vue"
+import conversational_meta from "./render_elements/conversational_meta.vue"
 import {TextAnnotationInstance, TextRelationInstance} from "../../vue_canvas/instances/TextInstance"
 import {getInstanceList} from "../../../services/instanceList"
 import getTextService from "../../../services/getTextService"
@@ -234,7 +243,8 @@ export default Vue.extend({
     text_selection_svg,
     text_fast_label,
     text_context_menu,
-    relation_in_progress
+    relation_in_progress,
+    conversational_meta
   },
   props: {
     image_annotation_ctx: {
@@ -358,7 +368,7 @@ export default Vue.extend({
   },
   computed: {
     real_container_width: function() {
-      if (this.container_width) return this.container_width
+      if (this.container_width) return this.container_width - 100
       else window.innerWidth - 350
     },
     render_rects: function () {
