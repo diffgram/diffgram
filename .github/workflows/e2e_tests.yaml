@@ -93,9 +93,7 @@ jobs:
     - run: cd /__w/diffgram
     - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
     - name: Fetch mc client
-      run: curl wget https://dl.min.io/client/mc/release/linux-amd64/mc
-    - name: Permissions to Execute MC
-      run: chmod +x ./mc
+      run: curl wget https://dl.min.io/client/mc/release/linux-amd64/mc  && chmod +x ./mc
     - name: Create the dev bucket
       run: ./mc alias set minio http://minio:9000 minioadmin minioadmin && ./mc mb minio/testbucket
     - name: Set policy
