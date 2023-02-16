@@ -303,9 +303,12 @@ export default Vue.extend({
         this.$emit('global_compound_attribute_change', attribute)
       },
       current_global_instance: function() {
-        const global_instance = this.annotation_ui_context.instance_store.instance_store[this.annotation_ui_context.working_file.id].global_instance
-
-        return global_instance
+        if (this.annotation_ui_context.instance_store && this.annotation_ui_context.instance_store.instance_store[this.annotation_ui_context.working_file.id]) {
+            const global_instance = this.annotation_ui_context.instance_store.instance_store[this.annotation_ui_context.working_file.id].global_instance
+    
+            return global_instance
+        }
+        return null
       }
     }
 })

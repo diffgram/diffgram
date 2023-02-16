@@ -840,18 +840,23 @@ export default Vue.extend({
         
         const refs = []
         file_ids.map(working_file_id => {
-          const ref = this.$refs[`annotation_area_factory_${working_file_id}`][0].$refs[`text_annotation_core_${working_file_id}`]
-          if (ref) refs.push(ref)
+          if (this.$refs[`annotation_area_factory_${working_file_id}`] && this.$refs[`annotation_area_factory_${working_file_id}`][0]) {
+            const ref = this.$refs[`annotation_area_factory_${working_file_id}`][0].$refs[`text_annotation_core_${working_file_id}`]
+            if (ref) refs.push(ref)
+          }
         })
-        let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`]
 
-        const text_resize_listener = () => refs.map(refrence => refrence.resize_listener())
-
-        listener_map = {
-          "beforeunload": ref.leave_listener,
-          "keydown": ref.keydown_event_listeners,
-          "keyup": ref.keyup_event_listeners,
-          "resize": text_resize_listener,
+        if (this.$refs[`annotation_area_factory_${file_id}`][0]) {
+          let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`]
+  
+          const text_resize_listener = () => refs.map(refrence => refrence.resize_listener())
+  
+          listener_map = {
+            "beforeunload": ref.leave_listener,
+            "keydown": ref.keydown_event_listeners,
+            "keyup": ref.keyup_event_listeners,
+            "resize": text_resize_listener,
+          }
         }
       }
 
@@ -1810,7 +1815,7 @@ export default Vue.extend({
 
       const file_type_arrya = raw_file.type.split('/')
 
-      const file = {...raw_file, type:file_type_arrya[0], subtype: file_type_arrya[1] }
+      const file = {...raw_file, type: file_type_arrya[0], subtype: file_type_arrya[1] }
 
       if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.computed_project_string_id, file.id)
