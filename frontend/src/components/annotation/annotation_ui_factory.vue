@@ -1797,14 +1797,21 @@ export default Vue.extend({
       }
       file.instance_list = this.annotation_ui_context.compound_global_attributes_instance_list
     },
-    set_default_layout_for_child_files: function(child_files){
+    set_default_layout_for_child_files: function(child_files, root_file = null){
       let cols = child_files.length < 4 ? child_files.length : 4
+
+      if (root_file && root_file.subtype === 'conversational') cols =1
       this.annotation_ui_context.panel_settings.set_cols_and_rows_from_total_items(cols, child_files.length)
     },
-    update_root_file: async function (file) {
-      if (!file) {
+    update_root_file: async function (raw_file) {
+      if (!raw_file) {
         return
       }
+
+      const file_type_arrya = raw_file.type.split('/')
+
+      const file = {...raw_file, type:file_type_arrya[0], subtype: file_type_arrya[1] }
+
       if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.computed_project_string_id, file.id)
         if (err) {
@@ -1815,7 +1822,7 @@ export default Vue.extend({
           return a.ordinal - b.ordinal
         })
 
-        this.set_default_layout_for_child_files(child_files)
+        this.set_default_layout_for_child_files(child_files, file)
         this.set_working_file_list(child_files)
         this.populate_child_context_list(this.annotation_ui_context.working_file_list)
         await this.set_working_file_from_child_file_list(this.annotation_ui_context.working_file_list[0])
