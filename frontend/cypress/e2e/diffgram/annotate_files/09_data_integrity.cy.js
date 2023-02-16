@@ -215,7 +215,8 @@ describe('Annotate Files Tests', () => {
             cy.wait(1000).then(() => {
               slider_component.$emit('end', 65);
             }).then(() =>{
-              cy.wait(1000).then(() => {
+              cy.wait(4000)
+                .then(() => {
                 cy.get('@annotation_update.all').should('have.length.at.least', 1)
                   .then((xhrs) => {
                     expect(xhrs[0].response, 'request status').to.have.property('statusCode', 200)
