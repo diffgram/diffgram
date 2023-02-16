@@ -20,11 +20,12 @@ describe('Global Compound Attributes Tests', () => {
     })
 
     it('Correctly creates Compound Global Attribute', () => {
-      cy.createCompoundGlobalAttribute(prompt, 'radio',)
+      cy.createCompoundGlobalAttribute(prompt, 'radio', options)
     })
     it('Correctly uploads a compound file and display the global compound attribute.', () => {
       cy.uploadCompoundFileImages(testUser.project_string_id,  `${uuidv4()}.diffgram`, 2)
-        .get('global-attributes-compound-list').should('exist')
+        .wait(3000)
+        .get('[data-cy="global-attributes-compound-list"]').should('exist')
     })
 
     it('Correctly sets the value of the radio button compound file attribute.', () => {
@@ -44,6 +45,6 @@ describe('Global Compound Attributes Tests', () => {
           expect(response.statusCode, 'response status').to.eq(200)
         })
     })
-    
+
   })
 })
