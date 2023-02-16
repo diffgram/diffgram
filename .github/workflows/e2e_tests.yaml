@@ -99,7 +99,12 @@ jobs:
     - run: mkdir /gcp
     - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
     - name: Fetch mc client
-      run: curl -o ./mc -# https://dl.min.io/client/mc/release/linux-amd64/mc && chmod +x ./mc
+      run: |
+        curl https://dl.min.io/client/mc/release/linux-amd64/mc \
+          --create-dirs \
+          -o $HOME/minio-binaries/mc
+        chmod +x $HOME/minio-binaries/mc
+        export PATH=$PATH:$HOME/minio-binaries/
     - name: Create the dev bucket
       run: ./mc alias set minio http://minio:9000 minioadmin minioadmin && ./mc mb minio/testbucket
     - name: Set policy

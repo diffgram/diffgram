@@ -499,10 +499,10 @@ export default Vue.extend({
     }
   },
   created() {
-    if (this.$route.query.edit_schema) {
+    if (this.$route && this.$route.query.edit_schema) {
       this.enabled_edit_schema = true;
     }
-    if (this.$route.query.view_only) {
+    if (this.$route && this.$route.query.view_only) {
       if (this.$route.query.view_only === 'false') {
         this.view_only = false;
       } else {
@@ -556,9 +556,9 @@ export default Vue.extend({
     }
 
     this.initializing = true
-
-    this.get_model_runs_from_query(this.$route.query);
-    if (this.$route.query.view_only) {
+    let query = this.$route ? this.$route.query : undefined
+    this.get_model_runs_from_query(query);
+    if (query && query.view_only) {
       this.view_only = true;
       if (this.$route.query.view_only === 'false') {
         this.view_only = false;
@@ -690,7 +690,7 @@ export default Vue.extend({
     },
     file_id: function () {
       let file_id = this.file_id_prop;
-      if (this.$route.query.file) {
+      if (this.$route && this.$route.query.file) {
         file_id = this.$route.query.file;
       }
       return file_id;

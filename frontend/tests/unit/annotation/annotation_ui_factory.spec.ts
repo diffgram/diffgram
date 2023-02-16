@@ -1,15 +1,14 @@
 import Vuex from "vuex";
 import Vuetify from "vuetify";
 import {shallowMount, createLocalVue} from "@vue/test-utils";
-import annotation_ui_factory from "../../../src/components/annotation/annotation_ui_factory";
-// import * as InstanceUtils from "@/utils/instance_utils";
-
+import annotation_ui_factory from "../../../src/components/annotation/annotation_ui_factory.vue";
+import VueRouter from 'vue-router'
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
 import '@/vue-canvas.js'
 
 localVue.use(Vuex);
-
+localVue.use(VueRouter)
 describe("Test annotation_ui_factory.vue", () => {
   let props;
 
@@ -43,6 +42,9 @@ describe("Test annotation_ui_factory.vue", () => {
       },
       mocks: {
         $get_sequence_color: () => {
+        },
+        $route:{
+
         },
         task: 1,
         label_schema:{
@@ -97,7 +99,7 @@ describe("Test annotation_ui_factory.vue", () => {
   });
 
   it("Tests if annotation_core mounts successfully", () => {
-    const wrapper = shallowMount(annotation_ui_factory, props, localVue);
+    const wrapper = shallowMount(annotation_ui_factory, props);
     expect(wrapper.html().includes('id="annotation_factory_container"')).toBeTruthy();
   });
 
