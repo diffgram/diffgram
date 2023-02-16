@@ -18,8 +18,14 @@ def api_file_compound_new(project_string_id):
        :param project_string_id:
        :return:
        """
-    spec_list = [{'name': str},
-                 {'directory_id': None}]
+    spec_list = [
+        {'name': str},
+        {'directory_id': None},
+        {'type': {
+            'kind': str,
+            'default': 'compound'
+        }}
+    ]
 
     log, input, untrusted_input = regular_input.master(request = request,
                                                        spec_list = spec_list)
@@ -36,6 +42,7 @@ def api_file_compound_new(project_string_id):
             member = member,
             directory_id = input['directory_id'],
             name = input['name'],
+            type = input['type']
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
@@ -47,6 +54,7 @@ def file_compound_new_core(session: Session,
                            project: Project,
                            directory_id: int,
                            name: int,
+                           type: str,
                            member: Member,
                            log: dict = regular_log.default()):
     """
@@ -81,15 +89,13 @@ def file_compound_new_core(session: Session,
         project_id = project.id,
         project = project,
         type = 'from_compound',
-        media_type = 'compound'
-
-
+        media_type = type
     )
 
     file = File.new(
         session = session,
         working_dir_id = directory_id,
-        file_type = "compound",
+        file_type = type,
         original_filename = name,
         project_id = project.id,  # TODO test if project_id is working as expected here
         input_id = input_obj.id
