@@ -73,7 +73,7 @@
 
 import axios from '../../services/customInstance';
 import attribute_new_or_update from './attribute_new_or_update.vue';
-import { attribute_update_or_new } from "../../services/attributesService"
+import { attribute_update_or_new } from "../../services/attributesService.ts"
 
  import Vue from "vue";
 

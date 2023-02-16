@@ -199,7 +199,7 @@
   import tag_select from '@/components/tag/tag_select.vue'
   import label_schema_selector from "../label/label_schema_selector.vue"
   import attribute_select from "../attribute/attribute_select.vue"
-import { attribute_group_list } from "../../services/attributesService";
+import { attribute_group_list } from "../../services/attributesService.ts";
 import { get_file_signed_url } from "../../services/fileServices.ts";
 import dataset_selector from "../attached/global_dataset_selector.vue"
 

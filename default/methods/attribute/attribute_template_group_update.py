@@ -18,6 +18,11 @@ def api_attribute_template_group_update(project_string_id):
 
     spec_list = [
         {'group_id': int},
+        {'ordinal': {
+            "required": False,
+            "default": 0,
+            "type": int
+        }},
         {'name': None},
         {'prompt': None},
         {'kind': str},
@@ -66,7 +71,8 @@ def api_attribute_template_group_update(project_string_id):
             max_value = input['max_value'],
             default_id = input['default_id'],
             is_global = input['is_global'],
-            global_type = input['global_type'])
+            global_type = input['global_type'],
+            ordinal = input['ordinal']        )
 
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
@@ -107,7 +113,8 @@ def group_update_core(
     default_id: int = None,
     tree_data: dict = None,
     is_global: bool = False,
-    global_type: str = 'file'):
+    global_type: str = 'file',
+    ordinal: int = None):
     if mode == "ARCHIVE":
 
         group.archived = True
@@ -183,7 +190,8 @@ def group_update_core(
 
 
         group.is_new = False
-
+        if ordinal is not None:
+            group.ordinal = ordinal
         group.name = name
         group.min_value = min_value
         group.max_value = max_value

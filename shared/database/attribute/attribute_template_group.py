@@ -60,6 +60,7 @@ class Attribute_Template_Group(Base):
     # Allowed Values: [compound_file, file]
     global_type = Column(String(), default = 'file')  # Expansion direction eg for frame, series, etc.
 
+    ordinal = Column(Integer, default = 0)
     @staticmethod
     def new(session,
             project,
@@ -94,6 +95,7 @@ class Attribute_Template_Group(Base):
             'name': self.name,
             'kind': self.kind,
             'prompt': self.prompt,
+            'ordinal': self.ordinal,
             'show_prompt': self.show_prompt,
             # wrapping in str() seems to be needed to avoid some strange
             # embedded serialization issues (not with calling it directly, but things
@@ -117,6 +119,7 @@ class Attribute_Template_Group(Base):
             'is_root': self.is_root,
             'name': self.name,
             'kind': self.kind,
+            'ordinal': self.ordinal,
             'prompt': self.prompt,
             'show_prompt': self.show_prompt,
             'default_value': self.default_value,

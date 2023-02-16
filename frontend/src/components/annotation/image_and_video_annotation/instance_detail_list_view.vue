@@ -60,10 +60,11 @@
         @attribute_change="global_attribute_change($event)"
       />
 
-      <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups)"></v-divider>
+      <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"></v-divider>
+      <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"></v-divider>
 
       <v-expansion-panels
-        v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups)"
+        v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"
         v-model="instance_detail_open"
         accordion
         :tile="true"
@@ -801,7 +802,7 @@ export default Vue.extend({
           let file_id_list = elm.label_file_list.map(label_file => label_file.id)
           return file_id_list.includes(this.current_instance.label_file.id)
         })
-        return attr_group_list;
+        return attr_group_list.sort((a, b) => a.ordinal - b.ordinal);;
 
       },
 
