@@ -92,22 +92,20 @@ jobs:
     - run: cp -rf . /__w/diffgram
     - run: cd /__w/diffgram
     - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
+    - name: Fetch mc client
+      run: curl wget https://dl.min.io/client/mc/release/linux-amd64/mc
+    - name: Permissions to Execute MC
+      run: chmod +x ./mc
+    - name: Create the dev bucket
+      run: ./mc alias set minio http://minio:9000 minioadmin minioadmin && ./mc mb minio/testbucket
+    - name: Set policy
+      run: ./mc policy set policy minio/testbucket
     - run: cd walrus
     - run: pip3 install -r walrus/requirements.txt
     - run: pip3 install -r default/requirements.txt
     - run: pip3 install pytest sqlalchemy-utils
     - run: mkdir /gcp
     - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
-    - name: Fetch mc client
-      run: |
-        curl https://dl.min.io/client/mc/release/linux-amd64/mc \
-          --create-dirs 
-        chmod +x ./mc
-        export PATH=$PATH:$HOME/minio-binaries/
-    - name: Create the dev bucket
-      run: ./mc alias set minio http://minio:9000 minioadmin minioadmin && ./mc mb minio/testbucket
-    - name: Set policy
-      run: ./mc policy set policy minio/testbucket
     - name: Check processes
       run: ls -a
     - run: yarn --cwd frontend/ install
