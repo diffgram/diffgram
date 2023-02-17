@@ -773,7 +773,6 @@ export default Vue.extend({
       if (this.listeners_map()) this.listeners_map()['resize']()
     },
     on_global_compound_attribute_change: function (attribute_payload) {
-      console.log('here')
       let group = attribute_payload[0];
       let value = attribute_payload[1];
       let idx = this.annotation_ui_context.compound_global_instance_index
@@ -1931,6 +1930,7 @@ export default Vue.extend({
         model_runs_data = encodeURIComponent(model_runs);
       }
       this.get_model_runs_from_query(model_runs_data);
+      if (this.listeners_map()) this.listeners_map()['resize']()
       this.changing_file = false;
 
     },
