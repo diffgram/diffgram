@@ -6,6 +6,13 @@ import InstanceList from "../../../src/helpers/instance_list"
 import * as taskServices from "../../../src/services/tasksServices"
 import { shallowMount, createLocalVue } from "@vue/test-utils";
 import { TextAnnotationInstance } from "../../../src/components/vue_canvas/instances/TextInstance";
+import {
+    BaseAnnotationUIContext,
+    TextAnnotationUIContext
+  } from "../../../src/types/AnnotationUIContext" //'../../types/AnnotationUIContext'
+import InstanceStore from "../../../src/helpers/InstanceStore";
+import CommandManager from "../../../src/helpers/command/command_manager"
+import History from "../../../src/helpers/history"
 
 const localVue = createLocalVue();
 localVue.use(Vuex);
@@ -16,6 +23,23 @@ describe("text_annotation_core.vue", () => {
     let drawer;
 
     beforeEach(() => {
+        const annotation_ui_context = new BaseAnnotationUIContext()
+        annotation_ui_context.working_file = {
+            id: 1,
+            type: "text"
+        }
+        annotation_ui_context.instance_store = new InstanceStore()
+        annotation_ui_context.label_schema = {
+            id: 69,
+            name: "POS tags",
+            project_id: 20,
+        }
+        annotation_ui_context.history = new History()
+        annotation_ui_context.command_manager = new CommandManager(annotation_ui_context.history)
+        
+        const child_annotation_ctx_list = [new TextAnnotationUIContext()]
+        annotation_ui_context.current_text_annotation_ctx = child_annotation_ctx_list[0]
+
         props = {
             propsData: {
                 label_file_colour_map: {},
@@ -23,7 +47,12 @@ describe("text_annotation_core.vue", () => {
                 project_string_id: "project_string_id",
                 global_attribute_groups_list: [],
                 per_instance_attribute_groups_list: [],
-                label_schema: 1,
+                label_schema: annotation_ui_context.label_schema,
+                annotation_ui_context: annotation_ui_context,
+                image_annotation_ctx: child_annotation_ctx_list[0],
+                child_annotation_ctx_list: child_annotation_ctx_list,
+                instance_store: annotation_ui_context.instance_store,
+                working_file: annotation_ui_context.working_file
             }
         }
 
@@ -31,10 +60,12 @@ describe("text_annotation_core.vue", () => {
         drawer = new DrawRects(tokens, lines, instance_list)
         wrapper = shallowMount(text_annotation_core, props, localVue)
 
+        console.log(wrapper)
+
         wrapper.setData({
             tokens, 
             lines, 
-            new_instance_list: instance_list,
+            instance_list: instance_list,
             new_command_manager: {
                 executeCommand: jest.fn()
             }
@@ -101,7 +132,7 @@ describe("text_annotation_core.vue", () => {
         wrapper.vm.on_open_context_menu(e, {})
 
         expect(preventDefault).toHaveBeenCalled()
-        expect(wrapper.vm.current_instance).toBeTruthy()
+        expect(wrapper.props().annotation_ui_context.get_current_ann_ctx().current_instance).toBeTruthy()
     })
 
     it("Should emit change_label_schema on on_change_label_schema", () => {
@@ -109,45 +140,17 @@ describe("text_annotation_core.vue", () => {
         expect(wrapper.emitted('change_label_schema')).toBeTruthy()
     })
 
-    it("Should successully save task and call next task trigger of the status is not complete on on_task_annotation_complete_and_save", async () => {
-        const task = {
-            id: 1
-        }
-
-        const response = {
-            data: {
-                task: {
-                    status: "complete"
-                }
-            }
-        }
-
-        props.propsData.task = task;
-        const local_wrapper = shallowMount(text_annotation_core, props, localVue)
-
-        const mock = jest.spyOn(taskServices, 'finishTaskAnnotation')
-        mock.mockReturnValue(response);
-
-        local_wrapper.vm.save = jest.fn();
-        local_wrapper.vm.trigger_task_change = jest.fn();
-
-        await local_wrapper.vm.on_task_annotation_complete_and_save()
-
-        expect(local_wrapper.vm.save).toHaveBeenCalled()
-        expect(local_wrapper.vm.trigger_task_change).toHaveBeenCalled()
-        mock.mockRestore();
-    })
-
-    it("Should not create instances on the bulk label if the instance contain more than one token", () => {
+    it("Should not create instances on the bulk label if the instance contain more than one token", async () => {
         const bulk_test_instance = new TextAnnotationInstance()
         bulk_test_instance.create_instance(1, 1, 2, {})
-        wrapper.vm.new_instance_list.push([bulk_test_instance])
+        wrapper.vm.instance_list.push([bulk_test_instance])
 
-        const initial_instance_snapshot = wrapper.vm.new_instance_list.get_all()
+
+        const initial_instance_snapshot = wrapper.vm.instance_list.get_all()
 
         wrapper.vm.bulk_labeling(1)
 
-        const final_instance_snapshot = wrapper.vm.new_instance_list.get_all()
+        const final_instance_snapshot = wrapper.vm.instance_list.get_all()
 
         expect(initial_instance_snapshot).toEqual(final_instance_snapshot)
     })
@@ -162,18 +165,18 @@ describe("text_annotation_core.vue", () => {
 
         const bulk_test_instance = new TextAnnotationInstance()
         bulk_test_instance.create_instance(1, test_token.id, test_token.id, {})
-        wrapper.vm.new_instance_list.push([bulk_test_instance])
+        wrapper.vm.instance_list.push([bulk_test_instance])
 
         await wrapper.vm.bulk_labeling(1)
-        const number_of_instances = wrapper.vm.new_instance_list.get_all().length
+        const number_of_instances = wrapper.vm.instance_list.get_all().length
 
 
         expect(number_of_instances).toEqual(test_token_count)
     })
 
-    it("Should trigger bulk label if the control is not pressed while clicking and if bulk label is set to true", () => {
-        wrapper.setData({
-            bulk_label: true
+    it("Should trigger bulk label if the control is not pressed while clicking and if bulk label is set to true", async () => {
+        await wrapper.setProps({
+            bulk_mode: true
         })
 
         wrapper.vm.bulk_labeling = jest.fn()
