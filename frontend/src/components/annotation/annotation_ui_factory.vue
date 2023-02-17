@@ -58,6 +58,7 @@
       v-if="(interface_type === 'image' || interface_type === 'video') && !task_error.task_request && !changing_file && !changing_task && annotation_ui_context.current_image_annotation_ctx != undefined"
       :annotation_ui_context="annotation_ui_context"
       :interface_type="interface_type"
+      :root_file="root_file"
       :label_file_colour_map="label_file_colour_map"
       :label_list="label_list"
       :project_string_id="computed_project_string_id"
@@ -498,10 +499,10 @@ export default Vue.extend({
     }
   },
   created() {
-    if (this.$route.query.edit_schema) {
+    if (this.$route && this.$route.query.edit_schema) {
       this.enabled_edit_schema = true;
     }
-    if (this.$route.query.view_only) {
+    if (this.$route && this.$route.query.view_only) {
       if (this.$route.query.view_only === 'false') {
         this.view_only = false;
       } else {
@@ -555,9 +556,9 @@ export default Vue.extend({
     }
 
     this.initializing = true
-
-    this.get_model_runs_from_query(this.$route.query);
-    if (this.$route.query.view_only) {
+    let query = this.$route ? this.$route.query : undefined
+    this.get_model_runs_from_query(query);
+    if (query && query.view_only) {
       this.view_only = true;
       if (this.$route.query.view_only === 'false') {
         this.view_only = false;
@@ -579,6 +580,7 @@ export default Vue.extend({
       if (this.task_id_prop) {
         this.changing_task = true
         await this.fetch_single_task(this.task_id_prop);
+        this.update_root_file(this.annotation_ui_context.task.file)
         await this.check_credentials();
         await this.$nextTick()
         this.credentials_granted = this.has_credentials_or_admin();
@@ -688,7 +690,7 @@ export default Vue.extend({
     },
     file_id: function () {
       let file_id = this.file_id_prop;
-      if (this.$route.query.file) {
+      if (this.$route && this.$route.query.file) {
         file_id = this.$route.query.file;
       }
       return file_id;
@@ -829,12 +831,12 @@ export default Vue.extend({
       }
       let total_height = this.$refs.panels_manager.$el.clientHeight
       let total_rows = this.annotation_ui_context.panel_settings.rows
-      console.log('PANELS LIST resize', panes_list, this.annotation_ui_context.working_file_list, this.child_annotation_ctx_list)
+      console.log('TOTAL HEIGHT', total_height)
       for (let row_index = 0; row_index < panes_list.length; row_index++) {
         let row_files = this.annotation_ui_context.working_file_list.filter(file => file.row === row_index)
         for(let file of row_files){
           let i = this.annotation_ui_context.working_file_list.indexOf(file)
-          console.log('Iindex', i)
+
           // Set default initial values.
           if(this.child_annotation_ctx_list[i].container_height === 0){
             // We substract 50 px to leave a small padding when calculating new scale of images
@@ -846,6 +848,7 @@ export default Vue.extend({
 
           }
           this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[row_index].size / 100) - 50
+          console.log('container_height', i, this.child_annotation_ctx_list[i].container_height )
         }
 
       }

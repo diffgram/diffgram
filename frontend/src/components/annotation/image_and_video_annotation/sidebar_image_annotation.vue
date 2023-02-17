@@ -15,6 +15,7 @@
                                :model_run_list="annotation_ui_context.model_run_list"
                                :label_file_colour_map="label_file_colour_map"
                                :refresh="annotation_ui_context.refresh"
+                               :root_file="root_file"
                                :per_instance_attribute_groups_list="annotation_ui_context.per_instance_attribute_groups_list"
                                @toggle_instance_focus="$emit('toggle_instance_focus', $event)"
                                @show_all="$emit('focus_instance_show_all', $event)"
@@ -225,6 +226,7 @@ export default Vue.extend({
     project_string_id: {type: String, required: true},
     current_global_instance: {type: Object},
     compound_global_instance: {type: Object},
+    root_file: {type: Object},
     instance_list: {type: Array as Instance[], required: true, default: ()=>{return[]}},
     video_parent_file_instance_list: {type: Array as Instance[], required: true, default: ()=>{return[]}},
   },

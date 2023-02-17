@@ -36,10 +36,10 @@ import "cypress-real-events/support";
 Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
   cy.document().then((doc) => {
     cy.window().then((window) => {
-      const annCore = window.AnnotationCore;
+      const annCore = window.AnnotationUIFactory;
       let canvas_wrapper_id = `canvas_wrapper`
       if (annCore) {
-        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+        canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
       const real_x = x + canvas_client_box.x;
@@ -79,10 +79,10 @@ Cypress.Commands.add('rightclickdowncanvas', function (x, y) {
 Cypress.Commands.add('mousedowncanvas', function (x, y) {
   cy.document().then((doc) => {
     cy.window().then((window) => {
-      const annCore = window.AnnotationCore;
+      const annCore = window.AnnotationUIFactory;
       let canvas_wrapper_id = `canvas_wrapper`
       if (annCore) {
-        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+        canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
       }
       cy.log(canvas_wrapper_id)
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
@@ -112,10 +112,10 @@ Cypress.Commands.add('mousedowncanvas', function (x, y) {
 Cypress.Commands.add('dragcanvas', function (from_x, from_y, to_x, to_y) {
   cy.document().then((doc) => {
     cy.window().then((window) => {
-      const annCore = window.AnnotationCore;
+      const annCore = window.AnnotationUIFactory;
       let canvas_wrapper_id = `canvas_wrapper`
       if (annCore) {
-        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+        canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
       const real_from_x = from_x + canvas_client_box.x;
@@ -179,10 +179,10 @@ Cypress.Commands.add('mouseovercanvas', function (x, y) {
 
   cy.document().then((doc) => {
     cy.window().then((window) => {
-      const annCore = window.AnnotationCore;
+      const annCore = window.AnnotationUIFactory;
       let canvas_wrapper_id = `canvas_wrapper`
       if (annCore) {
-        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+        canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
       const real_x = x + canvas_client_box.x;
@@ -207,10 +207,10 @@ Cypress.Commands.add('mousemovecanvas', function (x, y) {
 
   cy.document().then((doc) => {
     cy.window().then((window) => {
-      const annCore = window.AnnotationCore;
+      const annCore = window.AnnotationUIFactory;
       let canvas_wrapper_id = `canvas_wrapper`
       if (annCore) {
-        canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+        canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
       }
       const canvas_client_box = doc.getElementById(canvas_wrapper_id).getBoundingClientRect();
       const real_x = x + canvas_client_box.x;
@@ -232,10 +232,10 @@ Cypress.Commands.add('mousemovecanvas', function (x, y) {
 })
 Cypress.Commands.add('mouseupcanvas', function (x, y) {
   cy.window().then((window) => {
-    const annCore = window.AnnotationCore;
+    const annCore = window.AnnotationUIFactory;
     let canvas_wrapper_id = `canvas_wrapper`
     if (annCore) {
-      canvas_wrapper_id = `canvas_wrapper_${annCore.working_file.id}`
+      canvas_wrapper_id = `canvas_wrapper_${annCore.annotation_ui_context.working_file.id}`
     }
     cy.get(`#${canvas_wrapper_id}`).then(($el) => {
       cy.wrap($el)
@@ -777,6 +777,29 @@ Cypress.Commands.add('select_label', function (label_name) {
   cy.get('.v-list-item.v-list-item--link').not(':contains("attributes")').contains(label_name).click({force: true})
 });
 
+Cypress.Commands.add('chooseCompoundAttributeTypeOnWizard', function () {
+  // hook for future
+  cy.get('[data-cy=global-compound-attribute-button]').click({force: true})
+});
+
+Cypress.Commands.add('createCompoundGlobalAttribute', function (attr_name, type, options) {
+  const next_wizard_step = '[data-cy=wizard_navigation_next]'
+  const wizard_step_container =  (step) => {return `[data-cy=attribute_wizard_step_${step}]`};
+  cy.goToSchemaFromToolbar()
+    .get('[data-cy="tab__Attributes"]').first().click({force: true})
+    .get(`[data-cy=new_attribute_button]`).click({force: true})
+    .get(`[data-cy="attribute_group_header_Untitled Attribute Group"]`).first().click({force: true})
+    .get('[data-cy=attribute_kind_select]').click({force: true})
+    .get('.v-list.v-select-list div').contains('Radio').click({force: true})
+    .get(`${wizard_step_container(1)} ${next_wizard_step}`).click({force: true})
+    .typesAttributePrompt(attr_name)
+    .get(`${wizard_step_container(2)} ${next_wizard_step}`).click({force: true})
+    .chooseCompoundAttributeTypeOnWizard(type)
+    .get(`${wizard_step_container(3)} ${next_wizard_step}`).click({force: true})
+    .get(`${wizard_step_container(4)} ${next_wizard_step}`).click({force: true})
+    .createAttributeOptions(options)
+});
+
 Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = `${uuidv4()}.json`) {
   cy.window().then(async window => {
     let store = window.app.$store;
@@ -850,6 +873,50 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
             cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
           })
       });
+
+  })
+
+
+});
+
+Cypress.Commands.add('uploadCompoundFileImages', function (project_string_id, file_name = `${uuidv4()}.diffgram`, num_files=2) {
+  cy.window().then(async window => {
+    let file_path = 'compound_files/root_file_payload.json';
+    cy.fixture(file_path, 'utf-8').then((rootFilePayload) => {
+      rootFilePayload.name = file_name
+      cy.request('POST', `http://localhost:8085/api/v1/project/${project_string_id}/file/new-compound`, rootFilePayload).then(
+        (response) => {
+            let root_id = response.body.file.id;
+            let files = [];
+            for(let i =0; i < num_files; i++){
+              files.push({
+                media: {
+                  url:  'https://picsum.photos/800',
+                  type: 'image'
+                },
+                ordinal: i,
+                type: 'from_url',
+                directory_id: 1,
+                parent_file_id: root_id,
+                original_filename: `Child file ${i}.jpg`
+              })
+            }
+            cy.wrap(files).each((file_data) => {
+              cy.request('POST', `http://localhost:8085/api/walrus/v1/project/${project_string_id}/input/packet`, file_data).then(
+                (resp) => {
+                  expect(resp.status).to.equal(200)
+                }
+              )
+            })
+            .then(() => {
+              cy.wait(2000)
+              cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`)
+              cy.wait(1000)
+              cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
+            })
+        }
+      )
+    })
 
   })
 
