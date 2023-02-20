@@ -386,15 +386,20 @@ def api_project_input_from_local(project_string_id):
         temp_log["error"]["input"] = "Expecting a key 'json' in form request."
         return jsonify(log = temp_log), 400
 
-    spec_list = [{"directory_id": {
-        'default': None,
-        'kind': int,
-        'required': False
-    }},
+    spec_list = [
+        {"directory_id": {
+            'default': None,
+            'kind': int,
+            'required': False
+        }},
         {"parent_file_id": {
             'default': None,
             'kind': int,
             'required': False
+        }},
+        {'ordinal': {
+            "required": False,
+            "kind": int
         }},
         {"instance_list": {
             'default': None,
@@ -407,7 +412,7 @@ def api_project_input_from_local(project_string_id):
             'default': None,
             'kind': dict,
             'required': False
-        }
+        },
         }
     ]
 
@@ -444,7 +449,9 @@ def api_project_input_from_local(project_string_id):
             file = file,
             directory_id = directory.id,
             parent_file_id = input.get('parent_file_id'),
-            http_input = input)
+            http_input = input,
+            ordinal = input.get('ordinal', 0),
+            )
 
         if result is not True:
             return jsonify(
@@ -465,7 +472,9 @@ def input_from_local(session,
                      http_input,
                      file,
                      directory_id,
-                     parent_file_id=None):
+                     parent_file_id=None,
+                     ordinal = 0
+                    ):
     immediate_mode = True
 
     input = Input()
@@ -485,6 +494,7 @@ def input_from_local(session,
     input.extension = os.path.splitext(original_filename)[1].lower()
     input.original_filename = os.path.split(original_filename)[1]
     input.parent_file_id = parent_file_id
+    input.ordinal = ordinal
     print('parent_file_id', parent_file_id)
 
     input.temp_dir = tempfile.mkdtemp()
