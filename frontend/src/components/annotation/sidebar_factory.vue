@@ -10,6 +10,7 @@
     :compound_global_instance="compound_global_instance"
     :video_parent_file_instance_list="video_parent_file_instance_list"
     :instance_list="instance_list"
+    :root_file="root_file"
     @toggle_instance_focus="$emit('toggle_instance_focus', $event)"
     @focus_instance_show_all="$emit('focus_instance_show_all', $event)"
     @update_canvas="$emit('update_canvas', $event)"
@@ -62,41 +63,16 @@ export default Vue.extend({
     text_sidebar
   },
   props: {
-    interface_type: {
-      type: String, 
-      required: true
-    },
-    annotation_ui_context: {
-      type: Object as BaseAnnotationUIContext, 
-      required: true
-    },
-    label_file_colour_map: {
-      type: Object as LabelColourMap, 
-      required: true
-    },
-    label_list: {
-      type: Array as LabelFile[], 
-      required: true
-    },
-    project_string_id: {
-      type: String, 
-      required: true
-    },
-    current_global_instance: {
-      type: Object, 
-      required: false
-    },
-    compound_global_instance: {
-      type: Object, 
-      default: () => {}
-    },
-    instance_list: {
-      required: true
-    },
-    video_parent_file_instance_list: {
-      type: Array as Instance[], 
-      required: false
-    },
+    interface_type: {type: String, required: true},
+    annotation_ui_context: {type: Object as BaseAnnotationUIContext, required: true},
+    label_file_colour_map: {type: Object as LabelColourMap, required: true},
+    label_list: {type: Array as LabelFile[], required: true},
+    project_string_id: {type: String, required: true},
+    current_global_instance: {type: Object, required: false},
+    compound_global_instance: {type: Object, required: false},
+    instance_list: {type: Array as Instance[], required: false},
+    video_parent_file_instance_list: {type: Array as Instance[], required: false},
+    root_file: {type: Object, required: true},
   },
   data: function () {
     return {}

@@ -40,7 +40,8 @@
 
 
       <global_attributes_list
-        v-if="global_attribute_groups_list_compound && global_attribute_groups_list_compound.length > 0"
+        data-cy="global-attributes-compound-list"
+        v-if="global_attribute_groups_list_compound && global_attribute_groups_list_compound.length > 0 && root_file.type === 'compound'"
         :global_attribute_groups_list="global_attribute_groups_list_compound"
         :current_global_instance="compound_global_instance"
         :schema_id="schema_id"
@@ -59,10 +60,11 @@
         @attribute_change="global_attribute_change($event)"
       />
 
-      <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups)"></v-divider>
+      <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"></v-divider>
+      <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"></v-divider>
 
       <v-expansion-panels
-        v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups)"
+        v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"
         v-model="instance_detail_open"
         accordion
         :tile="true"
@@ -583,6 +585,7 @@ export default Vue.extend({
       'per_instance_attribute_groups_list',
       'video_parent_file_instance_list',
       'compound_global_instance',
+      'root_file',
 
 
     ],
@@ -799,7 +802,7 @@ export default Vue.extend({
           let file_id_list = elm.label_file_list.map(label_file => label_file.id)
           return file_id_list.includes(this.current_instance.label_file.id)
         })
-        return attr_group_list;
+        return attr_group_list.sort((a, b) => a.ordinal - b.ordinal);;
 
       },
 

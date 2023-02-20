@@ -648,7 +648,7 @@
                         </v-icon>
                         <p class="title-file">{{ item.original_filename }}</p>
                       </v-container>
-                      <v-container v-else-if="item.type === 'compound'"
+                      <v-container v-else-if="item.type.includes('compound')"
                                    :class="{['d-flex ma-0 flex-column justify-center align-center pa-0']: true,
                                  ['unsselected-box']: !selected.includes(item),
                                  ['selected-box']: selected.includes(item)}">

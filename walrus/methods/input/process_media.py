@@ -944,9 +944,10 @@ class Process_Media():
         if self.input.media_type not in ['image', 'video', 'sensor_fusion', 'text', 'audio', 'geospatial']:
             return
 
+        file = self.input.file
         if self.input.file.parent_id is not None:
             # Avoid adding child of a compound file
-            return
+            file = File.get_by_id(session = self.session, file_id = self.input.file.parent_id)
 
         directory = self.input.directory
         if directory is None:
@@ -968,7 +969,7 @@ class Process_Media():
             job_sync_dir_manger.create_file_links_for_attached_dirs(
                 sync_only = True,
                 create_tasks = True,
-                file_to_link = self.input.file,
+                file_to_link = file,
                 file_to_link_dataset = self.working_dir,
                 related_input = self.input,
                 member = self.member

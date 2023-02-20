@@ -62,6 +62,7 @@
       v-if="(interface_type === 'image' || interface_type === 'video' || interface_type === 'text') && !task_error.task_request && !changing_file && !changing_task && annotation_ui_context.current_image_annotation_ctx != undefined"
       :annotation_ui_context="annotation_ui_context"
       :interface_type="interface_type"
+      :root_file="root_file"
       :label_file_colour_map="label_file_colour_map"
       :label_list="label_list"
       :project_string_id="computed_project_string_id"
@@ -532,10 +533,10 @@ export default Vue.extend({
     }
   },
   created() {
-    if (this.$route.query.edit_schema) {
+    if (this.$route && this.$route.query.edit_schema) {
       this.enabled_edit_schema = true;
     }
-    if (this.$route.query.view_only) {
+    if (this.$route && this.$route.query.view_only) {
       if (this.$route.query.view_only === 'false') {
         this.view_only = false;
       } else {
@@ -589,9 +590,9 @@ export default Vue.extend({
     }
 
     this.initializing = true
-
-    this.get_model_runs_from_query(this.$route.query);
-    if (this.$route.query.view_only) {
+    let query = this.$route ? this.$route.query : undefined
+    this.get_model_runs_from_query(query);
+    if (query && query.view_only) {
       this.view_only = true;
       if (this.$route.query.view_only === 'false') {
         this.view_only = false;
@@ -613,6 +614,7 @@ export default Vue.extend({
       if (this.task_id_prop) {
         this.changing_task = true
         await this.fetch_single_task(this.task_id_prop);
+        this.update_root_file(this.annotation_ui_context.task.file)
         await this.check_credentials();
         await this.$nextTick()
         this.credentials_granted = this.has_credentials_or_admin();
@@ -722,7 +724,7 @@ export default Vue.extend({
     },
     file_id: function () {
       let file_id = this.file_id_prop;
-      if (this.$route.query.file) {
+      if (this.$route && this.$route.query.file) {
         file_id = this.$route.query.file;
       }
       return file_id;
@@ -773,7 +775,6 @@ export default Vue.extend({
       if (this.listeners_map()) this.listeners_map()['resize']()
     },
     on_global_compound_attribute_change: function (attribute_payload) {
-      console.log('here')
       let group = attribute_payload[0];
       let value = attribute_payload[1];
       let idx = this.annotation_ui_context.compound_global_instance_index
@@ -840,18 +841,23 @@ export default Vue.extend({
         
         const refs = []
         file_ids.map(working_file_id => {
-          const ref = this.$refs[`annotation_area_factory_${working_file_id}`][0].$refs[`text_annotation_core_${working_file_id}`]
-          if (ref) refs.push(ref)
+          if (this.$refs[`annotation_area_factory_${working_file_id}`] && this.$refs[`annotation_area_factory_${working_file_id}`][0]) {
+            const ref = this.$refs[`annotation_area_factory_${working_file_id}`][0].$refs[`text_annotation_core_${working_file_id}`]
+            if (ref) refs.push(ref)
+          }
         })
-        let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`]
 
-        const text_resize_listener = () => refs.map(refrence => refrence.resize_listener())
-
-        listener_map = {
-          "beforeunload": ref.leave_listener,
-          "keydown": ref.keydown_event_listeners,
-          "keyup": ref.keyup_event_listeners,
-          "resize": text_resize_listener,
+        if (this.$refs[`annotation_area_factory_${file_id}`][0]) {
+          let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`]
+  
+          const text_resize_listener = () => refs.map(refrence => refrence.resize_listener())
+  
+          listener_map = {
+            "beforeunload": ref.leave_listener,
+            "keydown": ref.keydown_event_listeners,
+            "keyup": ref.keyup_event_listeners,
+            "resize": text_resize_listener,
+          }
         }
       }
 
@@ -911,6 +917,7 @@ export default Vue.extend({
 
           }
           this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[row_index].size / 100) - 50
+          console.log('container_height', i, this.child_annotation_ctx_list[i].container_height )
         }
 
       }
@@ -1797,14 +1804,21 @@ export default Vue.extend({
       }
       file.instance_list = this.annotation_ui_context.compound_global_attributes_instance_list
     },
-    set_default_layout_for_child_files: function(child_files){
+    set_default_layout_for_child_files: function(child_files, root_file = null){
       let cols = child_files.length < 4 ? child_files.length : 4
+
+      if (root_file && root_file.subtype === 'conversational') cols =1
       this.annotation_ui_context.panel_settings.set_cols_and_rows_from_total_items(cols, child_files.length)
     },
-    update_root_file: async function (file) {
-      if (!file) {
+    update_root_file: async function (raw_file) {
+      if (!raw_file) {
         return
       }
+
+      const file_type_arrya = raw_file.type.split('/')
+
+      const file = {...raw_file, type: file_type_arrya[0], subtype: file_type_arrya[1] }
+
       if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.computed_project_string_id, file.id)
         if (err) {
@@ -1815,7 +1829,7 @@ export default Vue.extend({
           return a.ordinal - b.ordinal
         })
 
-        this.set_default_layout_for_child_files(child_files)
+        this.set_default_layout_for_child_files(child_files, file)
         this.set_working_file_list(child_files)
         this.populate_child_context_list(this.annotation_ui_context.working_file_list)
         await this.set_working_file_from_child_file_list(this.annotation_ui_context.working_file_list[0])
@@ -1919,6 +1933,7 @@ export default Vue.extend({
         model_runs_data = encodeURIComponent(model_runs);
       }
       this.get_model_runs_from_query(model_runs_data);
+      if (this.listeners_map()) this.listeners_map()['resize']()
       this.changing_file = false;
 
     },
