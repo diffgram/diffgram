@@ -27,19 +27,11 @@ def api_file_compound_new(project_string_id):
        :param project_string_id:
        :return:
        """
-    spec_list = [
-        {'name': str},
-        {'directory_id': None},
-        {'type': {
-            'kind': str,
-            'default': 'compound'
-        }}
-    ]
     spec_list = [{'name': str},
                  {'directory_id': None},
                  {'type': {
                     'kind': str,
-                    'default': 'compound'
+                    'default': 'compound',
                     }},
                  {'instance_list': {
                      'default': [],
