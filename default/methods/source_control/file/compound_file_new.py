@@ -56,7 +56,7 @@ def api_file_compound_new(project_string_id):
             member = member,
             directory_id = input['directory_id'],
             name = input['name'],
-            type = input['type']
+            type = input['type'],
             instance_list = input['instance_list'],
         )
         if len(log["error"].keys()) >= 1:
