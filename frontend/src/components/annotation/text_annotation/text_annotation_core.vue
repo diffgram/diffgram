@@ -1,7 +1,7 @@
 <template>
 <div style="display: flex; flex-direction: row">
   <conversational_meta
-    v-if="working_file && global_attribute_groups_list && annotation_ui_context"
+    v-if="!image_annotation_ctx.rendering && !image_annotation_ctx.resizing"
     :workign_file="working_file"
     :global_attribute_groups_list="global_attribute_groups_list"
     :annotation_ui_context="annotation_ui_context"
