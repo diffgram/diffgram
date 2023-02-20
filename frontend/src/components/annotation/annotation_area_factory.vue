@@ -314,7 +314,6 @@ export default Vue.extend({
     }
   },
   computed: {
-
     current_interface_ref: function () {
       if (this.interface_type === 'image' || this.interface_type === 'video') {
         return this.$refs.annotation_core

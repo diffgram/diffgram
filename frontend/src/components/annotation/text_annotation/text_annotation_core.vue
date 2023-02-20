@@ -1,5 +1,8 @@
 <template>
-<div style="display: flex; flex-direction: row">
+<div
+  :ref="`text_annotation_area_${working_file.id}`"
+  style="display: flex; flex-direction: row"
+>
   <conversational_meta
     v-if="!image_annotation_ctx.rendering && !image_annotation_ctx.resizing"
     :workign_file="working_file"
@@ -782,6 +785,10 @@ export default Vue.extend({
       this.tokens = tokens
       this.image_annotation_ctx.rendering = false
       this.image_annotation_ctx.resizing = false
+
+      setTimeout(() => {
+        this.child_annotation_ctx_list.find(child => child.file.id === this.working_file.id).container_height = this.$refs[`text_annotation_area_${this.working_file.id}`].getBoundingClientRect().height
+      }, 1000)
     },
     // function to draw relations between instances
     on_trigger_instance_click: function (e, instance_id) {

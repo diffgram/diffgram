@@ -18,8 +18,9 @@
     >
       <pane 
         v-for="(item, row_index) in num_rows" :key="`row_${row_index}`"
+        :style="`height: ${child_annotation_ctx_list[row_index].container_height}px`"
       >
-        <splitpanes  
+        <splitpanes
           @pane-click="$emit('pane-click', row_index, $event)" 
           @resize="on_col_resized(row_index, $event)"
         >
@@ -93,7 +94,11 @@ export default Vue.extend({
     working_file_list: {
       type: Array,
       default: []
-    }
+    },
+    child_annotation_ctx_list: {
+      type: Array,
+      default: []
+    },
   },
   methods: {
     on_col_resized: function (row_index, panes_dimensions_list){
