@@ -531,6 +531,7 @@
   import { TreeNode } from "../../helpers/tree_view/Node"
 
   import Vue from "vue";
+  import {attribute_group_update} from "../../services/attributesService";
 
   export default Vue.extend({
 
@@ -1153,7 +1154,7 @@
           }
 
           // we assume if no labels selected it's ok
-          if (this.label_file_list.length == 0) {
+          if (this.group_internal.label_file_list.length == 0) {
             return true
           }
 
@@ -1165,7 +1166,7 @@
         recieve_label_file: function (label_file_list) {
 
 
-          this.label_file_list = label_file_list
+          this.group_internal.label_file_list = label_file_list
 
           // this feels a bit hacky but at least should work for now...
           if (this.first_load == true) {
@@ -1179,7 +1180,7 @@
         },
 
 
-        api_group_update: function (mode) {
+        api_group_update: async function (mode) {
           this.loading_update = true
           this.error = {}
           this.success = false
@@ -1210,32 +1211,19 @@
               group.min_value = min_value;
             }
           }
-
-          axios.post(
-            '/api/v1/project/' + this.project_string_id +
-            '/attribute/group/update',
-            {
-              group_id: Number(group.id),
-              name: group.name,
-              prompt: group.prompt,
-              label_file_list: this.label_file_list,
-              kind: group.kind,
-              default_id: group.default_id,
-              default_value: group.default_value,
-              min_value: min_value,
-              max_value: max_value,
-              mode: mode,
-              is_global: this.group.is_global,
-              global_type: this.group.global_type ? this.group.global_type : 'file',
-            }).then(response => {
-
-            //this.group = response.data.group
-
+          group.max_value = max_value;
+          group.min_value = min_value;
+          try{
+            let [data, error] = await attribute_group_update(this.project_string_id, mode, group)
             this.success = true
             this.loading_update = false
-
-            // response.data.log.info
-
+            if(error){
+              if (error.response.status == 400) {
+                this.error = error.response.data.log.error
+              }
+              this.loading_update = false
+              console.error(error)
+            }
 
             // careful mode is local, not this.mode
             if (mode == 'ARCHIVE') {
@@ -1252,18 +1240,13 @@
                 this.group.max_value = 10;
               }
             }
-
-          }).catch(error => {
-
-            if (error) {
-              if (error.response.status == 400) {
-                this.error = error.response.data.log.error
-              }
-              this.loading_update = false
-              console.error(error)
-            }
-          });
-
+          }
+          catch (error){
+            this.loading_update = false
+            console.error(error)
+          } finally {
+            this.loading_update = false
+          }
         }
 
       }

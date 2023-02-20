@@ -8,6 +8,8 @@ module.exports = {
   transformIgnorePatterns: [
     "node_modules/(?!(three"
     + "|ol"
+    + "|quick-lru"
+    + "|ol-ext"
     + "|yet-another-module"
     + ")/)",
 

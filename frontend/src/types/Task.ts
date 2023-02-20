@@ -26,6 +26,7 @@ export type Task = {
   time_created: Date
   time_completed: Date
   time_updated: Date
+  file: File
   count_instances_chagned: number
   reviewed_no_changes: boolean
   review_star_rating_average: number
