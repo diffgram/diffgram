@@ -1719,6 +1719,7 @@ export default Vue.extend({
         await this.set_working_file_from_child_file_list(file)
 
       }
+      await this.$nextTick()
       this.on_panes_ready()
       this.root_file = file
     },
