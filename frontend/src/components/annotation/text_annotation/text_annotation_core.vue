@@ -786,9 +786,12 @@ export default Vue.extend({
       this.image_annotation_ctx.rendering = false
       this.image_annotation_ctx.resizing = false
 
-      setTimeout(() => {
-        this.child_annotation_ctx_list.find(child => child.file.id === this.working_file.id).container_height = this.$refs[`text_annotation_area_${this.working_file.id}`].getBoundingClientRect().height + 25
-      }, 1000)
+      if (this.annotation_ui_context.subtype === 'conversational') {
+        setTimeout(() => {
+          this.child_annotation_ctx_list.find(child => child.file.id === this.working_file.id).container_height = this.$refs[`text_annotation_area_${this.working_file.id}`].getBoundingClientRect().height + 25
+        }, 100)
+      }
+
     },
     // function to draw relations between instances
     on_trigger_instance_click: function (e, instance_id) {
