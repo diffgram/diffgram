@@ -209,7 +209,9 @@ export class TextAnnotationUIContext {
   current_instance: any
   hover_instance: any
 
-  constructor() {
+  file: any
+
+  constructor(file) {
     this.container_width = 0
     this.container_height = 0
     this.has_changed = false
@@ -222,6 +224,8 @@ export class TextAnnotationUIContext {
 
     this.rendering = true
     this.resizing = false
+
+    this.file = file
   }
 
 }

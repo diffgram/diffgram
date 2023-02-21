@@ -1,4 +1,14 @@
 <template>
+<div
+  :ref="`text_annotation_area_${working_file.id}`"
+  style="display: flex; flex-direction: row"
+>
+  <conversational_meta
+    v-if="!image_annotation_ctx.rendering && !image_annotation_ctx.resizing"
+    :workign_file="working_file"
+    :global_attribute_groups_list="global_attribute_groups_list"
+    :annotation_ui_context="annotation_ui_context"
+  />
   <div style="display: flex; flex-direction: column">
     <div style="display: flex; flex-direction: row">
       <text_fast_label
@@ -199,6 +209,7 @@
       </div>
     </div>
   </div>
+</div>
 </template>
 
 <script>
@@ -209,6 +220,7 @@ import text_selection_svg from "./render_elements/selection.vue"
 import text_fast_label from "./render_elements/fast_label_menu.vue"
 import text_context_menu from "./render_elements/text_context_menu.vue"
 import relation_in_progress from "./render_elements/relation_in_progress.vue"
+import conversational_meta from "./render_elements/conversational_meta.vue"
 import {TextAnnotationInstance, TextRelationInstance} from "../../vue_canvas/instances/TextInstance"
 import {getInstanceList} from "../../../services/instanceList"
 import getTextService from "../../../services/getTextService"
@@ -234,7 +246,8 @@ export default Vue.extend({
     text_selection_svg,
     text_fast_label,
     text_context_menu,
-    relation_in_progress
+    relation_in_progress,
+    conversational_meta
   },
   props: {
     image_annotation_ctx: {
@@ -358,7 +371,7 @@ export default Vue.extend({
   },
   computed: {
     real_container_width: function() {
-      if (this.container_width) return this.container_width
+      if (this.container_width) return this.container_width - 100
       else window.innerWidth - 350
     },
     render_rects: function () {
@@ -494,7 +507,7 @@ export default Vue.extend({
       const bounding_rect = this.$refs[`initial_svg_element_${this.working_file.id}`].getBoundingClientRect()
       this.context_menu = {
         x: e.clientX - bounding_rect.left + 200 < bounding_rect.width ? e.clientX - bounding_rect.x : e.clientX - bounding_rect.x - 200,
-        y: e.clientY - 85 + window.pageYOffset,
+        y: e.clientY - bounding_rect.top + 25,
         instance
       }
       this.selection_rects = null
@@ -772,6 +785,13 @@ export default Vue.extend({
       this.tokens = tokens
       this.image_annotation_ctx.rendering = false
       this.image_annotation_ctx.resizing = false
+
+      if (this.annotation_ui_context.subtype === 'conversational') {
+        setTimeout(() => {
+          this.child_annotation_ctx_list.find(child => child.file.id === this.working_file.id).container_height = this.$refs[`text_annotation_area_${this.working_file.id}`].getBoundingClientRect().height + 25
+        }, 100)
+      }
+
     },
     // function to draw relations between instances
     on_trigger_instance_click: function (e, instance_id) {

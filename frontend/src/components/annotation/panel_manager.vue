@@ -18,8 +18,9 @@
     >
       <pane 
         v-for="(item, row_index) in num_rows" :key="`row_${row_index}`"
+        :style="`height: ${child_annotation_ctx_list[row_index].container_height}px`"
       >
-        <splitpanes  
+        <splitpanes
           @pane-click="$emit('pane-click', row_index, $event)" 
           @resize="on_col_resized(row_index, $event)"
         >
@@ -93,6 +94,21 @@ export default Vue.extend({
     working_file_list: {
       type: Array,
       default: []
+    },
+    child_annotation_ctx_list: {
+      type: Array,
+      default: []
+    },
+  },
+  mounted() {
+    this.disable_resize(this.root_file)
+  },
+  watch: {
+    root_file: {
+      deep: true,
+      handler: function(newVal) {
+        this.disable_resize(newVal)
+      }
     }
   },
   methods: {
@@ -107,12 +123,25 @@ export default Vue.extend({
 
       if (!file_type) return null
       return file_type.type
+    },
+    disable_resize: function(file) {
+      const list = document.getElementsByClassName("splitpanes__splitter")
+      if (file.subtype === 'conversational') {
+        for (let item of list) {
+          item.classList.add("noClick")
+        }
+      } else {
+        const list = document.getElementsByClassName("splitpanes__splitter")
+        for (let item of list) {
+          item.classList.remove("noClick")
+        }
+      }
     }
   }
 })
 </script>
 
-<style scoped>
+<style>
 .splitpanes__pane {
   display: flex;
   justify-content: center;
@@ -120,7 +149,7 @@ export default Vue.extend({
 
   color: rgba(255, 255, 255, 0.6);
 }
-.splitpanes--vertical > .splitpanes__splitter {
+/* .splitpanes--vertical > .splitpanes__splitter {
   min-width: 6px;
   background: linear-gradient(90deg, #ccc, #111) !important;
 }
@@ -128,7 +157,12 @@ export default Vue.extend({
 .splitpanes--horizontal > .splitpanes__splitter {
   min-height: 6px;
   background: linear-gradient(0deg, #ccc, #111) !important;
+} */
+
+.noClick {
+  pointer-events: none !important
 }
+
 .pane-container-unselected:hover{
   transition: .3s ease;
   box-shadow: 0 0 0 6px #b0b0b0;

@@ -136,6 +136,7 @@
         :layout_direction="layout_direction"
         :num_columns="annotation_ui_context.panel_settings.columns"
         :root_file="root_file"
+        :child_annotation_ctx_list="child_annotation_ctx_list"
         :panel_settings="annotation_ui_context.panel_settings"
         :selected_row="annotation_ui_context.working_file.row"
         :selected_col="annotation_ui_context.working_file.column"
@@ -914,12 +915,9 @@ export default Vue.extend({
             } else{
               this.child_annotation_ctx_list[i].container_height = 500
             }
-
           }
           this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[row_index].size / 100) - 50
-          console.log('container_height', i, this.child_annotation_ctx_list[i].container_height )
         }
-
       }
     },
     recalculate_pane_column_dimensions: function (row_index, panes_list) {
@@ -981,7 +979,7 @@ export default Vue.extend({
           new_child_list.push(new ImageAnnotationUIContext())
         } else if (file.type === 'text') {
           // Other type don't have context yet.
-          new_child_list.push(new TextAnnotationUIContext())
+          new_child_list.push(new TextAnnotationUIContext(file))
         } else if (file.type === 'audio') {
           // Other type don't have context yet.
           new_child_list.push(new AudioAnnotationUIContext())
@@ -1818,6 +1816,7 @@ export default Vue.extend({
       const file_type_arrya = raw_file.type.split('/')
 
       const file = {...raw_file, type: file_type_arrya[0], subtype: file_type_arrya[1] }
+      this.annotation_ui_context.subtype = file_type_arrya[1]
 
       if (file.type === 'compound') {
         let [child_files, err] = await get_child_files(this.computed_project_string_id, file.id)
@@ -1826,6 +1825,7 @@ export default Vue.extend({
           return
         }
         child_files = child_files.sort((a, b) => {
+          console.log(a)
           return a.ordinal - b.ordinal
         })
 
