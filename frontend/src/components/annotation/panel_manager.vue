@@ -100,6 +100,17 @@ export default Vue.extend({
       default: []
     },
   },
+  mounted() {
+    this.disable_resize(this.root_file)
+  },
+  watch: {
+    root_file: {
+      deep: true,
+      handler: function(newVal) {
+        this.disable_resize(newVal)
+      }
+    }
+  },
   methods: {
     on_col_resized: function (row_index, panes_dimensions_list){
       this.$emit('cols_resized', row_index, panes_dimensions_list)
@@ -112,12 +123,25 @@ export default Vue.extend({
 
       if (!file_type) return null
       return file_type.type
+    },
+    disable_resize: function(file) {
+      const list = document.getElementsByClassName("splitpanes__splitter")
+      if (file.subtype === 'conversational') {
+        for (let item of list) {
+          item.classList.add("noClick")
+        }
+      } else {
+        const list = document.getElementsByClassName("splitpanes__splitter")
+        for (let item of list) {
+          item.classList.remove("noClick")
+        }
+      }
     }
   }
 })
 </script>
 
-<style scoped>
+<style>
 .splitpanes__pane {
   display: flex;
   justify-content: center;
@@ -125,7 +149,7 @@ export default Vue.extend({
 
   color: rgba(255, 255, 255, 0.6);
 }
-.splitpanes--vertical > .splitpanes__splitter {
+/* .splitpanes--vertical > .splitpanes__splitter {
   min-width: 6px;
   background: linear-gradient(90deg, #ccc, #111) !important;
 }
@@ -133,7 +157,12 @@ export default Vue.extend({
 .splitpanes--horizontal > .splitpanes__splitter {
   min-height: 6px;
   background: linear-gradient(0deg, #ccc, #111) !important;
+} */
+
+.noClick {
+  pointer-events: none !important
 }
+
 .pane-container-unselected:hover{
   transition: .3s ease;
   box-shadow: 0 0 0 6px #b0b0b0;
