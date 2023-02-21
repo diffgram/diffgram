@@ -467,9 +467,9 @@ export default Vue.extend({
         this.hotkey_manager.activate(this.listeners_map())
       }
     },
-    '$route'(to, from) {
+    async '$route'(to, from) {
       if (from.name === 'task_annotation' && to.name === 'studio') {
-        this.fetch_project_file_list();
+        await this.fetch_project_file_list();
         this.annotation_ui_context.task = null;
         if (this.$refs.file_manager_sheet) {
           this.$refs.file_manager_sheet.display_file_manager_sheet();
@@ -831,7 +831,6 @@ export default Vue.extend({
       }
       let total_height = this.$refs.panels_manager.$el.clientHeight
       let total_rows = this.annotation_ui_context.panel_settings.rows
-      console.log('TOTAL HEIGHT', total_height)
       for (let row_index = 0; row_index < panes_list.length; row_index++) {
         let row_files = this.annotation_ui_context.working_file_list.filter(file => file.row === row_index)
         for(let file of row_files){
@@ -1720,6 +1719,7 @@ export default Vue.extend({
         await this.set_working_file_from_child_file_list(file)
 
       }
+      await this.$nextTick()
       this.on_panes_ready()
       this.root_file = file
     },

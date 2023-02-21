@@ -58,7 +58,6 @@ describe('Annotate Files Tests', () => {
           cy.wait(500)
 
 
-
         }
 
 
@@ -127,16 +126,16 @@ describe('Annotate Files Tests', () => {
         ]
         for (let box of boxes) {
           cy.mousedowncanvas(box.min_x, box.min_y)
-          .wait(500)
+            .wait(500)
 
-          .mouseupcanvas()
-          .wait(1000)
+            .mouseupcanvas()
+            .wait(1000)
 
-          .mousedowncanvas(box.max_x, box.max_y)
-          .wait(500)
-          .mouseupcanvas()
+            .mousedowncanvas(box.max_x, box.max_y)
+            .wait(500)
+            .mouseupcanvas()
 
-          .wait(2000)
+            .wait(2000)
         }
         cy.wait(7000)
           .get('[data-cy="edit_toggle"]').click({force: true})
@@ -207,34 +206,31 @@ describe('Annotate Files Tests', () => {
         cy.wait(3000)
           .window().then(window => {
           window.AnnotationUIFactory.set_has_changed(true)
-           })
+        })
           .window().its('video_player').then(video_player_component => {
+          cy.wait(1000).then(() => {
+            video_player_component.go_to_keyframe(65)
 
-            const slider_component = video_player_component.$refs.slider;
-            slider_component.$emit('start');
-            cy.wait(1000).then(() => {
-              slider_component.$emit('end', 65);
-            }).then(() =>{
-              cy.wait(4000)
-                .then(() => {
-                cy.get('@annotation_update.all').should('have.length.at.least', 1)
-                  .then((xhrs) => {
-                    expect(xhrs[0].response, 'request status').to.have.property('statusCode', 200)
-                    expect(xhrs[0].request.body.video_data.current_frame, 'request status').to.equal(0)
+          })
+          .then(() => {
+            cy.wait(1500)
+              .get('@annotation_update.all').should('have.length.at.least', 1)
+              .then((xhrs) => {
+                expect(xhrs[0].response, 'request status').to.have.property('statusCode', 200)
+                expect(xhrs[0].request.body.video_data.current_frame, 'request status').to.equal(0)
 
-                    cy.window().its('AnnotationUIFactory').then(ui_factory => {
-                      expect(ui_factory.annotation_ui_context.current_image_annotation_ctx.unsaved_frames.length).to.equal(0)
-                      let pending_save_frames = Object.keys(ui_factory.annotation_ui_context.current_image_annotation_ctx.instance_buffer_metadata);
-                      for(let key of pending_save_frames){
-                        expect(ui_factory.annotation_ui_context.current_image_annotation_ctx.instance_buffer_metadata[key].pending_save).to.satisfy(val => {
-                          return val === false || val === undefined
-                        });
+                cy.window().its('AnnotationUIFactory').then(ui_factory => {
+                  expect(ui_factory.annotation_ui_context.current_image_annotation_ctx.unsaved_frames.length).to.equal(0)
+                  let pending_save_frames = Object.keys(ui_factory.annotation_ui_context.current_image_annotation_ctx.instance_buffer_metadata);
+                  for (let key of pending_save_frames) {
+                    expect(ui_factory.annotation_ui_context.current_image_annotation_ctx.instance_buffer_metadata[key].pending_save).to.satisfy(val => {
+                      return val === false || val === undefined
+                    });
 
-                      }
+                  }
 
-                    })
-                  })
-            })
+                })
+              })
           })
         })
       });
