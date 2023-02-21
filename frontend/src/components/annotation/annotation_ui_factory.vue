@@ -467,9 +467,9 @@ export default Vue.extend({
         this.hotkey_manager.activate(this.listeners_map())
       }
     },
-    '$route'(to, from) {
+    async '$route'(to, from) {
       if (from.name === 'task_annotation' && to.name === 'studio') {
-        this.fetch_project_file_list();
+        await this.fetch_project_file_list();
         this.annotation_ui_context.task = null;
         if (this.$refs.file_manager_sheet) {
           this.$refs.file_manager_sheet.display_file_manager_sheet();
