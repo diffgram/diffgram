@@ -787,7 +787,7 @@ export default Vue.extend({
       this.image_annotation_ctx.resizing = false
 
       setTimeout(() => {
-        this.child_annotation_ctx_list.find(child => child.file.id === this.working_file.id).container_height = this.$refs[`text_annotation_area_${this.working_file.id}`].getBoundingClientRect().height
+        this.child_annotation_ctx_list.find(child => child.file.id === this.working_file.id).container_height = this.$refs[`text_annotation_area_${this.working_file.id}`].getBoundingClientRect().height + 25
       }, 1000)
     },
     // function to draw relations between instances
