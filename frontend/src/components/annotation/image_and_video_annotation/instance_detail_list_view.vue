@@ -412,11 +412,13 @@
                       <!-- Edit label
                          For images only
                         -->
-                      <div v-if="data_table_hover_index == props.item.instance_list_index
+                      <div v-show="data_table_hover_index == props.item.instance_list_index
                         || data_table_inner_menu_open == true
                         && data_table_hover_click_index == props.item.instance_list_index ">
                         <button_with_menu
+                          :ref="`change_label_button_instance_${props.item.id}`"
                           v-if="video_mode != true"
+                          :commit_menu_status="true"
                           @menu_open="data_table_inner_menu_open = $event,
                                   data_table_hover_click_index=props.item.instance_list_index"
                           tooltip_message="Change Label Template"
@@ -429,6 +431,7 @@
                             <v-layout column>
 
                               <label_select_only
+                                :enable_hotkeys="true"
                                 :label_file_list_prop=label_list
                                 :select_this_id_at_load=props.item.label_file_id
                                 @label_file="instance_update(
@@ -846,6 +849,16 @@ export default Vue.extend({
 
     },
     methods: {
+      open_change_label_menu: function(instance_id: number){
+        let ref_str = `change_label_button_instance_${instance_id}`;
+        let button = this.$refs[ref_str]
+
+        if(button){
+          button[0].open_menu()
+        }
+
+
+      },
       set_instance_index_numbers: function () {
         if(this.instance_list == undefined){
           return

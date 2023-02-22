@@ -225,6 +225,7 @@
               @save_multiple_frames="save_multiple_frames"
               @global_instance_changed="on_global_instance_changed"
               @change_task="(event) => trigger_task_change(event, annotation_ui_context.task, false)"
+              @open_label_change_dialog="open_change_label_dialog_sidebar"
             />
           </div>
 
@@ -731,6 +732,13 @@ export default Vue.extend({
     },
   },
   methods: {
+    open_change_label_dialog_sidebar: function(instance_id: number){
+      let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref()
+      if(sidebar && sidebar.$refs.instance_detail_list){
+        let instance_detail_list = sidebar.$refs.instance_detail_list
+        instance_detail_list.open_change_label_menu(instance_id)
+      }
+    },
     on_grid_changed: function(){
       this.set_working_file_list(this.annotation_ui_context.working_file_list)
       this.on_panes_ready()

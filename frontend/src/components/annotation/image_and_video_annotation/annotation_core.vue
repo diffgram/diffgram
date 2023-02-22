@@ -665,6 +665,7 @@ import IssuesAnnotationUIManager from "./../issues/IssuesAnnotationUIManager";
 import {BaseAnnotationUIContext, ImageAnnotationUIContext} from "../../../types/AnnotationUIContext";
 import {AutoBorderContext} from "../../vue_canvas/advanced_tools/PolygonAutoBorderTool";
 import store from '../../../../src/store.js'
+import {BoxInstanceCoordinator} from "../../vue_canvas/coordinators/coordinator_types/BoxInstanceCoordinator";
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
 
@@ -1183,6 +1184,7 @@ export default Vue.extend({
       },
 
       instance_focused_index: null,
+      instance_selection_hotkeys_index: null,
 
       window_width_from_listener: 1280,
       window_height_from_listener: 650,
@@ -1803,6 +1805,51 @@ export default Vue.extend({
   },
   // TODO 312 Methods!! refactor in multiple files and classes.
   methods: {
+    rotate_instance_selection_hotkeys_index: function(dir: string = 'next'){
+      console.log(
+        'ROTATING', this.instance_selection_hotkeys_index
+      )
+      if(this.draw_mode){
+        this.$emit('draw_mode_change', false)
+      }
+      if(this.instance_selection_hotkeys_index == undefined){
+        this.instance_selection_hotkeys_index = 0
+      }
+      else if(this.instance_selection_hotkeys_index < this.instance_list.length - 1){
+        if(dir === 'next'){
+          this.instance_selection_hotkeys_index += 1
+        } else{
+          if(this.instance_selection_hotkeys_index === 0){
+            this.instance_selection_hotkeys_index = this.instance_list.length - 1
+          } else{
+            this.instance_selection_hotkeys_index -= 1
+          }
+
+        }
+
+      } else if(this.instance_selection_hotkeys_index === this.instance_list.length - 1){
+        if(dir === 'next'){
+          this.instance_selection_hotkeys_index = 0
+        } else{
+          this.instance_selection_hotkeys_index -= 1
+        }
+
+      }
+      let instance = this.instance_list[this.instance_selection_hotkeys_index]
+      console.log('INSTANCE CURRENT', instance)
+
+      if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance.type)) {
+        let annotation_ctx = this.build_ann_event_ctx()
+        let coord_router: ImageAnnotationCoordinatorRouter = this.create_coordinator_router()
+        let coordinator = coord_router.generate_from_instance(instance, instance.type)
+        // Simulate select() interaction
+        let dummyInteractionCtx = new ImageInteractionEvent({annotation_ctx: annotation_ctx})
+        coordinator.select(dummyInteractionCtx)
+      } else{
+        instance.selected = true
+      }
+      this.instance_selected(instance)
+    },
     clear_unsaved: function() {
       this.instance_list = this.annotation_ui_context.instance_store.clear_unsaved(this.working_file.id)
     },
@@ -2911,6 +2958,8 @@ export default Vue.extend({
       // instance update
       if (update.mode == "update_label") {
         // not 100% sure if we need both here
+        console.log('INSTANCE udate labe', instance)
+        console.log('INSTANCE update', update)
         instance.label_file = update.payload;
         instance.label_file_id = update.payload.id;
       }
@@ -6267,7 +6316,7 @@ export default Vue.extend({
         }
       }
     },
-    create_coordinator_router: function (event: ImageInteractionEvent): ImageAnnotationCoordinatorRouter {
+    create_canvas_mouse_ctx: function(){
       let canvas_mouse_ctx: CanvasMouseCtx = {
         mouse_position: this.mouse_position,
         canvas_element_ctx: this.canvas_element_ctx,
@@ -6283,6 +6332,10 @@ export default Vue.extend({
         label_settings: this.label_settings,
         canvas_transform: this.canvas_transform
       }
+      return canvas_mouse_ctx
+    },
+    create_coordinator_router: function (event: ImageInteractionEvent): ImageAnnotationCoordinatorRouter {
+      let canvas_mouse_ctx: CanvasMouseCtx = this.create_canvas_mouse_ctx()
       const interaction_generator = new ImageAnnotationCoordinatorRouter(
         event,
         this.instance_hover_index,
@@ -7133,6 +7186,20 @@ export default Vue.extend({
         if (this.instance_type == "polygon") {
           this.finish_polygon_drawing(event)
         }
+      }
+
+      // Left or right arrows
+      console.log('KEY', this.shift_key, this.ctrl_key, event.keyCode)
+      if(this.ctrl_key && (event.keyCode === 37 || event.keyCode === 39)){
+        this.rotate_instance_selection_hotkeys_index(event.keyCode === 37 ? 'previous' : 'next')
+      }
+      if(event.keyCode === 76 ){
+        console.log('OPEN MENU', this.selected_instance)
+        let instance = this.selected_instance
+        if(instance){
+          this.$emit('open_label_change_dialog', instance.id)
+        }
+
       }
 
       if (event.keyCode === 32) {
