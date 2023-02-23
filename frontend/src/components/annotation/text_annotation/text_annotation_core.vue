@@ -976,6 +976,7 @@ export default Vue.extend({
 
       instance_list = this.get_and_set_global_instance(instance_list)
 
+
       // New command pattern
       this.instance_list = new InstanceList(instance_list)
     },
