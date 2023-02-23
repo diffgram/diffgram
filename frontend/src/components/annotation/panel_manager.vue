@@ -4,7 +4,7 @@
     class="splitpanes-container" 
   >
     <panel_manager_toolbar
-      v-if="root_file.type === 'compound'"
+      v-if="root_file.type === 'compound' && root_file.subtype !== 'conversational'"
       :panel_settings="panel_settings" class="toolbar" 
       @grid_changed="$emit('grid_changed')"
     />
