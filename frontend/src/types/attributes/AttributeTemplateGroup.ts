@@ -10,6 +10,8 @@ export type AttributeTemplateGroup = {
   ordinal: number
   is_global: boolean
   is_root: boolean
+
+  is_read_only: boolean
   kind: string
   max_value: number
   min_value: number

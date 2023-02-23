@@ -72,6 +72,7 @@ export const attribute_group_update = async (project_string_id, mode, group: Att
         kind: group.kind,
         default_id: group.default_id,
         default_value: group.default_value,
+        is_read_only: group.is_read_only,
         min_value: group.min_value,
         max_value: group.max_value,
         ordinal: group.ordinal,
