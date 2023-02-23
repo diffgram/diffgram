@@ -34,19 +34,19 @@ export default Vue.extend({
     },
     computed: {
       username: function() {
-        const author_attribute = this.global_attribute_groups_list.find(attr => attr.prompt.toLowerCase() === 'author')
+        const author_attribute = this.global_attribute_groups_list.find(attr => attr.name.toLowerCase() === 'message_author')
         const author_name = this.annotation_ui_context.instance_store.instance_store[this.workign_file.id].global_instance.attribute_groups[author_attribute.id]
         return author_name
       },
       time: function() {
-        const time_attribute = this.global_attribute_groups_list.find(attr => attr.prompt.toLowerCase() === 'time')
+        const time_attribute = this.global_attribute_groups_list.find(attr => attr.name.toLowerCase() === 'message_time')
 
         const time = this.annotation_ui_context.instance_store.instance_store[this.workign_file.id].global_instance.attribute_groups[time_attribute.id]
 
         return time
       },
       date: function() {
-        const date_attribute = this.global_attribute_groups_list.find(attr => attr.prompt.toLowerCase() === 'date')
+        const date_attribute = this.global_attribute_groups_list.find(attr => attr.name.toLowerCase() === 'message_date')
         const date = this.annotation_ui_context.instance_store.instance_store[this.workign_file.id].global_instance.attribute_groups[date_attribute.id]
 
         return date
