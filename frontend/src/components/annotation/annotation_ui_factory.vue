@@ -1833,7 +1833,6 @@ export default Vue.extend({
           return
         }
         child_files = child_files.sort((a, b) => {
-          console.log(a)
           return a.ordinal - b.ordinal
         })
 

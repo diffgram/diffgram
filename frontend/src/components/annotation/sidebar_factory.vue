@@ -70,7 +70,7 @@ export default Vue.extend({
     project_string_id: {type: String, required: true},
     current_global_instance: {type: Object, required: false},
     compound_global_instance: {type: Object, required: false},
-    instance_list: {type: Array as Instance[], required: false},
+    instance_list: {required: false},
     video_parent_file_instance_list: {type: Array as Instance[], required: false},
     root_file: {type: Object, required: true},
   },
