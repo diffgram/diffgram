@@ -82,7 +82,8 @@ export default Vue.extend({
 
 <style scoped>
 .fast-menu-element {
-    position: absolute
+    position: absolute;
+    z-index: 2;
 }
 
 .context-header {

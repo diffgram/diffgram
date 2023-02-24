@@ -142,10 +142,13 @@ export default Vue.extend({
 </script>
 
 <style>
+
 .splitpanes__pane {
   display: flex;
   justify-content: center;
   align-items: center;
+
+  overflow: visible;
 
   color: rgba(255, 255, 255, 0.6);
 }
