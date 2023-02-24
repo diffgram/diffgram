@@ -7,7 +7,7 @@
 
       <div v-on="on" class="d-flex justify-center" >
         <file_preview
-          v-if="(file.type === 'image' || file.type === 'video' || file.type === 'compound')"
+          v-if="(file.type === 'image' || file.type === 'video' || file.type.includes('compound'))"
           :class="`d-flex file-preview ${file.type}-preview`"
           :file_preview_width="file_preview_width"
           :file_preview_height="file_preview_height"
