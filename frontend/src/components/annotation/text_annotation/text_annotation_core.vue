@@ -45,7 +45,7 @@
           @mouseup="trigger_mouseup"
           @mousedown="trigger_mousedown"
         >
-          <g v-if="image_annotation_ctx.rendering" :transform="`translate(0, ${render_offset})`">
+          <g v-if="image_annotation_ctx.rendering && initial_words_measures" :transform="`translate(0, ${render_offset})`">
             <text
               v-for="(word, index) in initial_words_measures"
               :key="word.value + index"
@@ -57,7 +57,7 @@
               {{ word.value }}
             </text>
           </g>
-          <g v-if="image_annotation_ctx.resizing" :transform="`translate(0, ${render_offset})`">
+          <g v-if="image_annotation_ctx.resizing && initial_words_measures" :transform="`translate(0, ${render_offset})`">
             <text
               v-for="(word, index) in initial_words_measures"
               :key="word.value + index"
@@ -74,7 +74,7 @@
               v-if="relation_drawing"
               :render_drawing_arrow="render_drawing_arrow"
             />
-            <g v-if="render_rects.length > 0">
+            <g v-if="render_rects && render_rects.length > 0">
               <g
                 v-for="instance in instance_list.get().filter(instance => !instance.soft_delete && !invisible_labels.includes(instance.label_file_id))"
                 :key="`instance_rect_${instance.get_instance_data().id}`"
@@ -333,7 +333,7 @@ export default Vue.extend({
       text: null,
       current_label: null,
       relation_drawing: false,
-      initial_words_measures: [],
+      initial_words_measures: null,
       lines: [],
       tokens: [],
       invisible_labels: [],
@@ -377,6 +377,7 @@ export default Vue.extend({
     render_rects: function () {
       if (this.image_annotation_ctx.rendering || this.image_annotation_ctx.resizing) return [];
       if (this.tokens.length === 0) return [];
+      if (!this.instance_list) return [];
 
       let rects_to_draw = [];
       this.instance_list.get().filter(instance => !instance.soft_delete && !this.invisible_labels.includes(instance.label_file_id)).map(instance => {
@@ -435,6 +436,11 @@ export default Vue.extend({
     }
   },
   watch: {
+    initial_words_measures: function(newVal) {
+      if (newVal) {
+        setTimeout(this.initialize_token_render, 1000)
+      }
+    },
     instance_list: function (newVal) {
       if (this.working_file.type === "text" && newVal) {
         this.instance_store.set_instance_list(this.working_file.id, newVal)
@@ -445,7 +451,7 @@ export default Vue.extend({
     working_file: function () {
       this.image_annotation_ctx.rendering = true
       this.text = null;
-      this.initial_words_measures = [];
+      this.initial_words_measures = null;
       this.lines = []
       this.show_label_selection = false
       this.selection_rects = null
@@ -454,7 +460,7 @@ export default Vue.extend({
     task: function () {
       this.image_annotation_ctx.rendering = true
       this.text = null;
-      this.initial_words_measures = [];
+      this.initial_words_measures = null;
       this.lines = []
       this.show_label_selection = false
       this.selection_rects = null
@@ -564,6 +570,7 @@ export default Vue.extend({
       this.show_label_selection = false
       this.instance_in_progress = null
       clearTimeout(this.re_render_func);
+      
       this.re_render_func = setTimeout(this.initialize_token_render, 1000)
     },
     leave_listener: function (e) {
@@ -736,6 +743,7 @@ export default Vue.extend({
         set_words = words
 
         this.initial_words_measures = set_words
+
         this.initialize_instance_list()
       } catch(e) {
         this.fetching_error = true
@@ -743,6 +751,7 @@ export default Vue.extend({
     },
     initialize_token_render: async function () {
       if (!this.$refs[`initial_svg_element_${this.working_file.id}`]) return
+      if (!this.initial_words_measures) return
       
       const tokens = [];
       let token_x_position = 40;
@@ -979,6 +988,8 @@ export default Vue.extend({
 
       // New command pattern
       this.instance_list = new InstanceList(instance_list)
+
+      // setTimeout(this.initialize_token_render, 1000)
     },
     after_save: async function (updated_instances) {
       updated_instances.map(add_instance => {
