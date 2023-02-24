@@ -1663,7 +1663,7 @@ export default Vue.extend({
       await this.save(true);
       const response = await finishTaskAnnotation(this.annotation_ui_context.task.id);
 
-      const new_status = response.data.annotation_ui_context.task.status;
+      const new_status = response.data.task.status;
       this.annotation_ui_context.task.status = new_status;
 
       if (new_status !== "complete") this.submitted_to_review = true;
