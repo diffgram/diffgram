@@ -250,6 +250,7 @@
               @global_instance_changed="on_global_instance_changed"
               @change_task="(event) => trigger_task_change(event, annotation_ui_context.task, false)"
               @trigger_listeners_setup="trigger_listeners_setup"
+              @open_label_change_dialog="open_change_label_dialog_sidebar"
             />
           </div>
 
@@ -502,9 +503,9 @@ export default Vue.extend({
         this.hotkey_manager.activate(this.listeners_map())
       }
     },
-    '$route'(to, from) {
+    async '$route'(to, from) {
       if (from.name === 'task_annotation' && to.name === 'studio') {
-        this.fetch_project_file_list();
+        await this.fetch_project_file_list();
         this.annotation_ui_context.task = null;
         if (this.$refs.file_manager_sheet) {
           this.$refs.file_manager_sheet.display_file_manager_sheet();
@@ -768,6 +769,13 @@ export default Vue.extend({
   methods: {
     trigger_listeners_setup: function() {
       if (this.hotkey_manager) this.hotkey_manager.activate(this.listeners_map())
+    },
+    open_change_label_dialog_sidebar: function(instance_id: number){
+      let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref()
+      if(sidebar && sidebar.$refs.instance_detail_list){
+        let instance_detail_list = sidebar.$refs.instance_detail_list
+        instance_detail_list.open_change_label_menu(instance_id)
+      }
     },
     on_grid_changed: function(){
       this.set_working_file_list(this.annotation_ui_context.working_file_list)
@@ -1843,6 +1851,7 @@ export default Vue.extend({
         await this.set_working_file_from_child_file_list(file)
 
       }
+      await this.$nextTick()
       this.on_panes_ready()
       this.root_file = file
     },

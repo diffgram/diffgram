@@ -34,14 +34,22 @@
             Scope
           </v-stepper-step>
 
+          <v-stepper-step
+            editable
+            :complete="step > 4"
+            step="4"
+          >
+            Editable
+          </v-stepper-step>
+
 
 
           <v-divider></v-divider>
 
           <v-stepper-step
             editable
-            :complete="step > 4"
-            step="4">
+            :complete="step > 5"
+            step="5">
            Visible When
           </v-stepper-step>
 
@@ -49,8 +57,8 @@
 
           <v-stepper-step
             editable
-            :complete="step > 5"
-            step="5"
+            :complete="step > 6"
+            step="6"
           >
             {{ group.kind !== "tree" ? "Options" : "Tree" }}
           </v-stepper-step>
@@ -59,8 +67,8 @@
           <v-stepper-step
             v-if="group.kind !== 'tree'"
             editable
-            :complete="step > 6"
-            step="6">
+            :complete="step > 7"
+            step="7">
             Defaults
           </v-stepper-step>
 
@@ -71,12 +79,12 @@
           color="secondary"
           striped
           :value="global_progress"
-          :height="group.kind !== 'tree' ? 7 : 6"
+          :height="group.kind !== 'tree' ? 8 : 7"
         >
         </v-progress-linear>
 
 
-        <v-stepper-items style="height: 100%" class="pt-4">
+        <v-stepper-items style="height: 100%; min-height: 300px; border-bottom: 1px solid #e0e0e0" class="pt-4">
 
           <v-stepper-content step="1" style="height: 100%" data-cy="attribute_wizard_step_1">
 
@@ -209,8 +217,40 @@
 
           </v-stepper-content>
 
-
           <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_4">
+
+            <h2> 4. Read Only or Editable? </h2>
+
+            <br>
+            <p>
+              The Default is editable. You can use read only attributes to upload additional metadata to files, this metadata
+              will not be changed by annotators. I can only be set at upload time, via the API/SDK.
+            </p>
+
+            <br>
+
+            <v-layout class="justify-center align-center">
+              <v-checkbox
+                clearable
+                v-model="group.is_read_only"
+                label="Read only?"
+                @change="$emit('change')"
+              >
+              </v-checkbox>
+
+            </v-layout>
+
+            <wizard_navigation
+              @next="go_to_step(5)"
+              @back="go_back_a_step()"
+              :disabled_next="!group.prompt"
+              :skip_visible="false"
+            >
+            </wizard_navigation>
+
+          </v-stepper-content>
+
+          <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
 
             <h2 class="pb-2" > 4. When Do You Want to Show This? </h2>
 
@@ -237,7 +277,7 @@
             </label_select_only>
 
             <wizard_navigation
-              @next="go_to_step(5)"
+              @next="go_to_step(6)"
               @back="go_back_a_step()"
               :disabled_next="!group.kind"
               :skip_visible="false"
@@ -246,7 +286,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
+          <v-stepper-content step="6" style="height: 100%" data-cy="attribute_wizard_step_6">
 
           <v-layout v-if="group.kind !== 'tree'" column>
 
@@ -396,7 +436,7 @@
 
 
             <wizard_navigation
-              @next="go_to_step(6)"
+              @next="go_to_step(7)"
               @back="go_back_a_step()"
               :disabled_next="!group.kind"
               :skip_visible="false"
@@ -405,7 +445,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content v-if="group.kind !== 'tree'" step="6" style="height: 100%" data-cy="attribute_wizard_step_6">
+          <v-stepper-content v-if="group.kind !== 'tree'" step="7" style="height: 100%" data-cy="attribute_wizard_step_7">
 
             <!-- Edit Default  default_id default_value -->
             <v-layout column>
@@ -513,15 +553,15 @@
 
 
             <wizard_navigation
-              @next="go_to_step(7)"
-              @skip="go_to_step(6)"
+              @next="go_to_step(8)"
+              @skip="go_to_step(7)"
               @back="go_back_a_step()"
                                >
             </wizard_navigation>
 
           </v-stepper-content>
 
-          <v-stepper-content :step="group.kind !== 'tree' ? 7 : 6" data-cy="attribute_wizard_step_7">
+          <v-stepper-content :step="group.kind !== 'tree' ? 8 : 7" data-cy="attribute_wizard_step_8">
 
             <h2> Complete! Great work. </h2>
 

@@ -802,6 +802,7 @@
         }
       },
       methods: {
+
         add_hotkey_listeners: function(){
           window.addEventListener('keyup', this.attribute_keyup_handler);
           window.addEventListener('keydown', this.attribute_keydown_handler);

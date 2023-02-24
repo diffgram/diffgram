@@ -910,9 +910,9 @@ Cypress.Commands.add('uploadCompoundFileImages', function (project_string_id, fi
             })
             .then(() => {
               cy.wait(2000)
-              cy.visit(`http://localhost:8085/studio/upload/${project_string_id}`)
-              cy.wait(1000)
-              cy.get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
+                .visit(`http://localhost:8085/studio/upload/${project_string_id}`)
+                .wait(1000)
+                .get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
             })
         }
       )

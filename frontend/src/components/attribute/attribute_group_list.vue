@@ -60,8 +60,8 @@
                 :key="group.id"
               >
                 <v-expansion-panel-header
+                  :class="{'d-flex justify-start text-left': true}"
                   style="border: 1px solid #e0e0e0"
-                  class="d-flex justify-start text-left"
                   :data-cy="`attribute_group_header_${group.prompt}`"
                   @click="update_url_with_current_group(group)"
                 >
@@ -121,9 +121,7 @@
                     :current_instance="current_instance"
                     @attribute_change="$emit('attribute_change', $event)"
                   />
-                  <div v-if="mode==='edit'">
-                    ID: {{ group.id }}
-                  </div>
+
                 </v-expansion-panel-content>
               </v-expansion-panel>
             </transition-group>
@@ -132,10 +130,11 @@
             v-else
             v-for="(group, index) in attribute_group_list_computed"
             :key="group.id"
+            :disabled="group.is_read_only"
           >
             <v-expansion-panel-header
               style="border: 1px solid #e0e0e0"
-              class="d-flex justify-start text-left"
+              :class="{'d-flex justify-start text-left': true, 'read-only': group.is_read_only}"
               :data-cy="`attribute_group_header_${group.prompt}`"
               @click="update_url_with_current_group(group)"
             >
@@ -151,6 +150,8 @@
                 >
                   Untitled Attribute Group
                 </div>
+
+
 
                 <v-spacer/>
 
@@ -172,6 +173,11 @@
                     </v-layout>
                   </template>
                 </button_with_confirm>
+                <div v-if="get_attribute_value(group.id)" class="mr-4">
+                  <v-chip  x-small color="secondary lighten-5" text-color="primary lighten-1"  >
+                   <p class="ma-0 pa-0" style="max-width: 135px;overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"> {{get_attribute_value(group.id)}}</p>
+                  </v-chip>
+                </div>
                 <v-chip x-small>ID {{ group.id }}</v-chip>
               </h4>
               <!-- Archive button -->
@@ -209,6 +215,7 @@ import {attribute_group_list, archive_attribute_group, attribute_group_update} f
 import attribute_kind_icons from './attribute_kind_icons.vue'
 import attribute_group_new from './attribute_group_new.vue'
 import Vue from "vue"
+import {at} from "lodash";
 
 export default Vue.extend({
     name: 'attribute_group_list',
@@ -325,6 +332,39 @@ export default Vue.extend({
       }
     },
     methods: {
+      get_attribute_value: function(attribute_group_id: number){
+        if(!attribute_group_id){
+          return
+        }
+        if(!this.current_instance){
+          return
+        }
+
+        let attr_values = this.current_instance.attribute_groups
+        let attribute_value = attr_values[attribute_group_id]
+        let attribute_group = this.attribute_group_list.find(group => group.id === attribute_group_id)
+        if(!attribute_value){
+          return
+        }
+        if(['slider', 'date', 'time', 'text'].includes(attribute_group.kind)){
+          return attribute_value
+        } else if(['multiple_select'].includes(attribute_group.kind)){
+          return attribute_value.map(elm => elm.display_name).toString()
+        } else if(['select', 'radio'].includes(attribute_group.kind)){
+          return attribute_value.display_name
+        } else if(['tree'].includes(attribute_group.kind)){
+          let result = ""
+          console.log('tree', attribute_value)
+          for (let key of Object.keys(attribute_value)){
+            let tree_val = attribute_value[key].name
+            result += `${tree_val},`
+          }
+          result = result.substring(0, result.length - 1)
+          return result
+        }
+
+
+      },
       on_drag_end: function(e){
         let old_index = e.oldIndex + 1
         let new_index = e.newIndex + 1
@@ -384,6 +424,9 @@ export default Vue.extend({
       },
 
       update_url_with_current_group(group) {
+        if(group.is_read_only){
+          return
+        }
         this.$addQueriesToLocation({'attribute_group': group.id})
       },
       fetch_current_instance_missing_attributes: async function (mode) {
@@ -514,5 +557,8 @@ export default Vue.extend({
 
 .list-group-item i {
   cursor: pointer;
+}
+.read-only{
+
 }
 </style>
