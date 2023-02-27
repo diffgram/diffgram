@@ -937,7 +937,7 @@ export default Vue.extend({
 
       // This is for text initial rendering. The sidebar width is fixed and equal to 350 and initially not rendered
       if (
-        this.annotation_ui_context.working_file.type && 
+        this.annotation_ui_context.working_file.type == 'text' && 
         (!this.$refs.sidebar_factory || !this.$refs.sidebar_factory.$refs.sidebar_text)
       ) total_width -= 350
 
