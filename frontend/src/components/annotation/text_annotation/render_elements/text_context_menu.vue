@@ -46,10 +46,6 @@ export default Vue.extend({
         context_menu: {
             type: Object,
             required: true
-        },
-        svg_ref: {
-            type: SVGSVGElement,
-            required: true
         }
     },
     data() {
