@@ -1,7 +1,12 @@
 <template>
     <div 
         class="fast-menu-element"
-        :style="`top: ${context_menu.y}px; left: ${context_menu.x}px`" 
+        :style="`
+            top: ${context_menu.y}px; 
+            left: ${context_menu.x}px
+            width: ${menu_width}px;
+            max-width: ${menu_width}px
+        `" 
     >
         <v-card
             class="mx-auto"
@@ -43,6 +48,11 @@ export default Vue.extend({
             required: true
         }
     },
+    data() {
+        return {
+            menu_width: 200
+        }
+    },
     computed: {
         display_attributes: function() {
             if (!this.context_menu || !this.context_menu.instance || !this.context_menu.instance.attribute_groups) return null
@@ -68,7 +78,8 @@ export default Vue.extend({
 
 <style scoped>
 .fast-menu-element {
-    position: absolute
+    position: absolute;
+    z-index: 2;
 }
 
 .context-header {

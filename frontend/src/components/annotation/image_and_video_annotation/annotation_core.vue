@@ -725,7 +725,6 @@ export default Vue.extend({
     get_userscript: {type: Function, required: true},
     save_loading_frames_list: {type: Array, default: []},
     filtered_instance_type_list_function: {type: Function, default: () => []},
-    save_loading_image: {type: Boolean, default: false},
     loading: {type: Boolean, default: false},
     has_changed: {type: Boolean, default: false},
     annotations_loading: {type: Boolean, default: false},

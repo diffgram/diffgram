@@ -2317,10 +2317,12 @@ def annotation_update_web(
     if and_complete is True:
         new_file = new_file.toggle_flag_shared(session)
 
+    member_id = user.member_id if user else None
+
     Event.new(
         session = session,
         kind = "annotation_update",
-        member_id = user.member_id,
+        member_id = member_id,
         project_id = project.id,
         file_id = new_file.id,
         description = f"Changed {str(new_file.count_instances_changed)}"

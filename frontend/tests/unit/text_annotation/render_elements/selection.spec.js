@@ -12,10 +12,13 @@ describe("Tests for selection.vue", () => {
         }
     ]
 
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+
     const props = {
         propsData: {
-            rects
-        }
+            rects,
+            svg_ref: svg
+        },
     }
 
     beforeEach(() => {
@@ -24,11 +27,11 @@ describe("Tests for selection.vue", () => {
 
     it("Should properly render selection svg component", () => {
         const html = wrapper.html()
-        expect(html).toContain('circle cx="8" cy="10" r="4"')
+        expect(html).toContain('circle cx="8" cy="10" r="5"')
         expect(html).toContain('rect x="8" y="10" width="1" height="25"')
-        expect(html).toContain('rect x="8" y="15" width="24" height="20"')
+        expect(html).toContain('rect x="8" y="15" width="25" height="20"')
         expect(html).toContain('rect x="32" y="15" width="1" height="25"')
-        expect(html).toContain('circle cx="32" cy="40" r="4"')
+        expect(html).toContain('circle cx="32" cy="40" r="5"')
     })
 
     it("Should emit events on move_borders", () => {
@@ -46,8 +49,8 @@ describe("Tests for selection.vue", () => {
 
         wrapper.vm.end_move_listener(event)
 
-        expect(wrapper.vm.end_border_moved.x).toEqual(100)
-        expect(wrapper.vm.end_border_moved.y).toEqual(100)
+        expect(wrapper.vm.end_border_moved.x).toEqual(450)
+        expect(wrapper.vm.end_border_moved.y).toEqual(200)
     })
 
     it("Should update start_border_moved on start_move_listener", () => {
@@ -58,8 +61,8 @@ describe("Tests for selection.vue", () => {
 
         wrapper.vm.start_move_listener(event)
 
-        expect(wrapper.vm.start_border_moved.x).toEqual(100)
-        expect(wrapper.vm.start_border_moved.y).toEqual(100)
+        expect(wrapper.vm.start_border_moved.x).toEqual(450)
+        expect(wrapper.vm.start_border_moved.y).toEqual(200)
     })
 
     it("SHould not emit on_change_selection_border if new borders are not set", () => {

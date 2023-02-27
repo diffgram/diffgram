@@ -29,6 +29,10 @@ def api_file_compound_new(project_string_id):
        """
     spec_list = [{'name': str},
                  {'directory_id': None},
+                 {'type': {
+                    'kind': str,
+                    'default': 'compound',
+                    }},
                  {'instance_list': {
                      'default': [],
                      'kind': list,
@@ -52,6 +56,7 @@ def api_file_compound_new(project_string_id):
             member = member,
             directory_id = input['directory_id'],
             name = input['name'],
+            type = input['type'],
             instance_list = input['instance_list'],
         )
         if len(log["error"].keys()) >= 1:
@@ -113,6 +118,7 @@ def file_compound_new_core(session: Session,
                            project: Project,
                            directory_id: int,
                            name: int,
+                           type: str,
                            member: Member,
                            instance_list: List[dict],
                            log: dict = regular_log.default()):
@@ -156,7 +162,7 @@ def file_compound_new_core(session: Session,
     file = File.new(
         session = session,
         working_dir_id = directory_id,
-        file_type = "compound",
+        file_type = type,
         original_filename = name,
         project_id = project.id,  # TODO test if project_id is working as expected here
         input_id = input_obj.id

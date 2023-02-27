@@ -45,13 +45,11 @@ export default Vue.extend({
   },
   methods:{
     on_change_rows: function(rows){
-      console.log('CHANGEEE rows', rows)
       this.panel_settings.rows = rows
       this.$emit('grid_changed')
     },
 
     on_change_columns: function(cols){
-      console.log('CHANGEEE cols', cols)
       this.panel_settings.columns = cols
       this.$emit('grid_changed')
     }

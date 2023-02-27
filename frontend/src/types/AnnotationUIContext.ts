@@ -51,6 +51,8 @@ export class BaseAnnotationUIContext {
 
   hidden_label_id_list: number[]
 
+  history: any
+
   public get_current_ann_ctx(): AnyAnnotationCtx {
     if (!this.working_file) {
       return undefined
@@ -88,6 +90,7 @@ export class BaseAnnotationUIContext {
     this.num_rows = 1
     this.num_cols = 4
     this.hidden_label_id_list = []
+    this.history = null
   }
 
 }
@@ -117,6 +120,7 @@ export class ImageAnnotationUIContext {
   container_height: number
 
   has_changed: boolean
+  save_loading: boolean
   has_pending_frames: boolean
   unsaved_frames: number[]
   video_global_attribute_changed: boolean
@@ -148,6 +152,7 @@ export class ImageAnnotationUIContext {
     this.container_width = 0
     this.container_height = 0
     this.has_changed = false
+    this.save_loading = false
     this.has_pending_frames = false
     this.video_global_attribute_changed = false
     this.unsaved_frames = []
@@ -188,15 +193,39 @@ export class GeoAnnotationUIContext {
 }
 
 export class TextAnnotationUIContext {
+  rendering: boolean
+  resizing: boolean
   has_changed: boolean
+  save_loading: boolean
   container_width: number
   container_height: number
 
   get_userscript: Function
 
-  constructor() {
+  bulk_mode: boolean
+  search_mode: boolean
+  
+  context_menu: any
+  current_instance: any
+  hover_instance: any
+
+  file: any
+
+  constructor(file) {
     this.container_width = 0
     this.container_height = 0
+    this.has_changed = false
+    this.save_loading = false
+    this.bulk_mode = false
+    this.search_mode = false
+    this.current_instance = null
+    this.hover_instance = null
+    this.context_menu = null
+
+    this.rendering = true
+    this.resizing = false
+
+    this.file = file
   }
 
 }
