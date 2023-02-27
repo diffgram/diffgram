@@ -372,7 +372,7 @@ export default Vue.extend({
   computed: {
     real_container_width: function() {
       if (this.container_width) return this.container_width - 100
-      else window.innerWidth - 350
+      else return window.innerWidth - 350
     },
     render_rects: function () {
       if (this.image_annotation_ctx.rendering || this.image_annotation_ctx.resizing) return [];
