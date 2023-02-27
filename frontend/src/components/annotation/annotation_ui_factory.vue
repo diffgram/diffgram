@@ -1242,6 +1242,7 @@ export default Vue.extend({
 
       let frame_number;
       let instance_list;
+
       if (this.annotation_ui_context.current_image_annotation_ctx.video_mode) {
         if (!frame_number_param) {
           frame_number = parseInt(this.current_frame, 10);
@@ -1256,7 +1257,7 @@ export default Vue.extend({
         });
       }
       
-      if (this.get_save_loading(frame_number)) return
+      if (frame_number && this.get_save_loading(frame_number)) return
       if (this.any_loading) return
       
       if (
