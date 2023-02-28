@@ -131,7 +131,7 @@
         v-else-if="annotation_ui_context &&
           annotation_ui_context.working_file_list &&
           annotation_ui_context.working_file_list.length > 0 &&
-          child_annotation_ctx_list && 
+          child_annotation_ctx_list &&
           annotation_ui_context.global_attribute_groups_list"
         :layout_direction="layout_direction"
         :num_columns="annotation_ui_context.panel_settings.columns"
@@ -149,16 +149,16 @@
         @grid_changed="on_grid_changed"
         ref="panels_manager"
       >
-        <template 
+        <template
           v-for="(file, index) in annotation_ui_context.working_file_list"
           v-slot:[`panel_${file.row}:${file.column}`]=""
         >
-          <panel_metadata 
-            :file="file" 
+          <panel_metadata
+            :file="file"
             class="panel-metadata"
             :key="`area_metadata_${file.id}`"
           />
-          <div 
+          <div
             :key="`area_factory_container_${file.id}`"
             :class="`${file.id === annotation_ui_context.working_file.id
                          && annotation_ui_context.working_file_list.length >= 1 ? 'selected-file': 'unselected-file'} annotation-area-container`">
@@ -616,7 +616,7 @@ export default Vue.extend({
       if (this.task_id_prop) {
         this.changing_task = true
         await this.fetch_single_task(this.task_id_prop);
-        this.update_root_file(this.annotation_ui_context.task.file)
+        await this.update_root_file(this.annotation_ui_context.task.file)
         await this.check_credentials();
         await this.$nextTick()
         this.credentials_granted = this.has_credentials_or_admin();
@@ -821,7 +821,7 @@ export default Vue.extend({
     },
     listeners_map: function () {
       let listener_map = null;
-      
+
       if (!this.annotation_ui_context) return listener_map
       if (!this.annotation_ui_context.working_file) return listener_map
 
@@ -831,11 +831,11 @@ export default Vue.extend({
       if (!this.$refs[`annotation_area_factory_${file_id}`]) return listener_map
       if (!this.$refs[`annotation_area_factory_${file_id}`][0]) return listener_map
 
-      
+
       if (file_type === 'image' || file_type === 'video') {
         let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`annotation_core_${file_id}`]
         if (!ref) return listener_map
-  
+
         listener_map = {
           "beforeunload": ref.warn_user_unload,
           "keydown": ref.keyboard_events_global_down,
@@ -847,7 +847,7 @@ export default Vue.extend({
 
       else if (file_type === 'text') {
         const file_ids = this.annotation_ui_context.working_file_list.map(working_file => working_file.id)
-        
+
         const refs = []
         file_ids.map(working_file_id => {
           if (this.$refs[`annotation_area_factory_${working_file_id}`] && this.$refs[`annotation_area_factory_${working_file_id}`][0]) {
@@ -858,9 +858,9 @@ export default Vue.extend({
 
         if (this.$refs[`annotation_area_factory_${file_id}`][0]) {
           let ref = this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`]
-  
+
           const text_resize_listener = () => refs.map(refrence => refrence.resize_listener())
-  
+
           listener_map = {
             "beforeunload": ref.leave_listener,
             "keydown": ref.keydown_event_listeners,
@@ -933,11 +933,11 @@ export default Vue.extend({
 
       let total_width = this.$refs.panels_manager.$el.clientWidth;
 
-      if (!total_width) return 
+      if (!total_width) return
 
       // This is for text initial rendering. The sidebar width is fixed and equal to 350 and initially not rendered
       if (
-        this.annotation_ui_context.working_file.type == "text" && 
+        this.annotation_ui_context.working_file.type == "text" &&
         (!this.$refs.sidebar_factory || !this.$refs.sidebar_factory.$refs.sidebar_text)
       ) total_width -= 350
 
@@ -966,6 +966,7 @@ export default Vue.extend({
       })
       this.rows_panes_size = default_pane_sizes_rows
       this.recalculate_pane_rows_dimensions(default_pane_sizes_rows)
+      this.$forceUpdate()
     },
     on_panes_rows_resized: function (panes_list) {
       this.rows_panes_size = panes_list
@@ -1218,12 +1219,12 @@ export default Vue.extend({
         }
 
         const { global_instance ,instance_list } = this.annotation_ui_context.instance_store.get_instance_list(file_id)
-        
+
         const res = await postInstanceList(url, [...instance_list, global_instance], file_id)
 
         if (res) {
           const { added_instances } = res
-  
+
           this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].after_save(added_instances)
         }
 
@@ -1256,10 +1257,10 @@ export default Vue.extend({
           else return elm
         });
       }
-      
+
       if (frame_number && this.get_save_loading(frame_number)) return
       if (this.any_loading) return
-      
+
       if (
         this.annotation_ui_context.current_image_annotation_ctx.video_mode &&
         (
@@ -1591,7 +1592,7 @@ export default Vue.extend({
           return false
         }
         return this.current_image_annotation_ctx.save_loading_frames_list.includes(frame_number)
-      } 
+      }
       else return this.annotation_ui_context.get_current_ann_ctx().save_loading
     },
     set_save_loading: function (value, frame) {
@@ -1853,6 +1854,7 @@ export default Vue.extend({
       }
       await this.$nextTick()
       this.on_panes_ready()
+      await this.$nextTick()
       this.root_file = file
     },
 
@@ -2223,7 +2225,7 @@ export default Vue.extend({
 
       this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].on_select_instance(instance)
     },
-    
+
     stop_hover_text_instance: function () {
       const file_id = this.annotation_ui_context.working_file.id
 
