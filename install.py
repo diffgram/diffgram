@@ -250,7 +250,8 @@ class DiffgramInstallTool:
         return True
 
     def validate_s3_connection(self):
-        if not self.use_docker_minio:
+        print('AAAA', self.use_docker_minio)
+        if not self.use_docker_minio or self.static_storage_provider == 'aws':
             endpoint_url = self.s3_endpoint_url
         else:
             endpoint_url = 'http://localhost:9000'
