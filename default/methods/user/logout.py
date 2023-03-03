@@ -1,29 +1,27 @@
-# OPENCORE - ADD
 from flask import session as login_session
-from flask import redirect
 from methods import routes
 from shared.settings import settings
 from shared.auth.KeycloakDiffgramClient import KeycloakDiffgramClient
+from shared.auth.OAuth2Provider import OAuth2Provider
+from shared.helpers.permissions import get_decoded_refresh_token_from_session
 
 
-def oidc_logout():
-    jwt_data = login_session.get('jwt')
-    if jwt_data is None:
-        login_session['jwt'] = ''
-        return "Success", 200
-
-    login_session['jwt'] = ''
-    if type(jwt_data) == dict:
-        access_token = jwt_data.get('access_token')
-        refresh_token = jwt_data.get('refresh_token')
-        kc_client = KeycloakDiffgramClient()
-        kc_client.logout(refresh_token = refresh_token)
+def oauth2_logout() -> [dict, int]:
+    oauth2 = OAuth2Provider()
+    refresh_token = get_decoded_refresh_token_from_session()
+    oauth_client = oauth2.get_client()
+    login_session['refresh_token'] = None
+    login_session['id_token'] = None
+    login_session['access_token'] = None
+    login_session.clear()
+    # url_data = oauth_client.logout(refresh_token = refresh_token)
+    return {"url_redirect": None}, 200
 
 
 @routes.route('/api/v1/user/logout', methods = ['GET'])
 def logout():
-    if settings.USE_OIDC:
-        oidc_logout()
+    if settings.USE_OAUTH2:
+        return oauth2_logout()
     else:
         login_session['user_id'] = ''
-    return "Success", 200
+        return {"url_redirect": None}, 200

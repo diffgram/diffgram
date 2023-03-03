@@ -60,14 +60,12 @@ def connection_save_api():
         },
         {'connection': dict}  # see connection_spec for spec
     ]
-
     log, input, untrusted_input = regular_input.master(
         request = request,
         spec_list = spec_list)
 
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
-
     with sessionMaker.session_scope() as session:
         connection_operations = Connection_Operations(
             session = session,
@@ -96,40 +94,15 @@ def connection_save_api():
             connection = connection_operations.connection.serialize()), 200
 
 
-@routes.route('/api/v1/connection/list',
-              methods = ['POST'])
-@General_permissions.grant_permission_for(
-    Roles = ['normal_user'],
-    apis_user_list = ["api_enabled_builder"])
-def connection_list_api():
+@routes.route('/api/project/<string:project_string_id>/connections', methods = ['GET'])
+@Project_permissions.user_has_project(["admin", "Editor", "Viewer", "allow_if_project_is_public"])
+def connection_list_api(project_string_id):
     """
     security model assumes that validate_connection_permissions_permission_scope
     checks it / returns forbidden if not applicable.
 
     """
-
-    connection_list_api_spec = [
-        {'permission_scope': {
-            'default': 'project',
-            'kind': str,
-            'required': False,
-            'valid_values_list': ['project', 'org']
-        }
-        },
-        {'project_string_id': {
-            'kind': str,
-            'required': True
-        }
-        },
-
-    ]
-    log, input, untrusted_input = regular_input.master(
-        request = request,
-        spec_list = connection_list_api_spec)
-
-    if len(log["error"].keys()) >= 1:
-        return jsonify(log = log), 400
-
+    log = regular_log.default()
     with sessionMaker.session_scope() as session:
         ### MAIN ###
         connection_operations = Connection_Operations(
@@ -141,8 +114,8 @@ def connection_list_api():
             return jsonify(log = connection_operations.log), 400
 
         connection_operations.validate_connection_permissions_scope(
-            permission_scope = input.get('permission_scope'),
-            project_string_id = input.get('project_string_id'),
+            permission_scope = "project",
+            project_string_id = project_string_id,
         )
         # Curious if we want a connection "grouping" concept or not
 

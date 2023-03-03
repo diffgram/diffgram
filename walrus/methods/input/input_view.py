@@ -73,7 +73,25 @@ def input_list_web(project_string_id):
             'kind': int,
             'default': None,
             'required': False
+            }
+        },
+        {"parent_file_id": {
+            'kind': int,
+            'default': None,
+            'required': False
         }
+        },
+        {"media_type": {
+            'kind': str,
+            'default': None,
+            'required': False
+        }
+        },
+        {"has_attached_instances": {
+            'kind': bool,
+            'default': None,
+            'required': False
+            }
         }
     ]
 
@@ -97,7 +115,10 @@ def input_list_web(project_string_id):
             date_to_string = input['date_to'],
             file_id = input['file_id'],
             batch_id = input['batch_id'],
-            task_id = input['task_id']
+            task_id = input['task_id'],
+            parent_file_id = input['parent_file_id'],
+            media_type = input['media_type'],
+            has_attached_instances = input['has_attached_instances']
         )
 
         input_list_serialized = []
@@ -123,7 +144,10 @@ def build_input_list(
     date_to_string: str = None,
     file_id: int = None,
     batch_id: int = None,
-    task_id: int = None):
+    task_id: int = None,
+    parent_file_id: int = None,
+    media_type: str = None,
+    has_attached_instances: bool = None):
     """
     TODO put as part of Input class
     """
@@ -138,7 +162,7 @@ def build_input_list(
     # an input image for a video file
     query = session.query(Input).options(defer('frame_packet_map')).filter(
         Input.project_id == project.id,
-        Input.parent_file_id == None)
+        Input.parent_file_id == parent_file_id)
     if show_deferred is False:
         # By default we show processing deferred
         # Example reason to set it to False
@@ -158,6 +182,8 @@ def build_input_list(
             query = query.filter(Input.status.notin_(
                 ['success', 'failed']))
 
+    if media_type:
+        query = query.filter(Input.media_type == media_type)
     # TODO make date generic mix in with option to change attribute used
     if date_from_string:
         date_from_datetime = datetime.datetime.strptime(date_from_string, "%Y-%m-%d")
@@ -175,6 +201,9 @@ def build_input_list(
 
     if file_id:
         query = query.filter(Input.file_id == file_id)
+
+    if has_attached_instances:
+        query = query.filter(or_(Input.instance_list != None, Input.frame_packet_map != None))
 
     if task_id:
 

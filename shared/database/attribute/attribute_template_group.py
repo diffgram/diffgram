@@ -5,6 +5,7 @@ from shared.database.attribute.attribute_template_group_to_file import Attribute
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import joinedload
 from shared.database.labels.label_schema import LabelSchemaLink, LabelSchema
+from sqlalchemy.orm.session import Session
 
 class Attribute_Template_Group(Base):
     """
@@ -56,8 +57,12 @@ class Attribute_Template_Group(Base):
                                         foreign_keys = [default_external_map_id])
 
     is_global = Column(Boolean, default = False)
+
+    # is_read_only = Column(Boolean, default = False)
+    # Allowed Values: [compound_file, file]
     global_type = Column(String(), default = 'file')  # Expansion direction eg for frame, series, etc.
 
+    # ordinal = Column(Integer, default = 0)
     @staticmethod
     def new(session,
             project,
@@ -67,8 +72,8 @@ class Attribute_Template_Group(Base):
         if schema is None:
             raise Exception("schema Required")
 
-        if member is None:
-            raise Exception("member Required")
+        # if member is None:
+        #     raise Exception("member Required")
 
         attribute_template_group = Attribute_Template_Group(
             project = project,
@@ -79,7 +84,7 @@ class Attribute_Template_Group(Base):
 
         schema.add_attribute_group(session = session,
                                    attribute_group_id = attribute_template_group.id,
-                                   member_created_id = member.id)
+                                   member_created_id = None)
 
         return attribute_template_group
 
@@ -91,7 +96,9 @@ class Attribute_Template_Group(Base):
             'is_root': self.is_root,
             'name': self.name,
             'kind': self.kind,
+            # 'is_read_only': self.is_read_only,
             'prompt': self.prompt,
+            # 'ordinal': self.ordinal,
             'show_prompt': self.show_prompt,
             # wrapping in str() seems to be needed to avoid some strange
             # embedded serialization issues (not with calling it directly, but things
@@ -115,6 +122,8 @@ class Attribute_Template_Group(Base):
             'is_root': self.is_root,
             'name': self.name,
             'kind': self.kind,
+            # 'is_read_only': self.is_read_only,
+            # 'ordinal': self.ordinal,
             'prompt': self.prompt,
             'show_prompt': self.show_prompt,
             'default_value': self.default_value,
@@ -210,7 +219,7 @@ class Attribute_Template_Group(Base):
     def get_group_relations_list(session, file_id_list):
 
         result = session.query(Attribute_Template_Group_to_File).options(
-            joinedload(Attribute_Template_Group_to_File.attribute_template_group)).\
+            joinedload(Attribute_Template_Group_to_File.attribute_template_group)). \
             filter(Attribute_Template_Group_to_File.file_id.in_(file_id_list)).all()
 
         return result
@@ -227,7 +236,8 @@ class Attribute_Template_Group(Base):
              is_root = None,
              schema_id = None,
              group_id_list = None,
-             is_global = None
+             is_global = None,
+             is_read_only = None
              ):
         """
 
@@ -244,6 +254,8 @@ class Attribute_Template_Group(Base):
         if group_id:
             query = query.filter(Attribute_Template_Group.id == group_id)
 
+        if is_read_only is not None:
+            query = query.filter(Attribute_Template_Group.is_read_only == is_read_only)
         if is_global:
             query = query.filter(Attribute_Template_Group.is_global == is_global)
 
@@ -291,11 +303,10 @@ class Attribute_Template_Group(Base):
         if return_kind == "objects":
             return query.all()
 
-
     @staticmethod
     def get_by_id(session,
                   id,
-                  project_id = None):
+                  project_id = None) -> 'Attribute_Template_Group':
         """
         Must include project id for security check
 
@@ -306,6 +317,21 @@ class Attribute_Template_Group(Base):
         return session.query(Attribute_Template_Group).filter(
             Attribute_Template_Group.id == id,
             Attribute_Template_Group.project_id == project_id).first()
+
+    @staticmethod
+    def get_by_name_and_project(session: Session, name: str, project_id: int,) -> 'Attribute_Template_Group':
+        """
+        Must include project id for security check
+
+        (This assumes untrusted source)...
+
+        """
+
+        return session.query(Attribute_Template_Group).filter(
+            Attribute_Template_Group.project_id == project_id,
+            Attribute_Template_Group.prompt == name,
+            Attribute_Template_Group.archived == False
+        ).first()
 
     # WIP
 
@@ -358,7 +384,7 @@ class Attribute_Template_Group(Base):
             return_kind = "objects"
         )
 
-        if attribute_template_list is None or len(attribute_template_list) is 0:
+        if attribute_template_list == None or len(attribute_template_list) == 0:
             return children
 
         # TODO handle serialzing children

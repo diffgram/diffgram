@@ -80,6 +80,11 @@
 
   <v-container fluid v-else class="align-center justify-center">
     <h1 class="pa-10 black--text text-center">Preparing your data
+      <v-progress-linear v-if="diffgram_export_ingestor"
+                         striped
+                         :value="diffgram_export_ingestor.current_file_count / diffgram_export_ingestor.total_files">
+
+      </v-progress-linear>
       <v-progress-circular indeterminate></v-progress-circular>
     </h1>
   </v-container>
@@ -136,11 +141,11 @@
       },
       computed: {},
       watch: {
-        file_list: function (new_val, old_val) {
+        file_list: async function (new_val, old_val) {
           if (new_val) {
             this.preparing_payload = true;
             this.compute_attached_instance_per_file();
-            this.summarized_file_list = this.file_list_for_summary();
+            this.summarized_file_list = await this.file_list_for_summary();
             this.preparing_payload = false;
           }
         },
@@ -150,7 +155,7 @@
         await this.$nextTick();
         await new Promise(resolve => setTimeout(resolve, 500));
         this.compute_attached_instance_per_file();
-        this.summarized_file_list = this.file_list_for_summary();
+        this.summarized_file_list = await this.file_list_for_summary();
         this.preparing_payload = false;
       },
 
@@ -158,7 +163,7 @@
 
       },
       methods: {
-        file_list_for_summary: function () {
+        file_list_for_summary: async function () {
           if (this.$props.upload_mode === 'update') {
             if (this.file_list_update) {
               return this.file_list_update;
@@ -169,7 +174,8 @@
             return this.$props.file_list
           }
           else if(this.$props.upload_mode === 'from_diffgram_export'){
-            return this.$props.diffgram_export_ingestor.get_instance_count_per_file();
+            let value =  await this.$props.diffgram_export_ingestor.get_instance_count_per_file();
+            return value
           }
         },
         files_to_update_list: function () {
@@ -540,7 +546,7 @@
              labels_payload = this.prepare_pre_labeled_data_payload(
               this.$props.pre_labeled_data,
               this.$props.diffgram_schema_mapping,
-              this.file_list_for_summary()
+              await this.file_list_for_summary()
             )
           }
 

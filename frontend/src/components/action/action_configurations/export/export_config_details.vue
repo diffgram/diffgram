@@ -11,15 +11,11 @@
       </diffgram_select>
 
 
-      <v_directory_list
+      <global_dataset_selector
         v-model="action.config_data.directory_id"
         v-if="action.config_data.source === 'directory' "
-        :project_string_id="project_string_id"
-        :show_new="false"
-        :show_update="false"
-        @change_directory="on_change_directory">
-      </v_directory_list>
-
+        @change_directory="on_change_directory"
+      />
 
       <div class="pl-2 pr-2">
         <job_select
@@ -58,8 +54,10 @@
 </template>
 
 <script>
-import directory_list from '../../../source_control/directory_list'
+import directory_selector from '../../../source_control/directory_selector'
 import action_config_wizard_base from '../../actions_config_base/action_config_wizard_base'
+import global_dataset_selector from "../../../attached/global_dataset_selector.vue"
+
 export default {
   name: "export_config_details",
   props:{
@@ -73,9 +71,12 @@ export default {
       required: true
     }
   },
+  components: {
+    global_dataset_selector,
+    directory_selector
+  },
   methods: {
     on_task_template_changed: function(tt){
-      console.log('change',tt)
       this.action.config_data.task_template_id = tt.id
     },
     on_change_directory: function(dir){
@@ -108,9 +109,6 @@ export default {
       ],
       kind_list: ["Annotations"],
     }
-  },
-  components: {
-    directory_list: directory_list
   },
   computed:{
     on_directories_updated: function(){

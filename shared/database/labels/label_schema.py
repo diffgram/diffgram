@@ -41,7 +41,7 @@ class LabelSchema(Base, SerializerMixin):
         ).first()
         return result
 
-    def get_default(session, project_id):
+    def get_default(session: Session, project_id: int):
 
         schema = session.query(LabelSchema).filter(
             LabelSchema.project_id == project_id,
@@ -54,14 +54,14 @@ class LabelSchema(Base, SerializerMixin):
             ).first()
         if schema is None:
             schema = session.query(LabelSchema).filter(
-            LabelSchema.project_id == project_id).first()
+                LabelSchema.project_id == project_id).first()
         return schema
 
     @staticmethod
-    def new(session: Session, 
-            name: str, 
-            project_id: int, 
-            member_created_id: int, 
+    def new(session: Session,
+            name: str,
+            project_id: int,
+            member_created_id: int,
             is_default: bool = False) -> 'LabelSchema':
 
         schema = LabelSchema(
@@ -112,6 +112,7 @@ class LabelSchema(Base, SerializerMixin):
         )
         return rel
 
+
     @staticmethod
     def list(session: Session, project_id: int, is_default: bool = None):
         query = session.query(LabelSchema).filter(
@@ -137,6 +138,7 @@ class LabelSchema(Base, SerializerMixin):
         else:
             result = [l.label_file_id for l in links]
             return result
+
     def get_attribute_groups(self, session: Session):
         query = session.query(LabelSchemaLink).filter(
             LabelSchemaLink.schema_id == self.id,
@@ -158,6 +160,7 @@ class LabelSchema(Base, SerializerMixin):
         for elm in links:
             result.append(elm.instance_template)
         return result
+
 
 class LabelSchemaLink(Base, SerializerMixin):
     __tablename__ = 'label_schema_link'
@@ -185,7 +188,8 @@ class LabelSchemaLink(Base, SerializerMixin):
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
     @staticmethod
-    def new_label_link(session: Session, schema_id: int, label_file_id: int, member_created_id: int) -> 'LabelSchemaLink':
+    def new_label_link(session: Session, schema_id: int, label_file_id: int,
+                       member_created_id: int) -> 'LabelSchemaLink':
         existing_rel = session.query(LabelSchemaLink).filter(
             LabelSchemaLink.schema_id == schema_id,
             LabelSchemaLink.label_file_id == label_file_id
@@ -204,7 +208,8 @@ class LabelSchemaLink(Base, SerializerMixin):
         return schema_link
 
     @staticmethod
-    def new_attribute_group_link(session: Session, schema_id: int, attribute_group_id: int, member_created_id: int) -> 'LabelSchemaLink':
+    def new_attribute_group_link(session: Session, schema_id: int, attribute_group_id: int,
+                                 member_created_id: int) -> 'LabelSchemaLink':
         existing_rel = session.query(LabelSchemaLink).filter(
             LabelSchemaLink.schema_id == schema_id,
             LabelSchemaLink.attribute_template_group_id == attribute_group_id
@@ -223,7 +228,8 @@ class LabelSchemaLink(Base, SerializerMixin):
         return schema_link
 
     @staticmethod
-    def new_instance_template_link(session: Session, schema_id: int, instance_template_id: int, member_created_id: int) -> 'LabelSchemaLink':
+    def new_instance_template_link(session: Session, schema_id: int, instance_template_id: int,
+                                   member_created_id: int) -> 'LabelSchemaLink':
         existing_rel = session.query(LabelSchemaLink).filter(
             LabelSchemaLink.schema_id == schema_id,
             LabelSchemaLink.instance_template_id == instance_template_id

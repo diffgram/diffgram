@@ -32,7 +32,7 @@ class Transaction(Base):
 	transaction_type = Column(String)		# TODO rename to kind
 	# "task", "brain", "general"
 
-	sub_kind = Column(String)	# New May 20, 2019
+	sub_kind = Column(String)
 
 	amount = Column(Integer)
 	"""
@@ -58,7 +58,6 @@ class Transaction(Base):
 							foreign_keys=[job_id])
 
 
-	# New May 29, 2019
 	project_id = Column(Integer, ForeignKey('project.id'))
 	project = relationship('Project', 
 							foreign_keys=[project_id])
@@ -66,7 +65,6 @@ class Transaction(Base):
 	time_created = Column(DateTime, default=datetime.datetime.utcnow)
 	time_updated = Column(DateTime, onupdate=datetime.datetime.utcnow)
 
-	# New April 2, 2019
 	audit_cache =  Column(MutableDict.as_mutable(JSONEncodedDict), 
 							default = {})
 
@@ -199,11 +197,8 @@ class Transaction(Base):
 
 		trial_balance = balance_new + amount
 
-		#print("balance_new", balance_new, "trial_balance", trial_balance)
 
 		trial_balance -= credit_limit
-
-		#print("trial_balance", trial_balance)
 
 		if trial_balance > 0:
 			return False, "Trial balance > 0"

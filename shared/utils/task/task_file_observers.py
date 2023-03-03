@@ -1,13 +1,10 @@
-# OPENCORE - ADD
-try:
-    from default.methods.regular.regular_api import *
-except:
-    from methods.regular.regular_api import *
-
 from abc import ABC, abstractmethod
 from shared.utils.source_control.file.file_transfer_core import file_transfer_core
 from shared.database.sync_events.sync_action_queue import SyncActionsQueue
 from shared.helpers.sessionMaker import AfterCommitAction
+from shared.shared_logger import get_shared_logger
+from shared.regular import regular_methods
+logger = get_shared_logger()
 
 class Observable(ABC):
     """

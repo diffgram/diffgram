@@ -1,5 +1,6 @@
 <template>
 <div>
+  <h1>UI Schema: </h1>
   <ui_schema_selector
     v-if="job"
     data-cy="ui-schema-selector"

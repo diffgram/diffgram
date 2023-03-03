@@ -7,6 +7,7 @@
       :schema_id="schema_id"
       :project_string_id="project_string_id"
       :mode = " 'edit' "
+      :draggable="true"
           >
   </attribute_group_list>
 

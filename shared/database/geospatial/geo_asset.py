@@ -1,7 +1,4 @@
-# OPENCORE - ADD
 from shared.database.common import *
-from shared.settings import settings
-from shared.database.common import data_tools
 
 
 class GeoAsset(Base):
@@ -63,10 +60,14 @@ class GeoAsset(Base):
 
         return point_cloud
 
-    def serialize(self, session):
-
-        self.regenerate_url(session)
-
+    def serialize(self, session, connection_id = None, bucket_name = None, regen_url = True, create_thumbnails = True):
+        if regen_url:
+            from shared.url_generation import blob_regenerate_url
+            blob_regenerate_url(blob_object = self,
+                                session = session,
+                                connection_id = connection_id,
+                                bucket_name = bucket_name,
+                                create_thumbnails = create_thumbnails)
         data = {
             'id': self.id,
             'original_filename': self.original_filename,
@@ -80,10 +81,3 @@ class GeoAsset(Base):
             'time_updated': self.time_updated,
         }
         return data
-
-    def regenerate_url(self, session):
-        should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(self, session)
-        if should_regenerate is True:
-            self.url_signed = data_tools.build_secure_url(self.url_signed_blob_path, new_offset_in_seconds)
-            self.url_signed_expiry = time.time() + new_offset_in_seconds
-            session.add(self)

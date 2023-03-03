@@ -10,7 +10,6 @@ from shared.database.attribute.attribute_template_group_to_file import Attribute
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("20 per day")
 def api_attribute_template_group_update(project_string_id):
     """
 
@@ -19,6 +18,16 @@ def api_attribute_template_group_update(project_string_id):
 
     spec_list = [
         {'group_id': int},
+        {'ordinal': {
+            "required": False,
+            "default": 0,
+            "type": int
+        }},
+        {'is_read_only': {
+            "required": False,
+            "default": False,
+            "type": bool
+        }},
         {'name': None},
         {'prompt': None},
         {'kind': str},
@@ -28,7 +37,8 @@ def api_attribute_template_group_update(project_string_id):
         {'min_value': None},
         {'max_value': None},
         {'mode': str},
-        {'is_global': None}
+        {'is_global': None},
+        {'global_type': str}
     ]
 
     log, input, untrusted_input = regular_input.master(request = request,
@@ -60,12 +70,16 @@ def api_attribute_template_group_update(project_string_id):
             mode = input['mode'],
             kind = input['kind'],
             log = log,
-            member = user.member,
+            member = user.member if user else None,
             default_value = input['default_value'],
             min_value = input['min_value'],
             max_value = input['max_value'],
             default_id = input['default_id'],
-            is_global = input['is_global'])
+            is_global = input['is_global'],
+            global_type = input['global_type'],
+            ordinal = input['ordinal'],
+            is_read_only = input['is_read_only'],
+        )
 
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
@@ -105,7 +119,11 @@ def group_update_core(
     max_value = None,
     default_id: int = None,
     tree_data: dict = None,
-    is_global: bool = False):
+    is_global: bool = False,
+    global_type: str = 'file',
+    ordinal: int = None,
+    is_read_only: bool = False,
+):
     if mode == "ARCHIVE":
 
         group.archived = True
@@ -181,9 +199,11 @@ def group_update_core(
 
 
         group.is_new = False
-
+        if ordinal is not None:
+            group.ordinal = ordinal
         group.name = name
         group.min_value = min_value
+        group.is_read_only = is_read_only
         group.max_value = max_value
         group.prompt = prompt
         group.member_updated = member
@@ -191,6 +211,7 @@ def group_update_core(
         group.default_value = default_value
         group.default_id = default_id
         group.is_global = is_global
+        group.global_type = global_type
         session.add(group)
         log['info']['update'] = "Success"
 

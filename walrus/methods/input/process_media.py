@@ -1,3 +1,5 @@
+import uuid
+
 from methods.regular.regular_api import *
 from methods.video.video import New_video
 
@@ -22,6 +24,7 @@ from imageio import imread
 from shared.image_tools import imresize
 
 from shared.database.user import UserbaseProject
+from shared.utils.memory_checks import check_and_wait_for_memory
 from shared.database.input import Input
 from shared.database.video.video import Video
 from shared.database.image import Image
@@ -52,18 +55,16 @@ from shared.feature_flags.feature_checker import FeatureChecker
 from shared.utils.singleton import Singleton
 from methods.text_data.text_tokenizer import TextTokenizer
 from shared.utils.instance.transform_instance_utils import rotate_instance_dict_90_degrees
-
+from shared.ingest.allowed_ingest_extensions import images_allowed_file_names, \
+    sensor_fusion_allowed_extensions, \
+    geo_tiff_allowed_extensions, \
+    videos_allowed_file_names, \
+    text_allowed_file_names, \
+    audio_allowed_file_names, \
+    csv_allowed_file_names, \
+    existing_instances_allowed_file_names
 
 data_tools = Data_tools().data_tools
-
-images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
-sensor_fusion_allowed_extensions = [".json"]
-geo_tiff_allowed_extensions = [".tiff", ".tif"]
-videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]
-text_allowed_file_names = [".txt"]
-audio_allowed_file_names = [".mp3", ".wav", ".flac"]
-csv_allowed_file_names = [".csv"]
-existing_instances_allowed_file_names = [".json"]
 
 STOP_PROCESSING_DATA = False
 
@@ -129,7 +130,7 @@ def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
             logger.warning('Rejected Item: processing, data stopped. Waiting for termination...')
             break
 
-        check_and_wait_for_memory(memory_limit_float = 75.0)
+        check_and_wait_for_memory(memory_limit_float = 85.0)
 
         logger.info("[Media Queue Heartbeat]")
         try:
@@ -137,26 +138,6 @@ def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
         except Exception as exception:
             logger.info(f"[Media Queue Failed] {str(exception)}")
             add_deferred_items_time = 30  # reset
-
-
-def check_and_wait_for_memory(memory_limit_float = 75.0, check_interval = 5):
-    while True:
-        if is_memory_available(memory_limit_float = memory_limit_float):
-            return True
-        else:
-            logger.warn("No memory available, waiting. There is no harm if processing large amount please wait.")
-            time.sleep(check_interval)
-
-
-def is_memory_available(memory_limit_float = 75.0):
-    memory_percent = get_memory_percent()
-    if memory_percent is None: return True  # Don't stop if this check fails
-
-    if memory_percent > memory_limit_float:
-        logger.warn(f"[Memory] {memory_percent} % used is > {memory_limit_float} limit.")
-        return False
-
-    return True
 
 
 def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEUE):
@@ -415,7 +396,7 @@ class Process_Media():
 
         start_time = time.time()
 
-        check_and_wait_for_memory(memory_limit_float = 75.0)
+        check_and_wait_for_memory(memory_limit_float = 85.0)
 
         ### Warm up
         self.get_input_with_retry()
@@ -445,15 +426,11 @@ class Process_Media():
         if self.input.allow_csv:
             self.allow_csv = self.input.allow_csv
 
-        # Advantage of doing this here is then it's set
-        # For all ways a flow can come in...
-        # Not clear if this is best place to set this.
+        self.input.status = "processing"
 
         if self.input.mode == "flow":
             # Get directory from flow
             self.input.directory = self.input.action_flow.directory
-
-        self.input.status = "processing"
 
         self.try_to_commit()
 
@@ -714,8 +691,8 @@ class Process_Media():
 
         return new_file
 
-    def __copy_image(self):
-        logger.debug(f"Copying Image {self.input.file_id}")
+    def __copy_file(self):
+        logger.debug(f"Copying file type: {self.input.media_type} {self.input.file_id}")
 
         self.input.newly_copied_file = File.copy_file_from_existing(
             session = self.session,
@@ -730,7 +707,25 @@ class Process_Media():
             flush_session = True
         )
 
+        if self.input.file.type == 'compound':
+            child_files = self.input.file.get_child_files(session = self.session)
+            for child in child_files:
+                self.input.newly_copied_file = File.copy_file_from_existing(
+                    session = self.session,
+                    working_dir = None,
+                    working_dir_id = self.input.directory_id,
+                    existing_file = child,
+                    copy_instance_list = self.input.copy_instance_list,
+                    add_link = self.input.add_link,
+                    remove_link = self.input.remove_link,
+                    sequence_map = None,
+                    previous_video_parent_id = None,
+                    flush_session = True,
+                    new_parent_id = self.input.newly_copied_file.id
+                )
+
         self.declare_success(self.input)
+
         # Perform sync operations
         source_dir = WorkingDir.get_by_id(self.session, self.input.source_directory_id)
         dest_dir = WorkingDir.get_by_id(self.session, self.input.directory_id)
@@ -758,9 +753,8 @@ class Process_Media():
             return
         elif self.input.media_type == 'frame':
             self.__copy_frame()
-        elif self.input.media_type == 'image':
-            self.__copy_image()
-
+        else:
+            self.__copy_file()
     def __update_existing_file(self,
                                file,
                                init_existing_instances = False):
@@ -947,8 +941,13 @@ class Process_Media():
         # From the file directory, get all related jobs.
         # TODO confirm how this works for pre processing case
         # Whitelist for allow types here, otherwise it opens a ton of connections while say processing frames
-        if self.input.media_type not in ['image', 'video', 'sensor_fusion']:
+        if self.input.media_type not in ['image', 'video', 'sensor_fusion', 'text', 'audio', 'geospatial']:
             return
+
+        file = self.input.file
+        if self.input.file.parent_id is not None:
+            # Avoid adding child of a compound file
+            file = File.get_by_id(session = self.session, file_id = self.input.file.parent_id)
 
         directory = self.input.directory
         if directory is None:
@@ -970,7 +969,7 @@ class Process_Media():
             job_sync_dir_manger.create_file_links_for_attached_dirs(
                 sync_only = True,
                 create_tasks = True,
-                file_to_link = self.input.file,
+                file_to_link = file,
                 file_to_link_dataset = self.working_dir,
                 related_input = self.input,
                 member = self.member
@@ -982,9 +981,9 @@ class Process_Media():
             # concurrently and that may lead to a bad end result of the counter.
 
             # Commit any update job/task data.
-            self.try_to_commit()
-            job.refresh_stat_count_tasks(self.session)
 
+            job.refresh_stat_count_tasks(self.session)
+        self.try_to_commit()
     def may_attach_to_job(self):
 
         if not self.input or not self.input.file:
@@ -1035,7 +1034,6 @@ class Process_Media():
             self.log['error']['geo_data'] = traceback.format_exc()
             self.input.status = 'failed'
             self.input.update_log = self.log
-
 
     def process_sensor_fusion_json(self):
         sf_processor = SensorFusionFileProcessor(
@@ -1470,6 +1468,8 @@ class Process_Media():
             return
         if input.file_id is None and input.file is not None:
             input.file_id = input.file.id
+
+        logger.debug(f'Success Processing Input: {input.id} {input.mode} - {input.type}')
         Event.new_deferred(
             session = self.session,
             kind = 'input_file_uploaded',
@@ -1527,10 +1527,12 @@ class Process_Media():
                 working_dir_id = self.working_dir_id,
                 file_type = "audio",
                 audio_file_id = self.new_audio_file.id,
+                parent_id = self.input.parent_file_id,
                 original_filename = self.input.original_filename,
                 project_id = self.project_id,
                 input_id = self.input.id,
                 file_metadata = self.input.file_metadata,
+                ordinal = self.input.ordinal,
             )
 
             if self.input.status != "failed":
@@ -1552,6 +1554,7 @@ class Process_Media():
             self.input.update_log = self.log
 
         return True
+
     def process_one_text_file(self):
         """
             This function will process a single text file and Create a Row in Table
@@ -1583,8 +1586,10 @@ class Process_Media():
                 session = self.session,
                 working_dir_id = self.working_dir_id,
                 file_type = "text",
+                parent_id = self.input.parent_file_id,
                 text_file_id = self.new_text_file.id,
                 original_filename = self.input.original_filename,
+                ordinal = self.input.ordinal,
                 project_id = self.project_id,
                 input_id = self.input.id,
                 file_metadata = self.input.file_metadata,
@@ -1650,32 +1655,7 @@ class Process_Media():
                                                                              readed_image_width,
                                                                              readed_image_height)
 
-    def process_one_image_file(self):
-
-        """
-
-        raw_file is raw data file, not diffgram class File(object)
-        if we don't have a raw file, we use the self.input.temp_dir_path_and_filename
-
-        """
-
-
-        result = self.read_raw_file()
-        if result is False: return False
-
-        # Image() subclass
-        self.new_image = Image(
-            original_filename = self.input.original_filename)
-        self.session.add(self.new_image)
-        self.session.flush()
-
-        self.try_to_commit()
-
-        if self.project:
-            self.project_id = self.project.id
-
-        ### Main
-
+    def save_image_and_thumbnails(self):
         self.resize_raw_image()
 
         self.check_metadata_and_auto_correct_instances(
@@ -1691,43 +1671,136 @@ class Process_Media():
         if len(self.log["error"].keys()) >= 1:
             logger.error(f"Error save_raw_image_thumb")
             return
+
+    def determine_image_upload_strategy(self) -> str:
+        """
+            Determines the upload strategy based on available upload data.
+        :return:
+        """
+        if self.input.type == "from_blob_path" \
+            and self.input.bucket_name is not None \
+            and self.input.raw_data_blob_path is not None:
+            return "connection_processing"
+        else:
+            return "standard_processing"
+
+    def create_image_object_from_input(self):
+        self.new_image = Image(original_filename = self.input.original_filename)
+
+        self.session.add(self.new_image)
+        self.session.flush()
+
+        return self.new_image
+
+    def create_image_file_from_input(self):
         self.input.file = File.new(
             session = self.session,
             working_dir_id = self.working_dir_id,
             file_type = "image",
             image_id = self.new_image.id,
+            parent_id = self.input.parent_file_id,
             original_filename = self.input.original_filename,
             project_id = self.project_id,  # TODO test if project_id is working as expected here
             input_id = self.input.id,
-            file_metadata = self.input.file_metadata
-        )
+            connection_id = self.input.connection_id,
+            bucket_name = self.input.bucket_name,
+            file_metadata = self.input.file_metadata,
+            ordinal = self.input.ordinal,
 
-        ###
+        )
+        return self.input.file
+
+    def connection_image_processing(self):
+
+        self.new_image = self.create_image_object_from_input()
+        # Set URL
+        self.new_image.url_signed_blob_path = self.input.raw_data_blob_path
+        self.try_to_commit()
+
+        if log_has_error(self.log):
+            self.input.status = 'failed'
+            logger.error(f"failed to process connection upload. Log: {self.log}")
+            logger.error(self.log)
+            self.input.update_log = self.log
+
+        self.input.file = self.create_image_file_from_input()
+
         self.populate_new_models_and_runs()
-        # If it's a video then we expect it will be handled by the above detection
+
+        if log_has_error(self.log):
+            self.input.status = 'failed'
+            logger.error(f"failed to generation URL. Log: {self.log}")
+            logger.error(self.log)
+            self.input.update_log = self.log
+        # Handle status checks
+        if self.input.media_type == 'image':
+            if self.input.status != "failed":  # if we haven't already set a status
+                self.declare_success(self.input)
+
+    def standard_image_processing(self):
+        # Read file if it does not come from a blob
+        result = self.read_raw_file()
+        if result is False:
+            return False
+        if settings.DIFFGRAM_SYSTEM_MODE == 'testing_e2e':
+            self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
+                                                  str(self.project_id) + "/" + str(uuid.uuid4()) + "/" + str(self.new_image.id)
+
+        else:
+            self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
+                                                  str(self.project_id) + "/" + str(self.new_image.id)
+
+        self.try_to_commit()
+
+        # Save thumbnails if we are uploading blobs, otherwise skip
+        self.save_image_and_thumbnails()
+        if log_has_error(self.log):
+            return
+
+        self.input.file = self.create_image_file_from_input()
+
+        self.populate_new_models_and_runs()
+
+        # Handle status checks
         if self.input.media_type == 'image':
 
             if self.input.status != "failed":  # if we haven't already set a status
-                # May need this on video too
-                # Context of for example the packet for instances attached to it
-                # Not loading successfully
-                # We default this to init so 'failed' string instead of None
                 self.declare_success(self.input)
 
-            # Question, could we just call close() on temp_dir_path_and_filename instead here?
-            # TODO review this usage vs say https://docs.python.org/3/library/tempfile.html#tempfile.NamedTemporaryFile
-            # basically, if the default is that delete=True on close, hmmm
+            if self.input.type != 'from_blob_path':
+                try:
+                    shutil.rmtree(self.input.temp_dir)  # delete directory
+                except OSError as exc:
+                    print("shutil error")
+                    pass
 
-            # allow_csv is True by default but gets set to False by process csv...
-            try:
-                shutil.rmtree(self.input.temp_dir)  # delete directory
-            except OSError as exc:
-                print("shutil error")
-                pass
+    def process_one_image_file(self):
+        """
+            Adds an image file into diffgram from self.input data.
+        :return:
+        """
+        try:
+            self.new_image = self.create_image_object_from_input()
+            if self.project:
+                self.project_id = self.project.id
 
-        # Refresh Previews of project
-        self.project.set_cache_key_dirty('preview_file_list')
-        return True
+            strategy = self.determine_image_upload_strategy()
+            if strategy == "connection_processing":
+                self.connection_image_processing()
+            else:
+                self.standard_image_processing()
+
+            # Refresh Previews of project
+            self.project.set_cache_key_dirty('preview_file_list')
+            return True
+        except Exception as e:
+            msg = traceback.format_exc()
+            logger.error(f'Error on process_one_image_file {msg}')
+            self.input.status = 'failed'
+            self.log['error']['process_one_image'] = str(e)
+            self.log['error']['trace'] = msg
+            self.input.update_log = self.log
+            return False
 
     def __get_allowed_model_ids(self):
         models = Model.list(session = self.session, project_id = self.project_id)
@@ -1860,9 +1933,6 @@ class Process_Media():
 
     def save_raw_image_file(self):
 
-        self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
-                                              str(self.project_id) + "/" + str(self.new_image.id)
-
         # Use original file for jpg and jpeg
         extension = str(self.input.extension).lower()
         if extension in ['.jpg', '.jpeg']:
@@ -1926,6 +1996,7 @@ class Process_Media():
             settings.PROJECT_TEXT_FILES_BASE_DIR,
             str(self.project_id),
             str(self.new_text_file.id))
+        logger.debug(f'Blob path Tokens: {self.new_text_file.tokens_url_signed_blob_path}')
         data_tools.upload_from_string(self.new_text_file.tokens_url_signed_blob_path,
                                       json_string_data,
                                       content_type = 'application/json')
@@ -1935,12 +2006,12 @@ class Process_Media():
         logger.info(f"Saved Tokens on: {self.new_text_file.tokens_url_signed_blob_path}")
 
     def save_raw_audio_file(self):
-        offset = 2592000
-        self.new_audio_file.url_signed_expiry = int(time.time() + offset)  # 1 month
+        new_offset_in_seconds = settings.SIGNED_URL_CACHE_NEW_OFFSET_SECONDS_VALID
+        self.new_audio_file.url_signed_expiry = int(new_offset_in_seconds)  # 1 month
 
         self.new_audio_file.url_signed_blob_path = '{}{}/{}'.format(settings.PROJECT_TEXT_FILES_BASE_DIR,
-                                                                   str(self.project_id),
-                                                                   str(self.new_audio_file.id))
+                                                                    str(self.project_id),
+                                                                    str(self.new_audio_file.id))
 
         # TODO: Please review. On image there's a temp directory for resizing. But I don't feel the need for that here.
         logger.debug(f"Uploading text file from {self.input.temp_dir_path_and_filename}")
@@ -1952,10 +2023,11 @@ class Process_Media():
         )
 
         self.new_audio_file.url_signed = data_tools.build_secure_url(self.new_audio_file.url_signed_blob_path,
-                                                                    offset)
+                                                                     new_offset_in_seconds)
+
     def save_raw_text_file(self):
-        offset = 2592000
-        self.new_text_file.url_signed_expiry = int(time.time() + offset)  # 1 month
+        new_offset_in_seconds = settings.SIGNED_URL_CACHE_NEW_OFFSET_SECONDS_VALID
+        self.new_text_file.url_signed_expiry = int(new_offset_in_seconds)
 
         self.new_text_file.url_signed_blob_path = '{}{}/{}'.format(settings.PROJECT_TEXT_FILES_BASE_DIR,
                                                                    str(self.project_id),
@@ -1971,7 +2043,7 @@ class Process_Media():
         )
 
         self.new_text_file.url_signed = data_tools.build_secure_url(self.new_text_file.url_signed_blob_path,
-                                                                    offset)
+                                                                    new_offset_in_seconds)
 
         # Now Save Tokens
 
@@ -2486,16 +2558,3 @@ def clean_up_temp_dir(path):
     except OSError as exc:
         logger.error(f"shutil error {str(exc)}")
         pass
-
-
-def get_memory_percent():
-    import psutil
-
-    memory_percent = None
-    try:
-        psutil_memory_result = psutil.virtual_memory()
-        memory_percent = psutil_memory_result[2]
-    except Exception as e:
-        logger.warn(traceback.format_exc())
-
-    return memory_percent

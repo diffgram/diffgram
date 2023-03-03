@@ -13,14 +13,14 @@
         <v-container fluid class="d-flex align-top">
 
           <div class="pr-4">
-            <tooltip_button
+            <standard_button
                 tooltip_message="Quick Edit Project Level Schema"
                 @click="open_labels_dialog"
                 icon="mdi-format-paint"
                 :icon_style="true"
                 :large="true"
                 color="primary">
-            </tooltip_button>
+            </standard_button>
           </div>
 
           <label_select_only
@@ -261,7 +261,7 @@
 
 
 
-                <!-- Disable changes for Jan 2019 release -->
+                <!-- Disabled -->
                 <v-select :items="permission_list"
                           v-model="job.permission"
                           label="Visibility"
@@ -316,7 +316,7 @@
   import label_select_only from '../../label/label_select_only.vue'
   import label_manager_dialog from '../../label/label_manager_dialog.vue'
   import {route_errors} from '../../regular/regular_error_handling'
-  import userscript_select from '../../annotation/userscript/userscript_select.vue'
+  import userscript_select from '../../annotation/image_and_video_annotation/userscript/userscript_select.vue'
   import Vue from "vue";
 
 

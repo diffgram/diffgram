@@ -1,6 +1,6 @@
 import axios from './customInstance'
 
-export const postInstanceList = async (url, instance_list) => {
+export const postInstanceList = async (url, instance_list, child_file_save_id = undefined) => {
     try {
         const payload = instance_list.map(inst => {
             if (typeof inst.id === 'string') inst.id = null
@@ -10,8 +10,9 @@ export const postInstanceList = async (url, instance_list) => {
             url,
             {
                 instance_list: payload,
-                and_complete: false
-            }
+                and_complete: false,
+                child_file_save_id
+            },
         )
         return data
     } catch(e) {

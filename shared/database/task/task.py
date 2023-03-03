@@ -290,6 +290,10 @@ class Task(Base):
             if last_task.status in status_allow_list:
                 return last_task
 
+    @staticmethod
+    def spicedb_type():
+        return "diffgram/task"
+
     def get_all_users_in_task(self, session):
         """
             Returns the list of both assignees and reviewers
@@ -569,6 +573,7 @@ class Task(Base):
         task_serialized['time_tracking'] = time_tracking_records_data
         return task_serialized
 
+    @staticmethod
     def get_by_job_and_file(
         session,
         job,
@@ -578,6 +583,7 @@ class Task(Base):
         query = session.query(Task).filter(
             Task.job_id == job.id,
             Task.file_id == file.id,
+            Task.status != 'archived',
         )
         if return_type == 'first':
             return query.first()
@@ -701,7 +707,7 @@ class Task(Base):
         completed = query.filter(Task.job_id == job_id,
                                  Task.status == 'complete').count()
         in_review = query.filter(Task.job_id == job_id,
-                                 Task.status == 'review_requested').count()
+                                 Task.status == 'in_review').count()
         requires_changes = query.filter(Task.job_id == job_id,
                                         Task.status == 'requires_changes').count()
         in_progress = query.filter(Task.job_id == job_id,
@@ -742,13 +748,13 @@ class Task(Base):
 
         return task
 
-    def serialize_for_list_view_builder(self, session = None):
+    def serialize_for_list_view_builder(self, session = None, regen_url = True):
 
         file = None
         task_assignees = []
         task_reviewers = []
         if session:
-            file = self.file.serialize_with_type(session = session)
+            file = self.file.serialize_with_type(session = session, regen_url = regen_url)
 
             task_assignees_query = TaskUser.list(session, self.id, None, None, 'assignee')
 

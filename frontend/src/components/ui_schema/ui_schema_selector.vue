@@ -27,13 +27,13 @@
     <v-layout>
       <div class="pt-4 pr-4">
 
-        <tooltip_button
+        <standard_button
             tooltip_message="Refresh"
             @click="refresh"
             icon="refresh"
             :icon_style="true"
             color="primary">
-        </tooltip_button>
+        </standard_button>
 
           {{ui_schema_list_computed.length}}
 
@@ -222,7 +222,6 @@ export default Vue.extend({
 
   methods: {
     update_current: function(ui_schema){
-      console.log('AAAAAA', ui_schema, this.internal_ui_schema_list)
       this.internal_ui_schema_list.splice(0, 0, ui_schema)
       this.current_ui_schema = ui_schema
     },

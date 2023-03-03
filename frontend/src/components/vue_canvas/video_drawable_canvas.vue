@@ -1,6 +1,6 @@
 <template>
   <div class="video_canvas" style="position: relative; height: 100%" >
-    <div @click="$emit('on_click_details', current_frame)">
+    <div>
       <drawable_canvas
         :allow_zoom="allow_zoom"
         :image_bg="html_image"
@@ -34,7 +34,7 @@
     <v_video  v-if="is_mounted"
               @mouseover="hovered = true"
               :user_nav_width_for_frame_previews="false"
-              :style="{maxWidth: this.$refs.drawable_canvas.canvas_width_scaled, position: 'absolute', bottom: '-95px', right: 0}"
+              :style="{maxWidth: this.$refs.drawable_canvas.canvas_width_scaled, position: 'absolute', bottom: `-20px`, right: 0}"
               :player_width="canvas_width"
               :update_query_params="false"
               :player_height="`${video_player_height}px`"
@@ -71,14 +71,19 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import Vue from "vue";
 import drawable_canvas from "./drawable_canvas";
 import instance_list from "./instance_list";
 import axios from "../../services/customInstance";
+import {initialize_instance_object} from "@/utils/instance_utils";
 import {KeypointInstance} from "./instances/KeypointInstance";
+import {newEmptyCanvasMouseCtx} from "@/types/mouse_position";
+import {InstanceImage2D} from "@/components/vue_canvas/instances/InstanceImage2D";
+import {post_init_instance} from "../../utils/instance_utils";
+import {CanvasMouseTools} from "./CanvasMouseTools";
 
-  export default Vue.extend( {
+export default Vue.extend( {
     name: "video_drawable_canvas",
     components: {
       drawable_canvas,
@@ -133,6 +138,9 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       show_video_nav_bar:{
         default: true
       },
+      video_player_height: {
+        default: 80
+      },
 
       reticle_colour: {
         default: () => ({
@@ -150,8 +158,11 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       return {
         loading: false,
         hovered: false,
+        canvas_mouse_ctx: newEmptyCanvasMouseCtx(),
         is_mounted: false,
         loading_images: [],
+        label_file_colour_map: {},
+        label_file_map: {},
         annotations_loading: false,
         get_instances_loading: false,
         refresh: new Date(),
@@ -164,8 +175,8 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         current_frame: 0,
         seeking: false,
         instance_frame_start: 0,
-        video_player_height: 80,
         instance_buffer_size: 60,
+        canvas_mouse_tools: null,
         instance_buffer_dict: {},
         instance_buffer_error: {},
         instance_buffer_metadata: {},
@@ -189,6 +200,7 @@ import {KeypointInstance} from "./instances/KeypointInstance";
     },
     watch: {
       instance_list: function(){
+        this.build_label_file_map()
         this.$emit('update_instance_list', this.instance_list);
       },
       refresh_video_buffer: function(){
@@ -196,24 +208,44 @@ import {KeypointInstance} from "./instances/KeypointInstance";
       }
     },
     created() {
+      this.build_label_file_map()
+      this.canvas_mouse_ctx = newEmptyCanvasMouseCtx()
       document.addEventListener('focusin', this.focus_in)
       document.addEventListener('focusout', this.focus_out)
     },
     async mounted() {
+
       this.is_mounted = true;
       await this.$nextTick();
       await this.initialize_video();
-
     },
     methods:{
       set_keyframe_loading: function(value){
         this.go_to_keyframe_loading = value
       },
+      build_label_file_map: function () {
+        if(!this.instance_list){
+          return
+        }
+        this.label_file_colour_map = {}
+        for (let inst of this.instance_list) {
+          if (inst.label_file) {
+            this.label_file_colour_map[inst.label_file_id] = inst.label_file.colour
+            this.label_file_map[inst.label_file_id] = inst.label_file
+          }
+        }
+      },
       initialize_video: async function(){
-        this.$refs.video_controllers.reset_cache();
+        if(this.$refs.video_controllers){
+          await this.$refs.video_controllers.reset_cache();
+        }
+
         await this.get_instances();
         await this.$nextTick();
-        await this.$refs.video_controllers.current_video_update();
+        if(this.$refs.video_controllers){
+          await this.$refs.video_controllers.current_video_update();
+        }
+
       },
       focus_in: function(){
         this.focused = true;
@@ -222,7 +254,10 @@ import {KeypointInstance} from "./instances/KeypointInstance";
         this.focused = false;
       },
       update_canvas: function(){
-        this.$refs.drawable_canvas.update_canvas()
+        if(this.$refs.drawable_canvas){
+          this.$refs.drawable_canvas.update_canvas()
+        }
+
       },
       video_animation_unit_of_work: async function (image) {
         /*
@@ -338,26 +373,25 @@ import {KeypointInstance} from "./instances/KeypointInstance";
           this.loading = false
         }
       },
+      instance_hovered: function () {
 
+      },
+      instance_unhovered: function () {
+
+      },
       initialize_instance: function(instance){
-        // TODO: add other instance types as they are migrated to classes.
-        if(instance.type === 'keypoints' && !instance.initialized){
-          let initialized_instance = new KeypointInstance(
-            this.mouse_position,
-            this.canvas_element_ctx,
-            this.instance_context,
-            this.trigger_instance_changed,
-            this.instance_selected,
-            this.instance_deselected,
-            this.mouse_down_delta_event,
-            this.mouse_position,
-          );
-          initialized_instance.populate_from_instance_obj(instance);
-          return initialized_instance
-        }
-        else{
-          return instance
-        }
+
+        let inst = initialize_instance_object(instance, this.canvas_mouse_ctx)
+        let canvas_mouse_tool = undefined
+        inst = post_init_instance(inst,
+          this.label_file_map,
+          this.$refs.drawable_canvas ? this.$refs.drawable_canvas.canvas_element : null,
+          this.canvas_mouse_ctx.label_settings,
+          this.canvas_mouse_ctx.canvas_transform,
+          this.instance_hovered,
+          this.instance_unhovered,
+          this.$refs.drawable_canvas.canvas_mouse_tools)
+        return inst
       },
       initialize_instance_buffer_dict_frame: function(frame_number){
         /**
@@ -463,7 +497,18 @@ import {KeypointInstance} from "./instances/KeypointInstance";
           const new_instance = this.$props.filtered_instance_by_model_runs.find(elm => elm.id === inst.id);
           inst.override_color = new_instance.override_color;
         }
-        return new_instance_list;
+        let vm = this
+        return new_instance_list.map(inst => {
+          let newInst = initialize_instance_object(inst, this.canvas_mouse_ctx)
+          newInst = post_init_instance(newInst,
+            this.label_file_map,
+            this.$refs.drawable_canvas ? this.$refs.drawable_canvas.canvas_element : null,
+            this.canvas_mouse_ctx.label_settings,
+            this.canvas_mouse_ctx.canvas_transform,
+            this.instance_hovered,
+            this.instance_unhovered)
+          return newInst
+        });
       },
       any_loading() {
         return  this.annotations_loading || this.loading || this.get_instances_loading

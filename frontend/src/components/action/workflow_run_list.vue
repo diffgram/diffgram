@@ -69,7 +69,7 @@
 
             {{ props.item.status }}
 
-            <!-- Disable while WIP Oct 6 2020
+            <!-- Disabled
                Changed from image / next thing based to being more general -->
             <v-btn @click="route_action_event(props.item)"
                     :loading="loading"

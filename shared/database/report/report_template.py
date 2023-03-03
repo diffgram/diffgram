@@ -6,15 +6,6 @@ class ReportTemplate(Base):
     __tablename__ = 'report_template'
 
     """
-
-    Metadata about the report template
-
-    Columns are done by Column
-
-    NOTE 
-        May 1, 2020 
-            If adding items, make sure to add to serialize too,
-            since the report save assumes that will exist.
         
     """
 
@@ -44,6 +35,7 @@ class ReportTemplate(Base):
     item_of_interest = Column(String())
 
     group_by = Column(String())
+    second_group_by = Column(String())
 
     # dynamic period
     # all, last_week, last 14 days, last month, last year etc…
@@ -51,21 +43,14 @@ class ReportTemplate(Base):
     # always in context of current to previous right?
     period = Column(String(), default = "last_30_days")
 
-    # Return type is decided by the view?
-
     # day, month
     date_period_unit = Column(String())
 
     compare_to_previous_period = Column(Boolean, default = False)
 
-    # TODO add a list relation
-    # ie to access Column objects from here...
-    # and filters etc...
-
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys = [task_id])
 
-    # New May 11, 2020
     job_id = Column(Integer, ForeignKey('job.id'))
     job = relationship("Job", foreign_keys = [job_id])
     # If we wanted to add a multiple select filter for this in the future
@@ -81,7 +66,6 @@ class ReportTemplate(Base):
                                  'jobs_id_list': []
                              })
 
-    # WIP, NEW April 15, 2020
     report_dashboard_id = Column(Integer, ForeignKey('report_dashboard.id'))
     report_dashboard = relationship("ReportDashboard", foreign_keys = [report_dashboard_id])
 
@@ -91,10 +75,12 @@ class ReportTemplate(Base):
     view_type = Column(String())  # [count, rows, chart, objects]
     # 'objects' is internal only maybe
 
-    # Maybe what type of chart?
     view_sub_type = Column(String())  # [web_chart, future]...
 
-    group_by_labels = Column(Boolean, default = False)
+    task_event_type = Column(String())  # [task_completed, task_created, etc]...
+
+    aggregate_func = Column(String())
+
 
     @staticmethod
     def get_by_id(session,
@@ -125,14 +111,15 @@ class ReportTemplate(Base):
             'name': self.name,
             'scope': self.scope,
             'project_id': self.project_id,
+            'task_event_type': self.task_event_type,
             'project_string_id': project_string_id,  # note no self
             'member_created_id': self.member_created_id,
             'member_updated': self.member_updated,
             'time_created': self.time_created.strftime('%m/%d/%Y, %H:%M:%S') if self.time_created else None,
             'time_updated': time_updated,
             'item_of_interest': self.item_of_interest,
-            'group_by_labels': self.group_by_labels,
             'group_by': self.group_by,
+            'second_group_by': self.second_group_by,
             'period': self.period,
             'date_period_unit': self.date_period_unit,
             'compare_to_previous_period': self.compare_to_previous_period,
@@ -144,7 +131,8 @@ class ReportTemplate(Base):
             'is_visible_on_report_dashboard': self.is_visible_on_report_dashboard,
             'job_id': self.job_id,
             'label_file_id_list': label_file_id_list,
-            'task_id': self.task_id
+            'task_id': self.task_id,
+            'aggregate_func': self.aggregate_func
 
         }
 

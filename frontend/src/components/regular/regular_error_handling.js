@@ -43,6 +43,7 @@ in data() in JS
 **/
 import store from '../../store';
 export function route_errors (error) {
+
   if(error && error.message && error.message === 'Network Error'){
     store.commit('set_connection_error', error);
     return {
@@ -118,6 +119,7 @@ export function route_errors (error) {
     }
 
     else {
+      let result = {...error}
       if (error.response.data && typeof error.response.data === 'object') {
         result = {
           ...error.response.data,
@@ -133,10 +135,17 @@ export function route_errors (error) {
       return error.request
   }
   else if (error && error.message) {
-      return error.message
+      return {
+        'message': error.message,
+        'error': error
+      }
   }
   else {
+
     // if we could not process it otherwise
+    if(!error.response){
+      return {'error': error}
+    }
     return error
   }
 }

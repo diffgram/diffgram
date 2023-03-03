@@ -1,12 +1,12 @@
 import Vuex from "vuex";
-import {shallowMount, createLocalVue, Wrapper} from "@vue/test-utils";
-import CuboidDrawerTool from "../../../src/components/3d_annotation/CuboidDrawerTool";
+import {createLocalVue, Wrapper} from "@vue/test-utils";
+import CuboidDrawerTool from "../../../src/components/annotation/3d_annotation/CuboidDrawerTool";
 import * as THREE from "three";
-import {WEBGL} from "../../../src/components/3d_annotation/WebGL";
+import AnnotationScene3D from "../../../src/components/annotation/3d_annotation/AnnotationScene3D";
 import mock = jest.mock;
-import AnnotationScene3D from "../../../src/components/3d_annotation/AnnotationScene3D";
 import Cuboid3DInstance from "../../../src/components/vue_canvas/instances/Cuboid3DInstance"
 import {mocked} from 'ts-jest/utils'
+import {LabelFile} from "../../../src/types/label";
 
 jest.mock("three/src/renderers/WebGLRenderer"); // this happens automatically with automocking
 const localVue = createLocalVue();
@@ -40,7 +40,7 @@ describe("Test canvas_3d.vue", () => {
       colour: {
         hex: '#ffffff'
       }
-    }
+    } as LabelFile
     mock_instance.dimensions_3d = {
       width: 1,
       height: 2,
@@ -73,7 +73,7 @@ describe("Test canvas_3d.vue", () => {
       colour: {
         hex: '#ffffff'
       }
-    }
+    } as LabelFile
     mock_instance.dimensions_3d = {
       width: 1,
       height: 2,
@@ -118,7 +118,7 @@ describe("Test canvas_3d.vue", () => {
       colour: {
         hex: '#ffffff'
       }
-    }
+    } as LabelFile
     mock_instance.dimensions_3d = {
       width: 1,
       height: 2,

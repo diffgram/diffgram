@@ -100,7 +100,7 @@
                 <v-layout>
                   <div v-if="display_projectName" id="project_name">
 
-                    <v-menu offset-y>
+                    <v-menu offset-y :close-on-content-click="false">
                       <template
                         v-slot:activator="{ on, attrs }"
                         v-bind="attrs"
@@ -114,22 +114,36 @@
                           </h2>
                         </v-btn>
                       </template>
-                      <v-list
-                        id="project_list"
-                        v-if="$store.state.project_list &&
-                              $store.state.project_list.user_projects_list">
-                        <v-list-item
-                          class="project-option"
-                          style="cursor: pointer"
-                          v-for="project in user_project_list"
-                          :key="project.id"
-                        >
-                          <v-list-item-title @click="change_project(project)">{{
-                            project.name
-                            }}
-                          </v-list-item-title>
-                        </v-list-item>
-                      </v-list>
+
+                        <div v-if="loading">
+                          <v-progress-circular indeterminate></v-progress-circular>
+                        </div>
+                        <v-list
+                          id="project_list"
+                          v-if="!loading && $store.state.project_list && $store.state.project_list.user_projects_list">
+                            <div class="d-flex">
+
+                              <div class="d-flex flex-column">
+                                <v-list-item
+                                  class="project-option"
+                                  style="cursor: pointer"
+                                  v-for="project in user_project_list"
+                                  :key="project.id"
+                                >
+                                  <v-list-item-title @click="change_project(project)">{{
+                                      project.name
+                                    }}
+                                  </v-list-item-title>
+                                </v-list-item>
+
+                              </div>
+                              <v-btn @click="get_avalible_projects"class="mt-2 mr-4" color="primary" x-small >
+                                <v-icon dark>mdi-refresh</v-icon>
+                              </v-btn>
+                            </div>
+
+                        </v-list>
+
                     </v-menu>
                   </div>
                 </v-layout>
@@ -137,7 +151,7 @@
             </div>
 
 
-            <tooltip_button
+            <standard_button
               tooltip_message="View Pending File Operations"
               class="hidden-sm-and-down"
               @click="open_pending_files_dialog"
@@ -150,7 +164,7 @@
               :icon_style="true"
               :bottom="true"
             >
-            </tooltip_button>
+            </standard_button>
 
 
             <pending_files_dialog
@@ -198,42 +212,18 @@
             >
 
               <template slot="content">
-                <v-layout column>
-
-                  <v-btn @click="$router.push('/admin/')">
-                    Projects
-                  </v-btn>
-
-                  <v-btn @click="$router.push('/admin/install/info')">
-                    Install Info
-                  </v-btn>
-
-                  <v-btn @click="$router.push('/admin/mock')">
-                    Mock Data
-                  </v-btn>
-
-                  <v-btn @click="builder_or_trainer_toggle()">
-                    Builder / Trainer Toggle
-                  </v-btn>
-
-                  <v-btn @click="toggle_super_admin_mode()">
-                    Super Admin Toggle
-                  </v-btn>
-
-                  <v-btn @click="$router.push('/admin/student')">
-                    Student Plan
-                  </v-btn>
 
 
-                </v-layout>
+                  <menu_super_admin> </menu_super_admin>
+
+
               </template>
 
             </button_with_menu>
 
 
-            <!-- Don't show for trainers, but do show even if not logged in.-->
             <!-- Docs -->
-            <tooltip_button
+            <standard_button
               class="hidden-sm-and-down"
               href="https://diffgram.readme.io/docs"
               target="_blank"
@@ -244,7 +234,7 @@
               :bottom="true"
               v-if="$store.state.builder_or_trainer.mode != 'trainer'"
             >
-            </tooltip_button>
+            </standard_button>
 
 
 
@@ -253,9 +243,10 @@
                      style="text-transform: none !important;"
                      class="mr-2"
                      @click="contact_us"
-                     v-if="$store.state.org && !$store.state.org.current.id && $store.state.builder_or_trainer.mode == 'builder'"
+                     v-if="$store.state.org
+                     && !$store.state.org.current.id"
               >
-                  Book A Demo
+                  Enterprise
               </v-btn>
 
 
@@ -269,14 +260,18 @@
                 Try Now
               </v-btn>
             </ahref_seo_optimal>
+
             <v-btn
               v-if="$store.state.user.logged_in == true
-                   && $store.state.org && !$store.state.org.current.id"
-              @click="go_to_order_page"
+                   && $store.state.system
+                   && $store.state.system.is_open_source == false
+                   && !$store.state.org.current.id"
+              @click="go_to_install()"
               outlined
-              color="success">
-              <v-icon left>mdi-star-shooting</v-icon>
-              Upgrade
+              style="text-transform: none !important;"
+                   >
+              <v-icon left>mdi-download</v-icon>
+              Install
             </v-btn>
 
             <v_profile_in_menu class="hidden-xs-only">
@@ -309,6 +304,7 @@
   import pending_files_dialog from "../input/pending_files_dialog";
   import {getProjectList} from "../../services/projectServices";
   import menu_marketing from './menu_marketing'
+  import menu_super_admin from "./menu_super_admin";
 
   import Vue from "vue";
 
@@ -318,7 +314,8 @@
       main_menu_project,
       menu_tasks,
       pending_files_dialog,
-      menu_marketing
+      menu_marketing,
+      menu_super_admin
     },
     props: {
       'height': {
@@ -332,6 +329,7 @@
       return {
         title: "Diffgram",
         project_menu: false,
+        loading: false,
         project_manager_dialog: false,
         pending_files_dialog_is_open: false,
         do_not_show_menu: false,
@@ -392,14 +390,18 @@
     mounted() {
       if (
         !this.$store.state.project_list ||
-        this.$store.state.project_list.user_projects_list ||
-        (this.$store.state.project_list.user_projects_list &&
-          this.$store.state.project_list.user_projects_list.length === 0)
+        (this.$store.state.project_list && !this.$store.state.project_list.user_projects_list) ||
+        (this.$store.state.project_list && this.$store.state.project_list.user_projects_list && this.$store.state.project_list.user_projects_list.length === 0)
       ) {
         this.get_avalible_projects()
       }
     },
     methods: {
+
+      go_to_install: function() {
+        window.open(`https://diffgram.readme.io/docs/install`, '_blank')
+      },
+
       go_to_order_page: function(){
         if(window.location.host === 'diffgram.com'){
           window.open(`https://diffgram.com/order/premium`, '_blank')
@@ -432,9 +434,6 @@
       builder_or_trainer_toggle: function () {
         this.$store.commit("builder_or_trainer_toggle");
       },
-      toggle_super_admin_mode: function () {
-        this.$store.commit("super_admin_toggle");
-      },
       route_home_new_tab: function () {
         if (this.$store.state.user.logged_in == true) {
           window.open("/home/dashboard");
@@ -443,9 +442,13 @@
         }
       },
       get_avalible_projects: async function () {
+        if (!this.$store.state.user || !this.$store.state.user.logged_in) return
+        
+        this.loading = true
         const response = await getProjectList();
         const project_list = response.data.project_list;
         this.$store.commit("set_userProjects_list", project_list);
+        this.loading = false
       },
       contact_us: function(){
         window.open('https://diffgram.com/main/contact')

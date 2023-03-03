@@ -1,9 +1,18 @@
-# OPEN CORE - ADD
-try:
-    from methods.regular.regular_api import *
-except:
-    from default.methods.regular.regular_api import *
-
+import datetime, time
+from shared.communicate.email import communicate_via_email
+from dataclasses import dataclass, field
+from shared.database.user import User
+from shared.database.project import Project
+from shared.database.task.task import Task
+from typing import Any
+from shared.regular import regular_log
+from shared.regular import regular_input
+from shared.regular.regular_member import get_member
+from shared.database.event.event import Event
+from shared.database.source_control.file import File
+from shared.settings import settings
+from shared.database.source_control.file_stats import FileStats
+from flask import request
 try:
     # The walrus service doesn't have task_complete
     from shared.methods.task.task import task_complete
@@ -28,7 +37,7 @@ from shared.database.video.sequence import Sequence
 from shared.database.external.external import ExternalMap
 from shared.shared_logger import get_shared_logger
 import traceback
-
+from typing import Optional
 logger = get_shared_logger()
 
 
@@ -44,10 +53,10 @@ class Annotation_Update():
     instance_list_existing: list = None
     instance_list_existing_dict: dict = field(default_factory = lambda: {})
     instance_list_kept_serialized: list = field(default_factory = lambda: [])
-    video_data: dict = None
+    video_data: Optional[dict] = None
     project: Project = None  # Note project is Required for get_allowed_label_file_ids()
-    project_id: Project = None  # add project_id for avoiding dettached session on thread processing
-    task: Task = None
+    project_id: int = None  # add project_id for avoiding dettached session on thread processing
+    task: Optional[Task] = None
     complete_task: bool = False
     gold_standard_file = None
     external_auth: bool = False
@@ -68,8 +77,8 @@ class Annotation_Update():
     system_upgrade_hash_changes: list = field(default_factory = lambda: [])
 
     directory = None
-    external_map: ExternalMap = None
-    external_map_action: str = None
+    external_map: Optional[ExternalMap] = None
+    external_map_action: Optional[str] = None
     new_instance_dict_hash: dict = field(default_factory = lambda: {})  # Keep a hash of all
     do_create_new_file = False
     set_parent_instance_list = False
@@ -402,6 +411,10 @@ class Annotation_Update():
             'kind': list,
             'required': False
         }},
+        {'score': {
+            'kind': float,
+            'required': False
+        }},
 
     ])
 
@@ -625,11 +638,18 @@ class Annotation_Update():
         """
         if not self.file:
             return
-
         self.file.set_cache_by_key(
             cache_key = 'instance_list',
             value = self.instance_list_kept_serialized
         )
+
+        FileStats.update_file_stats_data(
+            session = self.session,
+            instance_list = self.instance_list_kept_serialized,
+            file_id = self.file.id,
+            project = self.project
+        )
+
 
     def return_orginal_file_type(self):
         """
@@ -811,8 +831,8 @@ class Annotation_Update():
             self.instance.label_file_id = None  # Ensure is None for Security
             return True
 
-        self.log['error']['valid_label_file'] = "Permission issue with " + \
-                                                str(self.instance.label_file_id) + " label_file_id."
+        self.log['error']['valid_label_file'] = "Label File ID" + \
+                                                str(self.instance.label_file_id) + f"does not belong to project {self.project.project_string_id}. Ensure you are using the correct label_file_id (and not the label ID). They are different!"
         return False
 
     def init_video_input(self):
@@ -1156,6 +1176,7 @@ class Annotation_Update():
                 radius = input['radius'],
                 bounds = input['bounds'],
                 bounds_lonlat = input['bounds_lonlat'],
+                score = input['score'],
             )
 
     def get_min_coordinates_instance(self, instance):
@@ -1327,7 +1348,8 @@ class Annotation_Update():
                         coords = None,
                         radius = None,
                         bounds = None,
-                        bounds_lonlat = None
+                        bounds_lonlat = None,
+                        score = None
                         ):
         """
         Assumes a "system" level context
@@ -1428,6 +1450,7 @@ class Annotation_Update():
             'radius': radius,
             'bounds': bounds,
             'bounds_lonlat': bounds_lonlat,
+            'score' : score
         }
         if overwrite_existing_instances and id is not None:
             self.instance = self.session.query(Instance).filter(Instance.id == id).first()
@@ -2163,14 +2186,16 @@ def task_annotation_update(
 
     # TODO Why are we adding this to session here? not clear
     session.add(task)
-
+    child_file_save_id = input.get('child_file_save_id')
     project = task.project
 
     instance_list_new = untrusted_input.get('instance_list', None)
     gold_standard_file = untrusted_input.get('gold_standard_file', None)
     try:
-        file = File.get_by_id(session = session, file_id = task.file_id)
-
+        if child_file_save_id is None:
+            file = File.get_by_id(session = session, file_id = task.file_id)
+        else:
+            file = File.get_by_id(session = session, file_id = child_file_save_id)
     except Exception as e:
         trace = traceback.format_exc()
         logger.error(f"File {task.file_id} is Locked")
@@ -2292,10 +2317,12 @@ def annotation_update_web(
     if and_complete is True:
         new_file = new_file.toggle_flag_shared(session)
 
+    member_id = user.member_id if user else None
+
     Event.new(
         session = session,
         kind = "annotation_update",
-        member_id = user.member_id,
+        member_id = member_id,
         project_id = project.id,
         file_id = new_file.id,
         description = f"Changed {str(new_file.count_instances_changed)}"

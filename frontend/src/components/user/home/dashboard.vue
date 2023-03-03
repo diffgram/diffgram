@@ -66,7 +66,10 @@
           <p>Diffgram quick start:</p>
           <ul>
             <li>
-              <a target= "_blank" href="https://diffgram.readme.io/docs/diffgram-101-key-concepts#project">Diffgram 101 - Key Concepts</a>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/concepts-101">Diffgram 101 - Key Concepts</a>
+            </li>
+            <li>
+              <a target= "_blank" href="https://diffgram.readme.io/docs/schema-setup">Schema</a>
             </li>
             <li>
               <a target= "_blank" href="https://diffgram.readme.io/docs/data-scope-introduction">Datasets</a>
@@ -116,15 +119,15 @@
 
         <v-layout>
           <v-row>
-            <v-col cols="3">
-              <v-card>
-                <v-card-title>Visit History:</v-card-title>
-                <v-card-text>
-                  <user_visit_history_list :project_string_id="project_string_id"></user_visit_history_list>
-                </v-card-text>
-              </v-card>
-            </v-col>
-            <v-col cols="9">
+<!--            <v-col cols="3">-->
+<!--              <v-card>-->
+<!--                <v-card-title>Visit History:</v-card-title>-->
+<!--                <v-card-text>-->
+<!--                  <user_visit_history_list :project_string_id="project_string_id"></user_visit_history_list>-->
+<!--                </v-card-text>-->
+<!--              </v-card>-->
+<!--            </v-col>-->
+            <v-col cols="12">
 
               <v-card >
                 <v-card-title>Reports: </v-card-title>
@@ -148,7 +151,7 @@
         </div>
       </div>
 
-      <div v-if="$store.state.user.current.is_super_admin == true">
+      <div v-if="$store.state.user.settings.show_ids == true">
         Project ID {{$store.state.project.current.id}}
       </div>
     </div>

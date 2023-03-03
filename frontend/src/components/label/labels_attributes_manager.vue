@@ -96,13 +96,11 @@
 </template>
 
 <script lang="ts">
-
-  import axios from '../../services/customInstance';
   import Vue from "vue";
-  import v_labels_edit from '../annotation/labels_edit'
-  import labels_manager_tabs from './labels_manager_tabs'
-  import attribute_group_list_manager from '../attribute/attribute_group_list_manager'
-  import labels_management_list from '../label/labels_management_list'
+  import v_labels_edit from '../annotation/image_and_video_annotation/labels_edit.vue'
+  import labels_manager_tabs from './labels_manager_tabs.vue'
+  import attribute_group_list_manager from '../attribute/attribute_group_list_manager.vue'
+  import labels_management_list from '../label/labels_management_list.vue'
   import {get_labels} from '../../services/labelServices';
 
   export default Vue.extend({

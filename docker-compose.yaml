@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   dispatcher:
-    image: gcr.io/diffgram-open-core/local_dispatcher:latest
+    image: diffgram/local_dispatcher:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8085:8085"
     expose: [8085]
@@ -12,14 +12,14 @@ services:
     environment:
       SAME_HOST: ${SAME_HOST}
   frontend:
-    image: gcr.io/diffgram-open-core/frontend:${DIFFGRAM_VERSION_TAG}
+    image: diffgram/frontend:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8081:80"
     expose: [80]
     depends_on:
     - default
   eventhandlers:
-    image: gcr.io/diffgram-open-core/eventhandlers:${DIFFGRAM_VERSION_TAG}
+    image: diffgram/eventhandlers:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8086:8086"
     expose: [8086]
@@ -39,7 +39,7 @@ services:
       DIFFGRAM_SERVICE_NAME: eventhandlers
     entrypoint: ["python3", "-u", "/app/main.py"]
   walrus:
-    image: gcr.io/diffgram-open-core/walrus:${DIFFGRAM_VERSION_TAG}
+    image: diffgram/walrus:${DIFFGRAM_VERSION_TAG}
     ports:
     - "0.0.0.0:8082:8082"
     expose: [8082]
@@ -60,9 +60,9 @@ services:
     entrypoint: ["python3", "-u", "/app/main.py"]
 
   default:
-    image: gcr.io/diffgram-open-core/default:${DIFFGRAM_VERSION_TAG}
+    image: diffgram/default:${DIFFGRAM_VERSION_TAG}
     healthcheck:
-      test: curl --fail http://default:8080 || exit 1
+      test: curl --fail http://default:8080/api/status || exit 1
       interval: 30s
       timeout: 30s
       retries: 5
@@ -86,7 +86,7 @@ services:
       DIFFGRAM_SERVICE_NAME: default
     command: ["python3", "-u", "/app/main.py"]
   db_migration:
-    image: gcr.io/diffgram-open-core/default:${DIFFGRAM_VERSION_TAG}
+    image: diffgram/default:${DIFFGRAM_VERSION_TAG}
     env_file:
       - .env
     environment:
@@ -129,5 +129,30 @@ services:
     ports:
         - 5672:5672
         - 15672:15672
+  minio:
+    image: minio/minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    expose: [9000, 9001]
+    volumes:
+      - ./test/.minio/data:/export
+      - ./test/.minio/config:/root/.minio
+    environment:
+      - "MINIO_ROOT_USER=${DIFFGRAM_MINIO_ACCESS_KEY_ID}"
+      - "MINIO_ROOT_PASSWORD=${DIFFGRAM_MINIO_ACCESS_KEY_SECRET}"
+    command: server /export --console-address :9001
+
+  createbuckets:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c "
+      /usr/bin/mc config host add myminio http://minio:9000 ${DIFFGRAM_MINIO_ACCESS_KEY_ID} ${DIFFGRAM_MINIO_ACCESS_KEY_SECRET};
+      /usr/bin/mc mb myminio/${DIFFGRAM_S3_BUCKET_NAME};
+      /usr/bin/mc policy set policy myminio/${DIFFGRAM_S3_BUCKET_NAME} ;
+      exit 0;
+      "
 volumes:
   static: {}

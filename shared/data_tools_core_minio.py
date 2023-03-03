@@ -3,7 +3,9 @@ from shared.settings import settings
 
 from .data_tools_core_s3 import Config
 from .data_tools_core_s3 import DataToolsS3
+from shared.shared_logger import get_shared_logger
 
+logger = get_shared_logger()
 
 class DataToolsMinio(DataToolsS3):
     """
@@ -18,6 +20,21 @@ class DataToolsMinio(DataToolsS3):
         - DIFFGRAM_S3_BUCKET_NAME
 
     """
+    def build_secure_url(self, blob_name: str, expiration_offset: int = None, bucket: str = "web"):
+        """
+            Builds a presigned URL to access the given blob path.
+        :param blob_name: The path to the blob for the presigned URL
+        :param expiration_offset: The expiration time for the presigned URL
+        :param bucket: string for the bucket type (either 'web' or 'ml') defaults to 'web'
+        :return: the string for the presigned url
+        """
+        signed_url = super().build_secure_url(blob_name = blob_name,
+                                              expiration_offset = expiration_offset,
+                                              bucket = bucket)
+        if settings.DIFFGRAM_STATIC_STORAGE_PROVIDER == 'minio' and signed_url.startswith('http://minio:9000'):
+            signed_url = signed_url.replace('http://minio:9000', 'http://localhost:8085/minio')
+        return signed_url
+
 
     def __init__(self):
 

@@ -13,8 +13,173 @@ try:
     from methods.input.process_media import add_item_to_queue
 except:
     pass
-from shared.regular import regular_methods
+from shared.regular import regular_methods, regular_log
 from methods.input.upload import Upload
+from shared.database.connection.connection import Connection
+from sqlalchemy.orm.session import Session
+from shared.helpers.permissions import get_session_string
+from shared.url_generation import get_custom_url_supported_connector
+
+
+@routes.route('/api/walrus/v1/project/<string:project_string_id>/input/packet',
+              methods = ['POST'])
+@Project_permissions.user_has_project(['admin', "Editor"])
+@limiter.limit("20 per second")
+def input_packet(project_string_id):
+    """
+    Import single packet
+
+    1) Validate packet
+    2) Send
+    3) Return
+
+    Question
+        How are we deciding to return 400 bad request
+        vs creating input with status regarding request?
+            * Is the assumption that if we can determine an error
+            we should do as soon as possible without creating it?
+            * Or that if it's directly related to the spec list
+            that's the criteria?
+    """
+
+    spec_list = [{'job_id': None},
+                 {'file_id': None},
+                 {'file_name': None},
+                 {'mode': None},
+                 {'directory_id': None},
+                 {'original_filename': None},
+                 {'raw_data_blob_path': None},
+                 {'parent_file_id': {
+                     "required": False,
+                     "kind": int
+                 }},
+                 {'ordinal': {
+                     "required": False,
+                     "kind": int
+                 }},
+                 {'connection_id': {
+                     "required": False,
+                     "kind": int
+                 }},
+                 {'bucket_name': {
+                     "required": False,
+                     "kind": str
+                 }},
+                 {'blob_path': {
+                     "required": False,
+                     "kind": str
+                 }},
+                 {'type': None},
+                 {'batch_id': None},
+                 {"media": {
+                     'default': {},
+                     'kind': dict,
+                 }
+                 },
+                 {"video_split_duration": {
+                     'default': None,
+                     'kind': int,
+                 }
+                 }
+                 ]
+
+    log, input, untrusted_input = regular_input.master(request = request,
+                                                       spec_list = spec_list)
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log = log), 400
+
+    # log = {"success" : False, "errors" : []}
+    # Careful, getting this from headers...
+    # TODO: Remove usage of directory ID in headers.
+    directory_id = request.headers.get('directory_id', None)
+    if directory_id is None:
+        # Try to get it from payload
+        directory_id = input['directory_id']
+
+    if directory_id is None and input['mode'] != 'update':
+        log["error"]['directory'] = "'directory_id' not supplied"
+        return jsonify(log = log), 400
+
+    # If we have at least one valid file type clear other errors.
+    log['error'] = {}
+    # Optional
+    job_id = untrusted_input.get('job_id', None)
+    mode = untrusted_input.get('mode', None)
+    media_url = input['media'].get('url', None)
+    media_type = input['media'].get('type', None)
+
+    log["info"] = "Started processing"
+
+    # QUESTION how early do we want to record input here?
+    # ie do we want to record 400 type errors? or stictly after we
+    # have a "valid" starting point
+
+    # Do we actually want to use a long running operation here?
+    # If we do can't pass input directly.... sigh
+    # need to revist if want to do this using imediate mode or not
+
+    diffgram_input_id = None
+    video_split_duration = input['video_split_duration']
+
+    client_id = None
+    if request.authorization:
+        client_id = request.authorization.get('username', None)
+
+    with sessionMaker.session_scope() as session:
+        # Creates and input and puts it in the media processing queue.
+        member = get_member(session)
+        valid_file_data, log, file_id = validate_file_data_for_input_packet(
+            session = session,
+            input = input,
+            project_string_id = project_string_id,
+            log = log)
+        if not valid_file_data:
+            return jsonify(log = log), 400
+        log = regular_log.default()
+        connection_id_access_token = get_session_string()
+        diffgram_input = enqueue_packet(project_string_id = project_string_id,
+                                        session = session,
+                                        media_url = media_url,
+                                        media_type = media_type,
+                                        job_id = job_id,
+                                        file_id = file_id,
+                                        directory_id = directory_id,
+                                        instance_list = untrusted_input.get('instance_list', None),
+                                        parent_file_id = untrusted_input.get('parent_file_id', None),
+                                        original_filename = input.get('original_filename', None),
+                                        raw_data_blob_path = input.get('raw_data_blob_path', None),
+                                        bucket_name = input.get('bucket_name', None),
+                                        connection_id = input.get('connection_id', None),
+                                        ordinal = input.get('ordinal', 0),
+                                        video_split_duration = video_split_duration,
+                                        frame_packet_map = untrusted_input.get('frame_packet_map', None),
+                                        batch_id = untrusted_input.get('batch_id', None),
+                                        type = input.get('type', None),
+                                        enqueue_immediately = False,
+                                        connection_id_access_token = connection_id_access_token,
+                                        mode = mode,
+                                        member = member)
+        auth_api = None
+        if client_id:
+            auth_api = Auth_api.get(
+                session = session,
+                client_id = client_id)
+        else:
+            user = User.get(session)
+
+        Event.new(
+            session = session,
+            kind = "input_from_packet",
+            member_id = auth_api.member_id if auth_api else user.member.id,
+            project_id = diffgram_input.project.id,
+            description = str(diffgram_input.media_type),
+            input_id = diffgram_input.id
+        )
+
+    log["success"] = True
+    return jsonify(
+        log = log,
+        input_id = diffgram_input_id), 200
 
 
 def enqueue_packet(project_string_id,
@@ -28,6 +193,7 @@ def enqueue_packet(project_string_id,
                    directory_id = None,
                    source_directory_id = None,
                    instance_list = None,
+                   parent_file_id = None,
                    video_split_duration = None,
                    frame_packet_map = None,
                    remove_link = None,
@@ -39,51 +205,99 @@ def enqueue_packet(project_string_id,
                    type = None,
                    task_action = None,
                    external_map_id = None,
+                   connection_id = None,
+                   bucket_name = None,
                    original_filename = None,
+                   raw_data_blob_path = None,
                    external_map_action = None,
                    enqueue_immediately = False,
-                   image_metadata = {},
+                   image_metadata: dict = {},
                    mode = None,
                    allow_duplicates = False,
                    auto_correct_instances_from_image_metadata = False,
                    extract_labels_from_batch = False,
-                   member = None):
+                   connection_id_access_token = False,
+                   member = None,
+                   ordinal: int = 0):
     """
-        Creates Input() object and enqueues it for media processing
+            Creates Input() object and enqueues it for media processing
         Returns Input() object that was created
-    :param packet_data:
+    :param project_string_id:
+    :param session:
+    :param media_url:
+    :param media_type:
+    :param file_id:
+    :param file_name:
+    :param job_id:
+    :param batch_id:
+    :param directory_id:
+    :param source_directory_id:
+    :param instance_list:
+    :param parent_file_id:
+    :param video_split_duration:
+    :param frame_packet_map:
+    :param remove_link:
+    :param add_link:
+    :param copy_instance_list:
+    :param commit_input:
+    :param task_id:
+    :param video_parent_length:
+    :param type:
+    :param task_action:
+    :param external_map_id:
+    :param connection_id:
+    :param bucket_name:
+    :param original_filename:
+    :param raw_data_blob_path:
+    :param external_map_action:
+    :param enqueue_immediately:
+    :param image_metadata:
+    :param mode:
+    :param allow_duplicates:
+    :param auto_correct_instances_from_image_metadata:
+    :param extract_labels_from_batch:
+    :param connection_id_access_token:
+    :param do_enqueue:
+    :param member:
     :return:
     """
-    diffgram_input = Input()
-    project = Project.get(session, project_string_id)
-    diffgram_input.file_id = file_id
-    diffgram_input.image_metadata = image_metadata
-    diffgram_input.auto_correct_instances_from_image_metadata = auto_correct_instances_from_image_metadata
-    diffgram_input.task_id = task_id
-    diffgram_input.batch_id = batch_id
-    diffgram_input.video_parent_length = video_parent_length
-    diffgram_input.remove_link = remove_link
-    diffgram_input.add_link = add_link
-    diffgram_input.copy_instance_list = copy_instance_list
-    diffgram_input.external_map_id = external_map_id
-    diffgram_input.original_filename = original_filename
-    diffgram_input.external_map_action = external_map_action
-    diffgram_input.task_action = task_action
-    diffgram_input.mode = mode
-    diffgram_input.project = project
-    diffgram_input.media_type = media_type
-    diffgram_input.type = "from_url"
-    diffgram_input.url = media_url
-    diffgram_input.video_split_duration = video_split_duration
-    diffgram_input.allow_duplicates = allow_duplicates
-    diffgram_input.member_created = member
-    if instance_list:
-        diffgram_input.instance_list = {}
-        diffgram_input.instance_list['list'] = instance_list
 
-    if frame_packet_map:
-        diffgram_input.frame_packet_map = frame_packet_map
-    # print(diffgram_input.frame_packet_map)
+    project = Project.get(session, project_string_id)
+    if connection_id_access_token is not None:
+        image_metadata['connection_id_access_token'] = connection_id_access_token
+    diffgram_input = Input.new(
+        image_metadata = image_metadata,
+        file_id = file_id,
+        task_id = task_id,
+        batch_id = batch_id,
+        ordinal = ordinal,
+        parent_file_id = parent_file_id,
+        raw_data_blob_path = raw_data_blob_path,
+        video_parent_length = video_parent_length,
+        remove_link = remove_link,
+        add_link = add_link,
+        copy_instance_list = copy_instance_list,
+        external_map_id = external_map_id,
+        original_filename = original_filename,
+        external_map_action = external_map_action,
+        connection_id = connection_id,
+        bucket_name = bucket_name,
+        task_action = task_action,
+        mode = mode,
+        project = project,
+        media_type = media_type,
+        type = type if type is not None else "from_url",
+        url = media_url,
+        video_split_duration = video_split_duration,
+        auto_correct_instances_from_image_metadata = auto_correct_instances_from_image_metadata,
+        allow_duplicates = allow_duplicates,
+        member_created_id = member.id if member is not None else None,
+        job_id = job_id,
+        directory_id = directory_id,
+        source_directory_id = source_directory_id,
+        instance_list = instance_list,
+        frame_packet_map = frame_packet_map,
+    )
 
     session.add(diffgram_input)
     session.flush()
@@ -93,28 +307,10 @@ def enqueue_packet(project_string_id,
         upload_tools.extract_instance_list_from_batch(input = diffgram_input,
                                                       input_batch_id = batch_id,
                                                       file_name = file_name)
-    # Expect temp dir to be None here.
-    # because each machine should assign it's own temp dir
-    # Something else to consider for future here!
-    # Once this is part of input, it will be smoothly handled at right time as part of
-    # processing queue
-    diffgram_input.job_id = job_id
-
-    # Process media handles checking if the directory id is valid
-    diffgram_input.directory_id = directory_id
-    diffgram_input.source_directory_id = source_directory_id
 
     diffgram_input_id = diffgram_input.id
 
-    queue_limit = 0
-    if media_type == "image":
-        queue_limit = 30  # 50
-    if media_type == "video":
-        queue_limit = 1
-
     if settings.PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY is True or enqueue_immediately:
-
-        print('diffgram_input_id', diffgram_input_id)
         if commit_input:
             regular_methods.commit_with_rollback(session = session)
         item = PrioritizedItem(
@@ -126,6 +322,44 @@ def enqueue_packet(project_string_id,
         diffgram_input.processing_deferred = True  # Default
 
     return diffgram_input
+
+
+def validate_input_from_blob_path(project: Project, input: dict, session: Session, log: dict):
+    if input.get('connection_id') is None:
+        log['error'] = {}
+        log['error']['connection_id'] = 'Provide a connection ID'
+    connection = Connection.get_by_id(session, id = input.get('connection_id'))
+
+    if connection is None:
+        log['error'] = {}
+        log['error']['connection_id'] = 'Connection ID does not exist'
+        return log
+
+    connector, log = get_custom_url_supported_connector(session = session, log = log, connection_id = connection.id)
+    if regular_log.log_has_error(log):
+        return log
+
+    if connection.project_id != project.id:
+        log['error'] = {}
+        log['error']['connection_id'] = 'Invalid Connection ID. Connection ID must belong to project'
+
+    if input.get('bucket_name') is None:
+        log['error'] = {}
+        log['error']['bucket_name'] = 'Provide bucket name for blob'
+
+    if input.get('media') is None or input.get('media') == {}:
+        log['error'] = {}
+        log['error']['media'] = 'Provide media data. Needs to be {"media_type": str, "url": str<optional>}'
+
+    if input.get('media') is not None and input['media'].get('type') is None:
+        log['error'] = {}
+        log['error'][
+            'media.type'] = 'Provide media type needs to be ["image", "video", "text", "audio", "csv", "sensor_fusion", "geo_tiff"]'
+    if input.get('raw_data_blob_path') is None:
+        log['error'] = {}
+        log['error']['raw_data_blob_path'] = 'Provide raw_data_blob_path for blob'
+
+    return log
 
 
 def validate_file_data_for_input_packet(session, input, project_string_id, log):
@@ -142,6 +376,18 @@ def validate_file_data_for_input_packet(session, input, project_string_id, log):
     :param log:
     :return:
     """
+    project = Project.get_by_string_id(session = session, project_string_id = project_string_id)
+    if input.get('type') == 'from_blob_path':
+        log = validate_input_from_blob_path(
+            project = project,
+            input = input,
+            session = session,
+            log = log
+        )
+        if regular_log.log_has_error(log):
+            return False, log, None
+        else:
+            return True, log, None
     valid_id = False
     valid_media_url = False
     valid_file_name = False
@@ -151,7 +397,7 @@ def validate_file_data_for_input_packet(session, input, project_string_id, log):
     else:
         media_url = None
         media_type = None
-    project = Project.get_by_string_id(session = session, project_string_id = project_string_id)
+
     file_id = None
     if input.get('file_id') is None:
         # Validate Media URL Case
@@ -204,137 +450,3 @@ def validate_file_data_for_input_packet(session, input, project_string_id, log):
         log['error'] = {}
 
     return result, log, file_id
-
-
-@routes.route('/api/walrus/v1/project/<string:project_string_id>/input/packet',
-              methods = ['POST'])
-@Project_permissions.user_has_project(['admin', "Editor"])
-@limiter.limit("20 per second")
-def input_packet(project_string_id):
-    """
-    Import single packet
-
-    1) Validate packet
-    2) Send
-    3) Return
-
-    Question
-        How are we deciding to return 400 bad request
-        vs creating input with status regarding request?
-            * Is the assumption that if we can determine an error
-            we should do as soon as possible without creating it?
-            * Or that if it's directly related to the spec list
-            that's the criteria?
-    """
-
-    spec_list = [{'job_id': None},
-                 {'file_id': None},
-                 {'file_name': None},
-                 {'mode': None},
-                 {'directory_id': None},
-                 {'original_filename': None},
-                 {'batch_id': None},
-                 {"media": {
-                     'default': {},
-                     'kind': dict,
-                 }
-                 },
-                 {"video_split_duration": {
-                     'default': None,
-                     'kind': int,
-                 }
-                 }
-                 ]
-
-    log, input, untrusted_input = regular_input.master(request = request,
-                                                       spec_list = spec_list)
-    if len(log["error"].keys()) >= 1:
-        return jsonify(log = log), 400
-
-    # log = {"success" : False, "errors" : []}
-
-    # Careful, getting this from headers...
-    # TODO: Remove usage of directory ID in headers.
-    directory_id = request.headers.get('directory_id', None)
-    if directory_id is None:
-        # Try to get it from payload
-        directory_id = input['directory_id']
-
-    if directory_id is None and input['mode'] != 'update':
-        log["error"]['directory'] = "'directory_id' not supplied"
-        return jsonify(log = log), 400
-
-    # If we have at least one valid file type clear other errors.
-    log['error'] = {}
-    # Optional
-    job_id = untrusted_input.get('job_id', None)
-    mode = untrusted_input.get('mode', None)
-    media_url = input['media'].get('url', None)
-    media_type = input['media'].get('type', None)
-
-    log["info"] = "Started processing"
-
-    # QUESTION how early do we want to record input here?
-    # ie do we want to record 400 type errors? or stictly after we
-    # have a "valid" starting point
-
-    # Do we actually want to use a long running operation here?
-    # If we do can't pass input directly.... sigh
-    # need to revist if want to do this using imediate mode or not
-
-    diffgram_input_id = None
-    video_split_duration = input['video_split_duration']
-
-    client_id = None
-    if request.authorization:
-        client_id = request.authorization.get('username', None)
-
-
-
-    with sessionMaker.session_scope() as session:
-        # Creates and input and puts it in the media processing queue.
-        member = get_member(session)
-        valid_file_data, log, file_id = validate_file_data_for_input_packet(
-            session = session,
-            input = input,
-            project_string_id = project_string_id,
-            log = log)
-        if not valid_file_data:
-            return jsonify(log = log), 400
-        log = regular_log.default()
-        diffgram_input = enqueue_packet(project_string_id = project_string_id,
-                                        session = session,
-                                        media_url = media_url,
-                                        media_type = media_type,
-                                        job_id = job_id,
-                                        file_id = file_id,
-                                        directory_id = directory_id,
-                                        instance_list = untrusted_input.get('instance_list', None),
-                                        original_filename = input.get('original_filename', None),
-                                        video_split_duration = video_split_duration,
-                                        frame_packet_map = untrusted_input.get('frame_packet_map', None),
-                                        batch_id = untrusted_input.get('batch_id', None),
-                                        enqueue_immediately = False,
-                                        mode = mode,
-                                        member = member)
-        auth_api = None
-        if client_id:
-            auth_api = Auth_api.get(
-                session = session,
-                client_id = client_id)
-        else:
-            user = User.get(session)
-
-        Event.new(
-            session = session,
-            kind = "input_from_packet",
-            member_id = auth_api.member_id if auth_api else user.member.id,
-            project_id = diffgram_input.project.id,
-            description = str(diffgram_input.media_type),
-            input_id = diffgram_input.id
-        )
-
-    log["success"] = True
-    return jsonify(
-        log = log,
-        input_id = diffgram_input_id), 200

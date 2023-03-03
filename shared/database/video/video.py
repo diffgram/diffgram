@@ -2,9 +2,6 @@
 from shared.database.common import *
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.source_control.file import File
-from shared.data_tools_core import Data_tools
-
-data_tools = Data_tools().data_tools
 
 
 class Video(Base):
@@ -68,10 +65,12 @@ class Video(Base):
         self,
         session = None,
         project = None):
+        from shared.data_tools_core import Data_tools
+
+        data_tools = Data_tools().data_tools
         if session and self.file_blob_path:
             should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(self, session)
             if should_regenerate is True:
-
                 self.file_signed_url = data_tools.build_secure_url(
                     self.file_blob_path, new_offset_in_seconds)
 
@@ -86,7 +85,9 @@ class Video(Base):
     def serialize_list_view(
         self,
         session = None,
-        project = None):
+        project = None,
+        connection_id = None,
+        bucket_name = None):
 
         self.regenerate_url(
             project = project,
@@ -105,6 +106,7 @@ class Video(Base):
             'status': self.status,
             'description': self.description,
             'preview_image_url_thumb': self.preview_image_url_thumb,
+            'file_blob_path': self.file_blob_path,
             'file_signed_url': self.file_signed_url,
             'width': self.width,
             'height': self.height,
@@ -181,9 +183,11 @@ class Video(Base):
         width: int,
         height: int,
         directory_id: int,
+        parent_file_id: int = None,
         parent_input_id: int = None,  # WIP
         parent_video_split_duration: int = None,
         file_metadata: dict = None,
+        ordinal: int = 0
     ):
         # Does it make sense for this to be here
         # or would it make more sense for this to
@@ -229,8 +233,10 @@ class Video(Base):
             working_dir_id = directory_id,
             file_type = "video",
             video_id = video.id,
+            parent_id = parent_file_id,
             original_filename = filename,
-            file_metadata = file_metadata
+            file_metadata = file_metadata,
+            ordinal = ordinal
         )
 
         return video, file
@@ -242,7 +248,7 @@ class Video(Base):
         frame_number: int,
         thumb: bool = False,
         project = None) -> str:
-
+        from shared.data_tools_core import data_tools
         # Temp thing, until we have project saved here or something
 
         # New default
@@ -254,7 +260,6 @@ class Video(Base):
         # since why we are supplying a frame number otherwise here?
 
         else:
-            print("used migration")
             # note just project, not self.
             if self.preview_image and project:
                 path = settings.PROJECT_IMAGES_BASE_DIR + \

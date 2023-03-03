@@ -4,15 +4,22 @@ from shared.database.action.action_template import Action_Template
 from sqlalchemy.dialects.postgresql import JSONB
 from enum import Enum
 from sqlalchemy_serializer import SerializerMixin
-
-
 class ActionTriggerEventTypes(Enum):
     task_completed = 'task_completed'
     task_created = 'task_created'
+    task_review_start = 'task_review_start'
+    task_request_changes = 'task_request_changes'
+    task_review_complete = 'task_review_complete'
+    task_in_progress = 'task_in_progress'
+    task_comment_created = 'task_comment_created'
     task_template_completed = 'task_template_completed'
     input_file_uploaded = 'input_file_uploaded'
     input_instance_uploaded = 'input_instance_uploaded'
     action_completed = 'action_completed'
+    manual_trigger = 'manual_trigger'
+    file_copy = 'file_copy'
+    file_move = 'file_move'
+    file_mirror = 'file_mirror'
 
 
 class ActionKinds(Enum):
@@ -53,9 +60,15 @@ class Action(Base, SerializerMixin):
 
     config_data = Column(MutableDict.as_mutable(JSONB))
 
-    condition_data = Column(MutableDict.as_mutable(JSONB))
+    precondition = Column(MutableDict.as_mutable(JSONB))
 
     completion_condition_data = Column(MutableDict.as_mutable(JSONB))
+
+    # Output of action, usually caches the output of latest ActionRun.
+    output = Column(MutableDict.as_mutable(JSONB))
+
+    # This is possible return of the output
+    output_interface = Column(MutableDict.as_mutable(JSONB))
 
     ordinal = Column(Integer)
 
@@ -100,6 +113,9 @@ class Action(Base, SerializerMixin):
     count = Column(Integer)  # ie 1, 4, 0
     count_confidence_threshold = Column(Float)  # ie 0.50 prediction confidence
 
+    # Action preconditions
+
+
     # Condition action
 
     condition_operator = Column(String)  # (equals, less than, greater than, etc.)
@@ -130,12 +146,10 @@ class Action(Base, SerializerMixin):
 
     # Overlay
 
-    # New June 19, 2019
-
     overlay_kind = Column(String())  # "text", "image", "icon" ?
     overlay_text = Column(String())
 
-    overlay_image_id = Column(Integer, ForeignKey('image.id'))  # new feb 12 2019
+    overlay_image_id = Column(Integer, ForeignKey('image.id'))
     overlay_image = relationship("Image",
                                  foreign_keys = [overlay_image_id])
 
@@ -150,8 +164,9 @@ class Action(Base, SerializerMixin):
         from shared.database.action.workflow import Workflow
         actions = session.query(Action).join(Workflow, Action.workflow_id == Workflow.id).filter(
             Workflow.active == True,
+            Action.archived == False,
             Action.project_id == project_id,
-            Action.trigger_data['trigger_event_name'].astext == trigger_kind
+            Action.trigger_data['event_name'].astext == trigger_kind
         ).all()
         return actions
 
@@ -168,12 +183,12 @@ class Action(Base, SerializerMixin):
         icon,
         description,
         ordinal,
-        condition_data,
+        precondition,
         completion_condition_data,
         public_name,
         add_to_session = True,
-        flush_session = True
-
+        flush_session = True,
+        output_interface = None,
     ):
         """
         We default active to True for easier searching
@@ -197,8 +212,9 @@ class Action(Base, SerializerMixin):
             description = description,
             ordinal = ordinal,
             public_name = public_name,
-            condition_data = condition_data,
             completion_condition_data = completion_condition_data,
+            output_interface = output_interface,
+            precondition = precondition
         )
         if add_to_session:
             session.add(action)
@@ -219,7 +235,7 @@ class Action(Base, SerializerMixin):
         ).first()
         return action
 
-    # WIP WIP WIP
+
     def serialize(self):
         """
         pattern is that the kind specific thing gets inserted as a dict
@@ -357,7 +373,7 @@ class Action(Base, SerializerMixin):
     @staticmethod
     def get_by_id(session,
                   id,
-                  project_id = None):
+                  project_id = None) -> 'Action':
         """
         Must include project id for security check
 

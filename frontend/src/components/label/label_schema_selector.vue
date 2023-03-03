@@ -5,9 +5,9 @@
       return-object
 
       data-cy="label_schema_selector"
-      :disabled="schema_list_loading"
+      :disabled="schema_list_loading || disabled"
       @change="on_change_schema"
-      prepend-icon="mdi-shape-plus"
+      :prepend-icon="icon ? 'mdi-shape-plus' : null"
       item-value="id"
       item-text="name"
       ref="schema_select"
@@ -23,7 +23,7 @@
 </template>
 
 <script>
-import {get_schemas} from "@/services/labelServices";
+import { get_schemas } from "@/services/labelServices";
 
 export default {
   name: "label_schema_selector",
@@ -31,11 +31,19 @@ export default {
     project_string_id:{
       required: true
     },
+    disabled: {
+      type: Boolean,
+      default: false
+    },
     initial_schema:{
       default: undefined
     },
     label: {
       default: 'Select Schema'
+    },
+    icon: {
+      type: Boolean,
+      default: true
     }
   },
   async mounted() {
@@ -47,7 +55,6 @@ export default {
       this.selected_schema = this.schema_list[0];
     }
     this.on_change_schema(this.selected_schema)
-
   },
   data:function (){
     return{
@@ -61,7 +68,10 @@ export default {
     on_change_schema: function(schema){
       this.$emit('change', schema);
       document.activeElement.blur()
-      this.$refs.schema_select.blur()
+      if(this.$refs.schema_select){
+        this.$refs.schema_select.blur()
+      }
+
     },
     on_filter_schemas: function(item, query_text, item_text){
       return item.name.toLocaleLowerCase().includes(query_text.toLocaleLowerCase())

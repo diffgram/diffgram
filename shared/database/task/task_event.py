@@ -2,7 +2,8 @@ from shared.database.common import *
 from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy import desc
 from shared.database.discussion.discussion_comment import DiscussionComment
-
+from shared.database.event.event import Event
+from shared.database.project import Project
 
 class TaskEvent(Base, SerializerMixin):
     """
@@ -26,7 +27,7 @@ class TaskEvent(Base, SerializerMixin):
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys = [task_id])
 
-    event_type = Column(String())  # ["completed", "archived",  "in_review", "created", "comment"]
+    event_type = Column(String())  # ["completed", "archived",  "in_review", "created", "task_comment_created"]
 
     comment_id = Column(Integer, ForeignKey('discussion_comment.id'))
     comment = relationship("DiscussionComment", foreign_keys = [comment_id])
@@ -67,7 +68,7 @@ class TaskEvent(Base, SerializerMixin):
             TaskEvent.task_id == task_id,
             TaskEvent.job_id == job_id,
             TaskEvent.project_id == project_id,
-            TaskEvent.event_type == 'comment'
+            TaskEvent.event_type == 'task_comment_created'
         ).order_by(desc(TaskEvent.time_created)).first()
 
         if (latest_comment == None):
@@ -112,7 +113,7 @@ class TaskEvent(Base, SerializerMixin):
         )
 
     @staticmethod
-    def generate_task_request_change_event(session, task, member, task_assignee) -> 'TaskEvent':
+    def generate_task_request_change_event(session, task, member, task_assignee = None) -> 'TaskEvent':
         return TaskEvent.new(
             session = session,
             project_id = task.project_id,
@@ -120,7 +121,7 @@ class TaskEvent(Base, SerializerMixin):
             task_id = task.id,
             event_type = 'task_request_changes',
             member_created_id = member.id if member else None,
-            user_assignee_id = task_assignee.id,
+            user_assignee_id = task_assignee.id if task_assignee else None,
             user_reviewer_id = member.user_id if task.job.allow_reviews else None
         )
 
@@ -153,7 +154,7 @@ class TaskEvent(Base, SerializerMixin):
             project_id = task.project_id,
             job_id = task.job_id,
             task_id = task.id,
-            event_type = 'comment',
+            event_type = 'task_comment_created',
             member_created_id = member.id if member else None,
             comment_id = comment.id
 
@@ -172,7 +173,6 @@ class TaskEvent(Base, SerializerMixin):
             add_to_session: bool = True,
             flush_session: bool = True
             ) -> 'TaskEvent':
-
         task_event = TaskEvent(
             project_id = project_id,
             job_id = job_id,
@@ -182,6 +182,21 @@ class TaskEvent(Base, SerializerMixin):
             user_reviewer_id = user_reviewer_id,
             user_assignee_id = user_assignee_id,
             comment_id = comment_id
+        )
+        project = Project.get_by_id(session = session, id = project_id)
+        event = Event.new(
+            session = session,
+            project_id = project_id,
+            job_id = job_id,
+            task_id = task_id,
+            kind = event_type,
+            member_id = member_created_id,
+            extra_metadata = {
+                'user_reviewer_id': user_reviewer_id,
+                'user_assignee_id': user_assignee_id,
+                'project_string_id': project.project_string_id,
+
+            }
         )
 
         if add_to_session:

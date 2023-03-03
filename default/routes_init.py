@@ -5,6 +5,7 @@ def do_routes_importing():
     from methods.attribute.attribute_template_group_update import api_attribute_template_group_update
 
     from methods.action.action_new import api_action_new
+    from methods.action.action_previous import api_action_previous
     from methods.action.action_update import api_action_update
     from methods.action.action_validate_config import api_action_validate
     from methods.action.workflow import new_workflow_factory_api
@@ -12,9 +13,16 @@ def do_routes_importing():
     from methods.action.workflow_update import api_workflow_update
     from methods.action.action_list import api_action_list
     from methods.action.action_template_list import api_action_template_list
+    from methods.action.action_manual import api_action_manual
+    from methods.action.action_template_get import api_get_action_template
+    from methods.action.action_stat import api_action_stat
+    from methods.action.action_run_list import api_action_list_web
 
     from methods.project.project_update import api_project_update
     from methods.source_control.file.file_update import api_file_update
+    from methods.source_control.file.file_get_child_files import api_file_get_child_files
+    from methods.source_control.file.get_file_stats import api_get_file_stats
+    from methods.source_control.file.file_update_metadata import api_file_update_metadata
 
     from methods.project.project_list import project_list_api
 
@@ -41,7 +49,6 @@ def do_routes_importing():
     from methods.task.task.task_review import task_review_api
     from methods.task.task.task_complete import api_task_complete
 
-    from methods.task.file.file_attach import add_files_to_job_api
     from methods.task.file.dir_attach import update_dirs_to_job_api
     from methods.source_control.file.file_exists import file_list_exists_api
 
@@ -99,6 +106,7 @@ def do_routes_importing():
     from methods.source_control.working_dir.directory_list import list_directory_api
 
     from methods.source_control.file.file_browser import view_file_diff
+    from methods.source_control.file.compound_file_new import api_file_compound_new
 
     from methods.source_control.file.remove import remove_file
     from methods.source_control.working_dir.view import view_working_dir_web
@@ -106,7 +114,6 @@ def do_routes_importing():
     from methods.source_control.working_dir.directory_update import update_directory_api
 
     from methods.project.star import star_status
-    from methods.project.tags import update_tags
 
     from methods.video.video_view import get_video_single_image
     from methods.video.sequence import get_sequence
@@ -134,8 +141,10 @@ def do_routes_importing():
     from methods.annotation.instance_template_update import update_instance_template_api
     from methods.annotation.instance_history import instance_history_api
 
-    from methods.report.report_runner import report_save_api
+    from methods.report.report_save_api import report_save_api
+    from methods.report.report_run_api import report_run_api
     from methods.report.report_list import report_list_api
+    from methods.report.report_view_api import report_view_api
     from methods.userscript.userscript import userscript_new_api
 
     from methods.batch.batch_new import new_input_batch
@@ -151,9 +160,10 @@ def do_routes_importing():
     from methods.ui_schema.ui_schema import ui_schema_new_api
 
     from methods.configs.mailgun_is_set import mailgun_is_set
-    from methods.configs.oidc_is_set import oidc_is_set
+    from methods.configs.oauth2_is_set import oauth2_is_set
     from methods.configs.admin_install_info import api_admin_install_info
     from methods.configs.is_open_source import api_is_open_source
+    from methods.configs.large_api_chunk_size import large_api_chunk_size
 
     from methods.task.credential.credential_type_new import new_credential_type_api
     from methods.task.credential.credential_list import credential_list_api
@@ -173,3 +183,16 @@ def do_routes_importing():
     from methods.labels.label_schema_list import api_label_schema_list
     from methods.labels.label_schema_new import api_label_schema_new
     from methods.labels.label_schema_update import api_label_schema_update
+
+    from methods.tag.tag import tag_view_by_project
+    from methods.source_control.file.file_get_signed_url import api_file_get_signed_url
+
+    from methods.roles.role_new import new_role_web
+    from methods.roles.role_remove_permission import role_remove_permission_web
+    from methods.roles.role_add_permission import role_add_permission_web
+    from methods.roles.role_add_user_object import new_role_member_object_web
+    from methods.roles.role_remove_user_object import delete_role_member_object_web
+    from methods.roles.role_list import list_roles_web
+    from methods.roles.role_delete import role_delete_web
+    from methods.project.regen_file_stats import api_project_regen_file_stats
+    from methods.task.task_template.task_template_add_files import task_template_add_files_api

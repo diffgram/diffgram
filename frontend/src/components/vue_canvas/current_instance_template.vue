@@ -79,7 +79,7 @@
       },
       draw_guided_mode: function(ctx, done, instance_template){
         for (let instance of instance_template.instance_list) {
-          instance.calculate_min_max_points()
+          instance.update_min_max_points()
           instance.draw(ctx);
         }
         done()
@@ -168,7 +168,7 @@
                 instance.nodes[i].y = new_nodes[i].y
               }
             }
-            instance.calculate_min_max_points()
+            instance.update_min_max_points()
             instance.vertex_size = 2;
             instance.line_width = 2;
             instance.draw(ctx);

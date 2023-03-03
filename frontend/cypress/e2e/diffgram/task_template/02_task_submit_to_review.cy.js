@@ -5,7 +5,7 @@ describe("Correctly Submits Task to Review", () => {
   context("task review context", () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
-      Cypress.Cookies.defaults({preserve: ["session"]})
+
 
       cy.loginByForm(testUser.email, testUser.password)
         .gotToProject(testUser.project_string_id)

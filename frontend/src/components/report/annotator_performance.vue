@@ -25,17 +25,21 @@
 
 </template>
 
-<script>
-import {runReport} from '../../services/reportServices'
-import Bar_horizontal_chart from "@/components/report/charts/bar_horizontal_chart";
+<script lang="ts">
+import {runReport} from '../../services/reportServices.ts'
+import Bar_horizontal_chart from "../report/charts/bar_horizontal_chart";
 export default {
   name: "annotator_performance",
-  components: {Bar_horizontal_chart},
+  components: {
+    Bar_horizontal_chart
+  },
   props: {
     job_id: {
+      type: String,
       default: null
     },
     project_string_id: {
+      type: String,
       default: null
     }
   },
@@ -78,13 +82,14 @@ export default {
         job_id: null, // Populated on mounted(),
         period: 'all',
         view_type: 'all',
-        view_sub_type: 'bar',
+        view_sub_type: 'bar'
       },
       loading: false
     }
   },
   mounted() {
     this.report_template.job_id = this.job_id;
+    this.report_template.project_id = this.$store.state.project.current.id;
     this.gen_report();
   },
   methods: {
@@ -115,7 +120,7 @@ export default {
     gen_report: async function(){
       this.loading = true
       let [result, error] = await runReport(this.project_string_id, undefined, this.report_template)
-      if(result){
+      if(result && result.stats) {
         this.report_result = result;
         let labels = [];
         for(let i = 0; i< result.stats.labels.length; i++){
@@ -129,6 +134,17 @@ export default {
               borderColor: 'white',
               label: 'Average Time Per Task (Mins)',
               data: result.stats.values
+            }
+          ]
+        }
+      } else {
+        this.chart_data ={
+          datasets: [
+            {
+              backgroundColor: '#757575',
+              borderColor: 'white',
+              label: 'Average Time Per Task (Mins)',
+              data: []
             }
           ]
         }

@@ -1,81 +1,78 @@
 <template>
   <div v-cloak>
-    <v-layout>
+    <v-autocomplete :items="member_list_internal"
+                    v-model="item_internal"
+                    :label="label"
+                    :data-cy="datacy"
+                    item-value="member_id"
+                    :multiple="multiple"
+                    :disabled="loading || view_only"
+                    @input="$emit('input', $event)"
+                    @change="$emit('change', $event)"
+                    :filter="on_filter"
+                    clearable
+    >
+      <!-- Why >>>>  :item-value="null"  Because for multiple select otherwise
+            it doesnt' track selected properly-->
+      <!-- Add a tile with Select All as Lalbel and binded on a method that add or remove all items -->
+      <template v-slot:prepend-item>
+        <v-list-item
+          ripple
+          :data-cy="`${datacy}__select-all`"
+          @click="toggle"
+          v-if="allow_all_option"
+        >
+          <v-list-item-action>
+            <v-icon :color="item_internal.length > 0 ? 'indigo darken-4' : ''">
+              {{ icon }}
+            </v-icon>
+          </v-list-item-action>
+          <v-list-item-content>
+            <v-list-item-title>
+              Select All
+            </v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
+        <v-divider class="mt-2"></v-divider>
+      </template>
 
-      <v-autocomplete :items="member_list_internal"
-                v-model="item_internal"
-                :label="label"
-                :data-cy="datacy"
-                item-value="member_id"
-                :multiple="multiple"
-                :disabled="loading || view_only"
-                @input="$emit('input', $event)"
-                @change="$emit('change', $event)"
-                :filter="on_filter"
-                clearable
-      >
-        <!-- Why >>>>  :item-value="null"  Because for multiple select otherwise
-              it doesnt' track selected properly-->
-        <!-- Add a tile with Select All as Lalbel and binded on a method that add or remove all items -->
-        <template v-slot:prepend-item>
-          <v-list-item
-            ripple
-            :data-cy="`${datacy}__select-all`"
-            @click="toggle"
-            v-if="allow_all_option"
-          >
-            <v-list-item-action>
-              <v-icon :color="item_internal.length > 0 ? 'indigo darken-4' : ''">
-                {{ icon }}
-              </v-icon>
-            </v-list-item-action>
-            <v-list-item-content>
-              <v-list-item-title>
-                Select All
-              </v-list-item-title>
-            </v-list-item-content>
-          </v-list-item>
-          <v-divider class="mt-2"></v-divider>
-        </template>
+      <template v-slot:item="data">
 
-        <template v-slot:item="data">
+        <v-layout :data-cy="`${datacy}__select-user`">
+          <v_user_icon v-if="data.item.show_icon" class="mr-4" :user="data.item" :size="25"
+                       :font-size="'12px !important'">
+          </v_user_icon>
+          {{ data.item.first_name}} {{ data.item.last_name}}
+        </v-layout>
+      </template>
 
-          <v-layout :data-cy="`${datacy}__select-user`">
-            <v_user_icon v-if="data.item.show_icon" class="mr-4" :user="data.item" :size="25"
+      <template v-slot:selection="{item, index}">
+        <v-chip color="primary" small v-if="item.show_icon && index === 0 && !all_selected" >
+          <template>
+            <v_user_icon :user="item"  class="mr-2" :size="25"
                          :font-size="'12px !important'">
             </v_user_icon>
-            {{ data.item.first_name}} {{ data.item.last_name}}
-          </v-layout>
-        </template>
-
-        <template v-slot:selection="{item, index}">
-          <v-chip color="primary" small v-if="item.show_icon && index === 0 && !all_selected" >
-            <template>
-              <v_user_icon :user="item"  class="mr-2" :size="25"
-                           :font-size="'12px !important'">
-              </v_user_icon>
-              <span  style="font-size: 10px">
+            <span   style="font-size: 10px">
                 <template v-if="show_names_on_selected && index === 0"> {{ item.first_name}} {{ item.last_name}}</template>
 
               </span>
 
-            </template>
-          </v-chip>
-          <span v-if="index === 1 && !all_selected" style="font-size: 10px"> (+{{ item_internal.length - 1 }} others)</span>
+          </template>
+        </v-chip>
+        <span v-if="index === 1 && !all_selected" style="font-size: 10px"> (+{{ item_internal.length - 1 }} others)</span>
 
-          <div v-if="all_selected && index === 0" data-cy="member-select__select-all">
-            <v-icon color="primary"
-                    left >
-                mdi-select-all
-            </v-icon>
-            All
-          </div>
+        <div v-if="all_selected && index === 0" data-cy="member-select__select-all">
+          <v-icon color="primary"
+                  left >
+            mdi-select-all
+          </v-icon>
+          All
+        </div>
 
 
-        </template>
+      </template>
 
-      </v-autocomplete>
-    </v-layout>
+    </v-autocomplete>
 
   </div>
 </template>

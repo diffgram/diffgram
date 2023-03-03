@@ -9,18 +9,20 @@
        @mouseup="mouse_up"
        @contextmenu="contextmenu">
     <canvas
+      @contextmenu="on_right_click_canvas"
       data-cy="canvas"
       v-canvas:cb="onRendered"
       :id="canvas_id"
-      :canvas_transform="canvas_transform"
       :height="canvas_height_scaled"
       :width="canvas_width_scaled">
       <slot :ord="3" name="instance_drawer" :canvas_transform="canvas_transform"></slot>
       <v_bg
+        oncontextmenu="false"
         :ord="1"
         :background="bg_color"
         ref="background"
         :image="image_bg"
+        :degrees="rotation_degrees"
         :refresh="refresh"
         :canvas_width="canvas_width"
         :canvas_height="canvas_height"
@@ -91,11 +93,17 @@
       show_target_reticle: {
         default: true
       },
+      prevent_context_menu: {
+        default: true
+      },
       auto_scale_bg:{
         default: false
       },
       text_color: {
         default: "#000000"
+      },
+      rotation_degrees: {
+        default: 0
       },
       bg_color: {
         default: undefined
@@ -224,7 +232,7 @@
       this.canvas_ctx = this.canvas_element.getContext('2d');
 
       this.update_canvas();
-
+      this.$emit('canvas_element_ready', this.canvas_element)
     },
 
     beforeDestroy() {
@@ -234,7 +242,11 @@
       window.removeEventListener('resize', this.update_window_size_from_listener)
     },
     methods: {
-
+      on_right_click_canvas: function(e){
+        if(this.prevent_context_menu){
+          e.preventDefault()
+        }
+      },
       update_window_size_from_listener: async function(){
         if(!this.$props.image_bg){
           return

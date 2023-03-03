@@ -1,11 +1,6 @@
 <template>
   <div>
-    <v-btn data-cy="change_stats_visibility_button"
-           @click="change_stats_visibility()"
-           text>
-      {{ stats_visibility ? "Hide" : "Show job" }} statistics
-    </v-btn>
-    <v-row v-if="stats_visibility">
+    <v-layout>
       <v-col cols="12" sm="4">
         <v-card class="mx-auto info-style" outlined>
           <h3>Job progress:</h3>
@@ -62,7 +57,7 @@
           </div>
         </v-card>
       </v-col>
-    </v-row>
+    </v-layout>
   </div>
 </template>
 
@@ -98,10 +93,6 @@ export default Vue.extend({
     },
   },
   methods: {
-    change_stats_visibility() {
-      this.stats_visibility = !this.stats_visibility;
-      localStorage.setItem("diff_stats_task_visibility", this.stats_visibility);
-    },
     async update_user_chart() {
       const { job_id } = this.$route.params;
       if(!job_id){
@@ -132,13 +123,6 @@ export default Vue.extend({
     },
   },
   async created() {
-    const stats_visibility_status = localStorage.getItem(
-      "diff_stats_task_visibility"
-    );
-
-    if (stats_visibility_status)
-      this.stats_visibility = JSON.parse(stats_visibility_status);
-
     const user_id = this.$store.state.user.current.id;
 
     const { job_id } = this.$route.params;
@@ -162,7 +146,6 @@ export default Vue.extend({
   },
   data() {
     return {
-      stats_visibility: true,
       current_user_stat: "two",
       update_user_cart: false,
       job_data_fetched: false,

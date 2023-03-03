@@ -7,11 +7,6 @@ import Vue from 'vue'
 import App from './App.vue'
 
 
-// import StarRating from 'vue-star-rating'
-// Vue.component('vue-star-rating', StarRating)
-
-// import Spinner from 'vue-simple-spinner'
-
 import vue2Dropzone from 'vue2-dropzone'
 import './css/vue_dropzone.css'
 
@@ -37,8 +32,8 @@ Vue.component('file_preview', file_preview)
 import file_preview_with_hover_expansion from './components/regular/file_preview_with_hover_expansion'
 Vue.component('file_preview_with_hover_expansion', file_preview_with_hover_expansion)
 
-import v_directory_list from './components/source_control/directory_list'
-Vue.component('v_directory_list', v_directory_list)
+import directory_selector from './components/source_control/directory_selector.vue'
+Vue.component('directory_selector', directory_selector)
 
 import VueMarkDown from 'vue-markdown'
 
@@ -51,6 +46,13 @@ import resend_verify_email from './components/user/account/resend_verify_email'
 import action_node_box from './components/action/action_node_box'
 
 import task_list from './components/task/task/task_list'
+
+// BASE COMPONENTS
+import standard_button from "./components/base/standard_button.vue"
+Vue.component('standard_button', standard_button)
+
+import standard_chip from "./components/base/standard_chip.vue"
+Vue.component('standard_chip', standard_chip)
 
 /*
  * ABSTRACT regular methods
@@ -69,9 +71,6 @@ import info_multiple from './components/regular/info_multiple'
 Vue.component('v_info_multiple', info_multiple)
 
 import error_multiple from './components/regular/error_multiple'
-
-import tooltip_button from './components/regular/tooltip_button'
-Vue.component('tooltip_button', tooltip_button)
 
 import ui_schema from './components/regular/ui_schema_wrapper'
 Vue.component('ui_schema', ui_schema)
@@ -93,9 +92,6 @@ Vue.component('diffgram_select', diffgram_select)
 
 import regular_table from './components/regular/regular_table'
 Vue.component('regular_table', regular_table)
-
-import regular_chip from './components/regular/regular_chip'
-Vue.component('regular_chip', regular_chip)
 
 import bread_crumbs from './components/regular/bread_crumbs'
 Vue.component('bread_crumbs', bread_crumbs)
@@ -134,7 +130,7 @@ import user_icon from './components/user/user_icon'
 import user_profile_image_edit from './components/user/user_profile_image_edit'
 Vue.component('user_profile_image_edit', user_profile_image_edit)
 
-import thumbnail from './components/annotation/thumbnail'
+import thumbnail from './components/annotation/image_and_video_annotation/thumbnail'
 Vue.component('thumbnail', thumbnail)
 
 import VueHighlightJS from 'vue-highlight.js';
@@ -155,7 +151,7 @@ import store from './store'
 import './vue-canvas.js'
 //import canvas_zoom_picture_in_picture from './components/vue_canvas/zoom_picture_in_picture'
 
-import is_complete from './components/annotation/actions/is_complete'
+import is_complete from './components/annotation/image_and_video_annotation/actions/is_complete'
 
 
 import export_view from './components/export/export_home'
@@ -165,21 +161,21 @@ import project_manager from './components/project/project_manager'
 import profile_in_menu from './components/user/profile_in_menu'
 import main_menu from './components/main_menu/menu'
 
-import labels_view from './components/annotation/labels_view'
-import labels_new from './components/annotation/labels_new'
-import labels_edit from './components/annotation/labels_edit'
+import labels_view from './components/annotation/image_and_video_annotation/labels_view'
+import labels_new from './components/annotation/image_and_video_annotation/labels_new'
+import labels_edit from './components/annotation/image_and_video_annotation/labels_edit'
 
 import { Chrome } from 'vue-color'
 
 import job_cancel from './components/task/job/job_cancel'
 
-import annotation_trainer_menu from './components/annotation/trainer/trainer_menu'
-import annotation_trainer_job_info from './components/annotation/trainer/trainer_job_info'
+import annotation_trainer_menu from './components/annotation/image_and_video_annotation/trainer/trainer_menu'
+import annotation_trainer_job_info from './components/annotation/image_and_video_annotation/trainer/trainer_job_info'
 
-import annotation_core from './components/annotation/annotation_core'
+import annotation_core from './components/annotation/image_and_video_annotation/annotation_core'
 
 import vue_scroll_to from 'vue-scrollto'
-import media_core from './components/annotation/media_core'
+import media_core from './components/annotation/image_and_video_annotation/media_core'
 
 import input_view from './components/input/input_view'
 
@@ -194,8 +190,6 @@ import user_new_otp from './components/user/one_time_pass/new_otp'
 import project_star from './components/project/star'
 import user_follow from './components/user/follow'
 import user_follow_list from './components/user/follow_list'
-import search_query from './components/search/query'
-import project_tags from './components/project/tags'
 
 
 import bar_chart from './components/report/charts/bar_chart'
@@ -246,8 +240,8 @@ import './css/mxgraph.css'
 
 // https://vuetifyjs.com/en/features/theme/#customizing
 
-const vuetify_options = {
-  icons : {
+export const vuetify_options = {
+  icons: {
     iconfont: 'mdi'
   },
   theme: {
@@ -268,7 +262,7 @@ Vue.use(vue_scroll_to)
 import VueMoment from 'vue-moment'
 import moment from 'moment-timezone'
 Vue.use(VueMoment, {
-    moment,
+  moment,
 })
 
 Vue.component('v_task_list', task_list)
@@ -324,9 +318,6 @@ Vue.component('v_project_star', project_star)
 Vue.component('v_user_follow', user_follow)
 Vue.component('v_user_follow_list', user_follow_list)
 
-Vue.component('v_search_query', search_query)
-Vue.component('v_project_tags', project_tags)
-
 Vue.component('v_export_view', export_view)
 
 Vue.component('v_guide_new_or_edit', guide_new_or_edit)
@@ -351,7 +342,7 @@ import { get_sequence_color } from './components/regular/regular_annotation'
 Vue.prototype.$get_sequence_color = get_sequence_color
 
 
-import {addQueriesToLocation} from './components/regular/regular'
+import { addQueriesToLocation } from './components/regular/regular'
 Vue.prototype.$addQueriesToLocation = addQueriesToLocation
 
 

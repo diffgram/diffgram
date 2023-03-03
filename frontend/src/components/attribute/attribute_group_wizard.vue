@@ -34,14 +34,22 @@
             Scope
           </v-stepper-step>
 
+          <v-stepper-step
+            editable
+            :complete="step > 4"
+            step="4"
+          >
+            Editable
+          </v-stepper-step>
+
 
 
           <v-divider></v-divider>
 
           <v-stepper-step
             editable
-            :complete="step > 4"
-            step="4">
+            :complete="step > 5"
+            step="5">
            Visible When
           </v-stepper-step>
 
@@ -49,8 +57,8 @@
 
           <v-stepper-step
             editable
-            :complete="step > 5"
-            step="5"
+            :complete="step > 6"
+            step="6"
           >
             {{ group.kind !== "tree" ? "Options" : "Tree" }}
           </v-stepper-step>
@@ -59,8 +67,8 @@
           <v-stepper-step
             v-if="group.kind !== 'tree'"
             editable
-            :complete="step > 6"
-            step="6">
+            :complete="step > 7"
+            step="7">
             Defaults
           </v-stepper-step>
 
@@ -71,12 +79,12 @@
           color="secondary"
           striped
           :value="global_progress"
-          :height="group.kind !== 'tree' ? 7 : 6"
+          :height="group.kind !== 'tree' ? 8 : 7"
         >
         </v-progress-linear>
 
 
-        <v-stepper-items style="height: 100%" class="pt-4">
+        <v-stepper-items style="height: 100%; min-height: 300px; border-bottom: 1px solid #e0e0e0" class="pt-4">
 
           <v-stepper-content step="1" style="height: 100%" data-cy="attribute_wizard_step_1">
 
@@ -172,19 +180,28 @@
 
             <v-layout class="justify-center align-center">
               <v-btn-toggle color="secondary" v-model="toggle_global_attribute" @change="set_is_global($event, group)">
-                <v-btn>
+                <v-btn data-cy="instance-attribute-button">
                   <v-icon left color="primary" size="18">
                     mdi-brush
                   </v-icon>
                   Per Annotation (Default)
                 </v-btn>
 
-                <v-btn>
+                <v-btn data-cy="global-attribute-button">
                   <v-icon left color="primary" size="18">
                     mdi-file
                   </v-icon>
 
                    Per File
+
+                </v-btn>
+
+                <v-btn data-cy="global-compound-attribute-button">
+                  <v-icon left color="primary" size="18">
+                    mdi-file-table-box-multiple
+                  </v-icon>
+
+                  Per Root Compound File
 
                 </v-btn>
               </v-btn-toggle>
@@ -200,8 +217,40 @@
 
           </v-stepper-content>
 
-
           <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_4">
+
+            <h2> 4. Read Only or Editable? </h2>
+
+            <br>
+            <p>
+              The Default is editable. You can use read only attributes to upload additional metadata to files, this metadata
+              will not be changed by annotators. I can only be set at upload time, via the API/SDK.
+            </p>
+
+            <br>
+
+            <v-layout class="justify-center align-center">
+              <v-checkbox
+                clearable
+                v-model="group.is_read_only"
+                label="Read only?"
+                @change="$emit('change')"
+              >
+              </v-checkbox>
+
+            </v-layout>
+
+            <wizard_navigation
+              @next="go_to_step(5)"
+              @back="go_back_a_step()"
+              :disabled_next="!group.prompt"
+              :skip_visible="false"
+            >
+            </wizard_navigation>
+
+          </v-stepper-content>
+
+          <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
 
             <h2 class="pb-2" > 4. When Do You Want to Show This? </h2>
 
@@ -228,7 +277,7 @@
             </label_select_only>
 
             <wizard_navigation
-              @next="go_to_step(5)"
+              @next="go_to_step(6)"
               @back="go_back_a_step()"
               :disabled_next="!group.kind"
               :skip_visible="false"
@@ -237,7 +286,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
+          <v-stepper-content step="6" style="height: 100%" data-cy="attribute_wizard_step_6">
 
           <v-layout v-if="group.kind !== 'tree'" column>
 
@@ -335,7 +384,7 @@
                     @blur="$store.commit('set_user_is_typing_or_menu_open', false)"
                     :value="item.name"
                   />
-                  <tooltip_button
+                  <standard_button
                     v-if="open"
                     color="primary"
                     icon="mdi-plus"
@@ -344,7 +393,7 @@
                     :icon_style="true"
                     :bottom="true"
                   />
-                  <tooltip_button
+                  <standard_button
                     v-else
                     color="primary"
                     icon="mdi-plus"
@@ -373,6 +422,9 @@
                       </v-layout>
                     </template>
                   </button_with_confirm>
+                  <v-chip class="ma-auto" x-small v-if="$store.state.user.settings.show_ids === true">
+                    ID: {{ item.id }}
+                  </v-chip>
                 </v-layout>
                 <v-layout @click="add_root_tree_item" v-else flexe>
                   Add new
@@ -384,7 +436,7 @@
 
 
             <wizard_navigation
-              @next="go_to_step(6)"
+              @next="go_to_step(7)"
               @back="go_back_a_step()"
               :disabled_next="!group.kind"
               :skip_visible="false"
@@ -393,7 +445,7 @@
 
           </v-stepper-content>
 
-          <v-stepper-content v-if="group.kind !== 'tree'" step="6" style="height: 100%" data-cy="attribute_wizard_step_6">
+          <v-stepper-content v-if="group.kind !== 'tree'" step="7" style="height: 100%" data-cy="attribute_wizard_step_7">
 
             <!-- Edit Default  default_id default_value -->
             <v-layout column>
@@ -501,15 +553,15 @@
 
 
             <wizard_navigation
-              @next="go_to_step(7)"
-              @skip="go_to_step(6)"
+              @next="go_to_step(8)"
+              @skip="go_to_step(7)"
               @back="go_back_a_step()"
                                >
             </wizard_navigation>
 
           </v-stepper-content>
 
-          <v-stepper-content :step="group.kind !== 'tree' ? 7 : 6" data-cy="attribute_wizard_step_7">
+          <v-stepper-content :step="group.kind !== 'tree' ? 8 : 7" data-cy="attribute_wizard_step_8">
 
             <h2> Complete! Great work. </h2>
 
@@ -536,11 +588,10 @@ import draggable from 'vuedraggable'
 import attribute from './attribute.vue';
 import label_select_only from '../label/label_select_only.vue'
 import attribute_new_or_update from './attribute_new_or_update.vue';
-import Tooltip_button from "../regular/tooltip_button.vue";
 import { v4 as uuidv4 } from "uuid";
 import { TreeNode } from "../../helpers/tree_view/Node"
 import { construct_tree, find_all_relatives } from "../../helpers/tree_view/construct_tree"
-import { attribute_update_or_new } from "../../services/attributesService"
+import { attribute_update_or_new } from "../../services/attributesService.ts"
 import pLimit from 'p-limit';
 
 export default Vue.extend( {
@@ -549,8 +600,7 @@ export default Vue.extend( {
     label_select_only,
     attribute_new_or_update,
     draggable,
-    attribute,
-    Tooltip_button
+    attribute
   },
   model: {
     prop: 'group',
@@ -634,7 +684,12 @@ export default Vue.extend( {
   methods: {
     set_global_attribute: function(){
       if(this.group.is_global){
-        this.toggle_global_attribute = 1
+        if(this.group.global_type === 'compound_file'){
+          this.toggle_global_attribute = 2
+        } else{
+          this.toggle_global_attribute = 1
+        }
+
       }
       else{
         this.toggle_global_attribute = 0
@@ -650,6 +705,10 @@ export default Vue.extend( {
     set_is_global: function(value, group){
       if(value === 1){
         group.is_global = true
+        group.global_type = 'file'
+      } else if(value === 2){
+        group.is_global = true
+        group.global_type = 'compound_file'
       }
       else{
         group.is_global = false
@@ -684,8 +743,9 @@ export default Vue.extend( {
     },
     delete_tree_item: function(item_id) {
       const all_relatives = find_all_relatives(item_id, this.tree_items_list)
-      const list_copy = [...this.tree_items_list].filter(item => !all_relatives.includes(item.get_id()))
-      const list_to_delete = [...this.tree_items_list].filter(item => all_relatives.includes(item.get_id()))
+      let relative_node_ids = all_relatives.related_nodes.map(elm => elm.id)
+      const list_copy = [...this.tree_items_list].filter(item => !relative_node_ids.includes(item.get_id()))
+      const list_to_delete = [...this.tree_items_list].filter(item => relative_node_ids.includes(item.get_id()))
       this.tree_items_list = list_copy
       this.save_tree_item("ARCHIVE", list_to_delete)
     },

@@ -6,7 +6,7 @@ import jwt
 from shared.shared_logger import get_shared_logger
 import traceback
 from shared.utils.singleton import Singleton
-
+from shared.auth.OAuth2Provider import OAuth2ClientBase
 logger = get_shared_logger()
 
 REDIRECT_URI_DIFFGRAM = f'{settings.URL_BASE}user/oidc-login'
@@ -17,7 +17,7 @@ def check_keycloak_setup():
         Initializes Keylcoak client for startup check purposes.
     :return: True if init was successful.
     """
-    if settings.USE_OIDC:
+    if settings.USE_OAUTH2:
         logger.info('Testing Keycloak setup...')
         try:
             client = KeycloakDiffgramClient()
@@ -40,16 +40,16 @@ class DefaultGlobalRoles(Enum):
     super_admin = 'super_admin'
 
 
-class KeycloakDiffgramClient(metaclass = Singleton):
+class KeycloakDiffgramClient(OAuth2ClientBase):
     keycloak: KeycloakOpenID
     installed: bool
     client_secret: str
 
     def __init__(self):
         self.setup_keycloak_diffgram_install()
-        self.keycloak = KeycloakOpenID(server_url = settings.OIDC_PROVIDER_HOST,
-                                       client_id = settings.OIDC_PROVIDER_CLIENT_ID,
-                                       realm_name = settings.OIDC_PROVIDER_REALM,
+        self.keycloak = KeycloakOpenID(server_url = settings.OAUTH2_PROVIDER_HOST,
+                                       client_id = settings.OAUTH2_PROVIDER_CLIENT_ID,
+                                       realm_name = settings.KEYCLOAK_REALM,
                                        client_secret_key = self.client_secret)
 
     def setup_keycloak_diffgram_install(self):
@@ -59,7 +59,7 @@ class KeycloakDiffgramClient(metaclass = Singleton):
             for diffgram to work correctly with it.
         :return:
         """
-        self.keycloak_admin_master = KeycloakAdmin(server_url = settings.OIDC_PROVIDER_HOST,
+        self.keycloak_admin_master = KeycloakAdmin(server_url = settings.OAUTH2_PROVIDER_HOST,
                                                    username = settings.KEY_CLOAK_MASTER_USER,
                                                    password = settings.KEY_CLOAK_MASTER_PASSWORD)
         # Create a new Realm
@@ -97,20 +97,20 @@ class KeycloakDiffgramClient(metaclass = Singleton):
         return self.client_secret
 
     def __get_client_secret(self):
-        client = self.keycloak_admin_master.get_client(settings.OIDC_PROVIDER_CLIENT_ID)
+        client = self.keycloak_admin_master.get_client(settings.OAUTH2_PROVIDER_CLIENT_ID)
         secret = self.keycloak_admin_master.get_client_secrets(client_id = client.get('id'))
         self.client_secret = secret.get('value')
         return self.client_secret
 
     def __create_diffgram_default_realm(self) -> str:
         realm_id = self.keycloak_admin_master.create_realm(
-            payload = {"realm": settings.OIDC_PROVIDER_REALM, 'enabled': True},
+            payload = {"realm": settings.KEYCLOAK_REALM, 'enabled': True},
             skip_exists = True)
         return realm_id
 
     def __create_admin_user(self) -> str:
 
-        self.keycloak_admin_master.realm_name = settings.OIDC_PROVIDER_REALM
+        self.keycloak_admin_master.realm_name = settings.KEYCLOAK_REALM
         user_id = self.keycloak_admin_master.create_user(payload = {
             'username': settings.KEY_CLOAK_DIFFGRAM_USER,
             'enabled': True,
@@ -123,10 +123,10 @@ class KeycloakDiffgramClient(metaclass = Singleton):
         return user_id
 
     def __create_default_diffgram_client(self) -> str:
-        logger.info(f'Creating client {settings.OIDC_PROVIDER_CLIENT_ID}')
+        logger.info(f'Creating client {settings.OAUTH2_PROVIDER_CLIENT_ID}')
         client_id = self.keycloak_admin_master.create_client(
-            payload = {'name': settings.OIDC_PROVIDER_CLIENT_ID,
-                       'id': settings.OIDC_PROVIDER_CLIENT_ID},
+            payload = {'name': settings.OAUTH2_PROVIDER_CLIENT_ID,
+                       'id': settings.OAUTH2_PROVIDER_CLIENT_ID},
             skip_exists = True)
         self.keycloak_admin_master.update_client(client_id,
                                                  {'authorizationServicesEnabled': True,
@@ -136,7 +136,7 @@ class KeycloakDiffgramClient(metaclass = Singleton):
         logger.info(f'Fetched Keycloak Client for Diffgram:  {client_id}')
         return client_id
 
-    def __create_default_global_roles(self, client_id) -> list:
+    def __create_default_global_roles(self, client_id: str) -> list:
         created_role_ids = []
         for enum_item in DefaultGlobalRoles:
             res = self.keycloak_admin_master.create_client_role(client_role_id = client_id,
@@ -146,7 +146,7 @@ class KeycloakDiffgramClient(metaclass = Singleton):
             created_role_ids.append(res)
         return created_role_ids
 
-    def __create_default_project_roles(self, normal_user_role, client_id) -> list:
+    def __create_default_project_roles(self, normal_user_role: str, client_id: str) -> list:
         created_role_ids = []
         role = self.keycloak_admin_master.get_client_role(
             client_id = client_id,
@@ -168,16 +168,17 @@ class KeycloakDiffgramClient(metaclass = Singleton):
             created_role_ids.append(enum_item.value)
         return created_role_ids
 
-    def refresh_token(self, token):
+    def refresh_token(self, token: str) -> dict:
         return self.keycloak.refresh_token(refresh_token = token)
 
-    def logout(self, refresh_token):
+    def logout(self, refresh_token: str) -> str:
         self.keycloak.logout(refresh_token)
+        return None
 
     def get_login_url(self):
         return self.keycloak.auth_url(redirect_uri = REDIRECT_URI_DIFFGRAM)
 
-    def get_access_token_with_code_grant(self, code):
+    def get_access_token_with_code_grant(self, code: str) -> dict:
 
         token = self.keycloak.token(grant_type = 'authorization_code',
                                     code = code,
@@ -200,7 +201,7 @@ class KeycloakDiffgramClient(metaclass = Singleton):
             # Build the key in format accepted by JWT (python implementation)
             header = "-----BEGIN PUBLIC KEY-----\n"
             trailer = "\n-----END PUBLIC KEY-----"
-            key = header + str(settings.OIDC_PROVIDER_PUBLIC_KEY).encode('utf-8') + trailer
+            key = header + str(settings.OAUTH2_PROVIDER_PUBLIC_KEY).encode('utf-8') + trailer
             # Decode the token by using the server public key
             decoded = jwt.decode(access_token,
                                  key = key,
@@ -211,3 +212,15 @@ class KeycloakDiffgramClient(metaclass = Singleton):
             err = traceback.format_exc()
             logger.error(err)
             return False, e
+
+    def get_access_token_from_jwt(self, jwt_data: dict) -> str:
+
+        return jwt_data.get('access_token')
+
+    def get_id_token_from_jwt(self, jwt_data: dict) -> str:
+
+        return jwt_data.get('id_token')
+
+    def get_refresh_token_from_jwt(self, jwt_data: dict) -> str:
+
+        return jwt_data.get('refresh_token')

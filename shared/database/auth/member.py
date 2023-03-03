@@ -27,7 +27,16 @@ class Member(Base):
     # TODO future
     # May be some more permissions we can move into here / share
 
+    @staticmethod
     def get_by_id(session,
                   member_id):
         return session.query(Member).filter(
             Member.id == member_id).first()
+
+
+    @staticmethod
+    def get_by_user_id(
+            session,
+            user_id):
+        return session.query(Member).filter(
+            Member.user_id == user_id).first()

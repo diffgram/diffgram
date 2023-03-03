@@ -22,7 +22,7 @@ from sqlalchemy import String
 from sqlalchemy import DateTime
 from sqlalchemy import Boolean
 from sqlalchemy import ARRAY
-
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import backref
@@ -44,4 +44,4 @@ from sqlalchemy import or_
 from shared.regular import regular_methods
 
 
-data_tools = data_tools_core.Data_tools().data_tools
+

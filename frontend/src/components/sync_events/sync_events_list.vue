@@ -9,32 +9,27 @@
           <v-col cols="1" class="d-flex align-center">  <v-btn color="primary" @click="refresh_list" icon><v-icon>mdi-sync</v-icon></v-btn></v-col>
           <v-col cols="2" class="d-flex">
             <v-icon color="primary" class="mr-4">mdi-filter</v-icon>
-            <v_directory_list class="pt-2"
-                              :project_string_id="project_string_id"
-                              :show_new="false"
-                              label="Source"
-                              :initial_dir_from_state="false"
-                              :update_from_state="false"
-                              :set_current_dir_on_change="false"
-                              :change_on_mount="false"
-                              :show_update="false"
-                              :clearable="true"
-                              @change_directory="change_source_dataset">
-            </v_directory_list>
+            <global_dataset_selector 
+              class="pt-2"
+              label="Source"
+              :update_from_state="false"
+              :set_current_dir_on_change="false"
+              :change_on_mount="false"
+              :clearable="true"
+              @change_directory="change_source_dataset"
+            />
           </v-col>
           <v-col cols="2">
-            <v_directory_list class="pt-2"
-                              :project_string_id="project_string_id"
-                              :show_new="false"
-                              label="Destinations"
-                              :initial_dir_from_state="false"
-                              :update_from_state="false"
-                              :set_current_dir_on_change="false"
-                              :change_on_mount="false"
-                              :show_update="false"
-                              :clearable="true"
-                              @change_directory="change_destination_dataset">
-            </v_directory_list>
+            <global_dataset_selector 
+              class="pt-2"
+              label="Destinations"
+              :initial_dir_from_state="false"
+              :update_from_state="false"
+              :set_current_dir_on_change="false"
+              :change_on_mount="false"
+              :clearable="true"
+              @change_directory="change_destination_dataset"
+            />
           </v-col>
           <v-col cols="2" class="pt-5">
             <diffgram_select
@@ -230,12 +225,14 @@
   import Vue from "vue";
   import diffgram_select from '../../components/regular/diffgram_select'
   import {create_event} from "../event/create_event";
+  import global_dataset_selector from "../attached/global_dataset_selector.vue"
 
   export default Vue.extend({
       name: 'sync_events_list',
 
       components: {
-        diffgram_select: diffgram_select
+        diffgram_select: diffgram_select,
+        global_dataset_selector
       },
 
       props: {

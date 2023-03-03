@@ -82,14 +82,12 @@
           this.$emit('add_action_to_workflow', act)
         },
         onDragStartNewBlock (event) {
-          console.log('onDragStartNewBlock', event);
           // contains all the props and attributes passed to demo-node
           const { props } = event
           this.newDraggingBlock = props;
           this.$emit('newDraggingBlock', props)
         },
         onDragStopNewBlock (event) {
-          console.log('onDragStopNewBlock', event);
           this.newDraggingBlock = null;
           this.$emit('newDraggingBlock', null)
         },

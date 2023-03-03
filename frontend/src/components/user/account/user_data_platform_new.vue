@@ -77,14 +77,14 @@
             Login
           </v-btn>
 
-          <tooltip_button
+          <standard_button
               tooltip_message="Join Slack Community"
-              href="https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg"
+              href="https://form.jotform.com/222377866413058"
               target="_blank"
               icon="mdi-slack"
               :icon_style="true"
               color="primary">
-          </tooltip_button>
+          </standard_button>
         </v-card-actions>
     </v-container>
 
@@ -213,7 +213,7 @@
             'password': this.password,
             'password_check': this.password_check
           });
-
+          console.log('')
           this.$store.commit('log_in');
           this.$store.commit('set_user_name', this.email)
 
@@ -235,7 +235,13 @@
         }
         catch(e){
           console.error(e)
-          this.error = this.$route_api_errors(e)
+          if (typeof  this.$route_api_errors(e) === 'object'){
+            this.error = this.$route_api_errors(e)
+          }
+          else {
+            this.error = {'error': this.$route_api_errors(e)}
+          }
+
           this.loading = false
 
         }

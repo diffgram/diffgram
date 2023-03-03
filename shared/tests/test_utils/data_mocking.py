@@ -37,6 +37,7 @@ from shared.database.task.job.user_to_job import User_To_Job
 from shared.database.input import Input
 from shared.database.project_migration.project_migration import ProjectMigration
 from shared.database.audio.audio_file import AudioFile
+from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
 
 # This line is to prevent developers to run test in other databases or enviroments. We should rethink how to handle
 # configuration data for the different deployment phases (local, testing, staging, production)
@@ -73,12 +74,20 @@ def create_label_schema(schema_data, session):
 
 
 def create_attribute_template_group(group_data, session):
+    if group_data.get('name') is not None and group_data.get('prompt') is None:
+        group_data['prompt'] = group_data.get('name')
     group = Attribute_Template_Group(
         **group_data
     )
     session.add(group)
     session.commit()
     return group
+
+
+def create_role(role_data, session):
+    role = Role(*role_data)
+    session.add(role)
+    session.commit()
 
 
 def create_project_migration(migration_data, session):
@@ -103,6 +112,7 @@ def create_project_migration(migration_data, session):
     session.add(p_migration)
     session.commit()
     return p_migration
+
 
 def create_audio_file(audio_data: dict, session: Session) -> AudioFile:
     audio = AudioFile(
@@ -157,10 +167,24 @@ def register_user(user_data: dict, session):
         permissions_general = {'general': ['normal_user']}
 
     )
-
+    member = register_member(new_user, session = session)
     new_user.permissions_projects = {
-        user_data.get('project_string_id'): ['admin']
+        user_data.get('project_string_id'): user_data.get('project_roles', ['admin'])
     }
+    project = Project.get_by_string_id(session = session, project_string_id = user_data.get('project_string_id'))
+    if project and not user_data.get('no_roles'):
+        from shared.database.project_perms import ProjectDefaultRoles
+        project.create_default_roles(session = session)
+        for role_name in user_data.get('project_roles', ['admin']):
+            default_roles_list = [x.value for x in list(ProjectDefaultRoles)]
+            if role_name in default_roles_list:
+                RoleMemberObject.new(
+                    session = session,
+                    member_id = member.id,
+                    object_id = project.id,
+                    object_type = ValidObjectTypes.project,
+                    default_role_name = ProjectDefaultRoles[role_name]
+                )
     session.add(new_user)
 
     if 'project_string_id' in user_data:
@@ -174,10 +198,15 @@ def register_user(user_data: dict, session):
                 project,
                 new_user
             )
-
-            permission_result, permission_error = Project_permissions.add(user_data['project_string_id'],
-                                                                          new_user,
-                                                                          user_data['project_string_id'])
+            from shared.regular import regular_log
+            if not user_data.get('no_roles'):
+                permission_result, log = Project_permissions.add(
+                    session = session,
+                    permission = 'admin',
+                    user = new_user,
+                    sub_type = user_data['project_string_id'],
+                    log = regular_log.default())
+    session.commit()
     return new_user
 
 
@@ -270,6 +299,8 @@ def create_task_event(task_event_data: dict, session: 'Session'):
 def create_directory(dir_data, session):
     working_dir = WorkingDir()
     working_dir.user_id = dir_data['user'].id
+    working_dir.access_type = dir_data.get('access_type', 'project')
+    working_dir.archived = dir_data.get('archived', False)
     working_dir.project_id = dir_data['project'].id
     if dir_data.get('jobs_to_sync'):
         working_dir.jobs_to_sync = dir_data.get('jobs_to_sync')
@@ -280,6 +311,7 @@ def create_directory(dir_data, session):
         for file in file_list:
             WorkingDirFileLink.add(session, working_dir.id, file)
     regular_methods.commit_with_rollback(session)
+    session.commit()
     return working_dir
 
 
@@ -303,7 +335,8 @@ def create_instance_template(instance_template_data, session):
             )
             session.add(rel)
     if instance_template_data.get('schema_id'):
-        schema = LabelSchema.get_by_id(session, instance_template_data.get('schema_id'), project_id = instance_template_data.get('project_id'))
+        schema = LabelSchema.get_by_id(session, instance_template_data.get('schema_id'),
+                                       project_id = instance_template_data.get('project_id'))
         schema.add_instance_template(session = session,
                                      instance_template_id = instance_template.id,
                                      member_created_id = schema.member_created_id)
@@ -322,6 +355,7 @@ def create_file(file_data, session):
         project_id = file_data.get('project_id'),
         job_id = file_data.get('job_id'),
         original_filename = file_data.get('original_filename', get_random_string(6)),
+        parent_id = file_data.get('parent_id'),
         type = file_data.get('type', 'image'),
         state = file_data.get('state', 'added'),
         frame_number = file_data.get('frame_number'),
@@ -591,9 +625,7 @@ def create_instance(instance_data, session):
         global_frame_number = instance_data.get('global_frame_number'),
         machine_made = instance_data.get('machine_made'),
         interpolated = instance_data.get('interpolated'),
-        fan_made = instance_data.get('fan_made'),
         verified = instance_data.get('verified'),
-        occluded = instance_data.get('occluded'),
         soft_delete = instance_data.get('soft_delete', False),
         label_file_id = instance_data.get('label_file_id'),
         file_id = instance_data.get('file_id'),
@@ -607,6 +639,8 @@ def create_instance(instance_data, session):
         y_max = instance_data.get('y_max'),
         width = instance_data.get('width'),
         height = instance_data.get('height'),
+        lonlat = instance_data.get('lonlat'),
+        coords = instance_data.get('coords'),
         preview_image_url = instance_data.get('preview_image_url'),
         preview_image_blob_dir = instance_data.get('preview_image_blob_dir'),
         preview_image_url_expiry = instance_data.get('preview_image_url_expiry'),
@@ -786,6 +820,7 @@ def create_project_with_context(context_data, session):
     user = register_user(
         {'username': f"project_owner_{project_string_id}",
          'email': f"test{project_string_id}@test.com",
+         'project_roles': ['admin'],
          'password': 'diffgram123'},
         session
     )

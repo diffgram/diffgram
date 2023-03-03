@@ -1,11 +1,11 @@
-import { GlobalAnnotationInstance } from "../components/vue_canvas/instances/GlobalInstance";
+import { GlobalInstance } from "../components/vue_canvas/instances/GlobalInstance";
 import { TextAnnotationInstance, TextRelationInstance } from "../components/vue_canvas/instances/TextInstance";
 import { InstanceInterface } from "./interfaces/InstanceData";
 import { v4 as uuidv4 } from 'uuid'
 
 export default class InstanceList {
     private instance_list: Array<InstanceInterface> = [];
-    private global_instance: InstanceInterface = new GlobalAnnotationInstance();
+    private global_instance: InstanceInterface = new GlobalInstance();
 
     constructor(instances?: Array<any>) {
         this.global_instance.type = "global"
@@ -20,8 +20,8 @@ export default class InstanceList {
                     const { start_token, end_token } = instance
                     new_instance = new TextAnnotationInstance()
                     new_instance.create_instance(id, start_token, end_token, label_file, attribute_groups)
-                } 
-                
+                }
+
                 else if (instance.type === "relation") {
                     const { from_instance_id, to_instance_id, soft_delete } = instance
                     new_instance = new TextRelationInstance()
@@ -29,10 +29,10 @@ export default class InstanceList {
                 }
 
                 else if (instance.type === "global") {
-                    const global_instance = new GlobalAnnotationInstance()
+                    const global_instance = new GlobalInstance()
                     global_instance.create_instance(id, creation_ref_id, attribute_groups)
                     this.global_instance = global_instance
-                    return 
+                    return
                 }
 
                 else return
@@ -46,7 +46,7 @@ export default class InstanceList {
     public set_global_instance(new_global_instance: InstanceInterface): void {
         this.global_instance = new_global_instance
     }
-    
+
     public get(): Array<InstanceInterface> {
         const non_deleted = this.instance_list.filter(instance => instance.soft_delete !== true)
         return non_deleted

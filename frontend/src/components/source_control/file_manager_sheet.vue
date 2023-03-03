@@ -27,7 +27,7 @@
 
             <v-spacer> </v-spacer>
 
-            <tooltip_button
+            <standard_button
               tooltip_message="Minimize"
               @click="media_sheet = !media_sheet"
               icon="mdi-window-minimize"
@@ -36,9 +36,9 @@
               :bottom="true"
               datacy="minimize-file-explorer-button"
             >
-            </tooltip_button>
+            </standard_button>
 
-            <tooltip_button
+            <standard_button
               v-if="full_screen"
               tooltip_message="Restore Down"
               @click="minimize_sheet"
@@ -48,9 +48,9 @@
               :bottom="true"
               datacy="restore-down-file-explorer-button"
             >
-            </tooltip_button>
+            </standard_button>
 
-            <tooltip_button
+            <standard_button
               v-if="!full_screen"
               tooltip_message="Maximize"
               @click="full_screen_sheet"
@@ -60,9 +60,9 @@
               :bottom="true"
               datacy="fullscreen-file-explorer-button"
             >
-            </tooltip_button>
+            </standard_button>
 
-            <tooltip_button
+            <standard_button
               tooltip_message="Close"
               @click="media_sheet = !media_sheet"
               icon="mdi-close"
@@ -71,7 +71,7 @@
               :bottom="true"
               datacy="close-file-explorer-button"
             >
-            </tooltip_button>
+            </standard_button>
 
 
 
@@ -82,6 +82,8 @@
                               :project_string_id="project_string_id"
                               file_view_mode="annotation"
                               :task="task"
+                              :context="context"
+                              :request_media_on_mount="request_media_on_mount"
                               :full_screen="full_screen"
                               :view_only_mode="view_only"
                               :file_id_prop="file_id_prop"
@@ -147,6 +149,8 @@
       'show_explorer_full_screen',
       'enabled_edit_schema',
       'initializing',
+      'context',
+      'request_media_on_mount',
 
     ],
     components:{

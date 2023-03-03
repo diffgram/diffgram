@@ -13,7 +13,7 @@
     </p>
 
     <v-row class="d-flex justify-center align-center" style="min-height: 500px">
-      <tooltip_button
+      <standard_button
         :x-large="true"
         tooltip_message="Upload File"
         @click="open_upload_wizard"
@@ -22,7 +22,7 @@
         icon="mdi-upload"
         button_message="Upload Files"
         color="white">
-      </tooltip_button>
+      </standard_button>
     </v-row>
 
 

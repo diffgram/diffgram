@@ -5,7 +5,7 @@ from shared.database.export import Export
 from shared.export.export_utils import check_export_permissions_and_status
 from shared.export.export_view import export_view_core
 from shared.regular import regular_log
-
+from flasgger import swag_from
 data_tools = Data_tools().data_tools
 
 
@@ -13,6 +13,7 @@ data_tools = Data_tools().data_tools
               '/export/working_dir/list',
               methods=['GET'])
 @Project_permissions.user_has_project(["admin", "Editor", "Viewer"])
+@swag_from('../../docs/export_list.yml')
 def export_list(project_string_id):
     """
 

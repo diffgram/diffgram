@@ -35,8 +35,7 @@ def api_label_new(project_string_id):
     spec_list = [
         {'name': str},
         {'colour': None},
-        {'schema_id': {"type": int, "required": True}},
-
+        {'schema_id': {"type": int, "required": False}},
 
     ]
 
@@ -61,16 +60,15 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
     """
     project = Project.get_project(session, project_string_id)
 
-    if not schema_id:
-        log['error']['schema_id'] = 'Provide Schema_id'
-        return None
+    if schema_id:
+        schema = LabelSchema.get_by_id(session, schema_id,  project.id)
+    else:
+        schema = LabelSchema.get_default(session, project.id)
 
     colour = input['colour']
 
     if not colour:
         colour = default_color()
-
-    schema = LabelSchema.get_by_id(session, schema_id,  project.id)
 
     label_file = File.new_label_file(
         session=session,
@@ -103,8 +101,10 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
 @Project_permissions.user_has_project(["admin", "Editor", "Viewer", "allow_if_project_is_public"])
 def api_get_labels(project_string_id):
     """
+        GET Handler to get labels from given project and Schema ID.
+    :param project_string_id:
+    :return:
     """
-
     schema_id = request.args.get('schema_id')
     log = regular_log.default()
     with sessionMaker.session_scope() as session:
@@ -123,6 +123,13 @@ def api_get_labels(project_string_id):
         
         global_attribute_groups_serialized_list = project.get_global_attributes(
             session = session, schema_id = schema.id)
+        global_attributes_normal_files = []
+        global_attributes_compound_files = []
+        for attr in global_attribute_groups_serialized_list:
+            if attr['global_type'] == 'compound_file':
+                global_attributes_compound_files.append(attr)
+            else:
+                global_attributes_normal_files.append(attr)
 
         attribute_groups_serialized_list = project.get_attributes(session = session, schema_id = schema.id)
         
@@ -133,7 +140,8 @@ def api_get_labels(project_string_id):
 
         return jsonify(labels_out = labels_out,
                        label_file_colour_map = directory.label_file_colour_map,
-                       global_attribute_groups_list = global_attribute_groups_serialized_list,
+                       global_attribute_groups_list = global_attributes_normal_files,
+                       global_attribute_groups_list_compound = global_attributes_compound_files,
                        attribute_groups = attribute_groups_serialized_list,
                        log = log
                        ), 200

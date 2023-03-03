@@ -1,5 +1,5 @@
 # WALRUS service
-from werkzeug.contrib.fixers import ProxyFix  # needed for get_remote_address to get right ip
+from werkzeug.middleware.proxy_fix import ProxyFix # needed for get_remote_address to get right ip
 import time
 from flask import Flask, request
 import logging
@@ -36,8 +36,6 @@ from shared.export.export_generation import new_external_export
 from methods.export.export_view import export_list
 
 from methods.video.interpolation import interpolate_all_frames
-from methods.connectors.labelbox_connector import labelbox_web_hook_manager
-from methods.connectors.scale_ai_connector import send_task_to_scale_ai, task_completed_scaleai
 
 from methods.interservice.interservice_receive_api import interservice_receive_api
 from methods.data_mocking.generate_data import generate_data_api
@@ -94,7 +92,11 @@ limiter.init_app(app)
 settings.DIFFGRAM_SERVICE_NAME = 'walrus_service'
 startup_checker = WalrusServiceSystemStartupChecker()
 startup_checker.execute_startup_checks()
-
+from swagger_setup import setup_swagger
+try:
+    setup_swagger(app)
+except:
+    logger.warning('Failed to generate swagger spec')
 # This starts the queue loop for processing media uploads.
 process_media_queue_manager = ProcessMediaQueueManager()
 process_media_queue_manager.start_process_media_threads()
@@ -122,4 +124,4 @@ else:
     print("settings.NAME_EQUALS_MAIN", settings.NAME_EQUALS_MAIN)
 
     app.debug == False
-    app.wsgi_app = ProxyFix(app.wsgi_app, num_proxies = 2)
+    app.wsgi_app = ProxyFix(app.wsgi_app)

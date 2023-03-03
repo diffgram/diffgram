@@ -1,6 +1,10 @@
 from shared.database.common import *
 from shared.shared_logger import get_shared_logger
+
 logger = get_shared_logger()
+import analytics
+
+analytics.write_key = settings._ANALYTICS_WRITE_KEY
 
 
 class EventHub(Base):
@@ -17,13 +21,13 @@ class EventHub(Base):
 
     """
 
-    id = Column(BIGINT, primary_key=True)
+    id = Column(BIGINT, primary_key = True)
 
-    kind = Column(String(), index=True)
+    kind = Column(String(), index = True)
 
     page_name = Column(String())
 
-    object_type = Column(String(), index=True)
+    object_type = Column(String(), index = True)
 
     description = Column(String())
 
@@ -45,7 +49,6 @@ class EventHub(Base):
 
     member_id = Column(Integer)
 
-    # New August 7th, 2019
     file_id = Column(Integer)
 
     report_template_id = Column(Integer)
@@ -54,7 +57,7 @@ class EventHub(Base):
 
     report_template_data = Column(MutableDict.as_mutable(JSONEncodedDict))
 
-    time_created = Column(DateTime, default=datetime.datetime.utcnow)
+    time_created = Column(DateTime, default = datetime.datetime.utcnow)
 
     startup_time = Column(DateTime, default = None, nullable = True)
 
@@ -75,6 +78,7 @@ class EventHub(Base):
     event_type = Column(String())
 
     def serialize(self):
+
         return {
             'id': self.id,
             'kind': self.kind,
@@ -82,6 +86,16 @@ class EventHub(Base):
             'error_log': self.error_log,
             'object_type': self.object_type,
             'page_name': self.page_name,
+            'event_type': self.event_type,
+            'service_name': self.service_name,
+            'storage_backend': self.storage_backend,
+            'previous_version': self.previous_version,
+            'diffgram_version': self.diffgram_version,
+            'install_fingerprint': self.install_fingerprint,
+            'time_created': self.time_created,
+            'startup_time': self.startup_time,
+            'shut_down_time': self.shut_down_time,
+            'host_os': self.host_os,
             'input_id': self.input_id,
             'file_id': self.file_id,
             'task_id': self.task_id,
@@ -96,26 +110,26 @@ class EventHub(Base):
 
     @staticmethod
     def new(session,
-            kind=None,
-            member_id=None,
-            success=None,
-            error_log=None,
-            description=None,
-            link=None,
-            project_id=None,
-            task_id=None,
-            run_time=None,
-            page_name=None,
-            object_type=None,
-            task_template_id=None,
-            member=None,
-            input_id=None,
-            file_id=None,
-            report_template_id=None,
-            report_data=None,
-            report_template_data=None,
-            add_to_session=True,
-            flush_session=True,
+            kind = None,
+            member_id = None,
+            success = None,
+            error_log = None,
+            description = None,
+            link = None,
+            project_id = None,
+            task_id = None,
+            run_time = None,
+            page_name = None,
+            object_type = None,
+            task_template_id = None,
+            member = None,
+            input_id = None,
+            file_id = None,
+            report_template_id = None,
+            report_data = None,
+            report_template_data = None,
+            add_to_session = True,
+            flush_session = True,
             install_fingerprint = None,
             diffgram_version = None,
             storage_backend = None,
@@ -152,23 +166,23 @@ class EventHub(Base):
                 email = user.email
 
         event = EventHub(
-            kind=kind,
-            member_id=member_id,
-            success=success,
-            error_log=error_log,
-            description=description,
-            link=link,
-            project_id=project_id,
-            task_id=task_id,
-            task_template_id=task_template_id,
-            run_time=run_time,
-            object_type=object_type,
-            input_id=input_id,
-            file_id=file_id,
-            page_name=page_name,
-            report_data=report_data,
-            report_template_data=report_template_data,
-            report_template_id=report_template_id,
+            kind = kind,
+            member_id = member_id,
+            success = success,
+            error_log = error_log,
+            description = description,
+            link = link,
+            project_id = project_id,
+            task_id = task_id,
+            task_template_id = task_template_id,
+            run_time = run_time,
+            object_type = object_type,
+            input_id = input_id,
+            file_id = file_id,
+            page_name = page_name,
+            report_data = report_data,
+            report_template_data = report_template_data,
+            report_template_id = report_template_id,
             install_fingerprint = install_fingerprint,
             diffgram_version = diffgram_version,
             storage_backend = storage_backend,
@@ -183,5 +197,39 @@ class EventHub(Base):
             session.add(event)
         if flush_session:
             session.flush()
+
+        if event.kind == 'builder_api_enabled':
+
+            if member_id is None:
+                return event
+            analytics.identify(member_id, {
+                'email': user.email,
+                'first_name': user.first_name,
+                'last_name': user.last_name,
+                'how_hear_about_us': user.how_hear_about_us,
+                'signup_role': user.signup_role,
+                'signup_demo': user.signup_demo,
+                'city': user.city,
+                'company': user.company_name
+            })
+        elif event.kind in ['system_startup', 'version_upgrade', 'version_downgrade', 'os_change']:
+            if member_id is None:
+                member_id = event.install_fingerprint
+            if member_id is None:
+                return event
+            props = event.serialize()
+            props = {
+                key: value for key, value in props.items() if value is not None
+            }
+            analytics.track(
+                user_id = member_id,
+                event = event.kind,
+                properties = props,
+                context = {
+                    'traits': {
+                        event.kind: True
+                    }
+                }
+            )
 
         return event

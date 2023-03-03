@@ -1,6 +1,6 @@
 # OPENCORE - ADD
 from abc import ABC, abstractmethod
-
+from shared.regular import regular_log
 
 def with_connection(f):
     """
@@ -23,6 +23,7 @@ class Connector(ABC):
         self.auth_data = auth_data
         self.config_data = config_data
         self.connection_client = None
+        self.log = regular_log.default()
 
     @abstractmethod
     def connect(self):
@@ -31,6 +32,20 @@ class Connector(ABC):
             All implementations should return a ConnectionError exception in case
             connection is unsuccessful.
         :return:
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def test_connection(self):
+        """
+            This function checks if there is a successful connection to the source
+        :return: True/False
+        """
+        raise NotImplementedError
+
+    def get_client(self):
+        """
+            Returns client relevant to connection
         """
         raise NotImplementedError
 
@@ -58,11 +73,5 @@ class Connector(ABC):
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def test_connection(self):
-        """
-            This function checks if there is a succseful connecction to the source
-        :return: True/False
-        """
-        raise NotImplementedError
+
 

@@ -11,7 +11,9 @@ import logging
 logger = logging.getLogger()
 import os
 from env_adapter import EnvAdapter
-
+from urllib.parse import urlparse
+from urllib import parse
+from urllib.parse import parse_qs
 env_adapter = EnvAdapter()
 
 SAME_HOST = os.getenv('SAME_HOST', True)
@@ -35,6 +37,18 @@ def route_same_host(path):
     url_parsed = urllib.parse.urlparse(request.url)
     path_with_params = f"{path}?{urllib.parse.unquote(url_parsed.query)}"
     # Walrus
+    # https://stackoverflow.com/questions/6656363/proxying-to-another-web-service-with-flask
+    if path.startswith('minio'):
+        dict_value = dict(parse.parse_qsl(parse.urlsplit(request.url).query))
+        str_path = f"http://minio:9000{path_with_params.replace('minio', '').split('?')[0]}"
+        str_path = urllib.parse.unquote(str_path)
+
+        resp = requests.get(str_path, params = dict_value)
+        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+        headers = [(name, value) for (name, value) in resp.raw.headers.items()
+                   if name.lower() not in excluded_headers]
+        return Response(resp.content, resp.status_code, headers)
+
     if path[: 10] == "api/walrus":
         host_reached = 'walrus'
         host = 'http://127.0.0.1:8082/'
@@ -44,7 +58,6 @@ def route_same_host(path):
         host_reached = 'frontend'
         return requests.get(f"http://localhost:8081/{path_with_params}").text
 
-    # https://stackoverflow.com/questions/6656363/proxying-to-another-web-service-with-flask
 
     try:
 
@@ -82,6 +95,16 @@ def route_multi_host(path):
     path_with_params = f"{path}?{urllib.parse.unquote(url_parsed.query)}"
     # Walrus
 
+    if path.startswith('minio'):
+        dict_value = dict(parse.parse_qsl(parse.urlsplit(request.url).query))
+        str_path = f"http://minio:9000{path_with_params.replace('minio', '').split('?')[0]}"
+        str_path = urllib.parse.unquote(str_path)
+
+        resp = requests.get(str_path, params = dict_value)
+        excluded_headers = ['content-encoding', 'content-length', 'transfer-encoding', 'connection']
+        headers = [(name, value) for (name, value) in resp.raw.headers.items()
+                   if name.lower() not in excluded_headers]
+        return Response(resp.content, resp.status_code, headers)
     logging.warning(f"MULTI path_with_params {path_with_params}")
     if path[: 10] == "api/walrus":
         host_reached = 'walrus'
@@ -138,6 +161,7 @@ def route_multi_host(path):
 def _proxy(path):
     print(f"_proxy:*--------> {path}")
     logging.warning(f"_proxy:*--------> {path}")
+    logging.warning(f"SAME_HOST:*--------> {SAME_HOST}")
     if SAME_HOST:
         print('route_same_host')
         return route_same_host(path)

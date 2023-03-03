@@ -26,7 +26,7 @@
                   right: 0"
              class="text-right pa-2">
 
-          <tooltip_button
+          <standard_button
             tooltip_message="Pin"
             v-if="!job.is_pinned"
             icon="mdi-pin-outline"
@@ -37,9 +37,9 @@
             color="primary"
             @click="pin_job(job)"
           >
-          </tooltip_button>
+          </standard_button>
 
-          <tooltip_button
+          <standard_button
             tooltip_message="Pinned"
             v-else
             icon="mdi-pin"
@@ -50,7 +50,7 @@
             color="primary"
             @click="pin_job(job)"
           >
-          </tooltip_button>
+          </standard_button>
         </div>
 
         <v-card-title
@@ -63,18 +63,27 @@
         </v-card-title>
 
         <v-card-subtitle>
+          <v-layout>
+            <div class="pt-1">
+              <v-chip small :color="status_color(job.status)">
+                {{job.status | capitalize }}
+              </v-chip>
+            </div>
 
-          <v-row class="" dense v-if="job.label_schema">
-            <v-col cols="12" >
-              <v-chip small
-                      @click="$router.push(`/project/${project_string_id}/labels?schema_id=${job.label_schema.id}`)"
-                      class="schema-chip"
-                      color="primary"
-                      outlined ><v-icon small>mdi-shape-plus</v-icon> {{job.label_schema.name | truncate(25)}}</v-chip>
-            </v-col>
-          </v-row>
-          <v-chip :color="status_color(job.status)" x-small>{{job.status | capitalize }}</v-chip>
-          <span>Created: {{job.time_created | moment("DD-MM-YYYY H:mm:ss a")}}</span>
+            <v-spacer></v-spacer>
+
+            <v-tooltip bottom color="info">
+              <template v-slot:activator="{ on }">
+                <v-chip v-on="on" color="white" small text-color="primary">
+                  {{job.time_created | moment("DD-MMM")}}
+                </v-chip>
+              </template>
+
+              Created: {{job.time_created | moment("H:mm:ss DD-MM-YYYY")}}
+            </v-tooltip>
+
+          </v-layout>
+
         </v-card-subtitle>
         <v-card-text class="">
           <v-container fluid class="d-flex flex-column pa-0">
@@ -117,6 +126,30 @@
               </v-col>
             </v-row>
 
+            <v-row v-if="job.label_schema">
+              <v-col>
+                <div class="pa-2">
+                  <v-chip small
+                          @click="$router.push(`/project/${project_string_id}/labels?schema_id=${job.label_schema.id}`)"
+                          class="schema-chip"
+                          color="primary"
+                          outlined >
+                  <v-icon left small>mdi-shape-plus</v-icon>
+                    {{job.label_schema.name | truncate(25)}}
+                  </v-chip>
+                </div>
+              </v-col>
+            </v-row>
+
+
+            <tag_display_and_select
+                :project_string_id="project_string_id"
+                :object_id="job.id"
+                :object_type="'job'"
+            >
+            </tag_display_and_select>
+
+
             <v-row class="mb-4" dense>
               <v-col cols="12" class="d-flex pa-0" v-if="job.member_list_ids.length > 0">
                 <v_user_icon v-if="member_id != 'all'"
@@ -131,7 +164,7 @@
             </v-row>
 
             <v-row class="pl-4 d-flex" style="height: 100%">
-              <!-- Copy and paste from job list but changed to job-->
+
               <v-col cols="12">
                 <div  style="max-width: 200px" class="d-flex flex-wrap"
                       v-if="job && job.attached_directories_dict && job.attached_directories_dict.attached_directories_list">
@@ -166,13 +199,13 @@
               <div class="pl-2 pt-1">
 
               </div>
-              <tooltip_button datacy='resync_button'
+              <standard_button datacy='resync_button'
                               tooltip_message="Resync Missing Files"
                               icon="mdi-refresh"
                               color="primary"
                               :icon_style="true"
                               @click="confirm_resync_dialog_open = true">
-              </tooltip_button>
+              </standard_button>
               <v-dialog
                 v-model="confirm_resync_dialog_open"
                 max-width="450"
@@ -210,41 +243,41 @@
                   </v-card-actions>
                 </v-card>
               </v-dialog>
-              <tooltip_button datacy='view_button'
+              <standard_button datacy='view_button'
                               tooltip_message="View"
                               icon="mdi-eye"
                               color="primary"
                               :icon_style="true"
                               @click="job_detail_page_route_by_status(job)">
-              </tooltip_button>
+              </standard_button>
 
 
-              <tooltip_button datacy='next_task_button'
+              <standard_button datacy='next_task_button'
                               tooltip_message="Go To Next Pending Task"
                               icon="mdi-page-next"
                               color="primary"
                               :icon_style="true"
                               :disabled="!job.stat_count_available || job.stat_count_available === 0"
                               @click="go_to_next_task(job)">
-              </tooltip_button>
+              </standard_button>
 
 
-              <tooltip_button datacy='discussions_button'
+              <standard_button datacy='discussions_button'
                               tooltip_message="Discussions"
                               icon="mdi-comment-text-multiple-outline"
                               color="primary"
                               :icon_style="true"
                               @click="$router.push(`/job/${job.id}/discussions`)">
-              </tooltip_button>
+              </standard_button>
 
 
-              <tooltip_button datacy='pipeline_button'
+              <standard_button datacy='pipeline_button'
                               tooltip_message="Task Template Pipeline"
                               icon="mdi-relation-many-to-many"
                               color="primary"
                               :icon_style="true"
                               @click="open_task_template_pipeline_dialog(job)">
-              </tooltip_button>
+              </standard_button>
 
             </v-row>
           </v-container>
@@ -261,17 +294,20 @@
 
 </template>
 
-<script lang="ts">
+<script >
   import Vue from "vue";
   import axios from '../../../services/customInstance';
   import job_pipelines_dialog from '../job/job_pipelines_dialog';
   import label_select_only from '../../label/label_select_only.vue'
+  import tag_display_and_select from '@/components/tag/tag_display_and_select.vue'
+
 
   export default Vue.extend({
       name: 'job_list_card_display',
       components: {
         job_pipelines_dialog,
-        label_select_only
+        label_select_only,
+        tag_display_and_select
       },
       props: {
         'project_string_id': {
@@ -354,6 +390,8 @@
         }
       },
       methods: {
+
+
         resync_job: async function(job){
           try {
             this.loading_resync_job = true;

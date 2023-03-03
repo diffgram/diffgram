@@ -105,14 +105,14 @@
             <v-card>
               <v-layout column>
 
-                <tooltip_button
+                <standard_button
                     @click="api_action_event_update('ARCHIVE')"
                     icon="mdi-package-down"
                     :loading="loading"
                     :disabled="loading"
                     tooltip_message="Archive"
                     color="primary">
-                </tooltip_button>
+                </standard_button>
 
               </v-layout>
             </v-card>

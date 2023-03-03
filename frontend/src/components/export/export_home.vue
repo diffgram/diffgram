@@ -21,14 +21,11 @@
             </diffgram_select>
 
 
-            <v_directory_list
-              v-if="source == 'directory' "
-              :project_string_id="project_string_id"
-              :show_new="false"
-              :show_update="false"
-              @change_directory="">
-            </v_directory_list>
-
+            <global_dataset_selector
+              v-if="source === 'directory'"
+              :set_current_dir_on_change="false"
+              :initial_dir_from_state="true"
+            />
 
             <div class="pl-2 pr-2">
               <job_select
@@ -249,7 +246,7 @@
                           -->
 
                         <div class="pl-2">
-                          <regular_chip
+                          <standard_chip
                             v-if="props.item.directory && props.item.source == 'directory'"
                             :message=props.item.directory.nickname
                             tooltip_message="Name"
@@ -257,9 +254,9 @@
                             tooltip_direction="bottom"
                             :small="true"
                           >
-                          </regular_chip>
+                          </standard_chip>
 
-                          <regular_chip
+                          <standard_chip
                             v-if="props.item.job && props.item.source == 'job'"
                             :message=props.item.job.name
                             tooltip_message="Go to Job"
@@ -269,9 +266,9 @@
                             :is_clickable="true"
                             @click="$router.push('/job/' + props.item.job.id)"
                           >
-                          </regular_chip>
+                          </standard_chip>
 
-                          <regular_chip
+                          <standard_chip
                             v-if="props.item.task && props.item.source == 'task'"
                             :message=props.item.task.id
                             tooltip_message="Go to Task"
@@ -281,7 +278,7 @@
                             :is_clickable="true"
                             @click="$router.push('/task/' + props.item.task.id)">
 
-                          </regular_chip>
+                          </standard_chip>
                         </div>
 
                       </v-layout>
@@ -322,7 +319,7 @@
 
                         <v-flex class="flex-row">
 
-                          <tooltip_button
+                          <standard_button
                             tooltip_message="Download"
                             data-cy="download_export"
                             @click="post_export_link(props.item)"
@@ -330,8 +327,8 @@
                             :text_style="true"
                             :disabled="props.item.status != 'complete'"
                             color="primary">
-                          </tooltip_button>
-                          <tooltip_button
+                          </standard_button>
+                          <standard_button
                             tooltip_message="Export To 3rd Party Integration"
                             @click="open_connection_export_dialog(props.item)"
                             icon="mdi-database-export"
@@ -339,7 +336,7 @@
                             data-cy="export-third-party"
                             :disabled="props.item.status != 'complete'"
                             color="primary">
-                          </tooltip_button>
+                          </standard_button>
 
                         </v-flex>
 
@@ -420,6 +417,8 @@
   import Export_connection_dialog from "./export_connection_dialog.vue";
   import {create_event} from "../event/create_event";
 
+  import global_dataset_selector from "../attached/global_dataset_selector.vue"
+
 
   export default Vue.extend({
       name: 'export',
@@ -427,7 +426,8 @@
       components: {
         Export_connection_dialog,
         free_tier_limit_dialog,
-        export_source_icons
+        export_source_icons,
+        global_dataset_selector
       },
       props: {
         'project_string_id': {

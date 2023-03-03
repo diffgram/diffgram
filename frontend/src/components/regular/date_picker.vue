@@ -19,7 +19,7 @@
                           label="From"
                           :clearable="true"
                           @click:clear="on_clear_from"
-                          prepend-icon="event"
+                          prepend-icon="mdi-calendar"
                           readonly>
             </v-text-field>
           </template>
@@ -51,7 +51,7 @@
             <v-text-field v-on="on"
                           v-model="date_to"
                           label="To"
-                          prepend-icon="event"
+                          prepend-icon="mdi-calendar"
                           @click:clear="on_clear_to"
                           :clearable="true"
                           readonly></v-text-field>

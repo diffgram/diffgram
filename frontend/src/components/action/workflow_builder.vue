@@ -13,7 +13,7 @@
                   {{workflow.name }}
                 </span>
           </h4>
-          <tooltip_button
+          <standard_button
             v-if="!edit_name"
             tooltip_message="Change Name"
             @click="edit_name = true"
@@ -23,7 +23,7 @@
             color="primary"
             datacy="edit_schema_name_button"
           >
-          </tooltip_button>
+          </standard_button>
 
           <v-text-field
             class="edit-workflow-name"
@@ -41,7 +41,7 @@
           </v-text-field>
 
           <div>
-            <tooltip_button
+            <standard_button
               v-if="edit_name == true"
               @click="update_workflow_name"
               color="primary"
@@ -53,10 +53,10 @@
               :loading="loading"
               :disabled="loading || !has_changes"
             >
-            </tooltip_button>
+            </standard_button>
           </div>
 
-          <tooltip_button
+          <standard_button
             v-if="edit_name == true"
             tooltip_message="Cancel Name Edit"
             datacy="cancel_edit_name"
@@ -67,7 +67,7 @@
             class="flex-grow-1"
             :disabled="loading"
           >
-          </tooltip_button>
+          </standard_button>
           <div class="d-flex align-center justify-start ml-auto">
             <v-tooltip top primary class="">
               <template v-slot:activator="{ on, attrs }">
@@ -129,14 +129,16 @@
 
           </v-progress-linear>
 
-          <action_config_factory v-if="!add_action_loading"
-                                 :actions_list="workflow.actions_list"
-                                 :project_string_id="project_string_id"
-                                 @action_updated="on_action_updated"
-                                 @open_action_selector="show_add_action_panel"
-                                 :action="selected_action"
-                                 :display_mode="display_mode">
-          </action_config_factory>
+          <action_config_factory 
+            v-if="!add_action_loading"
+            :actions_list="workflow.actions_list"
+            :project_string_id="project_string_id"
+            :action="selected_action"
+            :display_mode="display_mode"
+            :workflow="workflow"
+            @action_updated="on_action_updated"
+            @open_action_selector="show_add_action_panel"
+          />
         </v-card>
         <v-card v-if="show_add_action" class="ml-2 pa-4 steps-container" width="80%" elevation="0">
           <v-card-title>
@@ -255,7 +257,7 @@ export default Vue.extend({
       },
       selected_action: {
         deep: true,
-        handler: function(new_val, old_val){
+        handler: function(new_val, old_val) {
           this.on_action_updated(new_val)
         }
       }
@@ -378,7 +380,7 @@ export default Vue.extend({
             result.action.icon,
             result.action.kind,
             result.action.trigger_data,
-            result.action.condition_data,
+            result.action.precondition,
             result.action.description,
             result.action.completion_condition_data
           )

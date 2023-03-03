@@ -3,7 +3,7 @@ try:
 except:
     from walrus.methods.regular.regular_api import *
 from shared.database.event.eventhub import EventHub
-
+from threading import Thread
 
 @routes.route('/api/walrus/eventhub/new', methods = ['POST'])
 @limiter.limit("300 per second")
@@ -180,9 +180,9 @@ def new_eventhub_web():
         }
         },
     ]
-    logger.info('Received Event from Event hub')
+    logger.debug('Received Event from Event hub')
     if not settings.ALLOW_EVENTHUB:
-        logger.info('Eventhub disabled, ignoring...')
+        logger.debug('Eventhub disabled, ignoring...')
         return jsonify({"disabled": 'Eventhub disabled'}), 202
 
     log, input, untrusted_input = regular_input.master(
@@ -192,46 +192,52 @@ def new_eventhub_web():
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
-    with sessionMaker.session_scope() as session:
-
-        eventhub_data, log = new_eventhub_core(
-            session,
-            log = log,
-            kind = input['kind'],
-            member_id = input['member_id'],
-            success = input['success'],
-            error_log = input['error_log'],
-            link = input['link'],
-            project_id = input['project_id'],
-            task_id = input['task_id'],
-            run_time = input['run_time'],
-            page_name = input['page_name'],
-            object_type = input['object_type'],
-            task_template_id = input['task_template_id'],
-            input_id = input['input_id'],
-            file_id = input['file_id'],
-            report_template_id = input['report_template_id'],
-            report_template_data = input['report_template_data'],
-            install_fingerprint = input['install_fingerprint'],
-            diffgram_version = input['diffgram_version'],
-            storage_backend = input['storage_backend'],
-            service_name = input['service_name'],
-            event_type = input['event_type'],
-            description = input['description'],
-            previous_version = input['previous_version'],
-            host_os = input['host_os'],
-            startup_time = input['startup_time'],
-            shut_down_time = input['shut_down_time'],
-        )
+    t = Thread(
+        target = new_evenhub_threaded,
+        args = ((input, log)))
+    t.start()
 
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
-    return jsonify(eventhub_data), 200
+    return jsonify(ok = True), 200
 
 
-def new_eventhub_core(session,
-                      log = regular_log.default(),
+def new_evenhub_threaded(input_data, log):
+    eventhub_data, log = new_eventhub_core(
+        log = log,
+        kind = input_data['kind'],
+        member_id = input_data['member_id'],
+        success = input_data['success'],
+        error_log = input_data['error_log'],
+        link = input_data['link'],
+        project_id = input_data['project_id'],
+        task_id = input_data['task_id'],
+        run_time = input_data['run_time'],
+        page_name = input_data['page_name'],
+        object_type = input_data['object_type'],
+        task_template_id = input_data['task_template_id'],
+        input_id = input_data['input_id'],
+        file_id = input_data['file_id'],
+        report_template_id = input_data['report_template_id'],
+        report_template_data = input_data['report_template_data'],
+        install_fingerprint = input_data['install_fingerprint'],
+        diffgram_version = input_data['diffgram_version'],
+        storage_backend = input_data['storage_backend'],
+        service_name = input_data['service_name'],
+        event_type = input_data['event_type'],
+        description = input_data['description'],
+        previous_version = input_data['previous_version'],
+        host_os = input_data['host_os'],
+        startup_time = input_data['startup_time'],
+        shut_down_time = input_data['shut_down_time'],
+    )
+    if regular_log.log_has_error(log):
+        logger.error(f'Error with eventhub create {log}')
+
+    else:
+        logger.debug('EventHub: event processed successfully')
+def new_eventhub_core(log = regular_log.default(),
                       kind = None,
                       member_id = None,
                       success = None,
@@ -271,37 +277,36 @@ def new_eventhub_core(session,
     :param attached_elements:
     :return: created discussion python dict.
     """
+    with sessionMaker.session_scope_threaded() as session:
+        eventhub = EventHub.new(
+            session = session,
+            kind = kind,
+            member_id = member_id,
+            success = success,
+            error_log = error_log,
+            description = description,
+            link = link,
+            project_id = project_id,
+            task_id = task_id,
+            run_time = run_time,
+            page_name = page_name,
+            object_type = object_type,
+            task_template_id = task_template_id,
+            input_id = input_id,
+            report_template_id = report_template_id,
+            report_data = report_data,
+            report_template_data = report_template_data,
+            file_id = file_id,
+            install_fingerprint = install_fingerprint,
+            diffgram_version = diffgram_version,
+            storage_backend = storage_backend,
+            service_name = service_name,
+            previous_version = previous_version,
+            host_os = host_os,
+            startup_time = startup_time,
+            shut_down_time = shut_down_time,
+            event_type = event_type,
+        )
 
-    eventhub = EventHub.new(
-        session = session,
-        kind = kind,
-        member_id = member_id,
-        success = success,
-        error_log = error_log,
-        description = description,
-        link = link,
-        project_id = project_id,
-        task_id = task_id,
-        run_time = run_time,
-        page_name = page_name,
-        object_type = object_type,
-        task_template_id = task_template_id,
-        input_id = input_id,
-        report_template_id = report_template_id,
-        report_data = report_data,
-        report_template_data = report_template_data,
-        file_id = file_id,
-        install_fingerprint = install_fingerprint,
-        diffgram_version = diffgram_version,
-        storage_backend = storage_backend,
-        service_name = service_name,
-        previous_version = previous_version,
-        host_os = host_os,
-        startup_time = startup_time,
-        shut_down_time = shut_down_time,
-        event_type = event_type,
-    )
-
-
-    eventhub_data = eventhub.serialize()
-    return eventhub_data, log
+        eventhub_data = eventhub.serialize()
+        return eventhub_data, log

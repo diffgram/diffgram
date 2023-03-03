@@ -11,18 +11,18 @@ from shared.database.source_control import working_dir as working_dir_database_m
 from shared.database.annotation.instance import Instance
 from shared.database.labels.label import Label
 from shared.database.text_file import TextFile
-from shared.database.video.sequence import Sequence
-from shared.helpers.sessionMaker import AfterCommitAction
-from shared.database.labels.label_schema import LabelSchema
+from shared.database.source_control.file_perms import FilePermissions
 import time
 from shared.regular import regular_log
 from sqlalchemy.orm import joinedload
+from sqlalchemy.orm.session import Session
 from shared.shared_logger import get_shared_logger
 from shared.database.core import MutableDict
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import UniqueConstraint
 from shared.database.geospatial.geo_asset import GeoAsset
 from shared.helpers.performance import timeit
+from typing import List
 
 
 logger = get_shared_logger()
@@ -81,14 +81,12 @@ class File(Base, Caching):
     member_updated_id = Column(Integer, ForeignKey('member.id'))
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
-
-
     # "added", "removed", "changed"
     state = Column(String())  # for source control
 
     committed = Column(Boolean)
 
-    # image, frame, video, label
+    # image, frame, video, label, compound
     type = Column(String())
 
     # hash_data = [image_id, [instance-list], [n list]]
@@ -107,6 +105,11 @@ class File(Base, Caching):
     boxes_count = Column(Integer, default = 0)
     boxes_machine_made_count = Column(Integer, default = 0)
     polygon_count = Column(Integer, default = 0)
+
+    # Used for compound files mainly. To determine custom layouts for labeling UI
+    ui_schema_id = Column(Integer, ForeignKey('ui_schema.id'))
+    ui_schema = relationship("UI_Schema")
+
     ##########
 
     image_id = Column(Integer, ForeignKey('image.id'))
@@ -119,8 +122,7 @@ class File(Base, Caching):
     text_file = relationship(TextFile, foreign_keys = [text_file_id])
 
     audio_file_id = Column(Integer, ForeignKey('audio_file.id'))
-    audio_file = relationship(AudioFile, foreign_keys=[audio_file_id])
-
+    audio_file = relationship(AudioFile, foreign_keys = [audio_file_id])
 
     original_filename = Column(String())
 
@@ -149,6 +151,11 @@ class File(Base, Caching):
     task_id = Column(Integer, ForeignKey('task.id'))
     task = relationship("Task", foreign_keys = [task_id])
 
+    # Connection ID where the file is stored (if no connection provided will use default storage provider from env vars)
+    connection_id = Column(Integer, ForeignKey('connection_base.id'))
+    connection = relationship("Connection", foreign_keys = [connection_id])
+    bucket_name = Column(String())
+
     frame_number = Column(Integer)  # assumed to be local
     global_frame_number = Column(Integer)
 
@@ -170,6 +177,9 @@ class File(Base, Caching):
     # Thinking about relaxing the requirement that a file be globally unique???
 
     parent_id = Column(BIGINT, ForeignKey('file.id'))  # Updated
+
+    # Ordinal is used to control order of child files in the context of a compound file.
+    ordinal = Column(BIGINT, default = 0)
 
     def previous(self, session):  # Legacy
         return session.query(File).filter(File.id == self.parent_id).first()
@@ -321,15 +331,18 @@ class File(Base, Caching):
             'time_last_updated': time_last_updated,
             'ann_is_complete': self.ann_is_complete,
             'original_filename': self.original_filename,
+            'bucket_name': self.bucket_name,
+            'connection_id': self.connection_id,
             'video_id': self.video_id,
             'video_parent_file_id': self.video_parent_file_id,
-            'count_instances_changed': self.count_instances_changed
+            'count_instances_changed': self.count_instances_changed,
+            'ordinal': self.ordinal
         }
 
     def get_signed_url(self, session):
         if self.type == "image":
             if self.image:
-                serialized = self.image.serialize_for_source_control(session)
+                serialized = self.image.serialize_for_source_control(session, refrence_file = self)
                 return serialized['url_signed']
         # Do we want to throw an error here? should be pretty rare no image if type image
 
@@ -340,8 +353,8 @@ class File(Base, Caching):
 
         if self.type == "text":
             if self.text_file:
-                self.text_file.regenerate_url(session)
-                return self.text_file.url_signed
+                serialized = self.text_file.serialize(session)
+                return serialized['url_signed']
         return None
 
     def get_blob_path(self):
@@ -372,51 +385,70 @@ class File(Base, Caching):
         ).all()
         return assets
 
-    def serialize_geospatial_assets(self, session):
+    def serialize_geospatial_assets(self, session, connection_id = None, bucket_name = None, regen_url = True, create_thumbnails: bool = True):
         assets_list = self.get_geo_assets(session)
         result = []
         for asset in assets_list:
-            result.append(asset.serialize(session))
+            result.append(asset.serialize(session, connection_id = connection_id, bucket_name = bucket_name,
+                                          regen_url = regen_url, create_thumbnails = create_thumbnails))
         return result
 
-    def serialize_with_type(self,
-                            session = None
-                            ):
-
+    def serialize_with_type(self, session = None, regen_url = True):
         file = self.serialize_base_file()
-
         if self.type == "image":
             if self.image:
-                file['image'] = self.image.serialize_for_source_control(session)
+                file['image'] = self.image.serialize_for_source_control(session = session,
+                                                                        connection_id = self.connection_id,
+                                                                        bucket_name = self.bucket_name,
+                                                                        reference_file = self,
+                                                                        regen_url = regen_url)
+                file['image']['bucket_name'] = self.bucket_name
 
         elif self.type == "video":
             if self.video:
-                file['video'] = self.video.serialize_list_view(session, self.project)
-
+                file['video'] = self.video.serialize_list_view(session = session,
+                                                               project = self.project,
+                                                               connection_id = self.connection_id,
+                                                               bucket_name = self.bucket_name)
+                file['video']['bucket_name'] = self.bucket_name
         elif self.type == "text":
+            print('serialize_with_type', regen_url)
             if self.text_file:
-                file['text'] = self.text_file.serialize(session)
+                file['text'] = self.text_file.serialize(session = session,
+                                                        connection_id = self.connection_id,
+                                                        bucket_name = self.bucket_name,
+                                                        regen_url = regen_url)
+                file['text']['bucket_name'] = self.bucket_name
 
         elif self.type == "geospatial":
             file['geospatial'] = {
-                'layers': self.serialize_geospatial_assets(session = session)
+                'layers': self.serialize_geospatial_assets(session = session,
+                                                           connection_id = self.connection_id,
+                                                           bucket_name = self.bucket_name,
+                                                           regen_url = regen_url)
             }
-            
+            file['geospatial']['bucket_name'] = self.bucket_name
         if self.type == "audio":
             if self.audio_file:
-                file['audio'] = self.audio_file.serialize()
-
+                file['audio'] = self.audio_file.serialize(session = session,
+                                                          connection_id = self.connection_id,
+                                                          bucket_name = self.bucket_name,
+                                                          regen_url = regen_url)
+                file['audio']['bucket_name'] = self.bucket_name
         elif self.type == "sensor_fusion":
             point_cloud_file = self.get_child_point_cloud_file(session = session)
             if point_cloud_file and point_cloud_file.point_cloud:
-                file['point_cloud'] = point_cloud_file.point_cloud.serialize(session)
-
+                file['point_cloud'] = point_cloud_file.point_cloud.serialize(session = session,
+                                                                             connection_id = self.connection_id,
+                                                                             bucket_name = self.bucket_name,
+                                                                             regen_url = regen_url)
+                file['point_cloud']['bucket_name'] = self.bucket_name
         elif self.type == "label":
             if session:
                 label = Label.get_by_id(session, self.label_id)
             else:
                 label = self.label
-            #if session:
+            # if session:
             #    file['attribute_group_list'] = Attribute_Template_Group.from_file_attribute_group_list_serialize(
             #        session = session,
             #       file_id = self.id)
@@ -425,6 +457,13 @@ class File(Base, Caching):
             file['label'] = label.serialize()
 
         return file
+
+    def get_child_files(self, session: Session) -> List['File']:
+        child_files = session.query(File).filter(
+            File.parent_id == self.id,
+            File.state != "removed"
+        ).all()
+        return child_files
 
     def create_frame_packet_map(self, session):
         """
@@ -485,7 +524,8 @@ class File(Base, Caching):
 
     def serialize_with_annotations(
         self,
-        session = None):
+        session = None,
+        regen_url = True):
 
         """
         Better way to do file splitting?
@@ -497,11 +537,10 @@ class File(Base, Caching):
             Instance.soft_delete == False
         ).all()
 
-        file = self.serialize_with_type(session)
+        file = self.serialize_with_type(session, regen_url = regen_url)
         file['instance_list'] = [instance.serialize_with_label() for instance in instance_list]
 
         return file
-
 
     def serialize_annotations_only(self):
 
@@ -514,10 +553,6 @@ class File(Base, Caching):
     def serialize_instance_list_only(self):
         return [instance.serialize_with_label() for instance in self.instance_list]
 
-    # NOTE for more complex options
-    # generally use WorkingDirFileLink.file_list()
-    # Becuase we need to cross reference datasets
-
     @staticmethod
     def get_by_id(session, file_id, with_for_update = False, nowait = False, skip_locked = False):
         if with_for_update:
@@ -527,6 +562,7 @@ class File(Base, Caching):
         else:
             return session.query(File).filter(File.id == file_id).first()
 
+    @staticmethod
     def get_by_id_list(session, file_id_list):
         return session.query(File).filter(File.id.in_(file_id_list)).all()
 
@@ -620,7 +656,8 @@ class File(Base, Caching):
         ann_is_complete_reset = False,
         batch_id = None,
         flush_session = False,
-        working_dir_id: int = None
+        working_dir_id: int = None,
+        new_parent_id: int = None
     ):
         """
         orginal_directory_id is for Video, to get list of video files
@@ -649,11 +686,11 @@ class File(Base, Caching):
         if working_dir:
             working_dir_id = working_dir.id
 
-        # IMAGE Defer
-        if existing_file.type == 'image' and defer_copy and not remove_link:
+        # File Copy Defer
+        if defer_copy and not remove_link:
             regular_methods.transmit_interservice_request_after_commit(
                 session = session,
-                message = 'image_copy',
+                message = 'file_copy',
                 logger = logger,
                 service_target = 'walrus',
                 id = existing_file.id,
@@ -663,34 +700,11 @@ class File(Base, Caching):
                                 'destination_working_dir_id': working_dir_id,
                                 'source_working_dir_id': orginal_directory_id,
                                 'add_link': add_link,
+                                'type': existing_file.type,
                                 'batch_id': batch_id,
                                 'remove_link': remove_link,
+                                'frame_count': existing_file.video.frame_count if existing_file.video else None
                                 }
-            )
-            log['info'][
-                'message'] = 'File copy in progress. Please check progress in the file operations progress section.'
-            return
-
-        # VIDEO
-        if existing_file.type == "video" and defer_copy is True:
-            # Defer the copy to the walrus.
-            regular_methods.transmit_interservice_request_after_commit(
-                session = session,
-                message = 'video_copy',
-                logger = logger,
-                service_target = 'walrus',
-                id = existing_file.id,
-                project_string_id = existing_file.project.project_string_id,
-                extra_params = {
-                    'file_id': existing_file.id,
-                    'copy_instance_list': copy_instance_list,
-                    'destination_working_dir_id': working_dir_id,
-                    'source_working_dir_id': orginal_directory_id,
-                    'add_link': add_link,
-                    'batch_id': batch_id,
-                    'remove_link': remove_link,
-                    'frame_count': existing_file.video.frame_count
-                }
             )
             log['info'][
                 'message'] = 'File copy in progress. Please check progress in the file operations progress section.'
@@ -710,9 +724,9 @@ class File(Base, Caching):
         file.audio_file_id = existing_file.audio_file_id
         file.label_id = existing_file.label_id
         file.video_id = existing_file.video_id
+        file.parent_id = new_parent_id
         file.global_frame_number = existing_file.global_frame_number
         file.colour = existing_file.colour
-        file_relationship(session, file, existing_file)
         file.state = "changed"
         file.frame_number = existing_file.frame_number  # Ok if None
 
@@ -773,7 +787,6 @@ class File(Base, Caching):
                     frame_number = instance.frame_number,
                     global_frame_number = instance.global_frame_number,
                     machine_made = instance.machine_made,
-                    fan_made = instance.fan_made,
                     points = instance.points,
                     soft_delete = instance.soft_delete,
                     center_x = instance.center_x,
@@ -829,8 +842,8 @@ class File(Base, Caching):
         session.flush()
 
         schema.add_label_file(
-            session = session, 
-            label_file_id = file.id, 
+            session = session,
+            label_file_id = file.id,
             member_created_id = member.id)
 
         # In the future this could handle other label caching
@@ -850,24 +863,27 @@ class File(Base, Caching):
 
     @staticmethod
     def new(session,
-            working_dir_id=None,
-            project_id=None,
-            file_type=None,
-            image_id=None,
-            point_cloud_id=None,
-            text_file_id=None,
-            audio_file_id=None,
-            video_id=None,
-            frame_number=None,
-            label_id=None,
-            colour=None,
-            original_filename=None,
-            video_parent_file=None,
-            text_tokenizer=None,
-            input_id=None,
-            parent_id=None,
-            task=None,
-            file_metadata=None
+            working_dir_id = None,
+            project_id = None,
+            file_type = None,
+            image_id = None,
+            point_cloud_id = None,
+            text_file_id = None,
+            audio_file_id = None,
+            video_id = None,
+            connection_id = None,
+            bucket_name = None,
+            frame_number = None,
+            label_id = None,
+            colour = None,
+            original_filename = None,
+            video_parent_file = None,
+            text_tokenizer = None,
+            input_id = None,
+            parent_id = None,
+            task = None,
+            file_metadata = None,
+            ordinal: int = None
             ):
         """
         "file_added" case
@@ -899,24 +915,27 @@ class File(Base, Caching):
             video_parent_file_id = video_parent_file.id
 
         file = File(
-            original_filename=original_filename,
-            image_id=image_id,
-            point_cloud_id=point_cloud_id,
-            state="added",
-            type=file_type,
-            project_id=project_id,
-            label_id=label_id,
-            audio_file_id=audio_file_id,
-            text_file_id=text_file_id,
-            video_id=video_id,
-            video_parent_file_id=video_parent_file_id,
-            frame_number=frame_number,
-            colour=colour,
-            input_id=input_id,
-            parent_id=parent_id,
-            task=task,
-            file_metadata=file_metadata,
-            text_tokenizer=text_tokenizer
+            original_filename = original_filename,
+            image_id = image_id,
+            point_cloud_id = point_cloud_id,
+            state = "added",
+            type = file_type,
+            project_id = project_id,
+            label_id = label_id,
+            audio_file_id = audio_file_id,
+            text_file_id = text_file_id,
+            bucket_name = bucket_name,
+            connection_id = connection_id,
+            video_id = video_id,
+            video_parent_file_id = video_parent_file_id,
+            frame_number = frame_number,
+            colour = colour,
+            input_id = input_id,
+            parent_id = parent_id,
+            task = task,
+            file_metadata = file_metadata,
+            text_tokenizer = text_tokenizer,
+            ordinal = ordinal
         )
 
         File.new_file_new_frame(file, video_parent_file)
@@ -1043,7 +1062,6 @@ class File(Base, Caching):
 
         # Migration
         if not file and directory_id:
-            print("used file migration")
             return File.get_by_id_and_directory_untrusted(
                 session = session,
                 directory_id = directory_id,
@@ -1055,14 +1073,29 @@ class File(Base, Caching):
         return file
 
     @staticmethod
-    def get_by_name_and_directory(session, directory_id, file_name):
+    def get_directories_ids(session, file_id: int) -> List[int]:
+        from shared.database.source_control.working_dir import WorkingDirFileLink
+        working_dir_sub_query = session.query(WorkingDirFileLink).filter(
+            WorkingDirFileLink.file_id == file_id).all()
+        res = []
+        for elm in working_dir_sub_query:
+            res.append(elm.working_dir_id)
+        return res
+
+    @staticmethod
+    def get_by_name_and_directory(session, directory_id, file_name, with_deleted = True):
         from shared.database.source_control.working_dir import WorkingDirFileLink
         working_dir_sub_query = session.query(WorkingDirFileLink).filter(
             WorkingDirFileLink.working_dir_id == directory_id).subquery('working_dir_sub_query')
-
-        file = session.query(File).filter(
-            File.id == working_dir_sub_query.c.file_id,
-            File.original_filename == file_name).first()
+        if with_deleted:
+            file = session.query(File).filter(
+                File.id == working_dir_sub_query.c.file_id,
+                File.original_filename == file_name).first()
+        else:
+            file = session.query(File).filter(
+                File.id == working_dir_sub_query.c.file_id,
+                File.state != 'removed',
+                File.original_filename == file_name).first()
         return file
 
     @staticmethod
@@ -1209,6 +1242,13 @@ class File(Base, Caching):
 
         return file
 
+    @staticmethod
+    def get_permissions_list() -> list:
+        result = []
+        for elm in list(FilePermissions):
+            result.append(elm.value)
+        return result
+
 
 def build_annotation_hash_list(annotation_list):
     hash_list = []
@@ -1253,14 +1293,3 @@ def new_file_database_object_from_existing(session):
     return file
 
 
-def file_relationship(session, file, previous_file):
-    file.parent_id = previous_file.id
-    if not previous_file.child_primary_id:
-        previous_file.child_primary_id = file.id
-
-    if previous_file.root_id:
-        file.root_id = previous_file.root_id
-    else:
-        file.root_id = previous_file.id
-
-    session.add(previous_file)

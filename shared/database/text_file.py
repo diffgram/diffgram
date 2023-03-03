@@ -1,7 +1,5 @@
-# OPENCORE - ADD
 from shared.database.common import *
-from shared.database.common import data_tools
-from shared.settings import settings
+
 import json
 
 
@@ -42,6 +40,7 @@ class TextFile(Base):
     time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
     def get_text_tokens(self, tokenizer_type):
+        from shared.data_tools_core import data_tools
         data = data_tools.get_string_from_blob(self.tokens_url_signed_blob_path)
         data_dict = json.loads(data)
         result = data_dict[tokenizer_type]
@@ -52,6 +51,7 @@ class TextFile(Base):
             Download Raw text from blob.
         :return:
         """
+        from shared.data_tools_core import data_tools
         data = data_tools.get_string_from_blob(self.tokens_url_signed_blob_path)
         return data
 
@@ -67,14 +67,20 @@ class TextFile(Base):
         }
         return text
 
-    def serialize(self, session):
-
-        self.regenerate_url(session)
+    def serialize(self, session, connection_id = None, bucket_name = None, regen_url = True, create_thumbnails = True):
+        if regen_url:
+            from shared.url_generation import blob_regenerate_url
+            blob_regenerate_url(blob_object = self,
+                                session = session,
+                                connection_id = connection_id,
+                                bucket_name = bucket_name,
+                                create_thumbnails = create_thumbnails)
 
         text = {
             'original_filename': self.original_filename,
             'soft_delete': self.soft_delete,
             'url_signed': self.url_signed,
+            'url_signed_blob_path': self.url_signed_blob_path,
             'id': self.id,
             'is_inference': self.is_inference,
             'tokens_url_signed': self.tokens_url_signed,
@@ -83,29 +89,14 @@ class TextFile(Base):
         }
         return text
 
-
-    def regenerate_tokens_urls(self, session, new_offset_in_seconds):
+    def regenerate_tokens_urls(self, session, new_offset_in_seconds, connection_id = None, bucket_name = None):
         """
             Refresh signed URL for tokens Blob of the text file.
         :param session:
         :return:
         """
-        if self.tokens_url_signed_blob_path:
-            self.tokens_url_signed = data_tools.build_secure_url(self.tokens_url_signed_blob_path,
-                                                                    new_offset_in_seconds)
-            #self.tokens_url_signed_expiry = time.time() + new_offset_in_seconds
-            session.add(self)
-
-    def regenerate_url(self, session):
-        """
-            Refresh signed URL for the raw Text blob.
-        :param session:
-        :return:
-        """
-        should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(self, session)
-        if should_regenerate is True:
-            self.url_signed = data_tools.build_secure_url(self.url_signed_blob_path, new_offset_in_seconds)
-            self.url_signed_expiry = time.time() + new_offset_in_seconds
-            session.add(self)
-
-            self.regenerate_tokens_urls(session, new_offset_in_seconds)
+        from shared.url_generation import blob_regenerate_url
+        blob_regenerate_url(blob_object = self,
+                            session = session,
+                            connection_id = connection_id,
+                            bucket_name = bucket_name)

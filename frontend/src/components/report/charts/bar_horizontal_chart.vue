@@ -1,7 +1,3 @@
-<div>
-  <bar-chart></bar-chart>
-</div>
-
 <script lang="ts">
 
   import VueCharts from 'vue-chartjs'

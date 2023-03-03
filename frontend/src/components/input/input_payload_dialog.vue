@@ -22,30 +22,26 @@
       </v-card-text>
     </v-card>
   </v-dialog>
-
 </template>
 
 <script lang="ts">
-
-import axios from '../../services/customInstance';
-import labels_view from '../../components/annotation/labels_view'
-import v_upload_large from '../upload_large'
 import Vue from "vue";
+import axios from '../../services/customInstance';
+import labels_view from '../../components/annotation/image_and_video_annotation/labels_view.vue'
+import v_upload_large from '../upload_large.vue'
 import CodeDiff from 'vue-code-diff/dist/vue-code-diff'
-export default Vue.extend({
 
+export default Vue.extend({
     name: 'input_payload_dialog',
     components: {
-      labels_view: labels_view,
-      CodeDiff: CodeDiff,
-      v_upload_large: v_upload_large
+      labels_view,
+      CodeDiff,
+      v_upload_large
     },
-    props: ['project_string_id', 'selected_input'],
-
-    mounted() {
-
-    },
-
+    props: [
+      'project_string_id', 
+      'selected_input'
+    ],
     data() {
       return {
         loading: false,
@@ -97,8 +93,8 @@ export default Vue.extend({
       }
     }
   }
-) </script>
-
+) 
+</script>
 
 <style>
   code{

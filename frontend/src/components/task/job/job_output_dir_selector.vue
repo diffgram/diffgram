@@ -5,32 +5,31 @@
         <v-radio-group v-model="output_dir_action" :mandatory="true" @change="on_option_change">
           <v-radio label="Move the files to a Dataset" value="move"></v-radio>
 
-          <v_directory_list :project_string_id="project_string_id"
-                            @change_directory="on_change_move_dir"
-                            ref="dir_list_move"
-                            :show_new="true"
-                            :initial_dir_from_state="false"
-                            :update_from_state="false"
-                            :set_current_dir_on_change="false"
-                            :view_only_mode="output_dir_action !== 'move'"
-                            :show_update="true"
-                            :set_from_id="move_id"
-          >
-          </v_directory_list>
+          <global_dataset_selector 
+            ref="dir_list_move"
+            :show_new="true"
+            :initial_dir_from_state="false"
+            :update_from_state="false"
+            :set_current_dir_on_change="false"
+            :show_update="true"
+            :view_only_mode="output_dir_action !== 'move'"
+            :set_from_id="move_id"
+            @change_directory="on_change_move_dir"
+          />
 
           <v-radio label="Copy the files to a Dataset" value="copy"></v-radio>
 
-          <v_directory_list :project_string_id="project_string_id"
-                            :set_from_id="copy_id"
-                            @change_directory="on_change_copy_dir"
-                            ref="dir_list_copy"
-                            :show_new="true"
-                            :initial_dir_from_state="false"
-                            :update_from_state="false"
-                            :set_current_dir_on_change="false"
-                            :view_only_mode="output_dir_action !== 'copy'"
-                            :show_update="true">
-          </v_directory_list>
+          <global_dataset_selector 
+            ref="dir_list_copy"
+            :set_from_id="copy_id"
+            :show_new="true"
+            :initial_dir_from_state="false"
+            :update_from_state="false"
+            :set_current_dir_on_change="false"
+            :view_only_mode="output_dir_action !== 'copy'"
+            :show_update="true"
+            @change_directory="on_change_copy_dir"
+          />
 
           <v-radio label="Do nothing." :value="'nothing'"></v-radio>
         </v-radio-group>
@@ -43,6 +42,7 @@
 
 <script lang="ts">
   import Vue from "vue";
+  import global_dataset_selector from "../../attached/global_dataset_selector.vue"
 
   export default Vue.extend({
       name: 'job_output_dir_selector',
@@ -59,6 +59,9 @@
           default: undefined,
           type: String
         },
+      },
+      components: {
+        global_dataset_selector
       },
       computed:{
         move_id: function(){

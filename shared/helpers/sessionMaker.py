@@ -27,12 +27,14 @@ if settings.DIFFGRAM_SYSTEM_MODE == "production":
     engine = create_engine(settings.DATABASE_URL,
                            pool_size=settings.DATABASE_CONNECTION_POOL_SIZE,
                            max_overflow=2,
-                           echo=False)
+                           echo=False,
+                           connect_args={"options": f"-c statement_timeout=15000 -c idle_in_transaction_session_timeout={settings.DATABASE_IDLE_SESSION_TRANSACTION_TIMEOUT}"})
 
 if settings.DIFFGRAM_SYSTEM_MODE in ["sandbox", "staging", "testing", "testing_e2e"]:
     engine = create_engine(settings.DATABASE_URL,
                            pool_size=settings.DATABASE_CONNECTION_POOL_SIZE,
-                           max_overflow=2)
+                           max_overflow=2,
+                           connect_args={"options": f"-c statement_timeout=15000 -c idle_in_transaction_session_timeout={settings.DATABASE_IDLE_SESSION_TRANSACTION_TIMEOUT}"})
 
 # see http://docs.sqlalchemy.org/en/latest/core/pooling.html
 # Each worker will use up to pool size + max_overflow it would appear

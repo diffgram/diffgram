@@ -13,6 +13,7 @@ from shared.shared_logger import get_shared_logger
 from shared.database.task.exam.exam import Exam
 from shared.database.labels.label_schema import LabelSchema
 from shared.database.task.task import TASK_STATUSES
+from shared.database.tag.tag import JobTag
 
 logger = get_shared_logger()
 
@@ -104,7 +105,7 @@ class Job(Base, Caching):
 
     completion_action = Column(String())
 
-    exam_id = Column(Integer, ForeignKey('exam.id'))  # New Feb 8, 2019
+    exam_id = Column(Integer, ForeignKey('exam.id'))
     exam = relationship("Exam")
 
     # Review settings
@@ -281,6 +282,13 @@ class Job(Base, Caching):
             return files_to_process.count()
         elif return_kind == 'first':
             return files_to_process.first()
+
+    @staticmethod
+    def get(session, job_id, project_id):
+
+        return session.query(Job).filter(
+            Job.id == job_id,
+            Job.project_id == project_id).first()
 
     @staticmethod
     def get_by_id(session, job_id):
@@ -750,7 +758,7 @@ class Job(Base, Caching):
             schema_data = schema.serialize()
         ui_schema_data = None
         if self.ui_schema_id:
-            ui_schema = UI_Schema.get_by_id(session = session, id = self.label_schema_id)
+            ui_schema = UI_Schema.get_by_id(session = session, id = self.ui_schema_id)
             ui_schema_data = ui_schema.serialize()
         return {
             'id': self.id,
@@ -906,6 +914,13 @@ class Job(Base, Caching):
 
         return query.all()
 
+    def serialize_with_tags(self, session = None) -> dict:
+        result = self.serialize_for_list_view(session = session)
+        tag_rels = JobTag.get_by_job_id(job_id = self.id, project_id = self.project_id, session = session)
+        serialized_tags = [rel.tag.name for rel in tag_rels]
+        result['tags'] = serialized_tags
+        return result
+
     def serialize_for_list_view(self, session = None):
 
         stat_count_available = None
@@ -995,7 +1010,6 @@ class Job(Base, Caching):
         the file doesn't get remove properly from the job...
 
         """
-        print('update_file_count_statistic')
         self.file_count_statistic = WorkingDirFileLink.file_list(
             session = session,
             working_dir_id = self.directory_id,

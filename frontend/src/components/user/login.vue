@@ -109,34 +109,48 @@
                  <v-spacer></v-spacer>
 
                 <v-btn
+                  @click="route_oauth2_login"
+                  v-if="show_oauth2"
+                  color="secondary"
+                  outlined
+                  class="mr-4"
+                  :loading="loading"
+                  :disabled="loading"
+                >
+                  <v-icon left>mdi-web</v-icon>
+                  Login with SSO
+                </v-btn>
+
+
+                <v-btn
                   @click="route_account_new"
-                  color="primary"
-                  text
+                  color="success"
+                  outlined
                   :loading="loading"
                   @click.native="loader = 'loading'"
                   :disabled="loading"
                 >
                   <v-icon left>mdi-plus</v-icon>
-                  Create
+                  Create User
                 </v-btn>
 
-                <tooltip_button
+                <standard_button
                     tooltip_message="Join Slack Community"
-                    href="https://join.slack.com/t/diffgram-workspace/shared_invite/zt-twn6529v-hhSPzpQrAxvoZB95PhfAFg"
+                    href="https://form.jotform.com/222377866413058"
                     target="_blank"
                     icon="mdi-slack"
                     :icon_style="true"
                     color="primary">
-                </tooltip_button>
+                </standard_button>
 
-                <tooltip_button
+                <standard_button
                     tooltip_message="Help"
                     href="https://diffgram.readme.io/docs/login-magic-login-and-password-setting"
                     target="_blank"
                     icon="mdi-lifebuoy"
                     :icon_style="true"
                     color="primary">
-                </tooltip_button>
+                </standard_button>
               </v-layout>
           </v-container>
         </div>
@@ -204,7 +218,7 @@
 
 <script lang="ts">
 import axios from "../../services/customInstance";
-import { is_mailgun_set, is_oidc_set } from "../../services/configService";
+import { is_mailgun_set, is_oauth2_set } from "../../services/configService";
 
 import Vue from "vue";
 export default Vue.extend({
@@ -223,11 +237,13 @@ export default Vue.extend({
       render_default_login: false,
 
       e1: true,
+      show_oauth2: false,
 
       email: null,
       mailgun: undefined,
 
       mode: "loading",
+      oauth_login_url: null,
       show_logging_in_messsage: false,
 
       error: {
@@ -274,10 +290,12 @@ export default Vue.extend({
 
     window.addEventListener("keyup", this.keyboard_events);
     const { mailgun } = await is_mailgun_set();
-    const { use_oidc, login_url } = await is_oidc_set();
-    if(use_oidc){
-      window.location.replace(login_url);
-      return
+    const { use_oauth2, login_url } = await is_oauth2_set();
+    if(use_oauth2){
+      // window.location.replace();
+      // return
+      this.oauth_login_url = login_url
+      this.show_oauth2 = true
     }
     this.render_default_login = true;
     this.mailgun = mailgun;
@@ -294,6 +312,10 @@ export default Vue.extend({
     window.removeEventListener("keyup", this.keyboard_events);
   },
   methods: {
+    route_oauth2_login: function(){
+      window.location.replace(this.oauth_login_url);
+      // this.$router.push(this.oauth_login_url);
+    },
     route_account_new: function () {
       this.$router.push("/user/new");
     },

@@ -4,15 +4,15 @@ from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.regular import regular_log
 from sqlalchemy import event as sqlalchemy_event
 
-
 from sqlalchemy.schema import Index
 from sqlalchemy.dialects.postgresql import JSONB
+
 
 class Input(Base):
     __tablename__ = 'input'
 
-    id = Column(Integer, primary_key=True)
-    created_time = Column(DateTime, default=datetime.datetime.utcnow)
+    id = Column(Integer, primary_key = True)
+    created_time = Column(DateTime, default = datetime.datetime.utcnow)
 
     time_completed = Column(DateTime)
     time_loaded_video = Column(DateTime)
@@ -28,47 +28,45 @@ class Input(Base):
     # Yes some work to update this
     # BUT this is probably a better measure for more closely tracking
     # if the process crashes so worth it.
-    time_updated = Column(DateTime, onupdate=datetime.datetime.utcnow)
+    time_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
 
     time_last_attempted = Column(Integer)
 
     # ["copy_file", "update", "update_with_existing", ""]
-    mode = Column(String) 
+    mode = Column(String)
 
     url = Column(String())
     media_type = Column(String())  # image, frame, video, csv
 
     #  Why not name this "source"
     # TODO naming of this attribute could probably be improved.
-    type = Column(String())  # ["from_url", "from_video_split"]
+    type = Column(String())  # ["from_url", "from_video_split", "from_blob_path"]
 
     allow_csv = Column(Boolean())
 
-    allow_duplicates = Column(Boolean(), default=False)
+    allow_duplicates = Column(Boolean(), default = False)
 
     # By default we don't defer processing, but can if needed
     # At the moment this flag is only used "in flight"
     # So eventually, in theory, all the flags will be False.
     # Not sure if that's ok or bad?
-    processing_deferred = Column(Boolean(), default=False)
+    processing_deferred = Column(Boolean(), default = False)
 
-    status = Column(String(), default="init")
+    status = Column(String(), default = "init")
     status_text = Column(String())
 
     offset_in_seconds = Column(Integer)
-    percent_complete = Column(Float, default=0.0)
+    percent_complete = Column(Float, default = 0.0)
 
     description = Column(String())
     size = Column(Integer)
 
-    archived = Column(Boolean, default=False)
+    archived = Column(Boolean, default = False)
 
-    auto_correct_instances_from_image_metadata = Column(Boolean, default=False)
-
+    auto_correct_instances_from_image_metadata = Column(Boolean, default = False)
 
     raw_data_blob_path = Column(String())
     # video_processed_blob_path = Column(String())
-
 
     resumable_url = Column(String())
 
@@ -89,7 +87,7 @@ class Input(Base):
     # I think it would be good for this to be seperate
     # For easy searching
     # Default to 0 so we can do < a value instead of None checks
-    retry_count = Column(Integer, default=0)
+    retry_count = Column(Integer, default = 0)
 
     # Use get_by_id().
     # See parent_input =  in process_media.py
@@ -98,13 +96,13 @@ class Input(Base):
 
     # context of say a video file
     parent_file_id = deferred(Column(Integer, ForeignKey('file.id')))
-    parent_file = relationship("File", foreign_keys=[parent_file_id])
+    parent_file = relationship("File", foreign_keys = [parent_file_id])
 
     file_id = Column(Integer, ForeignKey('file.id'))
-    file = relationship("File", foreign_keys=[file_id])
+    file = relationship("File", foreign_keys = [file_id])
 
     newly_copied_file_id = Column(Integer, ForeignKey('file.id'))
-    newly_copied_file = relationship("File", foreign_keys=[newly_copied_file_id]) #TODO: ADD TO PRODUCTION
+    newly_copied_file = relationship("File", foreign_keys = [newly_copied_file_id])  # TODO: ADD TO PRODUCTION
 
     add_link = Column(Boolean)
     remove_link = Column(Boolean)
@@ -118,11 +116,19 @@ class Input(Base):
     image_metadata = Column(MutableDict.as_mutable(JSONB))
 
     task_id = Column(Integer, ForeignKey('task.id'))
-    task = relationship("Task", foreign_keys=[task_id])
+    task = relationship("Task", foreign_keys = [task_id])
     task_action = Column(String())
 
+    ordinal = Column(Integer, default = 0)
+    # Connection ID where the file is stored (if no connection provided will use default storage provider from env vars)
+    connection_id = Column(Integer, ForeignKey('connection_base.id'))
+    connection = relationship("Connection", foreign_keys = [connection_id])
+
+    # Bucket name for a blob path file
+    bucket_name = Column(String())
+
     external_map_id = Column(Integer, ForeignKey('external_map.id'))
-    external_map = relationship("ExternalMap", foreign_keys=[external_map_id])
+    external_map = relationship("ExternalMap", foreign_keys = [external_map_id])
     external_map_action = Column(String())
 
     job_id = Column(Integer, ForeignKey('job.id'))
@@ -130,11 +136,11 @@ class Input(Base):
 
     # Also include image or video?
 
-    directory_id = Column(Integer, ForeignKey('working_dir.id'))    # target directory
-    directory = relationship("WorkingDir", foreign_keys=[directory_id])
+    directory_id = Column(Integer, ForeignKey('working_dir.id'))  # target directory
+    directory = relationship("WorkingDir", foreign_keys = [directory_id])
 
-    source_directory_id = Column(Integer, ForeignKey('working_dir.id'))     # For internal only
-    source_directory = relationship("WorkingDir", foreign_keys=[source_directory_id])
+    source_directory_id = Column(Integer, ForeignKey('working_dir.id'))  # For internal only
+    source_directory = relationship("WorkingDir", foreign_keys = [source_directory_id])
 
     invalid_directory_permission = Column(Boolean)
 
@@ -145,7 +151,7 @@ class Input(Base):
     user = relationship("User")
 
     batch_id = Column(Integer, ForeignKey('input_batch.id'))
-    batch = relationship("InputBatch", foreign_keys=[batch_id])
+    batch = relationship("InputBatch", foreign_keys = [batch_id])
 
     temp_dir = Column(String())
 
@@ -158,7 +164,7 @@ class Input(Base):
     frame_packet_map = Column(MutableDict.as_mutable(JSONEncodedDict))
 
     update_log = Column(MutableDict.as_mutable(JSONEncodedDict),
-                        default=regular_log.default())  # New Sept 3, 2020
+                        default = regular_log.default())
 
     # Context of video
     video_parent_length = Column(Integer)  # This way don't have to check video each time. To see where it ends
@@ -185,29 +191,43 @@ class Input(Base):
 
     @staticmethod
     def new(
-            project = None,
-            project_id = None,
-            media_type: str = None,
-            type: str = None,
-            mode: str = None,
-            url: str = None,
-            job_id: int = None,
-            video_parent_length: int = None,
-            source_directory_id: int = None,
-            remove_link: bool = None,
-            add_link: bool = None,
-            copy_instance_list: bool = None,
-            directory_id: int = None,
-            file_id: int = None,
-            parent_file_id: int = None,
-            newly_copied_file_id: int = None,
-            sequence_map: dict = None,
-            processing_deferred: bool = False,
-            parent_input_id: int = None,
-            batch_id: int = None,
-            video_split_duration: int = None,
-            file_metadata: dict = None,
-            member_created_id: int = None
+        project = None,
+        project_id = None,
+        media_type: str = None,
+        type: str = None,
+        mode: str = None,
+        url: str = None,
+        raw_data_blob_path: str = None,
+        original_filename: str = None,
+        external_map_action: str = None,
+        task_action: str = None,
+        bucket_name: str = None,
+        job_id: int = None,
+        video_parent_length: int = None,
+        external_map_id: int = None,
+        task_id: int = None,
+        source_directory_id: int = None,
+        remove_link: bool = None,
+        add_link: bool = None,
+        copy_instance_list: bool = None,
+        allow_duplicates: bool = None,
+        directory_id: int = None,
+        connection_id: int = None,
+        file_id: int = None,
+        parent_file_id: int = None,
+        newly_copied_file_id: int = None,
+        instance_list: dict = None,
+        frame_packet_map: dict = None,
+        image_metadata: dict = None,
+        auto_correct_instances_from_image_metadata: bool = False,
+        sequence_map: dict = None,
+        processing_deferred: bool = False,
+        parent_input_id: int = None,
+        batch_id: int = None,
+        video_split_duration: int = None,
+        file_metadata: dict = None,
+        member_created_id: int = None,
+        ordinal: int = 0
     ):
         """
         Helps insure not forgetting stuff...
@@ -223,41 +243,60 @@ class Input(Base):
         # if a video_split is provided then we use it.
         if parent_input_id is None and video_split_duration is None:
             video_split_duration = 30
-
+        if project and not project_id:
+            project_id = project.id
         input = Input(
-            project=project,
             project_id = project_id,
-            file_id=file_id,
-            mode=mode,
-            newly_copied_file_id=newly_copied_file_id,
-            media_type=media_type,
-            type=type,
-            url=url,
-            job_id=job_id,
-            directory_id=directory_id,
-            sequence_map=sequence_map,
-            processing_deferred=processing_deferred,
-            parent_input_id=parent_input_id,
+            file_id = file_id,
+            mode = mode,
+            newly_copied_file_id = newly_copied_file_id,
+            media_type = media_type,
+            ordinal = ordinal,
+            allow_duplicates = allow_duplicates,
+            type = type,
+            url = url,
+            job_id = job_id,
+            directory_id = directory_id,
+            connection_id = connection_id,
+            bucket_name = bucket_name,
+            task_action = task_action,
+            source_directory_id = source_directory_id,
+            external_map_action = external_map_action,
+            original_filename = original_filename,
+            external_map_id = external_map_id,
+            task_id = task_id,
+            remove_link = remove_link,
+            add_link = add_link,
+            sequence_map = sequence_map,
+            raw_data_blob_path = raw_data_blob_path,
+            processing_deferred = processing_deferred,
+            image_metadata = image_metadata,
+            auto_correct_instances_from_image_metadata = auto_correct_instances_from_image_metadata,
+            parent_input_id = parent_input_id,
             video_parent_length = video_parent_length,
-            video_split_duration=video_split_duration,
-            batch_id=batch_id,
-            copy_instance_list=copy_instance_list,
-            file_metadata=file_metadata,
-            member_created_id=member_created_id
+            video_split_duration = video_split_duration,
+            batch_id = batch_id,
+            copy_instance_list = copy_instance_list,
+            file_metadata = file_metadata,
+            member_created_id = member_created_id
         )
         input.parent_file_id = parent_file_id
+        if instance_list:
+            input.instance_list = {'list': instance_list}
 
+        if frame_packet_map:
+            input.frame_packet_map = frame_packet_map
         return input
 
     def get_by_id(
-            session,
-            id: int,
-            skip_locked: bool = False):
+        session,
+        id: int,
+        skip_locked: bool = False):
 
         query = session.query(Input).filter(Input.id == id)
 
         if skip_locked == True:
-            query = query.with_for_update(skip_locked=True)
+            query = query.with_for_update(skip_locked = True)
 
         return query.first()
 
@@ -300,6 +339,8 @@ class Input(Base):
             'raw_data_blob_path': self.raw_data_blob_path,
             'source': self.type,
             'mode': self.mode,
+            'archived': self.archived,
+            'parent_file_id': self.parent_file_id,
             'file_id': self.file_id,
             'batch_id': self.batch_id,
             'task_id': self.task_id,  # Include task_id
@@ -317,10 +358,10 @@ class Input(Base):
 
     @staticmethod
     def directory_not_equal_to_status(
-            session,
-            directory_id,
-            status="success",
-            return_type="count"
+        session,
+        directory_id,
+        status = "success",
+        return_type = "count"
     ):
         """
         Returns 0 if there are no files equal to status

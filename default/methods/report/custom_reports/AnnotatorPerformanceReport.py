@@ -37,22 +37,10 @@ class AnnotatorPerformanceReport:
             'count': len(data),
             'labels': [],
             'values': [],
-            'values_metadata': [],
             'header_name': 'Annotator Task Time (Minutes)',
         }
         for elm in data:
             result['labels'].append(elm[0])
             result['values'].append(round(elm[1] / 60.0, 2))  # To Minutes
-        users = self.session.query(User).filter(
-            User.id.in_(result['labels'])
-        ).all()
-        user_dict = {}
-        for u in users:
-            user_dict[u.id] = u
-        for elm in data:
-            result['values_metadata'].append({'email': user_dict[elm[0]].email,
-                                              'first_name': user_dict[elm[0]].first_name,
-                                              'last_name': user_dict[elm[0]].last_name
-                                              })
-
+        
         return result

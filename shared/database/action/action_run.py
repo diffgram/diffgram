@@ -19,6 +19,7 @@ class ActionRun(Base):
     file_id = Column(BIGINT, ForeignKey('file.id'))
     file = relationship("File", foreign_keys = [file_id])
 
+    status = Column(String())
     action_id = Column(BIGINT, ForeignKey('action.id'))
     action = relationship("Action", foreign_keys = [action_id])
 
@@ -61,6 +62,9 @@ class ActionRun(Base):
     email_subject = Column(String())
     email_body = Column(String())
 
+    # Output of action, usually caches the output of latest ActionRun.
+    output = Column(MutableDict.as_mutable(JSONB))
+
     # Reuse image class setup for clarity
     overlay_rendered_image_id = Column(Integer, ForeignKey('image.id'))  # new feb 12 2019
     overlay_rendered_image = relationship("Image",
@@ -68,37 +72,42 @@ class ActionRun(Base):
 
     @staticmethod
     def new(session,
-            flow_event_id,
-            flow_id,
+            workflow_id,
             action_id,
-            file_id,
+            file_id = None,
+            workflow_run_id = None,
             project_id = None,
             org = None,
-            link = None,
-            member = None,
             kind = None
             ):
         """
-        objects vs ids here...
-
-        Not using member yet.
-
+            Creates a new Action run.
+        :param session:
+        :param workflow_run_id:
+        :param workflow_id:
+        :param action_id:
+        :param file_id:
+        :param project_id:
+        :param org:
+        :param link:
+        :param member:
+        :param kind:
+        :return:
         """
-        if flow_event_id is None:
-            return
-
-        action_event = WofklowRun(
-            flow_event_id = flow_event_id,
-            flow_id = flow_id,
+        action_run = ActionRun(
+            workflow_id = workflow_id,
+            workflow_run_id = workflow_run_id,
             action_id = action_id,
             file_id = file_id,
             project_id = project_id,
             org = org,
-            kind = kind
+            kind = kind,
+            status = "initialized"
         )
 
-        session.add(action_event)
-        return action_event
+        session.add(action_run)
+        session.flush()
+        return action_run
 
     @staticmethod
     def list(
@@ -132,32 +141,57 @@ class ActionRun(Base):
         if return_kind == "objects":
             return query.limit(limit).all()
 
-    def serialize(self,
-                  session = None):
+    @staticmethod
+    def list_by_action_id(session, action_id, limit = None, offset = None):
+        query = session.query(ActionRun).order_by(ActionRun.id.desc()).filter(ActionRun.action_id == action_id, ActionRun.status != "initialized")
+        if limit:
+            query = query.limit(limit)
+        if offset:
+            query = query.offset(offset)
+        return query.all()
 
-        # Question, do we want to include
-        # Other information about the action?
-        # ie serialize the "original" action too
-        # so perosn can see how it flowed through system?
+    @staticmethod
+    def set_action_run_status(session, action_run_id, status):
+        action_run = session.query(ActionRun).filter(ActionRun.id == action_run_id).first()
+        action_run.status = status
+        session.flush()
+        session.commit()
 
-        # session if needed to regen urls
-        self.session = session
+    @staticmethod
+    def shout_down_running_actions(session):
+        action_runs = session.query(ActionRun).filter(ActionRun.status == "running")
+        for action_run in action_runs:
+            action_run.status = 'canceled'
 
-        event = {
+        session.flush()
+        session.commit()
+
+
+    @staticmethod
+    def get_latest_action_status(session, action_id):
+        action_run = session.query(ActionRun).filter(ActionRun.action_id == action_id, ActionRun.status != 'initialized').order_by(ActionRun.id.desc())
+
+        return action_run.first()
+
+    def serialize_action_run(self):
+        return {
+            'id': self.id,
+            'output': self.output
+        }
+
+    def serialize(self, session = None):
+
+        action_run_data = {
             'id': self.id,
             'kind': self.kind,
+            'status': self.status,
+            'output': self.output,
+            'workflow_id': self.workflow_id,
+            'action_id': self.action_id,
             'time_created': self.time_created
         }
 
-        # Get kind specific attributes
-        kind_specific = self.kind_specific_serialize_strategy.get(
-            self.kind)
-        if kind_specific is None:
-            return "class Action Event Serialize Error. Error, no kind"
-
-        event[self.kind] = kind_specific(self)
-
-        return event
+        return action_run_data
 
     def serialize_file(self):
         pass

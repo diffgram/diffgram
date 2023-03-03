@@ -1,8 +1,4 @@
-# OPENCORE - ADD
 from shared.database.common import *
-from shared.settings import settings
-from shared.database.common import data_tools
-
 
 class Image(Base):
     __tablename__ = 'image'
@@ -13,6 +9,7 @@ class Image(Base):
     description = Column(String(250))
     width = Column(Integer)
     height = Column(Integer)
+    rotation_degrees = Column(Integer, default = 0)
     soft_delete = Column(Boolean, default = False)
 
     mask_joint_url = Column(String())
@@ -54,6 +51,7 @@ class Image(Base):
         image = {
             'width': self.width,
             'height': self.height,
+            'rotation_degrees': self.rotation_degrees,
             'is_annotation_example': self.is_annotation_example,
             'url_annotation_example': self.url_annotation_example,
             'url_annotation_example_thumb': self.url_annotation_example_thumb
@@ -61,13 +59,13 @@ class Image(Base):
         return image
 
     def serialize(self):
-
         keyframe = False
 
         image = {
             'original_filename': self.original_filename,
             'width': self.width,
             'height': self.height,
+            'rotation_degrees': self.rotation_degrees,
             'soft_delete': self.soft_delete,
             'url_signed': self.url_signed,
             'url_signed_thumb': self.url_signed_thumb,
@@ -78,26 +76,30 @@ class Image(Base):
         }
         return image
 
-    def serialize_for_source_control(self, session = None):
-
-        self.regenerate_url(session)
-
+    def serialize_for_source_control(self,
+                                     session = None,
+                                     connection_id = None,
+                                     bucket_name = None,
+                                     reference_file: 'File' = None,
+                                     regen_url = True,
+                                     create_thumbnails: bool = True):
+        if regen_url:
+            from shared.url_generation import blob_regenerate_url
+            blob_regenerate_url(blob_object = self,
+                                session = session,
+                                connection_id = connection_id,
+                                bucket_name = bucket_name,
+                                reference_file = reference_file,
+                                create_thumbnails = create_thumbnails)
         return {
             'original_filename': self.original_filename,
             'width': self.width,
             'height': self.height,
+            'rotation_degrees': self.rotation_degrees,
             'soft_delete': self.soft_delete,
             'url_signed': self.url_signed,
             'url_signed_thumb': self.url_signed_thumb,
-            'annotation_status': self.annotation_status
+            'url_signed_blob_path': self.url_signed_blob_path,
+            'annotation_status': self.annotation_status,
+            'id': self.id
         }
-
-    def regenerate_url(self, session):
-        if not self.url_signed_blob_path: return
-        should_regenerate, new_offset_in_seconds = data_tools.determine_if_should_regenerate_url(self, session)
-        if should_regenerate is True:
-            self.url_signed = data_tools.build_secure_url(self.url_signed_blob_path, new_offset_in_seconds)
-            self.url_signed_thumb = data_tools.build_secure_url(self.url_signed_thumb_blob_path,
-                                                                new_offset_in_seconds)
-            self.url_signed_expiry = time.time() + new_offset_in_seconds
-            session.add(self)

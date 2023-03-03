@@ -8,13 +8,11 @@ describe('Task Template Creation', () => {
   context('It creates a task template with the wizard', () => {
     before(function () {
       Cypress.Cookies.debug(true, {verbose: true})
-      Cypress.Cookies.defaults({
-        preserve: ['session']
-      })
+
       // login before all tests
-      cy.loginByForm(testUser.email, testUser.password);
-      cy.gotToProject(testUser.project_string_id);
-      cy.createLabels(testLabels)
+      cy.loginByForm(testUser.email, testUser.password)
+        .gotToProject(testUser.project_string_id)
+        .createLabels(testLabels)
     })
     let url = '/api/v1/project/*/job/update'
     let url_launch = '/api/v1/job/launch'
@@ -103,13 +101,13 @@ describe('Task Template Creation', () => {
       cy.get('[data-cy="task-template-credentials-step"]').should('be.visible')
       .get('[data-cy="credentials-step-title"]').should('be.visible')
       .get('[data-cy="open-create-credential"]').should('be.visible')
-      .get('[data-cy="open-create-credential"]').click()
-      .get('[data-cy="create-credential-button"]').click()
-      .get('[data-cy="refresh-credentials"]').click()
+      .get('[data-cy="open-create-credential"]').click({force: true})
+      .get('[data-cy="create-credential-button"]').click({force: true})
+      .get('[data-cy="refresh-credentials"]').click({force: true})
       .get('[data-cy="credential-checkbox-0"]').click({force: true})
       .get('[data-cy="requires-button"]').should('be.visible')
       .get('[data-cy="clear-button"]').should('be.visible')
-      .get('[data-cy="requires-button"]').click()
+      .get('[data-cy="requires-button"]').click({force: true})
 
       .intercept(url_launch).as('launch_job')
       .get('[data-cy="task-template-credentials-step"] [data-cy="wizard_navigation_next"]').click({force: true})

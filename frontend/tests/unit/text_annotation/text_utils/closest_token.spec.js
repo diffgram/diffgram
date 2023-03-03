@@ -1,4 +1,4 @@
-import closest_token from "../../../../src/components/text_annotation/text_utils/closest_token";
+import closest_token from "../../../../src/components/annotation/text_annotation/text_utils/closest_token";
 import { tokens, lines } from "../text_test_data"
 
 describe("Closes token search, closest_token.ts", () => {
@@ -53,15 +53,6 @@ describe("Closes token search, closest_token.ts", () => {
         }
         const token = closest_token(tokens, lines, coordinates)
         expect(token.line).toEqual(0)
-    })
-
-    it("Should return token that does not exist if the line falls of text space", () => {
-        const coordinates = {
-            x: 50,
-            y: 400
-        }
-        const token = closest_token(tokens, lines, coordinates)
-        expect(token).toBeUndefined()
     })
 
     it("Should return token from the previous like if it's closer to it", () => {

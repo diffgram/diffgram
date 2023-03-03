@@ -22,6 +22,13 @@
                 </v-text-field>
               </v-flex>
 
+              <v-flex lg4>
+                <v-checkbox
+                  v-model="$store.state.user.settings.show_ids"
+                  label="Show ids"
+                />
+              </v-flex>
+
             </v-card-text>
 
             </v-container>
@@ -133,8 +140,7 @@
 
               <!-- Shutdown project start -->
                 <v-flex>
-              <v-dialog v-model="project_delete_dialog"
-                        >
+              <v-dialog v-model="project_delete_dialog">
                 <template v-slot:activator="{ on }">
                   <v-btn color="error"
                          v-on="on">
@@ -191,6 +197,12 @@
                      color="primary">
               <v-icon>mdi-info</v-icon>
                 Service Status
+              </v-btn>
+
+              <v-btn @click="regenerate_file_stats"
+                     color="primary">
+                <v-icon>mdi-info</v-icon>
+                Regenerate File Stats
               </v-btn>
 
               </v-container>
@@ -286,6 +298,23 @@ export default Vue.extend( {
     this.add_visit_history_event();
   },
     methods: {
+      regenerate_file_stats: async function(){
+        try{
+
+          const response = await axios.post(`/api/v1/project/${this.project_string_id}/regen-file-stats`)
+          if (response.status == 200){
+            this.$store.commit('display_snackbar', {
+              text: 'Files are regenerating. This can take several minutes.',
+              color: 'success'
+            })
+          }
+        } catch (e) {
+          this.$store.commit('display_snackbar', {
+            text: e.toString(),
+            color: 'error'
+          })
+        }
+      },
       add_visit_history_event: async function(){
         const event_data = await create_event(this.project_string_id, {
           page_name: 'project_settings',

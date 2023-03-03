@@ -21,15 +21,15 @@
             </v-btn>
           </v-toolbar-items>
 
-          <tooltip_button
-              tooltip_message="Create Sample Project"
-              @click="open_confirm_dialog_sample_data"
-              icon="mdi-apps-box"
-              :icon_style="true"
-              :bottom="true"
-              color="primary">
-          </tooltip_button>
-
+          <standard_button
+            tooltip_message="Create Sample Project"
+            icon="mdi-apps-box"
+            :icon_style="true"
+            :bottom="true"
+            color="primary"
+            @click="open_confirm_dialog_sample_data"
+          >
+          </standard_button>
         </v-toolbar>
       </template>
     </main_menu>
@@ -53,11 +53,14 @@
         <v-skeleton-loader
           :loading="loading"
           type="card@3"
-        />
+        ></v-skeleton-loader>
       </div>
 
       <template>
-        <v-container v-if="!loading" class="pa-20">
+        <v-container
+          v-if="!loading"
+          class="pa-20"
+        >
           <v-row>
             <v-col
 
@@ -77,7 +80,6 @@
                   class="mx-auto"
                   width="400"
                   :accesskey="item.name"
-
                 >
                   <div class="member-list">
                     <div
@@ -85,13 +87,13 @@
                       :key="i"
                       class="avatar"
                     >
-                      <user_icon :user="member" />
+                      <user_icon :user="member"></user_icon>
                     </div>
                     <div
                       v-if="item.member_list.slice(3).length"
                       class="avatar count"
                     >
-                      <user_icon :message="'+' + item.member_list.slice(3).length" />
+                      <user_icon :message="'+' + item.member_list.slice(3).length"></user_icon>
                     </div>
                   </div>
 
@@ -101,7 +103,7 @@
                     :src="get_preview_url(item)"
                     :data-cy="`project-im-${item.project_string_id}`"
                     @click="change_project(item)"
-                  />
+                  ></v-img>
                   <v-card-title
                     class="pb-0 project-title"
                     :data-cy="`project-title-${item.project_string_id}`"
@@ -133,8 +135,11 @@
         </v-container>
       </template>
     </v-card>
-    <v-dialog v-model="dialog_confirm_sample_data" max-width="450px">
-      <v-card >
+    <v-dialog
+      v-model="dialog_confirm_sample_data"
+      max-width="450px"
+    >
+      <v-card>
         <v-card-title class="headline">
           Create Sample Project
         </v-card-title>
@@ -170,7 +175,7 @@
       color="primary"
     >
       Sample project created successfully.
-      <template v-slot:action="{ attrs }">
+      <template #action="{ attrs }">
         <v-btn
           color="white"
           text
@@ -187,6 +192,7 @@
 
 import axios from '../../services/customInstance';
 import user_icon from '../user/user_icon.vue';
+import {get_dataset_list} from '../../services/datasetServices'
 
 import Vue from "vue";
 import {create_event} from "../event/create_event";
@@ -277,14 +283,29 @@ export default Vue.extend( {
     },
 
 
-    change_project(item) {
+    async change_project(item) {
+
+      // Set Project working dir list
+      let [dataset_list, err] = await get_dataset_list(item.project_string_id)
+
+      if (err){
+        console.error(err)
+        this.$store.commit('display_snackbar', {
+          text: `Error changing projects ${err}`,
+          color: 'error'
+        })
+        return
+      }
+      item.directory_list = dataset_list
       if(item.is_public){
         this.$store.commit('set_current_public_project', item);
       }
       else{
         this.$store.commit('set_current_public_project', {});
       }
+
       this.$store.commit('set_project', item)
+
 
       this.$router.push({ path: '/home/dashboard'})
 

@@ -13,7 +13,7 @@
 
   import user_icon from '../user/user_icon.vue';
   import share_instance_dialog from '../share/share_instance_dialog.vue';
-  import node_name_editor_keypoint_instance from '../annotation/node_name_editor_keypoint_instance';
+  import node_name_editor_keypoint_instance from '../annotation/image_and_video_annotation/node_name_editor_keypoint_instance.vue';
   import sequence_select from '../video/sequence_select.vue'
 
   export default Vue.extend({
@@ -369,6 +369,7 @@
       },
       on_click_delete_polygon_point() {
         this.$emit('delete_polygon_point', this.polygon_point_hover_locked);
+        this.$emit('hide_context_menu');
       },
       emit_update_and_hide_instance(instance_update: Object) {
 

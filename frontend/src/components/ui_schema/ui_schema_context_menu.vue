@@ -52,7 +52,7 @@
             elevation="5"
             >
       <v-card-title class="pb-0">
-        <tooltip_button
+        <standard_button
           v-if="!edit_name"
           tooltip_message="Edit Name"
           datacy="ui_schema_edit_name"
@@ -62,8 +62,8 @@
           color="primary"
           :disabled="!$store.state.ui_schema.current"
         >
-        </tooltip_button>
-        <tooltip_button
+        </standard_button>
+        <standard_button
           v-else
           tooltip_message="Stop Editing"
           datacy="ui_schema_edit_name"
@@ -73,7 +73,7 @@
           color="primary"
           :disabled="!$store.state.ui_schema.current"
         >
-        </tooltip_button>
+        </standard_button>
         <div v-if="edit_name == false" @dblclick="edit_name=true">
           {{$store.state.ui_schema.current.name}}
         </div>
@@ -104,7 +104,7 @@
       <v-container>
 
         <v-layout>
-          <tooltip_button
+          <standard_button
               tooltip_message="Add"
               datacy="ui_schema_add"
               button_message="Add Elements"
@@ -113,9 +113,9 @@
               :text_style="true"
               color="primary"
                           >
-          </tooltip_button>
+          </standard_button>
 
-          <tooltip_button
+          <standard_button
             v-if="show_save"
             datacy="ui_schema_save"
             tooltip_message="Save"
@@ -129,9 +129,9 @@
             :icon_style="true"
             color="primary"
                         >
-        </tooltip_button>
+        </standard_button>
 
-        <tooltip_button
+        <standard_button
             v-if="!$store.state.ui_schema.current.archived"
             tooltip_message="Archive"
             @click="toggle_is_archive()"
@@ -141,29 +141,29 @@
             :disabled="!ui_schema_exists
                       || public_not_super_admin"
                         >
-        </tooltip_button>
+        </standard_button>
 
 
-        <tooltip_button
+        <standard_button
             v-if="$store.state.ui_schema.current.archived"
             tooltip_message="Restore"
             @click="toggle_is_archive()"
             icon="mdi-delete-restore"
             :icon_style="true"
             color="primary"                          >
-        </tooltip_button>
+        </standard_button>
 
 
-        <tooltip_button
+        <standard_button
             tooltip_message="Restore Defaults"
             @click="reset()"
             datacy="reset_defaults"
             icon="mdi-restore "
             :icon_style="true"
             color="primary"                          >
-        </tooltip_button>
+        </standard_button>
 
-        <tooltip_button
+        <standard_button
             v-if="$store.state.user.current.is_super_admin == true"
             tooltip_message="Toggle is Public Example"
             @click="toggle_is_public()"
@@ -171,7 +171,7 @@
             :icon_style="true"
             color="primary"
                         >
-        </tooltip_button>
+        </standard_button>
 
           <div  v-if="$store.state.user.current.is_super_admin == true">
               <div v-if="$store.state.ui_schema.current.is_public">
@@ -201,7 +201,7 @@
         </ui_schema_selector>
 
 
-        <tooltip_button
+        <standard_button
             tooltip_message="New Schema"
             datacy="ui_schema_new"
             @click="new_ui_schema_with_servercall()"
@@ -209,7 +209,7 @@
             :icon_style="true"
             color="primary"
                         >
-        </tooltip_button>
+        </standard_button>
 
         <v-menu
         v-model="show_add_menu"
@@ -246,7 +246,7 @@
       </v-menu>
 
 
-        <tooltip_button
+        <standard_button
             tooltip_message="Copy to New"
             datacy="ui_schema_copy"
             @click="copy_ui_schema_with_servercall()"
@@ -255,7 +255,7 @@
             color="primary"
             :disabled="!ui_schema_exists"
                         >
-        </tooltip_button>
+        </standard_button>
 
 
       </v-layout>
@@ -293,6 +293,7 @@
   import {UI_Schema} from './ui_schema'
   import ui_schema_selector from './ui_schema_selector'
   import ui_schema_menu_content from './ui_schema_menu_content'
+  import { create_new_schema_ui } from "../../services/schemaUIService"
 
   export default Vue.extend({
     name: 'UISchemaContextMenu',
@@ -581,22 +582,14 @@
         this.error = {}
 
         try{
-          const result = await axios.post(
-            `/api/v1/project/${this.project_string_id}/ui_schema/new`,
-            ui_schema.serialize()
-          )
-          if(result.status === 200){
-
-            this.change(result.data.ui_schema)
-            this.edit_name = true // assume a user wants to edit name of new script
-            this.newly_created_schema = result.data.ui_schema
-          }
-
+          const result = await create_new_schema_ui(this.project_string_id, ui_schema.export())
+          this.change(result.data.ui_schema)
+          this.edit_name = true // assume a user wants to edit name of new script
+          this.newly_created_schema = result.data.ui_schema
         }
         catch (error) {
           this.error = this.$route_api_errors(error)
           console.error(error)
-
         }
         finally {
           this.loading = false;

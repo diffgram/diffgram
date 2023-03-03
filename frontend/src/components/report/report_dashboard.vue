@@ -33,14 +33,14 @@
                     <!-- TODO different handling if it's a default
                       report. -->
 
-                    <tooltip_button
+                    <standard_button
                         tooltip_message="Edit Report"
                         @click="$router.push('/report/' + item.id)"
                         icon="edit"
                         :text_style="true"
                         :disabled="!$store.state.user.current.is_super_admin"
                         color="primary">
-                    </tooltip_button>
+                    </standard_button>
 
                    </v-card-title>
 
@@ -138,7 +138,7 @@ export default Vue.extend( {
 
       })
       .catch(error => {
-        console.log(error);
+        console.error(error);
         this.error = this.$route_api_errors(error)
       });
 

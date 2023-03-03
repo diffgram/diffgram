@@ -138,7 +138,10 @@ def login():
 def first_stage_login_success(log,
                               session,
                               user,
-                              jwt = None):
+                              jwt = None,
+                              user_data_oidc = None,
+                              access_token_data = None,
+                              ) -> [any, int]:
     """
 
     Assumes initial login success
@@ -174,11 +177,19 @@ def first_stage_login_success(log,
                        otp_current_session = user.otp_current_session), 200
 
     if user.otp_enabled is None or user.otp_enabled is False:
-        if settings.USE_OIDC:
+        if settings.USE_OAUTH2:
+            if not jwt:
+                log['error']['login'] = 'OAUTH2 Login is enabled. Cannot use default login. Please use SSO or contact your admin.'
+                return jsonify(log=log), 400
             set_jwt_in_session(jwt)
         else:
             setSecureCookie(user)
-
-        return jsonify(log = log,
-                       user = user.serialize(),
-                       install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT), 200
+        result = {
+            'log': log,
+            'user': user.serialize(),
+            'access_token_data': access_token_data,
+            'user_data_oidc': user_data_oidc,
+            'install_fingerprint': settings.DIFFGRAM_INSTALL_FINGERPRINT
+        }
+        logger.debug(f'Log in success result {result}')
+        return jsonify(result), 200

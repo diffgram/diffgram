@@ -1,10 +1,8 @@
 import Vuex from "vuex";
 import Vuetify from "vuetify";
-import {mount, createLocalVue, shallowMount} from "@vue/test-utils";
-import schema_card_selector from "@/components/annotation/schema_card_selector";
+import {mount, createLocalVue } from "@vue/test-utils";
+import schema_card_selector from "@/components/annotation/image_and_video_annotation/schema_card_selector";
 import * as labelServices from '@/services/labelServices'
-import * as eventServices from '@/components/event/create_event'
-import {create_event} from "@/components/event/create_event";
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();

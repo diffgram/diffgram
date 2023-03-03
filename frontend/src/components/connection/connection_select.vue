@@ -56,8 +56,7 @@
 
           </template>
 
-          <!-- Duplicate because veutify needs
-            it - at least last time checked early 2020 -->
+          <!-- Duplicate because veutify needs -->
 
           <template v-slot:selection="data">
 
@@ -222,7 +221,8 @@
 
             </button_with_menu>
             <v-card-text class="d-flex">
-              <v-img :src="vendor_images[connection.integration_name].image" width="45" height="65px"></v-img>
+              <v-img v-if="vendor_images[connection.integration_name]"
+                     :src="vendor_images[connection.integration_name].image" width="45" height="65px"></v-img>
             </v-card-text>
             <v-card-title class="text-center vendor-text d-flex justify-center align-center align-content-center">
               {{connection.name}}
@@ -452,14 +452,7 @@
 
           this.connection_list_loading = true
 
-          axios.post('/api/v1/connection/list', {
-
-            permission_scope: this.permission_scope,
-            project_string_id: this.project_string_id,
-            org_id: null
-
-
-          }).then(response => {
+          axios.get(`/api/project/${this.project_string_id}/connections`).then(response => {
 
             this.$store.commit('set_connection_list', response.data.connection_list)
             this.connection_list_loading = false

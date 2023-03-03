@@ -7,6 +7,9 @@ INTEGRATION_VENDORS_SUPPORTED_FEATURES = {
         'files_import': True,
         'files_export': True,
     },
+    'vertex_ai': {
+        'train': True
+    },
     'amazon_aws': {
         'files_import': True,
         'files_export': True
@@ -54,6 +57,9 @@ class Connection(Base):
     name = Column(String())
     archived = Column(Boolean, default=False)
     is_active = Column(Boolean, default=False)
+    aws_v4_signature = Column(Boolean, default=False)
+    aws_region = Column(String, default="us-west-1")
+    url_signer_service = Column(String, default=None)
 
     # In [project, org, diffgram_wide, future]
     permission_scope = Column(String, default="project")
@@ -71,6 +77,7 @@ class Connection(Base):
     account_email = Column(String())  # ie for Google
     project_id_external = Column(String())  # ie for Google
     # _external because project_id is the internal project_id for Diffgram
+
 
     # Standard items
 
@@ -97,6 +104,8 @@ class Connection(Base):
             'project_id': self.project_id,
             'member_created_id': self.member_created_id,
             'member_updated': self.member_updated,
+            'aws_v4_signature': self.aws_v4_signature,
+            'aws_region': self.aws_region,
             'time_created': self.time_created,
             'time_updated': self.time_updated,
             'archived': self.archived,
@@ -109,7 +118,8 @@ class Connection(Base):
             # use built in bool to return True/False so we don't reveal (even) the encrypted info
             'exists_private_secret': bool(self.private_secret_encrypted),
             'integration_name': self.integration_name,
-            'integration_version': self.integration_version
+            'integration_version': self.integration_version,
+            'url_signer_service': self.url_signer_service
 
         }
 

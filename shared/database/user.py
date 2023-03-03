@@ -1,20 +1,14 @@
-# OPENCORE - ADD
 from shared.database.common import *
 from shared.helpers.permissions import getUserID
 from shared.database import hashing_functions
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.discussion.discussion_relation import DiscussionRelation
 from shared.database.account.plan import Plan
-
+from shared.data_tools_core import data_tools
 
 class User(Base):
     __tablename__ = 'userbase'
 
-    """
-    
-    """
-
-    # TODO may want to get full name here
 
     id = Column(Integer, primary_key = True)
 
@@ -248,7 +242,7 @@ class User(Base):
         }
 
     @staticmethod
-    def get_user_by_oidc_id(session, oidc_id):
+    def get_user_by_oauth2_id(session, oidc_id):
         user = session.query(User).filter(
             User.oidc_id == oidc_id
         ).first()
@@ -327,6 +321,20 @@ class User(Base):
 
         return session.query(User).filter(
             User.id == user_id).first()
+
+    @staticmethod
+    def get_by_user_id_list(session,
+                  user_id_list: list):
+
+        return session.query(User).filter(
+            User.id.in_(user_id_list)).all()
+
+    @staticmethod
+    def get_by_id_member_list(session,
+                  member_id_list: list):
+
+        return session.query(User).filter(
+            User.member_id.in_(member_id_list)).all()
 
     def get_by_email(session,
                      email):

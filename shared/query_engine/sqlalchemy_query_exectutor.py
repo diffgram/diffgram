@@ -1,17 +1,16 @@
-from lark.visitors import Visitor
 from shared.query_engine.diffgram_query import DiffgramQuery
-from abc import ABC, abstractmethod
 from shared.database.source_control.file import File
-from shared.database.annotation.instance import Instance
-from sqlalchemy import func
 from shared.query_engine.diffgram_query_exectutor import BaseDiffgramQueryExecutor
 from shared.shared_logger import get_shared_logger
-import operator
 from shared.regular import regular_log
-from sqlalchemy.sql.expression import and_, or_
+from sqlalchemy.orm import aliased
+from lark import Token
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.permissions.project_permissions import Project_permissions
-from shared.query_engine.query_creator import ENTITY_TYPES
+from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator, QueryEntity
+from shared.query_engine.expressions.expressions import CompareExpression, AndExpression, OrExpression, \
+    Factor
+
 logger = get_shared_logger()
 
 
@@ -23,21 +22,20 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         the DiffgramQueryExecutor.
     """
 
-
     def __init__(self, session, diffgram_query: DiffgramQuery):
         self.diffgram_query = diffgram_query
         self.log = regular_log.default()
         self.session = session
+        self.and_expression = None
+        self.or_expression = None
         self.final_query = self.session.query(File).join(WorkingDirFileLink, WorkingDirFileLink.file_id == File.id).filter(
             File.project_id == self.diffgram_query.project.id,
             File.state != 'removed',
-            File.type.in_(['video', 'image'])
+            File.parent_id == None,
+            File.type.in_(['video', 'image', 'compound', 'text'])
         )
-        if diffgram_query.directory:
-            self.final_query = self.final_query.filter(
-                WorkingDirFileLink.working_dir_id == self.diffgram_query.directory.id
-            )
-        # Additional security check just for sanity
+
+
         Project_permissions.by_project_core(
             project_string_id = self.diffgram_query.project.project_string_id,
             Roles = ["admin", "Editor", "Viewer", "allow_if_project_is_public"],
@@ -48,15 +46,16 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         self.valid = False
 
     def start(self, *args):
-        if len(self.log['error'].keys()) > 0:
+        if regular_log.log_has_error(self.log):
             return
         self.valid = False
         if len(args) == 1:
             local_tree = args[0]
             if len(local_tree.children) == 1:
                 child = local_tree.children[0]
+                or_expression: OrExpression = child.or_expression
                 self.final_query = self.final_query.filter(
-                    child.or_statement
+                    or_expression.sql_or_statement
                 )
                 self.valid = True
                 return self.final_query
@@ -76,216 +75,169 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         :param args:
         :return:
         """
-        if len(self.log['error'].keys()) > 0:
+        if regular_log.log_has_error(self.log):
             return
         if len(args) == 1:
             local_tree = args[0]
-            conditions = []
+            expressions = []
+            if not self.or_expression:
+                self.or_expression = OrExpression(expression_list = [])
             for child in local_tree.children:
-                if hasattr(child, 'and_statement'):
-                    conditions.append(child.and_statement)
-            local_tree.or_statement = or_(*conditions)
+                if hasattr(child, 'and_expression'):
+                    expressions.append(child.and_expression)
+                    self.or_expression.add_expression(child.and_expression)
+                    # Reset and expressions list
+                    self.and_expression = AndExpression(expression_list = [])
+            local_tree.or_expression = self.or_expression
             return local_tree
         else:
             logger.error(f"Invalid child count for expr. Must be 1 and is {len(args)}")
             self.log['error']['expr'] = 'Invalid child count for factor. Must be 1'
 
-    def term(self, *args):
+    def term(self, *args) -> AndExpression:
         """
             The term rule should join one or more conditions in an AND statement.
         :param args:
         :return:
         """
-        if len(self.log['error'].keys()) > 0:
+        if regular_log.log_has_error(self.log):
             return
         if len(args) == 1:
+
             local_tree = args[0]
-            conditions = []
+            if not self.and_expression:
+                self.and_expression = AndExpression(expression_list = [])
+            expression_list = []
             for child in local_tree.children:
-                if hasattr(child, 'query_condition'):
-                    conditions.append(child.query_condition)
-            local_tree.and_statement = and_(*conditions)
-            return local_tree
+                if hasattr(child, 'factor'):
+                    factor = child.factor
+                    expression_list.append(factor.filter_value)
+                    self.and_expression.add_expression(factor.filter_value)
+
+            local_tree.and_expression = self.and_expression
         else:
             logger.error(f"Invalid child count for term. Must be 1 and is {len(args)}")
             self.log['error']['term'] = 'Invalid child count for factor. Must be 1'
 
     def factor(self, *args):
-        if len(self.log['error'].keys()) > 0:
+        if regular_log.log_has_error(self.log):
             return
         if len(args) == 1:
             local_tree = args[0]
             if len(local_tree.children) == 1:
-                local_tree.query_condition = local_tree.children[0].query_condition
+                compare_expr = local_tree.children[0].compare_expression
+                AliasFile = aliased(File)
+                if hasattr(compare_expr, 'subquery'):
+                    filter_value = File.id.in_(compare_expr.subquery)
+                elif hasattr(compare_expr, 'expression'):
+                    filter_value = compare_expr.expression
+                result = Factor(filter_value = filter_value)
+                local_tree.factor = result
                 return local_tree
             else:
                 logger.error('Invalid child count for factor. Must be 1')
                 self.log['error']['factor'] = 'Invalid child count for factor. Must be 1'
 
-    def __determine_entity_type(self, name_token):
-        try:
-            int(name_token.value)
-            return int
-        except ValueError:
-            pass
-        # If it is not an int then it should be a string entity type (like "file" or "labels")
-        value = name_token.value
-        value = value.split('.')[0]
-        if value == "label":
-            value = "labels"  # cast to plural
-        return value
+    def array(self, args):
+        local_tree = args
+        values = []
+        for token in local_tree.children:
+            s = token.value
+            try:
+                int_val = int(s)
+                values.append(int_val)
+            except ValueError as verr:
+                values.append(s)
+        local_tree.value = values
+        return local_tree
 
-    def get_compare_op(self, token):
-        if token.value == '>':
-            return operator.gt
-        if token.value == '<':
-            return operator.lt
-        if token.value == '=':
-            return operator.eq
-        if token.value == '!=':
-            return operator.ne
-        if token.value == '>=':
-            return operator.ge
-        if token.value == '<=':
-            return operator.le
+    def __build_query_element(self, token: Token) -> QueryElement:
+        query_element, self.log = QueryElement.new(
+            session = self.session,
+            log = self.log,
+            project_id = self.diffgram_query.project.id,
+            token = token
+        )
+        return query_element
 
-    def __parse_value(self, token):
+    def __validate_expression(self, compare_expression: CompareExpression):
         """
-            Transforms the token into an integer or appropriate diffgram value (instance count, issue count, etc)
-        :param token:
-        :return:
-        """
-        # First try to convert into int.
-        try:
-            result = int(token.value)
-            return result
-        except ValueError:
-            pass
-
-        # If value is not a number then it's a variable name (such as a label name)
-        # TODO: for now we assume no "nested" names are allowed. In other words, the dot syntax just has 1 level deep.
-        entity_type = self.__determine_entity_type(token)
-        if entity_type == 'labels':
-            label_name = token.value.split('.')[1]
-
-            label_file = File.get_by_label_name(session = self.session,
-                                                label_name = label_name,
-                                                project_id = self.diffgram_query.project.id)
-            if not label_file:
-                # Strip underscores
-                label_name = label_name.replace('_', ' ')
-                label_file = File.get_by_label_name(session = self.session,
-                                                    label_name = label_name,
-                                                    project_id = self.diffgram_query.project.id)
-            if not label_file:
-                error_string = f"Label {str(label_name)} does not exists"
-                logger.error(error_string)
-                self.log['error']['label_name'] = error_string
-                return
-            instance_list_count_subquery = (self.session.query(func.count(Instance.id)).filter(
-                or_(
-                   and_(
-                       Instance.file_id == File.id,
-                       Instance.label_file_id == label_file.id,
-                       Instance.soft_delete != True
-                   ),
-                    and_(
-                        Instance.parent_file_id == File.id,
-                        Instance.label_file_id == label_file.id,
-                        Instance.soft_delete != True
-                    )
-                )
-
-            ))
-            return instance_list_count_subquery.as_scalar()
-        elif entity_type == 'file':
-            # Case for metadata
-            metadata_key = token.value.split('.')[1]
-            return File.file_metadata[metadata_key].astext
-        else:
-            return token.value
-
-    def __validate_expression(self, token1, token2, operator):
-        """
-            This functions has the reponsability of checking that the expression operators
+            This functions has the responsibility of checking that the expression operators
             are semantically valid for each of the different contexts.
-        :param token1:
-        :param token2:
-        :param operator:
+        :param compare_expression:
         :return:
         """
-
-        entity_type1 = self.__determine_entity_type(token1)
-        entity_type2 = self.__determine_entity_type(token2)
-        if len(token1.value.split('.')) == 1:
-            error_string = f"Error with token: {token1.value}. Should specify the label name or global count"
+        if compare_expression is None:
+            error_string = "Error compare expression must not be None"
+            logger.error(error_string)
+            self.log['error']['compare_expr'] = error_string
+            return False
+        entity_type_left: QueryEntity = QueryEntity.new(compare_expression.left_raw)
+        entity_type_right: QueryEntity = QueryEntity.new(compare_expression.right_raw)
+        compare_op_token: Token = compare_expression.compare_op_raw
+        if len(entity_type_left.full_key.split('.')) == 1:
+            error_string = f"Error with entity: {entity_type_left.key}. Should specify the label name or global count"
             logger.error(error_string)
             self.log['error']['compare_expr'] = error_string
             return False
 
-        if "file" in [entity_type1, entity_type2]:
-            value_1 = self.__parse_value(token1)
-            value_2 = self.__parse_value(token2)
+        if "file" in [entity_type_left, entity_type_right]:
+            value_1 = self.__build_query_element(compare_expression.left_raw)
+            value_2 = self.__build_query_element(compare_expression.right_raw)
 
-            if operator.value not in ["=", "!="]:
-                error_string = 'Invalid operator for file entity {}, valid operators are {}'.format(operator.value,
-                                                                                                    str(["=", "!="]))
+            if compare_op_token.value not in ["=", "!="]:
+                error_string = 'Invalid operator for file entity {}, valid operators are {}'.format(
+                    compare_expression.operator_raw.value,
+                    str(["=", "!="]))
                 logger.error(error_string)
                 self.log['error']['compare_expr'] = error_string
                 return False
 
             if type(value_1) == int and type(value_2) == int:
-                logger.error('Error: at least 1 value must be a label.') 
+                logger.error('Error: at least 1 value must be a label.')
 
         return True
 
+    def init_compare_expression(self, children) -> CompareExpression:
 
+        compare_expression, self.log = CompareExpression.new(
+            session = self.session,
+            left_raw = children[0],
+            compare_op_raw = children[1],
+            right_raw = children[2],
+            project_id = self.diffgram_query.project.id,
+            log = self.log
+        )
+        return compare_expression
 
     def compare_expr(self, *args):
         if len(self.log['error'].keys()) > 0:
+            logger.error(self.log)
             return
+
         local_tree = args[0]
-        if len(local_tree.children) == 3:
-            children = local_tree.children
-            name1 = children[0]
-            compare_op = children[1]
-            name2 = children[2]
-            entity_type = self.__determine_entity_type(name1)
-            if self.__validate_expression(name1, name2, compare_op):
-                value_1 = self.__parse_value(name1)
-                value_2 = self.__parse_value(name2)
-                if len(self.log['error'].keys()) > 0:
-                    return
-
-                self.conditions.append(
-                    self.get_compare_op(compare_op)(
-                        value_1,
-                        value_2
-                    )
-                )
-                if entity_type == "labels":
-                    local_tree.query_condition = self.get_compare_op(compare_op)(value_1, value_2)
-                    # self.final_query = self.final_query.filter(
-                    #     self.get_compare_op(compare_op)(
-                    #         value_1,
-                    #         value_2
-                    #     )
-                    # )
-                    return local_tree
-                elif entity_type == 'file':
-                    local_tree.query_condition = self.get_compare_op(compare_op)(value_1, str(value_2))
-                    # self.final_query = self.final_query.filter(
-                    #     self.get_compare_op(compare_op)(
-                    #         value_1,
-                    #         str(value_2) # TODO: asummption that we just accept JSON string comparison (no numbers)
-                    #     )
-                    # )
-                    return local_tree
-            else:
-                return
-
-        else:
+        if len(local_tree.children) != 3:
             self.log['error']['compare_expr'] = f"Invalid compare expression {str(args)}"
+
+        children = local_tree.children
+
+        compare_expression: CompareExpression = self.init_compare_expression(children)
+        if regular_log.log_has_error(self.log):
+            msg = f'Error creating expression {self.log}'
+            logger.error(msg)
+            return
+
+        if not self.__validate_expression(compare_expression):
+            return
+        compare_expression.build_expression_subquery(session = self.session)
+        if regular_log.log_has_error(self.log):
+            msg = f'Error build_expression_subquery() {self.log}'
+            logger.error(msg)
+            return
+
+        local_tree.compare_expression = compare_expression
+
+        self.conditions.append(compare_expression)
 
     def execute_query(self):
         """
@@ -296,9 +248,12 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
             grammar defined in grammar.py
         :return:
         """
+        if self.diffgram_query.tree:
+            self.visit(self.diffgram_query.tree)
+            if len(self.conditions) == 0 or len(self.log['error'].keys()) > 0 or not self.valid:
+                logger.error('Invalid query. Please check your syntax and try again.')
+                return None, self.log
 
-        self.visit(self.diffgram_query.tree)
-        if len(self.conditions) == 0 or len(self.log['error'].keys()) > 0 or not self.valid:
-            logger.error('Invalid query. Please check your syntax and try again.')
-            return None, self.log
+        logger.info(str(self.final_query))
+
         return self.final_query, self.log

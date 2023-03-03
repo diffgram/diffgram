@@ -3,9 +3,9 @@
 
     <div class="d-flex align-center">
 
-      <v_error_multiple :error="errors_export_data" >
+      <v_info_multiple :info="errors_export_data" >
 
-      </v_error_multiple>
+      </v_info_multiple>
       <v-progress-circular indeterminate v-if="loading_attributes_creation || loading_labels_creation"></v-progress-circular>
       <v-alert dismissible type="success" v-if="success_missing_labels">Labels created successfully.</v-alert>
       <v-alert dismissible type="success" v-if="success_missing_attributes">Attributes created successfully.</v-alert>
@@ -144,6 +144,7 @@
             'cuboid',
             'ellipse',
           ],
+          update_creation_remaining_count: 0,
           current_question: 0,
           missing_labels: [],
           errors_export_data: undefined,
@@ -184,7 +185,9 @@
       mounted() {
         if(this.$props.diffgram_export_ingestor){
           this.current_validation = 'export_metadata';
+
           this.validate_export_metadata();
+          Object.freeze(this.$props.diffgram_export_ingestor.export_raw_obj)
         }
 
       },
@@ -246,7 +249,6 @@
             console.error(e);
             this.errors_export_data = {};
             this.instances_data_state = 'error';
-            this.errors_export_data['instance_validation'] = e.toString();
             this.errors_export_data['instance_validation'] = e.toString();
           }
 
@@ -312,7 +314,6 @@
                   colour: color_obj,
                   name: label_name
                 });
-              this.new_label_name = null
 
               // only if success?
               this.$store.commit('init_label_refresh');
@@ -406,80 +407,204 @@
             this.instances_data_state = 'error'
           }
         },
+        create_attribute_templates: async function(attr_group, new_group, attribute_template_list){
+          try {
+            for(const attribute of attribute_template_list){
+              let new_attribute = {
+                ...attribute,
+                id: null,
+                group_id: new_group.id,
+              }
+              if (new_attribute.parent_id) {
+                new_attribute.parent_id = new_group.parent_id
+              }
+              const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
+                {
+                  attribute: new_attribute,
+                  mode: 'NEW'
+                }
+              )
+              if(response_attributes.status === 200){
+                new_group.attribute_template_list.push(response_attributes.data.attribute_template)
+              }
+            }
+          }
+          catch (e) {
+            this.catch_attribute_errors(e)
+          }
+          finally {
+            this.determine_if_may_declare_success_attributes()
+          }
+        },
+
+        determine_if_may_declare_success_attributes() {
+          // the last object may not be the the longest, so this ensures only last one marks complete
+          if (this.update_creation_remaining_count == 0){
+            this.declare_success_attributes()
+          }
+          else {
+            this.update_creation_remaining_count -= 1
+          }
+
+        },
+
+        create_attribute_templates_tree_view: async function(attr_group, new_group, sorted_attribute_template_list){
+          try {
+            for(const attribute of sorted_attribute_template_list){
+              let old_id = attribute.id;
+              let new_attribute = {
+                ...attribute,
+                id: null,
+                group_id: new_group.id,
+              }
+              const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
+                {
+                  attribute: new_attribute,
+                  mode: 'NEW'
+                }
+              )
+              if(response_attributes.status === 200){
+                let new_attr_template = response_attributes.data.attribute_template;
+                new_group.attribute_template_list.push(new_attr_template)
+                // Replace new ID
+                sorted_attribute_template_list.map(attr_temp => {
+                  if(attr_temp.parent_id === old_id){
+                    attr_temp.parent_id = new_attr_template.id
+                  }
+                })
+              }
+            }
+          }
+          catch (e) {
+            this.catch_attribute_errors(e)
+          }
+          finally {
+            this.determine_if_may_declare_success_attributes()
+          }
+
+        },
+        topological_sort_attribute_template_list: function(attribute_template_list){
+          /*
+          * Sorts the list of attribute templates so that the parents are created first and all dependencies are created
+          * afterwards
+          * */
+          const findParent = (id) => attribute_template_list.find(x => x.id === id);
+          const getLevel = (parent_id, lvl) =>
+          {
+            let parent = findParent(parent_id)
+            return parent_id ? getLevel(parent.parent_id, lvl + 1) : lvl;
+          }
+          let new_attribute_template_list = attribute_template_list.map((attribute_template) =>
+          {
+            return {
+              ...attribute_template,
+              parent_id: findParent(attribute_template.parent_id) ? findParent(attribute_template.parent_id).id : null,
+              lvl: getLevel(attribute_template.parent_id, 0)
+            };
+          });
+          let sorted_attribute_template_list = new_attribute_template_list.sort((a, b) =>
+          {
+            return (a.lvl - b.lvl) ? a.lvl - b.lvl : a.id - b.id;
+          });
+          return sorted_attribute_template_list
+        },
+
+        build_new_attribute_group: function (new_group, attr_group) {
+            new_group.name = attr_group.name
+            new_group.prompt = attr_group.prompt
+            new_group.label_file_list = attr_group.label_file_list
+            new_group.kind = attr_group.kind
+            new_group.default_id = attr_group.default_id
+            new_group.default_value = attr_group.default_value
+            new_group.min_value = attr_group.min_value
+            new_group.max_value = attr_group.max_value
+            new_group.is_global = attr_group.is_global
+            return new_group
+        },
+
+        reset_attribute_creation_state: function () {
+            this.created_attribute_groups = []
+            this.errors_export_data = {}
+            this.success_missing_attributes = false
+            this.loading_attributes_creation = true
+            this.update_creation_remaining_count = 0
+        },
+
+        update_existing_attribute_group: async function (new_group, attr_group) {
+
+          new_group = this.build_new_attribute_group(new_group, attr_group)
+
+          const response = await axios.post(`/api/v1/project/${this.project_string_id }/attribute/group/update`,
+            {
+              ...new_group,
+              group_id: new_group.id,
+              mode: 'UPDATE'
+            }
+          )
+          if(response.status === 200){
+            this.diffgram_export_ingestor.add_new_attr_id_mapping(attr_group.id, new_group.id);
+            if(attr_group.attribute_template_list){
+              new_group.attribute_template_list = []
+
+              if(new_group.kind === 'tree'){
+                let sorted_attr_template_list = this.topological_sort_attribute_template_list(attr_group.attribute_template_list)
+                this.create_attribute_templates_tree_view(attr_group, new_group, sorted_attr_template_list)
+              }
+              else{
+                this.create_attribute_templates(attr_group, new_group, attr_group.attribute_template_list)
+              }
+
+              this.diffgram_export_ingestor.map_attribute_options(attr_group, new_group);
+            }
+
+
+            this.created_attribute_groups.push(new_group)
+          }
+
+        },
+
         create_missing_attributes: async function(){
           if(!this.missing_attributes){
             return
           }
           try{
-            this.created_attribute_groups = [];
-            this.errors_export_data = {};
-            this.success_missing_attributes = false;
-            this.loading_attributes_creation = true;
+            this.reset_attribute_creation_state()
+
             this.diffgram_export_ingestor.substitute_label_file_ids_on_attributes(this.existing_label_file_list)
-            for(let attr_group of this.missing_attributes){
+
+            this.update_creation_remaining_count = this.missing_attributes.length - 1
+
+            for(let [i, attr_group] of this.missing_attributes.entries()){
+
               const response = await axios.post(`/api/v1/project/${this.project_string_id}/attribute/group/new`,{})
+
               if(response.status === 200){
-                let new_group = response.data.attribute_template_group;
-                new_group.name = attr_group.name
-                new_group.prompt = attr_group.prompt
-                new_group.label_file_list = attr_group.label_file_list
-                new_group.kind = attr_group.kind
-                new_group.default_id = attr_group.default_id
-                new_group.default_value = attr_group.default_value
-                new_group.min_value = attr_group.min_value
-                new_group.max_value = attr_group.max_value
-
-                const response_update = await axios.post(`/api/v1/project/${this.project_string_id }/attribute/group/update`,
-                  {
-                    ...new_group,
-                    group_id: new_group.id,
-                    mode: 'UPDATE'
-                  }
-                )
-                if(response_update.status === 200){
-                  this.diffgram_export_ingestor.add_new_attr_id_mapping(attr_group.id, new_group.id);
-                  if(attr_group.attribute_template_list){
-                    new_group.attribute_template_list = []
-                    for(const attribute of attr_group.attribute_template_list){
-                      const response_attributes = await axios.post(`/api/v1/project/${this.project_string_id }/attribute`,
-                        {
-                          attribute:{
-                            ...attribute,
-                            id: null,
-                            group_id: new_group.id
-                          },
-                          mode: 'NEW'
-                        }
-                      )
-                      if(response_attributes.status === 200){
-                        new_group.attribute_template_list.push(response_attributes.data.attribute_template)
-                      }
-                    }
-                    this.diffgram_export_ingestor.map_attribute_options(attr_group, new_group);
-                  }
-
-
-                  this.created_attribute_groups.push(new_group)
-                  this.$store.commit('attribute_refresh_group_list')
-
-                }
-
-
+                let new_group = response.data.attribute_template_group
+                this.update_existing_attribute_group(new_group, attr_group)
               }
             }
-            this.success_missing_attributes = true;
-            this.retry_all_checks();
           }
           catch (e) {
-            console.error(e);
-            this.errors_export_data = {};
-            this.errors_export_data['create_attribute'] = this.$route_api_errors(e)
-            this.valid_attributes = false;
-
+            this.catch_attribute_errors(e)
           }
-          this.loading_attributes_creation = false;
 
         },
+
+        catch_attribute_errors(e){
+          console.error(e);
+          this.errors_export_data = {};
+          this.errors_export_data['create_attribute'] = this.$route_api_errors(e)
+          this.valid_attributes = false;
+          this.loading_attributes_creation = false;
+        },
+
+        declare_success_attributes(){
+          this.$store.commit('attribute_refresh_group_list')
+          this.loading_attributes_creation = false;
+          this.success_missing_attributes = true;
+          this.retry_all_checks();
+        },
+
         validate_attribute_groups: async function(){
           try{
             this.attributes_data_state = 'loading'

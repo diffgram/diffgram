@@ -105,6 +105,8 @@ class Event(Base):
 
     diffgram_version = Column(String)
 
+    extra_metadata = Column(MutableDict.as_mutable(JSONB))
+
     # We don't need an "update" since this is meant to be a static record??
     time_created = Column(DateTime, default = datetime.datetime.utcnow)
 
@@ -133,6 +135,7 @@ class Event(Base):
             'host_os': settings.DIFFGRAM_HOST_OS,
             'storage_backend': settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
             'service_name': settings.DIFFGRAM_SERVICE_NAME,
+            'extra_metadata': self.extra_metadata
         }
 
     def serialize_for_visit_history(self, session):
@@ -272,7 +275,8 @@ class Event(Base):
             report_template_id = None,
             report_template_data = None,
             add_to_session = True,
-            flush_session = True
+            flush_session = True,
+            extra_metadata = None
             ):
         """
         Generally we always want a member_id
@@ -285,13 +289,6 @@ class Event(Base):
         having a kind, etc...
 
         """
-
-        # TODO handle if account is none? / check? hmmm
-
-        # This allows smoother handling if we pass a member
-        # Object... I guess that's better then it determining it?
-
-        # Careful this overrides stuff effectively
         if member:
             member_id = member.id
 
@@ -319,6 +316,7 @@ class Event(Base):
             report_template_id = report_template_id,
             report_template_data = report_template_data,
             page_name = page_name,
+            extra_metadata = extra_metadata
         )
         if add_to_session:
             session.add(event)
@@ -330,28 +328,28 @@ class Event(Base):
         event.broadcast()
         return event
 
-    # May want the event in some cases???
-    # return True
+
 
     def send_to_eventhub(self):
         """
             Sends the current event to Diffgram's EventHub for anonymous data tracking.
         :return:
         """
-        if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox', 'testing', 'testing_e2e']:
+        from shared.settings import settings
+        EXCLUDED_EVENTHUB_TRACKING_EVENTS = ['user_visit']
+        if settings.DIFFGRAM_SYSTEM_MODE in ['testing', 'testing_e2e']:
             return
 
-        if settings.DIFFGRAM_SYSTEM_MODE in ['testing_e2e', 'testing']:
+        if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox'] and self.kind in EXCLUDED_EVENTHUB_TRACKING_EVENTS:
             return
-
         try:
             event_data = self.serialize()
             event_data['event_type'] = 'user'
+            event_data['install_fingerprint'] = settings.DIFFGRAM_INSTALL_FINGERPRINT
             result = requests.post(settings.EVENTHUB_URL, json = event_data, timeout = 3)
             if result.status_code == 200:
                 logger.info(f"Sent event: {self.id} to Diffgram Eventhub")
             else:
-                # print(result, result.text)
                 logger.error(
                     "Error sending {} to Diffgram Eventhub. Status Code: ".format(self.id, result.status_code))
         except Exception as e:
@@ -370,7 +368,8 @@ class Event(Base):
         """
         # This is just for passing info about a user
         # to system
-
+        if settings.DIFFGRAM_SYSTEM_MODE in ['testing', 'testing_e2e']:
+            return
         try:
             analytics.identify(user.member_id, {
                 'email': user.email,
@@ -391,6 +390,8 @@ class Event(Base):
         event,
         email = None):
         # Validate an event exists.
+        if settings.DIFFGRAM_SYSTEM_MODE in ['testing', 'testing_e2e']:
+            return
         if event is None:
             return
         if event.member_id is None:

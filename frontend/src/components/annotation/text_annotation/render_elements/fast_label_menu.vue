@@ -1,0 +1,179 @@
+<template>
+    <div 
+        class="fast-menu-element"
+        :style="`
+            top: ${position.top}px; 
+            left: ${position.left}px;
+            width: ${menu_width}px;
+            max-width: ${menu_width}px
+        `" 
+    >
+        <v-card
+            class="mx-auto"
+            max-width="400"
+            tile
+        >
+            <div style="padding: 0px 5px">
+                <v-text-field
+                    label="Start by typing label name"
+                    hide-details="auto"
+                    v-model="search_value"
+                    ref="search_label"
+                    autofocus
+                    @keydown="check_key_down"
+                    @input="on_search_label"
+                    @blur="on_input_blur"
+                    @focus="on_input_focus"
+                />
+            </div>
+            <v-list dense>
+                <v-list-item-group
+                    v-if="search_label"
+                >
+                    <v-list-item 
+                        v-for="(label, index) in search_label.slice(0, 9)" :key="`labl+list_item${index}`" 
+                        @click="on_apply_label(label)"
+                    >
+                        <v-list-item-content>
+                            <div class="list-item" :style="`color: ${label.colour.hex}`">
+                                {{ label.label.name }} 
+                                <kbd>{{ index + 1 }}</kbd>
+                            </div>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list-item-group>
+            </v-list>
+        </v-card>
+    </div>
+</template>
+
+<script lang="ts">
+import Vue from 'vue'
+
+export default Vue.extend({
+    name: "text_fast_label",
+    props: {
+        rects: {
+            type: Array,
+            default: null
+        },
+        arrow_position: {
+            type: Object,
+            default: null
+        },
+        label_list: {
+            type: Array,
+            required: true
+        },
+        svg_ref: {
+            type: SVGSVGElement,
+            required: true
+        }
+    },
+    computed: {
+        position: function() {
+            const element_bounding_box = this.svg_ref.getBoundingClientRect()
+            if (!this.rects && !this.arrow_position) return;
+
+            if (this.rects) {
+                const last_element_index = this.rects.length - 1
+    
+                const top = this.rects[last_element_index].y + 50
+                const left = this.rects[last_element_index].x + this.rects[last_element_index].width
+    
+                const container_height = this.search_label ? this.search_label.slice(0, 9).length * 40 + 50 : 0
+    
+                return {
+                    top: top + container_height - 150 - window.scrollY < window.innerHeight ? top : top - container_height - 50,
+                    left: left + this.menu_width > element_bounding_box.width ? left - this.menu_width : left
+                }
+            } else {
+                return {
+                    top: this.arrow_position.y + 25,
+                    left: this.arrow_position.x + this.menu_width < element_bounding_box.width ? this.arrow_position.x : this.arrow_position.x - this.menu_width,
+                }
+            }
+        }
+    },
+    data() {
+        return {
+            search_value: "",
+            search_label: null,
+            blured: true,
+            menu_width: 260
+        }
+    },
+    watch: {
+        label_list: function() {
+            this.search_label = [...this.label_list]
+            this.search_value = ""
+        }
+    },
+    mounted() {
+        this.$emit('remove_listeners')
+        this.search_label = [...this.label_list]
+    },
+    beforeDestroy() {
+        this.$emit('add_listeners')
+    },
+    methods: {
+        check_key_down: function(e) {
+            const input_is_number = parseInt(e.key)
+            if (input_is_number) {
+                e.preventDefault()
+                this.on_input_number(e)
+            }
+        },
+        on_search_label: function(e) {
+            const to_search = e.toLowerCase()
+            this.search_label = [...this.label_list].filter(label => label.label.name.toLowerCase().includes(to_search))
+        },
+        on_apply_label: function(label) {
+            if (this.rects) this.$emit('create_instance', label)
+            else this.$emit('create_relation', label)
+        },
+        on_input_blur: function() {
+            this.blured = true
+        },
+        on_input_focus: function() {
+            this.blured = false
+        },
+        on_input_number: function(e) {
+            if (this.blured) return
+            
+            let key = Number(e.key)
+            if (key || key === 0) {
+                if (key === 0) key = 9
+                else key = key - 1
+
+                if (this.search_label && this.search_label.length > key) {
+                    const label_to_set = this.search_label[key]
+                    this.on_apply_label(label_to_set)
+                }
+            } else {
+                if (e.key.length === 1) {
+                    this.search_value += e.key
+                } else if (e.keyCode === 8) {
+                    this.search_value = this.search_value.slice(0, -1)
+                }
+                this.on_search_label(this.search_value)
+            }
+        }
+    }
+})
+</script>
+
+<style scoped>
+.fast-menu-element {
+    position: absolute;
+    z-index: 2;
+}
+
+.list-item {
+    display: flex;
+    min-width: 100px;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-between;
+}
+</style>

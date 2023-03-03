@@ -59,7 +59,7 @@
       <template slot="actions" slot-scope="props">
 
         <v-layout>
-          <tooltip_button
+          <standard_button
               :loading="migration_retry_loading[props.item.id]"
               @click="retry_migration(props.item)"
               v-if="['in_progress', 'failed'].includes(props.item.status)" 
@@ -68,16 +68,16 @@
               tooltip_message="Retry"
               :icon_style="true"
                         >
-          </tooltip_button>
+          </standard_button>
 
-          <tooltip_button
+          <standard_button
               @click="display_error_log(props.item)"
               color="primary"
               icon="mdi-format-list-group"
               tooltip_message="Logs"
               :icon_style="true"
                         >
-          </tooltip_button>
+          </standard_button>
         </v-layout>
 
 

@@ -16,7 +16,7 @@
     <!-- Only show in project mode till support for removeing from org. -->
 
     <v-layout>
-      <tooltip_button
+      <standard_button
         tooltip_message="Remove User"
         @click="api_member_update('REMOVE')"
         icon="mdi-shield-remove"
@@ -25,9 +25,9 @@
         :loading="api_member_update_loading"
         :disabled="api_member_update_loading || selected.length == 0"
       >
-      </tooltip_button>
+      </standard_button>
 
-      <tooltip_button
+      <standard_button
         tooltip_message="Help"
         href="https://diffgram.readme.io/docs/project"
         target="_blank"
@@ -35,7 +35,7 @@
         :icon_style="true"
         color="primary"
       >
-      </tooltip_button>
+      </standard_button>
 
     </v-layout>
 
@@ -73,6 +73,9 @@
             </v-checkbox>
           </td>
 
+          <td>
+            {{props.item.member_id}}
+          </td>
           <td v-if="props.item.member_kind == 'human'">
             <v_user_icon :user="props.item">
             </v_user_icon>
@@ -160,6 +163,12 @@ import Vue from "vue"; export default Vue.extend( {
         align: 'left',
         sortable: true,
         value: null
+      },
+      {
+        text: "ID",
+        align: 'left',
+        sortable: true,
+        value: 'member_id'
       },
       {
         text: "Picture",

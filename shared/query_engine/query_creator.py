@@ -73,7 +73,6 @@ class QueryCreator:
                             keys = File.get_metadata_keys(session = self.session,
                                                    project = self.project,
                                                    directory = self.directory)
-                            print('eys', keys)
                             suggestions = keys
                             suggest_type = 'labels'
                         elif last_token.value in ['instance', 'instances']:
@@ -93,7 +92,6 @@ class QueryCreator:
             return [], None
         except UnexpectedToken as token_exception:
             suggestions = []
-            print('TOKEN ', token_exception.accepts)
             token_type = [t for t in token_exception.accepts]
             if 'COMPARE_OP' in token_type:
                 suggestions.append('$operator')
@@ -103,14 +101,15 @@ class QueryCreator:
                 suggestions = ENTITY_TYPES
                 suggest_type = 'text'
                 return suggestions, suggest_type
-            for x in self.parser.terminals:
-                print(x.user_repr())
+
             logger.error(f"Unexpected token {str(token_exception)}")
             return False, None
 
     def create_query(self, query_string):
         try:
-            tree = self.parser.parse(query_string)
+            tree = None
+            if query_string:
+                tree = self.parser.parse(query_string)
             # print(tree.pretty())
             return DiffgramQuery(tree, self.project, self.member, directory = self.directory)
         except Exception as e:

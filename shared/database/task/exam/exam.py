@@ -12,7 +12,6 @@ class Exam(Base):
     From the "Deep class" perspective, thinking of this more as a sub class to
     Jobs, making jobs deeper, than its own indepedent class?
 
-    Oct 22/ 2019
     We don't even list the job here??
     TODO also list the job_id here in case we want to jump back ot it?
 

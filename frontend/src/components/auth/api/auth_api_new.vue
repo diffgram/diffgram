@@ -88,7 +88,7 @@
           auth: {},
           show_auth: false,
 
-          permission_level_list: ['Editor', 'Viewer'],
+          permission_level_list: ['Editor', 'Viewer', "admin"],
           permission_level: 'Editor',
 
         }

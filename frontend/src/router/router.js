@@ -3,12 +3,6 @@ import Router from 'vue-router'
 
 const routerOptions = [
   {
-    path: '/learn/build_vs_buy',
-    component: 'marketing/build_vs_buy',
-    alias: ['/build_vs_buy'],
-    meta: {external_page: true}
-  },
-  {
     path: '/order/premium',
     component: 'account/billing/order_premium'
   },
@@ -77,7 +71,7 @@ const routerOptions = [
   },
   {
     path: '/userscript',
-    component: 'annotation/userscript/userscript',
+    component: 'annotation/image_and_video_annotation/userscript/userscript',
     props: true,
     meta: {
       requiresAuth: true,
@@ -152,7 +146,7 @@ const routerOptions = [
   },
   {
     path: '/project/:project_string_id/labels',
-    component: 'annotation/labels_page',
+    component: 'labels_schema/labels_page',
     props: (route) => ({
       // why do we need this "override" again?
       project_string_id: route.params.project_string_id
@@ -238,7 +232,7 @@ const routerOptions = [
   },
   {
     path: '/job/:job_id/annotate/',
-    component: 'annotation/trainer/trainer_annotation',
+    component: 'annotation/image_and_video_annotation/trainer/trainer_annotation',
     props: true,
     meta: {
       requiresAuth: true,
@@ -311,7 +305,7 @@ const routerOptions = [
 
   {
     path: '/project/:project_string_id/annotation_project/new',
-    component: 'annotation/annotation_project_create',
+    component: 'annotation/image_and_video_annotation/annotation_project_create',
     props: true, meta: {requiresAuth: true}
   },
 
@@ -503,7 +497,8 @@ const routerOptions = [
     props: false,
     meta: {
       requiresAuth: false,
-      title: "Signup Now"
+      title: "Signup Now",
+      hide_default_menu: true,
     }
   },
 
@@ -603,8 +598,16 @@ const routerOptions = [
     })
   },
   {
-    path: '/user/oidc-login/',
-    component: 'user/login_oidc_redirect',
+    path: '/user/oauth2-login/',
+    component: 'user/login_oauth2_redirect',
+    props: true,
+    meta: (route) => ({
+      title: "Login"
+    })
+  },
+  {
+    path: '/user/logout/',
+    component: 'user/logout',
     props: true,
     meta: (route) => ({
       title: "Login"

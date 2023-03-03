@@ -112,7 +112,6 @@ class Notification(Base):
                       headers=headers)
 
     def __build_subject_and_message_for_task(self, session, start_time, event_type='completion'):
-        print('BUILDING EMAIL', start_time, event_type)
         subject = f"New Task Completed: {self.notification_relation.task_id}"
         if event_type == 'creation':
             subject = f"New Task Created: {self.notification_relation.task_id}"

@@ -19,8 +19,23 @@ export const action_update = async (project_string_id, workflow_id, action) => {
     workflow_id: workflow_id
   }
   try {
-    console.log('action', action);
-    console.log('req_data', req_data);
+    const {data} = await axios.put(
+      url,
+      req_data
+    )
+    return [data, null]
+  } catch (e) {
+    console.error(e)
+    return [null, e]
+  }
+}
+
+export const action_manual_trigger = async (project_string_id, action) => {
+  let url = `/api/v1/project/${project_string_id}/actions/${action.id}/manual_trigger`;
+  let req_data = {
+    ...action
+  }
+  try {
     const {data} = await axios.put(
       url,
       req_data
@@ -44,7 +59,7 @@ export const new_action = async (project_string_id, workflow_id, action) => {
         ordinal: action.ordinal,
         workflow_id: workflow_id,
         trigger_data: action.trigger_data,
-        condition_data: action.condition_data,
+        precondition: action.precondition,
         completion_condition_data: action.completion_condition_data,
         template_id: action.template_id,
         icon: action.icon,
@@ -99,6 +114,17 @@ export const workflow_update = async (project_string_id, workflow, mode) => {
 
 export const get_workflow = async (project_string_id, workflow_id) => {
   let url = `/api/v1/project/${project_string_id}/workflow/${workflow_id}`;
+  try {
+    const {data} = await axios.get(url)
+    return [data, null]
+  } catch (e) {
+    console.error(e)
+    return [null, e]
+  }
+}
+
+export const get_action_template = async (project_string_id, action_template_id) => {
+  let url = `/api/v1/project/${project_string_id}/action-template/${action_template_id}`;
   try {
     const {data} = await axios.get(url)
     return [data, null]

@@ -1,0 +1,18 @@
+# For info on getting the latest rdme version and obtaining your API_DEFINITION_ID,
+# see our docs: https://docs.readme.com/docs/rdme#example-syncing-an-openapi-definition
+name: Sync Open API Specs to ReadMe.io
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: readmeio/rdme@7.3.0
+        with:
+          rdme: openapi default/docs/swagger_spec.json --key=${{ secrets.README_API_KEY }} --id=${{ secrets.README_DEFAULT_API_ID }}
+      - uses: readmeio/rdme@7.3.0
+        with:
+          rdme: openapi default/docs/swagger_spec.json --key=${{ secrets.README_API_KEY }} --id=${{ secrets.README_WALRUS_API_ID }}

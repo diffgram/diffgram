@@ -19,7 +19,7 @@
             -->
             <div v-if="connection_id !== 'new'" class="pa-0 d-flex justify-center align-center">
               <h2 class="mr-2">ID</h2>
-              <regular_chip
+              <standard_chip
                 :message=connection.id
                 tooltip_message="ID"
                 v-if="connection_id !== 'new'"
@@ -27,13 +27,13 @@
                 tooltip_direction="bottom"
                 :small="true"
               >
-              </regular_chip>
+              </standard_chip>
             </div>
 
             <!-- TBD , maybe save and test -->
 
 
-            <tooltip_button tooltip_message="Save"
+            <standard_button tooltip_message="Save"
                             @click="save_connection"
                             icon="save"
                             :text_style="true"
@@ -41,9 +41,9 @@
                             :large="buttons_size_large"
                             :disabled="!has_changes"
                             color="primary">
-            </tooltip_button>
+            </standard_button>
 
-            <tooltip_button tooltip_message="Test"
+            <standard_button tooltip_message="Test"
                             class="ma-0"
                             @click="test_connection(connection_id)"
                             icon="mdi-test-tube"
@@ -52,9 +52,9 @@
                             :left="true"
                             :large="buttons_size_large"
                             color="primary">
-            </tooltip_button>
+            </standard_button>
 
-            <tooltip_button
+            <standard_button
               tooltip_message="Back to List"
               @click="$router.push('/connection/list')"
               icon="list"
@@ -62,7 +62,7 @@
               :icon_style="true"
               :large="true"
               color="primary">
-            </tooltip_button>
+            </standard_button>
 
             <div class="pa-2">
               <div v-if="has_changes">
@@ -216,6 +216,44 @@
               ></v-checkbox>
             </v-col>
           </v-row>
+          <v-row
+            v-if="connection.integration_name && connection_form_specs[connection.integration_name].aws_v4_signature"
+            no-gutters>
+            <v-col>
+              <v-checkbox v-model="connection.aws_v4_signature"
+                          label="Use V4 Signature"
+                          color="orange"
+                          @change="has_changes = true"
+                          hide-details
+              ></v-checkbox>
+            </v-col>
+          </v-row>
+          <v-row
+            v-if="connection.integration_name && connection_form_specs[connection.integration_name].aws_region"
+            no-gutters>
+            <v-col>
+              <v-text-field
+                label="AWS Region (Empty will default to us-west-1)"
+                v-model="connection.aws_region"
+                @input="has_changes = true"
+                flat
+              >
+              </v-text-field>
+            </v-col>
+          </v-row>
+          <v-row
+            v-if="connection.integration_name && connection_form_specs[connection.integration_name].url_signer_service"
+            no-gutters>
+            <v-col>
+              <v-text-field
+                label="Optional: AWS Custom URL Signer (Empty will default to use AWS API)"
+                v-model="connection.url_signer_service"
+                @input="has_changes = true"
+                flat
+              >
+              </v-text-field>
+            </v-col>
+          </v-row>
           <v-row>
             <v-col cols="12" class="d-flex align-center">
               <p>
@@ -340,7 +378,13 @@
               private_secret: true,
               account_email: true,
               project_id_external: true,
-
+            },
+            'vertex_ai': {
+              name: true,
+              private_id: true,
+              private_secret: true,
+              account_email: true,
+              project_id_external: true
             },
             'microsoft_azure': {
               name: true,
@@ -356,6 +400,9 @@
               name: true,
               private_id: true,
               private_secret: true,
+              aws_v4_signature: true,
+              aws_region: true,
+              url_signer_service: true,
             },
             'datasaur': {
               name: true,
@@ -458,7 +505,7 @@
           this.success_run = false
           this.loading_test = true
           this.error = {}
-
+          console.log('connectionconnectionconnectionconnection', this.connection)
           axios.post('/api/walrus/v1/connection/test', {
             connection_id: parseInt(connection_id),
 
@@ -469,7 +516,10 @@
             private_secret: this.connection.private_secret ? this.connection.private_secret : undefined,
             account_email: this.connection.account_email ? this.connection.account_email : undefined,
             integration_name: this.connection.integration_name ? this.connection.integration_name : undefined,
-            project_id_external: this.connection.project_id_external ? this.connection.project_id_external : undefined
+            project_id_external: this.connection.project_id_external ? this.connection.project_id_external : undefined,
+            aws_v4_signature: this.connection.aws_v4_signature ? this.connection.aws_v4_signature : undefined,
+            aws_region: this.connection.aws_region ? this.connection.aws_region : "us-west-1",
+            url_signer_service: this.connection.url_signer_service
 
           }).then(response => {
             this.success_run = true

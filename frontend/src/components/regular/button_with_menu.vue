@@ -12,7 +12,7 @@
 
     {{ tooltip_message }}
 
-    <template v-slot:activator="{on : tooltip}" >
+    <template v-slot:activator="{on : tooltip}">
       <v-menu
         v-model="menu_open"
         :close-on-content-click="close_content_on_click"
@@ -26,6 +26,7 @@
         :right="menu_direction_right"
         :left="menu_direction_left"
         :max-width="max_width"
+        style="z-index: 9999;"
       >
         <!-- Default to offset y for now can fiddle with later -->
 
@@ -47,12 +48,12 @@
           >
             <v-icon :large="large"
                     :color="icon_color_computed">
-              {{icon}}
+              {{ icon }}
             </v-icon>
             {{ button_text }}
             <!-- Text Style thing is WIP here -->
             <div v-if="text_style==true">
-              {{ tooltip_message}}
+              {{ tooltip_message }}
             </div>
           </v-btn>
 
@@ -73,13 +74,13 @@
             <v-icon :large="large"
                     :color="icon_color_computed"
                     left>
-              {{icon}}
+              {{ icon }}
             </v-icon>
             {{ button_text }}
 
             <!-- Text Style thing is WIP here -->
             <div v-if="text_style==true">
-              {{ tooltip_message}}
+              {{ tooltip_message }}
             </div>
 
           </v-btn>
@@ -104,7 +105,7 @@
             <!-- Important, content gets injected here -->
             <slot name="content"
                   :menu_open="menu_open"
-                  >
+            >
 
             </slot>
 
@@ -116,11 +117,11 @@
                    in top right corner?
                    Some menus expecatation is can just click away... -->
 
-              <v-divider></v-divider>
-
-              <v-card-actions>
+              <v-card-actions class="d-flex justify-end">
                 <v-btn :data-cy="`${datacyclose}`"
-                       @click="menu_open = false"
+                       :color="action_color"
+                       outlined
+                       @click="action_clicked"
                        text>
                   <v-icon left> {{ action_icon }}</v-icon>
                   {{ action_message }}
@@ -142,279 +143,310 @@
 </template>
 
 <script lang="ts">
-  // @ts-nocheck
+// @ts-nocheck
 
-  // Access menu_open on child via -> <template slot-scope="props">
-  // Then pass prop to child as ->  ` :menu_open="props.menu_open"`
+// Access menu_open on child via -> <template slot-scope="props">
+// Then pass prop to child as ->  ` :menu_open="props.menu_open"`
 
-  /*
-   * Example
-   *
-   *
+/*
+ * Example
+ *
+ *
 
-  <button_with_menu
-      tooltip_message="Hotkeys"
-      icon="mdi-keyboard-settings"
-      :close_by_button="true"
-          >
+<button_with_menu
+    tooltip_message="Hotkeys"
+    icon="mdi-keyboard-settings"
+    :close_by_button="true"
+        >
 
-      <template slot="content">
-        <v-layout column>
-
-
-        </v-layout>
-      </template>
-
-  </button_with_menu>
-
-   *  We normally style tooltip message first so it's easier to see what
-   *  it's referring too
-   *
-   *  Questions / notes
-   *  We could add a v-model if we wanted to be able trigging it from something else
-   *
-   *
-  vuetify 2, and @click on button is correct placement
-  if issue with lock check use actually has BOTH:
-
-  1) ie <button_with_menu> has:
-
-  Jan 7, 2020: OLD
-  @click="$store.commit('set_user_is_typing_or_menu_open', true)"
-  @update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
-
-  NEW:, just bind this flag
-  :commit_menu_status="true"
-  Little things like the "commit menu" open can now be automatic in this shared setup!!!
-  But I think it's good to expose that too in case we want to do other things with the events
+    <template slot="content">
+      <v-layout column>
 
 
-  2) AND !!!! that whatever event expecting to not fire actually has the lock ie:
-  if (this.$store.state.user.is_typing_or_menu_open == true) {
-    return
-  }
-  like in annotation_core , keyboard_events_global_up()
+      </v-layout>
+    </template>
 
-  Keep in mind this is sort of a "hack" in the sense that we don't
-  always want to disble hotkeys when a menu comes up,
-  but if a menu has text we want to enter, then while we are entering the text
-  we want to disable the hotkeys, and if that's the main thing the menu has then it
-  seems like that's an ok work around? hmmm
-  An alternative we could have a wrapper around text entries or something?...
-  I guess in the future is it possible different hotkeys for different context menus?...
+</button_with_menu>
 
-  Perhaps the "set menu open" is still a valuable property to have for other reasons,
-  we just happen to be using it for hot keys now....
+ *  We normally style tooltip message first so it's easier to see what
+ *  it's referring too
+ *
+ *  Questions / notes
+ *  We could add a v-model if we wanted to be able trigging it from something else
+ *
+ *
+vuetify 2, and @click on button is correct placement
+if issue with lock check use actually has BOTH:
 
+1) ie <button_with_menu> has:
 
-  The "action" thing is in the context that sometimes we seem to need to
-  close a menu for updates to trigger nicely / propogate in vue
-  (maybe some better way to do this?)
-  And so it makes more sense to have this as say a "go" action
-  (that indireclty "goes" by closing it...) Not sure.
+OLD
+@click="$store.commit('set_user_is_typing_or_menu_open', true)"
+@update:return-value="$store.commit('set_user_is_typing_or_menu_open', false)"
 
-  See sequence list for an example with the "change sequence number
-
-  The flip side is not clear if we want to always be trying to update "everything"
-  when a single menu like this is open.
+NEW:, just bind this flag
+:commit_menu_status="true"
+Little things like the "commit menu" open can now be automatic in this shared setup!!!
+But I think it's good to expose that too in case we want to do other things with the events
 
 
-   *
-   */
+2) AND !!!! that whatever event expecting to not fire actually has the lock ie:
+if (this.$store.state.user.is_typing_or_menu_open == true) {
+  return
+}
+like in annotation_core , keyboard_events_global_up()
 
-  import Vue from "vue";
+Keep in mind this is sort of a "hack" in the sense that we don't
+always want to disble hotkeys when a menu comes up,
+but if a menu has text we want to enter, then while we are entering the text
+we want to disable the hotkeys, and if that's the main thing the menu has then it
+seems like that's an ok work around? hmmm
+An alternative we could have a wrapper around text entries or something?...
+I guess in the future is it possible different hotkeys for different context menus?...
 
-  export default Vue.extend({
-      name: 'button_with_menu',
-      props: {
-        'value': {
-          default: undefined
-        },
-        'loading': {
-          default: false
-        },
-        'disabled': {
-          default: false
-        },
-        'color': { // button color (not menu)
-          default: 'red'
-        },
-        'icon_color': { // icon color
-          default: undefined
-        },
-        'button_text': {
-          default: undefined,
-          type: String
-        },
-        'datacy': {
-          default: undefined,
-          type: String
-        },
-        'datacyclose': {
-          default: undefined,
-          type: String
-        },
-        'small': {
-          default: undefined,
-        },
-        'icon': {
-          default: null,
-          type: String
-        },
-        'max_width': {
-          default: 900,
-          type: Number
-        },
-        'tooltip_message': {
-          default: null,
-          type: String
-        },
-        'background': { // button text color , eg use background="white--text"
-          default: null,
-          type: String
-        },
-        'xSmall': {
-          default: false
-        },
-        'outlined': {
-          default: false,
-          type: Boolean
-        },
-        'icon_style': {
-          default: true
-        },
-        'text_style': {
-          default: false
-        },
-        'tooltip_direction': {      // left, right, bottom, top
-          default: "bottom"
-        },
-        'menu_direction': {      // left, right, bottom, top
-          default: "right"
-        },
-        'close_by_button': {
-          default: false
-        },
-        'nudge_width': {
-          default: 200
-        },
-        'offset': {    // == 'x', 'y'
-          default: 'y'
-        },
-        'attach': {
-          default: false
-        },
-        'open-on-hover': {
-          default: false,
-          type: Boolean
-        },
-        'commit_menu_status': {
-          default: false,
-          type: Boolean
-        },
-        'large': {
-          default: false,
-          type: Boolean
-        },
-        'action_message': {
-          default: 'close',
-          type: String
-        },
-        'action_icon': {
-          default: 'close',
-          type: String
-        }
+Perhaps the "set menu open" is still a valuable property to have for other reasons,
+we just happen to be using it for hot keys now....
+
+
+The "action" thing is in the context that sometimes we seem to need to
+close a menu for updates to trigger nicely / propogate in vue
+(maybe some better way to do this?)
+And so it makes more sense to have this as say a "go" action
+(that indireclty "goes" by closing it...) Not sure.
+
+See sequence list for an example with the "change sequence number
+
+The flip side is not clear if we want to always be trying to update "everything"
+when a single menu like this is open.
+
+
+ *
+ */
+
+import Vue from "vue";
+
+export default Vue.extend({
+    name: 'button_with_menu',
+    props: {
+      'value': {
+        default: undefined
       },
-
-      data() {
-        return {
-          // tooltip direction
-          // maybe in future could use for other stuff too...
-          tooltip_direction_top: false,
-          tooltip_direction_right: false,
-          tooltip_direction_left: false,
-          tooltip_direction_bottom: false,
-
-          menu_direction_top: false,
-          menu_direction_right: false,
-          menu_direction_left: false,
-          menu_direction_bottom: false,
-
-          offset_y: true,
-          offset_x: false,
-
-          menu_open: false,
-
-          // https://vuetifyjs.com/en/components/menus
-
-          // Designates if menu should close when its content is clicked
-          close_content_on_click: false
-
-          // Designates if menu should close on outside-activator click
-          //close_on_click: true
-
-        }
+      'loading': {
+        default: false
       },
-      created() {
-        // defaults to bottom now since that's more common for menus?
-
-        // vuetify has flags for each of these
-        // so this just sets it to true assuming it was false before...
-        this["tooltip_direction_" + this.tooltip_direction] = true
-        this["menu_direction_" + this.menu_direction] = true
-
-        if (this.close_by_button == true) {
-          this.close_content_on_click = false
-        }
-        if (this.offset == 'x') {
-          this.offset_y = !this.offset_y
-          this.offset_x = !this.offset_x
-
-        }
-
-        // WIP not complete
-        if (this.text_style == true) {
-          this.icon_style = false
-        }
+      'disabled': {
+        default: false
       },
-
-      watch: {
-        // We could also use v-model but maybe that confused more then helps?
-        // esp if we just want read only?
-        menu_open: function (state) {
-          this.$emit('menu_open', state)
-        },
-
-        value: function (event) {
-          this.menu_open = event
-        }
+      'color': { // button color (not menu)
+        default: 'red'
       },
-      computed: {
-        icon_color_computed: function () {
-
-          if (this.$props.icon_color != undefined) {
-            return this.$props.icon_color
-          } else {
-            return this.$props.color;
-          }
-
-        },
+      'icon_color': { // icon color
+        default: undefined
       },
-      methods: {
-        close_menu: function () {
-          this.menu_open = false;
-        },
-        update_return_value: function () {
-          if (this.commit_menu_status == true) {
-            this.$store.commit('set_user_is_typing_or_menu_open', false)
-          }
-        },
-        click: function () {
-          if (this.commit_menu_status == true) {
-            this.$store.commit('set_user_is_typing_or_menu_open', true)
-          }
-        }
+      'button_text': {
+        default: undefined,
+        type: String
+      },
+      'datacy': {
+        default: undefined,
+        type: String
+      },
+      'datacyclose': {
+        default: undefined,
+        type: String
+      },
+      'small': {
+        default: undefined,
+      },
+      'icon': {
+        default: null,
+        type: String
+      },
+      'max_width': {
+        default: 900,
+        type: Number
+      },
+      'tooltip_message': {
+        default: null,
+        type: String
+      },
+      'background': { // button text color , eg use background="white--text"
+        default: null,
+        type: String
+      },
+      'xSmall': {
+        default: false
+      },
+      'outlined': {
+        default: false,
+        type: Boolean
+      },
+      'icon_style': {
+        default: true
+      },
+      'text_style': {
+        default: false
+      },
+      'tooltip_direction': {      // left, right, bottom, top
+        default: "bottom"
+      },
+      'menu_direction': {      // left, right, bottom, top
+        default: "right"
+      },
+      'close_by_button': {
+        default: false
+      },
+      'nudge_width': {
+        default: 200
+      },
+      'offset': {    // == 'x', 'y'
+        default: 'y'
+      },
+      'attach': {
+        default: false
+      },
+      'open-on-hover': {
+        default: false,
+        type: Boolean
+      },
+      'commit_menu_status': {
+        default: false,
+        type: Boolean
+      },
+      'large': {
+        default: false,
+        type: Boolean
+      },
+      'action_message': {
+        default: 'close',
+        type: String
+      },
+      'action_icon': {
+        default: 'close',
+        type: String
+      },
+      'action_color': {
+        default: 'primary',
+        type: String
+      }
+    },
+
+    data() {
+      return {
+        // tooltip direction
+        // maybe in future could use for other stuff too...
+        tooltip_direction_top: false,
+        tooltip_direction_right: false,
+        tooltip_direction_left: false,
+        tooltip_direction_bottom: false,
+
+        menu_direction_top: false,
+        menu_direction_right: false,
+        menu_direction_left: false,
+        menu_direction_bottom: false,
+
+        offset_y: true,
+        offset_x: false,
+
+        menu_open: false,
+
+        // https://vuetifyjs.com/en/components/menus
+
+        // Designates if menu should close when its content is clicked
+        close_content_on_click: false
+
+        // Designates if menu should close on outside-activator click
+        //close_on_click: true
 
       }
+    },
+    created() {
+      // defaults to bottom now since that's more common for menus?
+
+      // vuetify has flags for each of these
+      // so this just sets it to true assuming it was false before...
+      this["tooltip_direction_" + this.tooltip_direction] = true
+      this["menu_direction_" + this.menu_direction] = true
+
+      if (this.close_by_button == true) {
+        this.close_content_on_click = false
+      }
+      if (this.offset == 'x') {
+        this.offset_y = !this.offset_y
+        this.offset_x = !this.offset_x
+
+      }
+
+      // WIP not complete
+      if (this.text_style == true) {
+        this.icon_style = false
+      }
+      let vm = this;
+      window.addEventListener(
+        "keyup",
+        (event) => {
+          if(event.keyCode === 27){ //Esc
+            vm.close_menu()
+          }else if (event.keyCode === 13) {  // Enter
+            vm.close_menu()
+          }
+        }
+      );
+    },
+    beforeDestroy() {
+
+    },
+
+    watch: {
+      // We could also use v-model but maybe that confused more then helps?
+      // esp if we just want read only?
+      menu_open: function (state) {
+        this.$emit('menu_open', state)
+      },
+
+      value: function (event) {
+        this.menu_open = event
+      }
+    },
+    computed: {
+      icon_color_computed: function () {
+
+        if (this.$props.icon_color != undefined) {
+          return this.$props.icon_color
+        } else {
+          return this.$props.color;
+        }
+
+      },
+    },
+    methods: {
+      action_clicked: function () {
+        this.menu_open = false;
+        this.$emit('action_clicked')
+      },
+      open_menu: function () {
+        this.menu_open = true;
+        if (this.commit_menu_status == true) {
+          this.$store.commit('set_user_is_typing_or_menu_open', true)
+        }
+      },
+      close_menu: function () {
+        this.menu_open = false;
+        if (this.commit_menu_status == true) {
+          this.$store.commit('set_user_is_typing_or_menu_open', false)
+        }
+      },
+      update_return_value: function () {
+        if (this.commit_menu_status == true) {
+          this.$store.commit('set_user_is_typing_or_menu_open', false)
+        }
+      },
+      click: function () {
+        if (this.commit_menu_status == true) {
+          this.$store.commit('set_user_is_typing_or_menu_open', true)
+        }
+      }
+
     }
-  ) </script>
+  }
+) </script>

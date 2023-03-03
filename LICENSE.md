@@ -12,7 +12,12 @@ Limitations
 
 2. You will not compete with the Licensor in the Training Data Software market.
 
-3. You may not alter, remove, or obscure any licensing, copyright, or other notices of the Licensor in the Software. Any use of the Licensor’s trademarks is subject to applicable law.
+3. You may not alter, remove, or obscure any licensing, copyright, or other notices of the Licensor in the Software. Any use of the Licensorâ€™s trademarks is subject to applicable law.
+
+4. Commercial use may require purchasing an Enterprise license. The current requirements are: If you have 10 or more users;
+or if your company has 250 or more employees; 
+or if your company has over $10,000,000 in annual revenues or venture funding. Diffgram reserves the right 
+to take protective measures to enforce this.
 
 ## No Other Rights
 These terms do not imply any licenses other than those expressly granted in these terms.

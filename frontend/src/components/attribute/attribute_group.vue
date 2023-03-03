@@ -43,7 +43,7 @@
               :disabled="view_only_mode"
               v-for="item in select_format"
               :key="item.name"
-              :label="`${item.display_name}`"
+              :label="`${item.display_name} [${item.id}]`"
               :value="item"
             ></v-radio>
           </v-radio-group>
@@ -152,6 +152,16 @@
             width="100%"
             v-if="group.kind === 'tree'"
           >
+            <div style="padding: 5px">
+              <v-chip
+                class="ma-1"
+                x-small
+                v-for="(name, index) in internal_selected_names"
+                :key="`${name}_${index}`"
+              >
+                {{ name }}
+              </v-chip>
+            </div>
             <v-sheet class="pa-4 primary lighten-2">
               <v-text-field
                 v-model="search"
@@ -168,17 +178,33 @@
             <p v-if="tree_force_rerender">
               Searching...
             </p>
+            <v-lazy
+              v-else
+              :options="{
+                threshold: 0.3
+              }"
+            >
             <v-treeview
-              v-if="!tree_force_rerender"
-              v-model="internal_selected"
               :items="tree_items"
-              :search="search"
-              :open-all="search && search.length > 0"
+              :load-children="load_clidren"
+              :open-all="search ? true : false"
               selectionType="independent"
-              selectable
-              open-on-click
-              @input="attribute_change"
-            />
+            >
+              <template v-slot:prepend="{ item }">
+                  <v-checkbox
+                    :input-value="internal_selected.includes(item.id)"
+                    @change="tree_input(item)"
+                    style="margin-top: 0"
+                    hide-details
+                  />
+              </template>
+              <template v-slot:append="{item}">
+                <v-chip x-small v-if="$store.state.user.settings.show_ids === true">
+                  ID: {{ item.id }}
+                </v-chip>
+              </template>
+            </v-treeview>
+            </v-lazy>
           </v-card>
 
         </v-layout>
@@ -466,6 +492,7 @@
               </v-layout>
             </template>
           </button_with_confirm>
+
           <!-- Archive button -->
 
 
@@ -500,10 +527,11 @@
   import label_select_only from '../label/label_select_only.vue'
   import attribute_kind_icons from './attribute_kind_icons';
   import attribute_group_wizard from './attribute_group_wizard';
-  import { construct_tree } from "../../helpers/tree_view/construct_tree"
+  import { construct_tree, tree_parents } from "../../helpers/tree_view/construct_tree"
   import { TreeNode } from "../../helpers/tree_view/Node"
 
   import Vue from "vue";
+  import {attribute_group_update} from "../../services/attributesService";
 
   export default Vue.extend({
 
@@ -512,7 +540,6 @@
       components: {
         draggable,
         attribute,
-        attribute_new_or_update,
         label_select_only,
         attribute_kind_icons,
         attribute_group_wizard
@@ -545,6 +572,9 @@
         },
         'schema_id':{
           default: undefined
+        },
+        'active_hotkeys': {
+          default: false
         }
 
       },
@@ -554,6 +584,7 @@
           search: "",
           tree_force_rerender: false,
           tree_rerender_timeout: null,
+          filtered_node_list: null,
           first_load: true,
           original_kind: null,
           loading_update: null,
@@ -566,6 +597,7 @@
           success: false,
 
           internal_selected: [],
+          internal_selected_names: [],
 
           kind_list: [
 
@@ -628,7 +660,18 @@
             */
 
           ],
-
+          hotkey_dict: {
+            49: 0,
+            50: 1,
+            51: 2,
+            52: 3,
+            53: 4,
+            54: 5,
+            55: 6,
+            56: 7,
+            57: 8,
+            58: 9
+          },
           name: null,
 
           label_file_list: [],
@@ -639,22 +682,34 @@
 
         }
       },
-
+      beforeDestroy() {
+       this.remove_hotkey_listeners()
+      },
       watch: {
-        search: function() {
+        active_hotkeys: function(newValue){
+          if(newValue){
+            this.add_hotkey_listeners()
+          } else{
+            this.remove_hotkey_listeners()
+          }
+        },
+        search: function(newValue) {
           clearTimeout(this.tree_rerender_timeout)
           this.tree_force_rerender = true
           this.tree_rerender_timeout = setTimeout(() => {
+            this.tree_search(newValue)
             this.tree_force_rerender = false
-          }, 100)
+          }, 400)
         },
 
         // not sure if this is right thing to watch
         current_instance() {
+
           this.set_existing_selected()
         },
 
         group() {
+
           // for "resesting" it.
           // we want a newly created group to be different
           // vue js being a bit fiddly here
@@ -674,13 +729,16 @@
         this.group_internal = this.$props.group
 
         if (this.group.kind === "tree") {
-          this.group.attribute_template_list.map(attr => {
+          this.group.attribute_template_list.filter(item => !item.parent_id).map(attr => {
             const new_node = new TreeNode(attr.group_id, attr.name)
             new_node.initialize_existing_node(attr.id, attr.parent_id)
             this.tree_items_list.push(new_node)
           })
 
           this.tree_items = construct_tree(this.tree_items_list)
+        }
+        if(this.active_hotkeys){
+          this.add_hotkey_listeners()
         }
       },
       computed: {
@@ -689,9 +747,10 @@
 
           const tree_array = this.internal_selected.map(item => {
             const item_node = this.tree_items_list.find(node_item => node_item.get_id() === item)
-            const { id, name } = item_node.get_API_data()
-            return {[id]: { name, "selected": true}}
-
+            if (item_node) {
+              const { id, name } = item_node.get_API_data()
+              return {[id]: { name, "selected": true}}
+            }
           })
 
           const tree_post_items = {
@@ -743,6 +802,104 @@
         }
       },
       methods: {
+
+        add_hotkey_listeners: function(){
+          window.addEventListener('keyup', this.attribute_keyup_handler);
+          window.addEventListener('keydown', this.attribute_keydown_handler);
+        },
+        remove_hotkey_listeners: function(){
+          window.removeEventListener('keyup', this.attribute_keyup_handler);
+          window.removeEventListener('keydown', this.attribute_keydown_handler);
+        },
+        attribute_keyup_handler: function(){
+          if(!['radio', 'select'].includes(this.group.kind)){
+            return
+          }
+
+        },
+        attribute_keydown_handler: function(event){
+          if(!['radio', 'select'].includes(this.group.kind)){
+            return
+          }
+          let index = this.hotkey_dict[event.keyCode]
+          if(index != undefined){
+            let item_to_select = this.select_format[index]
+            if(item_to_select && item_to_select != this.internal_selected){
+              this.internal_selected = item_to_select
+              this.attribute_change()
+            }
+          }
+        },
+        tree_input: function(e) {
+          const already_selected = this.internal_selected.includes(e.id)
+
+          if (already_selected) {
+            const index_to_delete = this.internal_selected.indexOf(e.id);
+            this.internal_selected.splice(index_to_delete, 1);
+
+            const index_to_delete_name = this.internal_selected_names.indexOf(e.name);
+            this.internal_selected_names.splice(index_to_delete_name, 1);
+          }
+          else {
+            this.internal_selected.push(e.id)
+            this.internal_selected_names.push(e.name)
+          }
+
+          this.attribute_change()
+        },
+        load_clidren: function(e) {
+          let template_list = this.group.attribute_template_list.filter(item => item.parent_id === e.id)
+
+          this.set_tree(template_list)
+        },
+        tree_search: async function(e) {
+          this.tree_items_list = []
+
+          if (!this.search) {
+            this.group.attribute_template_list.filter(item => !item.parent_id).map(attr => {
+              const new_node = new TreeNode(attr.group_id, attr.name)
+              new_node.initialize_existing_node(attr.id, attr.parent_id)
+              this.tree_items_list.push(new_node)
+            })
+            this.tree_items = construct_tree(this.tree_items_list)
+            return
+          }
+
+          const res = this.group.attribute_template_list.filter(item => item.name.toLowerCase().includes(e.toLowerCase()))
+
+          const selected_nodes = res.map(item => {
+            const new_node = new TreeNode(item.group_id, item.name)
+            new_node.initialize_existing_node(item.id, item.parent_id)
+            return new_node
+          })
+
+          const all_nodes = this.group.attribute_template_list.map(item => {
+            const new_node = new TreeNode(item.group_id, item.name)
+            new_node.initialize_existing_node(item.id, item.parent_id)
+            return new_node
+          })
+
+          const local_nodes = []
+          const global_tracker = []
+
+          await selected_nodes.map(async node => {
+            const result = await tree_parents(node.id, [...all_nodes], global_tracker)
+            local_nodes.push(...result.nodes_to_return)
+            global_tracker.push(...result.local_tracker)
+          })
+
+          this.tree_items_list = [...new Set(local_nodes.map(node => node))]
+          this.tree_items = construct_tree(this.tree_items_list)
+        },
+        set_tree: function(to_tree) {
+          to_tree.map(attr => {
+            const new_node = new TreeNode(attr.group_id, attr.name)
+            new_node.initialize_existing_node(attr.id, attr.parent_id)
+            this.tree_items_list.push(new_node)
+          })
+
+          this.tree_items = construct_tree(this.tree_items_list)
+        },
         update_label_files: function(new_label_list){
           if(!this.$props.enable_wizard){
             this.$refs.label_selector.set_label_list(new_label_list)
@@ -776,6 +933,7 @@
 
            *
            */
+
           this.$emit('attribute_change', [this.group, this.export_internal_selected])
 
         },
@@ -790,14 +948,13 @@
         },
 
         format_default: function () {
-
           if ([null, "select", "radio"].includes(this.group.kind)) {
             let default_attribute = {}
             default_attribute.id = this.group.default_id
             return default_attribute
           }
           if (this.group.kind == 'multiple_select'){
-            return [this.group.default_id]  // note array formatting, assumed to be single ID for now
+            return [{id:this.group.default_id}]  // note array formatting, assumed to be single ID for now
           }
           if (this.group.kind == 'text'){
             return this.group.default_value
@@ -830,68 +987,30 @@
            * This was really more for the "single select" otherwise can just load from instance right?
            *
            */
-
           // reset
           this.internal_selected = []
+          this.internal_selected_names = []
+
+          if (this.group.kind === 'date') {
+            this.internal_selected = ''
+          }
 
           // set existing if applicable
           if (!this.current_instance) {
             return
           }
-
-          // note this is basing off the current instance!
-
-          /*
-           * TYPES: Different types treated differently
-           *
-           *  the values for attribute groups are diverse
-           *  effectively we assume that whatever format it stores the value in is what we will
-           *  reload it as
-           *
-           *  we can't just use ids because of free text fields (like 137 in this example)
-           *
-           *  and the form of the data changes since some things prefer to store in arrays
-           *  some as objects and some as straight ids...
-           *
-           *  the form is determined by the group type
-           *  and then by the front end select controls here
-           *
-           *  the backend stores whatever it is given for these things
-           *
-           *  EXAMPLE:
-             *    136: Object
-                  137: "dog"
-                  138: Array[3]
-                  139: 180
-                  // future maybe a Node
-           */
-
-          /*
-           * Prior we iterated through the whole list but that doesn't really make sense
-           * because we only care about the group id
-           *
-           * IMPORTANT - instance group value != current group
-           *
-           *    this is the current instance data which is different from
-           *    the current group
-           *
-           *    for example the current group may be "apple"
-           *    but there may be no selection for "apple" yet on the specific instance.
-           *
-           */
+          if (!this.current_instance.attribute_groups) {
+            return
+          }
 
           let value = null    // shared with existing and default
           let existing_value = null
           let default_value = null
-
-          if (this.current_instance.attribute_groups) {
+          if (this.current_instance.attribute_groups && this.current_instance.attribute_groups[this.group.id]) {
             existing_value = this.current_instance.attribute_groups[this.group.id]
           }
-          if (existing_value != null){
-            value = existing_value
-          }
-
           else  {
+
             // If not existing value, check for default
             // We must be careful here, we don't want to "reset" to the default value
             // if there was an existing value. We only set default when it's null.
@@ -903,7 +1022,11 @@
               value = this.format_default()
             }
           }
-
+          // Populate existing value.
+          if ((existing_value != null && this.group.kind != 'multiple_select' )
+            || (this.group.kind === 'multiple_select' && existing_value && existing_value.length > 0)){
+            value = existing_value
+          }
           // Code below is for LOADING VALUES / formatting.
           // At this point we around know the value itself as ( existing_value )
 
@@ -926,24 +1049,26 @@
 
           } else if(this.group.kind == "tree") {
             this.internal_selected = Object.keys(this.current_instance.attribute_groups[this.group.id]).map(key => parseInt(key))
+            this.internal_selected_names = this.internal_selected.map(key => this.current_instance.attribute_groups[this.group.id][key]['name'])
           } else if (this.group.kind == "text") {
             // in this case nothing to change we are only storing text
             this.internal_selected = value
 
           } else if (this.group.kind == "multiple_select") {
-
-            this.internal_selected = []
+            if(value && value.length > 0){
+              this.internal_selected = []
+            }
             // value is an array now
             for (let single_selected of value) {
               if(!single_selected){
                 return
               }
-              this.internal_selected.push(this.select_format.find(
+              let selected_attr = this.select_format.find(
                 attribute => {
                   return attribute.id == single_selected.id
-                }))
+                })
+              this.internal_selected.push(selected_attr)
             }
-
           }
           else if(this.group.kind === 'slider'){
             if(!this.group.min_value){
@@ -1030,7 +1155,7 @@
           }
 
           // we assume if no labels selected it's ok
-          if (this.label_file_list.length == 0) {
+          if (this.group_internal.label_file_list.length == 0) {
             return true
           }
 
@@ -1042,7 +1167,7 @@
         recieve_label_file: function (label_file_list) {
 
 
-          this.label_file_list = label_file_list
+          this.group_internal.label_file_list = label_file_list
 
           // this feels a bit hacky but at least should work for now...
           if (this.first_load == true) {
@@ -1056,7 +1181,7 @@
         },
 
 
-        api_group_update: function (mode) {
+        api_group_update: async function (mode) {
           this.loading_update = true
           this.error = {}
           this.success = false
@@ -1087,31 +1212,19 @@
               group.min_value = min_value;
             }
           }
-
-          axios.post(
-            '/api/v1/project/' + this.project_string_id +
-            '/attribute/group/update',
-            {
-              group_id: Number(group.id),
-              name: group.name,
-              prompt: group.prompt,
-              label_file_list: this.label_file_list,
-              kind: group.kind,
-              default_id: group.default_id,
-              default_value: group.default_value,
-              min_value: min_value,
-              max_value: max_value,
-              mode: mode,
-              is_global: this.group.is_global
-            }).then(response => {
-
-            //this.group = response.data.group
-
+          group.max_value = max_value;
+          group.min_value = min_value;
+          try{
+            let [data, error] = await attribute_group_update(this.project_string_id, mode, group)
             this.success = true
             this.loading_update = false
-
-            // response.data.log.info
-
+            if(error){
+              if (error.response.status == 400) {
+                this.error = error.response.data.log.error
+              }
+              this.loading_update = false
+              console.error(error)
+            }
 
             // careful mode is local, not this.mode
             if (mode == 'ARCHIVE') {
@@ -1128,18 +1241,13 @@
                 this.group.max_value = 10;
               }
             }
-
-          }).catch(error => {
-
-            if (error) {
-              if (error.response.status == 400) {
-                this.error = error.response.data.log.error
-              }
-              this.loading_update = false
-              console.log(error)
-            }
-          });
-
+          }
+          catch (error){
+            this.loading_update = false
+            console.error(error)
+          } finally {
+            this.loading_update = false
+          }
         }
 
       }

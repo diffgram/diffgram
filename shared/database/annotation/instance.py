@@ -95,20 +95,10 @@ class Instance(Base):
 
     pause_object = Column(Boolean)
 
-    # TODO review interpolated
-    # And other options in relation to say box
     machine_made = Column(Boolean)
     interpolated = Column(Boolean)
 
-    # Should this be machine_made_type?
-    fan_made = Column(Boolean)
-
     verified = Column(Boolean)
-
-    #  this is part of attributes now, delete?
-    # TODO, do we want user selectable bools?
-    occluded = Column(String())  # "full", "partial" ...
-    # Other?
 
     soft_delete = Column(Boolean)  # This is just for working dir
 
@@ -169,7 +159,6 @@ class Instance(Base):
 
     rear_face = Column(MutableDict.as_mutable(JSONEncodedDict))
 
-    # CAREFUL renamed these
     preview_image_url = Column(String())
     preview_image_blob_dir = Column(String())
     preview_image_url_expiry = Column(Integer)
@@ -188,6 +177,8 @@ class Instance(Base):
     to_instance_id = Column(Integer(), ForeignKey('instance.id'), nullable = True)
 
     text_tokenizer = Column('text_tokenizer', String(), default = 'nltk')
+
+    score = Column(Float())
 
     member_created_id = Column(Integer, ForeignKey('member.id'))
     member_created = relationship("Member", foreign_keys = [member_created_id])
@@ -452,7 +443,6 @@ class Instance(Base):
             'model_id': self.model_id,
             'model_run_id': self.model_run_id,
             'sequence_id': self.sequence_id,
-            'fan_made': self.fan_made,
             'points': points,
             'front_face': self.front_face,
             'rear_face': self.rear_face,
@@ -474,7 +464,8 @@ class Instance(Base):
             'bounds': self.bounds,
             'bounds_lonlat': self.bounds_lonlat,
             'start_time': self.start_time,
-            'end_time': self.end_time
+            'end_time': self.end_time,
+            'score': self.score
 
         }
 
@@ -483,6 +474,7 @@ class Instance(Base):
         instance = self.serialize()
 
         label_file = None
+
         if self.label_file is not None:
             label_file = self.label_file.serialize_with_label()
 
@@ -514,7 +506,6 @@ class Instance(Base):
             'width': self.width,
             'height': self.height,
             'number': self.number,
-            'fan_made': self.fan_made,
             'sequence_id': self.sequence_id,
             'points': self.points.get('points', None),
             'front_face': self.front_face,
@@ -525,7 +516,8 @@ class Instance(Base):
             'previous_id': self.previous_id,
             'next_id': self.next_id,
             'root_id': self.root_id,
-            'version': self.version
+            'version': self.version,
+            'score': self.score
         }
 
     # TODO revist in context of new instance structure
@@ -560,20 +552,6 @@ class Instance(Base):
     def serialize_for_sequence_preview(self, session):
         data_tools = data_tools_core.Data_tools().data_tools
         """
-        preview_image_url = Column(String())
-        preview_image_blob_dir = Column(String())
-        preview_image_url_expiry = Column(Integer)
-
-        TODO feel like this should be a more regular pattern...
-        Since we have signed URL in other stuff...
-
-        Feb 7, 2020
-        add check for preview_image_blob_dir
-        because if it's None it will hit the fail everytime
-        and this route can get heavy enough as is 
-        just a little thing as saw a bunch of print statments repeating
-
-        Also bug fix if it suceeds to update time properly.
         """
 
         if self.preview_image_blob_dir:

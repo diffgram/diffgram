@@ -2,6 +2,7 @@
 from methods.regular.regular_api import *
 import re
 from shared.database.labels.label_schema import LabelSchema
+
 project_name_regular_expression = re.compile(r"^[a-zA-Z0-9_ ]{4,30}$")
 project_id_regular_expression = re.compile(r"^[a-zA-Z0-9_-]{4,30}$")
 
@@ -14,36 +15,36 @@ def valid_project_id(id):
     return project_id_regular_expression.match(id)
 
 
-@routes.route('/api/project/new', methods=['POST'])
-@General_permissions.grant_permission_for(
-    Roles='normal_user',
-    apis_user_list=[
-        'api_enabled_builder'])  # Checking email is verified within function to return nice error message here
+@routes.route('/api/project/new', methods = ['POST'])
+@General_permissions.grant_permission_for(Roles = 'normal_user',apis_user_list = ['api_enabled_builder'])  # Checking email is verified within function to return nice error message here
 @limiter.limit("25 per day")
 def project_new_api():
     spec_list = [{'project_name': str},
                  {'goal': None},
                  {'project_string_id': str}]
 
-    log, input, untrusted_input = regular_input.master(request=request,
-                                                       spec_list=spec_list)
+    log, input, untrusted_input = regular_input.master(request = request,
+                                                       spec_list = spec_list)
     if len(log["error"].keys()) >= 1:
-        return jsonify(log=log), 400
+        return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
 
-        user = User.get(session=session)
-        member =  get_member(session)
+        user = User.get(session = session)
+        member = get_member(session)
+        if settings.ONLY_SUPER_ADMINS_CREATE_PROJECTS and not user.is_super_admin:
+            log['error']['unauthorized'] = "Only super admins can create project."
+            return jsonify(log = log), 403
         if user.security_email_verified is not True:
             log['error']['security_email_verified'] = "Please verify your email first"
-            return jsonify(log=log), 400
+            return jsonify(log = log), 400
 
         existing_project = session.query(Project).filter(
             Project.project_string_id == input['project_string_id']).first()
 
         if existing_project is not None:
             log['error']['project_string_id'] = "Project name already exists. Projects must be globally unique."
-            return jsonify(log=log), 400
+            return jsonify(log = log), 400
 
         default_project_limit = 10
 
@@ -58,27 +59,26 @@ def project_new_api():
             if len(user.projects) >= default_project_limit:
                 log['error'][
                     'limit'] = "oops looks like you have a few projects already! Please contact us to increase this limit."
-                return jsonify(log=log), 400
+                return jsonify(log = log), 400
 
         if not valid_project_name(input['project_name']):
             log['error']['project_name'] = "Invalid name."
-            return jsonify(log=log), 400
+            return jsonify(log = log), 400
 
         if not valid_project_id(input['project_string_id']):
             log['error']['project_id'] = "Invalid project id"
-            return jsonify(log=log), 400
-
+            return jsonify(log = log), 400
 
         project = Project.new(
-            session=session,
-            name=input['project_name'],
-            project_string_id=input['project_string_id'],
-            goal=input['goal'],
-            user=user,
-            member_created=user.member
+            session = session,
+            name = input['project_name'],
+            project_string_id = input['project_string_id'],
+            goal = input['goal'],
+            user = user,
+            member_created = user.member
         )
 
         log['success'] = True
-        return jsonify(log=log,
+        return jsonify(log = log,
                        schema = project.get_default_schema(session).serialize(),
-                       project=project.serialize()), 200
+                       project = project.serialize()), 200

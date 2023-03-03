@@ -26,7 +26,7 @@ class JobDirectorySyncManager:
         incoming_directory: WorkingDir,
         job: Job = None,
         create_tasks: bool = False,
-        sync_event_manager = None):
+        sync_event_manager = None) -> [Task, dict]:
         """
             Given a file, add the link to the job directory and create a task if create_tasks=True.
         :param session:
@@ -63,7 +63,7 @@ class JobDirectorySyncManager:
                 f"Job status not active, skipping. Statuses must be one of {str(valid_status_to_create_tasks)}")
             return True, log
 
-        logger.debug('Creating task...')
+        logger.debug(f'Attempt to create task for file {file.id}')
         potential_existing_task = self.__check_if_task_exists(
             job = job_obj,
             file = file)
@@ -83,7 +83,7 @@ class JobDirectorySyncManager:
         if regular_log.log_has_error(log):
             return False, log
 
-        return True, log
+        return task, log
 
     def __check_if_task_exists(
         self,
@@ -306,6 +306,7 @@ class JobDirectorySyncManager:
                         root_files_only = True,  # TODO do we need to get child files too?
                         limit = None,
                     )
+                print('files', files)
                 for file in files:
                     logger.debug('Single file sync event with file: {} and folder {}'.format(
                         directory,
@@ -335,10 +336,11 @@ class JobDirectorySyncManager:
                         create_tasks = create_tasks,
                         sync_event_manager = sync_event_manager
                     )
-                    if result is not True:
-                        log['error']['sync_file_dirs'] = f"Error syncing dirs for file id: {file.id}"
+
                     if regular_log.log_has_error(log):
+                        log['error']['sync_file_dirs'] = f"Error syncing dirs for file id: {file.id}"
                         return False, log
+
         else:
             logger.debug(
                 f"Single file sync event with file: {file_to_link_dataset.id} and folder {file_to_link.id}")

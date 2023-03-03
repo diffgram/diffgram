@@ -19,7 +19,9 @@
                outlined
                small
                v-if="!show_task_template_wizard"
-               color="success" @click="show_wizard">
+               color="success"
+               @click="show_wizard"
+               >
           <v-icon>mdi-plus</v-icon>
           Create New
         </v-btn>
@@ -46,12 +48,12 @@
 </template>
 
 <script>
-import task_template_wizard from '../../../task/job/task_template_wizard_creation/task_template_wizard'
 import task_template_creation_dialog from '../../../task/job/task_template_wizard_creation/task_template_creation_dialog'
 import {create_empty_job} from '../../../task/job/empty_job'
 import {Action} from './../../Action'
 import Job_detail from "@/components/task/job/job_detail";
 import Action_config_wizard_base from "@/components/action/actions_config_base/action_config_wizard_base";
+
 export default {
   name: "task_template_config_details",
   props:{
@@ -74,8 +76,7 @@ export default {
       job_to_create: create_empty_job(),
       job_selected: null,
       show_task_template_wizard: false,
-      switch_loading: false,
-
+      switch_loading: false
     }
   },
   components: {
@@ -85,7 +86,6 @@ export default {
   },
   methods: {
     on_launch: function(job){
-      console.log('task_template_launched', job)
       this.job_selected = job;
       this.$refs.job_select.add_job_to_list(job)
       this.$refs.job_select.select_job(job)

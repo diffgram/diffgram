@@ -8,6 +8,8 @@
 
   import Vue from 'vue'
   import { cuboid } from './cuboid.js'
+  import {BoxInstance} from "./instances/BoxInstance";
+
   Vue.prototype.$cuboid = new cuboid()
 
 export default Vue.extend({
@@ -80,10 +82,16 @@ export default Vue.extend({
           }
 
           else if (instance.type == "box") {
-            this.draw_box(instance, ctx)
+            let box_instance = instance as BoxInstance
+            box_instance.draw(ctx)
           }
 
-          else if (["polygon", "line"].includes(instance.type)) {
+          else if (instance.type == "polygon") {
+            let poly_instance = instance as PolygonInstance
+            poly_instance.draw(ctx)
+          }
+
+          else if (["line"].includes(instance.type)) {
             this.draw_polygon(instance, ctx)
           }
 

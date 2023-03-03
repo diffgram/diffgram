@@ -5,7 +5,7 @@
     <div v-if="show_detail == false">
       <v_error_multiple :error="default_error">
       </v_error_multiple>
-   
+
       <v_error_multiple :error="walrus_error">
       </v_error_multiple>
     </div>
@@ -13,7 +13,7 @@
     <div v-if="show_detail == true">
       <h1> Status </h1>
 
-      <tooltip_button
+      <standard_button
         tooltip_message="Refresh"
         @click="check_all"
         :disabled="default_loading || walrus_loading"
@@ -22,7 +22,7 @@
         :icon_style="true"
         :bottom="true"
       >
-      </tooltip_button>
+      </standard_button>
 
       <v-card-title> Default Service </v-card-title>
       <v_error_multiple :error="default_error">
@@ -127,9 +127,11 @@ import Vue from "vue"; export default Vue.extend( {
     async check_generic(api) {
       let result = await api()
       let success = undefined
-      let error = this.$route_api_errors(result)
+      let error = undefined
       if (result.status == 200) {
         success = true
+      } else{
+        error = this.$route_api_errors(result)
       }
       return [success, error]
     },
