@@ -3487,7 +3487,7 @@ export default Vue.extend({
         this.original_media_height = file.image.height;
 
         var self = this;
-        this.addImageProcess(file.image.url_signed).then((new_image) => {
+        this.addImageProcess('https://picsum.photos/200/300.webp').then((new_image) => {
           self.html_image = new_image;
           self.loading = false;
           self.refresh = Date.now();

@@ -1,0 +1,67 @@
+
+---
+summary: View File
+description: Gets the details of a given file ID
+tags:
+  - Files
+parameters:
+  - in: body
+    required: true
+    name: FileUpdateMetadataReqBody
+    description: The metadata to be updated. Any keys not provided will be ignored.
+    schema:
+      $ref: '#/definitions/FileUpdateMetadataReqBody'
+definitions:
+  File:
+    type: object
+    properties:
+      image:
+        description: the image related data.
+        type: object
+      video:
+        description: the video related data.
+        type: object
+      id:
+        description: the file ID
+        type: object
+      hash:
+        description: the file hash.
+        type: string
+      state:
+        description: the state of the file.
+        type: string
+      created_time:
+        description: The time the file was created.
+        type: string
+      time_last_updated:
+        description: The time the file was updated.
+        type: object
+      original_filename:
+        description: The name of the file.
+        type: string
+      bucket_name:
+        description: Bucket name where file resides (if applicable)
+        type: string
+      connection_id:
+        description: Connection ID to access the file (if applicable)
+        type: number
+      video_id:
+        description: Video ID to for accessing the video object.
+        type: number
+      video_parent_file_id:
+        description: File ID of the parent video file.
+        type: number
+  FileUpdateMetadataReqBody:
+    type: object
+    properties:
+      rotation_degrees:
+        description: the rotation degrees for rotating image. Works only on image type files.
+        type: number
+      ordinal:
+        description: the ordinal for a child file. Useful for ordering compound files.
+        type: number
+responses:
+  200:
+    description: The updated file.
+    schema:
+      $ref: '#/definitions/File'
