@@ -1935,7 +1935,7 @@ class Process_Media():
 
         # Use original file for jpg and jpeg
         extension = str(self.input.extension).lower()
-        if extension in ['.jpg', '.jpeg']:
+        if extension in ['.jpg', '.jpeg', '.webp']:
             new_temp_filename = self.input.temp_dir_path_and_filename
         # If PNG is used check compression
         elif extension == '.png':
@@ -1957,7 +1957,7 @@ class Process_Media():
         else:
             self.input.status = "failed"
             self.input.status_text = f"""Extension: {self.input.extension} not supported yet. 
-                Try adding an accepted extension [.jpg, .jpeg, .png, .bmp, .tif, .tiff] or no extension at all if from cloud source and response header content-type is set correctly."""
+                Try adding an accepted extension [.jpg, .jpeg, .png, .bmp, .tif, .tiff, .webp] or no extension at all if from cloud source and response header content-type is set correctly."""
             self.log['error']['extension'] = self.input.status_text
             return
 
