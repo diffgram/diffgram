@@ -9,18 +9,19 @@ parameters:
     in: path
     type: string
     required: true
+  - name: workflow_id
+    in: path
+    type: number
+    required: true
   - in: body
-    name: ActionsListRequestBody
+    name: ActionsNewRequestBody
     description: The metadata to be updated. Any keys not provided will be ignored.
     schema:
-      $ref: '#/definitions/FileUpdateMetadataReqBody'
+      $ref: '#/definitions/ActionsNewRequestBody'
 definitions:
-  Action:
+  ActionsNewRequestBody:
     type: object
     properties:
-      id:
-        description: the action ID
-        type: number
       kind:
         description: the type of the action.
         type: number
@@ -50,16 +51,42 @@ definitions:
         type: string
       trigger_data:
         description: Payload of the trigger of this action
-        type: object
-  FileUpdateMetadataReqBody:
+        $ref: '#/definitions/TriggerData'
+      ordinal:
+        description: Order of the actions inside the workflow.
+        type: number
+      precondition:
+        description: Object with the metadata for the precondition
+        $ref: '#/definitions/PreConditionData'
+
+      completion_condition_data:
+        description: Object with the metadata for the completion condition data.
+        $ref: '#/definitions/CompletionConditionData'
+
+  TriggerData:
     type: object
     properties:
-      rotation_degrees:
-        description: the rotation degrees for rotating image. Works only on image type files.
+      event_name:
+        description: The name of the event to listen for triggering.
+        type: string
+      upload_directory_id_list:
+        description: In case for directories events, the list of dir IDs to listen for.
         type: number
-      ordinal:
-        description: the ordinal for a child file. Useful for ordering compound files.
+      trigger_action_id:
+        description: The ID of the action this trigger belongs to.
         type: number
+  PreConditionData:
+    type: object
+    properties:
+      event_name:
+        description: The name of the event to allow triggering the action, all other events will not trigger it.
+        type: string
+  CompletionConditionData:
+    type: object
+    properties:
+      event_name:
+        description: The name of the event to allow triggering the action, all other events will not trigger it.
+        type: string
 responses:
   200:
     description: The updated file.

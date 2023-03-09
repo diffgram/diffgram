@@ -13,7 +13,7 @@ import os
 from werkzeug.utils import secure_filename
 from shared.image_tools import imresize
 from imageio import imwrite
-
+from flasgger import swag_from
 
 @routes.route('/api/v1/project/<string:project_string_id>/actions/workflow/<int:workflow_id>/action',
               methods = ['POST'])
@@ -21,6 +21,7 @@ from imageio import imwrite
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
 @limiter.limit("20 per day")
+@swag_from('../../docs/actions/actions_new.yml')
 def api_action_new(project_string_id, workflow_id):
     """
     Shared route for update and new

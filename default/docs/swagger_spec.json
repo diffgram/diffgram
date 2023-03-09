@@ -32,6 +32,45 @@
                 ]
             }
         },
+        "/api/v1/project/{project_string_id}/actions/workflow/{workflow_id}/action": {
+            "post": {
+                "summary": "Create Actions",
+                "description": "Create a new action within a workflow.",
+                "responses": {
+                    "200": {
+                        "description": "The updated file.",
+                        "schema": {
+                            "$ref": "#/definitions/File"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "workflow_id",
+                        "in": "path",
+                        "type": "number",
+                        "required": true
+                    },
+                    {
+                        "in": "body",
+                        "name": "ActionsNewRequestBody",
+                        "description": "The metadata to be updated. Any keys not provided will be ignored.",
+                        "schema": {
+                            "$ref": "#/definitions/ActionsNewRequestBody"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
         "/api/v1/project/{project_string_id}/discussion/{discussion_id}/add-comment": {
             "post": {
                 "summary": "Create Discussion Comment",
@@ -175,6 +214,98 @@
                 "ordinal": {
                     "description": "the ordinal for a child file. Useful for ordering compound files.",
                     "type": "number"
+                }
+            }
+        },
+        "ActionsNewRequestBody": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "description": "the type of the action.",
+                    "type": "number"
+                },
+                "active": {
+                    "description": "is the action active or not.",
+                    "type": "boolean"
+                },
+                "archived": {
+                    "description": "is the action archived or not.",
+                    "type": "boolean"
+                },
+                "status": {
+                    "description": "action status",
+                    "type": "string"
+                },
+                "template_id": {
+                    "description": "action template ID.",
+                    "type": "number"
+                },
+                "workflow_id": {
+                    "description": "Workflow ID to which this actions belongs to.",
+                    "type": "number"
+                },
+                "public_name": {
+                    "description": "UI Visible action name.",
+                    "type": "string"
+                },
+                "icon": {
+                    "description": "Icon URL for the action",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Short description for what the action does.",
+                    "type": "string"
+                },
+                "trigger_data": {
+                    "description": "Payload of the trigger of this action",
+                    "$ref": "#/definitions/TriggerData"
+                },
+                "ordinal": {
+                    "description": "Order of the actions inside the workflow.",
+                    "type": "number"
+                },
+                "precondition": {
+                    "description": "Object with the metadata for the precondition",
+                    "$ref": "#/definitions/PreConditionData"
+                },
+                "completion_condition_data": {
+                    "description": "Object with the metadata for the completion condition data.",
+                    "$ref": "#/definitions/CompletionConditionData"
+                }
+            }
+        },
+        "TriggerData": {
+            "type": "object",
+            "properties": {
+                "event_name": {
+                    "description": "The name of the event to listen for triggering.",
+                    "type": "string"
+                },
+                "upload_directory_id_list": {
+                    "description": "In case for directories events, the list of dir IDs to listen for.",
+                    "type": "number"
+                },
+                "trigger_action_id": {
+                    "description": "The ID of the action this trigger belongs to.",
+                    "type": "number"
+                }
+            }
+        },
+        "PreConditionData": {
+            "type": "object",
+            "properties": {
+                "event_name": {
+                    "description": "The name of the event to allow triggering the action, all other events will not trigger it.",
+                    "type": "string"
+                }
+            }
+        },
+        "CompletionConditionData": {
+            "type": "object",
+            "properties": {
+                "event_name": {
+                    "description": "The name of the event to allow triggering the action, all other events will not trigger it.",
+                    "type": "string"
                 }
             }
         },
