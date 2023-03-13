@@ -59,7 +59,8 @@ export default Vue.extend( {
     },
     computed: {
       attribute_list_computed: function(){
-        return this.attribute_list.map(elm => {
+        let ordered_attributes = this.attribute_list.sort((a, b) => a.ordinal - b.ordinal);
+        return ordered_attributes.map(elm => {
           elm.prompt = !elm.prompt ? 'Untitled Attribute Group': elm.prompt
           return elm
         })
