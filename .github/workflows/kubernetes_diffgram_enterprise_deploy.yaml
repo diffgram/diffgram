@@ -258,7 +258,7 @@ jobs:
       - name: Upgrade Diffgram with Helm
         run: |
           helm dependency update
-          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-production
+          helm upgrade --install diffgram . -f values.yaml --namespace diffgram-production --timeout 15m0s
 
 
   Staging-Deploy-Azure-Kubernetes:
