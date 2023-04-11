@@ -161,7 +161,7 @@
           <div
             :key="`area_factory_container_${file.id}`"
             :class="`${file.id === annotation_ui_context.working_file.id
-                         && annotation_ui_context.working_file_list.length >= 1 ? 'selected-file': 'unselected-file'} annotation-area-container`">
+                         && annotation_ui_context.working_file_list.length > 1 ? 'selected-file': 'unselected-file'} annotation-area-container`">
             <annotation_area_factory
               :key="`annotation_area_factory_${file.id}`"
               :ref="`annotation_area_factory_${file.id}`"
@@ -1204,8 +1204,6 @@ export default Vue.extend({
       frame_number_param = undefined,
       instance_list_param = undefined
     ) {
-      this.set_has_changed(false)
-      this.set_save_loading(true)
 
       if (this.annotation_ui_context.working_file.type === 'text') {
         const file_id = this.annotation_ui_context.working_file.id
@@ -1238,9 +1236,14 @@ export default Vue.extend({
 
       this.save_error = {}
       this.annotation_ui_context.current_image_annotation_ctx.save_warning = {}
-      if (this.annotation_ui_context.current_image_annotation_ctx.go_to_keyframe_loading) return
-      if (this.view_only_mode) return
-
+      if (this.annotation_ui_context.current_image_annotation_ctx.go_to_keyframe_loading) {
+        return
+      }
+      if (this.view_only_mode) {
+        return
+      }
+      this.set_has_changed(false)
+      this.set_save_loading(true)
       let frame_number;
       let instance_list;
 

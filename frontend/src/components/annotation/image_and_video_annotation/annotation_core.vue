@@ -1805,9 +1805,6 @@ export default Vue.extend({
   // TODO 312 Methods!! refactor in multiple files and classes.
   methods: {
     rotate_instance_selection_hotkeys_index: function(dir: string = 'next'){
-      console.log(
-        'ROTATING', this.instance_selection_hotkeys_index
-      )
       if(this.draw_mode){
         this.$emit('draw_mode_change', false)
       }
@@ -1835,7 +1832,6 @@ export default Vue.extend({
 
       }
       let instance = this.instance_list[this.instance_selection_hotkeys_index]
-      console.log('INSTANCE CURRENT', instance)
 
       if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance.type)) {
         let annotation_ctx = this.build_ann_event_ctx()
@@ -2957,8 +2953,6 @@ export default Vue.extend({
       // instance update
       if (update.mode == "update_label") {
         // not 100% sure if we need both here
-        console.log('INSTANCE udate labe', instance)
-        console.log('INSTANCE update', update)
         instance.label_file = update.payload;
         instance.label_file_id = update.payload.id;
       }
@@ -7188,12 +7182,10 @@ export default Vue.extend({
       }
 
       // Left or right arrows
-      console.log('KEY', this.shift_key, this.ctrl_key, event.keyCode)
       if(this.ctrl_key && (event.keyCode === 37 || event.keyCode === 39)){
         this.rotate_instance_selection_hotkeys_index(event.keyCode === 37 ? 'previous' : 'next')
       }
       if(event.keyCode === 76 ){
-        console.log('OPEN MENU', this.selected_instance)
         let instance = this.selected_instance
         if(instance){
           this.$emit('open_label_change_dialog', instance.id)
