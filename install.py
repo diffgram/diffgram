@@ -90,6 +90,7 @@ class DiffgramInstallTool:
 
     def set_gcp_credentials(self):
         is_valid = False
+        self.use_docker_minio = False
         # Ask For Service Account
         while not is_valid:
             f = None
@@ -250,7 +251,6 @@ class DiffgramInstallTool:
         return True
 
     def validate_s3_connection(self):
-        print('AAAA', self.use_docker_minio)
         if not self.use_docker_minio or self.static_storage_provider == 'aws':
             endpoint_url = self.s3_endpoint_url
         else:
@@ -433,7 +433,7 @@ class DiffgramInstallTool:
     def set_azure_credentials(self):
         # Ask For Access Key ID
         is_valid = False
-
+        self.use_docker_minio = False
         while not is_valid:
             azure_connection_string = bcolors.inputcolor('Please provide the Azure Connection String: ')
             if azure_connection_string == '':
@@ -563,7 +563,7 @@ class DiffgramInstallTool:
             if self.static_storage_provider == 'minio':
                 os.system('docker compose --profile minio up -d')
             else:
-                os.system('docker-compose up -d')
+                os.system('docker compose up -d')
             print('✓ Diffgram Successfully Launched!')
             print('View the Web UI at: http://localhost:8085')
         except Exception as e:
