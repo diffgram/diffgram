@@ -1,5 +1,5 @@
 <template>
-  <div v-cloak>
+  <div v-cloak style="height: 100%">
     <v-alert type="success"
              class="ma-0"
              :value="focus_mode">

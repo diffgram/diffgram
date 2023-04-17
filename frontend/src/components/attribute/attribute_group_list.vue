@@ -9,6 +9,7 @@
       style="overflow-y:auto"
     >
       <v-layout
+        fill-height
         v-if="mode==='edit'"
         class="d-flex pa-4 align-center"
       >
@@ -110,7 +111,8 @@
 
                 <v-expansion-panel-content>
                   <attribute_group
-                    :refs="`attribute_group_${group.id}`"
+
+                    :ref="`attribute_group_${group.id}`"
                     :active_hotkeys="openedPanel === index"
                     :schema_id="schema_id"
                     :project_string_id="project_string_id"
@@ -187,6 +189,7 @@
 
             <v-expansion-panel-content>
               <attribute_group
+                :ref="`attribute_group_${group.id}`"
                 :active_hotkeys="openedPanel === index"
                 :schema_id="schema_id"
                 :project_string_id="project_string_id"
@@ -195,6 +198,7 @@
                 :group="group"
                 :key="group.id"
                 :current_instance="current_instance"
+
                 @attribute_change="$emit('attribute_change', $event)"
               />
               <div v-if="mode==='edit'">
@@ -244,6 +248,10 @@ export default Vue.extend({
         attribute_group_list: [] as Array<any>,
         out_of_schema_attributes: [] as Array<any>,
         openedPanel: null as Number,
+        hotkey_dict: {
+          38: 'previous',
+          40: 'next',
+        },
       }
     },
     watch: {
@@ -296,8 +304,12 @@ export default Vue.extend({
       if (this.attribute_group_list.length > 0 && this.openedPanel == undefined) {
         this.openedPanel = 0
       }
+      window.addEventListener('keydown', this.manage_key_down)
+      window.addEventListener('keyup', this.manage_key_up)
     },
     destroyed() {
+      window.removeEventListener('keydown', this.manage_key_down)
+      window.removeEventListener('keyup', this.manage_key_up)
       this.refresh_watcher() // destroy
     },
     computed: {
@@ -332,6 +344,60 @@ export default Vue.extend({
       }
     },
     methods: {
+      manage_key_up: function(event){
+        const shiftKey = 16;
+        if (event.keyCode === shiftKey) {
+          this.shift_key = false;
+        }
+
+      },
+      change_open_attribute: async function(direction){
+        if(isNaN(this.openedPanel)){
+          this.openedPanel = 0
+        }
+
+        if (direction === 'next' && this.shift_key){
+          this.openedPanel += 1
+          if(this.openedPanel === this.attribute_group_list_computed.length - 1){
+            this.openedPanel = 0
+          }
+        } else if(direction === 'previous' && this.shift_key){
+          this.openedPanel -= 1
+          if(this.openedPanel < 0){
+            this.openedPanel = this.attribute_group_list_computed.length - 1
+          }
+        }
+        await this.$nextTick()
+        const attr = this.attribute_group_list_computed[this.openedPanel]
+        if(attr && attr.kind === 'tree'){
+          const attrRef = this.$refs[`attribute_group_${attr.id}`]
+          console.log('ATTR', attrRef)
+          if(attrRef && attrRef.length > 0){
+            const treeInput = attrRef[0].$refs.treeview_search
+            if(treeInput){
+              await this.$nextTick()
+              setTimeout(() => {
+                treeInput.focus()
+                // treeInput.$el.focus()
+              }, 0)
+            }
+          }
+
+
+        }
+      },
+      manage_key_down: async function(event){
+        const shiftKey = 16;
+        if (event.keyCode === shiftKey) {
+          this.shift_key = true;
+        }
+
+        let direction = this.hotkey_dict[event.keyCode]
+        console.log('KET DOWN', direction, this.openedPanel)
+        if(direction){
+          await this.change_open_attribute(direction)
+        }
+      },
       get_attribute_value: function(attribute_group_id: number){
         if(!attribute_group_id){
           return

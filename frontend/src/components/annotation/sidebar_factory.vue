@@ -1,7 +1,8 @@
 <template>
-<div>
+<div :style="`height: ${sidebarHeight}px `">
   <sidebar_image_annotation
     v-if="(interface_type === 'image' || interface_type === 'video')"
+    :height="sidebarHeight"
     :annotation_ui_context="annotation_ui_context"
     :label_file_colour_map="label_file_colour_map"
     :project_string_id="project_string_id"
@@ -88,9 +89,18 @@ export default Vue.extend({
       // TODO: ADD OTHER INTERFACE TYPES HERE.
     }
   },
+  computed: {
+    sidebarHeight: function(){
+      return window.innerHeight - 100;
+    }
+  }
 })
 </script>
 
-<style scoped>
-
+<style>
+.v-navigation-drawer__content {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
 </style>

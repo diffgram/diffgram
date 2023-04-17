@@ -919,16 +919,18 @@ export default Vue.extend({
           if(this.child_annotation_ctx_list[i].container_height === 0){
             // We substract 50 px to leave a small padding when calculating new scale of images
             if(total_rows === 1){
-              this.child_annotation_ctx_list[i].container_height = Math.round(total_height  - 50);
+              console.log('TOTAL', total_height)
+              this.child_annotation_ctx_list[i].container_height = Math.round(total_height);
             } else{
               this.child_annotation_ctx_list[i].container_height = 500
             }
           }
-          this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[row_index].size / 100) - 50
+          this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[row_index].size / 100)
         }
       }
     },
     recalculate_pane_column_dimensions: function (row_index, panes_list) {
+      console.log('RECALCULATEEEE')
       if (!this.$refs.panels_manager) return
 
       let total_width = this.$refs.panels_manager.$el.clientWidth;
@@ -1948,8 +1950,10 @@ export default Vue.extend({
       }
       this.get_model_runs_from_query(model_runs_data);
       if (this.listeners_map()) this.listeners_map()['resize']()
-      this.changing_file = false;
 
+      this.changing_file = false;
+      await this.$nextTick();
+      this.update_window_size_from_listener()
     },
 
     get_labels_from_project: async function () {
