@@ -2,8 +2,7 @@
     <div
         class="wrapper-element"
         :style="`
-            max-height: calc(100vh - ${toolbar_height});
-            min-height: calc(100vh - ${toolbar_height});
+            height: ${sidebar_height}px
             top: ${toolbar_height}
         `"
     >
@@ -160,6 +159,7 @@ export default Vue.extend({
         global_attributes_list
     },
     props: {
+        sidebar_height: {type: Number, required: true},
         project_string_id: {
             type: String,
             required: true
@@ -197,7 +197,7 @@ export default Vue.extend({
             default: null
         },
         annotation_ui_context: {
-            type: Object, 
+            type: Object,
             required: true
         },
         compound_global_instance: {
@@ -305,7 +305,7 @@ export default Vue.extend({
       current_global_instance: function() {
         if (this.annotation_ui_context.instance_store && this.annotation_ui_context.instance_store.instance_store[this.annotation_ui_context.working_file.id]) {
             const global_instance = this.annotation_ui_context.instance_store.instance_store[this.annotation_ui_context.working_file.id].global_instance
-    
+
             return global_instance
         }
         return null

@@ -1,8 +1,8 @@
 <template>
-<div :style="`height: ${sidebarHeight}px `">
+<div :style="`height: ${sidebar_height}px `">
   <sidebar_image_annotation
     v-if="(interface_type === 'image' || interface_type === 'video')"
-    :height="sidebarHeight"
+    :height="sidebar_height"
     :annotation_ui_context="annotation_ui_context"
     :label_file_colour_map="label_file_colour_map"
     :project_string_id="project_string_id"
@@ -24,6 +24,7 @@
   <text_sidebar
     v-if="interface_type === 'text'"
     :project_string_id="project_string_id"
+    :sidebar_height="sidebar_height"
     :annotation_ui_context="annotation_ui_context"
     :label_list="label_list"
     :current_global_instance="current_global_instance"
@@ -90,7 +91,7 @@ export default Vue.extend({
     }
   },
   computed: {
-    sidebarHeight: function(){
+    sidebar_height: function(){
       return window.innerHeight - 100;
     }
   }

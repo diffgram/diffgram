@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="root_file.type === 'compound' || root_file.type === 'video' || root_file.type === 'image'"
+    v-if="multipane_supported_file"
     class="splitpanes-container"
   >
     <panel_manager_toolbar
@@ -102,13 +102,22 @@ export default Vue.extend({
   },
   mounted() {
     this.disable_resize(this.root_file)
+    if(!this.multipane_supported_file){
+      this.$emit('ready')
+    }
   },
   watch: {
     root_file: {
       deep: true,
       handler: function(newVal) {
         this.disable_resize(newVal)
+
       }
+    }
+  },
+  computed: {
+    multipane_supported_file: function(){
+      return this.root_file.type === 'compound' || this.root_file.type === 'video' || this.root_file.type === 'image'
     }
   },
   methods: {
