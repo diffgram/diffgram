@@ -148,7 +148,7 @@ def task_get_annotation_list_api(task_id):
         # which assummes we need to check file permissions still,
         # ie (via project) where as here we don't...
         file = task.file
-        if input.get('task_child_file_id'):
+        if input is not None and input.get('task_child_file_id'):
             file = File.get_by_id(session = session, file_id = input.get('task_child_file_id'))
 
         file_serialized = file.serialize_with_annotations(session = session)
