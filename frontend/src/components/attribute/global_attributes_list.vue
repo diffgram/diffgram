@@ -10,6 +10,8 @@
     :flat="true"
     :hover="true"
     :tile="true"
+    style="height: 100%"
+
   >
     <v-expansion-panel>
       <v-expansion-panel-header
@@ -39,7 +41,7 @@
       <v-expansion-panel-content>
         <attribute_group_list
           v-if="current_global_instance && sorted_global_attribute_groups_list && sorted_global_attribute_groups_list.length !== 0"
-          style="overflow-y:auto; max-height: 400px"
+          style="overflow-y:auto;"
           mode="annotate"
           key="global_attribute_groups_list"
           :schema_id="schema_id"

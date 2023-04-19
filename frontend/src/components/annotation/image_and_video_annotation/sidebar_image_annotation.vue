@@ -2,7 +2,7 @@
   <v-navigation-drawer
     permanent
     left
-    style="border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; height: 89vh"
+    :style="`border-right: 1px solid #e0e0e0;border-top: 1px solid #e0e0e0; height: ${height}px`"
     :width="annotation_ui_context.current_image_annotation_ctx.label_settings.left_nav_width"
   >
 
@@ -226,6 +226,7 @@ export default Vue.extend({
     project_string_id: {type: String, required: true},
     current_global_instance: {type: Object},
     compound_global_instance: {type: Object},
+    height: {type: Number},
     root_file: {type: Object},
     instance_list: {type: Array as Instance[], required: true, default: ()=>{return[]}},
     video_parent_file_instance_list: {type: Array as Instance[], required: true, default: ()=>{return[]}},

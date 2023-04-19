@@ -164,6 +164,7 @@
             </div>
             <v-sheet class="pa-4 primary lighten-2">
               <v-text-field
+                ref="treeview_search"
                 v-model="search"
                 label="Start by typing attribute name"
                 dark
@@ -185,6 +186,7 @@
               }"
             >
             <v-treeview
+              ref="treeview"
               :items="tree_items"
               :load-children="load_clidren"
               :open-all="search ? true : false"
@@ -199,7 +201,7 @@
                   />
               </template>
               <template v-slot:append="{item}">
-                <v-chip x-small v-if="$store.state.user.settings.show_ids === true">
+                <v-chip x-small>
                   ID: {{ item.id }}
                 </v-chip>
               </template>
