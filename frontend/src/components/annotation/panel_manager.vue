@@ -1,30 +1,30 @@
 <template>
-  <div 
-    v-if="root_file.type === 'compound' || root_file.type === 'video' || root_file.type === 'image'"
-    class="splitpanes-container" 
+  <div
+    v-if="multipane_supported_file"
+    class="splitpanes-container"
   >
     <panel_manager_toolbar
       v-if="root_file.type === 'compound' && root_file.subtype !== 'conversational'"
-      :panel_settings="panel_settings" class="toolbar" 
+      :panel_settings="panel_settings" class="toolbar"
       @grid_changed="$emit('grid_changed')"
     />
-    <splitpanes 
+    <splitpanes
       class="default-theme"
       style="width: 100%"
       :horizontal="layout_direction === 'horizontal'"
-      :push-other-panes="false" 
+      :push-other-panes="false"
       @resize="on_rows_resized"
       @ready="$emit('ready')"
     >
-      <pane 
+      <pane
         v-for="(item, row_index) in num_rows" :key="`row_${row_index}`"
         :style="`height: ${child_annotation_ctx_list[row_index].container_height}px`"
       >
         <splitpanes
-          @pane-click="$emit('pane-click', row_index, $event)" 
+          @pane-click="$emit('pane-click', row_index, $event)"
           @resize="on_col_resized(row_index, $event)"
         >
-          <pane 
+          <pane
             v-for="(col, col_index) in parseInt(num_columns)"
             :key="`row_${row_index}_col_${col_index}`"
             :style="`align-items: ${get_file_type(row_index, col_index) == 'text' ? 'flex-start' : 'center'}`"
@@ -33,7 +33,7 @@
             <slot :name="`panel_${row_index}:${col_index}`">
               <div style="width: 400px">
                 <h6
-                  style="font-size: 36px" 
+                  style="font-size: 36px"
                   class="text--black"
                 >
                   row: {{row_index}} col {{col_index}}
@@ -59,14 +59,14 @@ import 'splitpanes/dist/splitpanes.css'
 
 export default Vue.extend({
   name: "panel_manager",
-  components: { 
-    Splitpanes, 
-    Pane, 
+  components: {
+    Splitpanes,
+    Pane,
     panel_manager_toolbar
   },
   props: {
     num_rows: {
-      type: Number, 
+      type: Number,
       required: true
     },
     selected_row: {
@@ -76,19 +76,19 @@ export default Vue.extend({
       type: Number
     },
     num_columns: {
-      type: Number, 
+      type: Number,
       required: true
     },
     layout_direction: {
-      type: String, 
+      type: String,
       default: 'horizontal'
     },
     root_file: {
-      type: Object, 
+      type: Object,
       required: true
     },
     panel_settings: {
-      type: Object, 
+      type: Object,
       required: true
     },
     working_file_list: {
@@ -102,13 +102,22 @@ export default Vue.extend({
   },
   mounted() {
     this.disable_resize(this.root_file)
+    if(!this.multipane_supported_file){
+      this.$emit('ready')
+    }
   },
   watch: {
     root_file: {
       deep: true,
       handler: function(newVal) {
         this.disable_resize(newVal)
+
       }
+    }
+  },
+  computed: {
+    multipane_supported_file: function(){
+      return this.root_file.type === 'compound' || this.root_file.type === 'video' || this.root_file.type === 'image'
     }
   },
   methods: {
