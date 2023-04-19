@@ -909,7 +909,7 @@ Cypress.Commands.add('uploadCompoundFileImages', function (project_string_id, fi
               )
             })
             .then(() => {
-              cy.wait(2000)
+              cy.wait(8000)
                 .visit(`http://localhost:8085/studio/upload/${project_string_id}`)
                 .wait(1000)
                 .get('[data-cy=input-table] tbody tr').first().get('.file-link').first().click({force: true});
