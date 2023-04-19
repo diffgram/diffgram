@@ -4,7 +4,7 @@
   style="display: flex; flex-direction: row"
 >
   <conversational_meta
-    v-if="!image_annotation_ctx.rendering && !image_annotation_ctx.resizing"
+    v-if="!image_annotation_ctx.rendering && !image_annotation_ctx.resizing && annotation_ui_context.subtype === 'conversational'"
     :workign_file="working_file"
     :global_attribute_groups_list="global_attribute_groups_list"
     :annotation_ui_context="annotation_ui_context"
@@ -322,6 +322,10 @@ export default Vue.extend({
       type: Number,
       default: 600
     },
+    container_height: {
+      type: Number,
+      default: 600
+    },
     child_annotation_ctx_list: {
       type: Array,
       default: []
@@ -361,7 +365,7 @@ export default Vue.extend({
     }
   },
   beforeMount() {
-    this.resize_listener()
+    // this.resize_listener()
   },
   mounted() {
     this.on_mount()
@@ -570,7 +574,6 @@ export default Vue.extend({
       this.show_label_selection = false
       this.instance_in_progress = null
       clearTimeout(this.re_render_func);
-      
       this.re_render_func = setTimeout(this.initialize_token_render, 1000)
     },
     leave_listener: function (e) {
@@ -744,7 +747,7 @@ export default Vue.extend({
 
         this.initial_words_measures = set_words
 
-        this.initialize_instance_list()
+        await this.initialize_instance_list()
       } catch(e) {
         this.fetching_error = true
       }
@@ -752,13 +755,16 @@ export default Vue.extend({
     initialize_token_render: async function () {
       if (!this.$refs[`initial_svg_element_${this.working_file.id}`]) return
       if (!this.initial_words_measures) return
-      
+
       const tokens = [];
       let token_x_position = 40;
+      this.initial_words_measures.map((word, index) => {
+        const refs = this.$refs[`word_${index}_file_${this.working_file.id}`]
+        let current_token_width = 0
+        if(refs.length >  0){
+          current_token_width = refs[0].getBoundingClientRect().width
 
-      this.initial_words_measures.map((word, index) => {   
-        const current_token_width = this.$refs[`word_${index}_file_${this.working_file.id}`][0].getBoundingClientRect().width
-
+        }
         if (this.lines.length === 0) {
           this.lines.push({id: 0, y: 5, initial_y: 5})
         }
@@ -800,6 +806,7 @@ export default Vue.extend({
           this.child_annotation_ctx_list.find(child => child.file.id === this.working_file.id).container_height = this.$refs[`text_annotation_area_${this.working_file.id}`].getBoundingClientRect().height + 25
         }, 100)
       }
+      // this.$emit('file_rendered');
 
     },
     // function to draw relations between instances
@@ -808,7 +815,7 @@ export default Vue.extend({
       if (context) return
 
       if (this.bulk_mode) return this.bulk_labeling(instance_id)
-      
+
       this.on_draw_relation(instance_id)
     },
     create_relation: function(label) {
@@ -898,13 +905,13 @@ export default Vue.extend({
     on_finish_draw_instance: async function (label) {
       if (!this.instance_in_progress.start_token && this.instance_in_progress.start_token !== 0) return
       const instance_exists = this.instance_list.get().find(instance =>
-        instance.start_token === this.instance_in_progress.start_token && 
+        instance.start_token === this.instance_in_progress.start_token &&
         instance.end_token === this.instance_in_progress.end_token &&
         !instance.soft_delete &&
         instance.label_file_id === label.id
         ||
-        instance.end_token === this.instance_in_progress.start_token && 
-        instance.start_token === this.instance_in_progress.end_token && 
+        instance.end_token === this.instance_in_progress.start_token &&
+        instance.start_token === this.instance_in_progress.end_token &&
         !instance.soft_delete &&
         instance.label_file_id === label.id
       )
@@ -948,11 +955,11 @@ export default Vue.extend({
     },
     delete_instance: async function (instance) {
       this.annotation_ui_context.get_current_ann_ctx().hover_instance = null
-      
+
       if (this.annotation_ui_context.get_current_ann_ctx().current_instance && instance.creation_ref_id === this.annotation_ui_context.get_current_ann_ctx().current_instance.creation_ref_id) {
         this.annotation_ui_context.get_current_ann_ctx().current_instance = null
       }
-      
+
       const new_delete_command = new DeleteInstanceCommand([instance], this.instance_list)
       this.annotation_ui_context.command_manager.executeCommand(new_delete_command)
       this.$emit('set_has_changed', true)
@@ -988,8 +995,6 @@ export default Vue.extend({
 
       // New command pattern
       this.instance_list = new InstanceList(instance_list)
-
-      // setTimeout(this.initialize_token_render, 1000)
     },
     after_save: async function (updated_instances) {
       updated_instances.map(add_instance => {
@@ -997,12 +1002,12 @@ export default Vue.extend({
 
         const old_instance = this.instance_list.get_all().find(instance => instance.creation_ref_id === add_instance.creation_ref_id)
         const old_id = old_instance.get_instance_data().id
-          
+
         this.instance_list.get_all().find(instance => instance.creation_ref_id === add_instance.creation_ref_id).id = add_instance.id
         if (this.instance_in_progress) {
           this.instance_in_progress.start_instance = this.instance_in_progress.start_instance === old_id ? add_instance.id : this.instance_in_progress.start_instance
         }
-        
+
         this.instance_list.get_all()
           .filter(instance => {
             const {from_instance_id, to_instance_id} = instance.get_instance_data()
@@ -1097,7 +1102,7 @@ export default Vue.extend({
       let command
 
       const global_instance = this.annotation_ui_context.instance_store.instance_store[this.working_file.id].global_instance
-      
+
       if (is_global) {
         command = new UpdateGlobalAttributeCommand([global_instance], this.instance_list, true)
       } else {
@@ -1109,7 +1114,7 @@ export default Vue.extend({
       if (["slider", "text", "time", "date"].includes(attribute[0].kind)) attribute_to_pass = attribute[1]
       else if (Array.isArray(attribute[1])) attribute_to_pass = [...attribute[1]]
       else attribute_to_pass = {...attribute[1]}
-      
+
       command.set_new_attribute(attribute[0].id, attribute_to_pass)
       this.annotation_ui_context.command_manager.executeCommand(command)
       this.$emit('set_has_changed', true)

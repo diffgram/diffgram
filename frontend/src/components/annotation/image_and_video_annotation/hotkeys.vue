@@ -19,7 +19,9 @@
   <p> <kbd>1 - 9</kbd> Change Attribute Option of Active Attribute (radio and select only) </p>
 
   <p> <kbd>Shift</kbd> + <kbd>←</kbd>,<kbd>→</kbd> Previous or Next File </p>
-
+  <h2> Attributes </h2>
+  <p> <kbd>Shift</kbd> + <kbd>↑</kbd>,<kbd>↓</kbd> Previous or Next Attribute </p>
+  <p> <kbd>1-9</kbd> Change Attribute Options (Select & Radio) </p>
   <h2> Instance </h2>
   <p> <kbd>CTRL+ ←/→</kbd> Change Selected Instance</p>
   <p> <kbd>L</kbd> Open Change Label Menu (Use <kbd>←/→</kbd> and <kbd>enter</kbd> to select once open)</p>

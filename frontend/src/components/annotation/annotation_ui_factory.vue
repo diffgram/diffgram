@@ -172,7 +172,7 @@
               :interface_type="interface_type"
               :show_toolbar="index === 0"
               :annotation_ui_context="annotation_ui_context"
-              :image_annotation_ctx="child_annotation_ctx_list[index]"
+                :image_annotation_ctx="child_annotation_ctx_list[index]"
               :child_annotation_ctx_list="child_annotation_ctx_list"
               :working_file="file"
               :file="file"
@@ -251,6 +251,7 @@
               @change_task="(event) => trigger_task_change(event, annotation_ui_context.task, false)"
               @trigger_listeners_setup="trigger_listeners_setup"
               @open_label_change_dialog="open_change_label_dialog_sidebar"
+              @file_rendered="on_file_rendered"
             />
           </div>
 
@@ -625,9 +626,11 @@ export default Vue.extend({
         }
         this.changing_task = false
       } else if (this.file_id_prop) {
+
         await this.fetch_schema_list()
         await this.fetch_single_file();
       } else {
+
         await this.fetch_schema_list()
         await this.fetch_project_file_list();
       }
@@ -767,6 +770,9 @@ export default Vue.extend({
     },
   },
   methods: {
+    on_file_rendered: function(){
+      this.on_panes_ready()
+    },
     trigger_listeners_setup: function() {
       if (this.hotkey_manager) this.hotkey_manager.activate(this.listeners_map())
     },
@@ -919,12 +925,12 @@ export default Vue.extend({
           if(this.child_annotation_ctx_list[i].container_height === 0){
             // We substract 50 px to leave a small padding when calculating new scale of images
             if(total_rows === 1){
-              this.child_annotation_ctx_list[i].container_height = Math.round(total_height  - 50);
+              this.child_annotation_ctx_list[i].container_height = Math.round(total_height);
             } else{
               this.child_annotation_ctx_list[i].container_height = 500
             }
           }
-          this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[row_index].size / 100) - 50
+          this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[row_index].size / 100)
         }
       }
     },
@@ -932,15 +938,15 @@ export default Vue.extend({
       if (!this.$refs.panels_manager) return
 
       let total_width = this.$refs.panels_manager.$el.clientWidth;
-
       if (!total_width) return
 
       // This is for text initial rendering. The sidebar width is fixed and equal to 350 and initially not rendered
       if (
         this.annotation_ui_context.working_file.type == "text" &&
         (!this.$refs.sidebar_factory || !this.$refs.sidebar_factory.$refs.sidebar_text)
-      ) total_width -= 350
-
+      ) {
+        total_width -= 350
+      }
       let row_files = this.annotation_ui_context.working_file_list.filter(f => f.row === parseInt(row_index))
       for (let file_index = 0; file_index < row_files.length; file_index++) {
         let file = row_files[file_index]
@@ -951,8 +957,11 @@ export default Vue.extend({
         }
         this.child_annotation_ctx_list[i].container_width = total_width * (panes_list[file_index].size / 100) - 50
       }
+
     },
-    on_panes_ready: function () {
+    on_panes_ready: async function () {
+      await this.$nextTick()
+
       for (let i = 0; i < this.annotation_ui_context.panel_settings.rows; i++) {
         // TODO: filter this by row
         let default_pane_sizes_cols = this.child_annotation_ctx_list.map(elm => {
@@ -1199,38 +1208,43 @@ export default Vue.extend({
       }
       return result
     },
+    process_text_save: async function(and_complete = false){
+      // TODO: Move out of component and into a class.
+      this.set_has_changed(false)
+      this.set_save_loading(true)
+      const file_id = this.annotation_ui_context.working_file.id
+      let url
+      if (this.annotation_ui_context.task && this.annotation_ui_context.task.id) {
+        url = `/api/v1/task/${this.annotation_ui_context.task.id}/annotation/update`;
+      } else {
+        url = `/api/project/${this.project_string_id}/file/${file_id}/annotation/update`
+      }
+
+      const { global_instance ,instance_list } = this.annotation_ui_context.instance_store.get_instance_list(file_id)
+
+      const res = await postInstanceList(url, [...instance_list, global_instance], file_id)
+
+      if (res) {
+        const { added_instances } = res
+
+        this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].after_save(added_instances)
+      }
+
+      if(this.root_file && this.root_file.type === 'compound'){
+        await this.save_compound_global_attributes(and_complete)
+      }
+
+      this.set_save_loading(false)
+
+    },
     save: async function (
       and_complete = false,
       frame_number_param = undefined,
       instance_list_param = undefined
     ) {
-
+      // TODO: Move out of component into a InstanceListSaver class
       if (this.annotation_ui_context.working_file.type === 'text') {
-        const file_id = this.annotation_ui_context.working_file.id
-        let url
-
-
-        if (this.annotation_ui_context.task && this.annotation_ui_context.task.id) {
-          url = `/api/v1/task/${this.annotation_ui_context.task.id}/annotation/update`;
-        } else {
-          url = `/api/project/${this.project_string_id}/file/${file_id}/annotation/update`
-        }
-
-        const { global_instance ,instance_list } = this.annotation_ui_context.instance_store.get_instance_list(file_id)
-
-        const res = await postInstanceList(url, [...instance_list, global_instance], file_id)
-
-        if (res) {
-          const { added_instances } = res
-
-          this.$refs[`annotation_area_factory_${file_id}`][0].$refs[`text_annotation_core_${file_id}`].after_save(added_instances)
-        }
-
-        if(this.root_file && this.root_file.type === 'compound'){
-          await this.save_compound_global_attributes(and_complete)
-        }
-
-        this.set_save_loading(false)
+        await this.process_text_save(and_complete)
         return
       }
 
@@ -1948,8 +1962,10 @@ export default Vue.extend({
       }
       this.get_model_runs_from_query(model_runs_data);
       if (this.listeners_map()) this.listeners_map()['resize']()
-      this.changing_file = false;
 
+      this.changing_file = false;
+      await this.$nextTick();
+      this.update_window_size_from_listener()
     },
 
     get_labels_from_project: async function () {
@@ -2002,7 +2018,7 @@ export default Vue.extend({
       if (this.$refs.file_manager_sheet) {
         this.$refs.file_manager_sheet.display_file_manager_sheet();
       }
-
+      await this.update_window_size_from_listener()
     },
 
     fetch_single_file: async function () {
@@ -2017,6 +2033,7 @@ export default Vue.extend({
       if (this.$refs.file_manager_sheet) {
         this.$refs.file_manager_sheet.display_file_manager_sheet();
       }
+      await this.update_window_size_from_listener()
     },
 
     fetch_single_task: async function (task_id) {
