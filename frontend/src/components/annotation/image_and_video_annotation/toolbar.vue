@@ -26,7 +26,7 @@
               v-if="$store.getters.get_ui_schema('logo', 'visible')"
               :href="'/me'"
             >
-              <div class="pt-2 pr-3 clickable">
+              <div class="pa-2 clickable">
                 <img
                   src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
                   height="30px"
