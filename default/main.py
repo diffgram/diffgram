@@ -142,7 +142,8 @@ startup_checker.execute_startup_checks()
 print("Startup in", time.time() - start_time)
 from swagger_setup import setup_swagger
 try:
-    setup_swagger(app)
+    path = setup_swagger(app)
+    logger.info(f'Generated Swagger spec: {path}')
 except Exception as e:
     data = traceback.format_exc()
     logger.warning(f'Failed to generate swagger spec: {data}')

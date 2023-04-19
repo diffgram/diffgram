@@ -18,7 +18,7 @@ from flasgger import swag_from
 from shared.database.source_control.file_perms import FilePermissions
 @routes.route('/api/v1/file/view',
               methods = ['POST'])
-@swag_from('../../../docs/file_view.yml')
+@swag_from('../../../docs/files/file_view.yml')
 def view_file_by_id():  # Assumes permissions handled later with Project_permissions
     """
 

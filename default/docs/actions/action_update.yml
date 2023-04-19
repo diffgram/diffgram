@@ -1,7 +1,7 @@
 
 ---
-summary: Create Action
-description: Create a new action within a workflow.
+summary: Update Action
+description: Updates an action within a workflow.
 tags:
   - Workflows & Actions
 parameters:
@@ -9,31 +9,25 @@ parameters:
     in: path
     type: string
     required: true
-  - name: workflow_id
+  - name: action_id
     in: path
     type: number
     required: true
   - in: body
-    name: ActionsNewRequestBody
+    name: ActionsUpdateRequestBody
     description: The metadata to be updated. Any keys not provided will be ignored.
     schema:
-      $ref: '#/definitions/ActionsNewRequestBody'
+      $ref: '#/definitions/ActionsUpdateRequestBody'
 definitions:
-  ActionsNewRequestBody:
+  ActionsUpdateRequestBody:
     type: object
     properties:
       kind:
         description: the type of the action.
         type: number
-      active:
-        description: is the action active or not.
-        type: boolean
       archived:
         description: is the action archived or not.
         type: boolean
-      status:
-        description: action status
-        type: string
       template_id:
         description: action template ID.
         type: number
@@ -58,12 +52,14 @@ definitions:
       precondition:
         description: Object with the metadata for the precondition
         $ref: './default/docs/actions/schemas.yaml#/definitions/PreConditionData'
-
       completion_condition_data:
         description: Object with the metadata for the completion condition data.
         $ref: './default/docs/actions/schemas.yaml#/definitions/CompletionConditionData'
+      output_interface:
+        description: Output of the action interface definition.
+        type: object
 responses:
   200:
-    description: The created action.
+    description: The updated action.
     schema:
       $ref: './default/docs/actions/schemas.yaml#/definitions/Action'

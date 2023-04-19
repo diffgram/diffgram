@@ -1,0 +1,18 @@
+
+---
+summary: Workflows List
+description: Gets the workflows associated with the given project.
+tags:
+  - Workflows & Actions
+parameters:
+  - name: project_string_id
+    in: path
+    type: string
+    required: true
+responses:
+  200:
+    description: The list of action runs.
+    schema:
+      type: array
+      items:
+        $ref: './default/docs/actions/schemas.yaml#/definitions/ActionRun'

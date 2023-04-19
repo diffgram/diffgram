@@ -7,14 +7,12 @@ def do_routes_importing():
     from methods.action.action_new import api_action_new
     from methods.action.action_previous import api_action_previous
     from methods.action.action_update import api_action_update
-    from methods.action.action_validate_config import api_action_validate
     from methods.action.workflow import new_workflow_factory_api
     from methods.action.workflow import workflow_view_api
     from methods.action.workflow_update import api_workflow_update
     from methods.action.action_template_list import api_action_template_list
     from methods.action.action_manual import api_action_manual
     from methods.action.action_template_get import api_get_action_template
-    from methods.action.action_stat import api_action_stat
     from methods.action.action_run_list import api_action_list_web
 
     from methods.project.project_update import api_project_update

@@ -1,0 +1,29 @@
+
+---
+summary: Create Workflow
+description: Create a new workflow.
+tags:
+  - Workflows & Actions
+parameters:
+  - name: project_string_id
+    in: path
+    type: string
+    required: true
+  - in: body
+    name: ActionsNewRequestBody
+    required: true
+    description: The metadata to be updated. Any keys not provided will be ignored.
+    schema:
+      $ref: '#/definitions/WorkflowNewRequestBody'
+definitions:
+  WorkflowNewRequestBody:
+    type: object
+    properties:
+      name:
+        description: the name of the workflow.
+        type: string
+responses:
+  200:
+    description: The created workflow.
+    schema:
+      $ref: './default/docs/actions/schemas.yaml#/definitions/Workflow'

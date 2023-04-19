@@ -1,0 +1,35 @@
+
+---
+summary: Update File Metadata
+description: Updates the given file ID file metadata.
+tags:
+  - Files
+parameters:
+  - name: project_string_id
+    in: path
+    type: string
+    required: true
+  - name: file_id
+    in: path
+    type: number
+    required: true
+  - in: body
+    name: FileUpdateMetadataReqBody
+    description: The metadata to be updated. Any keys not provided will be ignored.
+    schema:
+      $ref: '#/definitions/FileUpdateMetadataReqBody'
+definitions:
+  FileUpdateMetadataReqBody:
+    type: object
+    properties:
+      rotation_degrees:
+        description: the rotation degrees for rotating image. Works only on image type files.
+        type: number
+      ordinal:
+        description: the ordinal for a child file. Useful for ordering compound files.
+        type: number
+responses:
+  200:
+    description: The updated file.
+    schema:
+      $ref: './default/docs/files/schemas.yaml#/definitions/File'

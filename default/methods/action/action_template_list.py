@@ -1,15 +1,14 @@
 from methods.regular.regular_api import *
 from sqlalchemy.orm.session import Session
-from shared.database.action.action import Action
-from shared.database.action.workflow import Workflow
 from shared.database.action.action_template import Action_Template
-from shared.database.action.action_run import ActionRun
+from flasgger import swag_from
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/action-template/list', methods = ['GET'])
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
+@swag_from('../../docs/actions/action_template_list.yml')
 def api_action_template_list(project_string_id):
     """
         Returns all the available action templates in a project.

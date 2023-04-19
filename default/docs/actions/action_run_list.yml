@@ -1,0 +1,22 @@
+
+---
+summary: Action Runs List
+description: Gets the actions runs associated with the given action ID.
+tags:
+  - Workflows & Actions
+parameters:
+  - name: project_string_id
+    in: path
+    type: string
+    required: true
+  - name: action_id
+    in: path
+    type: number
+    required: true
+responses:
+  200:
+    description: The list of action runs.
+    schema:
+      type: array
+      items:
+        $ref: './default/docs/actions/schemas.yaml#/definitions/ActionRun'
