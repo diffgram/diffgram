@@ -1,6 +1,6 @@
 <template>
   <v-expansion-panels
-    v-if="global_attribute_groups_list"
+    v-if="sorted_global_attribute_groups_list"
     v-model="open"
     :accordion="true"
     :inset="false"
@@ -10,6 +10,8 @@
     :flat="true"
     :hover="true"
     :tile="true"
+    style="height: 100%"
+
   >
     <v-expansion-panel>
       <v-expansion-panel-header
@@ -32,20 +34,20 @@
           x-small
           class="d-flex justify-center flex-grow-0"
         >
-          {{ global_attribute_groups_list.length }}
+          {{ sorted_global_attribute_groups_list.length }}
         </v-chip>
       </v-expansion-panel-header>
 
       <v-expansion-panel-content>
         <attribute_group_list
-          v-if="current_global_instance && global_attribute_groups_list && global_attribute_groups_list.length !== 0"
-          style="overflow-y:auto; max-height: 400px"
+          v-if="current_global_instance && sorted_global_attribute_groups_list && sorted_global_attribute_groups_list.length !== 0"
+          style="overflow-y:auto;"
           mode="annotate"
           key="global_attribute_groups_list"
           :schema_id="schema_id"
           :project_string_id="project_string_id"
           :view_only_mode="view_only_mode"
-          :attribute_group_list_prop="global_attribute_groups_list"
+          :attribute_group_list_prop="sorted_global_attribute_groups_list"
           :current_instance="current_global_instance"
           @attribute_change="$emit('attribute_change', $event)"
         />
@@ -92,6 +94,11 @@ export default Vue.extend({
         if (this.global_attribute_groups_list.length > 0) this.open = 0
       } else {
         this.open = this.open_state ? 0 : undefined
+      }
+    },
+    computed: {
+      sorted_global_attribute_groups_list: function(){
+        return this.global_attribute_groups_list.sort((a, b) => a.ordinal - b.ordinal);
       }
     }
   }

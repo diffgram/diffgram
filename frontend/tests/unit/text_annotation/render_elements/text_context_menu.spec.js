@@ -6,8 +6,10 @@ describe("Tests text_context_menu.vue", () => {
     let wrapper;
 
     beforeEach(() => {
+        const svg_ref = document.createElementNS("http://www.w3.org/2000/svg", "svg")
         props = {
             propsData: {
+                svg_ref,
                 context_menu: {
                     x: 1,
                     y: 1,
@@ -29,7 +31,7 @@ describe("Tests text_context_menu.vue", () => {
     })
 
     it("Should render context menu on the provided position", () => {
-        expect(wrapper.html()).toContain('class="fast-menu-element" style="top: 1px; left: 1px;"')
+        expect(wrapper.html()).toContain('class="fast-menu-element" style="top: 1px; left: 1px;')
     })
 
     it("Should render correct label color", () => {

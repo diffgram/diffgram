@@ -268,7 +268,6 @@ export class CanvasMouseTools {
   }
 
   private raw_point(event) {
-    console.log('EVENT POINT', event)
     var rect = event.target.getBoundingClientRect();
     var x = event.clientX - rect.left; //x position within the element.
     var y = event.clientY - rect.top;  //y position within the element.

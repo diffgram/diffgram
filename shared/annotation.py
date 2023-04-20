@@ -37,7 +37,7 @@ from shared.database.video.sequence import Sequence
 from shared.database.external.external import ExternalMap
 from shared.shared_logger import get_shared_logger
 import traceback
-
+from typing import Optional
 logger = get_shared_logger()
 
 
@@ -53,10 +53,10 @@ class Annotation_Update():
     instance_list_existing: list = None
     instance_list_existing_dict: dict = field(default_factory = lambda: {})
     instance_list_kept_serialized: list = field(default_factory = lambda: [])
-    video_data: dict = None
+    video_data: Optional[dict] = None
     project: Project = None  # Note project is Required for get_allowed_label_file_ids()
-    project_id: Project = None  # add project_id for avoiding dettached session on thread processing
-    task: Task = None
+    project_id: int = None  # add project_id for avoiding dettached session on thread processing
+    task: Optional[Task] = None
     complete_task: bool = False
     gold_standard_file = None
     external_auth: bool = False
@@ -77,8 +77,8 @@ class Annotation_Update():
     system_upgrade_hash_changes: list = field(default_factory = lambda: [])
 
     directory = None
-    external_map: ExternalMap = None
-    external_map_action: str = None
+    external_map: Optional[ExternalMap] = None
+    external_map_action: Optional[str] = None
     new_instance_dict_hash: dict = field(default_factory = lambda: {})  # Keep a hash of all
     do_create_new_file = False
     set_parent_instance_list = False
@@ -638,7 +638,6 @@ class Annotation_Update():
         """
         if not self.file:
             return
-        print('FILEEE CAHCEEEEE', self.file.id, self.instance_list_kept_serialized)
         self.file.set_cache_by_key(
             cache_key = 'instance_list',
             value = self.instance_list_kept_serialized
@@ -2192,7 +2191,6 @@ def task_annotation_update(
 
     instance_list_new = untrusted_input.get('instance_list', None)
     gold_standard_file = untrusted_input.get('gold_standard_file', None)
-    print('child_file_save_id', child_file_save_id)
     try:
         if child_file_save_id is None:
             file = File.get_by_id(session = session, file_id = task.file_id)
@@ -2319,10 +2317,12 @@ def annotation_update_web(
     if and_complete is True:
         new_file = new_file.toggle_flag_shared(session)
 
+    member_id = user.member_id if user else None
+
     Event.new(
         session = session,
         kind = "annotation_update",
-        member_id = user.member_id,
+        member_id = member_id,
         project_id = project.id,
         file_id = new_file.id,
         description = f"Changed {str(new_file.count_instances_changed)}"

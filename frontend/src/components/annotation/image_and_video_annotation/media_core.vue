@@ -648,7 +648,7 @@
                         </v-icon>
                         <p class="title-file">{{ item.original_filename }}</p>
                       </v-container>
-                      <v-container v-else-if="item.type === 'compound'"
+                      <v-container v-else-if="item.type.includes('compound')"
                                    :class="{['d-flex ma-0 flex-column justify-center align-center pa-0']: true,
                                  ['unsselected-box']: !selected.includes(item),
                                  ['selected-box']: selected.includes(item)}">
@@ -1390,7 +1390,7 @@ export default Vue.extend({
         if (!file) {
           return
         }
-        let create_thumbnails = this.context === 'task' || (file && file.image && file.image.url_signed_blob_path) ? false : true
+        let create_thumbnails = (this.context === 'task' || (file && file.image && file.image.url_signed_blob_path)) ? false : true
         let [url_data, err] = await get_file_signed_url(project_string_id, file.id, create_thumbnails);
         if (err) {
           this.error = this.$route_api_errors(err)
