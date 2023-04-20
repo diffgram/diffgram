@@ -12,7 +12,7 @@ from flasgger import swag_from
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
     apis_user_list=["api_enabled_builder"])
-@limiter.limit("10 per day")
+@limiter.limit("1000 per day")
 @swag_from('../../docs/actions/workflow_new.yml')
 def new_workflow_factory_api(project_string_id):
     """
@@ -66,7 +66,7 @@ def new_workflow_factory_api(project_string_id):
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
     apis_user_list=["api_enabled_builder"])
-@limiter.limit("100 per day")
+@limiter.limit("1000 per day")
 @swag_from('../../docs/actions/workflow_view.yml')
 def workflow_view_api(project_string_id, workflow_id):
     """
@@ -103,7 +103,7 @@ def workflow_view_api(project_string_id, workflow_id):
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
     apis_user_list=["api_enabled_builder"])
-@limiter.limit("100 per day")
+@limiter.limit("1000 per day")
 @swag_from('../../docs/actions/workflows_list.yml')
 def flow_list_view_api(project_string_id):
     """
@@ -152,7 +152,7 @@ def flow_list_view_api(project_string_id):
 @Project_permissions.user_has_project(
     Roles=["admin", "Editor"],
     apis_user_list=['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("20 per day")
+@limiter.limit("2000 per day")
 @swag_from('../../docs/actions/workflow_runs_list.yml')
 def api_action_flow_event_list(project_string_id):
     """

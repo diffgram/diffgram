@@ -1,6 +1,7 @@
 from methods.regular.regular_api import *
 from shared.database.action.action import Action
 from shared.database.action.workflow import Workflow
+from flasgger import swag_from
 
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
@@ -9,11 +10,13 @@ from shared.database.action.workflow import Workflow
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
-@limiter.limit("20 per day")
+@limiter.limit("2000 per day")
+@swag_from('../../docs/actions/workflow_update.yml')
 def api_workflow_update(project_string_id):
     """
-    TODO maybe prefer to pass whole flow object?
-
+        Updates the given workflow.
+    :param project_string_id:
+    :return:
     """
 
     spec_list = [

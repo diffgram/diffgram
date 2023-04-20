@@ -32,6 +32,39 @@
                 ]
             }
         },
+        "/api/v1/project/{project_string_id}/actions/workflow/update": {
+            "put": {
+                "summary": "Update Workflow",
+                "description": "Updates a workflow.",
+                "responses": {
+                    "200": {
+                        "description": "The updated workflow.",
+                        "schema": {
+                            "$ref": "./default/docs/actions/schemas.yaml#/definitions/Workflow"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "in": "body",
+                        "name": "WorkflowUpdateRequestBody",
+                        "description": "The metadata to be updated. Any keys not provided will be ignored.",
+                        "schema": {
+                            "$ref": "#/definitions/ActionsUpdateRequestBody"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
         "/api/v1/project/{project_string_id}/actions/workflow/new": {
             "post": {
                 "summary": "Create Workflow",
@@ -510,6 +543,59 @@
                 }
             }
         },
+        "ActionsUpdateRequestBody": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "description": "the type of the action.",
+                    "type": "number"
+                },
+                "archived": {
+                    "description": "is the action archived or not.",
+                    "type": "boolean"
+                },
+                "template_id": {
+                    "description": "action template ID.",
+                    "type": "number"
+                },
+                "workflow_id": {
+                    "description": "Workflow ID to which this actions belongs to.",
+                    "type": "number"
+                },
+                "public_name": {
+                    "description": "UI Visible action name.",
+                    "type": "string"
+                },
+                "icon": {
+                    "description": "Icon URL for the action",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Short description for what the action does.",
+                    "type": "string"
+                },
+                "trigger_data": {
+                    "description": "Payload of the trigger of this action",
+                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/TriggerData"
+                },
+                "ordinal": {
+                    "description": "Order of the actions inside the workflow.",
+                    "type": "number"
+                },
+                "precondition": {
+                    "description": "Object with the metadata for the precondition",
+                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/PreConditionData"
+                },
+                "completion_condition_data": {
+                    "description": "Object with the metadata for the completion condition data.",
+                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/CompletionConditionData"
+                },
+                "output_interface": {
+                    "description": "Output of the action interface definition.",
+                    "type": "object"
+                }
+            }
+        },
         "WorkflowNewRequestBody": {
             "type": "object",
             "properties": {
@@ -598,59 +684,6 @@
             "properties": {
                 "content": {
                     "type": "string"
-                }
-            }
-        },
-        "ActionsUpdateRequestBody": {
-            "type": "object",
-            "properties": {
-                "kind": {
-                    "description": "the type of the action.",
-                    "type": "number"
-                },
-                "archived": {
-                    "description": "is the action archived or not.",
-                    "type": "boolean"
-                },
-                "template_id": {
-                    "description": "action template ID.",
-                    "type": "number"
-                },
-                "workflow_id": {
-                    "description": "Workflow ID to which this actions belongs to.",
-                    "type": "number"
-                },
-                "public_name": {
-                    "description": "UI Visible action name.",
-                    "type": "string"
-                },
-                "icon": {
-                    "description": "Icon URL for the action",
-                    "type": "string"
-                },
-                "description": {
-                    "description": "Short description for what the action does.",
-                    "type": "string"
-                },
-                "trigger_data": {
-                    "description": "Payload of the trigger of this action",
-                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/TriggerData"
-                },
-                "ordinal": {
-                    "description": "Order of the actions inside the workflow.",
-                    "type": "number"
-                },
-                "precondition": {
-                    "description": "Object with the metadata for the precondition",
-                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/PreConditionData"
-                },
-                "completion_condition_data": {
-                    "description": "Object with the metadata for the completion condition data.",
-                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/CompletionConditionData"
-                },
-                "output_interface": {
-                    "description": "Output of the action interface definition.",
-                    "type": "object"
                 }
             }
         }
