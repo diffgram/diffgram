@@ -92,6 +92,9 @@ export default Vue.extend({
   },
   computed: {
     sidebar_height: function(){
+      if(this.annotation_ui_context.task){
+        return window.innerHeight - 50;
+      }
       return window.innerHeight - 100;
     }
   }
