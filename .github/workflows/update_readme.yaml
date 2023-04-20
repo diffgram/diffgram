@@ -16,6 +16,6 @@ jobs:
       - uses: readmeio/rdme@7.3.0
         with:
           rdme: openapi default/docs/swagger_spec.json --key=${{ secrets.README_API_KEY }} --id=${{ secrets.README_DEFAULT_API_ID }}
-      - uses: readmeio/rdme@7.3.0
-        with:
-          rdme: openapi walrus /docs/swagger_spec.json --key=${{ secrets.README_API_KEY }} --id=${{ secrets.README_WALRUS_API_ID }}
+#      - uses: readmeio/rdme@7.3.0
+#        with:
+#          rdme: openapi walrus /docs/swagger_spec.json --key=${{ secrets.README_API_KEY }} --id=${{ secrets.README_WALRUS_API_ID }}
