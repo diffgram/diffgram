@@ -1,7 +1,7 @@
 <template>
   <v-toolbar
     dense
-    width="100%"
+    width="100vw"
     elevation="0"
     fixed
     :height="height"
@@ -57,7 +57,7 @@
             tooltip_message="Undo (ctrl+z)"
             ui_schema_name="undo"
             datacy="undo"
-            :disabled="undo_disabled"
+            :disabled="!annotation_ui_context.command_manager.command_history.undo_posible"
             :icon_style="true"
             :bottom="true"
             @click="$emit('undo')"
@@ -69,7 +69,7 @@
             datacy="redo"
             tooltip_message="Redo (ctrl+y)"
             ui_schema_name="redo"
-            :disabled="redo_disabled"
+            :disabled="!annotation_ui_context.command_manager.command_history.undo_posible"
             :icon_style="true"
             :bottom="true"
             @click="$emit('redo')"
@@ -236,7 +236,7 @@
         tooltip_message="Undo (ctrl+z)"
         ui_schema_name="undo"
         datacy="undo"
-        :disabled="undo_disabled"
+        :disabled="!annotation_ui_context.command_manager.command_history.undo_posible"
         :icon_style="true"
         :bottom="true"
         @click="$emit('undo')"
@@ -248,7 +248,7 @@
         tooltip_message="Redo (ctrl+y)"
         ui_schema_name="redo"
         datacy="redo"
-        :disabled="redo_disabled"
+        :disabled="!annotation_ui_context.command_manager.command_history.redo_posible"
         :icon_style="true"
         :bottom="true"
         @click="$emit('redo')"
@@ -381,14 +381,6 @@ export default Vue.extend({
     task_status
   },
   props: {
-    undo_disabled: {
-      type: Boolean,
-      required: true
-    },
-    redo_disabled: {
-      type: Boolean,
-      required: true
-    },
     has_changed: {
       type: Boolean,
       default: false
@@ -398,7 +390,7 @@ export default Vue.extend({
       default: false
     },
     height: {
-      type: String,
+      type: String | Number,
       default: '50px'
     },
     project_string_id: {
@@ -436,8 +428,11 @@ export default Vue.extend({
     label_schema: {
       type: Object,
       required: true
-    }
-
+    },
+    annotation_ui_context: {
+      type: Object,
+      required: true
+    },
   }
 })
 </script>

@@ -33,7 +33,6 @@
     </div>
     <div v-else-if="interface_type === 'sensor_fusion'">
       <sensor_fusion_editor
-        ref="sensor_fusion_editor"
         v-bind="$props"
         v-on="$listeners"
         :ref="`3d_annotation_core_${working_file.id}`"
@@ -41,6 +40,7 @@
     </div>
     <div v-else-if="interface_type === 'text'">
       <text_annotation_core
+        v-if="!changing_file && !changing_task && image_annotation_ctx != undefined"
         v-bind="$props"
         v-on="$listeners"
         :ref="`text_annotation_core_${working_file.id}`"
@@ -300,10 +300,21 @@ export default Vue.extend({
     },
     show_toolbar: {type: Boolean},
     image_annotation_ctx: {type: Object},
-    is_active: {type: Boolean}
+    is_active: {type: Boolean},
+    bulk_mode: {
+      type: Boolean,
+      default: false
+    },
+    search_mode: {
+      type: Boolean,
+      default: false
+    },
+    child_annotation_ctx_list: {
+      type: Array,
+      default: []
+    }
   },
   computed: {
-
     current_interface_ref: function () {
       if (this.interface_type === 'image' || this.interface_type === 'video') {
         return this.$refs.annotation_core

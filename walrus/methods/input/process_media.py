@@ -1,3 +1,5 @@
+import uuid
+
 from methods.regular.regular_api import *
 from methods.video.video import New_video
 
@@ -942,9 +944,10 @@ class Process_Media():
         if self.input.media_type not in ['image', 'video', 'sensor_fusion', 'text', 'audio', 'geospatial']:
             return
 
+        file = self.input.file
         if self.input.file.parent_id is not None:
             # Avoid adding child of a compound file
-            return
+            file = File.get_by_id(session = self.session, file_id = self.input.file.parent_id)
 
         directory = self.input.directory
         if directory is None:
@@ -966,7 +969,7 @@ class Process_Media():
             job_sync_dir_manger.create_file_links_for_attached_dirs(
                 sync_only = True,
                 create_tasks = True,
-                file_to_link = self.input.file,
+                file_to_link = file,
                 file_to_link_dataset = self.working_dir,
                 related_input = self.input,
                 member = self.member
@@ -1739,9 +1742,13 @@ class Process_Media():
         result = self.read_raw_file()
         if result is False:
             return False
+        if settings.DIFFGRAM_SYSTEM_MODE == 'testing_e2e':
+            self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
+                                                  str(self.project_id) + "/" + str(uuid.uuid4()) + "/" + str(self.new_image.id)
 
-        self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
-                                              str(self.project_id) + "/" + str(self.new_image.id)
+        else:
+            self.new_image.url_signed_blob_path = settings.PROJECT_IMAGES_BASE_DIR + \
+                                                  str(self.project_id) + "/" + str(self.new_image.id)
 
         self.try_to_commit()
 
@@ -1928,7 +1935,7 @@ class Process_Media():
 
         # Use original file for jpg and jpeg
         extension = str(self.input.extension).lower()
-        if extension in ['.jpg', '.jpeg']:
+        if extension in ['.jpg', '.jpeg', '.webp']:
             new_temp_filename = self.input.temp_dir_path_and_filename
         # If PNG is used check compression
         elif extension == '.png':
@@ -1950,7 +1957,7 @@ class Process_Media():
         else:
             self.input.status = "failed"
             self.input.status_text = f"""Extension: {self.input.extension} not supported yet. 
-                Try adding an accepted extension [.jpg, .jpeg, .png, .bmp, .tif, .tiff] or no extension at all if from cloud source and response header content-type is set correctly."""
+                Try adding an accepted extension [.jpg, .jpeg, .png, .bmp, .tif, .tiff, .webp] or no extension at all if from cloud source and response header content-type is set correctly."""
             self.log['error']['extension'] = self.input.status_text
             return
 

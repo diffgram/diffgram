@@ -1,17 +1,28 @@
 <template>
-  <div v-if="interface_type === 'image' || interface_type === 'video'">
+  <div v-if="interface_type === 'image' || interface_type === 'video' || interface_type === 'text'">
     <main_menu
       :height="`${show_default_navigation ? '100px' : '50px'}`"
       :show_default_navigation="show_default_navigation"
     >
       <template slot="second_row">
-        <image_and_video_toolbar
-          ref="toolbar"
-          :height="50"
-          :instance_type_list="filtered_instance_type_list"
-          v-bind="$props"
-          v-on="$listeners"
-        />
+        <div>
+          <image_and_video_toolbar
+            ref="toolbar"
+            v-if="interface_type === 'image' || interface_type === 'video'"
+            :height="50"
+            :instance_type_list="filtered_instance_type_list"
+            v-bind="$props"
+            v-on="$listeners"
+          />
+          <text_toolbar
+            ref="toolbar"
+            v-if="interface_type === 'text'"
+            :height="50"
+            :instance_type_list="filtered_instance_type_list"
+            v-bind="$props"
+            v-on="$listeners"
+          />
+        </div>
       </template>
     </main_menu>
   </div>
@@ -20,11 +31,13 @@
 <script lang="ts">
 import Vue from "vue";
 import image_and_video_toolbar from "./image_and_video_annotation/toolbar.vue"
+import text_toolbar from "./text_annotation/text_toolbar.vue"
 
 export default Vue.extend({
   name: "toolbar_factory",
   components:{
-    image_and_video_toolbar
+    image_and_video_toolbar,
+    text_toolbar
   },
   props: {
     project_string_id: {
@@ -38,6 +51,10 @@ export default Vue.extend({
     command_manager: {
       type: Object,
       required: true
+    },
+    history: {
+      type: Object,
+      default: null
     },
     interface_type: {
       type: String,
@@ -138,6 +155,18 @@ export default Vue.extend({
     instance_type: {
       type: String,
       default: "box"
+    },
+    annotation_ui_context: {
+      type: Object,
+      required: true
+    },
+    bulk_mode: {
+      type: Boolean,
+      default: false
+    },
+    search_mode: {
+      type: Boolean,
+      default: false
     },
   },
   mounted() {

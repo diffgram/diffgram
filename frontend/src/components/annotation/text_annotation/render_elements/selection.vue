@@ -3,7 +3,7 @@
         <circle 
             :cx="start_border_position.x"
             :cy="start_border_position.y"
-            :r="4"
+            :r="circle_radius"
             :fill="solid_fill"
             class="move-cursor"
             @mousedown="move_borders('start')"
@@ -11,31 +11,31 @@
         <rect
             :x="start_border_position.x"
             :y="start_border_position.y"
-            :width="1"
-            :height="25"
+            :width="border_rect_width"
+            :height="selection_rect_height + circle_radius"
             :fill="solid_fill"
         />
         <rect
             v-for="rect in no_empty_rects"
             :key="`selection_${rect.x}_${rect.y}_${rect.width}`"
             :x="rect.x - 2"
-            :y="rect.y + 5"
-            :width="rect.width + 4"
-            :height="20"
+            :y="rect.y + circle_radius"
+            :width="rect.width + circle_radius"
+            :height="selection_rect_height"
             :fill="transparent_fill"
             @click="on_selection_click"
         />
         <rect
             :x="end_border_position.x"
-            :y="end_border_position.y + 5"
-            :width="1"
-            :height="25"
+            :y="end_border_position.y + circle_radius"
+            :width="border_rect_width"
+            :height="selection_rect_height + circle_radius"
             :fill="solid_fill"
         />
         <circle 
             :cx="end_border_position.x"
-            :cy="end_border_position.y + 30"
-            :r="4"
+            :cy="end_border_position.y + selection_rect_height + 2 * circle_radius"
+            :r="circle_radius"
             :fill="solid_fill"
             class="move-cursor"
             @mousedown="move_borders('end')"
@@ -52,6 +52,21 @@ export default Vue.extend({
         rects: {
             type: Array,
             required: true
+        },
+        svg_ref: {
+            type: SVGSVGElement,
+            required: true
+        }
+    },
+    data() {
+        return {
+            solid_fill: "rgba(76, 139, 245)",
+            transparent_fill: "rgba(76, 139, 245, 0.4)",
+            end_border_moved: null,
+            start_border_moved: null,
+            circle_radius: 5,
+            border_rect_width: 1,
+            selection_rect_height: 20
         }
     },
     computed: {
@@ -85,14 +100,6 @@ export default Vue.extend({
             }
         }
     },
-    data() {
-        return {
-            solid_fill: "rgba(76, 139, 245)",
-            transparent_fill: "rgba(76, 139, 245, 0.4)",
-            end_border_moved: null,
-            start_border_moved: null
-        }
-    },
     methods: {
         move_borders: function(direction) {
             this.$emit('on_start_moving_borders')
@@ -103,15 +110,17 @@ export default Vue.extend({
             }
         },
         end_move_listener: function(e) {
+            const element_bounding_box = this.svg_ref.getBoundingClientRect()
             this.end_border_moved = {
-                x: e.clientX - 350,
-                y: window.scrollY + e.clientY - 150
+                x: e.clientX - element_bounding_box.left,
+                y: e.clientY - element_bounding_box.top - 2 * (this.selection_rect_height + this.circle_radius)
             }
         },
         start_move_listener: function(e) {
+            const element_bounding_box = this.svg_ref.getBoundingClientRect()
             this.start_border_moved = {
-                x: e.clientX - 350,
-                y: window.scrollY + e.clientY - 125
+                x: e.clientX - element_bounding_box.left,
+                y: e.clientY - element_bounding_box.top - this.selection_rect_height - this.circle_radius
             }
         },
         on_apply_new_border: function() {

@@ -7,7 +7,7 @@
         return_object
         :multiple="true"
         :label="label"
-        :item_list="attribute_list"
+        :item_list="attribute_list_computed"
       />
       <div v-if="selected_attributes.length > 0">
           <attribute_group_list
@@ -30,7 +30,7 @@ import attribute_group_list from "./attribute_group_list.vue";
 
 export default Vue.extend( {
     name: 'attribute_select',
-    components: { 
+    components: {
       diffgram_select,
       attribute_group_list
     },
@@ -57,6 +57,15 @@ export default Vue.extend( {
         selected_attributes: [],
       }
     },
+    computed: {
+      attribute_list_computed: function(){
+        let ordered_attributes = this.attribute_list.sort((a, b) => a.ordinal - b.ordinal);
+        return ordered_attributes.map(elm => {
+          elm.prompt = !elm.prompt ? 'Untitled Attribute Group': elm.prompt
+          return elm
+        })
+      }
+    }
   }
-) 
+)
 </script>

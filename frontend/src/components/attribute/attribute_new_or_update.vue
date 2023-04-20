@@ -72,7 +72,7 @@
 </template>
 
 <script lang="ts">
-import { attribute_update_or_new } from "../../services/attributesService"
+import { attribute_update_or_new } from "../../services/attributesService.ts"
 
  import Vue from "vue"; export default Vue.extend( {
 

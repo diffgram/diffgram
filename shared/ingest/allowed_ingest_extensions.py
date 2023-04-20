@@ -1,5 +1,5 @@
 
-images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"]
+images_allowed_file_names = [".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff", ".webp"]
 sensor_fusion_allowed_extensions = [".json"]
 geo_tiff_allowed_extensions = [".tiff", ".tif"]
 videos_allowed_file_names = [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]

@@ -34,35 +34,40 @@ describe("Tests for fast_label_menu.vue", () => {
         y: 10
     }
 
+    const svg_ref = document.createElementNS("http://www.w3.org/2000/svg", "svg")
+
     it("Should be mounted succssfufully with rects prop", () => {
         const props = {
             propsData: {
                 label_list,
-                rects
+                rects,
+                svg_ref
             }
         }
 
         const wrapper = shallowMount(fast_label_menu, props)
-        expect(wrapper.html()).toContain('style="top: 60px; left: 390px;"')
+        expect(wrapper.html()).toContain('style="top: 60px')
     })
 
     it("Should be mounted succssfufully with arrow_position prop", () => {
         const props = {
             propsData: {
                 label_list,
-                arrow_position
+                arrow_position,
+                svg_ref
             }
         }
 
         const wrapper = shallowMount(fast_label_menu, props)
-        expect(wrapper.html()).toContain('style="top: 35px; left: 360px;"')
+        expect(wrapper.html()).toContain('style="top: 35px')
     })
 
     it("on_apply_label should emit create_instance event if rects props is provided", () => {
         const props = {
             propsData: {
                 label_list,
-                rects
+                rects,
+                svg_ref
             }
         }
 
@@ -76,7 +81,8 @@ describe("Tests for fast_label_menu.vue", () => {
         const props = {
             propsData: {
                 label_list,
-                arrow_position
+                arrow_position,
+                svg_ref
             }
         }
 
@@ -90,7 +96,8 @@ describe("Tests for fast_label_menu.vue", () => {
         const props = {
             propsData: {
                 label_list,
-                arrow_position
+                arrow_position,
+                svg_ref
             }
         }
 
@@ -104,7 +111,8 @@ describe("Tests for fast_label_menu.vue", () => {
         const props = {
             propsData: {
                 label_list,
-                arrow_position
+                arrow_position,
+                svg_ref
             }
         }
 

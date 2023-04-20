@@ -14,6 +14,7 @@
           <v-icon size="350">{{icon}}</v-icon>
           <h2 class="text--secondary d-flex justify-center">Please add Some files to the dataset by going to the Upload
             Section</h2>
+          <h3>{{message}}</h3>
           <v-btn v-if="show_upload" color="success" x-large @click="go_to_upload">
             Upload Files
           </v-btn>
