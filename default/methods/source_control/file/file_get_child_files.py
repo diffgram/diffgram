@@ -9,6 +9,8 @@ from typing import List
 from shared.permissions.policy_engine.policy_engine import PolicyEngine
 from shared.database.permissions.roles import ValidObjectTypes
 from shared.database.source_control.file import FilePermissions
+
+
 @routes.route('/api/v1/project/<string:project_string_id>/file/<int:parent_file_id>/child-files', methods = ['GET'])
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor", "Viewer", "allow_if_project_is_public"],
@@ -22,6 +24,7 @@ def api_file_get_child_files(project_string_id: str, parent_file_id: int):
        :return:
        """
     # For now, no filters needed. But might add in the future.
+    with_instances = request.args.get('with_instances', False)
     log = regular_log.default()
     with sessionMaker.session_scope() as session:
         project = Project.get_by_string_id(session, project_string_id)
@@ -34,13 +37,15 @@ def api_file_get_child_files(project_string_id: str, parent_file_id: int):
             member = member
         )
         if not perm_result.allowed:
-            log['error']['unauthorized'] = f'Missing permissions {FilePermissions.file_view.value} for file {parent_file_id}'
+            log['error'][
+                'unauthorized'] = f'Missing permissions {FilePermissions.file_view.value} for file {parent_file_id}'
             return jsonify(log = log), 401
         child_files_data, log = get_child_files_core(
             session = session,
             log = log,
             project = project,
             parent_file_id = parent_file_id,
+            with_instances = with_instances,
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
@@ -51,7 +56,8 @@ def api_file_get_child_files(project_string_id: str, parent_file_id: int):
 def get_child_files_core(session: Session,
                          project: Project,
                          parent_file_id: int,
-                         log: dict = regular_log.default()) -> [List[dict], dict]:
+                         log: dict = regular_log.default(),
+                         with_instances: bool = False) -> [List[dict], dict]:
     """
         Gets the child files of a compound parent file.
     :param session:
@@ -68,7 +74,11 @@ def get_child_files_core(session: Session,
         return None, log
     child_files = file.get_child_files(session = session)
     result = []
+
     for child in child_files:
-        serialized_child_file = child.serialize_with_type(session = session)
+        if with_instances:
+            serialized_child_file = child.serialize_with_annotations(session = session)
+        else:
+            serialized_child_file = child.serialize_with_type(session = session)
         result.append(serialized_child_file)
     return result, log

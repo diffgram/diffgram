@@ -552,7 +552,7 @@ class File_Browser():
         if media_type:
             media_type_query = media_type.lower()
         if media_type in ["All", None]:
-            media_type_query = ["image", "video", "text", "sensor_fusion", "geospatial", "audio", "compound"]
+            media_type_query = ["image", "video", "text", "sensor_fusion", "geospatial", "audio", "compound", "compound/conversational"]
 
         if media_type in ['Image', 'image']:
             media_type_query = "image"

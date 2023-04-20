@@ -57,9 +57,12 @@ class Attribute_Template_Group(Base):
                                         foreign_keys = [default_external_map_id])
 
     is_global = Column(Boolean, default = False)
+
+    is_read_only = Column(Boolean, default = False)
     # Allowed Values: [compound_file, file]
     global_type = Column(String(), default = 'file')  # Expansion direction eg for frame, series, etc.
 
+    ordinal = Column(Integer, default = 0)
     @staticmethod
     def new(session,
             project,
@@ -93,7 +96,9 @@ class Attribute_Template_Group(Base):
             'is_root': self.is_root,
             'name': self.name,
             'kind': self.kind,
+            'is_read_only': self.is_read_only,
             'prompt': self.prompt,
+            'ordinal': self.ordinal,
             'show_prompt': self.show_prompt,
             # wrapping in str() seems to be needed to avoid some strange
             # embedded serialization issues (not with calling it directly, but things
@@ -117,6 +122,8 @@ class Attribute_Template_Group(Base):
             'is_root': self.is_root,
             'name': self.name,
             'kind': self.kind,
+            'is_read_only': self.is_read_only,
+            'ordinal': self.ordinal,
             'prompt': self.prompt,
             'show_prompt': self.show_prompt,
             'default_value': self.default_value,
@@ -229,7 +236,8 @@ class Attribute_Template_Group(Base):
              is_root = None,
              schema_id = None,
              group_id_list = None,
-             is_global = None
+             is_global = None,
+             is_read_only = None
              ):
         """
 
@@ -246,6 +254,8 @@ class Attribute_Template_Group(Base):
         if group_id:
             query = query.filter(Attribute_Template_Group.id == group_id)
 
+        if is_read_only is not None:
+            query = query.filter(Attribute_Template_Group.is_read_only == is_read_only)
         if is_global:
             query = query.filter(Attribute_Template_Group.is_global == is_global)
 

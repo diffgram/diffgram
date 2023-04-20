@@ -112,7 +112,7 @@
         :height="128"
       />
     </div>
-    <div v-if="file.type === 'compound'"
+    <div v-if="file.type.includes('compound')"
          class="pa-0 ma-0 drawable-wrapper"
          :style="{border: selected ? '4px solid #1565c0' : '4px solid #e0e0e0', height: `${file_preview_height + 8}px`}"
          ref="file_card">

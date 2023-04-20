@@ -299,7 +299,7 @@ class New_video():
             parent_input_id = input.parent_input_id,
             parent_video_split_duration = parent_video_split_duration,
             file_metadata = input.file_metadata,
-            ordinal = input.ordinal,
+            ordinal = input.ordinal if hasattr(input, "ordinal") else 0,
         )
 
         if self.input.frame_packet_map:

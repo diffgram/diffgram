@@ -46,7 +46,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
 
         self.assertIsNone(result)
 
-        for extension in [".jpg", ".jpeg", ".png"]:
+        for extension in [".jpg", ".jpeg", ".png", ".webp"]:
             result = process_media.Process_Media.determine_media_type(
                 input_type = input_type,
                 extension = extension,
