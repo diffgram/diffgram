@@ -15,6 +15,7 @@
     <toolbar_factory
       v-if="annotation_ui_context.working_file && annotation_ui_context.command_manager"
       :task="annotation_ui_context.task"
+      :show_ui_schema_context_menu="show_ui_schema_context_menu"
       :annotation_ui_context="annotation_ui_context"
       :project_string_id="computed_project_string_id"
       :working_file="annotation_ui_context.working_file"
@@ -1633,7 +1634,8 @@ export default Vue.extend({
           !this.annotation_ui_context.task ||
           !this.annotation_ui_context.task.job ||
           !this.annotation_ui_context.task.job.ui_schema ||
-          !this.annotation_ui_context.task.job.ui_schema.instance_selector
+          !this.annotation_ui_context.task.job.ui_schema.instance_selector ||
+          !this.annotation_ui_context.task.job.ui_schema.instance_selector.allowed_instance_types
         ) return null
 
 

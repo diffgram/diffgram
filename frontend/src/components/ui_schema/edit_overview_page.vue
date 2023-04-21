@@ -1,46 +1,46 @@
 <template>
-  <div v-cloak>
-    <v-container fluid>
+  <v-container fluid class="d-flex justify-center flex-column align-center">
 
-      <div class="d-flex mb-8 justify-space-between">
+    <div class="d-flex mb-8 justify-space-between">
 
-        <h1 class="font-weight-medium text--primary mr-4">
+      <h1 class="font-weight-medium text--primary mr-4">
 
-          White-label Customization (BETA)
-        </h1>
+        White-label Customization (BETA)
+      </h1>
 
-        <standard_button
-          tooltip_message="Launch UI Editor"
-          @click="open_ui_schema_creation"
-          button_color="primary"
-          icon="mdi-puzzle-edit"
-          :left="true"
-          button_message="Launch UI Editor"
-          color="white">
-        </standard_button>
 
-      </div>
+    </div>
 
-      <p class="text--primary">
-        UI Schemas are a way to Customize the Annotation UI. You can show/hide buttons and configure
-        what you want the annotators to see beyond Label Schema.
-      </p>
+    <p class="text--primary">
+      UI Schemas are a way to Customize the Annotation UI. You can show/hide buttons and configure
+      what you want the annotators to see beyond Label Schema.
+    </p>
 
-      <v-container fluid>
+    <v-container fluid style="width: 60%">
 
-        <ui_schema_selector
-          data-cy="ui-schema-selector"
-          @change="change"
-          :project_string_id="$store.state.project.current.project_string_id"
-          :show_default_option="true"
-        >
-        </ui_schema_selector>
-
-      </v-container>
+      <ui_schema_selector
+        data-cy="ui-schema-selector"
+        @change="change"
+        :project_string_id="$store.state.project.current.project_string_id"
+        :show_default_option="true"
+      >
+      </ui_schema_selector>
 
     </v-container>
+    <div>
+      <standard_button
+        tooltip_message="Launch UI Editor"
+        @click="open_ui_schema_creation"
+        button_color="primary"
+        icon="mdi-puzzle-edit"
+        :left="true"
+        button_message="Launch UI Editor"
+        color="white">
+      </standard_button>
+    </div>
 
-  </div>
+  </v-container>
+
 </template>
 
 <script lang="ts">
@@ -57,7 +57,11 @@ export default Vue.extend({
     components: {
       ui_schema_selector
     },
+    computed: {
+      ui_schema: function () {
 
+      }
+    },
     mounted() {
 
 
