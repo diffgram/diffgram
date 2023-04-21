@@ -75,9 +75,12 @@
             @click="$emit('redo')"
           />
 
-          <div>
-            <custom-buttons-section :project_string_id="project_string_id" :editing="show_ui_schema_context_menu"></custom-buttons-section>
-          </div>
+          <custom-buttons-section
+            v-on="$listeners"
+            :project_string_id="project_string_id"
+            :editing="show_ui_schema_context_menu">
+
+          </custom-buttons-section>
           <v-divider vertical v-if="task && task.status !== 'complete'"></v-divider>
 
           <v_is_complete
@@ -88,9 +91,7 @@
             @complete_task="$emit('complete_task')"
             @replace_file="$emit('replace_file', $event)"
             @on_next="$emit('change_task', 'next')"
-            @on_task_annotation_complete_and_save="
-                    $emit('on_task_annotation_complete_and_save')
-                    "
+            @on_task_annotation_complete_and_save="$emit('on_task_annotation_complete_and_save')"
             :save_and_complete="true"
             :loading="save_loading"
             :disabled="save_loading || (!file && !task)"
@@ -375,10 +376,12 @@ import label_select_annotation from "../../label/label_select_annotation.vue"
 import label_schema_selector from "../../label/label_schema_selector.vue"
 import task_status from "../image_and_video_annotation/task_status.vue"
 import CustomButtonsSection from "@/components/ui_schema/custom_buttons_section.vue";
+import image_and_video_toolbar from "@/components/annotation/image_and_video_annotation/toolbar.vue";
 
 export default Vue.extend({
   name: "text_toolbar",
   components: {
+    image_and_video_toolbar,
     CustomButtonsSection,
     label_select_annotation,
     label_schema_selector,

@@ -43,6 +43,7 @@
           v-if="current_global_instance && sorted_global_attribute_groups_list && sorted_global_attribute_groups_list.length !== 0"
           style="overflow-y:auto;"
           mode="annotate"
+          ref="attribute_group_list"
           key="global_attribute_groups_list"
           :schema_id="schema_id"
           :project_string_id="project_string_id"

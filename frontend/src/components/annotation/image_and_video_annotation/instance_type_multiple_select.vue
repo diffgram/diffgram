@@ -214,6 +214,9 @@
         },
         fetch_task_templates: async function(){
           this.loading = true;
+          if(this.schema_id === -1){
+            return
+          }
           let [data, error] = await getInstanceTemplatesFromProject(this.project_string_id, this.schema_id)
           if(data && data.instance_template_list){
               this.instance_template_list = data.instance_template_list;

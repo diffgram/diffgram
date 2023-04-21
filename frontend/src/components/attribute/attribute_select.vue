@@ -1,25 +1,26 @@
 <template>
   <div id="">
-      <diffgram_select
-        v-model="selected_attributes"
-        name_key="prompt"
-        key_to_seperate_objects="id"
-        return_object
-        :multiple="true"
-        :label="label"
-        :item_list="attribute_list_computed"
+    <diffgram_select
+      v-model="selected_attributes"
+      name_key="prompt"
+      key_to_seperate_objects="id"
+      return_object
+      :multiple="multiple"
+      :label="label"
+      :item_list="attribute_list_computed"
+      @change="$emit('change_selected', $event)"
+    />
+    <div v-if="selected_attributes_computed && selected_attributes_computed.length > 0">
+      <attribute_group_list
+        :project_string_id="project_string_id"
+        :mode="'annotate'"
+        :view_only_mode="false"
+        :schema_id="schema_id"
+        :attribute_group_list_prop="selected_attributes_computed"
+        key="attribute_groups_list"
+        @attribute_change="$emit('attribute_change', $event)"
       />
-      <div v-if="selected_attributes.length > 0">
-          <attribute_group_list
-            :project_string_id="project_string_id"
-            :mode="'annotate'"
-            :view_only_mode="false"
-            :schema_id="schema_id"
-            :attribute_group_list_prop="selected_attributes"
-            key="attribute_groups_list"
-            @attribute_change="$emit('attribute_change', $event)"
-        />
-      </div>
+    </div>
   </div>
 </template>
 
@@ -28,14 +29,18 @@ import Vue from "vue";
 import diffgram_select from "../regular/diffgram_select.vue";
 import attribute_group_list from "./attribute_group_list.vue";
 
-export default Vue.extend( {
+export default Vue.extend({
     name: 'attribute_select',
     components: {
       diffgram_select,
       attribute_group_list
     },
     props: {
-      project_string_id : {
+      multiple: {
+        type: Boolean,
+        default: true
+      },
+      project_string_id: {
         type: String,
         required: true
       },
@@ -57,11 +62,26 @@ export default Vue.extend( {
         selected_attributes: [],
       }
     },
+    methods: {
+      set_selected_attributes: function(selected_attributes){
+        this.selected_attributes = selected_attributes
+      }
+    },
     computed: {
-      attribute_list_computed: function(){
+      selected_attributes_computed: function () {
+        if (Array.isArray(this.selected_attributes)) {
+          return this.selected_attributes
+        }
+        if (this.selected_attributes && typeof this.selected_attributes === 'object') {
+          return [this.selected_attributes]
+        }
+        return []
+
+      },
+      attribute_list_computed: function () {
         let ordered_attributes = this.attribute_list.sort((a, b) => a.ordinal - b.ordinal);
         return ordered_attributes.map(elm => {
-          elm.prompt = !elm.prompt ? 'Untitled Attribute Group': elm.prompt
+          elm.prompt = !elm.prompt ? 'Untitled Attribute Group' : elm.prompt
           return elm
         })
       }

@@ -85,10 +85,11 @@ export default Vue.extend({
         return this.$refs.sidebar_image
       }
       else if(this.interface_type === 'text') {
-        return this.$refs.sidebar_image
+        return this.$refs.sidebar_text
       }
       // TODO: ADD OTHER INTERFACE TYPES HERE.
-    }
+    },
+
   },
   computed: {
     sidebar_height: function(){

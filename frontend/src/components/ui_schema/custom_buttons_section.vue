@@ -12,7 +12,7 @@
     </div>
     <button_edit_context_menu :project_string_id="project_string_id" ref="button_config_menu" :button="current_button"></button_edit_context_menu>
   </div>
-  <div v-else>
+  <div v-else class="d-flex" style="width: 100%">
     <div  style="width: 100%" class="d-flex justify-start align-center" >
       <v-btn
         class="mr-1"
@@ -73,13 +73,23 @@ export default Vue.extend({
   created() {
   },
   mounted() {
-
+    if(this.ui_schema && this.ui_schema .custom_buttons){
+      this.custom_buttons = this.ui_schema .custom_buttons.buttons_list;
+      this.$forceUpdate()
+    }
+    if(this.ui_schema  && !this.ui_schema .custom_buttons){
+      this.custom_buttons = [];
+    }
   },
   beforeDestroy() {
 
   },
   methods: {
     do_button_action: function(custom_button){
+      console.log('do_button_action', custom_button)
+      if(custom_button && custom_button.action){
+        this.$emit(custom_button.action.type, custom_button.action.metadata)
+      }
 
     },
     open_button_config: function(custom_button: CustomButton){

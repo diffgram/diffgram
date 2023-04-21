@@ -393,7 +393,6 @@ export default Vue.extend({
         }
 
         let direction = this.hotkey_dict[event.keyCode]
-        console.log('KET DOWN', direction, this.openedPanel)
         if(direction){
           await this.change_open_attribute(direction)
         }

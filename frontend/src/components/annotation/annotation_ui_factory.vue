@@ -41,6 +41,7 @@
       :bulk_mode="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().bulk_mode"
       :search_mode="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().search_mode"
       @save="save"
+      @set_attribute="on_set_global_attribute"
       @redo="redo"
       @undo="undo"
       @clear_unsaved="clear_unsaved"
@@ -771,6 +772,29 @@ export default Vue.extend({
     },
   },
   methods: {
+    on_set_global_attribute: function(attribute_data){
+      let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref();
+      console.log('set attribute valueee', attribute_data)
+      console.log('sidebar', sidebar)
+      if(sidebar && sidebar.$refs.instance_detail_list){
+        sidebar = sidebar.$refs.instance_detail_list
+      }
+      // Find attribute: only search on global and compound attributes.
+      let file_global_attribute = this.annotation_ui_context.global_attribute_groups_list.find(attr =>
+        attr.id === attribute_data.attribute_template_id
+      )
+      console.log('file_global_attribute', file_global_attribute, this.annotation_ui_context.global_attribute_groups_list)
+      if(file_global_attribute){
+        console.log('FINDING', sidebar)
+        let attr_ref = sidebar.$refs.global_attributes_list.$refs.attribute_group_list.$refs[`attribute_group_${file_global_attribute.id}`]
+        console.log('ATTR REF', attr_ref)
+        if(attr_ref && attr_ref.length > 0){
+          console.log('SETTING', attr_ref[0], 'with', attribute_data.attribute_value_id)
+          attr_ref[0].set_attribute_value(attribute_data.attribute_value_id)
+        }
+
+      }
+    },
     on_file_rendered: function(){
       this.on_panes_ready()
     },

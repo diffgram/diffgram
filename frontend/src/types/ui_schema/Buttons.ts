@@ -11,13 +11,19 @@ export class Button {
 }
 
 export class ActionCustomButton {
-  action_metadata: Object
-  action_type: string
+  metadata: Object
+  type: string
 
   constructor(type: string, metadata: Object) {
-    this.action_type = type
-    this.action_metadata = metadata
+    this.type = type
+    this.metadata = metadata
+  }
 
+  public set_metadata(key: string, val: any){
+    if(!this.metadata){
+      this.metadata = {}
+    }
+    this.metadata[key] = val
   }
 
 }

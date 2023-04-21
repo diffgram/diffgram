@@ -47,6 +47,7 @@
         :schema_id="schema_id"
         :project_string_id="project_string_id"
         :view_only_mode="view_only_mode"
+        ref="compound_attributes_list"
         @attribute_change="compound_global_attribute_change($event)"
         :title="'Compound Files Attribute'"
       />
@@ -57,6 +58,7 @@
         :schema_id="schema_id"
         :project_string_id="project_string_id"
         :view_only_mode="view_only_mode"
+        ref="global_attributes_list"
         @attribute_change="global_attribute_change($event)"
       />
 
@@ -100,6 +102,7 @@
               :current_instance="current_instance"
               @attribute_change="attribute_change($event)"
               key="attribute_groups_list"
+              ref="attributes_list"
             >
             </attribute_group_list>
 
