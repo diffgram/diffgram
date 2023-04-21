@@ -65,6 +65,13 @@ export default Vue.extend({
     methods: {
       set_selected_attributes: function(selected_attributes){
         this.selected_attributes = selected_attributes
+      },
+      select_attribute_by_id: function(attr_id){
+        for(let i = 0; i < this.attribute_list.length; i++){
+          if(this.attribute_list[i].id === attr_id){
+            this.selected_attributes = [this.attribute_list[i]]
+          }
+        }
       }
     },
     computed: {

@@ -13,9 +13,11 @@ export class Button {
 export class ActionCustomButton {
   metadata: Object
   type: string
+  name: string
 
-  constructor(type: string, metadata: Object) {
+  constructor(name: string, type: string, metadata: Object) {
     this.type = type
+    this.name = name
     this.metadata = metadata
   }
 

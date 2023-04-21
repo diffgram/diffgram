@@ -13,6 +13,7 @@
         <v-card-text>
           <v-tabs
             v-model="tab"
+            @change="on_change_tab"
             background-color="#f0f0f0"
           >
             <v-tabs-slider color="secondary"></v-tabs-slider>
@@ -35,6 +36,8 @@
                 <h4 class="">Actions: </h4>
 
                 <v-select return-object
+                          v-model="action"
+                          item-value="type"
                           item-text="name"
                           :items="actions_list" @change="set_action"></v-select>
 
@@ -45,6 +48,7 @@
 
                 </label_schema_selector>
                 <attribute_select
+                  ref="attribute_select"
                   :multiple="false"
                   label="Select Attribute to set"
                   v-if="label_schema"
@@ -94,19 +98,25 @@ export default Vue.extend({
     }
 
   },
+  mounted: async function(){
+    if(this.button && this.button.action){
+      await this.initialize_button_action_config()
+    }
+  },
   data() {
     // move context menu off the page out of view when hidden
     return {
       button_color: {},
       tab: 0,
+      selected_schema_id: undefined,
       actions_list: [
         {
           'name': 'Complete Task',
-          'key': 'complete_task',
+          'type': 'complete_task',
         },
         {
           'name': 'Set Attribute',
-          'key': 'set_attribute',
+          'type': 'set_attribute',
         },
 
       ],
@@ -123,14 +133,34 @@ export default Vue.extend({
       handler: function(val){
         this.button.color = val.hex
       }
-    }
+    },
+
   },
   computed: {
   },
   methods: {
+    initialize_button_action_config: async function(){
+      if(this.button.action){
+        console.log('set actionnnn', this.button)
+        this.set_action(new ActionCustomButton(this.button.action.name, this.button.action.type, this.button.action.metadata))
+
+      }
+      if(this.button.action.metadata.schema_id){
+        this.selected_schema_id = this.button.action.metadata.schema_id
+      }
+      if(this.button.action.metadata.attribute_template_id){
+        await this.get_schema_attributes()
+        await this.$nextTick();
+        const attr_select = this.$refs.attribute_select;
+        console.log('attr seect', attr_select)
+        if(!attr_select){
+          return
+        }
+        attr_select.select_attribute_by_id(this.button.action.metadata.attribute_template_id)
+      }
+    },
     set_action: function(val){
-      console.log('val', val)
-      this.action = new ActionCustomButton(val.key, {});
+      this.action = new ActionCustomButton(val.name, val.type, val.metadata? val.metadata: {});
       this.button.action = this.action
     },
     open_menu: function(){
@@ -142,6 +172,12 @@ export default Vue.extend({
     change_color: function(val){
       console.log('CHANGE COLOR', val)
       this.button.color = val
+    },
+    on_change_tab: async function(tab){
+      console.log('change tab', tab)
+      if(tab === 1){
+        await this.initialize_button_action_config()
+      }
     },
     save: async function(){
       await this.$store.commit('update_custom_button', this.button.name, this.button)
@@ -156,6 +192,7 @@ export default Vue.extend({
       return this.$store.state.ui_schema.current
     },
     on_change_schema: async function(val){
+      this.selected_schema_id = val.id
       if(this.action){
         this.action.set_metadata('schema_id', val.id)
       }
@@ -163,7 +200,7 @@ export default Vue.extend({
       await this.get_schema_attributes()
     },
     get_schema_attributes: async function () {
-      const [data, error] = await attribute_group_list(this.project_string_id, undefined, this.label_schema.id, 'from_project')
+      const [data, error] = await attribute_group_list(this.project_string_id, undefined, this.selected_schema_id, 'from_project')
 
       if (!error) {
         this.attribute_list = [...data.attribute_group_list]
