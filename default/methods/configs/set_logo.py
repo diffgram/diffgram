@@ -31,7 +31,11 @@ def admin_set_logo_core(session, file_binary, log = regular_log.default()):
     # Upload to temp dir
     temp_dir = tempfile.gettempdir()
     extension = file_binary.filename.split('.')[len(file_binary.filename.split('.')) - 1]
-    file_path = f"{temp_dir}/{uuid.uuid4()}.f{extension}"
+    allowed_formats = ['jpg', 'png', 'webp', 'jpeg']
+    if extension not in allowed_formats:
+        log['error']['image'] = f'Invalid image format only support {allowed_formats}.'
+        return None, log
+    file_path = f"{temp_dir}/{uuid.uuid4()}.{extension}"
     file_binary.save(file_path)
     blob_path = f'{settings.SYSTEM_DATA_BASE_DIR}{file_binary.filename}'
     # Upload to Cloud Storage
