@@ -21,21 +21,16 @@ def api_system_get_logo():
 
     log = regular_log.default()
     with sessionMaker.session_scope() as session:
-        binary_file = request.files.get('file')
-        if not binary_file:
-            log['error']['file'] = 'No file provided'
-            return jsonify(log = log), 400
-
-        logo_data, log = system_get_logo_core(session = session, file_binary = binary_file, log = log)
+        logo_data, log = system_get_logo_core(session = session, log = log)
         if regular_log.log_has_error(log):
             return jsonify(log = log), 400
 
-        return jsonify(logo_data = logo)
+        return jsonify(logo_data = logo_data)
 
 
-def system_get_logo_core(session, file_binary, log = regular_log.default()):
+def system_get_logo_core(session, log = regular_log.default()):
     # Upload to temp dir
     config = SystemConfigs.get_configs(session = session)
     config_data = config.serialize(session = session)
     logo_data = config_data.get('logo')
-    return logo_data
+    return logo_data, log

@@ -8,6 +8,7 @@ import uuid
 import tempfile
 from shared.database.image import Image
 from shared.database.system_configs.system_configs import SystemConfigs
+import mimetypes
 data_tools = Data_tools().data_tools
 
 @routes.route('/api/v1/admin/set-logo',
@@ -33,9 +34,13 @@ def admin_set_logo_core(session, file_binary, log = regular_log.default()):
     file_binary.save(file_path)
     blob_path = f'{settings.SYSTEM_DATA_BASE_DIR}{file_binary.filename}'
     # Upload to Cloud Storage
+
+    content_type = mimetypes.guess_type(file_binary.filename)
+    print('FILE PATH', file_path, content_type)
     data_tools.upload_to_cloud_storage(
         temp_local_path = file_path,
-        blob_path = blob_path
+        blob_path = blob_path,
+        content_type = content_type[0]
     )
     # Save new image Object
     new_image = Image(original_filename = file_binary.filename, url_signed_blob_path = blob_path)
@@ -43,5 +48,5 @@ def admin_set_logo_core(session, file_binary, log = regular_log.default()):
     session.flush()
     # Save System Config
     config = SystemConfigs.set_logo(session = session, image_id = new_image.id)
-    config_data = config.set_logo(session = session)
-    return config_data, None
+    config_data = config.serialize(session = session)
+    return config_data, log

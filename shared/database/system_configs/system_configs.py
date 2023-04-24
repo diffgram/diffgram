@@ -19,10 +19,10 @@ class SystemConfigs(Base):
     def serialize(self, session):
         logo_data = None
         if self.logo_id:
-            logo_data = self.logo.serialize_for_source_control(regen_url = True)
+            logo_data = self.logo.serialize_for_source_control(session = session, regen_url = True)
         return {
             'id': self.id,
-            'logo_id': self.logo_blob_path,
+            'logo_id': self.logo_id,
             'logo': logo_data
         }
 
@@ -37,23 +37,23 @@ class SystemConfigs(Base):
         configs = SystemConfigs.get_configs(session = session)
         if not configs:
             configs = SystemConfigs.new(session = session)
-        configs.image_id = image_id
+        configs.logo_id = image_id
         session.add(configs)
         return configs
     @staticmethod
     def get_configs(session):
-        result = session.query(SystemConfigs).all().first()
+        result = session.query(SystemConfigs).first()
+        if not result:
+            result = SystemConfigs.new(session = session)
         return result
     @staticmethod
     def new(session,
-            logo_blob_path = None,
-            logo_signed_url = None,
+            logo_id: int = None,
             add_to_session = True,
             flush_session = True):
 
         configs = SystemConfigs(
-            logo_blob_path = logo_blob_path,
-            logo_signed_url = logo_signed_url,
+            logo_id = logo_id,
         )
         if add_to_session:
             session.add(configs)

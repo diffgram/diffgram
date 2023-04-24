@@ -43,19 +43,20 @@ class Data_tools(metaclass = Singleton):
                                            session: Session,
                                            url_signed_expiry: int = None):
         if not session: return False, None
+
+        return True, settings.SIGNED_URL_CACHE_NEW_OFFSET_SECONDS_VALID
         minimum_secs_valid = settings.SIGNED_URL_CACHE_MINIMUM_SECONDS_VALID
         new_offset_in_seconds = settings.SIGNED_URL_CACHE_NEW_OFFSET_SECONDS_VALID
-
         time_to_check = time.time() + minimum_secs_valid
 
         if url_signed_expiry is None:
             url_signed_expiry = blob_object.url_signed_expiry
 
+
         if url_signed_expiry is None:
             return True, new_offset_in_seconds
 
         url_signed_expiry = int(float(blob_object.url_signed_expiry))
-
         if url_signed_expiry <= settings.URL_SIGNED_REFRESH + (new_offset_in_seconds):
             return True, new_offset_in_seconds
 

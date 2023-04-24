@@ -19,11 +19,11 @@ depends_on = None
 def upgrade():
     op.create_table('system_configs',
                     sa.Column('id', sa.BIGINT, nullable = False, primary_key = True),
-                    sa.Column('image_id', sa.Integer())
+                    sa.Column('logo_id', sa.Integer())
                     )
 
 
-    op.create_foreign_key("image_id_fkey", "system_configs", "image", ["image_id"], ["id"])
+    op.create_foreign_key("image_id_fkey", "system_configs", "image", ["logo_id"], ["id"])
 
 
 def downgrade():
