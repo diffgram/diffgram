@@ -30,7 +30,8 @@ def api_admin_set_logo():
 def admin_set_logo_core(session, file_binary, log = regular_log.default()):
     # Upload to temp dir
     temp_dir = tempfile.gettempdir()
-    file_path = f"{temp_dir}/{file_binary.filename}"
+    extension = file_binary.filename.split('.')[len(file_binary.filename.split('.')) - 1]
+    file_path = f"{temp_dir}/{uuid.uuid4()}.f{extension}"
     file_binary.save(file_path)
     blob_path = f'{settings.SYSTEM_DATA_BASE_DIR}{file_binary.filename}'
     # Upload to Cloud Storage
