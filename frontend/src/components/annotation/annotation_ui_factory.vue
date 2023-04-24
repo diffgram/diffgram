@@ -773,8 +773,6 @@ export default Vue.extend({
   methods: {
     on_set_global_attribute: async function (attribute_data) {
       let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref();
-      console.log('set attribute valueee', attribute_data)
-      console.log('sidebar', sidebar)
       if (sidebar && sidebar.$refs.instance_detail_list) {
         sidebar = sidebar.$refs.instance_detail_list
       }
@@ -782,18 +780,14 @@ export default Vue.extend({
       let file_global_attribute = this.annotation_ui_context.global_attribute_groups_list.find(attr =>
         attr.id === attribute_data.attribute_template_id
       )
-      console.log('file_global_attribute', file_global_attribute, this.annotation_ui_context.global_attribute_groups_list)
       if (file_global_attribute) {
-        console.log('FINDING', sidebar)
         let attr_ref = sidebar.$refs.global_attributes_list.$refs.attribute_group_list.$refs[`attribute_group_${file_global_attribute.id}`]
-        console.log('ATTR REF', attr_ref)
         if (!attr_ref) {
           await sidebar.$refs.global_attributes_list.$refs.attribute_group_list.open_panel_for_attribute_id(file_global_attribute.id)
           await this.$nextTick()
           attr_ref = sidebar.$refs.global_attributes_list.$refs.attribute_group_list.$refs[`attribute_group_${file_global_attribute.id}`]
         }
         if (attr_ref && attr_ref.length > 0) {
-          console.log('SETTING', attr_ref[0], 'with', attribute_data.attribute_value_id)
           attr_ref[0].set_attribute_value(attribute_data.attribute_value_id)
         }
 
@@ -1107,7 +1101,6 @@ export default Vue.extend({
       if (!file) {
         return
       }
-      console.log('get_child_annotation_ctx', file, this.annotation_ui_context.working_file_list)
       let file_index = -1;
       let i = 0
       for (let wf of this.annotation_ui_context.working_file_list) {
@@ -1116,7 +1109,6 @@ export default Vue.extend({
         }
         i += 1
       }
-      console.log('child_annotation_ctx_list', this.child_annotation_ctx_list, file_index)
       return this.child_annotation_ctx_list[file_index]
     },
     update_current_frame_buffer_dict: function (instance_buffer_dict, file_id, file_type) {
@@ -1686,6 +1678,7 @@ export default Vue.extend({
       return instance_type_list.filter((elm) => allowed_types.includes(elm.name))
     },
     set_ui_schema() {
+
       if (
         this.annotation_ui_context.task &&
         this.annotation_ui_context.task.job &&
@@ -1814,7 +1807,6 @@ export default Vue.extend({
         if (file.type === 'video') {
           frame_num = ann_ctx.current_frame
         }
-        console.log('SETTING COTNTEXTTT', ann_ctx)
         this.current_instance_list = this.annotation_ui_context.instance_store.get_instance_list(file.id, frame_num)
         this.annotation_ui_context.current_image_annotation_ctx = ann_ctx
         this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file.id)

@@ -18,6 +18,7 @@
         :schema_id="schema_id"
         :attribute_group_list_prop="selected_attributes_computed"
         key="attribute_groups_list"
+        ref="attribute_groups_list"
         @attribute_change="$emit('attribute_change', $event)"
       />
     </div>
@@ -66,12 +67,18 @@ export default Vue.extend({
       set_selected_attributes: function(selected_attributes){
         this.selected_attributes = selected_attributes
       },
-      select_attribute_by_id: function(attr_id){
+      select_attribute_by_id: async function(attr_id){
         for(let i = 0; i < this.attribute_list.length; i++){
           if(this.attribute_list[i].id === attr_id){
-            this.selected_attributes = [this.attribute_list[i]]
+            if(this.multiple){
+              this.selected_attributes = [this.attribute_list[i]]
+            } else{
+              this.selected_attributes = this.attribute_list[i]
+            }
+
           }
         }
+        await this.$nextTick();
       }
     },
     computed: {

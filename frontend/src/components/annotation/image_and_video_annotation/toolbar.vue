@@ -104,7 +104,9 @@
         </ui_schema>
       </div>
 
-      <custom-buttons-section :project_string_id="project_string_id" :editing="show_ui_schema_context_menu"></custom-buttons-section>
+      <custom-buttons-section :project_string_id="project_string_id"
+                              :ui_schema_prop="ui_schema_prop"
+                              :editing="show_ui_schema_context_menu"></custom-buttons-section>
 
       <v-divider v-if="task && task.status !== 'complete'" vertical></v-divider>
 

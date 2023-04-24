@@ -748,6 +748,7 @@ export default Vue.extend({
         this.initial_words_measures = set_words
 
         await this.initialize_instance_list()
+        this.$emit('set_ui_schema')
       } catch(e) {
         this.fetching_error = true
       }

@@ -36,6 +36,7 @@ export default Vue.extend({
     button_edit_context_menu,
   },
   props: {
+    'ui_schema_prop': {type: Object, required: false},
     'project_string_id': {type: String, required: true},
     'editing': {
       required: true,
@@ -86,7 +87,6 @@ export default Vue.extend({
   },
   methods: {
     do_button_action: function(custom_button){
-      console.log('do_button_action', custom_button)
       if(custom_button && custom_button.action){
         this.$emit(custom_button.action.type, custom_button.action.metadata)
       }

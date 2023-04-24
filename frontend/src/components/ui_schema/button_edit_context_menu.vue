@@ -51,9 +51,9 @@
                   ref="attribute_select"
                   :multiple="false"
                   label="Select Attribute to set"
-                  v-if="label_schema"
+                  v-if="selected_schema_id"
                   :project_string_id="project_string_id"
-                  :schema_id="label_schema ? label_schema.id : null"
+                  :schema_id="selected_schema_id"
                   :attribute_list="attribute_list"
                   @change_selected="attribute_change_event"
                   @attribute_change="attribute_change_value"
@@ -65,6 +65,9 @@
 
 
         <v-card-actions class="d-flex justify-end">
+          <v-btn color="primary" @click="close_menu">
+            Close
+          </v-btn>
           <v-btn color="success" @click="save">
             Save
           </v-btn>
@@ -128,6 +131,12 @@ export default Vue.extend({
     }
   },
   watch:{
+    button: {
+      handler: function (val){
+        this.tab = 0
+        this.initialize_button_action_config()
+      },
+    },
     button_color: {
       deep: true,
       handler: function(val){
@@ -141,22 +150,32 @@ export default Vue.extend({
   methods: {
     initialize_button_action_config: async function(){
       if(this.button.action){
-        console.log('set actionnnn', this.button)
         this.set_action(new ActionCustomButton(this.button.action.name, this.button.action.type, this.button.action.metadata))
 
       }
+      let attr_template_id = this.button.action.metadata.attribute_template_id
       if(this.button.action.metadata.schema_id){
         this.selected_schema_id = this.button.action.metadata.schema_id
       }
-      if(this.button.action.metadata.attribute_template_id){
+      if(attr_template_id){
         await this.get_schema_attributes()
         await this.$nextTick();
         const attr_select = this.$refs.attribute_select;
-        console.log('attr seect', attr_select)
         if(!attr_select){
           return
         }
-        attr_select.select_attribute_by_id(this.button.action.metadata.attribute_template_id)
+        await attr_select.select_attribute_by_id(attr_template_id)
+        const attr_value_id = this.button.action.metadata.attribute_value_id
+        await this.$nextTick();
+        if(attr_value_id){
+          const attr_list_ref = attr_select.$refs.attribute_groups_list
+
+          const attr_ref = attr_list_ref.$refs[`attribute_group_${attr_template_id}`]
+
+          if(attr_ref && attr_ref.length > 0){
+            attr_ref[0].set_attribute_value(attr_value_id)
+          }
+        }
       }
     },
     set_action: function(val){
@@ -170,11 +189,9 @@ export default Vue.extend({
       this.open = false;
     },
     change_color: function(val){
-      console.log('CHANGE COLOR', val)
       this.button.color = val
     },
     on_change_tab: async function(tab){
-      console.log('change tab', tab)
       if(tab === 1){
         await this.initialize_button_action_config()
       }
