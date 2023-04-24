@@ -196,7 +196,7 @@
           :project_string_id="project_string_id"
           @change="change($event)"
           :disabled="selector_disabled"
-          :current_ui_schema_prop="newly_created_schema"
+          :current_ui_schema_prop="selected_ui_schema"
                         >
         </ui_schema_selector>
 
@@ -238,6 +238,7 @@
             </v-btn>
             <v-btn data-cy="add_selected"
                    @click="add_selected"
+                   :disabled="!button_to_add"
                    color="success">
               Add Selected
             </v-btn>
@@ -289,12 +290,13 @@
 <script lang="ts">
 
   import Vue from 'vue';
+  import {v4 as uuidv4} from 'uuid'
   import axios from '../../services/customInstance';
   import {UI_Schema} from './ui_schema'
   import ui_schema_selector from './ui_schema_selector'
   import ui_schema_menu_content from './ui_schema_menu_content'
   import { create_new_schema_ui } from "../../services/schemaUIService"
-
+  import {CustomButton} from '../../types/ui_schema/Buttons'
   export default Vue.extend({
     name: 'UISchemaContextMenu',
     components: {
@@ -348,7 +350,7 @@
 
         show_re_open_button: false,
 
-        newly_created_schema: undefined,
+        selected_ui_schema: undefined,
 
         button_to_add: undefined,
 
@@ -480,7 +482,10 @@
         || this.$props.create_new_on_load) {
         this.new_ui_schema_with_servercall()
       }
-
+      let current_schema = this.get_ui_schema()
+      if(current_schema){
+        this.selected_ui_schema = current_schema
+      }
       var self = this
       this.get_target_element_watcher = this.$store.watch((state) => {
           return this.$store.state.ui_schema.target_element
@@ -526,6 +531,13 @@
             list.push(button)
           }
         }
+        // Add the default add Button Component
+        list.push({
+          type: 'custom',
+          name: 'Add Custom Button',
+          display_name: 'Add Custom Button'
+
+        })
         this.buttons_list_available = list
       },
       get_ui_schema: function () {
@@ -566,9 +578,22 @@
           [this.get_target_element(),'visible', true])
         //this.close();
       },
-      add_selected() {
-        this.$store.commit('set_ui_schema_element_value',
-          [this.button_to_add,'visible', true])
+      async add_selected() {
+        console.log('ADD', this.button_to_add)
+        if(this.button_to_add === 'Add Custom Button'){
+          let existing_buttons = this.$store.getters.get_custom_buttons_current_schema;
+          let numButtons = 0;
+          if(existing_buttons){
+            numButtons = existing_buttons.length;
+          }
+          // Add a Custom Button
+          let custom_button = new CustomButton('My Custom Button', `custom_button_${uuidv4()}`, null, null, '#4CAF50')
+          this.$store.commit('add_custom_button', custom_button)
+        }else{
+          this.$store.commit('set_ui_schema_element_value',
+            [this.button_to_add,'visible', true])
+        }
+        await this.update_ui_schema_with_servercall()
         this.button_to_add = undefined
       },
 
@@ -585,7 +610,7 @@
           const result = await create_new_schema_ui(this.project_string_id, ui_schema.export())
           this.change(result.data.ui_schema)
           this.edit_name = true // assume a user wants to edit name of new script
-          this.newly_created_schema = result.data.ui_schema
+          this.selected_ui_schema = result.data.ui_schema
         }
         catch (error) {
           this.error = this.$route_api_errors(error)

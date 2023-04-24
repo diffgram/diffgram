@@ -55,12 +55,13 @@
 
             <transition-group type="transition" name="flip-list">
               <v-expansion-panel
-
+                :ref="`attribute_group_${group.id}_panel`"
                 class="list-group-item"
                 v-for="(group, index) in attribute_group_list_computed"
                 :key="group.id"
               >
                 <v-expansion-panel-header
+                  :ref="`attribute_group_${group.id}_header`"
                   :class="{'d-flex justify-start text-left': true}"
                   style="border: 1px solid #e0e0e0"
                   :data-cy="`attribute_group_header_${group.prompt}`"
@@ -109,7 +110,7 @@
                     eg maybe in edit mode show internal tag-->
                 </v-expansion-panel-header>
 
-                <v-expansion-panel-content>
+                <v-expansion-panel-content :eager="true">
                   <attribute_group
 
                     :ref="`attribute_group_${group.id}`"
@@ -344,6 +345,14 @@ export default Vue.extend({
       }
     },
     methods: {
+      open_panel_for_attribute_id: async function(attr_id){
+        for(let i =0; i< this.attribute_group_list_computed.length; i++){
+          if(attr_id === this.attribute_group_list_computed[i].id){
+            this.openedPanel = i;
+          }
+        }
+        await this.$nextTick()
+      },
       manage_key_up: function(event){
         const shiftKey = 16;
         if (event.keyCode === shiftKey) {
@@ -393,7 +402,6 @@ export default Vue.extend({
         }
 
         let direction = this.hotkey_dict[event.keyCode]
-        console.log('KET DOWN', direction, this.openedPanel)
         if(direction){
           await this.change_open_attribute(direction)
         }

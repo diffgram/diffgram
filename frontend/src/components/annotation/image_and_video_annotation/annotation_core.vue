@@ -7654,7 +7654,7 @@ export default Vue.extend({
       // Add new Keyframe Numbers to Sequence from the created instances.
       for (var instance of response.data.added_instances) {
         this.add_keyframe_to_sequence(instance, frame_number)
-        if (instance.action_type == "deleted") {
+        if (instance.type == "deleted") {
           this.$refs.sequence_list.remove_frame_number_from_sequence(
             instance.sequence_id,
             frame_number
@@ -7663,9 +7663,9 @@ export default Vue.extend({
       }
     },
     add_keyframe_to_sequence(instance, frame_number) {
-      if (instance.action_type == "created" ||
-        instance.action_type == "new_instance" ||
-        instance.action_type == "undeleted")      // not 'edited'
+      if (instance.type == "created" ||
+        instance.type == "new_instance" ||
+        instance.type == "undeleted")      // not 'edited'
       {
         this.$refs.sequence_list.add_frame_number_to_sequence(
           instance.sequence_id,
