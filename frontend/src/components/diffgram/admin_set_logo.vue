@@ -1,23 +1,13 @@
 <template>
-  <div>
+  <div class="d-flex flex-column align-center justify-center">
 
-    <h1> Install Info </h1>
+    <h1> Logo: </h1>
 
-    <ul v-for="[key, group] of Object.entries(install_info)">
+    <logo></logo>
 
-      <h2> {{key}} </h2>
+    <v-divider></v-divider>
 
-      <li v-for="key in Object.keys(group)">
-
-        {{key}}: {{group[key]}}
-
-      </li>
-
-    </ul>
-
-    <status> </status>
-
-
+    <v-btn x-large>Upload New Logo</v-btn>
   </div>
 </template>
 
@@ -25,6 +15,7 @@
 
 import { get_install_info } from "../../services/configService";
 import status from "../status"
+import logo from "./logo.vue"
 
 import Vue from "vue"; export default Vue.extend( {
 
