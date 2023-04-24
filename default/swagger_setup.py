@@ -22,5 +22,7 @@ def setup_swagger(app):
             ],
         })
         data = swagger.get_apispecs()
-        with open("docs/swagger_spec.json", "w") as write_file:
+        path = "docs/swagger_spec.json"
+        with open(path, "w") as write_file:
             json.dump(data, write_file, indent = 4)
+        return path

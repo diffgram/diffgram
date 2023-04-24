@@ -11,7 +11,7 @@ from flasgger import swag_from
 @routes.route('/api/v1/project/<string:project_string_id>/discussion/<int:discussion_id>/add-comment',
               methods = ['POST'])
 @Project_permissions.user_has_project(Roles = ["admin", "Editor"], apis_user_list = ["api_enabled_builder"])
-@swag_from('../../docs/new_discussion.yml')
+@swag_from('../../docs/new_discussion_comment.yml')
 def new_discussion_comment_web(project_string_id, discussion_id):
     """
         Create a new comment on the given discussion_id.

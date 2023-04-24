@@ -1,0 +1,37 @@
+
+---
+summary: Update Workflow
+description: Updates a workflow.
+tags:
+  - Workflows & Actions
+parameters:
+  - name: project_string_id
+    in: path
+    type: string
+    required: true
+  - in: body
+    name: WorkflowUpdateRequestBody
+    description: The metadata to be updated. Any keys not provided will be ignored.
+    schema:
+      $ref: '#/definitions/ActionsUpdateRequestBody'
+definitions:
+  ActionsUpdateRequestBody:
+    type: object
+    properties:
+      name:
+        description: the name of the workflow.
+        type: string
+      mode:
+        description: the workflow update mode either "ARCHIVE" OR "UPDATE". "ARCHIVE" will ignore rest of payload an remove the workflow from the project, while setting active=false.
+        type: string
+      active:
+        description: flag to indicate if the workflow is active or not.
+        type: boolean
+      workflow_id:
+        description: Workflow ID to which this actions belongs to.
+        type: number
+responses:
+  200:
+    description: The updated workflow.
+    schema:
+      $ref: './default/docs/actions/schemas.yaml#/definitions/Workflow'

@@ -4,6 +4,267 @@
         "version": "1.0"
     },
     "paths": {
+        "/api/v1/file/view": {
+            "post": {
+                "summary": "View File",
+                "description": "Gets the details of a given file ID",
+                "responses": {
+                    "200": {
+                        "description": "The updated file.",
+                        "schema": {
+                            "$ref": "#/definitions/File"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "in": "body",
+                        "required": true,
+                        "name": "FileUpdateMetadataReqBody",
+                        "description": "The metadata to be updated. Any keys not provided will be ignored.",
+                        "schema": {
+                            "$ref": "#/definitions/FileUpdateMetadataReqBody"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Files"
+                ]
+            }
+        },
+        "/api/v1/project/{project_string_id}/actions/workflow/update": {
+            "put": {
+                "summary": "Update Workflow",
+                "description": "Updates a workflow.",
+                "responses": {
+                    "200": {
+                        "description": "The updated workflow.",
+                        "schema": {
+                            "$ref": "./default/docs/actions/schemas.yaml#/definitions/Workflow"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "in": "body",
+                        "name": "WorkflowUpdateRequestBody",
+                        "description": "The metadata to be updated. Any keys not provided will be ignored.",
+                        "schema": {
+                            "$ref": "#/definitions/ActionsUpdateRequestBody"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
+        "/api/v1/project/{project_string_id}/actions/workflow/new": {
+            "post": {
+                "summary": "Create Workflow",
+                "description": "Create a new workflow.",
+                "responses": {
+                    "200": {
+                        "description": "The created workflow.",
+                        "schema": {
+                            "$ref": "./default/docs/actions/schemas.yaml#/definitions/Workflow"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "in": "body",
+                        "name": "ActionsNewRequestBody",
+                        "required": true,
+                        "description": "The metadata to be updated. Any keys not provided will be ignored.",
+                        "schema": {
+                            "$ref": "#/definitions/WorkflowNewRequestBody"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
+        "/api/v1/project/{project_string_id}/actions/workflow/{workflow_id}/action": {
+            "post": {
+                "summary": "Create Action",
+                "description": "Create a new action within a workflow.",
+                "responses": {
+                    "200": {
+                        "description": "The created action.",
+                        "schema": {
+                            "$ref": "./default/docs/actions/schemas.yaml#/definitions/Action"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "workflow_id",
+                        "in": "path",
+                        "type": "number",
+                        "required": true
+                    },
+                    {
+                        "in": "body",
+                        "name": "ActionsNewRequestBody",
+                        "description": "The metadata to be updated. Any keys not provided will be ignored.",
+                        "schema": {
+                            "$ref": "#/definitions/ActionsNewRequestBody"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
+        "/api/v1/project/{project_string_id}/action/workflow-run/list": {
+            "post": {
+                "summary": "Workflows Runs List",
+                "description": "Gets the workflows runs associated with the given project & workflow ID. Each workflow run represents the execution of a workflow.",
+                "responses": {
+                    "200": {
+                        "description": "The list of workflow runs.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "./default/docs/actions/schemas.yaml#/definitions/WorkflowRun"
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "in": "body",
+                        "name": "WorkflowRunListRequestBody",
+                        "required": true,
+                        "description": "The metadata to for filtering the list",
+                        "schema": {
+                            "$ref": "#/definitions/WorkflowRunListRequestBody"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
+        "/api/v1/project/{project_string_id}/action/flow/list": {
+            "post": {
+                "summary": "Workflows List",
+                "description": "Gets the workflows associated with the given project.",
+                "responses": {
+                    "200": {
+                        "description": "The list of action runs.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "./default/docs/actions/schemas.yaml#/definitions/ActionRun"
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
+        "/api/v1/project/{project_string_id}/action/{action_id}/runs/list": {
+            "get": {
+                "summary": "Action Runs List",
+                "description": "Gets the actions runs associated with the given action ID.",
+                "responses": {
+                    "200": {
+                        "description": "The list of action runs.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "./default/docs/actions/schemas.yaml#/definitions/ActionRun"
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "action_id",
+                        "in": "path",
+                        "type": "number",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
+        "/api/v1/project/{project_string_id}/action-template/list": {
+            "get": {
+                "summary": "Action Templates List",
+                "description": "Gets the list of action templates on the project.",
+                "responses": {
+                    "200": {
+                        "description": "The list of action templates.",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "./default/docs/actions/schemas.yaml#/definitions/ActionTemplate"
+                            }
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
         "/api/v1/project/{project_string_id}/discussion/{discussion_id}/add-comment": {
             "post": {
                 "summary": "Create Discussion Comment",
@@ -43,6 +304,37 @@
                 ]
             }
         },
+        "/api/v1/project/{project_string_id}/action/previous/{action_id}": {
+            "get": {
+                "summary": "Get Previous Action",
+                "description": "Gets the actions that precedes the given action ID.",
+                "responses": {
+                    "200": {
+                        "description": "The previous action.",
+                        "schema": {
+                            "$ref": "./default/docs/actions/schemas.yaml#/definitions/Action"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "action_id",
+                        "in": "path",
+                        "type": "number",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
         "/api/v1/project/{project_string_id}/file/{file_id}/update-metadata": {
             "put": {
                 "summary": "Update File Metadata",
@@ -51,7 +343,7 @@
                     "200": {
                         "description": "The updated file.",
                         "schema": {
-                            "$ref": "#/definitions/File"
+                            "$ref": "./default/docs/files/schemas.yaml#/definitions/File"
                         }
                     }
                 },
@@ -81,25 +373,110 @@
                     "Files"
                 ]
             }
+        },
+        "/api/v1/project/{project_string_id}/action-template/{action_template_id}": {
+            "get": {
+                "summary": "Get Action Template",
+                "description": "Gets the given action template by ID.",
+                "responses": {
+                    "200": {
+                        "description": "The action template object.",
+                        "schema": {
+                            "$ref": "./default/docs/actions/schemas.yaml#/definitions/ActionTemplate"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "action_template_id",
+                        "in": "path",
+                        "type": "number",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
+        "/api/v1/project/{project_string_id}/workflow/{workflow_id}": {
+            "get": {
+                "summary": "Get Workflow",
+                "description": "Gets a workflow by ID",
+                "responses": {
+                    "200": {
+                        "description": "The previous workflow.",
+                        "schema": {
+                            "$ref": "./default/docs/actions/schemas.yaml#/definitions/Workflow"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "workflow_id",
+                        "in": "path",
+                        "type": "number",
+                        "required": true
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
+        },
+        "/api/v1/project/{project_string_id}/actions/{action_id}": {
+            "put": {
+                "summary": "Update Action",
+                "description": "Updates an action within a workflow.",
+                "responses": {
+                    "200": {
+                        "description": "The updated action.",
+                        "schema": {
+                            "$ref": "./default/docs/actions/schemas.yaml#/definitions/Action"
+                        }
+                    }
+                },
+                "parameters": [
+                    {
+                        "name": "project_string_id",
+                        "in": "path",
+                        "type": "string",
+                        "required": true
+                    },
+                    {
+                        "name": "action_id",
+                        "in": "path",
+                        "type": "number",
+                        "required": true
+                    },
+                    {
+                        "in": "body",
+                        "name": "ActionsUpdateRequestBody",
+                        "description": "The metadata to be updated. Any keys not provided will be ignored.",
+                        "schema": {
+                            "$ref": "#/definitions/ActionsUpdateRequestBody"
+                        }
+                    }
+                ],
+                "tags": [
+                    "Workflows & Actions"
+                ]
+            }
         }
     },
     "definitions": {
-        "DiscussionComment": {
-            "type": "object",
-            "properties": {
-                "id": {
-                    "type": "number"
-                }
-            }
-        },
-        "DiscussionCommentReqBody": {
-            "type": "object",
-            "properties": {
-                "content": {
-                    "type": "string"
-                }
-            }
-        },
         "File": {
             "type": "object",
             "properties": {
@@ -163,6 +540,150 @@
                 "ordinal": {
                     "description": "the ordinal for a child file. Useful for ordering compound files.",
                     "type": "number"
+                }
+            }
+        },
+        "ActionsUpdateRequestBody": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "description": "the type of the action.",
+                    "type": "number"
+                },
+                "archived": {
+                    "description": "is the action archived or not.",
+                    "type": "boolean"
+                },
+                "template_id": {
+                    "description": "action template ID.",
+                    "type": "number"
+                },
+                "workflow_id": {
+                    "description": "Workflow ID to which this actions belongs to.",
+                    "type": "number"
+                },
+                "public_name": {
+                    "description": "UI Visible action name.",
+                    "type": "string"
+                },
+                "icon": {
+                    "description": "Icon URL for the action",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Short description for what the action does.",
+                    "type": "string"
+                },
+                "trigger_data": {
+                    "description": "Payload of the trigger of this action",
+                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/TriggerData"
+                },
+                "ordinal": {
+                    "description": "Order of the actions inside the workflow.",
+                    "type": "number"
+                },
+                "precondition": {
+                    "description": "Object with the metadata for the precondition",
+                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/PreConditionData"
+                },
+                "completion_condition_data": {
+                    "description": "Object with the metadata for the completion condition data.",
+                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/CompletionConditionData"
+                },
+                "output_interface": {
+                    "description": "Output of the action interface definition.",
+                    "type": "object"
+                }
+            }
+        },
+        "WorkflowNewRequestBody": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "the name of the workflow.",
+                    "type": "string"
+                }
+            }
+        },
+        "ActionsNewRequestBody": {
+            "type": "object",
+            "properties": {
+                "kind": {
+                    "description": "the type of the action.",
+                    "type": "number"
+                },
+                "active": {
+                    "description": "is the action active or not.",
+                    "type": "boolean"
+                },
+                "archived": {
+                    "description": "is the action archived or not.",
+                    "type": "boolean"
+                },
+                "status": {
+                    "description": "action status",
+                    "type": "string"
+                },
+                "template_id": {
+                    "description": "action template ID.",
+                    "type": "number"
+                },
+                "workflow_id": {
+                    "description": "Workflow ID to which this actions belongs to.",
+                    "type": "number"
+                },
+                "public_name": {
+                    "description": "UI Visible action name.",
+                    "type": "string"
+                },
+                "icon": {
+                    "description": "Icon URL for the action",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "Short description for what the action does.",
+                    "type": "string"
+                },
+                "trigger_data": {
+                    "description": "Payload of the trigger of this action",
+                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/TriggerData"
+                },
+                "ordinal": {
+                    "description": "Order of the actions inside the workflow.",
+                    "type": "number"
+                },
+                "precondition": {
+                    "description": "Object with the metadata for the precondition",
+                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/PreConditionData"
+                },
+                "completion_condition_data": {
+                    "description": "Object with the metadata for the completion condition data.",
+                    "$ref": "./default/docs/actions/schemas.yaml#/definitions/CompletionConditionData"
+                }
+            }
+        },
+        "WorkflowRunListRequestBody": {
+            "type": "object",
+            "properties": {
+                "flow_id": {
+                    "description": "The workflow ID to list the runs from.",
+                    "type": "number"
+                }
+            }
+        },
+        "DiscussionComment": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "number"
+                }
+            }
+        },
+        "DiscussionCommentReqBody": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
                 }
             }
         }

@@ -1,0 +1,20 @@
+
+---
+summary: Get Previous Action
+description: Gets the actions that precedes the given action ID.
+tags:
+  - Workflows & Actions
+parameters:
+  - name: project_string_id
+    in: path
+    type: string
+    required: true
+  - name: action_id
+    in: path
+    type: number
+    required: true
+responses:
+  200:
+    description: The previous action.
+    schema:
+      $ref: './default/docs/actions/schemas.yaml#/definitions/Action'

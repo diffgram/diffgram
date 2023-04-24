@@ -4,13 +4,14 @@ from shared.database.action.action import Action
 from shared.database.action.workflow import Workflow
 from shared.database.action.action_run import ActionRun
 from sqlalchemy.orm.session import Session
-
+from flasgger import swag_from
 
 @routes.route('/api/v1/project/<string:project_string_id>/action/<int:action_id>/runs/list', methods = ['GET'])
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
 @limiter.limit("20 per day")
+@swag_from('../../docs/actions/action_run_list.yml')
 def api_action_list_web(project_string_id: str, action_id: int):
     """
 
@@ -19,7 +20,7 @@ def api_action_list_web(project_string_id: str, action_id: int):
     """
     args = request.args
     page = 0
-    page_size = 10
+    page_size = 50
     if args.get('page') is not None:
         page = args.get('page')
     if args.get('page_size') is not None:
