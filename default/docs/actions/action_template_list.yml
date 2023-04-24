@@ -1,0 +1,18 @@
+
+---
+summary: Action Templates List
+description: Gets the list of action templates on the project.
+tags:
+  - Workflows & Actions
+parameters:
+  - name: project_string_id
+    in: path
+    type: string
+    required: true
+responses:
+  200:
+    description: The list of action templates.
+    schema:
+      type: array
+      items:
+        $ref: './default/docs/actions/schemas.yaml#/definitions/ActionTemplate'

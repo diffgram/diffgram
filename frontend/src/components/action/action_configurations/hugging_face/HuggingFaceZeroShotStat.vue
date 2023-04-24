@@ -11,7 +11,7 @@
 </template>
 
 <script>
-import { get_action_stat } from '../../../../services/actionService'
+import {get_action_run_list, get_action_stat} from '../../../../services/actionService'
 import pieChart from "../../../report/charts/pieChart";
 
 export default {
@@ -55,8 +55,8 @@ export default {
   },
   async mounted() {
         this.loading = true;
-        const { action_list } = await get_action_stat(this.project_string_id, this.action.id)
-        this.action_list = action_list.filter(action_run => action_run.output)
+        const action_run_list = await get_action_run_list(this.project_string_id, this.action.id)
+        this.action_list = action_run_list.filter(action_run => action_run.output)
         const labels = {}
         this.action_list.map(action_run => {
             if (!labels[action_run.output.applied_option_label]) {
@@ -78,8 +78,8 @@ export default {
 
 <style scoped>
 .chart-wrapper {
-    display: flex; 
-    flex-direction: column; 
+    display: flex;
+    flex-direction: column;
     align-items: center
 }
 </style>

@@ -16,7 +16,7 @@ from flasgger import swag_from
 @Project_permissions.user_has_project(
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
-@swag_from('../../../docs/file_update_metadata.yml')
+@swag_from('../../../docs/files/file_update_metadata.yml')
 def api_file_update_metadata(project_string_id: str, file_id: int):
     """
         Updates a file ID metadata.

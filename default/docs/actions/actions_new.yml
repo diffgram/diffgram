@@ -1,0 +1,69 @@
+
+---
+summary: Create Action
+description: Create a new action within a workflow.
+tags:
+  - Workflows & Actions
+parameters:
+  - name: project_string_id
+    in: path
+    type: string
+    required: true
+  - name: workflow_id
+    in: path
+    type: number
+    required: true
+  - in: body
+    name: ActionsNewRequestBody
+    description: The metadata to be updated. Any keys not provided will be ignored.
+    schema:
+      $ref: '#/definitions/ActionsNewRequestBody'
+definitions:
+  ActionsNewRequestBody:
+    type: object
+    properties:
+      kind:
+        description: the type of the action.
+        type: number
+      active:
+        description: is the action active or not.
+        type: boolean
+      archived:
+        description: is the action archived or not.
+        type: boolean
+      status:
+        description: action status
+        type: string
+      template_id:
+        description: action template ID.
+        type: number
+      workflow_id:
+        description: Workflow ID to which this actions belongs to.
+        type: number
+      public_name:
+        description: UI Visible action name.
+        type: string
+      icon:
+        description: Icon URL for the action
+        type: string
+      description:
+        description: Short description for what the action does.
+        type: string
+      trigger_data:
+        description: Payload of the trigger of this action
+        $ref: './default/docs/actions/schemas.yaml#/definitions/TriggerData'
+      ordinal:
+        description: Order of the actions inside the workflow.
+        type: number
+      precondition:
+        description: Object with the metadata for the precondition
+        $ref: './default/docs/actions/schemas.yaml#/definitions/PreConditionData'
+
+      completion_condition_data:
+        description: Object with the metadata for the completion condition data.
+        $ref: './default/docs/actions/schemas.yaml#/definitions/CompletionConditionData'
+responses:
+  200:
+    description: The created action.
+    schema:
+      $ref: './default/docs/actions/schemas.yaml#/definitions/Action'

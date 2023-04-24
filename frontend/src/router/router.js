@@ -122,14 +122,6 @@ const routerOptions = [
     props: true,
     meta: {requiresAuth: true}
   },
-
-  {
-    // :flow_id is optional?
-    path: '/project/:project_string_id/flow/:flow_id?',
-    component: 'action/action_flow',
-    props: true,
-    meta: {requiresAuth: true}
-  },
   {
     // :flow_id is optional?
     path: '/project/:project_string_id/workflow/:workflow_id?',

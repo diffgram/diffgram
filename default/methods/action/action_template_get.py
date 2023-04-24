@@ -3,7 +3,7 @@ from sqlalchemy.orm.session import Session
 from shared.database.project import Project
 from shared.database.action.action_template import Action_Template
 from shared.regular.regular_log import log_has_error
-
+from flasgger import swag_from
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
               '/action-template/<string:action_template_id>',
@@ -12,6 +12,7 @@ from shared.regular.regular_log import log_has_error
     Roles = ["admin", "Editor"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
 @limiter.limit("20 per day")
+@swag_from('../../docs/actions/action_template_get.yml')
 def api_get_action_template(project_string_id, action_template_id):
     """
         Fetch single action template

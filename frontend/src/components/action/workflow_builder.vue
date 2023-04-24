@@ -129,7 +129,7 @@
 
           </v-progress-linear>
 
-          <action_config_factory 
+          <action_config_factory
             v-if="!add_action_loading"
             :actions_list="workflow.actions_list"
             :project_string_id="project_string_id"
@@ -162,7 +162,6 @@
 
 <script lang="ts">
 import axios from '../../services/customInstance';
-import action_existing_list from './action_existing_list.vue';
 import action_selector from './action_selector.vue';
 import action_node_box from './action_node_box.vue';
 import action_config_factory from './action_config_factory.vue';
@@ -183,7 +182,6 @@ export default Vue.extend({
       action_config_factory,
       Workflow_steps_visualizer,
       action_node_box: action_node_box,
-      action_existing_list: action_existing_list,
       upload: upload,
       workflow_run_list: workflow_run_list,
       action_selector: action_selector
