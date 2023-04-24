@@ -89,6 +89,7 @@ class UI_Schema(Base, SerializerMixin):
     allow_actions = Column(MutableDict.as_mutable(JSONB))
     block_actions = Column(MutableDict.as_mutable(JSONB))
     time_tracking = Column(MutableDict.as_mutable(JSONB))
+    custom_buttons = Column(MutableDict.as_mutable(JSONB))
     # example actions
 
     #allow_instance_delete 

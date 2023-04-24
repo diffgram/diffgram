@@ -16,6 +16,7 @@
                 :project_string_id="project_string_id"
                 :view_only_mode="false"
                 :title="'Compound Files Attribute'"
+                ref="compound_attributes_list"
                 @attribute_change="compound_global_attribute_change($event)"
             />
         </v-expansion-panel>
@@ -28,6 +29,7 @@
                 :current_global_instance="current_global_instance()"
                 :schema_id="schema_id"
                 :view_only_mode="false"
+                ref="global_attributes_list"
                 @attribute_change="attribute_change($event, true)"
               />
           </v-expansion-panel>
@@ -47,6 +49,7 @@
                         :attribute_group_list_prop="attribute_group_list_prop()"
                         :current_instance="current_instance"
                         @attribute_change="attribute_change($event)"
+                        ref="attributes_list"
                         key="attribute_groups_list"
                     />
                 </v-expansion-panel-content>

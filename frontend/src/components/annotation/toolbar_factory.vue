@@ -32,142 +32,49 @@
 import Vue from "vue";
 import image_and_video_toolbar from "./image_and_video_annotation/toolbar.vue"
 import text_toolbar from "./text_annotation/text_toolbar.vue"
+import CustomButtonsSection from "../ui_schema/custom_buttons_section.vue";
 
 export default Vue.extend({
   name: "toolbar_factory",
   components:{
+    CustomButtonsSection,
     image_and_video_toolbar,
     text_toolbar
   },
   props: {
-    project_string_id: {
-      type: String,
-      required: true
-    },
-    working_file: {
-      type: Object,
-      required: true
-    },
-    command_manager: {
-      type: Object,
-      required: true
-    },
-    history: {
-      type: Object,
-      default: null
-    },
-    interface_type: {
-      type: String,
-      default: null
-    },
-    save_loading: {
-      type: Boolean,
-      default: false
-    },
-    annotations_loading: {
-      type: Boolean,
-      default: true
-    },
-    label_schema: {
-      type: Object,
-      required: true
-    },
-    loading: {
-      type: Boolean,
-      default: false
-    },
-    view_only_mode: {
-      type: Boolean,
-      default: false
-    },
-    video_mode: {
-      type: Boolean,
-      default: false
-    },
-    label_settings: {
-      type: Object,
-      default: null
-    },
-    task: {
-      type: Object,
-      default: null
-    },
-    file: {
-      type: Object,
-      default: null
-    },
-    canvas_scale_local: {
-      type: Number,
-      default: 1
-    },
-    has_changed: {
-      type: Boolean,
-      default: false
-    },
-    label_list: {
-      type: Array,
-      default: []
-    },
-    draw_mode: {
-      type: Boolean,
-      default: true
-    },
-    label_file_colour_map: {
-      type: Object,
-      default: {}
-    },
-    full_file_loading: {
-      type: Boolean,
-      default: false
-    },
-    instance_template_selected: {
-      type: Boolean,
-      default: false
-    },
-    loading_instance_templates: {
-      type: Boolean,
-      default: false
-    },
-    view_issue_mode: {
-      type: Boolean,
-      default: false
-    },
-    is_keypoint_template: {
-      type: Boolean,
-      default: false
-    },
-    enabled_edit_schema: {
-      type: Boolean,
-      default: false
-    },
-    annotation_show_on: {
-      type: Boolean,
-      default: false
-    },
-    filtered_instance_type_list_function: {
-      type: Function,
-      default: () => {}
-    },
-    instance_type_list: {
-      type: Array,
-      default: []
-    },
-    instance_type: {
-      type: String,
-      default: "box"
-    },
-    annotation_ui_context: {
-      type: Object,
-      required: true
-    },
-    bulk_mode: {
-      type: Boolean,
-      default: false
-    },
-    search_mode: {
-      type: Boolean,
-      default: false
-    },
+    project_string_id: { type: String, required: true },
+    working_file: { type: Object, required: true },
+    command_manager: { type: Object, required: true },
+    history: { type: Object, default: null },
+    interface_type: { type: String, default: null },
+    save_loading: { type: Boolean, default: false },
+    annotations_loading: { type: Boolean, default: true },
+    label_schema: { type: Object, required: true },
+    loading: { type: Boolean, default: false },
+    view_only_mode: { type: Boolean, default: false },
+    video_mode: { type: Boolean, default: false },
+    label_settings: { type: Object, default: null },
+    task: { type: Object, default: null },
+    file: { type: Object, default: null },
+    canvas_scale_local: { type: Number, default: 1 },
+    has_changed: { type: Boolean, default: false },
+    label_list: { type: Array, default: [] },
+    draw_mode: { type: Boolean, default: true },
+    label_file_colour_map: { type: Object, default: {} },
+    full_file_loading: { type: Boolean, default: false },
+    instance_template_selected: { type: Boolean, default: false },
+    loading_instance_templates: { type: Boolean, default: false },
+    view_issue_mode: { type: Boolean, default: false },
+    is_keypoint_template: { type: Boolean, default: false },
+    enabled_edit_schema: { type: Boolean, default: false },
+    annotation_show_on: { type: Boolean, default: false },
+    filtered_instance_type_list_function: { type: Function, default: () => {} },
+    instance_type_list: { type: Array, default: [] },
+    instance_type: { type: String, default: "box" },
+    annotation_ui_context: { type: Object, required: true },
+    bulk_mode: { type: Boolean, default: false },
+    search_mode: { type: Boolean, default: false },
+    show_ui_schema_context_menu: { type: Boolean, default: false }
   },
   mounted() {
     if (window.Cypress) {

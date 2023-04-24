@@ -636,15 +636,26 @@ const ui_schema = {
     },
     get_current_ui_schema: (state) => () => {
       return state.current;
-    }
+    },
+    get_custom_buttons_current_schema: (state) => () => {
+      /**
+       * custom_button: CustomButton type object.
+       * **/
+      if(state && state.current['custom_buttons']){
+        return state.current['custom_buttons'].buttons_list
+      }
+
+    },
   },
   mutations: {
     set_ui_schema(state, current) {
       // Doing this to keep the watchers, so the root pointer in theory is the same
+      state.current = {}
       for (const [key, value] of Object.entries(current)) {
         state.current[key] = value
       }
       state.refresh = Date.now()
+      console.log('SET UI SCHEMA')
     },
     reset_ui_schema(state, current) {  // restore
       const allow_list = ["logo", "home", "task_list", "undo", "redo", "complete",
@@ -700,6 +711,32 @@ const ui_schema = {
       state.current[element][key] = value
       state.refresh = Date.now()
 
+    },
+    update_custom_button(state, payload){
+      let button_name = payload[0]
+      let button = payload[1]
+    },
+    add_custom_button(state, custom_button){
+      /**
+       * custom_button: CustomButton type object.
+       * **/
+      console.log('ADD CUSTOM BUTTONS', custom_button)
+
+      let custom_buttons = state.current['custom_buttons']
+      if (!custom_buttons){
+        custom_buttons = {
+          'buttons_list': [custom_button]
+        }
+      } else{
+        if(!custom_buttons.buttons_list){
+          custom_buttons.buttons_list = [custom_button]
+        } else{
+          custom_buttons.buttons_list.push(custom_button)
+        }
+
+      }
+      state.current['custom_buttons'] = custom_buttons
+      state.current = {...state.current}
     },
 
     set_ui_schema_top_level_key_value(state, payload) {

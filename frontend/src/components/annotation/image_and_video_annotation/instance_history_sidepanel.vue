@@ -32,23 +32,23 @@
 
            <v-list-item-content>
 
-             <v-list-item-title v-if="item.action_type === 'edited'">
+             <v-list-item-title v-if="item.type === 'edited'">
 
-               <v-icon small v-if="item.action_type === 'edited'" color="warning">mdi-account-edit</v-icon>
+               <v-icon small v-if="item.type === 'edited'" color="warning">mdi-account-edit</v-icon>
                {{`[${item.id}] Instance Edited`}}
              </v-list-item-title>
-             <v-list-item-title v-if="item.action_type === 'deleted'">
-               <v-icon small v-if="item.action_type === 'deleted'" color="error">mdi-delete-sweep</v-icon>
+             <v-list-item-title v-if="item.type === 'deleted'">
+               <v-icon small v-if="item.type === 'deleted'" color="error">mdi-delete-sweep</v-icon>
               {{`[${item.id}] Instance Deleted`}}
 
              </v-list-item-title>
-             <v-list-item-title v-if="item.action_type === 'undeleted'" >
-               <v-icon small v-if="item.action_type === 'undeleted'" color="primary">mdi-delete-restore</v-icon>
+             <v-list-item-title v-if="item.type === 'undeleted'" >
+               <v-icon small v-if="item.type === 'undeleted'" color="primary">mdi-delete-restore</v-icon>
               {{`[${item.id}] Instance Restored`}}
              </v-list-item-title>
-             <v-list-item-title v-if="item.action_type === 'created'">
+             <v-list-item-title v-if="item.type === 'created'">
 
-               <v-icon small v-if="item.action_type === 'created'" color="success">mdi-pencil-plus</v-icon>
+               <v-icon small v-if="item.type === 'created'" color="success">mdi-pencil-plus</v-icon>
                 {{`[${item.id}] Instance Created`}}
              </v-list-item-title>
 

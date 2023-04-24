@@ -10,15 +10,15 @@
       <v-card-text v-if="!loading">
         <CodeDiff :new-string="new_instance_text"
                   v-if="(new_instance || old_instance)
-                  && (new_instance.action_type === 'edited' || new_instance.action_type === 'created')"
+                  && (new_instance.type === 'edited' || new_instance.type === 'created')"
                   :old-string="old_instance_text"
                   :outputFormat="old_instance != undefined && new_instance != undefined ? `side-by-side` : ``"/>
 
         <!--    Restore Case    -->
         <CodeDiff :new-string="new_instance_text"
-                  v-if="(new_instance || old_instance) && (new_instance.action_type === 'undeleted')"/>
+                  v-if="(new_instance || old_instance) && (new_instance.type === 'undeleted')"/>
 
-        <h2 class="text--primary text-center" v-if="(new_instance || old_instance) && new_instance.action_type === 'deleted'">
+        <h2 class="text--primary text-center" v-if="(new_instance || old_instance) && new_instance.type === 'deleted'">
           <v-icon x-large color="error">mdi-delete-alert-outline</v-icon>
           Instance was deleted by user
 

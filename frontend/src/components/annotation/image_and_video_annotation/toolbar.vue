@@ -104,6 +104,10 @@
         </ui_schema>
       </div>
 
+      <custom-buttons-section :project_string_id="project_string_id"
+                              :ui_schema_prop="ui_schema_prop"
+                              :editing="show_ui_schema_context_menu"></custom-buttons-section>
+
       <v-divider v-if="task && task.status !== 'complete'" vertical></v-divider>
 
       <v_is_complete
@@ -1032,10 +1036,12 @@ import task_meta_data_card from "./task_meta_data_card.vue";
 import hotkeys from "./hotkeys.vue";
 import task_status from "./task_status.vue"
 import Guided_1_click_mode_selector from "../../instance_templates/guided_1_click_mode_selector.vue";
+import CustomButtonsSection from "../../ui_schema/custom_buttons_section.vue";
 
 export default Vue.extend({
   name: "image_and_video_toolbar",
   components: {
+    CustomButtonsSection,
     Guided_1_click_mode_selector,
     label_select_annotation,
     label_schema_selector,
@@ -1108,6 +1114,7 @@ export default Vue.extend({
     annotation_show_on: {
       type: Boolean,
     },
+    show_ui_schema_context_menu: {type: Boolean, required: true}
   },
   data() {
     return {
