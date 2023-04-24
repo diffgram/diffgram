@@ -36,7 +36,7 @@ jobs:
         CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
         DIFFGRAM_HOST_OS: ${{ secrets.DIFFGRAM_HOST_OS }}
-        DIFFGRAM_VERSION_TAG: ${{ secrets.DIFFGRAM_VERSION_TAG }}
+        DIFFGRAM_VERSION_TAG: 0.0.1
         DIFFGRAM_INSTALL_FINGERPRINT: ${{ secrets.DIFFGRAM_INSTALL_FINGERPRINT }}
         USER: root
         RUNNER_ALLOW_RUNASROOT: true
