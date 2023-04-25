@@ -795,7 +795,8 @@ const snackbar = {
 
 export const system = {
   state: {
-    is_open_source: undefined
+    is_open_source: undefined,
+    logo_refresh: new Date(),
   },
   mutations: {
     check_is_open_source(state) {
@@ -805,6 +806,10 @@ export const system = {
         state.is_open_source = false
       }
     },
+    logo_refresh(state) {
+      console.log('refreshhh')
+      state.logo_refresh = new Date()
+    }
   }
 }
 

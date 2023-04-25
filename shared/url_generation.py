@@ -50,11 +50,10 @@ def default_url_regenerate(session: Session,
     :return:
     """
     log = regular_log.default()
-    #print('URL REGENERATE', new_offset_in_seconds)
     try:
         blob_object.url_signed = data_tools.build_secure_url(blob_object.url_signed_blob_path, new_offset_in_seconds)
         blob_object.url_signed_expiry = time.time() + new_offset_in_seconds
-        if type(blob_object) == Image:
+        if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path:
             blob_object.url_signed_thumb = data_tools.build_secure_url(blob_object.url_signed_thumb_blob_path,
                                                                        new_offset_in_seconds)
         session.add(blob_object)
@@ -374,6 +373,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
         return
 
     logger.debug(f"Regenerating with {strategy} strategy")
+
     if strategy == "default":
         blob_object, log = default_url_regenerate(
             session = session,

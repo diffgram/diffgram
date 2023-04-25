@@ -48,6 +48,7 @@ class TestURLGeneration(testing_setup.DiffgramBaseTestCase):
         self.assertIsNone(image.url_signed)
         self.assertIsNone(image.url_signed_thumb)
         image.url_signed_blob_path = 'some_path'
+        image.url_signed_thumb_blob_path = 'some_path'
 
         with patch.object(data_tools, 'determine_if_should_regenerate_url', return_value = (True, 1)) as mock_2:
             with patch.object(data_tools, 'build_secure_url', return_value = 'some_url') as mock_3:
@@ -60,6 +61,8 @@ class TestURLGeneration(testing_setup.DiffgramBaseTestCase):
 
     def test_default_url_regenerate(self):
         image = Image()
+        image.url_signed_blob_path = 'test'
+        image.url_signed_thumb_blob_path = 'test_thumb'
         with patch.object(data_tools, 'build_secure_url', return_value = 'some_url') as mock1:
             url_generation.default_url_regenerate(blob_object = image,
                                                   session = self.session,
