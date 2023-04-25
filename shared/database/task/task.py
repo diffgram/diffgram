@@ -595,6 +595,7 @@ class Task(Base):
              date_from = None,
              date_to = None,
              job_id = None,
+             job_id_list = None,
              incoming_directory_id = None,
              file_id = None,
              project_id = None,
@@ -624,6 +625,9 @@ class Task(Base):
             )
         if incoming_directory_id:
             query = query.filter(Task.incoming_directory_id == incoming_directory_id)
+
+        if job_id_list:
+            query = query.filter(Task.job_id.in_(job_id_list))
 
         if job_id:
             query = query.filter(Task.job_id == job_id)

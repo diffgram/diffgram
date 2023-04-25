@@ -23,7 +23,7 @@ export const getFollowingTask = async (project_string_id, task_id, job_id, direc
     }
 
     const response = await axios.post(`/api/v1/job/${job_id}/next-task`, payload)
-    
+
     return [response.data, null]
   } catch(e) {
     return [null, e]
@@ -143,6 +143,45 @@ export const trackTimeTask = async (time_spent,
       file_id: file_id,
       parent_file_id: parent_file_id
     })
+    if(response.status === 200){
+      return [response.data, null]
+    }
+    else{
+      return [null, response]
+    }
+
+  }
+  catch (e){
+    return [null, e]
+  }
+}
+export const getTaskListFromJob = async (job_id, filters) =>{
+
+  try{
+    const response = await axios.post(
+      `/api/v1/job/${job_id}/task/list`,
+      filters
+    );
+    if(response.status === 200){
+      return [response.data, null]
+    }
+    else{
+      return [null, response]
+    }
+
+  }
+  catch (e){
+    return [null, e]
+  }
+}
+
+export const getTaskListFromProject = async (project_string_id, filters) =>{
+
+  try{
+    const response = await axios.post(
+      `/api/v1/project/${project_string_id}/task/list`,
+      filters
+    );
     if(response.status === 200){
       return [response.data, null]
     }

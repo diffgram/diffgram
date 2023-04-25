@@ -88,21 +88,6 @@
                                                        >
                     </file_preview_with_hover_expansion>
 
-                  <!--
-                    <file_preview
-                      v-if="project_string_id == last_task_event.project_string_id"
-                      class="d-flex file-preview"
-                      file_preview_width="150"
-                      file_preview_height="150"
-                      :key="last_task_event.task.id"
-                      :project_string_id="last_task_event.project_string_id"
-                      :file="last_file"
-                      :instance_list="last_file.instance_list"
-                      :show_ground_truth="true"
-                      @view_file_detail="route_resume_task()"
-                    ></file_preview>
-                  -->
-
                     <div @click="route_resume_task()"
                          v-if="project_string_id != last_task_event.project_string_id"
                          >
@@ -162,14 +147,12 @@
       </v-card>
     </v-container>
 
-<!--    <v-container>-->
-<!--      <v-card>-->
-<!--        <v-container>-->
-<!--          <h2>My Visit History</h2>-->
-<!--             <user_visit_history_list :project_string_id="project_string_id"></user_visit_history_list>-->
-<!--          </v-container>-->
-<!--      </v-card>-->
-<!--    </v-container>-->
+    <v-container>
+      <h1>My Tasks: </h1>
+      <task_list
+        :project_string_id="project_string_id"
+      ></task_list>
+    </v-container>
 
     <v-snackbar v-model="no_task_snackbar" color="red">
       No tasks available
@@ -186,10 +169,12 @@ import user_visit_history_list from '../../event/user_visit_history_list.vue'
 import project_pipeline from '../../project/project_pipeline'
 
 import Vue from "vue";
+import Task_list from "../../task/task/task_list.vue";
 
 export default Vue.extend( {
   name: 'annotator_dashboard_me',
   components: {
+    Task_list,
     report_dashboard,
     user_visit_history_list,
     project_pipeline,
