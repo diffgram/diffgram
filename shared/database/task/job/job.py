@@ -1026,6 +1026,13 @@ class Job(Base, Caching):
             project_id = self.project_id,
             return_mode = "count"
         )
+        task_in_progress = Task.list(
+            session,
+            status = 'in_progress',
+            job_id = self.id,
+            project_id = self.project_id,
+            return_mode = "count"
+        )
         task_count_complete = Task.list(
             session,
             status = 'complete',
@@ -1034,7 +1041,7 @@ class Job(Base, Caching):
             return_mode = "count"
         )
 
-        self.stat_count_tasks = task_count_complete + task_count_available
+        self.stat_count_tasks = task_count_complete + task_count_available + task_in_progress
         self.stat_count_complete = task_count_complete
         session.add(self)
         return

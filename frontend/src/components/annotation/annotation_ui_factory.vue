@@ -1297,10 +1297,14 @@ export default Vue.extend({
         if (instance_list_param) instance_list = instance_list_param;
         else instance_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id, frame_number)
       } else {
-        instance_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id).map(elm => {
+        const inst_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id)
+        instance_list = inst_list.map(elm => {
           if (elm.type === 'keypoints') return elm.get_instance_data()
           else return elm
         });
+      }
+      if(!instance_list){
+        return
       }
 
       if (frame_number && this.get_save_loading(frame_number)) return
