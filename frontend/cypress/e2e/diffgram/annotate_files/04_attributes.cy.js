@@ -104,9 +104,9 @@ describe('Annotate Files Tests', () => {
         cy.goToSchemaFromToolbar()
 
         cy.createAndSelectNewAttributeGroup()
-
-        cy.get('[data-cy=attribute_kind_select]').click({force: true});
-        cy.get('.v-list.v-select-list div').contains('Free Text').click({force: true})
+        cy.wait(2000)
+          .get('[data-cy=attribute_kind_select]').click({force: true})
+          .get('.v-list.v-select-list div').contains('Free Text').click({force: true})
       })
 
       it('Names Free Text Attribute', () => {

@@ -110,7 +110,7 @@
                     eg maybe in edit mode show internal tag-->
                 </v-expansion-panel-header>
 
-                <v-expansion-panel-content :eager="true">
+                <v-expansion-panel-content :eager="mode !== 'edit'">
                   <attribute_group
 
                     :ref="`attribute_group_${group.id}`"
