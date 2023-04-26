@@ -14,6 +14,19 @@ def job_stat(job_id):
         )
         return jsonify(job)
 
+@routes.route('/api/v1/project/<string:project_string_id>/stats-tasks', methods=["GET"])
+@Project_permissions.user_has_project(["admin", "Editor", "Viewer"], apis_user_list = ['builder_or_trainer'])
+def project_stats(project_string_id):
+    with sessionMaker.session_scope() as session:
+        project = Project.get_by_string_id(session, project_string_id = project_string_id)
+        user_id = request.args.get('user_id')
+        job = Task.stats(
+            session,
+            project_id = project.id,
+            user_id = user_id,
+        )
+        return jsonify(job)
+
 @routes.route('/api/job/<job_id>/user/<user_id>/stats', methods=["GET"])
 @Job_permissions.by_job_id(project_role_list = ["admin", "Editor", "Viewer"], apis_user_list = ['builder_or_trainer'])
 def job_user_stats(job_id, user_id):

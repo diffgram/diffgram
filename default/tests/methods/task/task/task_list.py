@@ -128,7 +128,7 @@ class TestTaskList(testing_setup.DiffgramBaseTestCase):
         self.session.commit()
         with self.app.test_request_context():
             common_actions.add_auth_to_session(flask.session, self.project.users[0])
-            result = task_list_core(self.session,
+            result, task_count_total = task_list_core(self.session,
                                     date_from=None,
                                     date_to=None,
                                     status="all",
@@ -140,3 +140,4 @@ class TestTaskList(testing_setup.DiffgramBaseTestCase):
         logger.info(result)
         print(self.session.query(Job).all(), len(self.session.query(Job).all()))
         self.assertEqual(len(result), num_tasks)
+        self.assertEqual(task_count_total, num_tasks)

@@ -655,7 +655,6 @@ const ui_schema = {
         state.current[key] = value
       }
       state.refresh = Date.now()
-      console.log('SET UI SCHEMA')
     },
     reset_ui_schema(state, current) {  // restore
       const allow_list = ["logo", "home", "task_list", "undo", "redo", "complete",
@@ -720,7 +719,6 @@ const ui_schema = {
       /**
        * custom_button: CustomButton type object.
        * **/
-      console.log('ADD CUSTOM BUTTONS', custom_button)
 
       let custom_buttons = state.current['custom_buttons']
       if (!custom_buttons){

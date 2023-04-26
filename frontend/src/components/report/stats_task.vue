@@ -190,7 +190,7 @@ export default Vue.extend({
         this.errors = null
         this.result = null
 
-        axios.post('/api/v1/diffgram/stats/task',
+        axios.post(`/api/v1/project/${this.project_string_id}/stats/task`,
           {
             'date_from': this.date.from,
             'date_to': this.date.to,

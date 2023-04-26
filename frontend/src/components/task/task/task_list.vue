@@ -146,7 +146,8 @@
                 "
               >
                 <v-chip color="white" text-color="primary"
-                  >No more pages.</v-chip
+                >No more pages.
+                </v-chip
                 >
               </div>
               <div>
@@ -156,7 +157,7 @@
                 </v-chip>
 
                 <v-chip class="pl-2 pr-2" color="white" text-color="primary"
-                  >of {{ $store.state.job.current.file_count_statistic }}
+                >of {{ $store.state.job.current.file_count_statistic }}
                 </v-chip>
               </div>
 
@@ -288,277 +289,34 @@
               <v-icon>mdi-account-minus-outline</v-icon>
               Remove reviewers
             </v-btn>
-
-            <!--
-          <v-checkbox v-model="my_stuff_only"
-                      label="My tasks Only">
-          </v-checkbox>
-          -->
           </v-layout>
         </v-container>
       </v-layout>
 
-      <v_error_multiple :error="error_attach"> </v_error_multiple>
+      <v_error_multiple :error="error_attach"></v_error_multiple>
 
-      <v_error_multiple :error="get_annotations_error"> </v_error_multiple>
+      <v_error_multiple :error="get_annotations_error"></v_error_multiple>
 
-      <v-alert type="success" v-if="show_success_attach"> </v-alert>
+      <v-alert type="success" v-if="show_success_attach"></v-alert>
 
-      <v_error_multiple :error="error_send_task"> </v_error_multiple>
+      <v_error_multiple :error="error_send_task"></v_error_multiple>
 
       <v-skeleton-loader
         :loading="loading"
         type="table"
         data-cy="skeletonloader"
       >
-        <regular_table
-          :item_list="task_list"
-          :header_list="header_list"
+        <task_list_table
+          :project_string_id="project_string_id"
+          :task_list="task_list"
+          :allow_reviews="allow_reviews"
           :column_list="column_list"
-          v-model="selected"
-          :hidedefaultfooter="true"
-          @rowclick="rowclick($event)"
+          @assign_dialog_open="on_assign_dialog_open"
         >
-          <template slot="Select" slot-scope="props">
-            <v-checkbox data-cy="select-task-list-item" v-model="props.item.is_selected"> </v-checkbox>
-          </template>
 
-          <template slot="Status" slot-scope="props">
-            <task_status_icons :status="props.item.status"> </task_status_icons>
-          </template>
+        </task_list_table>
 
-          <template slot="Preview" slot-scope="props">
-            <file_preview_with_hover_expansion
-              :show_preview_details="false"
-              :file="props.item.file"
-              :project_string_id="project_string_id"
-              tooltip_direction="right"
-              @view_file_detail="route_task(item.id)"
-              :file_preview_width="100"
-              :file_preview_height="100"
-            >
-            </file_preview_with_hover_expansion>
-          </template>
 
-          <template slot="ID" slot-scope="props">
-            {{ props.item.id }}
-          </template>
-
-          <template slot="AnnotationCount" slot-scope="props">
-            <div v-if="props.item.file && props.item.file.instance_list">
-              {{ props.item.file.instance_list.length }}
-            </div>
-          </template>
-
-          <template slot="DataUpdateLog" slot-scope="props">
-            <v-btn
-              @click.stop.prevent="open_input_log_dialog(props.item.id)"
-              type="primary"
-              small
-              color="primary"
-              outlined
-            >
-              <v-icon color="primary">mdi-format-list-bulleted</v-icon>
-            </v-btn>
-          </template>
-
-          <template slot="IncomingDataset" slot-scope="props">
-            <v-icon color="primary">mdi-folder</v-icon>
-            {{ props.item.incoming_directory.nickname }}
-          </template>
-
-          <template slot="AssignedUser" slot-scope="props">
-            <div class="display-assigned-users">
-              <standard_button
-                tooltip_message="Manage assignees"
-                class="hidden-sm-and-down"
-                color="primary"
-                @click.stop.prevent="() => on_assign_dialog_open(props.item.id, 'assignee')"
-                icon="mdi-account-plus-outline"
-                datacy="open-add-assignee-dialog"
-                large
-                :icon_style="true"
-                :bottom="true"
-              >
-              </standard_button>
-              <v_user_icon
-                style="z-index: 1"
-                v-if="props.item.task_assignees && props.item.task_assignees.length > 0"
-                :user_id="props.item.task_assignees[0].user_id"
-              />
-              <v-tooltip v-if="props.item.task_assignees && props.item.task_assignees.length > 1" bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-avatar v-bind="attrs" v-on="on" class="show-number-of-users">
-                    + {{ props.item.task_assignees.length - 1}}
-                  </v-avatar>
-                </template>
-                <span>{{ props.item.task_assignees.length }} users assigned to complete this task</span>
-              </v-tooltip>
-            </div>
-          </template>
-
-          <template v-if="allow_reviews" slot="AssignedReviewer" slot-scope="props">
-            <div class="display-assigned-users">
-              <standard_button
-                tooltip_message="Manage reviewers"
-                class="hidden-sm-and-down"
-                color="primary"
-                @click.stop.prevent="() => on_assign_dialog_open(props.item.id, 'reviewer')"
-                icon="mdi-account-plus-outline"
-                large
-                :icon_style="true"
-                :bottom="true"
-              >
-              </standard_button>
-              <v_user_icon
-                style="z-index: 1"
-                v-if="props.item.task_reviewers.length > 0" :user_id="props.item.task_reviewers[0].user_id"
-              />
-              <v-tooltip v-if="props.item.task_reviewers.length > 1" bottom>
-                <template v-slot:activator="{ on, attrs }">
-                  <v-avatar v-bind="attrs" v-on="on" class="show-number-of-users">
-                    + {{ props.item.task_reviewers.length - 1}}
-                  </v-avatar>
-                </template>
-                <span>{{ props.item.task_reviewers.length }} users assigned to complete this task</span>
-              </v-tooltip>
-            </div>
-          </template>
-
-          <template slot="LastUpdated" slot-scope="props">
-            <div v-if="props.item.time_updated">
-              {{
-                props.item.time_updated | moment("subtract", "7 hours", "from")
-              }}
-            </div>
-          </template>
-
-          <template slot="Created" slot-scope="props">
-            <div v-if="props.item.time_created">
-              {{ props.item.time_created | moment("ddd, MMM Do H:mm:ss a") }}
-            </div>
-          </template>
-
-          <template slot="Action" slot-scope="props">
-            <standard_button
-              tooltip_message="Go to Task"
-              @click.stop.prevent="route_task(props.item.id)"
-              v-if="!integration_name"
-              icon="mdi-file-find"
-              :icon_style="true"
-              :disabled="loading"
-              :large="true"
-              color="primary"
-            >
-            </standard_button>
-
-            <v-container
-              v-if="!props.item.loading && props.item.status === 'available'"
-              class="d-flex justify-center align-center"
-            >
-              <v-btn
-                v-if="integration_name === 'scale_ai'"
-                @click.stop.prevent="send_to_external(props.item)"
-                :loading="loading"
-                class="d-flex align-center mr-4"
-                :outlined="true"
-                color="primary"
-              >
-                <span>Send To:</span>
-                <v-img
-                  style="margin-bottom: 5px"
-                  width="80px"
-                  height="45px"
-                  src="https://uploads-ssl.webflow.com/5f07389521600425ba513006/5f1750e39c67ad3dd7c69015_logo_scale.png"
-                >
-                </v-img>
-              </v-btn>
-            </v-container>
-
-            <v-container
-              class="d-flex justify-center align-center"
-              v-if="
-                integration_name &&
-                !props.item.loading &&
-                props.item.status === 'in_progress'
-              "
-            >
-              <p class="primary--text font-weight-bold">
-                <v-icon color="primary">mdi-refresh</v-icon>
-                Task is being processed by external provider.
-              </p>
-            </v-container>
-            <v-container
-              class="d-flex justify-center align-center"
-              v-else-if="
-                !props.item.loading && props.item.status === 'complete'
-              "
-            >
-              <a
-                v-if="integration_name === 'labelbox' && props.item.external_id"
-                :href="`https://editor.labelbox.com/?project=${labelbox_project_id}&label=${props.item.external_id}`"
-                target="_blank"
-              >
-                <v-btn
-                  @click.stop.prevent="send_to_external(props.item)"
-                  :loading="loading"
-                  class="d-flex align-center mr-4 justify-center"
-                  :outlined="true"
-                  color="primary"
-                >
-                  <v-img
-                    style="margin-bottom: 0px"
-                    width="32px"
-                    height="32px"
-                    src="https://cdn.theorg.com/e1e775ca-6ad1-4c9e-847e-44856cfc75a4_thumb.jpg"
-                  >
-                  </v-img>
-                  <span>View On Labelbox:</span>
-                </v-btn>
-              </a>
-            </v-container>
-
-            <v-container
-              class="d-flex justify-center align-center"
-              v-if="integration_name && !props.item.loading"
-            >
-              <v-btn
-                @click.stop.prevent="route_task(props.item.id)"
-                :disabled="loading"
-                color="primary"
-              >
-                View
-              </v-btn>
-            </v-container>
-
-            <v-progress-linear
-              v-if="integration_name && loading"
-              color="primary"
-              :indeterminate="true"
-            ></v-progress-linear>
-
-            <!--
-              <v-btn v-if="props.item.task_type == 'review' &&
-                      props.item.status == 'complete' &&
-                      props.item.job_type != 'Exam'
-                      "
-                      @click.stop.prevent="route_task_diff(props.item.id)"
-                      :loading="loading"
-                      color="green">
-                Review
-              </v-btn>
-                  -->
-          </template>
-
-          <template slot="Rating" slot-scope="props">
-            <v-rating v-model="props.item.review_star_rating_average" readonly>
-            </v-rating>
-          </template>
-
-          <template slot="GoldStandardMissing" slot-scope="props">
-            {{ props.item.gold_standard_missing }}
-          </template>
-        </regular_table>
       </v-skeleton-loader>
 
       <v-container
@@ -599,18 +357,13 @@
       <!-- end list view -->
     </v-card>
 
-    <task_input_list_dialog
-      :task_id="selected_task_id"
-      :project_string_id="project_string_id"
-      ref="task_input_list_dialog"
-    ></task_input_list_dialog>
     <v-dialog v-model="dialog_confirm_archive" max-width="450px">
       <v-card>
-        <v-card-title class="headline"> Confirm Task Archive </v-card-title>
+        <v-card-title class="headline"> Confirm Task Archive</v-card-title>
         <v-card-text>
           Are you sure you want to archive this tasks?
         </v-card-text>
-        <v_error_multiple :error="error_archive_task"> </v_error_multiple>
+        <v_error_multiple :error="error_archive_task"></v_error_multiple>
         <v-card-actions>
           <v-spacer></v-spacer>
           <v-btn
@@ -664,13 +417,19 @@
 <script lang="ts">
 import axios from "axios";
 import _ from 'lodash'
-import { route_errors } from "../../regular/regular_error_handling";
+import {route_errors} from "../../regular/regular_error_handling.js";
 import task_status_icons from "../../regular_concrete/task_status_icons.vue";
+import task_list_table from "./task_list_table.vue";
 import task_status_select from "../../regular_concrete/task_status_select.vue";
 import task_input_list_dialog from "../../input/task_input_list_dialog.vue";
 import add_assignee from "../../dialogs/add_assignee.vue"
-import { assignUserToTask, batchAssignUserToTask, batchRemoveUserFromTask } from "../../../services/tasksServices"
-import { get_task_template_members } from "../../../services/taskTemplateService"
+import {
+  assignUserToTask,
+  batchAssignUserToTask,
+  batchRemoveUserFromTask,
+  getTaskListFromJob
+} from "../../../services/tasksServices.js"
+import {get_task_template_members} from "../../../services/taskTemplateService.js"
 import global_dataset_selector from "../../attached/global_dataset_selector.vue"
 
 import pLimit from "p-limit";
@@ -684,7 +443,8 @@ export default Vue.extend({
     task_status_select,
     task_input_list_dialog,
     add_assignee,
-    global_dataset_selector
+    global_dataset_selector,
+    task_list_table
   },
   props: {
     project_string_id: {
@@ -716,9 +476,9 @@ export default Vue.extend({
   data() {
     return {
       actions_list: [
-        { name: "Archive", value: "archive" },
-        { name: "Assign annotators", value: 'assign' },
-        { name: "Remove annotators", value: 'remove' },
+        {name: "Archive", value: "archive"},
+        {name: "Assign annotators", value: 'assign'},
+        {name: "Remove annotators", value: 'remove'},
       ],
 
       task_assign_dialog_open: false,
@@ -741,21 +501,18 @@ export default Vue.extend({
       dialog_confirm_archive: false,
       issues_filter: undefined,
       issue_filter_options: [
-        { name: "Filter By Tasks With Open Issue", value: "open_issues" },
-        { name: "Filter By Tasks With Closed Issues", value: "closed_issues" },
-        { name: "Filter By Tasks Any Issues", value: "issues" },
+        {name: "Filter By Tasks With Open Issue", value: "open_issues"},
+        {name: "Filter By Tasks With Closed Issues", value: "closed_issues"},
+        {name: "Filter By Tasks Any Issues", value: "issues"},
       ],
       loading_archive: false,
       snackbar_success: false,
       selected_action: undefined,
-
-      date: undefined, // TODO use date as a prop to sync with stats?
-
+      date: undefined,
       task_list: [],
 
       task_status: "all",
       task_id: undefined,
-      selected_task_id: undefined,
 
       loading: false,
       incoming_directory: undefined,
@@ -995,13 +752,13 @@ export default Vue.extend({
 
   },
   methods: {
-    async get_job_members(){
+    async get_job_members() {
       let [members_data, error] = await get_task_template_members(this.job_id);
-      if(error){
+      if (error) {
         console.error(error)
         return
       }
-      if(members_data){
+      if (members_data) {
         this.members_list = members_data.assignees
         this.reviewers_list = members_data.reviewers
       }
@@ -1011,20 +768,20 @@ export default Vue.extend({
       await this.task_list_api();
     },
 
-    on_assign_dialog_open: function(task_id, type) {
+    on_assign_dialog_open: function (task_id, type) {
       this.task_assign_dialog_open = true
       this.task_to_assign = task_id
       this.task_assign_dialog_type = type
     },
 
-    on_batch_assign_dialog_open: function(type, remove_mode) {
+    on_batch_assign_dialog_open: function (type, remove_mode) {
       this.task_assign_dialog_open = true
       this.task_assign_dialog_type = type
       this.task_assign_batch = true
       this.remove_mode = remove_mode
     },
 
-    on_assign_dialog_close: function() {
+    on_assign_dialog_close: function () {
       this.task_assign_dialog_open = false
       this.task_to_assign = null
       this.task_assign_dialog_loading = false
@@ -1032,9 +789,9 @@ export default Vue.extend({
       this.task_assign_batch = false
     },
 
-    assign_user_to_task: async function(user_ids) {
+    assign_user_to_task: async function (user_ids) {
       this.task_assign_dialog_loading = true
-      const new_task_assignees = user_ids.map(id => ({ user_id: id }))
+      const new_task_assignees = user_ids.map(id => ({user_id: id}))
       if (!this.task_assign_batch) {
         await assignUserToTask(user_ids, this.project_string_id, this.task_to_assign, this.task_assign_dialog_type)
         this.task_list.find(task => task.id === this.task_to_assign)[this.task_assign_dialog_type === "assignee" ? "task_assignees" : "task_reviewers"] = new_task_assignees
@@ -1060,11 +817,7 @@ export default Vue.extend({
       this.page_number -= 1;
       await this.task_list_api();
     },
-    rowclick(task) {
-      if (!this.column_list.includes("Select")) {
-        this.route_task(task.id);
-      }
-    },
+
     async send_to_external(task) {
       task.loading = true;
       this.error_send_task = {};
@@ -1111,69 +864,35 @@ export default Vue.extend({
     on_change_dir(dir) {
       this.incoming_directory = dir;
     },
-    open_input_log_dialog(task_id) {
-      this.selected_task_id = task_id;
-      this.$refs.task_input_list_dialog.open();
-    },
-    async trigger_connection_interface_refresh() {
-      const connection = this.job.interface_connection;
-      if (!connection) {
-        return;
-      }
-      if (connection.integration_name !== "datasaur") {
-        return;
-      }
-
-      try {
-        const response = await axios.post(
-          `/api/walrus/v1/connectors/${connection.id}/fetch-data`,
-          {
-            opts: {
-              task_template_id: this.job_id,
-              action_type: "sync_data_from_task_template",
-            },
-            project_string_id: this.project_string_id,
-          }
-        );
-
-        if (response.data.log.success == true) {
-          this.task_list = response.data.task_list;
-          this.pending_initial_dir_sync =
-            response.data.pending_initial_dir_sync;
-        }
-        return response;
-      } catch (error) {
-        console.error(error);
-        return false;
-      }
-    },
     async task_list_api() {
       this.loading = true;
       await this.$nextTick();
       try {
-        const response = await axios.post(
-          `/api/v1/job/${this.job_id}/task/list`,
-          {
-            page_number: this.page_number,
-            date_from: this.date ? this.date.from : undefined,
-            date_to: this.date ? this.date.to : undefined,
-            job_id: this.job_id,
-            mode_data: this.mode_data,
-            incoming_directory_id: this.incoming_directory
-              ? this.incoming_directory.directory_id
-              : undefined,
-            status: this.task_status,
-            issues_filter: this.issues_filter,
-            limit_count: this.per_page_limit,
-          }
-        );
-        if (response.data.log.success == true) {
-          this.task_list = response.data.task_list;
-          this.allow_reviews = response.data.allow_reviews
+        const filters = {
+          page_number: this.page_number,
+          date_from: this.date ? this.date.from : undefined,
+          date_to: this.date ? this.date.to : undefined,
+          job_id: this.job_id,
+          mode_data: this.mode_data,
+          incoming_directory_id: this.incoming_directory
+            ? this.incoming_directory.directory_id
+            : undefined,
+          status: this.task_status,
+          issues_filter: this.issues_filter,
+          limit_count: this.per_page_limit,
+        }
+        const [task_data, err] = await getTaskListFromJob(this.job_id, filters)
+        if (err) {
+          console.log(err)
+          return
+        }
+        if (task_data.log.success == true) {
+          this.task_list = task_data.task_list;
+          this.allow_reviews = task_data.allow_reviews
           this.pending_initial_dir_sync =
-            response.data.pending_initial_dir_sync;
+            task_data.pending_initial_dir_sync;
 
-          if (response.data.allow_reviews) {
+          if (task_data.allow_reviews) {
             this.column_list = [
               "Status",
               "Preview",
@@ -1185,20 +904,19 @@ export default Vue.extend({
             ]
 
             this.actions_list = [
-              { name: "Archive", value: "archive" },
-              { name: "Assign annotators", value: 'assign'},
-              { name: "Remove annotators", value: 'remove' },
-              { name: "Assign reviewers", value: 'assignReviewers'},
-              { name: "Remove reviewers", value: 'removeReviewers'},
-              ]
-          }
-          else{
+              {name: "Archive", value: "archive"},
+              {name: "Assign annotators", value: 'assign'},
+              {name: "Remove annotators", value: 'remove'},
+              {name: "Assign reviewers", value: 'assignReviewers'},
+              {name: "Remove reviewers", value: 'removeReviewers'},
+            ]
+          } else {
             this.column_list_all = this.column_list_all.filter(col => !["AssignedReviewer"].includes(col))
           }
 
           this.update_tasks_with_file_annotations(this.task_list);
         }
-        return response;
+        return task_data;
       } catch (error) {
         console.error(error);
         return false;
@@ -1243,7 +961,6 @@ export default Vue.extend({
 
     async refresh_task_list() {
       this.loading = true;
-      const result = await this.trigger_connection_interface_refresh();
       await this.task_list_api();
 
       this.loading = false;

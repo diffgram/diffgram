@@ -33,6 +33,7 @@
   import task_status_icons from '../../regular_concrete/task_status_icons.vue';
 
   import Vue from "vue";
+  import {getTaskListFromProject} from "../../../services/tasksServices";
 
   export default Vue.extend({
       name: 'task_relations_card',
@@ -68,14 +69,16 @@
             if(!this.$props.task.file.id != undefined){
               return
             }
-            const response = await axios.post(
-              `/api/v1/project/${this.$props.project_string_id}/task/list`, {
+            const filters = {
               file_id: this.$props.task.file.id,
               mode_data: 'list'
-            })
-            if(response.status === 200){
-              this.related_tasks = response.data.task_list;
             }
+            const [task_list_data, err] = await getTaskListFromProject(this.$props.project_string_id, filters)
+            if (err){
+              console.error(err)
+              return
+            }
+            this.related_tasks = task_list_data.task_list;
           }
           catch (error) {
             this.error_related_tasks = this.$route_api_errors(error)

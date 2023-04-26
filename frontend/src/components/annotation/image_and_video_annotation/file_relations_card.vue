@@ -24,7 +24,7 @@
 
   import axios from '../../../services/customInstance';
   import task_status_icons from '../../regular_concrete/task_status_icons.vue';
-
+  import {getTaskListFromProject} from '../../../services/tasksServices.js'
   import Vue from "vue";
 
   export default Vue.extend({
@@ -67,16 +67,17 @@
               return
             }
             this.loading = true;
-            const response = await axios.post(
-              `/api/v1/project/${this.$props.project_string_id}/task/list`,
-              {
-                file_id: file_id,
-                mode_data: 'list',
-                project_string_id: this.$props.project_string_id
-              })
-            if(response.status === 200){
-              this.related_tasks = response.data.task_list;
+            const filters =    {
+              file_id: file_id,
+              mode_data: 'list',
+              project_string_id: this.$props.project_string_id
             }
+            const [task_list_data, err] = await getTaskListFromProject(this.$props.project_string_id, filters)
+            if (err){
+              console.error(err)
+              return
+            }
+            this.related_tasks = task_list_data.task_list;
           }
           catch (error) {
             this.related_tasks_error = this.$route_api_errors(error);

@@ -939,8 +939,6 @@ export default Vue.extend({
 
       let total_height = this.$refs.panels_manager.$el.clientHeight
       let total_rows = this.annotation_ui_context.panel_settings.rows
-      console.log('total_height', total_height)
-      console.log('total_rows', total_rows)
       for (let row_index = 0; row_index < panes_list.length; row_index++) {
         let row_files = this.annotation_ui_context.working_file_list.filter(file => file.row === row_index)
         for (let file of row_files) {
@@ -950,13 +948,13 @@ export default Vue.extend({
             // We substract 50 px to leave a small padding when calculating new scale of images
             if (total_rows === 1) {
               this.child_annotation_ctx_list[i].container_height = Math.round(total_height);
-              console.log('this.child_annotation_ctx_list[i].container_height', total_height)
+
             } else {
               this.child_annotation_ctx_list[i].container_height = 500
             }
           }
           this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[row_index].size / 100)
-          console.log('this.child_annotation_ctx_list[i].container_height  FINAL', this.child_annotation_ctx_list[i].container_height)
+
         }
       }
     },

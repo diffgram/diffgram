@@ -272,7 +272,6 @@ export default Vue.extend({
       this.$emit('clear_selected_instances_image')
     },
     close_view_edit_issue_panel() {
-      console.log('CLOSE VIE EDITT')
       this.annotation_ui_context.issues_ui_manager.current_issue = undefined;
       this.annotation_ui_context.issues_ui_manager.show_modify_an_issue = false;
       this.annotation_ui_context.issues_ui_manager.issue_mouse_position = undefined;

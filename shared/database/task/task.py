@@ -620,6 +620,7 @@ class Task(Base):
              date_from = None,
              date_to = None,
              job_id = None,
+             job_id_list = None,
              incoming_directory_id = None,
              file_id = None,
              project_id = None,
@@ -630,6 +631,7 @@ class Task(Base):
              page_number = 0  # 0 is same as no offset
              ):
 
+        print('LISSST', status)
         query = session.query(Task)
         if task_ids:
             query = query.filter(
@@ -649,6 +651,9 @@ class Task(Base):
             )
         if incoming_directory_id:
             query = query.filter(Task.incoming_directory_id == incoming_directory_id)
+
+        if job_id_list:
+            query = query.filter(Task.job_id.in_(job_id_list))
 
         if job_id:
             query = query.filter(Task.job_id == job_id)
@@ -685,11 +690,14 @@ class Task(Base):
         query = query.order_by(Task.time_created)
 
         if page_number:
-            if page_number < 0: page_number = 0
+            if page_number < 0:
+                page_number = 0
             query = query.offset(page_number * limit_count)
 
-        task_list = query.limit(limit_count).all()
-
+        if limit_count:
+            task_list = query.limit(limit_count).all()
+        else:
+            task_list = query.all()
         task_id_list = [task.id for task in task_list]
         if issues_filter:
             if issues_filter == 'open_issues':
@@ -719,40 +727,61 @@ class Task(Base):
         return task_list
 
     @staticmethod
-    def stats(session, job_id, user_id = None):
+    def stats(session, job_id = None, user_id = None, project_id = None):
         from shared.database.user import User
 
         query = session.query(Task)
-        all_the_tasks_in_job = query.filter(Task.job_id == job_id).all()
+        filter_tasks = Task.job_id == job_id
+        if job_id:
+            filter_tasks = Task.job_id == job_id
 
+        if project_id:
+            filter_tasks = Task.project_id == project_id
+
+        total = query.filter(filter_tasks).count()
+        completed = query.filter(filter_tasks, Task.status == 'complete').count()
+        in_review = query.filter(filter_tasks, Task.status == 'in_review').count()
+        requires_changes = query.filter(filter_tasks, Task.status == 'requires_changes').count()
+        in_progress = query.filter(filter_tasks, Task.status == 'in_progress').count()
+        instances_created = 0
         if user_id:
             query = query.filter(Task.assignee_user_id == user_id)
 
-        total = query.filter(Task.job_id == job_id).count()
-        completed = query.filter(Task.job_id == job_id,
-                                 Task.status == 'complete').count()
-        in_review = query.filter(Task.job_id == job_id,
-                                 Task.status == 'in_review').count()
-        requires_changes = query.filter(Task.job_id == job_id,
-                                        Task.status == 'requires_changes').count()
-        in_progress = query.filter(Task.job_id == job_id,
-                                   Task.status == 'in_progress').count()
-
-        task_id_list = [task.id for task in all_the_tasks_in_job]
         if user_id is None:
-            # Get all the instances created on the tasks. No user filter
-            instances_created = session.query(Instance).filter(
-                Instance.task_id.in_(task_id_list),
-                Instance.soft_delete == False
-            ).count()
+            if job_id:
+                all_the_tasks = query.filter(Task.job_id == job_id).all()
+                task_id_list = [task.id for task in all_the_tasks]
+                # Get all the instances created on the tasks. No user filter
+                instances_created = session.query(Instance).filter(
+                    Instance.task_id.in_(task_id_list),
+                    Instance.soft_delete == False
+                ).count()
+            if project_id:
+                # Get all the instances created on the tasks. No user filter
+                instances_created = session.query(Instance).filter(
+                    Instance.project_id == project_id,
+                    Instance.soft_delete == False
+                ).count()
+
         else:
             # Get all the instances created by the given user
             user = User.get_by_id(session, user_id = user_id)
-            instances_created = session.query(Instance).filter(
-                Instance.task_id.in_(task_id_list),
-                Instance.soft_delete == False,
-                Instance.member_created_id == user.member_id
-            ).count()
+            if job_id:
+                all_the_tasks = query.filter(Task.job_id == job_id).all()
+                task_id_list = [task.id for task in all_the_tasks]
+
+                instances_created = session.query(Instance).filter(
+                    Instance.task_id.in_(task_id_list),
+                    Instance.soft_delete == False,
+                    Instance.member_created_id == user.member_id
+                ).count()
+            if project_id:
+                # Get all the instances created on the tasks. No user filter
+                instances_created = session.query(Instance).filter(
+                    Instance.project_id == project_id,
+                    Instance.soft_delete == False,
+                    Instance.member_created_id == user.member_id
+                ).count()
 
         tasks_stats = {
             "total": total,

@@ -380,7 +380,6 @@ export default Vue.extend({
         const attr = this.attribute_group_list_computed[this.openedPanel]
         if(attr && attr.kind === 'tree'){
           const attrRef = this.$refs[`attribute_group_${attr.id}`]
-          console.log('ATTR', attrRef)
           if(attrRef && attrRef.length > 0){
             const treeInput = attrRef[0].$refs.treeview_search
             if(treeInput){
@@ -428,7 +427,6 @@ export default Vue.extend({
           return attribute_value.display_name
         } else if(['tree'].includes(attribute_group.kind)){
           let result = ""
-          console.log('tree', attribute_value)
           for (let key of Object.keys(attribute_value)){
             let tree_val = attribute_value[key].name
             result += `${tree_val},`

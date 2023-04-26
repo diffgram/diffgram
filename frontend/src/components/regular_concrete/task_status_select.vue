@@ -4,13 +4,13 @@
     <diffgram_select
       :item_list="icon_list"
       v-model="item_internal"
-      :label="label"    
+      :label="label"
       :disabled="disabled"
       @input="$emit('input', $event)"
       @change="$emit('change', $event)"
             >
   </diffgram_select>
-  
+
 
 </template>
 
@@ -21,7 +21,7 @@
  *  multiple select in future
  *
  *  1) Define in component
- 
+
 <task_status_select
     v-model="share_type"
     label="Share type"
@@ -31,7 +31,7 @@
 
     2) Set Default data ie
     share_type = "project"  // note lower case
- *  
+ *
  */
 
 import Vue from "vue";
@@ -73,6 +73,12 @@ export default Vue.extend( {
           'color': 'green'
         },
         {
+          'display_name': 'In Progress',
+          'name': 'in_progress',
+          'icon': 'mdi-account-clock-outline',
+          'color': 'primary'
+        },
+        {
           'display_name': 'Available',
           'name': 'available',
           'icon': 'mdi-inbox',
@@ -98,7 +104,7 @@ export default Vue.extend( {
     this.item_internal = this.value
   },
   watch: {
-    /* 
+    /*
      * If we just edit this directly
      * (ie at created), then it won't change nicely when
      * updated from server

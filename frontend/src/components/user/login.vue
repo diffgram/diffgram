@@ -503,7 +503,8 @@ export default Vue.extend({
             this.$store.commit("set_project", project_current);
           }
 
-          this.$router.push("/home/dashboard");
+          // this.$router.push("/home/dashboard");
+          this.$router.push("/me");
 
           /*
           if (current_project_string_id == null) {

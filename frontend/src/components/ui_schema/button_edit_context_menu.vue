@@ -230,7 +230,6 @@ export default Vue.extend({
       this.attribute_value = attribute_selected_value
     },
     attribute_change_event: function(attr){
-      console.log('ATTR CHANGE', attr)
       this.action.set_metadata('attribute_template_id', attr.id)
       this.attribute = attr
     },

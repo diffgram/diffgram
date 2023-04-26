@@ -6,14 +6,14 @@ from sqlalchemy import func
 import datetime
 
 
-@routes.route('/api/v1/diffgram/stats/task',
+@routes.route('/api/v1/project/<string:project_string_id>/stats/task',
               methods = ['POST'])
 @limiter.limit("20 per day")
 def stats_task_api():
     spec_list = [{'date_from': str},
                  {'date_to': str},
                  {'status': str},
-                 {'job_id': None},
+                 {'job_id': int},
                  {'mode': str}]
 
     log, input, untrusted_input = regular_input.master(request = request,
@@ -22,9 +22,11 @@ def stats_task_api():
         return jsonify(log = log), 400
 
     with sessionMaker.session_scope() as session:
+        project = Project.get_by_string_id(session, project_string_id = project_string_id)
         user = User.get(session)
 
         stats = stats_task_core(session = session,
+                                project = project,
                                 date_from = input['date_from'],
                                 date_to = input['date_to'],
                                 status = input['status'],
@@ -39,6 +41,7 @@ def stats_task_api():
     project_role_list = ["admin", "Editor", "Viewer"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
 def stats_task_core(session,
+                    project,
                     date_from,
                     date_to,
                     status,
@@ -58,6 +61,7 @@ def stats_task_core(session,
 
     query = query.filter(Task.time_created >= date_from)
     query = query.filter(Task.time_created < date_to)
+    query = query.filter(Task.project_id == project.id)
 
     if status:
         if status != "all":
@@ -89,8 +93,3 @@ def stats_task_core(session,
     return {'labels': labels,
             'values': values,
             'count_task': count_task}
-
-
-
-
-

@@ -579,7 +579,6 @@
         //this.close();
       },
       async add_selected() {
-        console.log('ADD', this.button_to_add)
         if(this.button_to_add === 'Add Custom Button'){
           let existing_buttons = this.$store.getters.get_custom_buttons_current_schema;
           let numButtons = 0;

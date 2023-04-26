@@ -805,7 +805,6 @@
       },
       methods: {
         set_radio_select_value_by_id: function(option_id){
-          console.log('SET BY ID RADIO', option_id, this.select_format)
           for(let option of this.select_format){
             if(option.id === option_id){
               this.internal_selected = option
@@ -814,7 +813,6 @@
           }
         },
         set_attribute_value: function(value){
-          console.log('VALUE', value, this.group.kind)
           if(['radio', 'select'].includes(this.group.kind)){
               // Assume value is the ID for this case
               this.set_radio_select_value_by_id(value)

@@ -505,7 +505,6 @@
           this.success_run = false
           this.loading_test = true
           this.error = {}
-          console.log('connectionconnectionconnectionconnection', this.connection)
           axios.post('/api/walrus/v1/connection/test', {
             connection_id: parseInt(connection_id),
 
