@@ -807,7 +807,6 @@ export const system = {
       }
     },
     logo_refresh(state) {
-      console.log('refreshhh')
       state.logo_refresh = new Date()
     }
   }

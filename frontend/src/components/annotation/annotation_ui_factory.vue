@@ -630,7 +630,6 @@ export default Vue.extend({
         await this.fetch_schema_list()
         await this.fetch_single_file();
       } else {
-        console.log('FILE ID AWWWWW')
         await this.fetch_schema_list()
         await this.fetch_project_file_list();
       }
@@ -1898,7 +1897,6 @@ export default Vue.extend({
         await this.set_working_file_from_child_file_list(this.annotation_ui_context.working_file_list[0])
         await this.set_compound_global_attributes_instance_list(file)
       } else {
-        console.log('SINGLE LAYOUTTTT')
         // Set single layout
         this.set_layout_panels(1, 1)
         this.set_working_file_list([file])
@@ -2042,7 +2040,6 @@ export default Vue.extend({
       this.loading = true;
       if (this.$route.query.file) {
         if (this.$refs.file_manager_sheet) {
-          console.log('QUERY FILEEE')
           let file = await this.$refs.file_manager_sheet.get_media(
             true,
             this.$route.query.file

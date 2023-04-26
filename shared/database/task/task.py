@@ -223,7 +223,6 @@ class Task(Base):
         from methods.task.task.task_update import Task_Update
         from sqlalchemy import union, join
         # Query for tasks with status 'available'
-        # Query for tasks with status 'available'
         query1 = (
             session.query(Task)
             .filter(sa.and_(Task.status == 'available', Task.job_id == job_id))
