@@ -12,6 +12,9 @@ from shared.database.task.task_user import TaskUser
 from shared.database.task.task_event import TaskEvent
 from shared.database.task.task_time_tracking import TaskTimeTracking
 from shared.database.user import User
+from sqlalchemy import union
+import sqlalchemy as sa
+from sqlalchemy import or_, and_
 
 TASK_STATUSES = {
     'created': 'created',
@@ -211,16 +214,38 @@ class Task(Base):
 
     @staticmethod
     def get_task_from_job_id(
-        session,
-        job_id,
-        user,
-        direction = 'next',
-        assign_to_user = False,
-        skip_locked = True):
+            session,
+            job_id,
+            user,
+            direction = 'next',
+            assign_to_user = False,
+            skip_locked = True):
         from methods.task.task.task_update import Task_Update
-        query = session.query(Task).filter(
-            Task.status == 'available',
-            Task.job_id == job_id)
+        from sqlalchemy import union, join
+        # Query for tasks with status 'available'
+        # Query for tasks with status 'available'
+        query1 = (
+            session.query(Task)
+            .filter(sa.and_(Task.status == 'available', Task.job_id == job_id))
+        )
+
+        # Query for tasks with status 'in_progress' and assigned to the user
+        query2 = (
+            session.query(Task)
+            .join(TaskUser, Task.id == TaskUser.task_id)
+            .filter(
+                sa.and_(
+                    Task.status == 'in_progress',
+                    Task.job_id == job_id,
+                    TaskUser.user_id == user.id,
+                )
+            )
+        )
+
+        # Combine the results using a union
+        combined_query = query1.union(query2).subquery().alias('task_union')
+
+        query = session.query(Task).select_entity_from(combined_query)
 
         if direction == 'next':
             query = query.order_by(Task.time_created)
@@ -229,8 +254,12 @@ class Task(Base):
             query = query.order_by(Task.time_created.desc())
 
         if skip_locked == True:
-            query = query.with_for_update(skip_locked = True)
-
+            # query = query.with_for_update(skip_locked = True)
+            pass
+        from sqlalchemy import create_engine, text
+        print('aaaaa', query.all(), )
+        print('RAQQQ QUERYYY')
+        print(query.statement)
         task = query.first()
         if assign_to_user is True:
 
@@ -252,9 +281,9 @@ class Task(Base):
         return task
 
     def navigate_tasks_relative_to_given_task(
-        session,
-        task_id,
-        direction = 'next'
+            session,
+            task_id,
+            direction = 'next'
     ):
 
         known_task = Task.get_by_id(session, task_id = task_id)
@@ -275,10 +304,10 @@ class Task(Base):
         return discovered_task
 
     def get_last_task(
-        session,
-        user,
-        status_allow_list = ["available", "in_progress"],
-        job = None):
+            session,
+            user,
+            status_allow_list = ["available", "in_progress"],
+            job = None):
 
         last_task = user.last_task
         if last_task:
@@ -408,13 +437,13 @@ class Task(Base):
             return task_ids_with_issues[index_current + 1]
 
     def request_next_task_by_project(
-        session,
-        project,
-        user,
-        ignore_task_IDS_list = None,
-        status = 'available',
-        skip_locked = True,
-        task_type = None):
+            session,
+            project,
+            user,
+            ignore_task_IDS_list = None,
+            status = 'available',
+            skip_locked = True,
+            task_type = None):
 
         from shared.database.task.job.user_to_job import User_To_Job
         from shared.database.task.job.job import Job
@@ -453,9 +482,9 @@ class Task(Base):
 
     @staticmethod
     def get_file_ids_related_to_a_task(
-        session,
-        task_id,
-        project_id):
+            session,
+            task_id,
+            project_id):
 
         related_tasks_list = session.query(Task).filter(
             Task.id == task_id,
@@ -464,11 +493,11 @@ class Task(Base):
         return allowed_file_id_list
 
     def get_next_available_task_by_job_id(
-        session,
-        job_id,
-        task_type = None,
-        status = 'available',
-        ignore_task_IDS_list = None):
+            session,
+            job_id,
+            task_type = None,
+            status = 'available',
+            ignore_task_IDS_list = None):
         """
         Assumption is we only get tasks == to the status we set
         ie we ignore all other statuses (like archived)
@@ -575,10 +604,10 @@ class Task(Base):
 
     @staticmethod
     def get_by_job_and_file(
-        session,
-        job,
-        file,
-        return_type = 'first'):
+            session,
+            job,
+            file,
+            return_type = 'first'):
 
         query = session.query(Task).filter(
             Task.job_id == job.id,
