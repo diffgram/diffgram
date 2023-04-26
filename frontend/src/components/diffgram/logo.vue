@@ -40,7 +40,6 @@ export default Vue.extend({
     },
     watch: {
       logo_refresh: function(){
-        console.log('REFRESH LOGOOOO')
         this.get_system_configs()
       }
     },

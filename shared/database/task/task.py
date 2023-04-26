@@ -635,6 +635,7 @@ class Task(Base):
              page_number = 0  # 0 is same as no offset
              ):
 
+        print('LISSST', status)
         query = session.query(Task)
         if task_ids:
             query = query.filter(
@@ -693,11 +694,14 @@ class Task(Base):
         query = query.order_by(Task.time_created)
 
         if page_number:
-            if page_number < 0: page_number = 0
+            if page_number < 0:
+                page_number = 0
             query = query.offset(page_number * limit_count)
 
-        task_list = query.limit(limit_count).all()
-
+        if limit_count:
+            task_list = query.limit(limit_count).all()
+        else:
+            task_list = query.all()
         task_id_list = [task.id for task in task_list]
         if issues_filter:
             if issues_filter == 'open_issues':

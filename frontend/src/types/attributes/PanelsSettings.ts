@@ -11,7 +11,6 @@ export class PanelsSettings {
   }
 
   public set_cols_and_rows_from_total_items(cols, item_nums){
-    console.log(cols, item_nums)
     let rows = Math.ceil(item_nums / cols)
     this.rows = rows
     this.columns = cols

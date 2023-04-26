@@ -107,7 +107,7 @@
                   <span class="font-weight-light ">
                      {{ $store.state.project.current.name }} /
                   </span>
-                    <span class="font-weight-normal pl-1" >
+                    <span class="font-weight-normal pl-1">
                     All My Tasks
                   </span>
                   </h1>
@@ -154,6 +154,14 @@
                 </v-tab>
                 <v-tabs-items v-model="tab">
                   <v-tab-item class="">
+                    <task_list_headers
+                      :filters="filters"
+                      :total_task_count="total_task_count"
+                      @refresh_task_list="refresh_task_list"
+                      @update_column_list="update_column_list"
+                      :project_string_id="project_string_id">
+
+                    </task_list_headers>
                     <task_list_table
                       :project_string_id="project_string_id"
                       :task_list="task_list"
@@ -193,95 +201,117 @@ import project_pipeline from '../../project/project_pipeline'
 
 import Vue from "vue";
 import task_list_table from "../../task/task/task_list_table.vue";
+import task_list_headers from "../../task/task/task_list_headers.vue";
 import Project_discussions from "../../discussions/project_discussions.vue";
 import Stats_task from "../../report/stats_task.vue";
 import stats_panel from "../../stats/stats_panel.vue";
 
-export default Vue.extend( {
-  name: 'annotator_dashboard_me',
-  components: {
-    stats_panel,
-    Stats_task,
-    Project_discussions,
-    task_list_table,
-    report_dashboard,
-    user_visit_history_list,
-    project_pipeline,
+export default Vue.extend({
+    name: 'annotator_dashboard_me',
+    components: {
+      stats_panel,
+      Stats_task,
+      Project_discussions,
+      task_list_table,
+      report_dashboard,
+      user_visit_history_list,
+      task_list_headers,
+      project_pipeline,
 
-  },
-  data () {
-    return {
-      no_task_snackbar: false,
-      task_list: [],
-      items: [
-        {text: "My Tasks", icon: "mdi-view-dashboard"},
-        {text: "Insights", icon: "mdi-chart-areaspline"},
-        {text: "Discussions", icon: "mdi-comment-multiple"},
-      ],
-      column_list: [
-        "Status",
-        "Preview",
-        "AnnotationCount",
-        "LastUpdated",
-        "Action",
-        "Job",
-      ],
-      next_task_loading : false,
-      tab : 0,
-      resume_task_loading: false,
-      last_file: undefined,
-      load_task_list: false
-    }
-  },
-  created() {
-
-  },
-  async mounted() {
-    await this.fetch_task_list_project()
-  },
-  computed: {
-    project_string_id: function(){
-      return this.$store.state.project.current.project_string_id;
     },
-    last_task_event: function (){
-      if (!this.$store.state.user.history) { return false }
-      let last_task_event = this.$store.state.user.history.find(
-        x => x.page_name == 'task_detail')
-
-      this.get_file_with_annotations(last_task_event)
-
-      return last_task_event
-    }
-  },
-  methods: {
-    fetch_task_list_project: async function(){
-      try{
-        this.load_task_list = true;
-        const filters =    {
+    data() {
+      return {
+        no_task_snackbar: false,
+        task_list: [],
+        filters: {
           mode_data: 'list',
+          all_my_jobs: true,
+          limit_count: 25,
+          page_number: 0,
           project_string_id: this.project_string_id,
-          all_my_jobs: true
-        }
-        const [task_list_data, err] = await getTaskListFromProject(this.project_string_id, filters)
-        this.task_list = task_list_data.task_list
-        if(err){
-          console.error(err)
-          return
-        }
-      } catch (e) {
-        console.error(e)
-      } finally {
-        this.load_task_list = false
+        },
+        items: [
+          {text: "My Tasks", icon: "mdi-view-dashboard"},
+          {text: "Insights", icon: "mdi-chart-areaspline"},
+          {text: "Discussions", icon: "mdi-comment-multiple"},
+        ],
+        column_list: [
+          "Status",
+          "Preview",
+          "AnnotationCount",
+          "LastUpdated",
+          "Action",
+          "Job",
+        ],
+        next_task_loading: false,
+        total_task_count: 0,
+        tab: 0,
+        resume_task_loading: false,
+        last_file: undefined,
+        load_task_list: false
       }
     },
-    route_resume_task: function(){
-      this.resume_task_loading = true
-      const routeData = `/task/${this.last_task_event.task_id}`;
-      this.$router.push(routeData)
-    },
+    created() {
 
-    async get_file_with_annotations(last_task_event) {
-        if(!last_task_event){
+    },
+    async mounted() {
+      await this.fetch_task_list_project()
+    },
+    computed: {
+      project_string_id: function () {
+        return this.$store.state.project.current.project_string_id;
+      },
+      last_task_event: function () {
+        if (!this.$store.state.user.history) {
+          return false
+        }
+        let last_task_event = this.$store.state.user.history.find(
+          x => x.page_name == 'task_detail')
+
+        this.get_file_with_annotations(last_task_event)
+
+        return last_task_event
+      }
+    },
+    methods: {
+      update_column_list: function(col_list){
+        this.column_list = col_list
+      },
+      refresh_task_list: async function () {
+        await this.fetch_task_list_project(this.filters)
+      },
+      fetch_task_list_project: async function (filters = undefined) {
+        try {
+          this.load_task_list = true;
+          if (!filters) {
+            filters = {
+              mode_data: 'list',
+              project_string_id: this.project_string_id,
+              all_my_jobs: true
+            }
+          }
+
+          const [task_list_data, err] = await getTaskListFromProject(this.project_string_id, filters)
+          this.task_list = task_list_data.task_list
+          this.total_task_count = task_list_data.total_count
+          if (err) {
+            console.error(err)
+            return
+          }
+        } catch (e) {
+          console.error(e)
+        } finally {
+          this.load_task_list = false
+        }
+      },
+      route_resume_task: function () {
+        this.resume_task_loading = true
+        const routeData = `/task/${this.last_task_event.task_id}`;
+        this.$router.push(routeData)
+      },
+
+      async get_file_with_annotations(last_task_event) {
+        if (!last_task_event) {
           return
         }
         let url = '/api/v1/task/' + last_task_event.task_id + '/annotation/list';
@@ -289,49 +319,44 @@ export default Vue.extend( {
         this.get_annotations_loading = true
         this.last_file = undefined
 
-        try{
+        try {
           const response = await axios.post(url, {})
           this.last_file = response.data.file_serialized
-        }
-        catch(error){
+        } catch (error) {
           console.debug(error);
           this.get_annotations_error = this.$route_api_errors(error)
-        }
-        finally{
+        } finally {
           this.get_annotations_loading = false
         }
-      return
-    },
+        return
+      },
 
-    api_get_next_task_annotator: async function(){
-      try{
-        this.next_task_loading = true
-        const response = await axios.post(
-          `/api/v1/project/${this.project_string_id}/task/next`, {
-        });
-        if(response.status === 200 && response.data.task){
-          let task = response.data.task
-          const routeData = `/task/${task.id}`;
-          this.$router.push(routeData)
-        } else {
-          this.no_task_snackbar = true
+      api_get_next_task_annotator: async function () {
+        try {
+          this.next_task_loading = true
+          const response = await axios.post(
+            `/api/v1/project/${this.project_string_id}/task/next`, {});
+          if (response.status === 200 && response.data.task) {
+            let task = response.data.task
+            const routeData = `/task/${task.id}`;
+            this.$router.push(routeData)
+          } else {
+            this.no_task_snackbar = true
+          }
+        } catch (e) {
+          console.error(e);
+        } finally {
+          this.next_task_loading = false;
         }
       }
-      catch (e) {
-        console.error(e);
-      }
-      finally {
-        this.next_task_loading = false;
-      }
-    }
 
+    }
   }
-}
 ) </script>
 
 <style scoped>
-  .home-container{
-    padding: 0 10rem;
-  }
+.home-container {
+  padding: 0 10rem;
+}
 </style>
 

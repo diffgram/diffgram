@@ -508,9 +508,7 @@ export default Vue.extend({
       loading_archive: false,
       snackbar_success: false,
       selected_action: undefined,
-
-      date: undefined, // TODO use date as a prop to sync with stats?
-
+      date: undefined,
       task_list: [],
 
       task_status: "all",

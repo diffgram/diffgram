@@ -45,6 +45,7 @@ def task_list_api(project_string_id):
     spec_list = [{'date_from': None},
                  {'date_to': None},
                  {'status': None},
+                 {'page_number': None},
                  {'job_id': {'required': False, 'kind': int}},
                  {'all_my_jobs': {'required': False, 'kind': bool}},
                  {'issues_filter': None},
@@ -78,7 +79,7 @@ def task_list_api(project_string_id):
 
 
 def _task_list_api(session, project_id, input = input, member = None, log = regular_log.default()):
-    task_list = task_list_core(session = session,
+    task_list, total_count = task_list_core(session = session,
                                date_from = input['date_from'],
                                date_to = input['date_to'],
                                status = input['status'],
@@ -104,6 +105,7 @@ def _task_list_api(session, project_id, input = input, member = None, log = regu
 
     return jsonify(log = log,
                    task_list = task_list,
+                   total_count = total_count,
                    pending_initial_dir_sync = initial_dir_sync), 200
 
 
@@ -168,6 +170,21 @@ def task_list_core(session,
         page_number = page_number,
 
     )
+    total_tasks_count = Task.list(
+        session = session,
+        date_from = date_from,
+        date_to = date_to,
+        status = status,
+        job_id = job_id,
+        job_id_list = job_id_list,
+        project_id = project_id,
+        file_id = file_id,
+        incoming_directory_id = incoming_directory_id,
+        issues_filter = issues_filter,
+        limit_count = None,
+        page_number = None,
+        return_mode = 'count'
+    )
 
     out_list = []
     task_template = Job.get_by_id(session, job_id = job_id)
@@ -185,4 +202,4 @@ def task_list_core(session,
             serialized['external_id'] = external_id
         out_list.append(serialized)
 
-    return out_list
+    return out_list, total_tasks_count

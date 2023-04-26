@@ -228,7 +228,6 @@
                 image.onerror = reject
               }
               else{
-                console.log('image_bg', this.image_bg)
                 this.image_bg = newFile.html_image;
                 this.refresh = new Date();
                 resolve(newFile.html_image);
