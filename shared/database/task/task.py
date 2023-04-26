@@ -257,9 +257,6 @@ class Task(Base):
             # query = query.with_for_update(skip_locked = True)
             pass
         from sqlalchemy import create_engine, text
-        print('aaaaa', query.all(), )
-        print('RAQQQ QUERYYY')
-        print(query.statement)
         task = query.first()
         if assign_to_user is True:
 
