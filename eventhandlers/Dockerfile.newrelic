@@ -1,5 +1,5 @@
-FROM python:3.7.2-slim
-LABEL python_version=python3.7.2
+FROM python:3.7.16-bullseye
+LABEL python_version=python3.7.16
 
 RUN seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{}
 RUN for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done

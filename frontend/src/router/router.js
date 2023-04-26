@@ -26,6 +26,11 @@ const routerOptions = [
     meta: {requiresAuth: true}
   },
   {
+    path: '/admin/logo',
+    component: 'diffgram/admin_set_logo',
+    meta: {requiresAuth: true}
+  },
+  {
     path: '/admin/mock',
     component: 'diffgram/admin_mock_data',
     meta: {requiresAuth: true}

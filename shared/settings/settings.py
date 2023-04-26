@@ -88,6 +88,7 @@ PROJECT_INSTANCES_IMAGES_BASE_DIR = "projects/instances/images/"
 ACTIONS_BASE_DIR = "actions/"
 USER_IMAGES_BASE_DIR = "users/images/"
 EXPORT_DIR = "export/"
+SYSTEM_DATA_BASE_DIR = "diffgram-system/"
 
 # Email Settings
 DEFAULT_ENGINEERING_EMAIL = os.environ.get('DEFAULT_ENGINEERING_EMAIL', "")
