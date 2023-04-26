@@ -119,6 +119,10 @@ class SystemEvents(Base):
             # Determine if current version in env variable is greater than last recorded version.
             recorded_version = latest_recorded_version_event.diffgram_version
             version_to_check = settings.DIFFGRAM_VERSION_TAG
+            if recorded_version.startswith('newrelic-'):
+                recorded_version = recorded_version.replace('newrelic-', '')
+            if version_to_check.startswith('newrelic-'):
+                version_to_check = version_to_check.replace('newrelic-', '')
             if version.parse(version_to_check) > version.parse(recorded_version):
                 logger.info(f"New version detected: [{version_to_check}]")
                 system_event = SystemEvents.new(
