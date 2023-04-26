@@ -68,7 +68,7 @@ def task_list_api(project_string_id):
             return jsonify(log = log), 400
         # For now we are not supporting querying the entire file list of a project.
         # So we check we have either a job ID or a FileID to filter with
-        if input['file_id'] is None and input['job_id'] is None:
+        if input['file_id'] is None and input['job_id'] is None and input.get('all_my_jobs') is None:
             log['error']['file_id'] = 'Please Provide a file ID'
             log['error']['job_id'] = 'Please Provide a job ID'
             return jsonify(log = log), 400

@@ -97,6 +97,7 @@
         <v-icon left>{{ item.icon }}</v-icon>
         {{ item.text }}
       </v-tab>
+
       <v-tabs-items v-model="tab">
         <v-tab-item class="pt-2">
 
@@ -124,7 +125,7 @@
 
         <v-tab-item>
 
-          <stats_panel/>
+          <stats_panel :project_string_id="project_string_id" :job_id="job_id"/>
 
           <v_stats_task :job_id="job_id"
                         :project_string_id="$store.state.project.current.project_string_id">

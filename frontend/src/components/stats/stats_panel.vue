@@ -67,7 +67,7 @@ import pieChart from "../report/charts/pieChart";
 import store from "../../store";
 import user_icon from "../user/user_icon.vue";
 import {
-  getJobStats,
+  getJobStats, getJobStatsForProject,
   getJobStatsForUser,
 } from "../../services/jobStatsServices";
 
@@ -75,6 +75,16 @@ export default Vue.extend({
   components: {
     pieChart,
     user_icon,
+  },
+  props: {
+    project_string_id: {
+      type: String,
+      required: true
+    },
+    job_id: {
+      type: String,
+      required: false
+    }
   },
   store,
   watch: {
@@ -94,11 +104,18 @@ export default Vue.extend({
   },
   methods: {
     async update_user_chart() {
-      const { job_id } = this.$route.params;
-      if(!job_id){
+      if(!this.job_id && !this.project_string_id){
         return
       }
-      const { completed, total, in_progress, in_review, requires_changes, instances_created } = await getJobStatsForUser(job_id, this.show_member_stat);
+      let stats
+      if(this.job_id){
+        stats = await getJobStatsForUser(job_id, this.show_member_stat);
+
+      } else{
+        stats = await getJobStatsForProject(this.project_string_id, this.show_member_stat);
+
+      }
+      const { completed, total, in_progress, in_review, requires_changes, instances_created } = stats
       const pending = total - completed - in_progress - in_review - requires_changes
       this.user_stats.chartData.datasets[0].data = [completed, in_progress, in_review, requires_changes, pending];
       this.user_stats.chartData.labels = [
@@ -125,11 +142,17 @@ export default Vue.extend({
   async created() {
     const user_id = this.$store.state.user.current.id;
 
-    const { job_id } = this.$route.params;
+    const job_id = this.job_id;
     this.member_list = [...this.$store.state.project.current.member_list];
     this.show_member_stat = user_id;
     this.member_list_selected = user_id;
-    const { completed, total, in_progress, in_review, requires_changes } = await getJobStats(job_id);
+    let stats
+    if(job_id){
+      stats = await getJobStats(job_id);
+    } else{
+      stats = await getJobStatsForProject(this.project_string_id);
+    }
+    const { completed, total, in_progress, in_review, requires_changes } = stats
     const pending = total - completed - in_progress - in_review - requires_changes
     this.job_chart.chartData.datasets[0].data = [completed, in_progress, in_review, requires_changes, pending];
     this.job_chart.chartData.labels = [

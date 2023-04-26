@@ -49,7 +49,6 @@ def do_routes_importing():
     from methods.task.file.dir_attach import update_dirs_to_job_api
     from methods.source_control.file.file_exists import file_list_exists_api
 
-    from methods.task.stats.stats_leaderboard import stats_leadboard_api
     from methods.task.stats.stats_job import stats_job_api
     from methods.task.stats.stats_task import stats_task_api
     
@@ -169,7 +168,7 @@ def do_routes_importing():
     from methods.task.credential.credential_type_attach_to_job import credential_type_attach_to_job_api
     from methods.task.credential.credential_type_update import update_credential_type_image_api
 
-    from methods.task.stats.fast_stats import job_stat, job_user_stats
+    from methods.task.stats.fast_stats import job_stat, job_user_stats, project_stats
     from methods.task.task_time_tracking.task_track_time import api_task_track_time
 
 

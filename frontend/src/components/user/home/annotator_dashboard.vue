@@ -1,158 +1,180 @@
 <template>
   <div id="annotator_dashboard" class="home-container">
+    <v-progress-linear
+      v-if="next_task_loading || load_task_list"
+      height="10"
+      indeterminate
+      absolute
+      top
+      color="secondary accent-4">
+    </v-progress-linear>
+    <v-card class="ma-4">
+      <v-container fluid>
+        <v-row>
+          <!--        <v-col cols="3">-->
+          <!--          <v-container>-->
+          <!--            <v-card>-->
+          <!--              <v-container>-->
+
+          <!--                <v-progress-linear-->
+          <!--                  v-if="resume_task_loading"-->
+          <!--                  height="10"-->
+          <!--                  indeterminate-->
+          <!--                  absolute-->
+          <!--                  top-->
+          <!--                  color="secondary accent-4">-->
+          <!--                </v-progress-linear>-->
+
+          <!--                <h2>Resume Last Task </h2>-->
+          <!--                <div class="pa-2">-->
+
+          <!--                  <v-layout>-->
+          <!--                    <div class="d-flex align-center justify-center">-->
+          <!--                      <v-btn-->
+          <!--                        color="primary"-->
+          <!--                        large-->
+          <!--                        data-cy="resume_last_task"-->
+          <!--                        :disabled="!last_task_event || resume_task_loading || (last_task_event && !last_task_event.task_id)"-->
+          <!--                        @click="route_resume_task()"-->
+          <!--                      >-->
+          <!--                        Resume-->
+
+          <!--                        <v-icon-->
+          <!--                          right-->
+          <!--                        >-->
+          <!--                          mdi-replay-->
+          <!--                        </v-icon>-->
+
+          <!--                      </v-btn>-->
+          <!--                    </div>-->
 
 
-  <v-container>
-    <v-card>
-      <v-container>
+          <!--                    <div class="pl-4"-->
+          <!--                         v-if="last_task_event-->
+          <!--                        && last_file">-->
 
-      <v-progress-linear
-        v-if="next_task_loading"
-        height="10"
-        indeterminate
-        absolute
-        top
-        color="secondary accent-4">
-      </v-progress-linear>
+          <!--                      <file_preview_with_hover_expansion-->
+          <!--                        :file="last_file"-->
+          <!--                        v-if="project_string_id == last_task_event.project_string_id"-->
+          <!--                        :project_string_id="last_task_event.project_string_id"-->
+          <!--                        tooltip_direction="right"-->
+          <!--                        @view_file_detail="route_resume_task()"-->
+          <!--                      >-->
+          <!--                      </file_preview_with_hover_expansion>-->
 
-        <h1>Annotate Next Available Task </h1>
-          <div class="pa-2">
-            <v-btn
-              color="primary"
-              x-large
-              data-cy="annotate_now"
-              :disabled="next_task_loading"
-              @click="api_get_next_task_annotator()"
-            >
-              Annotate
+          <!--                      <div @click="route_resume_task()"-->
+          <!--                           v-if="project_string_id != last_task_event.project_string_id"-->
+          <!--                      >-->
+          <!--                        <thumbnail-->
+          <!--                          v-if="last_file.type === 'video'-->
+          <!--                           || last_file.type === 'image'"-->
+          <!--                          :item="last_file"-->
+          <!--                        >-->
+          <!--                        </thumbnail>-->
+          <!--                      </div>-->
 
-                  <v-icon
-                    right
+
+          <!--                    </div>-->
+
+          <!--                    <div v-if="last_task_event"-->
+          <!--                         class="pa-2 font-weight-light flex-column d-flex">-->
+          <!--                      <div>-->
+          <!--                        {{last_task_event.time_created}}-->
+          <!--                      </div>-->
+          <!--                      <div>-->
+          <!--                        {{last_task_event.project_string_id}}-->
+          <!--                      </div>-->
+          <!--                      <div>-->
+          <!--                        {{last_task_event.task_id}}-->
+          <!--                      </div>-->
+          <!--                    </div>-->
+
+
+          <!--                  </v-layout>-->
+          <!--                </div>-->
+          <!--              </v-container>-->
+          <!--            </v-card>-->
+          <!--          </v-container>-->
+          <!--        </v-col>-->
+          <v-col cols="12">
+            <v-container fluid>
+              <div class="d-flex">
+                <div class="flex-grow-1">
+                  <h1
+                    class="clickable"
+                    @click="$router.push('/job/list')"
                   >
-                    mdi-play
-                  </v-icon>
+                  <span class="font-weight-light ">
+                     {{ $store.state.project.current.name }} /
+                  </span>
+                    <span class="font-weight-normal pl-1" >
+                    All My Tasks
+                  </span>
+                  </h1>
 
-            </v-btn>
-          </div>
-      </v-container>
-    </v-card>
-  </v-container>
-
-    <v-container>
-      <v-card>
-        <v-container>
-
-        <v-progress-linear
-          v-if="resume_task_loading"
-          height="10"
-          indeterminate
-          absolute
-          top
-          color="secondary accent-4">
-        </v-progress-linear>
-
-          <h2>Resume Last Task </h2>
-            <div class="pa-2">
-
-              <v-layout>
-                <div class="d-flex align-center justify-center">
+                </div>
+                <div class="pa-2">
                   <v-btn
                     color="primary"
                     large
-                    data-cy="resume_last_task"
-                    :disabled="!last_task_event || resume_task_loading || (last_task_event && !last_task_event.task_id)"
-                    @click="route_resume_task()"
+                    data-cy="serach_route"
+                    @click="$router.push('/job/list')"
                   >
-                    Resume
+                    Browse
 
-                      <v-icon
-                        right
-                      >
-                        mdi-replay
-                      </v-icon>
+                    <v-icon
+                      right
+                    >
+                      mdi-compass
+                    </v-icon>
+
+                  </v-btn>
+                  <v-btn
+                    color="success"
+                    large
+                    data-cy="annotate_now"
+                    :disabled="next_task_loading"
+                    @click="api_get_next_task_annotator()"
+                  >
+                    Start Annotating
+
+                    <v-icon
+                      right
+                    >
+                      mdi-play
+                    </v-icon>
 
                   </v-btn>
                 </div>
+              </div>
+              <v-tabs v-model="tab" color="primary" style="height: 100%">
+                <v-tab v-for="item in items" :key="item.text">
+                  <v-icon left>{{ item.icon }}</v-icon>
+                  {{ item.text }}
+                </v-tab>
+                <v-tabs-items v-model="tab">
+                  <v-tab-item class="">
+                    <task_list_table
+                      :project_string_id="project_string_id"
+                      :task_list="task_list"
+                      :column_list="column_list"
+                    ></task_list_table>
+                  </v-tab-item>
+                  <v-tab-item>
+                    <stats_panel :project_string_id="project_string_id"/>
+                    <stats_task :project_string_id="project_string_id"></stats_task>
+                  </v-tab-item>
+                  <v-tab-item>
+                    <project_discussions :project_string_id="project_string_id"></project_discussions>
+                  </v-tab-item>
+                </v-tabs-items>
+              </v-tabs>
 
-
-                <div class="pl-4"
-                     v-if="last_task_event
-                        && last_file">
-
-                    <file_preview_with_hover_expansion
-                      :file="last_file"
-                      v-if="project_string_id == last_task_event.project_string_id"
-                      :project_string_id="last_task_event.project_string_id"
-                      tooltip_direction="right"
-                      @view_file_detail="route_resume_task()"
-                                                       >
-                    </file_preview_with_hover_expansion>
-
-                    <div @click="route_resume_task()"
-                         v-if="project_string_id != last_task_event.project_string_id"
-                         >
-                      <thumbnail
-                        v-if="last_file.type === 'video'
-                           || last_file.type === 'image'"
-                        :item="last_file"
-                      >
-                      </thumbnail>
-                    </div>
-
-
-                </div>
-
-                <div v-if="last_task_event"
-                     class="pa-2 font-weight-light flex-column d-flex">
-                  <div>
-                  {{last_task_event.time_created}}
-                  </div>
-                  <div>
-                  {{last_task_event.project_string_id}}
-                  </div>
-                  <div>
-                  {{last_task_event.task_id}}
-                  </div>
-                </div>
-
-
-             </v-layout>
-            </div>
-          </v-container>
-      </v-card>
-    </v-container>
-
-    <v-container>
-      <v-card>
-        <v-container>
-          <h2>Browse & Search Tasks </h2>
-            <div class="pa-2">
-              <v-btn
-                color="primary"
-                large
-                data-cy="serach_route"
-                @click="$router.push('/job/list')"
-              >
-                Browse
-
-                  <v-icon
-                    right
-                  >
-                    mdi-compass
-                  </v-icon>
-
-              </v-btn>
-            </div>
-          </v-container>
-      </v-card>
-    </v-container>
-
-    <v-container>
-      <h1>My Tasks: </h1>
-      <task_list
-        :project_string_id="project_string_id"
-      ></task_list>
-    </v-container>
+            </v-container>
+          </v-col>
+        </v-row>
+      </v-container>
+    </v-card>
 
     <v-snackbar v-model="no_task_snackbar" color="red">
       No tasks available
@@ -170,12 +192,18 @@ import user_visit_history_list from '../../event/user_visit_history_list.vue'
 import project_pipeline from '../../project/project_pipeline'
 
 import Vue from "vue";
-import Task_list from "../../task/task/task_list.vue";
+import task_list_table from "../../task/task/task_list_table.vue";
+import Project_discussions from "../../discussions/project_discussions.vue";
+import Stats_task from "../../report/stats_task.vue";
+import stats_panel from "../../stats/stats_panel.vue";
 
 export default Vue.extend( {
   name: 'annotator_dashboard_me',
   components: {
-    Task_list,
+    stats_panel,
+    Stats_task,
+    Project_discussions,
+    task_list_table,
     report_dashboard,
     user_visit_history_list,
     project_pipeline,
@@ -184,7 +212,22 @@ export default Vue.extend( {
   data () {
     return {
       no_task_snackbar: false,
+      task_list: [],
+      items: [
+        {text: "My Tasks", icon: "mdi-view-dashboard"},
+        {text: "Insights", icon: "mdi-chart-areaspline"},
+        {text: "Discussions", icon: "mdi-comment-multiple"},
+      ],
+      column_list: [
+        "Status",
+        "Preview",
+        "AnnotationCount",
+        "LastUpdated",
+        "Action",
+        "Job",
+      ],
       next_task_loading : false,
+      tab : 0,
       resume_task_loading: false,
       last_file: undefined,
       load_task_list: false
@@ -193,8 +236,8 @@ export default Vue.extend( {
   created() {
 
   },
-  mounted() {
-
+  async mounted() {
+    await this.fetch_task_list_project()
   },
   computed: {
     project_string_id: function(){
@@ -215,12 +258,16 @@ export default Vue.extend( {
       try{
         this.load_task_list = true;
         const filters =    {
-          file_id: file_id,
           mode_data: 'list',
-          project_string_id: this.$props.project_string_id
+          project_string_id: this.project_string_id,
+          all_my_jobs: true
         }
-        const [task_list_data, err] = await getTaskListFromProject(this.$props.project_string_id, filters)
-
+        const [task_list_data, err] = await getTaskListFromProject(this.project_string_id, filters)
+        this.task_list = task_list_data.task_list
+        if(err){
+          console.error(err)
+          return
+        }
       } catch (e) {
         console.error(e)
       } finally {

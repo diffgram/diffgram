@@ -56,6 +56,13 @@
         {{ props.item.incoming_directory.nickname }}
       </template>
 
+      <template slot="Job" slot-scope="props">
+        <v-btn small text outlined color="secondary" @click="$router.push(`/job/${props.item.job.id}`)">
+          <v-icon size="26">mdi-file-link</v-icon>
+          {{props.item.job.name}}
+        </v-btn>
+      </template>
+
       <template slot="AssignedUser" slot-scope="props">
         <div class="display-assigned-users">
           <standard_button
@@ -133,10 +140,12 @@
           tooltip_message="Go to Task"
           @click.stop.prevent="route_task(props.item.id)"
           icon="mdi-file-find"
+          icon_style="success"
           :icon_style="true"
           :disabled="loading"
           :large="true"
-          color="primary"
+          button_color="secondary"
+          color="secondary"
         >
         </standard_button>
 
@@ -195,20 +204,6 @@ export default Vue.extend({
   watch: {},
   data() {
     return {
-      column_list_backup: [],
-      column_list_all: [
-        "Select",
-        "Status",
-        "Preview",
-        "ID",
-        "AnnotationCount",
-        "DataUpdateLog",
-        "IncomingDataset",
-        "AssignedUser",
-        "AssignedReviewer",
-        "LastUpdated",
-        "Action",
-      ],
       loading: true,
       selected: [],
       header_list_default: [
@@ -230,6 +225,14 @@ export default Vue.extend({
         {
           text: "Preview",
           header_string_id: "Preview",
+          align: "center",
+          sortable: false,
+          width: "100px",
+          value: "",
+        },
+        {
+          text: "Job",
+          header_string_id: "Job",
           align: "center",
           sortable: false,
           width: "100px",
@@ -307,7 +310,6 @@ export default Vue.extend({
           value: "",
         },
       ],
-
       header_exam_results: [
         {
           text: "Average Star Rating",
@@ -341,7 +343,7 @@ export default Vue.extend({
     },
   },
   created() {
-    this.column_list_backup = this.column_list;
+
   },
   methods: {
     rowclick(task) {
