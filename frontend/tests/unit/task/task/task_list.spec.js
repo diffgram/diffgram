@@ -1,11 +1,11 @@
 import { shallowMount, createLocalVue } from "@vue/test-utils";
 import task_list from "@/components/task/task/task_list.vue";
 import Vuex from "vuex";
-import axios from "axios";
+import axios from "@/services/customInstance";
 
 const localVue = createLocalVue();
 localVue.use(Vuex);
-jest.mock('axios')
+jest.mock('@/services/customInstance')
 describe("task_list.vue", () => {
   let props;
 

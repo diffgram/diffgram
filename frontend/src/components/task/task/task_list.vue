@@ -417,7 +417,7 @@
 <script lang="ts">
 import axios from "axios";
 import _ from 'lodash'
-import {route_errors} from "../../regular/regular_error_handling";
+import {route_errors} from "../../regular/regular_error_handling.js";
 import task_status_icons from "../../regular_concrete/task_status_icons.vue";
 import task_list_table from "./task_list_table.vue";
 import task_status_select from "../../regular_concrete/task_status_select.vue";
@@ -428,8 +428,8 @@ import {
   batchAssignUserToTask,
   batchRemoveUserFromTask,
   getTaskListFromJob
-} from "../../../services/tasksServices"
-import {get_task_template_members} from "../../../services/taskTemplateService"
+} from "../../../services/tasksServices.js"
+import {get_task_template_members} from "../../../services/taskTemplateService.js"
 import global_dataset_selector from "../../attached/global_dataset_selector.vue"
 
 import pLimit from "p-limit";
