@@ -164,6 +164,7 @@
 <script lang="ts">
 
 import axios from '../../../services/customInstance';
+import {getTaskListFromProject} from '../../../services/tasksServices.js';
 import report_dashboard from '../../report/report_dashboard'
 import user_visit_history_list from '../../event/user_visit_history_list.vue'
 import project_pipeline from '../../project/project_pipeline'
@@ -185,7 +186,8 @@ export default Vue.extend( {
       no_task_snackbar: false,
       next_task_loading : false,
       resume_task_loading: false,
-      last_file: undefined
+      last_file: undefined,
+      load_task_list: false
     }
   },
   created() {
@@ -209,7 +211,22 @@ export default Vue.extend( {
     }
   },
   methods: {
+    fetch_task_list_project: async function(){
+      try{
+        this.load_task_list = true;
+        const filters =    {
+          file_id: file_id,
+          mode_data: 'list',
+          project_string_id: this.$props.project_string_id
+        }
+        const [task_list_data, err] = await getTaskListFromProject(this.$props.project_string_id, filters)
 
+      } catch (e) {
+        console.error(e)
+      } finally {
+        this.load_task_list = false
+      }
+    },
     route_resume_task: function(){
       this.resume_task_loading = true
       const routeData = `/task/${this.last_task_event.task_id}`;
