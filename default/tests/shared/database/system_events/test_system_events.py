@@ -49,7 +49,6 @@ class TestSystemEvents(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(system_event.diffgram_version, settings.DIFFGRAM_VERSION_TAG)
         self.assertEqual(system_event.kind, 'version_upgrade')
         self.assertEqual(system_event.service_name, 'test_service')
-        settings.DIFFGRAM_VERSION_TAG = '0.0.1'
         system_event = SystemEvents.check_version_upgrade(session = self.session, service_name = 'test_service')
 
         self.assertIsNone(system_event)

@@ -241,7 +241,7 @@
           <v-layout>
             <!-- KIND -->
             <diffgram_select
-              data_cy="attribute_kind_select"
+              data_cy="attribute_kind_select_no_wizard"
               :item_list="kind_list"
               v-model="group.kind"
               label="Kind"

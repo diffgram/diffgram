@@ -45,8 +45,7 @@
               <v-toolbar-title data-cy="navbar-logo" class="ml-0 pt-2 pr-3 clickable"
                                @click.ctrl="route_home_new_tab">
 
-                <img src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
-                     height="30px"/>
+                <logo :height="30"></logo>
 
               </v-toolbar-title>
             </ahref_seo_optimal>
@@ -301,6 +300,7 @@
 <script lang="ts">
   import menu_tasks from "./menu_tasks";
   import main_menu_project from "./menu_project";
+  import logo from "../diffgram/logo.vue";
   import pending_files_dialog from "../input/pending_files_dialog";
   import {getProjectList} from "../../services/projectServices";
   import menu_marketing from './menu_marketing'
@@ -315,7 +315,8 @@
       menu_tasks,
       pending_files_dialog,
       menu_marketing,
-      menu_super_admin
+      menu_super_admin,
+      logo
     },
     props: {
       'height': {
@@ -443,7 +444,7 @@
       },
       get_avalible_projects: async function () {
         if (!this.$store.state.user || !this.$store.state.user.logged_in) return
-        
+
         this.loading = true
         const response = await getProjectList();
         const project_list = response.data.project_list;

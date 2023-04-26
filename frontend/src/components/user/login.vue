@@ -5,10 +5,7 @@
     <v-flex class="flex-column" xs6 center v-if="$store.state.user.logged_in != true">
       <v_error_multiple :error="error_login"></v_error_multiple>
       <div class="pa-4 ma-auto text-center" style="width: 100%">
-        <img
-          src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
-          height="120px"
-        />
+        <logo :height="120"></logo>
       </div>
       <v-card>
         <v-card-title primary-title>
@@ -218,11 +215,15 @@
 
 <script lang="ts">
 import axios from "../../services/customInstance";
+import logo from "../diffgram/logo.vue";
 import { is_mailgun_set, is_oauth2_set } from "../../services/configService";
 
 import Vue from "vue";
 export default Vue.extend({
   name: "user_login",
+  components:{
+    logo,
+  },
   props: {
     magic_auth: {
       default: null,
