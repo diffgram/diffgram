@@ -204,7 +204,7 @@ export class TextAnnotationUIContext {
 
   bulk_mode: boolean
   search_mode: boolean
-  
+
   context_menu: any
   current_instance: any
   hover_instance: any
