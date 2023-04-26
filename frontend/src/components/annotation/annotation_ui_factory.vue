@@ -889,11 +889,13 @@ export default Vue.extend({
           const text_resize_listener = () => refs.map(refrence => refrence.resize_listener())
 
           listener_map = {
-            "beforeunload": ref.leave_listener,
-            "keydown": ref.keydown_event_listeners,
-            "keyup": ref.keyup_event_listeners,
+            "beforeunload": ref ? ref.leave_listener : undefined,
+            "keydown": ref ? ref.keydown_event_listeners: undefined,
+            "keyup": ref ? ref.keyup_event_listeners: undefined,
             "resize": text_resize_listener,
           }
+
+
         }
       }
 
@@ -936,8 +938,11 @@ export default Vue.extend({
       if (!this.$refs.panels_manager) {
         return
       }
+
       let total_height = this.$refs.panels_manager.$el.clientHeight
       let total_rows = this.annotation_ui_context.panel_settings.rows
+      console.log('total_height', total_height)
+      console.log('total_rows', total_rows)
       for (let row_index = 0; row_index < panes_list.length; row_index++) {
         let row_files = this.annotation_ui_context.working_file_list.filter(file => file.row === row_index)
         for (let file of row_files) {
@@ -947,11 +952,13 @@ export default Vue.extend({
             // We substract 50 px to leave a small padding when calculating new scale of images
             if (total_rows === 1) {
               this.child_annotation_ctx_list[i].container_height = Math.round(total_height);
+              console.log('this.child_annotation_ctx_list[i].container_height', total_height)
             } else {
               this.child_annotation_ctx_list[i].container_height = 500
             }
           }
           this.child_annotation_ctx_list[i].container_height = total_height * (panes_list[row_index].size / 100)
+          console.log('this.child_annotation_ctx_list[i].container_height  FINAL', this.child_annotation_ctx_list[i].container_height)
         }
       }
     },
@@ -1993,10 +2000,13 @@ export default Vue.extend({
       }
       this.get_model_runs_from_query(model_runs_data);
       if (this.listeners_map()) this.listeners_map()['resize']()
-
       this.changing_file = false;
       await this.$nextTick();
-      this.update_window_size_from_listener()
+      if(this.working_file && this.working_file.type !== 'text'){
+        this.update_window_size_from_listener()
+      }
+
+
     },
 
     get_labels_from_project: async function () {

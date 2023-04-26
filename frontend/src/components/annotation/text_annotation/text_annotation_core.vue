@@ -370,7 +370,6 @@ export default Vue.extend({
   mounted() {
     this.on_mount()
     this.start_autosave()
-
     this.$emit('trigger_listeners_setup')
   },
   computed: {
@@ -807,7 +806,6 @@ export default Vue.extend({
           this.child_annotation_ctx_list.find(child => child.file.id === this.working_file.id).container_height = this.$refs[`text_annotation_area_${this.working_file.id}`].getBoundingClientRect().height + 25
         }, 100)
       }
-      // this.$emit('file_rendered');
 
     },
     // function to draw relations between instances
