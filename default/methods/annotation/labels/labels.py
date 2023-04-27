@@ -98,7 +98,7 @@ def new_label_file_object_core(session, input, project_string_id, schema_id, mem
 
 
 @routes.route('/api/project/<string:project_string_id>/labels', methods = ['GET'])
-@Project_permissions.user_has_project(["admin", "Editor", "Viewer", "allow_if_project_is_public"])
+@Project_permissions.user_has_project(["admin", "Editor", "Viewer", "allow_if_project_is_public", "annotator"])
 def api_get_labels(project_string_id):
     """
         GET Handler to get labels from given project and Schema ID.

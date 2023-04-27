@@ -13,7 +13,7 @@ class User_Permissions():
 
 
     """
-
+    @staticmethod
     def general(user, apis_user_list):
 
         if user.security_disable_global is True:

@@ -47,7 +47,7 @@ def stats_task_api(project_string_id):
 
 
 @Job_permissions.by_job_id(
-    project_role_list = ["admin", "Editor", "Viewer"],
+    project_role_list = ["admin", "Editor", "Viewer", "annotator"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
 def stats_task_core(session,
                     project,

@@ -307,13 +307,20 @@ class Share_Project():
         )
 
     def remove(self):
-
+        existing_roles = self.member_to_modify.user.get_roles_in_project(project_string_id = self.project_string_id)
         if self.member_to_modify.kind == "human":
             self.remove_user()
 
         if self.member_to_modify.kind == "api":
             self.remove_auth_api()
-
+        for role in existing_roles:
+            RoleMemberObject.remove(
+                session = self.session,
+                default_role_name = role,
+                member_id = self.member_to_modify.id,
+                object_id = self.project.id,
+                object_type = ValidObjectTypes.project
+            )
     def remove_auth_api(self):
 
         auth_api = self.member_to_modify.auth_api

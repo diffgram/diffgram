@@ -244,7 +244,7 @@ def tag_view_by_project(project_string_id):
 
 @routes.route('/api/v1/project/<string:project_string_id>/tag/list/applied',
               methods = ['POST'])
-@Project_permissions.user_has_project(["admin", "Editor"])
+@Project_permissions.user_has_project(["admin", "Editor", "annotator"])
 def tag_list_applied_api(project_string_id):
     update_tags_specification = [
         {"object_id": {

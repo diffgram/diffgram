@@ -5,7 +5,7 @@ from shared.database.task.job.job import Job
 
 @routes.route('/api/v1/job/<int:task_template_id>/members-list', methods = ['GET'])
 @Job_permissions.by_job_id(
-    project_role_list = ["admin", "Editor"],
+    project_role_list = ["admin", "Editor", "annotator"],
     apis_project_list = [],
     apis_user_list = ["api_enabled_builder"])
 def task_template_members_list_api(task_template_id):

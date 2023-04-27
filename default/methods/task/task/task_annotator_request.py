@@ -7,7 +7,7 @@ from shared.utils.task.task_update_manager import Task_Update
               methods = ['POST'])
 @limiter.limit("1 per second, 50 per minute, 1000 per day")
 @Project_permissions.user_has_project(
-    ["admin", "Editor", "Annotator"])
+    ["admin", "Editor", "annotator"])
 def api_get_next_task_annotator(project_string_id):
 
     log = regular_input.regular_log.default_api_log()

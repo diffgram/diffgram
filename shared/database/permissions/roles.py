@@ -196,6 +196,31 @@ class RoleMemberObject(Base, SerializerMixin):
         return existing
 
     @staticmethod
+    def remove(session,
+               member_id: int,
+               object_id: int,
+               object_type: Enum,
+               role_id: int = None,
+               default_role_name: Enum = None):
+        existing = None
+        if role_id:
+            existing = session.query(RoleMemberObject).filter(
+                RoleMemberObject.member_id == member_id,
+                RoleMemberObject.object_id == object_id,
+                RoleMemberObject.object_type == object_type.name,
+                RoleMemberObject.role_id == role_id
+            ).first()
+        elif default_role_name:
+            existing = session.query(RoleMemberObject).filter(
+                RoleMemberObject.member_id == member_id,
+                RoleMemberObject.object_id == object_id,
+                RoleMemberObject.object_type == object_type.name,
+                RoleMemberObject.default_role_name == default_role_name.value
+            ).first()
+        if existing is None:
+            return
+        session.delete(existing)
+    @staticmethod
     def new(session,
             member_id: int,
             object_id: int,
