@@ -17,11 +17,16 @@ class ProjectDefaultRoles(Enum):
     viewer = 'viewer'
     editor = 'editor'
     admin = 'admin'
+    annotator = 'annotator'
 
 
 ProjectRolesPermissions = {
     'viewer': [
         ProjectPermissions.project_view.value,
+    ],
+    'annotator': [
+        ProjectPermissions.project_view.value,
+        ProjectPermissions.project_edit.value,
     ],
     'editor': [
         ProjectPermissions.project_view.value,

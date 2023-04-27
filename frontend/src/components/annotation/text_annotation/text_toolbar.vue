@@ -17,10 +17,7 @@
               :href="'/me'"
             >
               <div class="pt-2 pr-3 clickable">
-                <img
-                  src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
-                  height="30px"
-                />
+                <logo :height="30"></logo>
               </div>
             </ahref_seo_optimal>
           </ui_schema>

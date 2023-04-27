@@ -57,7 +57,9 @@ class FilePolicyEnforcer(BasePolicyEnforcer):
 
     def has_perm(self, member_id: int, object_type: str, object_id: int, perm: Enum) -> PermissionResult:
         # Check Default Permissions
+        print('HAS PERM', member_id, object_type, object_id, perm)
         default_roles = self.list_default_roles(member_id = member_id, object_id = object_id)
+        print('default_roles', default_roles)
         for role in default_roles:
             if FileRolesPermissions.get(role) is not None:
                 perms_list = FileRolesPermissions.get(role)
@@ -74,9 +76,11 @@ class FilePolicyEnforcer(BasePolicyEnforcer):
         member = Member.get_by_id(session = self.session, member_id = member_id)
         allowed_project_roles = [ProjectDefaultRoles.viewer.value,
                                  ProjectDefaultRoles.editor.value,
+                                 ProjectDefaultRoles.annotator.value,
                                  ProjectDefaultRoles.admin.value]
         if perm != FilePermissions.file_view:
             allowed_project_roles = [ProjectDefaultRoles.editor.value,
+                                     ProjectDefaultRoles.annotator.value,
                                      ProjectDefaultRoles.admin.value]
         perm_result: PermissionResult = self.policy_engine.member_has_any_project_role(member = member,
                                                                                        project_id = self.project.id,

@@ -20,7 +20,7 @@
     <v-menu v-model="project_menu"
             :nudge-width="150"
             offset-y
-            :disabled="false"
+
             v-if="$store.state.project.current.project_string_id"
             >
 
@@ -31,7 +31,7 @@
                 data-cy="project_menu_dropdown_toggle"
                 text
                 v-if="$store.state.project.current.project_string_id"
-                :disabled="$store.state.user.current.security_email_verified != true">
+                :disabled="$store.state.user.current.security_email_verified != true || !show_for_user_role">
           <v-icon left> mdi-lightbulb </v-icon>
           Project
           <v-icon right> mdi-chevron-down</v-icon>
@@ -283,7 +283,20 @@ export default Vue.extend( {
     }
   },
   computed: {
-
+    show_for_user_role: function(){
+      if(!this.$store.state.user){
+        return false
+      }
+      if(!this.$store.state.user.current){
+        return false
+      }
+      if(this.$store.state.user.current.is_super_admin){
+        return true
+      }
+      const member_id = this.$store.state.user.current.member_id
+      const result = this.$store.getters.member_in_roles(member_id, ['admin', 'editor'])
+      return result
+    }
   },
   methods: {
 

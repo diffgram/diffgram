@@ -25,7 +25,6 @@ class ValidObjectTypes(Enum):
 
 def get_valid_object_type(obj_type: str, log: dict) -> [object, dict]:
     valid_obj_types = [x.name for x in list(ValidObjectTypes)]
-    print('asdasd', valid_obj_types)
     if obj_type not in valid_obj_types:
         msg = f'Invalid object type {obj_type}'
         log['error']['permission'] = msg

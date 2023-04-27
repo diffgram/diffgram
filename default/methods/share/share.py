@@ -143,7 +143,6 @@ class Share_Project():
         self.notify = notify
 
     def main(self):
-        print('AAAA', self.mode)
         if self.mode == "NEW":
             self.new()
 
@@ -251,6 +250,13 @@ class Share_Project():
                 sub_type = self.project_string_id,
                 log = self.log)
 
+            RoleMemberObject.new(
+                session = self.session,
+                default_role_name = ProjectDefaultRoles[input['permission_type'].lower()],
+                member_id = self.user_to_modify.member_id,
+                object_id = self.project.id,
+                object_type = ValidObjectTypes.project
+            )
             if self.project not in self.user_to_modify.projects:
                 self.user_to_modify.projects.append(self.project)
 

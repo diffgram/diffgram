@@ -24,6 +24,7 @@ def job_list_api():
 
     log, input, untrusted_input = regular_input.master(request = request,
                                                        spec_list = spec_list)
+
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
@@ -237,7 +238,7 @@ def default_metadata(meta_proposed):
     return meta
 
 
-@Project_permissions.user_has_project(["admin", "Editor", "Viewer"])
+@Project_permissions.user_has_project(["admin", "Editor", "Viewer", "annotator"])
 def filter_by_project(session,
                       project_string_id,
                       query):

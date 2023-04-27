@@ -154,6 +154,7 @@
               tooltip_message="View Pending File Operations"
               class="hidden-sm-and-down"
               @click="open_pending_files_dialog"
+              :disabled="!show_for_user_role"
               color="primary"
               icon="mdi-file-clock"
               v-if="$store.state.builder_or_trainer.mode == 'builder'
@@ -184,7 +185,7 @@
 
                   <template v-slot:activator="{ on }">
                     <v-btn v-on="on"
-                           :disabled="!$store.state.project || !$store.state.project.current.project_string_id"
+                           :disabled="!$store.state.project || !$store.state.project.current.project_string_id || !show_for_user_role"
                            @click="$store.commit('set_user_is_typing_or_menu_open', true)"
                            text
                     >
@@ -243,7 +244,7 @@
                      class="mr-2"
                      @click="contact_us"
                      v-if="$store.state.org
-                     && !$store.state.org.current.id"
+                     && !$store.state.org.current.id && show_for_user_role"
               >
                   Enterprise
               </v-btn>
@@ -264,7 +265,7 @@
               v-if="$store.state.user.logged_in == true
                    && $store.state.system
                    && $store.state.system.is_open_source == false
-                   && !$store.state.org.current.id"
+                   && !$store.state.org.current.id && show_for_user_role"
               @click="go_to_install()"
               outlined
               style="text-transform: none !important;"
@@ -342,6 +343,20 @@
       };
     },
     computed: {
+      show_for_user_role: function(){
+        if(!this.$store.state.user){
+          return false
+        }
+        if(!this.$store.state.user.current){
+          return false
+        }
+        if(this.$store.state.user.current.is_super_admin){
+          return true
+        }
+        const member_id = this.$store.state.user.current.member_id
+        const result = this.$store.getters.member_in_roles(member_id, ['admin', 'editor'])
+        return result
+      },
       user_project_list: function () {
         let user_project_list = this.$store.state.project_list.user_projects_list;
         if (this.$store.state.project && this.$store.state.project.current) {

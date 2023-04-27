@@ -7,7 +7,7 @@ from shared.database.discussion.discussion import Discussion
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/discussions/list', methods = ['POST'])
-@Project_permissions.user_has_project(Roles = ["admin", "Editor", "allow_if_project_is_public"], apis_user_list = ["api_enabled_builder"])
+@Project_permissions.user_has_project(Roles = ["admin", "Editor", "allow_if_project_is_public", "annotator"], apis_user_list = ["api_enabled_builder"])
 def discussion_list_web(project_string_id):
     """
         List all the discussion based on the given filters.

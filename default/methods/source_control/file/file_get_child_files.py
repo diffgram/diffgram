@@ -13,7 +13,7 @@ from shared.database.source_control.file import FilePermissions
 
 @routes.route('/api/v1/project/<string:project_string_id>/file/<int:parent_file_id>/child-files', methods = ['GET'])
 @Project_permissions.user_has_project(
-    Roles = ["admin", "Editor", "Viewer", "allow_if_project_is_public"],
+    Roles = ["admin", "Editor", "Viewer", "annotator", "allow_if_project_is_public"],
     apis_user_list = ['api_enabled_builder', 'security_email_verified'])
 def api_file_get_child_files(project_string_id: str, parent_file_id: int):
     """

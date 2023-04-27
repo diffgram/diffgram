@@ -26,11 +26,8 @@
               v-if="$store.getters.get_ui_schema('logo', 'visible')"
               :href="'/me'"
             >
-              <div class="pa-2 clickable">
-                <img
-                  src="https://storage.googleapis.com/diffgram-002/public/logo/diffgram_logo_word_only.png"
-                  height="30px"
-                />
+                 <div class="pt-2 pr-3 clickable">
+                <logo :height="30"></logo>
               </div>
             </ahref_seo_optimal>
           </ui_schema>
@@ -1036,10 +1033,12 @@ import hotkeys from "./hotkeys.vue";
 import task_status from "./task_status.vue"
 import Guided_1_click_mode_selector from "../../instance_templates/guided_1_click_mode_selector.vue";
 import CustomButtonsSection from "../../ui_schema/custom_buttons_section.vue";
+import logo from "../../diffgram/logo.vue";
 
 export default Vue.extend({
   name: "image_and_video_toolbar",
   components: {
+      logo,
     CustomButtonsSection,
     Guided_1_click_mode_selector,
     label_select_annotation,

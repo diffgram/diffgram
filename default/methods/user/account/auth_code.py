@@ -7,7 +7,8 @@ except:
 from shared.database.user import Signup_code
 
 from shared.database import hashing_functions
-
+from shared.database.project_perms import ProjectDefaultRoles, ProjectRolesPermissions
+from shared.database.permissions.roles import RoleMemberObject, ValidObjectTypes, Role
 
 ### NEW NEW NEW ###
 ## NOT checking code creating NEW one 
@@ -212,6 +213,12 @@ def process_project_auth_code(
             user = new_user,
             sub_type = auth_code.project_string_id,
             log = log)
-
+        RoleMemberObject.new(
+            session = session,
+            default_role_name = ProjectDefaultRoles[auth_code.permission_level.lower()],
+            member_id = new_user.member_id,
+            object_id = project.id,
+            object_type = ValidObjectTypes.project
+        )
         if regular_log.log_has_error(log):
             logger.error(f'Error with auth code: {log}')
