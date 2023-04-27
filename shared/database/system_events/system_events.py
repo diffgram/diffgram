@@ -117,50 +117,52 @@ class SystemEvents(Base):
 
         else:
             # Determine if current version in env variable is greater than last recorded version.
-            recorded_version = latest_recorded_version_event.diffgram_version
-            version_to_check = settings.DIFFGRAM_VERSION_TAG
-            if recorded_version.startswith('newrelic-'):
-                recorded_version = recorded_version.replace('newrelic-', '')
-            if version_to_check.startswith('newrelic-'):
-                version_to_check = version_to_check.replace('newrelic-', '')
-            if version.parse(version_to_check) > version.parse(recorded_version):
-                logger.info(f"New version detected: [{version_to_check}]")
-                system_event = SystemEvents.new(
-                    session = session,
-                    kind = 'version_upgrade',
-                    description = f"Diffgram System startup for {service_name} service",
-                    install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
-                    previous_version = None,
-                    diffgram_version = version_to_check,
-                    host_os = settings.DIFFGRAM_HOST_OS,
-                    storage_backend = settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
-                    service_name = service_name,
-                    startup_time = datetime.datetime.utcnow(),
-                    shut_down_time = None,
-                    created_date = datetime.datetime.utcnow()
-                )
-                return system_event
-            elif version_to_check < recorded_version:
-                logger.info(f"Downgrade version detected: [{version_to_check}]")
-                system_event = SystemEvents.new(
-                    session = session,
-                    kind = 'version_downgrade',
-                    description = f"Diffgram System startup for {service_name} service",
-                    install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
-                    previous_version = None,
-                    diffgram_version = version_to_check,
-                    host_os = settings.DIFFGRAM_HOST_OS,
-                    storage_backend = settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
-                    service_name = service_name,
-                    startup_time = datetime.datetime.utcnow(),
-                    shut_down_time = None,
-                    created_date = datetime.datetime.utcnow()
-                )
-                return system_event
-            else:
-                # On equal versions, we do nothing.
-                return None
-
+            try:
+                recorded_version = latest_recorded_version_event.diffgram_version
+                version_to_check = settings.DIFFGRAM_VERSION_TAG
+                if recorded_version.startswith('newrelic-'):
+                    recorded_version = recorded_version.replace('newrelic-', '')
+                if version_to_check.startswith('newrelic-'):
+                    version_to_check = version_to_check.replace('newrelic-', '')
+                if version.parse(version_to_check) > version.parse(recorded_version):
+                    logger.info(f"New version detected: [{version_to_check}]")
+                    system_event = SystemEvents.new(
+                        session = session,
+                        kind = 'version_upgrade',
+                        description = f"Diffgram System startup for {service_name} service",
+                        install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
+                        previous_version = None,
+                        diffgram_version = version_to_check,
+                        host_os = settings.DIFFGRAM_HOST_OS,
+                        storage_backend = settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
+                        service_name = service_name,
+                        startup_time = datetime.datetime.utcnow(),
+                        shut_down_time = None,
+                        created_date = datetime.datetime.utcnow()
+                    )
+                    return system_event
+                elif version_to_check < recorded_version:
+                    logger.info(f"Downgrade version detected: [{version_to_check}]")
+                    system_event = SystemEvents.new(
+                        session = session,
+                        kind = 'version_downgrade',
+                        description = f"Diffgram System startup for {service_name} service",
+                        install_fingerprint = settings.DIFFGRAM_INSTALL_FINGERPRINT,
+                        previous_version = None,
+                        diffgram_version = version_to_check,
+                        host_os = settings.DIFFGRAM_HOST_OS,
+                        storage_backend = settings.DIFFGRAM_STATIC_STORAGE_PROVIDER,
+                        service_name = service_name,
+                        startup_time = datetime.datetime.utcnow(),
+                        shut_down_time = None,
+                        created_date = datetime.datetime.utcnow()
+                    )
+                    return system_event
+                else:
+                    # On equal versions, we do nothing.
+                    return None
+            except Exception as e:
+                logger.warning(str(e))
     @staticmethod
     def check_os_change(session, service_name):
         """
