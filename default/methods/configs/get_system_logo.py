@@ -29,7 +29,7 @@ def api_system_get_logo():
 
 
 def system_get_logo_core(session, log = regular_log.default()):
-    # Upload to temp dir
+
     config = SystemConfigs.get_configs(session = session)
     config_data = config.serialize(session = session)
     logo_data = config_data.get('logo')
