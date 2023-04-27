@@ -351,7 +351,7 @@ class Event(Base):
                 logger.info(f"Sent event: {self.id} to Diffgram Eventhub")
             else:
                 logger.error(
-                    "Error sending {} to Diffgram Eventhub. Status Code: ".format(self.id, result.status_code))
+                    f"Error sending ID: {self.id} to Eventhub. Status Code: {result.status_code}. result.text: {result.text}")
         except Exception as e:
             logger.error(f"Exception sending {str(e)} to Diffgram Eventhub: ")
 
