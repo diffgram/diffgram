@@ -96,7 +96,7 @@ class Permission_Task():
                     # TODO review use of admin / editor setup here
                     result = Project_permissions.check_permissions(session = session,
                                                                    project_string_id = project_string_id,
-                                                                   Roles = ['admin', 'Editor'])
+                                                                   Roles = ['admin', 'Editor', 'annotator'])
 
                     if result is True:
                         return True

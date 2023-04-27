@@ -20,7 +20,8 @@
 
 <script>
 import {get_task_template_details, update_task_template} from '@/services/taskTemplateService'
-export default {
+import Vue from "vue";
+export default  Vue.extend({
   name: "task_template_member_editor",
   props: {
     project_string_id: {
@@ -75,7 +76,7 @@ export default {
     }
   }
 
-}
+})
 </script>
 
 <style scoped>

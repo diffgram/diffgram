@@ -83,8 +83,6 @@
 </template>
 
 <script lang="ts">
-
-import pieChart from "../report/charts/pieChart";
 import axios from '../../services/customInstance';
 import Vue from "vue";
 import task_time_spent from "./task_time_spent.vue";

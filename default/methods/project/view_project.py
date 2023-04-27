@@ -6,6 +6,7 @@ from methods.regular.regular_api import *
               methods = ['GET'])
 @Project_permissions.user_has_project(["allow_if_project_is_public",
                                        "admin",
+                                       "annotator",
                                        "Editor",
                                        "Viewer"])
 def project_view(project_string_id):

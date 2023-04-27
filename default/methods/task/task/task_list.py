@@ -4,7 +4,7 @@ from shared.database.task.job.user_to_job import User_To_Job
 
 
 @routes.route('/api/v1/job/<int:job_id>/task/list', methods = ['POST'])
-@Job_permissions.by_job_id(project_role_list = ["admin", "Editor", "Viewer"], apis_user_list = ['builder_or_trainer'])
+@Job_permissions.by_job_id(project_role_list = ["admin", "annotator", "Editor", "Viewer"], apis_user_list = ['builder_or_trainer'])
 def task_list_by_job_api(job_id):
     with sessionMaker.session_scope() as session:
         spec_list = [{'date_from': None},
@@ -40,7 +40,7 @@ def task_list_by_job_api(job_id):
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/task/list', methods = ['POST'])
-@Project_permissions.user_has_project(["admin", "Editor", "Viewer"])
+@Project_permissions.user_has_project(["admin", "annotator", "Editor", "Viewer"])
 def task_list_api(project_string_id):
     spec_list = [{'date_from': None},
                  {'date_to': None},

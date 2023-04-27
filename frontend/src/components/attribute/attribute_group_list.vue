@@ -103,7 +103,7 @@
                         </v-layout>
                       </template>
                     </button_with_confirm>
-                    <v-chip x-small>ID {{ group.id }}</v-chip>
+                    <v-chip v-if="show_ids" x-small>ID {{ group.id }}</v-chip>
                   </h4>
                   <!-- Archive button -->
                   <!-- TODO maybe, play with this more
@@ -181,7 +181,7 @@
                    <p class="ma-0 pa-0" style="max-width: 135px;overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"> {{get_attribute_value(group.id)}}</p>
                   </v-chip>
                 </div>
-                <v-chip x-small>ID {{ group.id }}</v-chip>
+                <v-chip v-if="show_ids" x-small>ID {{ group.id }}</v-chip>
               </h4>
               <!-- Archive button -->
               <!-- TODO maybe, play with this more
@@ -199,7 +199,7 @@
                 :group="group"
                 :key="group.id"
                 :current_instance="current_instance"
-
+                :show_ids="show_ids"
                 @attribute_change="$emit('attribute_change', $event)"
               />
               <div v-if="mode==='edit'">
@@ -314,6 +314,23 @@ export default Vue.extend({
       this.refresh_watcher() // destroy
     },
     computed: {
+      show_for_user_role: function(){
+        if(!this.$store.state.user){
+          return false
+        }
+        if(!this.$store.state.user.current){
+          return false
+        }
+        if(this.$store.state.user.current.is_super_admin){
+          return true
+        }
+        const member_id = this.$store.state.user.current.member_id
+        const result = this.$store.getters.member_in_roles(member_id, ['admin', 'editor'])
+        return result
+      },
+      show_ids: function(){
+        return this.show_for_user_role
+      },
       dragOptions() {
         return {
           animation: 200,

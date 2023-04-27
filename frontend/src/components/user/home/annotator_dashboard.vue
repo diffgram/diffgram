@@ -99,7 +99,7 @@
           <v-col cols="12">
             <v-container fluid>
               <div class="d-flex">
-                <div class="flex-grow-1">
+                <div class="">
                   <h1
                     class="clickable"
                     @click="$router.push('/job/list')"
@@ -113,26 +113,12 @@
                   </h1>
 
                 </div>
-                <div class="pa-2">
-                  <v-btn
-                    color="primary"
-                    large
-                    data-cy="serach_route"
-                    @click="$router.push('/job/list')"
-                  >
-                    Browse
-
-                    <v-icon
-                      right
-                    >
-                      mdi-compass
-                    </v-icon>
-
-                  </v-btn>
+                <div class="flex-grow-1 ml-2" >
                   <v-btn
                     color="success"
                     large
                     data-cy="annotate_now"
+
                     :disabled="next_task_loading"
                     @click="api_get_next_task_annotator()"
                   >
@@ -145,6 +131,25 @@
                     </v-icon>
 
                   </v-btn>
+                </div>
+                <div class="pa-2">
+                  <v-btn
+                    color="primary"
+                    small
+                    outlined
+                    data-cy="serach_route"
+                    @click="$router.push('/job/list')"
+                  >
+                    Browse
+
+                    <v-icon
+                      right
+                    >
+                      mdi-compass
+                    </v-icon>
+
+                  </v-btn>
+
                 </div>
               </div>
               <v-tabs v-model="tab" color="primary" style="height: 100%">
@@ -274,7 +279,7 @@ export default Vue.extend({
       }
     },
     methods: {
-      update_column_list: function(col_list){
+      update_column_list: function (col_list) {
         this.column_list = col_list
       },
       refresh_task_list: async function () {

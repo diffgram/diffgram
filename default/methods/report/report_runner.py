@@ -300,7 +300,7 @@ class Report_Runner():
 
         if scope == "project":
       
-            project_role_list = ["admin", "Editor"]
+            project_role_list = ["admin", "Editor", "annotator"]
 
             Project_permissions.check_permissions(
                 session = self.session,

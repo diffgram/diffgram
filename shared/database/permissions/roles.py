@@ -25,7 +25,6 @@ class ValidObjectTypes(Enum):
 
 def get_valid_object_type(obj_type: str, log: dict) -> [object, dict]:
     valid_obj_types = [x.name for x in list(ValidObjectTypes)]
-    print('asdasd', valid_obj_types)
     if obj_type not in valid_obj_types:
         msg = f'Invalid object type {obj_type}'
         log['error']['permission'] = msg
@@ -196,6 +195,31 @@ class RoleMemberObject(Base, SerializerMixin):
             ).first()
         return existing
 
+    @staticmethod
+    def remove(session,
+               member_id: int,
+               object_id: int,
+               object_type: Enum,
+               role_id: int = None,
+               default_role_name: Enum = None):
+        existing = None
+        if role_id:
+            existing = session.query(RoleMemberObject).filter(
+                RoleMemberObject.member_id == member_id,
+                RoleMemberObject.object_id == object_id,
+                RoleMemberObject.object_type == object_type.name,
+                RoleMemberObject.role_id == role_id
+            ).first()
+        elif default_role_name:
+            existing = session.query(RoleMemberObject).filter(
+                RoleMemberObject.member_id == member_id,
+                RoleMemberObject.object_id == object_id,
+                RoleMemberObject.object_type == object_type.name,
+                RoleMemberObject.default_role_name == default_role_name.value
+            ).first()
+        if existing is None:
+            return
+        session.delete(existing)
     @staticmethod
     def new(session,
             member_id: int,

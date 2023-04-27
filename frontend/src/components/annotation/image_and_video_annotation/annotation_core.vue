@@ -3481,7 +3481,7 @@ export default Vue.extend({
         this.original_media_height = file.image.height;
 
         var self = this;
-        this.addImageProcess(file.image.signed_url).then((new_image) => {
+        this.addImageProcess(file.image.url_signed).then((new_image) => {
           self.html_image = new_image;
           self.loading = false;
           self.refresh = Date.now();

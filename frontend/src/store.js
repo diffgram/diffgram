@@ -194,6 +194,44 @@ export const project = {
     }
 
   },
+  getters:{
+    member_in_roles: state =>  (member_id, roles_list) => {
+      if(!state.current){
+        return
+      }
+      if(!state.current.member_list){
+        return
+      }
+      const member = state.current.member_list.find(elm => elm.member_id === member_id)
+      console.log('MEMBEER', member_id, roles_list, member)
+      if(!member){
+        return
+      }
+      if(!member.permission_level){
+        return
+      }
+
+      const role = member.permission_level[0]
+      console.log(role, 'role')
+      return roles_list.includes(role)
+    },
+    get_current_project_role: state =>  (member_id) => {
+      if(!state.current){
+        return
+      }
+      if(!state.current.member_list){
+        return
+      }
+      const member = state.current.member_list.find(elm => elm.member_id === member_id)
+      if(!member){
+        return
+      }
+      if(!member.permission_level){
+        return
+      }
+      return member.permission_level[0]
+    },
+  },
   mutations: {
     set_project_name(state, project_name) {
       state.project_name = project_name

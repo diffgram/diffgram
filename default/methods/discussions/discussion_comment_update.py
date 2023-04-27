@@ -9,7 +9,7 @@ from shared.database.discussion.discussion_comment import DiscussionComment
 
 @routes.route('/api/v1/project/<string:project_string_id>/discussion/<int:discussion_id>/update-comment',
               methods = ['POST'])
-@Project_permissions.user_has_project(Roles = ["admin", "Editor"], apis_user_list = ["api_enabled_builder"])
+@Project_permissions.user_has_project(Roles = ["admin", "Editor", "annotator"], apis_user_list = ["api_enabled_builder"])
 def update_discussion_comment_web(project_string_id, discussion_id):
     """
         Update comment's content of the given comment_id in the POST payload.

@@ -7,7 +7,7 @@ from shared.database.discussion.discussion import Discussion
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/issues/<int:discussion_id>', methods = ['GET'])
-@Project_permissions.user_has_project(Roles = ["admin", "Editor"], apis_user_list = ["api_enabled_builder"])
+@Project_permissions.user_has_project(Roles = ["admin", "Editor", "annotator"], apis_user_list = ["api_enabled_builder"])
 def discussion_detail_web(project_string_id, discussion_id):
     """
         Get discussion detail. This will include all attached elements.

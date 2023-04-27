@@ -2,82 +2,83 @@
   <div class="job-detail-container">
     <div class="d-flex justify-space-between align-center mb-1">
       <v-col>
-      <h1 class="pa-2">
-        <v-layout>
-          <div
-            class="font-weight-light clickable"
-            @click="$router.push('/job/list')"
-          >
-            {{ $store.state.project.current.name }} /
-          </div>
+        <h1 class="pa-2">
+          <v-layout>
+            <div
+              class="font-weight-light clickable"
+              @click="$router.push('/job/list')"
+            >
+              {{ $store.state.project.current.name }} /
+            </div>
 
-          <div
-            v-if="
+            <div
+              v-if="
               $store.state.job.current.id == this.job_id && edit_name != true
             "
-            class="font-weight-normal pl-2 d-flex align-center"
-            @dblclick="edit_name = true"
-          >
-            {{ job_name }}
-            <standard_button
-              v-if="edit_name == false"
-              tooltip_message="Edit Name"
-              tooltip_direction="bottom"
-              @click="edit_name = true"
-              icon="edit"
-              :icon_style="true"
-              color="primary"
+              class="font-weight-normal pl-2 d-flex align-center"
+              @dblclick="edit_name = true"
             >
-            </standard_button>
-          </div>
+              {{ job_name }}
+              <standard_button
+                v-if="edit_name == false"
+                :disabled="!show_for_user_role"
+                tooltip_message="Edit Name"
+                tooltip_direction="bottom"
+                @click="edit_name = true"
+                icon="edit"
+                :icon_style="true"
+                color="primary"
+              >
+              </standard_button>
+            </div>
 
-          <v-text-field
-            v-if="edit_name == true"
-            v-model="job_name"
-            @input="has_changes = true"
-            @keyup.enter="(edit_name = false), api_update_job()"
-            solo
-            flat
-            style="font-size: 22pt; border: 1px solid grey; height: 55px"
-            color="blue"
-          >
-          </v-text-field>
-
-          <div>
-            <button_with_confirm
+            <v-text-field
               v-if="edit_name == true"
-              @confirm_click="api_update_job()"
-              color="primary"
-              icon="save"
+              v-model="job_name"
+              @input="has_changes = true"
+              @keyup.enter="(edit_name = false), api_update_job()"
+              solo
+              flat
+              style="font-size: 22pt; border: 1px solid grey; height: 55px"
+              color="blue"
+            >
+            </v-text-field>
+
+            <div>
+              <button_with_confirm
+                v-if="edit_name == true"
+                @confirm_click="api_update_job()"
+                color="primary"
+                icon="save"
+                :icon_style="true"
+                tooltip_message="Save Name Updates"
+                confirm_message="Confirm"
+                :loading="loading"
+                :disabled="loading"
+              >
+              </button_with_confirm>
+            </div>
+
+            <standard_button
+              v-if="edit_name == true"
+              tooltip_message="Cancel Name Edit"
+              datacy="cancel_edit_name"
+              @click="edit_name = false"
+              icon="mdi-cancel"
               :icon_style="true"
-              tooltip_message="Save Name Updates"
-              confirm_message="Confirm"
-              :loading="loading"
+              color="primary"
               :disabled="loading"
             >
-            </button_with_confirm>
-          </div>
+            </standard_button>
+          </v-layout>
+        </h1>
 
-          <standard_button
-            v-if="edit_name == true"
-            tooltip_message="Cancel Name Edit"
-            datacy="cancel_edit_name"
-            @click="edit_name = false"
-            icon="mdi-cancel"
-            :icon_style="true"
-            color="primary"
-            :disabled="loading"
-          >
-          </standard_button>
-        </v-layout>
-      </h1>
-
-      <tag_display_and_select
+        <tag_display_and_select
           :project_string_id="project_string_id"
           :object_id="parseInt(job_id)"
           :object_type="'job'"
-      >
-      </tag_display_and_select>
+        >
+        </tag_display_and_select>
 
       </v-col>
 
@@ -93,7 +94,9 @@
     </div>
 
     <v-tabs v-model="tab" color="primary" style="height: 100%" v-if="show_job">
-      <v-tab v-for="item in items" :key="item.text">
+      <v-tab :disabled="protected_tabs.includes(item.text) && !show_for_user_role"
+             v-for="item in items"
+             :key="item.text">
         <v-icon left>{{ item.icon }}</v-icon>
         {{ item.text }}
       </v-tab>
@@ -113,7 +116,6 @@
           >
           </v_job_detail_trainer>
         </v-tab-item>
-
 
 
         <v-tab-item>
@@ -235,7 +237,7 @@ import Vue from "vue";
 import No_credentials_dialog from "./no_credentials_dialog.vue";
 import task_template_ui_schema_editor from "./task_template_ui_schema_editor.vue";
 import Label_schema_selector from "../../label/label_schema_selector.vue";
-import tag_display_and_select from '@/components/tag/tag_display_and_select.vue'
+import tag_display_and_select from '../../tag/tag_display_and_select.vue'
 import Task_template_member_editor from "./task_template_member_editor.vue";
 
 
@@ -257,12 +259,13 @@ export default Vue.extend({
     label_select_only,
     job_type,
     stats_panel,
-    tag_display_and_select
+    tag_display_and_select,
   },
 
   data() {
     return {
       tab: null,
+      protected_tabs: ['Schema', 'Pipeline', 'UI Schema', 'Members', 'Credentials & Settings'],
       no_task_snackbar: false,
       items: [
         {text: "Oveview", icon: "mdi-view-dashboard"},
@@ -351,6 +354,20 @@ export default Vue.extend({
     );
   },
   computed: {
+    show_for_user_role: function(){
+      if(!this.$store.state.user){
+        return false
+      }
+      if(!this.$store.state.user.current){
+        return false
+      }
+      if(this.$store.state.user.current.is_super_admin){
+        return true
+      }
+      const member_id = this.$store.state.user.current.member_id
+      const result = this.$store.getters.member_in_roles(member_id, ['admin', 'editor'])
+      return result
+    },
     project_string_id: function () {
       return this.$store.state.project.current.project_string_id;
     }

@@ -298,6 +298,10 @@ class User(Base):
 
         return session.query(User).filter(User.username == username_string).first()
 
+
+    def get_roles_in_project(self, project_string_id):
+        roles = self.permissions_projects.get(project_string_id)
+        return roles
     @staticmethod
     def get_current_user(session):
 

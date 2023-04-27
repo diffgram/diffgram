@@ -7,7 +7,7 @@ from shared.database.task.job.job import Job
 @routes.route('/api/v1/job/<int:job_id>/builder/info',
               methods = ['POST'])
 @Job_permissions.by_job_id(
-    project_role_list = ["admin", "Editor", "Viewer"],
+    project_role_list = ["admin", "Editor", "Viewer", "annotator"],
     apis_project_list = [],
     apis_user_list = ["api_enabled_builder"])
 @limiter.limit("300 per day")

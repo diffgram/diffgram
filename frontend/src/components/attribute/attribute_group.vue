@@ -201,7 +201,7 @@
                   />
               </template>
               <template v-slot:append="{item}">
-                <v-chip x-small>
+                <v-chip v-if="show_ids" x-small>
                   ID: {{ item.id }}
                 </v-chip>
               </template>
@@ -552,6 +552,10 @@
 
         'project_string_id': {
           default: null
+        },
+        'show_ids': {
+          default: true,
+
         },
         'group': {
           default: {}

@@ -70,7 +70,7 @@
                   prepend-icon="mdi-security-account"></v-select>
 
         <v-dialog v-model="view_existing_open"
-                  id="view_existing_members"                  
+                  id="view_existing_members"
                   v-if="enable_view_existing"
                   width="800px">
           <v-card>
@@ -106,7 +106,7 @@
 
           <auth_api_new :project_string_id="project_string_id"></auth_api_new>
 
-        </div> 
+        </div>
         <div v-else>
           <v-text-field label="Email"
                         v-model="email"
@@ -224,7 +224,7 @@ import Vue from "vue"; export default Vue.extend( {
       member_kind_list: ['User', 'Developer Authentication (API/SDK)'],
       member_kind: 'User',
 
-      permission_type_list: ['admin', 'Editor', 'Viewer'],
+      permission_type_list: ['admin', 'Editor',  'annotator', 'Viewer'],
       permission_type: 'Editor',
 
 

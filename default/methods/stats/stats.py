@@ -4,7 +4,7 @@ import datetime
 
 class Stats():
 
-
+	@staticmethod
 	def fill_missing_dates(date_from, 
 						   date_to, 
 						   known_dates_list: list):

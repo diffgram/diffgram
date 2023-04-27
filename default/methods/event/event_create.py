@@ -4,7 +4,7 @@ from methods.regular.regular_api import *
 
 @routes.route('/api/v1/project/<string:project_string_id>/event/create',
               methods = ['POST'])
-@Project_permissions.user_has_project(["admin", "Editor", "Viewer"])
+@Project_permissions.user_has_project(["admin", "Editor", "Viewer", "annotator"])
 def api_event_create(project_string_id):
     """
 

@@ -13,7 +13,7 @@ from flask import jsonify
 
 @routes.route('/api/v1/project/<string:project_string_id>/user/<int:user_to_check_id>/has-credentials',
               methods = ['GET'])
-@Project_permissions.user_has_project(Roles = ["admin", "Editor", "allow_if_project_is_public"],
+@Project_permissions.user_has_project(Roles = ["admin", "Editor", "allow_if_project_is_public", "annotator"],
                                       apis_user_list = ["api_enabled_builder"])
 def api_user_has_credentials(project_string_id, user_to_check_id) -> [Response, int]:
     """
