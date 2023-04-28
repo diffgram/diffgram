@@ -6,22 +6,33 @@ export const CUSTOM_BUTTON_ACTION_TYPE = {
   set_attribute: 'set_attribute',
   complete_task: 'complete_task',
 }
+const action_types_map = {
+  [CUSTOM_BUTTON_ACTION_TYPE.set_attribute]: ActionSetAttributeValue,
+  [CUSTOM_BUTTON_ACTION_TYPE.complete_task]: ActionCompleteTask,
+}
+
+export function get_initialized_action_from_obj(action: any): BaseActionCustomButton{
+  let ActionClass = action_types_map[action.type]
+  if(!ActionClass){
+    ActionClass = BaseActionCustomButton
+  }
+  const initialized_action = new ActionClass({
+    metadata: action.metadata,
+    type: action.type,
+    name: action.name,
+    workflow: this,
+    id: action.id
+  })
+  return initialized_action
+}
 export class CustomButtonWorkflow {
   private actions: BaseActionCustomButton[];
 
   private initialize_actions(actions): BaseActionCustomButton[] {
-    const action_types_map = {
-      [CUSTOM_BUTTON_ACTION_TYPE.set_attribute]: ActionSetAttributeValue,
-      [CUSTOM_BUTTON_ACTION_TYPE.complete_task]: ActionCompleteTask,
-    }
+
     const result: BaseActionCustomButton[] = []
     for (let action of actions) {
-      const initialized_action = new action_types_map[action.type]({
-        metadata: action.metadata,
-        type: action.type,
-        name: action.name,
-        workflow: this,
-      })
+      const initialized_action = get_initialized_action_from_obj(action)
       result.push(initialized_action)
     }
     return result

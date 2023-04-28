@@ -34,8 +34,7 @@
                   <slider-picker class="mb-4" v-model="button_color" @change="change_color"/>
                 </div>
               </v-tab-item>
-              <v-tab-item :key="2">
-                <h4 class="">Actions: </h4>
+              <v-tab-item :key="2" class="pl-4 pr-4">
                 <button_edit_workflow_creator
                   :button="button"
                   :project_string_id="project_string_id"
@@ -124,13 +123,11 @@ export default Vue.extend({
   methods: {
     initialize_button_action_config: async function(){
       if(this.button.workflow){
-        this.set_workflow(new ActionCustomButton(this.button.action.name, this.button.action.type, this.button.action.metadata))
+        this.set_workflow(this.button.workflow)
       }
-
-
     },
-    set_workflow: function(val){
-      this.button.workflow = new CustomButtonWorkflow(this.workflow.actions)
+    set_workflow: function(wf){
+      this.button.workflow = new CustomButtonWorkflow(wf.actions)
     },
     open_menu: function(){
       this.open = true

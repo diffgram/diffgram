@@ -83,6 +83,9 @@ export default Vue.extend({
       }
     },
     initialize_attribute_config: async function(){
+      if(!this.action || !this.action.metadata){
+        return
+      }
       let attr_template_id = this.action.metadata.attribute_template_id
       if(this.action.metadata.schema_id){
         this.selected_schema_id = this.action.metadata.schema_id

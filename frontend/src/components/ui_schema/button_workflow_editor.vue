@@ -1,21 +1,33 @@
 <template>
-  <div>
-    <div v-if="button.workflow && button.workflow.actions_list && button.actions_list.length > 0" v-for="action in button.actions_list">
+  <v-container >
+    <div v-if="button.workflow"
+         class="d-flex flex-column"
+         v-for="(index, action) in actions">
       <button_edit_action_step
         :project_string_id="project_string_id"
         :button="button"
         :existing_action="action">
       </button_edit_action_step>
-    </div>
-    <div v-else>
-      <p>No Actions yet. Add an action to make your button do something!</p>
-      <v-icon size="48">gesture-tap</v-icon>
-    </div>
-    <div class="d-flex justify-end">
-      <v-btn @click="add_action" color="secondary" x-small><v-icon>mdi-plus</v-icon>Add Action</v-btn>
+      <div class="d-flex justify-center align-center" v-if="index > 0 && index < actions.length - 1">
+        <v-icon size="28">mdi-arrow-down-thin</v-icon>
+      </div>
     </div>
 
-  </div>
+    <div
+      v-if="!button.workflow && actions.length === 0"
+      class="pa-4 d-flex flex-column align-center justify-center">
+      <p>No Actions yet. Add an action to make your button do something!</p>
+      <v-icon :size="76">mdi-gesture-tap</v-icon>
+    </div>
+
+    <div class="d-flex justify-end">
+      <v-btn @click="add_action" color="secondary" x-small>
+        <v-icon>mdi-plus</v-icon>
+        Add Action
+      </v-btn>
+    </div>
+
+  </v-container>
 </template>
 
 <script lang="ts">
@@ -29,6 +41,10 @@ import attribute_select from '../attribute/attribute_select.vue'
 import {types} from "sass";
 import String = types.String;
 import {attribute_group_list} from "../../services/attributesService";
+import {CustomButtonWorkflow} from "../../types/ui_schema/CustomButtonWorkflow";
+import {BaseActionCustomButton} from "../../types/ui_schema/BaseActionCustomButton";
+import {v4 as uuidv4} from 'uuid'
+
 export default Vue.extend({
   name: 'button_workflow_editor',
   components: {
@@ -45,8 +61,8 @@ export default Vue.extend({
     }
 
   },
-  mounted: async function(){
-    if(this.button && this.button.action){
+  mounted: async function () {
+    if (this.button && this.button.action) {
       await this.initialize_button_action_config()
     }
   },
@@ -74,9 +90,25 @@ export default Vue.extend({
       attribute_list: [],
     }
   },
+  computed: {
+    actions: function(){
+      if(!this.button){return []}
+      if(!this.button.workflow){return []}
+      if(!this.button.actions){return []}
+      return this.button.workflow.actions
+    }
+  },
   methods: {
-    add_action: function(){
-
+    add_action: function () {
+      if (!this.button.workflow) {
+        // Initialize workflow if none exists.
+        this.button.workflow = new CustomButtonWorkflow([{
+          metadata: null,
+          name: 'New Action',
+          type: null,
+          id: uuidv4()
+        }])
+      }
     },
 
   }
