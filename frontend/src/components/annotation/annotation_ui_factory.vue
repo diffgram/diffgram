@@ -350,7 +350,6 @@
 
 
 <script lang="ts">
-import Vue from "vue";
 import moment from "moment";
 import axios from "../../services/customInstance/index.js";
 import {create_event} from "../event/create_event";
@@ -392,6 +391,7 @@ import HotKeyManager from "./hotkeys/HotKeysManager"
 import {GlobalInstance} from "../vue_canvas/instances/GlobalInstance";
 import {postInstanceList} from "../../services/instanceList"
 import {CustomButton} from "../../types/ui_schema/Buttons";
+
 
 export default Vue.extend({
     name: "annotation_ui_factory",

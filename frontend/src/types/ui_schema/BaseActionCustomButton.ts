@@ -1,7 +1,6 @@
-import {CustomButtonWorkflow} from "./CustomButtonWorkflow";
+import {CustomButtonWorkflow} from "../ui_schema/CustomButtonWorkflow";
 import {AnyAnnotationCtx, BaseAnnotationUIContext} from "../AnnotationUIContext";
-import annotation_ui_factory from "../../components/annotation/annotation_ui_factory.vue";
-
+import {AnnotationUIFactory} from "../ui_schema/CustomButtonWorkflow";
 
 export class BaseActionCustomButton {
   metadata: object
@@ -24,6 +23,6 @@ export class BaseActionCustomButton {
     this.metadata[key] = val
   }
 
-  public async execute(annotation_ui_context: BaseAnnotationUIContext, ui_factory_component: InstanceType<typeof annotation_ui_factory>) {}
+  public async execute(annotation_ui_context: BaseAnnotationUIContext, ui_factory_component: AnnotationUIFactory) {}
 
 }

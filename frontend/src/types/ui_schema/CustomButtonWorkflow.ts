@@ -1,9 +1,13 @@
 import {BaseActionCustomButton} from "./BaseActionCustomButton";
 import {ActionSetAttributeValue} from "./button_actions/ActionSetAttributeValue";
 import {ActionCompleteTask} from "./button_actions/ActionCompleteTask";
-import {AnyAnnotationCtx, BaseAnnotationUIContext} from "../AnnotationUIContext";
-import annotation_ui_factory from "../../components/annotation/annotation_ui_factory.vue";
+import {BaseAnnotationUIContext} from "../AnnotationUIContext";
 
+import Vue, { VueConstructor } from "vue";
+
+export interface AnnotationUIFactory extends Vue {
+  on_task_annotation_complete_and_save: () => Promise<void>;
+}
 export const CUSTOM_BUTTON_ACTION_TYPE = {
   set_attribute: 'set_attribute',
   complete_task: 'complete_task',
@@ -73,7 +77,7 @@ export class CustomButtonWorkflow {
     }
   }
 
-  async start(annotation_ui_context: BaseAnnotationUIContext, ui_factory_component: InstanceType<typeof annotation_ui_factory>) {
+  async start(annotation_ui_context: BaseAnnotationUIContext, ui_factory_component: AnnotationUIFactory) {
     for (const action of this.actions) {
       await action.execute(annotation_ui_context, ui_factory_component);
     }
