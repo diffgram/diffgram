@@ -1086,8 +1086,8 @@ export default Vue.extend({
         },
         change_instance_type: function (instance_type: string): void {
             this.$store.commit("finish_draw");
-            this.$store.commit("set_last_selected_tool", this.instance_type);
             this.annotation_ui_context.instance_type = instance_type
+            this.$store.commit("set_last_selected_tool", instance_type);
         },
         change_current_label_file_template: function (label_file) {
             this.annotation_ui_context.current_label_file = label_file;

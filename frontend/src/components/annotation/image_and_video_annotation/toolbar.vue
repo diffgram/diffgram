@@ -1170,7 +1170,13 @@ export default Vue.extend({
     if(this.rotation_degrees == undefined){
       this.rotation_degrees = 0
     }
+
     this.loading_instance_type = false;
+    await this.$nextTick();
+
+    if(this.$store.state && this.$store.state.user && this.$store.state.user.settings && this.$store.state.user.settings.last_selected_annotation_tool){
+      this.set_instance_type(this.$store.state.user.settings.last_selected_annotation_tool)
+    }
   },
 
   computed: {
