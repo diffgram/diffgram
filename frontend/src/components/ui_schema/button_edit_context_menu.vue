@@ -144,7 +144,8 @@ export default Vue.extend({
       }
     },
     save: async function(){
-      await this.$store.commit('update_custom_button', this.button.name, this.button)
+
+      await this.$store.commit('update_custom_button', [this.button.name, this.button])
       await this.update_ui_schema_with_servercall()
       this.open = false
 

@@ -1,20 +1,22 @@
 <template>
   <v-container>
-    <div v-if="button.workflow"
-         class="d-flex flex-column"
-         v-for="(action, index) in button.workflow.actions">
-      <button_edit_action_step
-        :project_string_id="project_string_id"
-        :button="button"
-        :existing_action="action">
-      </button_edit_action_step>
-      <div class="d-flex justify-center align-center" v-if="index > 0 && index < button.workflow.actions.length - 1">
-        <v-icon size="28">mdi-arrow-down-thin</v-icon>
+    <div v-if="button.workflow && button.workflow.actions">
+      <div
+           class="d-flex flex-column"
+           v-for="(action, index) in button.workflow.actions">
+        <button_edit_action_step
+          :project_string_id="project_string_id"
+          :button="button"
+          :existing_action="action">
+        </button_edit_action_step>
+        <div class="d-flex justify-center align-center" v-if="index > 0 && index < button.workflow.actions.length - 1">
+          <v-icon size="28">mdi-arrow-down-thin</v-icon>
+        </div>
       </div>
     </div>
 
     <div
-      v-if="!button.workflow && button.workflow.actions && button.workflow.actions.length === 0"
+      v-if="!button.workflow || (button.workflow && !button.workflow.actions)"
       class="pa-4 d-flex flex-column align-center justify-center">
       <p>No Actions yet. Add an action to make your button do something!</p>
       <v-icon :size="76">mdi-gesture-tap</v-icon>
