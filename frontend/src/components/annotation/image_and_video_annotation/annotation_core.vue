@@ -3480,12 +3480,10 @@ export default Vue.extend({
         this.original_media_width = file.image.width;
         this.original_media_height = file.image.height;
 
-        var self = this;
-        this.addImageProcess(file.image.url_signed).then((new_image) => {
-          self.html_image = new_image;
-          self.loading = false;
-          self.refresh = Date.now();
-        });
+        const new_image = await this.addImageProcess(file.image.url_signed);
+        this.html_image = new_image;
+        this.loading = false;
+        this.refresh = Date.now();
       }
 
       if (file.type == "video") {
@@ -6973,7 +6971,7 @@ export default Vue.extend({
       this.reset_for_file_change_context();
       await this.refresh_attributes_from_current_file(this.working_file);
 
-      this.current_file_updates(this.working_file);
+      await this.current_file_updates(this.working_file);
       await this.prepare_canvas_for_new_file(this.working_file);
 
       this.full_file_loading = false;

@@ -514,7 +514,7 @@ export default Vue.extend({
                 }
             }
             if (from.name === 'studio' && to.name === 'task_annotation') {
-                this.working_file = null;
+                this.annotation_ui_context.working_file = null;
                 this.fetch_single_task(this.task_id_prop);
                 this.$refs.file_manager_sheet.hide_file_manager_sheet()
             }
@@ -534,6 +534,8 @@ export default Vue.extend({
                 Vue.set(this.annotation_ui_context, 'instance_store', new InstanceStore())
                 this.task_prefetcher.update_tasks(newVal)
             }
+            await this.$nextTick();
+
         }
     },
     created() {
@@ -1304,10 +1306,13 @@ export default Vue.extend({
                 else instance_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id, frame_number)
             } else {
                 const inst_list = this.annotation_ui_context.instance_store.get_instance_list(this.annotation_ui_context.working_file.id)
-                instance_list = inst_list.map(elm => {
+                if(inst_list){
+                  instance_list = inst_list.map(elm => {
                     if (elm.type === 'keypoints') return elm.get_instance_data()
                     else return elm
-                });
+                  });
+                }
+
             }
             if (!instance_list) {
                 return
@@ -1710,9 +1715,10 @@ export default Vue.extend({
             ) return
 
 
-            if (this.annotation_ui_context.current_image_annotation_ctx.has_changed) await this.save();
-
-            this.change_task(direction, task, assign_to_user);
+            if (this.annotation_ui_context.current_image_annotation_ctx.has_changed) {
+              await this.save();
+            }
+            await this.change_task(direction, task, assign_to_user);
         },
 
         on_task_annotation_complete_and_save: async function () {
@@ -1722,12 +1728,14 @@ export default Vue.extend({
             const new_status = response.data.task.status;
             this.annotation_ui_context.task.status = new_status;
 
-            if (new_status !== "complete") this.submitted_to_review = true;
-
-            if (this.annotation_ui_context.task && this.annotation_ui_context.task.id) {
-                this.set_save_loading(false)
-                this.trigger_task_change("next", this.annotation_ui_context.task, true);
+            if (new_status !== "complete") {
+              this.submitted_to_review = true;
             }
+
+            // if (this.annotation_ui_context.task && this.annotation_ui_context.task.id) {
+            //     this.set_save_loading(false)
+            //     await this.trigger_task_change("next", this.annotation_ui_context.task, true);
+            // }
         },
         save_time_tracking: async function () {
             if (!this.annotation_ui_context.task) return
@@ -2006,7 +2014,7 @@ export default Vue.extend({
             if (this.listeners_map()) this.listeners_map()['resize']()
             this.changing_file = false;
             await this.$nextTick();
-            if (this.working_file && this.working_file.type !== 'text') {
+            if (this.annotation_ui_context.working_file && this.annotation_ui_context.working_file.type !== 'text') {
                 this.update_window_size_from_listener()
             }
 
@@ -2142,11 +2150,14 @@ export default Vue.extend({
                     );
 
                     if (response.data && response.data.task) {
+                        const new_task = response.data.task
                         if (response.data.task.id !== task.id) {
-                            this.$router.push(`/task/${response.data.task.id}`);
-                            history.pushState({}, "", `/task/${response.data.task.id}`);
-                            this.annotation_ui_context.task = response.data.task;
-                            this.annotation_ui_context.task_loading = false
+                            this.$router.replace(`/task/${response.data.task.id}`);
+                            history.replaceState({}, "", `/task/${response.data.task.id}`);
+                            this.annotation_ui_context.task = new_task;
+                            this.task_image = new_task.image
+                            this.task_instances = new_task.instances
+                            this.task_loading = false
                         }
                     } else {
                         success = false

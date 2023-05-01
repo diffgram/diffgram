@@ -173,7 +173,8 @@ export default Vue.extend({
     complete_dialog: function () {
       if (this.review_statuses.includes(this.task.status)) {
         this.$store.commit("set_user_is_typing_or_menu_open", true);
-        return (this.review_dialog = true);
+        this.review_dialog = true;
+        return
       }
       this.is_complete_toggle_task(true);
     },
