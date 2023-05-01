@@ -28,7 +28,7 @@ export default Vue.extend({
 
   },
   mounted: async function(){
-
+    console.log('config action', this.action)
   },
   data() {
     // move context menu off the page out of view when hidden

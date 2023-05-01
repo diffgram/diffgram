@@ -41,7 +41,7 @@
               :bulk_mode="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().bulk_mode"
               :search_mode="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().search_mode"
               @save="save"
-              @set_attribute="on_set_global_attribute"
+              @execute_button_actions="execute_button_actions"
               @redo="redo"
               @undo="undo"
               @clear_unsaved="clear_unsaved"
@@ -391,6 +391,7 @@ import empty_file_editor_placeholder from "./image_and_video_annotation/empty_fi
 import HotKeyManager from "./hotkeys/HotKeysManager"
 import {GlobalInstance} from "../vue_canvas/instances/GlobalInstance";
 import {postInstanceList} from "../../services/instanceList"
+import {CustomButton} from "../../types/ui_schema/Buttons";
 
 export default Vue.extend({
     name: "annotation_ui_factory",
@@ -769,6 +770,12 @@ export default Vue.extend({
         },
     },
     methods: {
+        execute_button_actions: async function(custom_button: CustomButton){
+          if(!custom_button.workflow){
+            return
+          }
+          custom_button.workflow.start(this.annotation_ui_context, this)
+        },
         on_set_global_attribute: async function (attribute_data) {
             let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref();
             if (sidebar && sidebar.$refs.instance_detail_list) {

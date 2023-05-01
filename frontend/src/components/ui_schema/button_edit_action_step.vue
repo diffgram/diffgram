@@ -8,7 +8,7 @@
 
     </v-select>
     <v-btn @click="open_config_dialog" :disabled="!action || (action && !action.type)" small class="ml-4" icon outlined><v-icon>mdi-cog</v-icon></v-btn>
-    <v-btn small class="ml-4" color="error" icon outlined><v-icon>mdi-delete</v-icon></v-btn>
+    <v-btn @click="delete_action(initialized_action)" small class="ml-4" color="error" icon outlined><v-icon>mdi-delete</v-icon></v-btn>
 
     <v-dialog persistent  max-width="600px" v-model="is_open">
       <v-card>
@@ -64,6 +64,7 @@ export default Vue.extend({
     return {
       action: null,
       initialized_action: null,
+      action_id: null,
       is_open: false,
       actions_list: [
         {
@@ -81,13 +82,26 @@ export default Vue.extend({
 
   computed: {},
   methods: {
+    delete_action: function(action){
+      if(!this.button.workflow){
+        return
+      }
+      this.button.workflow.remove_action(action)
+    },
     initialize_existing_action: function (existing_action) {
-      this.action = existing_action;
-      this.initialized_action = get_initialized_action_from_obj(existing_action)
+
+      this.initialized_action = this.button.workflow.get_action(existing_action)
+      this.action = this.initialized_action
+      this.action_id = this.initialized_action.id
     },
     set_action: function (action) {
+
       this.action = action
-      this.initialized_action = get_initialized_action_from_obj(action)
+      if(this.action_id){
+        this.action.id = this.action_id
+      }
+      this.initialized_action = get_initialized_action_from_obj(this.action)
+      this.button.workflow.update_action(this.initialized_action)
     },
     open_config_dialog: function(action){
       this.is_open = true;

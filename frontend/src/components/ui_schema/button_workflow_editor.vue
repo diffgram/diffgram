@@ -1,20 +1,20 @@
 <template>
-  <v-container >
+  <v-container>
     <div v-if="button.workflow"
          class="d-flex flex-column"
-         v-for="(index, action) in actions">
+         v-for="(action, index) in button.workflow.actions">
       <button_edit_action_step
         :project_string_id="project_string_id"
         :button="button"
         :existing_action="action">
       </button_edit_action_step>
-      <div class="d-flex justify-center align-center" v-if="index > 0 && index < actions.length - 1">
+      <div class="d-flex justify-center align-center" v-if="index > 0 && index < button.workflow.actions.length - 1">
         <v-icon size="28">mdi-arrow-down-thin</v-icon>
       </div>
     </div>
 
     <div
-      v-if="!button.workflow && actions.length === 0"
+      v-if="!button.workflow && button.workflow.actions && button.workflow.actions.length === 0"
       class="pa-4 d-flex flex-column align-center justify-center">
       <p>No Actions yet. Add an action to make your button do something!</p>
       <v-icon :size="76">mdi-gesture-tap</v-icon>
@@ -91,23 +91,21 @@ export default Vue.extend({
     }
   },
   computed: {
-    actions: function(){
-      if(!this.button){return []}
-      if(!this.button.workflow){return []}
-      if(!this.button.actions){return []}
-      return this.button.workflow.actions
-    }
+
   },
   methods: {
     add_action: function () {
+      const empty_action = {
+        metadata: null,
+        name: 'New Action',
+        type: null,
+        id: uuidv4()
+      }
       if (!this.button.workflow) {
         // Initialize workflow if none exists.
-        this.button.workflow = new CustomButtonWorkflow([{
-          metadata: null,
-          name: 'New Action',
-          type: null,
-          id: uuidv4()
-        }])
+        this.button.workflow = new CustomButtonWorkflow([empty_action])
+      } else {
+        this.button.workflow.add_action(empty_action)
       }
     },
 

@@ -18,7 +18,7 @@ export class CustomButton extends Button {
   workflow: CustomButtonWorkflow
   color: string
 
-  constructor(display_name: string, name: string, icon: string, workflow: CustomButtonWorkflow, color: string) {
+  constructor({display_name, name, icon, workflow, color}) {
     super(display_name, name, icon)
     this.workflow = workflow
     this.color = color

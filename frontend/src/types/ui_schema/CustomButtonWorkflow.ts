@@ -1,6 +1,8 @@
 import {BaseActionCustomButton} from "./BaseActionCustomButton";
 import {ActionSetAttributeValue} from "./button_actions/ActionSetAttributeValue";
 import {ActionCompleteTask} from "./button_actions/ActionCompleteTask";
+import {AnyAnnotationCtx, BaseAnnotationUIContext} from "../AnnotationUIContext";
+import annotation_ui_factory from "../../components/annotation/annotation_ui_factory.vue";
 
 export const CUSTOM_BUTTON_ACTION_TYPE = {
   set_attribute: 'set_attribute',
@@ -38,14 +40,42 @@ export class CustomButtonWorkflow {
     return result
   }
 
+  public get_action(action: BaseActionCustomButton){
+    let existing = this.actions.find(a => a.id === action.id)
+    if(!existing){
+      return
+    }
+    const index = this.actions.indexOf(existing)
+    return this.actions[index]
+  }
+  public update_action(action: BaseActionCustomButton){
+    let existing = this.actions.find(a => a.id === action.id)
+    if(!existing){
+      return
+    }
+    const index = this.actions.indexOf(existing)
+    this.actions[index] = action
+  }
+  public remove_action(action){
+    const index = this.actions.indexOf(action);
+    if (index > -1) { // only splice array when item is found
+      this.actions.splice(index, 1); // 2nd parameter means remove one item only
+    }
+  }
+  public add_action(action: BaseActionCustomButton){
+    const initialized = get_initialized_action_from_obj(action)
+    this.actions.push(initialized)
+  }
   constructor(actions: object[]) {
-    const init_actions = this.initialize_actions(actions)
-    this.actions = init_actions;
+    if(actions){
+      const init_actions = this.initialize_actions(actions)
+      this.actions = init_actions;
+    }
   }
 
-  async start() {
+  async start(annotation_ui_context: BaseAnnotationUIContext, ui_factory_component: InstanceType<typeof annotation_ui_factory>) {
     for (const action of this.actions) {
-      await action.execute();
+      await action.execute(annotation_ui_context, ui_factory_component);
     }
   }
 }

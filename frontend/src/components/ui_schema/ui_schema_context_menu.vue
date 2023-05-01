@@ -586,7 +586,13 @@
             numButtons = existing_buttons.length;
           }
           // Add a Custom Button
-          let custom_button = new CustomButton('My Custom Button', `custom_button_${uuidv4()}`, null, null, '#4CAF50')
+          let custom_button = new CustomButton({
+            display_name: 'My Custom Button',
+            name: `custom_button_${uuidv4()}`,
+            icon: null,
+            color: '#4CAF50',
+            workflow: null
+          })
           this.$store.commit('add_custom_button', custom_button)
         }else{
           this.$store.commit('set_ui_schema_element_value',
