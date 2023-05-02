@@ -48,8 +48,10 @@ describe("Test sensor_fusion_editor.vue", () => {
         },
         builder_or_trainer: {
           mode: 'builder'
-        }
-      }
+        },
+
+      },
+
     })
     options = {
       localVue: localVue,
@@ -57,7 +59,13 @@ describe("Test sensor_fusion_editor.vue", () => {
       propsData: {
         view_only_mode: false
       },
-      mocks: {}
+      mocks: {
+        $refs: {
+          x_axis_3d_canvas: {setup_scene: ()=>{}},
+          y_axis_3d_canvas: {setup_scene: ()=>{}},
+          z_axis_3d_canvas: {setup_scene: ()=>{}},
+        }
+      }
     };
   });
 

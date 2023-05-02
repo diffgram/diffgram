@@ -26,7 +26,7 @@
               v-if="$store.getters.get_ui_schema('logo', 'visible')"
               :href="'/me'"
             >
-                 <div class="pt-2 pr-3 clickable">
+              <div class="pt-2 pr-3 clickable">
                 <logo :height="30"></logo>
               </div>
             </ahref_seo_optimal>
@@ -101,8 +101,12 @@
         </ui_schema>
       </div>
 
-      <custom-buttons-section :project_string_id="project_string_id"
-                              :editing="show_ui_schema_context_menu"></custom-buttons-section>
+      <custom-buttons-section
+        v-on="$listeners"
+        :project_string_id="project_string_id"
+        :editing="show_ui_schema_context_menu">
+
+      </custom-buttons-section>
 
       <v-divider v-if="task && task.status !== 'complete'" vertical></v-divider>
 
@@ -1038,7 +1042,7 @@ import logo from "../../diffgram/logo.vue";
 export default Vue.extend({
   name: "image_and_video_toolbar",
   components: {
-      logo,
+    logo,
     CustomButtonsSection,
     Guided_1_click_mode_selector,
     label_select_annotation,
@@ -1161,13 +1165,13 @@ export default Vue.extend({
   },
   async mounted() {
     this.label_settings_local = this.label_settings;
-    if(this.working_file && this.working_file.image){
+    if (this.working_file && this.working_file.image) {
       this.rotation_degrees = this.working_file.image.rotation_degrees
     }
-    if(this.task && this.task.file && this.task.file.image){
+    if (this.task && this.task.file && this.task.file.image) {
       this.rotation_degrees = this.task.file.image.rotation_degrees
     }
-    if(this.rotation_degrees == undefined){
+    if (this.rotation_degrees == undefined) {
       this.rotation_degrees = 0
     }
 

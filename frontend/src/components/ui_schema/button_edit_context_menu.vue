@@ -5,6 +5,8 @@
            :offset-overflow="true"
            :position-x="150"
            :position-y="50"
+           :min-width="400"
+
            :right="true"
            offset-y
            v-if="button"
@@ -32,32 +34,12 @@
                   <slider-picker class="mb-4" v-model="button_color" @change="change_color"/>
                 </div>
               </v-tab-item>
-              <v-tab-item :key="2">
-                <h4 class="">Actions: </h4>
-
-                <v-select return-object
-                          v-model="action"
-                          item-value="type"
-                          item-text="name"
-                          :items="actions_list" @change="set_action"></v-select>
-
-                <label_schema_selector
-                  v-if="action && action.type === 'set_attribute'"
-                  @change="on_change_schema"
-                  :project_string_id="project_string_id">
-
-                </label_schema_selector>
-                <attribute_select
-                  ref="attribute_select"
-                  :multiple="false"
-                  label="Select Attribute to set"
-                  v-if="selected_schema_id"
+              <v-tab-item :key="2" class="pl-4 pr-4">
+                <button_edit_workflow_creator
+                  :button="button"
                   :project_string_id="project_string_id"
-                  :schema_id="selected_schema_id"
-                  :attribute_list="attribute_list"
-                  @change_selected="attribute_change_event"
-                  @attribute_change="attribute_change_value"
-                />
+
+                ></button_edit_workflow_creator>
               </v-tab-item>
             </v-tabs-items>
           </v-tabs>
@@ -82,8 +64,10 @@
 import Vue from 'vue';
 import label_schema_selector from '../label/label_schema_selector.vue'
 import attribute_select from '../attribute/attribute_select.vue'
+import button_edit_workflow_creator from './button_workflow_editor.vue'
 import axios from '../../services/customInstance';
 import {ActionCustomButton} from '../../types/ui_schema/Buttons'
+import {CustomButtonWorkflow} from '../../types/ui_schema/CustomButtonWorkflow'
 import {types} from "sass";
 import String = types.String;
 import {attribute_group_list} from "../../services/attributesService";
@@ -91,6 +75,7 @@ export default Vue.extend({
   name: 'ButtonEditContextMenu',
   components: {
     label_schema_selector,
+    button_edit_workflow_creator,
     attribute_select
   },
   props: {
@@ -111,23 +96,11 @@ export default Vue.extend({
     return {
       button_color: {},
       tab: 0,
-      selected_schema_id: undefined,
-      actions_list: [
-        {
-          'name': 'Complete Task',
-          'type': 'complete_task',
-        },
-        {
-          'name': 'Set Attribute',
-          'type': 'set_attribute',
-        },
 
-      ],
+
       open: false,
       action: null,
-      label_schema: null,
-      attribute_value: null,
-      attribute_list: [],
+
     }
   },
   watch:{
@@ -149,38 +122,12 @@ export default Vue.extend({
   },
   methods: {
     initialize_button_action_config: async function(){
-      if(this.button.action){
-        this.set_action(new ActionCustomButton(this.button.action.name, this.button.action.type, this.button.action.metadata))
-
-      }
-      let attr_template_id = this.button.action.metadata.attribute_template_id
-      if(this.button.action.metadata.schema_id){
-        this.selected_schema_id = this.button.action.metadata.schema_id
-      }
-      if(attr_template_id){
-        await this.get_schema_attributes()
-        await this.$nextTick();
-        const attr_select = this.$refs.attribute_select;
-        if(!attr_select){
-          return
-        }
-        await attr_select.select_attribute_by_id(attr_template_id)
-        const attr_value_id = this.button.action.metadata.attribute_value_id
-        await this.$nextTick();
-        if(attr_value_id){
-          const attr_list_ref = attr_select.$refs.attribute_groups_list
-
-          const attr_ref = attr_list_ref.$refs[`attribute_group_${attr_template_id}`]
-
-          if(attr_ref && attr_ref.length > 0){
-            attr_ref[0].set_attribute_value(attr_value_id)
-          }
-        }
+      if(this.button.workflow){
+        this.set_workflow(this.button.workflow)
       }
     },
-    set_action: function(val){
-      this.action = new ActionCustomButton(val.name, val.type, val.metadata? val.metadata: {});
-      this.button.action = this.action
+    set_workflow: function(wf){
+      this.button.workflow = new CustomButtonWorkflow(wf.actions)
     },
     open_menu: function(){
       this.open = true
@@ -197,7 +144,8 @@ export default Vue.extend({
       }
     },
     save: async function(){
-      await this.$store.commit('update_custom_button', this.button.name, this.button)
+
+      await this.$store.commit('update_custom_button', [this.button.name, this.button])
       await this.update_ui_schema_with_servercall()
       this.open = false
 
@@ -208,31 +156,8 @@ export default Vue.extend({
       }
       return this.$store.state.ui_schema.current
     },
-    on_change_schema: async function(val){
-      this.selected_schema_id = val.id
-      if(this.action){
-        this.action.set_metadata('schema_id', val.id)
-      }
-      this.label_schema = val
-      await this.get_schema_attributes()
-    },
-    get_schema_attributes: async function () {
-      const [data, error] = await attribute_group_list(this.project_string_id, undefined, this.selected_schema_id, 'from_project')
 
-      if (!error) {
-        this.attribute_list = [...data.attribute_group_list]
-      }
-    },
-    attribute_change_value: function(attr_value_payload){
-      let attribute_template = attr_value_payload[0]
-      let attribute_selected_value = attr_value_payload[1]
-      this.action.set_metadata('attribute_value_id', attribute_selected_value.id)
-      this.attribute_value = attribute_selected_value
-    },
-    attribute_change_event: function(attr){
-      this.action.set_metadata('attribute_template_id', attr.id)
-      this.attribute = attr
-    },
+
     update_ui_schema_with_servercall: async function(){
       if (!this.get_ui_schema() || !this.get_ui_schema().id) {
         return

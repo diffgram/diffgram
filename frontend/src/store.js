@@ -754,6 +754,16 @@ const ui_schema = {
     update_custom_button(state, payload){
       let button_name = payload[0]
       let button = payload[1]
+      console.log('storee', button, button_name, state.current['custom_buttons'])
+      if(!state.current['custom_buttons']){
+        return
+      }
+      let custom_buttons = state.current['custom_buttons'].buttons_list
+      for(let i = 0; i < custom_buttons.length; i++){
+        if(custom_buttons[i].name === button_name){
+          custom_buttons[i] = button
+        }
+      }
     },
     add_custom_button(state, custom_button){
       /**

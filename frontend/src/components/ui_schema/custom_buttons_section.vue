@@ -30,6 +30,7 @@
 import Vue from 'vue';
 import button_edit_context_menu from './button_edit_context_menu.vue'
 import {CustomButton} from "../../types/ui_schema/Buttons";
+import {CustomButtonWorkflow} from "../../types/ui_schema/CustomButtonWorkflow";
 export default Vue.extend({
   name: 'CustomButtonsSection',
   components: {
@@ -56,7 +57,8 @@ export default Vue.extend({
       deep: true,
       handler: function(val){
         if(val && val.custom_buttons){
-          this.custom_buttons = val.custom_buttons.buttons_list;
+          const init_buttons = this.initialize_buttons(val.custom_buttons.buttons_list)
+          this.custom_buttons = init_buttons;
           this.$forceUpdate()
         }
         if(val && !val.custom_buttons){
@@ -75,7 +77,8 @@ export default Vue.extend({
   },
   mounted() {
     if(this.ui_schema && this.ui_schema .custom_buttons){
-      this.custom_buttons = this.ui_schema .custom_buttons.buttons_list;
+      const init_buttons = this.initialize_buttons(this.ui_schema.custom_buttons.buttons_list)
+      this.custom_buttons = init_buttons;
       this.$forceUpdate()
     }
     if(this.ui_schema  && !this.ui_schema .custom_buttons){
@@ -86,9 +89,27 @@ export default Vue.extend({
 
   },
   methods: {
+    initialize_buttons: function(buttons){
+      const result = [];
+      for(let button of buttons){
+        if(button.workflow){
+          const workflow = new CustomButtonWorkflow(button.workflow.actions)
+          const newButton = new CustomButton({...button, workflow: workflow})
+          result.push(newButton)
+        } else{
+          const newButton = new CustomButton({...button})
+          result.push(newButton)
+        }
+
+
+      }
+      return result
+    },
     do_button_action: function(custom_button){
-      if(custom_button && custom_button.action){
-        this.$emit(custom_button.action.type, custom_button.action.metadata)
+
+      if(custom_button && custom_button.workflow){
+        console.log('DO ACTION', custom_button)
+        this.$emit('execute_button_actions', custom_button)
       }
 
     },

@@ -11,7 +11,7 @@ import {createDefaultLabelSettings, ImageLabelSettings} from "./image_label_sett
 import {AttributeTemplateGroup} from "./attributes/AttributeTemplateGroup";
 import {PanelsSettings} from "./attributes/PanelsSettings";
 
-type AnyAnnotationCtx =
+export type AnyAnnotationCtx =
   ImageAnnotationUIContext
   | AudioAnnotationUIContext
   | TextAnnotationUIContext
