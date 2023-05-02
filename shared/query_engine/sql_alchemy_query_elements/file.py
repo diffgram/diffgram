@@ -17,6 +17,16 @@ class FileQueryElement(QueryElement):
         self.subquery = session.query(File.id).filter(File.file_metadata[file_key].astext).subquery()
         return self.subquery
 
+    def build_query_reserved_columns(self, session: Session, column_name: str) -> Selectable:
+        self.column = getattr(File, column_name)
+        self.subquery = session.query(File.id).filter(self.column).subquery()
+        return self.subquery
+
     def build_query(self, session: 'Session', token: Token) -> Selectable:
         file_key = token.value.split('.')[1]
-        return self.build_metadata_query(session, file_key = file_key)
+        print('build_query File', token)
+        reserved_columns = ['created_time', 'type', 'ann_is_complete', 'original_filename', 'task_id', 'frame_number', 'parent_id']
+        if file_key not in reserved_columns:
+            return self.build_metadata_query(session, file_key = file_key)
+        else:
+            return self.build_query_reserved_columns(session = session, column_name = file_key)
