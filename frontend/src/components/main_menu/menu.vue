@@ -85,15 +85,6 @@
 
             <v-spacer></v-spacer>
 
-            <div v-if="$store.state.builder_or_trainer.mode == 'trainer'">
-              <h3 class="pr-3">
-                <v-icon left
-                        color="primary">mdi-professional-hexagon
-                </v-icon>
-                Pro
-              </h3>
-            </div>
-
             <div v-if="$store.state.user.logged_in == true">
               <div v-if="$store.state.builder_or_trainer.mode == 'builder'">
                 <v-layout>
