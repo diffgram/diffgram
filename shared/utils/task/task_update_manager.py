@@ -4,6 +4,7 @@ from shared.regular import regular_methods, regular_log
 from dataclasses import dataclass
 from shared.database.source_control.working_dir import WorkingDirFileLink
 
+
 @dataclass
 class Task_Update():
     session: any
@@ -43,8 +44,21 @@ class Task_Update():
         self.task.job.refresh_stat_count_tasks(self.session)
         return
 
+    def update_related_file_status(self, old_status, updated_task: Task):
+        if updated_task.status == 'complete':
+            # Find All Other Tasks from the related file
+            other_pending_tasks = Task.get_related_pending_tasks(session = self.session,
+                                                                 task = updated_task)
+            if len(other_pending_tasks) == 0:
+                updated_task.file.ann_is_complete = True
+
+            else:
+                updated_task.file.ann_is_complete = False
+        else:
+            updated_task.file.ann_is_complete = False
+        self.session.add(updated_task.file)
+
     def emit_task_event_based_on_status(self, old_status, task):
-        print('TESTT', task.status, old_status)
         if task.status == 'complete':
             if old_status != 'completed':
                 assignees = task.get_assignees(session = self.session)
@@ -53,7 +67,8 @@ class Task_Update():
                 for user in assignees:
                     TaskEvent.generate_task_completion_event(self.session, task, self.member, task_assignee = user)
                 if not assignees:
-                    TaskEvent.generate_task_completion_event(self.session, task, self.member, task_assignee = self.member.user)
+                    TaskEvent.generate_task_completion_event(self.session, task, self.member,
+                                                             task_assignee = self.member.user)
 
         if task.status == 'in_progress':
             if old_status != 'in_progress':
@@ -68,6 +83,7 @@ class Task_Update():
                     TaskEvent.generate_task_request_change_event(self.session, task, self.member, task_assignee = user)
                 if not assignees:
                     TaskEvent.generate_task_request_change_event(self.session, task, self.member)
+
     def update_files_count(self):
         result, log = WorkingDirFileLink.file_link_update(
             session = self.session,

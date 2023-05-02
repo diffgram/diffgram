@@ -227,10 +227,13 @@ class JobDirectorySyncManager:
             task_type = 'draw',
             incoming_directory = incoming_directory
         )
+        # Set file as not completed
+        file.ann_is_complete = False
         # Set job as not completed.
         job_obj.status = 'active'
         self.session.add(job_obj)
         self.session.add(task)
+        self.session.add(file)
         return task
 
     def add_file_to_all_jobs(self, file, source_dir = None, create_tasks = False, member = None):

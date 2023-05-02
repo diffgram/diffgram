@@ -203,7 +203,6 @@ export const project = {
         return
       }
       const member = state.current.member_list.find(elm => elm.member_id === member_id)
-      console.log('MEMBEER', member_id, roles_list, member)
       if(!member){
         return
       }

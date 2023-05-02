@@ -38,6 +38,13 @@
             <li v-if="file.image">
               Width: {{ file.image.width }} Height: {{file.image.height}}
             </li>
+            <li v-if="file.ann_is_complete">
+              <v-icon color="success">mdi-check-circle-outline</v-icon> All Tasks on this File Completed
+            </li>
+            <li v-if="!file.ann_is_complete" class="pt-2 d-flex align-center">
+              <v-icon color="secondary">mdi-account-clock</v-icon>
+              <h5 class="ma-0 ml-2 text--primary">Tasks Pending Completion</h5>
+            </li>
           </ul>
 
           <!-- Current Video -->

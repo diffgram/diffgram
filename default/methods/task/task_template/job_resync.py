@@ -87,7 +87,8 @@ def threaded_job_resync(task_template_id, member_id):
             files = WorkingDirFileLink.file_list(
                 session = session,
                 limit = None,
-                working_dir_id = directory.id
+                working_dir_id = directory.id,
+                root_files_only = True,
             )
             for file in files:
                 if file.id not in file_ids:

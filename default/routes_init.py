@@ -162,6 +162,7 @@ def do_routes_importing():
     from methods.configs.get_system_logo import api_system_get_logo
     from methods.configs.is_open_source import api_is_open_source
     from methods.configs.large_api_chunk_size import large_api_chunk_size
+    from methods.configs.get_version import api_get_version
 
     from methods.task.credential.credential_type_new import new_credential_type_api
     from methods.task.credential.credential_list import credential_list_api
