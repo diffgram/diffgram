@@ -350,6 +350,7 @@
 
 
 <script lang="ts">
+import Vue from 'vue';
 import moment from "moment";
 import axios from "../../services/customInstance/index.js";
 import {create_event} from "../event/create_event";

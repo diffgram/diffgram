@@ -931,9 +931,15 @@
         // Set scene for secondary canvas
         await this.$nextTick();
         this.secondary_3d_canvas_container = document.getElementById('secondary_3d_canvas_container')
-        this.$refs.x_axis_3d_canvas.setup_scene(main_scene)
-        this.$refs.y_axis_3d_canvas.setup_scene(main_scene)
-        this.$refs.z_axis_3d_canvas.setup_scene(main_scene)
+        if(this.$refs.x_axis_3d_canvas){
+          this.$refs.x_axis_3d_canvas.setup_scene(main_scene)
+        }
+        if(this.$refs.y_axis_3d_canvas){
+          this.$refs.y_axis_3d_canvas.setup_scene(main_scene)
+        }
+        if(this.$refs.z_axis_3d_canvas){
+          this.$refs.z_axis_3d_canvas.setup_scene(main_scene)
+        }
       },
       on_instance_updated: function (instance) {
         this.center_secondary_cameras_to_instance(instance)
