@@ -600,6 +600,7 @@ export default Vue.extend({
         this.infinite_scroll_loading = true;
       }
       try{
+        this.query_error = {}
         this.none_found = undefined
         if (this.cancel_request){
           this.cancel_request.cancel()
