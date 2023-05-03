@@ -614,6 +614,15 @@ class Task(Base):
             return query.first()
 
     @staticmethod
+    def get_related_pending_tasks(session: 'Session', task: 'Task'):
+        query = session.query(Task)
+        query = query.filter(Task.status.notin_('complete'),
+                             Task.status != 'archived',
+                             Task.id != task.id,
+                             Task.file_id == task.file_id)
+        return query.all()
+
+    @staticmethod
     def list(session,
              task_ids = None,
              status = None,
@@ -630,8 +639,6 @@ class Task(Base):
              limit_count = 25,
              page_number = 0  # 0 is same as no offset
              ):
-
-        print('LISSST', status)
         query = session.query(Task)
         if task_ids:
             query = query.filter(
