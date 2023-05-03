@@ -5,7 +5,7 @@
         <v-radio-group v-model="output_dir_action" :mandatory="true" @change="on_option_change">
           <v-radio label="Move the files to a Dataset" value="move"></v-radio>
 
-          <global_dataset_selector 
+          <global_dataset_selector
             ref="dir_list_move"
             :show_new="true"
             :initial_dir_from_state="false"
@@ -19,7 +19,7 @@
 
           <v-radio label="Copy the files to a Dataset" value="copy"></v-radio>
 
-          <global_dataset_selector 
+          <global_dataset_selector
             ref="dir_list_copy"
             :set_from_id="copy_id"
             :show_new="true"
@@ -126,6 +126,8 @@
           }
           if (item === 'nothing') {
             this.job.completion_directory_id = undefined;
+            this.$refs.dir_list_copy.on_change_dataset()
+            this.$refs.dir_list_move.on_change_dataset()
             this.$emit('output_dir_actions_update', {directory: null, action: item})
           }
         }

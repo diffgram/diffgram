@@ -131,6 +131,7 @@
           this.$emit('output_dir_actions_update', output_dir)
         },
         on_directories_updated: function (dirs) {
+          console.log('DIRES UPDATED', dirs)
           this.$emit('directories_updated', dirs)
 
         }
