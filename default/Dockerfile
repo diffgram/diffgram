@@ -1,4 +1,4 @@
-FROM python:3.7.16-bullseye
+FROM python:3.11.1-bullseye
 LABEL python_version=python3.7.16
 
 # Set virtualenv environment variables. This is equivalent to running

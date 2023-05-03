@@ -1,4 +1,4 @@
-FROM python:3.7.16-bullseye
+FROM python:3.11.1-bullseyeFROM python:3.11.1-bullseye
 LABEL python_version=python3.7.16
 
 RUN seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{}
