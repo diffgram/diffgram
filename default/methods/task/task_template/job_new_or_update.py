@@ -393,6 +393,7 @@ def job_output_dir_update(project_string_id):
 def update_output_dir_actions(session, job, project, input_data, log):
     if input_data['output_dir_action'] == 'nothing':
         job.output_dir_action = input_data['output_dir_action']
+        job.completion_directory_id = None
         session.add(job)
         return job, log
 

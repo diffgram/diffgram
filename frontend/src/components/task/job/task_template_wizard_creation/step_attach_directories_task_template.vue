@@ -100,7 +100,7 @@
           request_refresh_labels: new Date(),
         }
       },
-      created() {
+      mounted() {
 
       },
 

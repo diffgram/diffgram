@@ -141,12 +141,7 @@
         </v-tab-item>
 
         <v-tab-item>
-          <job_pipeline_mxgraph
-            :job_id="job_id"
-            :show_output_jobs="true"
-            class="mt-4 mb-4 pb-8 pt-8"
-          >
-          </job_pipeline_mxgraph>
+          <job_edit_pipeline :job_id="job_id" :project_string_id="project_string_id"></job_edit_pipeline>
         </v-tab-item>
 
         <v-tab-item>
@@ -220,6 +215,7 @@
 <script lang="ts">
 import v_job_detail_builder from "./job_detail_builder";
 import job_edit_schema from "./job_edit_schema";
+import job_edit_pipeline from "./job_edit_pipeline";
 import no_credentials_dialog from "./no_credentials_dialog";
 import v_job_cancel_actions_button_container from "./job_cancel_actions_button_container";
 import v_job_detail_trainer from "./job_detail_trainer";
@@ -250,6 +246,7 @@ export default Vue.extend({
     No_credentials_dialog,
     job_edit_schema,
     v_job_detail_builder,
+    job_edit_pipeline,
     v_job_cancel_actions_button_container,
     task_template_ui_schema_editor,
     no_credentials_dialog,
