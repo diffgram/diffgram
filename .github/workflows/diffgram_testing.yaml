@@ -51,6 +51,8 @@ jobs:
           --health-retries 5
     steps:
       - uses: actions/setup-python@v3
+        with:
+          python-version: '3.11'
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
@@ -75,6 +77,7 @@ jobs:
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: cp -rf . /__w/diffgram
       - run: cd /__w/diffgram
+      - run: pip install --upgrade pip
       - run: pip install -r default/requirements.txt
       - run: pip install pytest sqlalchemy-utils
       - run: mkdir /gcp
@@ -126,10 +129,11 @@ jobs:
     steps:
       - uses: actions/setup-python@v3
         with:
-          python-version: '3.7'
+          python-version: '3.11'
       - run: sed -i -re 's/([a-z]{2}.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
       - run: apt-get update && apt-get install -y git libffi-dev
       - run: pip3 install "pip>=20"
+      - run: pip3 install --upgrade pip
       - run: rm -rf /tmp
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
       - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
