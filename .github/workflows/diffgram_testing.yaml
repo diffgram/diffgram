@@ -14,11 +14,11 @@ on:
     types: [ready_for_review]
 jobs:
   Default-Service-Unit-Tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Service containers to run with `container-job` test
 
     container:
-      image: python:3.11.1-buster
+      image: python:3.11.1-bullseye
       options: --user root
       env:
         NODE_ENV: development
