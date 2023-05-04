@@ -1,5 +1,5 @@
-FROM python:3.11.1-bullseyeFROM python:3.11.1-bullseye
-LABEL python_version=python3.7.16
+FROM python:3.11.1-bullseye
+LABEL python_version=python3.11.1
 
 RUN seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{}
 RUN for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done
@@ -7,6 +7,7 @@ RUN apt-get update
 RUN apt-get install -y libpq-dev python3-dev build-essential postgresql postgresql-contrib ffmpeg libsm6 libxext6
 ADD eventhandlers/requirements.txt /app/
 RUN pip3 install --upgrade pip
+RUN pip install --no-build-isolation tokenizers torch==2.0
 RUN pip3 install -r /app/requirements.txt
 ADD eventhandlers/ /app/
 ADD shared /app/shared

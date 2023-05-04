@@ -27,10 +27,10 @@ newrelic
 markupsafe==2.1.2
 pika
 python-keycloak
-pyjwt==1.7.1
+pyjwt==2.6.0
 opencv-python==4.7.0.72
-torch==1.11.0
-torchvision==0.12.0
+torch==2.0
+torchvision==0.15.1
 transformers==4.20.0
 deepchecks[vision]
 memory-profiler==0.55.0

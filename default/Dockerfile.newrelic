@@ -1,5 +1,5 @@
-FROM python:3.7.16-bullseye
-LABEL python_version=python3.7.16
+FROM python:3.11.1-bullseye
+LABEL python_version=python3.11.1
 
 # Set virtualenv environment variables. This is equivalent to running
 # source /env/bin/activate
@@ -13,9 +13,9 @@ RUN pip3 install -r /app/requirements.txt
 
 ADD default/ /app/
 ADD shared /app/shared
+
 WORKDIR /app/
 RUN ["chmod", "+x", "/app/db-init.sh"]
-ENV NEW_RELIC_CONFIG_FILE=/app/newrelic.ini
 #CMD exec gunicorn --bind :$PORT --timeout 120 --worker-class eventlet --workers 3 --no-sendfile --config python:my_conf main:app
 EXPOSE 8080
 CMD exec newrelic-admin run-program gunicorn --bind :8080 --timeout 120 --worker-class sync --workers 5 --no-sendfile main:app

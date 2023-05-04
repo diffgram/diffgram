@@ -1,5 +1,5 @@
 FROM python:3.11.1-bullseye
-LABEL python_version=python3.7.16
+LABEL python_version=python3.11.1
 
 # Set virtualenv environment variables. This is equivalent to running
 # source /env/bin/activate

@@ -40,7 +40,7 @@ GDAL==3.4.1
 pika
 azure-ai-textanalytics
 python-keycloak
-pyjwt==1.7.1
+pyjwt==2.6.0
 imageio-ffmpeg==0.2.0
 google-cloud-aiplatform
 flasgger
