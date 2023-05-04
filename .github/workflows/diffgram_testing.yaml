@@ -73,12 +73,15 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.ref_name }}
-      - name: "Get Python Version"
-        run: python --version
+
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: cp -rf . /__w/diffgram
       - run: cd /__w/diffgram
-
+      - name: "Get Python Version"
+        run: python --version
+      - run: echo $(python --version)
+      - run: echo $(pip3 --version)
+      - run: echo $(pip --version)
       - run: pip3 install --upgrade pip
       - run: pip3 install -r default/requirements.txt
       - run: pip3 install pytest sqlalchemy-utils
