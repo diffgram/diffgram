@@ -18,7 +18,7 @@ jobs:
     # Service containers to run with `container-job` test
 
     container:
-      image: python:3.7
+      image: python:3.11.1
       options: --user root
       env:
         NODE_ENV: development
@@ -89,7 +89,7 @@ jobs:
     runs-on: ubuntu-latest
     # Service containers to run with `container-job`
     container:
-      image: thinkwhere/gdal-python:3.7-ubuntu
+      image: thinkwhere/gdal-python:3.11-ubuntu
       options: --user root
       env:
         NODE_ENV: development
