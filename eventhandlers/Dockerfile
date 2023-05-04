@@ -8,8 +8,9 @@ RUN apt-get install -y libpq-dev python3-dev build-essential postgresql postgres
 ADD eventhandlers/requirements.txt /app/
 RUN pip3 install --upgrade pip
 RUN pip3 install --no-build-isolation tokenizers torch==2.0
+RUN pip3 install setuptools_rust  # Add this line
 ENV CRYPTOGRAPHY_DONT_BUILD_RUST=1
-RUN pip3 install --no-build-isolation  -r /app/requirements.txt
+RUN pip3 install   -r /app/requirements.txt
 ADD eventhandlers/ /app/
 ADD shared /app/shared
 ENV TRANSFORMERS_CACHE=/tmp/
