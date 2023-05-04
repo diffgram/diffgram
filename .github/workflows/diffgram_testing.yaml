@@ -93,7 +93,7 @@ jobs:
     runs-on: ubuntu-20.04
     # Service containers to run with `container-job`
     container:
-      image: thinkwhere/gdal-python:3.11-ubuntu
+      image: python:3.11.1-bullseye
       options: --user root
       env:
         NODE_ENV: development
