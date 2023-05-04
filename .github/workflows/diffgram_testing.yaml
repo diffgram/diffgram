@@ -18,7 +18,7 @@ jobs:
     # Service containers to run with `container-job` test
 
     container:
-      image: python:3.11.1-bullseye
+      image: python:3.11.1-buster
       options: --user root
       env:
         NODE_ENV: development
