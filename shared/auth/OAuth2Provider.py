@@ -101,7 +101,7 @@ class OAuth2ClientBase(metaclass = SingletonABC):
             return False
 
     def get_decoded_jwt_token(self, id_token: str) -> dict:
-        decoded_token = jwt.decode(id_token, "", algorithms = ["RS256"], verify = False)
+        decoded_token = jwt.decode(id_token, verify=False, algorithms='RS256', options={"verify_signature": False})
         return decoded_token
 
     @abc.abstractmethod
