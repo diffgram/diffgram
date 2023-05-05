@@ -99,6 +99,7 @@ jobs:
     - name: Set policy
       run: ./mc policy set policy minio/testbucket
     - run: cd walrus
+    - run: gdal-config --version
     - run: pip3 install -r walrus/requirements.txt
     - run: pip3 install -r default/requirements.txt
     - run: pip3 install pytest sqlalchemy-utils
