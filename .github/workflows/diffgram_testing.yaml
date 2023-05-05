@@ -93,7 +93,7 @@ jobs:
     runs-on: ubuntu-latest
     # Service containers to run with `container-job`
     container:
-      image: python:3.11.1-bullseye
+      image: ubuntu:22.04
       options: --user root
       env:
         NODE_ENV: development
