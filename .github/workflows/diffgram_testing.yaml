@@ -131,8 +131,7 @@ jobs:
       - uses: actions/setup-python@v3
         with:
           python-version: '3.11'
-      - run: sed -i -re 's/([a-z]{2}.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-      - run: apt-get update && apt-get install -y git libffi-dev ffmpeg python3.11 python3-pip libpq-dev python3.11-venv python3.11-distutils python3.11-dev git python3-setuptools libgdal-dev python3-lxml libxslt-dev
+      - run: apt-get update --allow-insecure-repositories && apt-get install -y git libffi-dev ffmpeg python3.11 python3-pip libpq-dev python3.11-venv python3.11-distutils python3.11-dev git python3-setuptools libgdal-dev python3-lxml libxslt-dev
       - run: pip3 install --upgrade pip
       - run: rm -rf /tmp
       - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
