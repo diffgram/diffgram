@@ -132,7 +132,7 @@ jobs:
         with:
           python-version: '3.11'
       - run: sed -i -re 's/([a-z]{2}.)?archive.ubuntu.com|security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-      - run: rm -f /etc/apt/sources.list.d/archive_uri-*
+      - run: mv /etc/apt/sources.list.d/* ~/solution
       - run: apt-get update && apt-get install -y git libffi-dev ffmpeg python3.11 python3-pip libpq-dev python3.11-venv python3.11-distutils python3.11-dev git python3-setuptools libgdal-dev python3-lxml libxslt-dev
       - run: pip3 install --upgrade pip
       - run: rm -rf /tmp
