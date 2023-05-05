@@ -15,7 +15,7 @@ jobs:
         # run copies of the current job in parallel
         containers: [1,2,3,4,5,6, 7]
     container:
-      image: diffgram/cypress-e2e:latest
+      image: diffgram/walrus:latest
       options: --user root --shm-size 4gb
       env:
         NODE_ENV: development
@@ -83,7 +83,7 @@ jobs:
     steps:
     - uses: actions/setup-node@v3
       with:
-        node-version: 16
+        node-version: 18
     - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
     - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
     - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
