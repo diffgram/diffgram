@@ -14,7 +14,43 @@ describe("Test annotation_core", () => {
   let props;
 
   beforeEach(() => {
+    const store = new Vuex.Store({
+      mutations: {
+        'set_user_is_typing_or_menu_open': jest.fn(),
+      },
+      getters: {
+        get_clipboard: state => {
+          return {instance_list: [{x: 1}, {x: 2}]}
+        }
+      },
+      state: {
+        project: {
+          current_directory: {
+            directory_id: 1
+          }
+        },
+        builder_or_trainer: {
+          mode: 'builder'
+        },
+        clipboard: {
+          clipboard_data: {
+            instance_list: [],
+          },
+        },
+        user: {
+          settings:{
+
+          }
+        },
+        annotation_state:{
+
+        }
+
+      },
+
+    })
     props = {
+      store,
       propsData:{
         label_schema:{
           id: 1,
@@ -94,6 +130,19 @@ describe("Test annotation_core", () => {
       },
       vuetify
     };
+    document.getElementById = () => {
+      return {
+        addEventListener(type, listener, options) {
+        },
+        getContext(s){
+
+        },
+        __vue__:{
+          height: 1
+        }
+
+      }
+    }
   });
 
   it("Tests if annotation_core mounts successfully", () => {
@@ -389,7 +438,7 @@ describe("Test annotation_core", () => {
     const wrapper = shallowMount(annotation_core, props, localVue);
     wrapper.vm.$store.commit = () => {}
 
-    wrapper.setData({full_file_loading: false})
+    wrapper.setData({full_file_loading: false })
 
     wrapper.vm.add_pasted_instance_to_instance_list = () => {}
 

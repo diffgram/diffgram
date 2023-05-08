@@ -932,6 +932,8 @@
         await this.$nextTick();
         this.secondary_3d_canvas_container = document.getElementById('secondary_3d_canvas_container')
         if(this.$refs.x_axis_3d_canvas){
+          console.log('AAAAAAAA', this.$refs.x_axis_3d_canvas)
+          console.log('22222', this.$refs.x_axis_3d_canvas.setup_scene)
           this.$refs.x_axis_3d_canvas.setup_scene(main_scene)
         }
         if(this.$refs.y_axis_3d_canvas){
