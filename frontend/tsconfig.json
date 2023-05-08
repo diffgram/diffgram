@@ -2,6 +2,7 @@
   "compilerOptions": {
 
   },
+  "esModuleInterop": true,
   "include": [
     "src/**/*",
     "node_modules/vuetify/src/globals.d.ts"

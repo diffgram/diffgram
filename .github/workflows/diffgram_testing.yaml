@@ -197,6 +197,6 @@ jobs:
       - run: cd frontend
       - uses: actions/setup-node@v2
         with:
-          node-version: "14"
+          node-version: "16"
       - run: yarn --cwd frontend install
       - run: yarn --cwd frontend run test:unit
