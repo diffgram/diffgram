@@ -46,7 +46,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     apparently uglify has been deprecated?
   https://github.com/webpack-contrib/terser-webpack-plugin
   */
-   
+
     /*
     new UglifyJsPlugin({
       uglifyOptions: {
@@ -60,7 +60,7 @@ const webpackConfig = merge(baseWebpackConfig, {
         nameCache: null,
         ie8: false,
         keep_fnames: false,
-   
+
       },
       sourceMap: config.build.productionSourceMap,
       parallel: true
@@ -71,7 +71,7 @@ const webpackConfig = merge(baseWebpackConfig, {
 
     // extract css into its own file
     new ExtractTextPlugin({
-      
+
       filename: utils.assetsPath('css/[name].[hash].css') ,
 
       allChunks: true
@@ -104,14 +104,12 @@ const webpackConfig = merge(baseWebpackConfig, {
         // more options:
         // https://github.com/kangax/html-minifier#options-quick-reference
       },
-      // necessary to consistently work with multiple chunks via CommonsChunkPlugin
-      chunksSortMode: 'dependency'
     }),
     // keep module.id stable when vendor modules does not change
     new webpack.HashedModuleIdsPlugin(),
     // enable scope hoisting
     new webpack.optimize.ModuleConcatenationPlugin(),
-    
+
 
     // https://stackoverflow.com/questions/49017682/webpack-4-migration-commonschunkplugin
 
