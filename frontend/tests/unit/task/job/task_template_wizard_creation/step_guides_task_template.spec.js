@@ -8,7 +8,7 @@ const localVue = createLocalVue();
 localVue.use(Vuex)
 localVue.use(VueRouter)
 const router = new VueRouter()
-
+jest.mock('../../../../../src/services/customInstance')
 let job = {
   name: 'test',
   label_mode: 'closed_all_available',
@@ -115,7 +115,7 @@ describe("step_guides_task_template.vue", () => {
     });
     const spy = jest.spyOn(axios, 'post')
     wrapper.vm.attach_selected()
-    expect(spy).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledTimes(2);
   });
 
 
