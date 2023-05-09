@@ -111,7 +111,7 @@ jobs:
     #    - run: yarn --cwd frontend/ run cypress install
     - run: yarn --cwd frontend/ build
     # Populate DB
-    - run: cd default/play_and_scripts/scripts; python setup_database_e2e_tests.py
+    - run: cd default/play_and_scripts/scripts; python3 setup_database_e2e_tests.py
     - name: "UI Tests - Chrome"
       uses: cypress-io/github-action@v4.0.0
       with:
