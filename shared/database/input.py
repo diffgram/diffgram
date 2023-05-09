@@ -59,6 +59,7 @@ class Input(Base):
     percent_complete = Column(Float, default = 0.0)
 
     description = Column(String())
+    text_data = Column(String())
     size = Column(Integer)
 
     archived = Column(Boolean, default = False)
@@ -227,6 +228,7 @@ class Input(Base):
         video_split_duration: int = None,
         file_metadata: dict = None,
         member_created_id: int = None,
+        text_data: str = None,
         ordinal: int = 0
     ):
         """
@@ -259,6 +261,7 @@ class Input(Base):
             directory_id = directory_id,
             connection_id = connection_id,
             bucket_name = bucket_name,
+            text_data = text_data,
             task_action = task_action,
             source_directory_id = source_directory_id,
             external_map_action = external_map_action,
