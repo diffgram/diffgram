@@ -1222,6 +1222,16 @@ class Process_Media():
         print(self.raw_text_file)
         return self.raw_text_file
 
+    def build_file_from_string(self, str_data: str):
+        # Get Raw file
+        import io
+        # create an empty file object for writing
+        file_obj = io.StringIO("")
+        # write to the file object
+        file_obj.write(str_data)
+        self.raw_text_file = file_obj
+        return self.raw_text_file
+
     def process_frame(self):
         """
         We don't create a file as we rely on Annotation_Update()
@@ -1562,7 +1572,13 @@ class Process_Media():
         """
         try:
             logger.debug(f"Started processing text file from input: {self.input_id}")
-            result = self.read_raw_text_file()
+            if self.input.type == 'from_text_data':
+                result = self.build_file_from_string(str_data = self.input.text_data)
+                raw_text = self.input.text_data
+            else:
+                result = self.read_raw_text_file()
+                raw_text = result.read()
+                raw_text = raw_text.decode('utf-8')
             if not result:
                 logger.error(f"Error reading text file {self.input.temp_dir_path_and_filename}")
             # Why is content_type needed here?
@@ -1595,15 +1611,15 @@ class Process_Media():
                 file_metadata = self.input.file_metadata,
                 text_tokenizer = 'nltk'
             )
-            raw_text = result.read()
-            raw_text = raw_text.decode('utf-8')
+
             self.save_text_tokens(raw_text, self.input.file)
             # Set success state for input.
             if self.input.media_type == 'text':
                 if self.input.status != "failed":
                     self.declare_success(self.input)
                 try:
-                    shutil.rmtree(self.input.temp_dir)  # delete directory
+                    if self.input.type != 'from_text_data':
+                        shutil.rmtree(self.input.temp_dir)  # delete directory
                 except OSError as exc:
                     logger.error("shutil error")
                     pass
@@ -2035,12 +2051,18 @@ class Process_Media():
 
         # TODO: Please review. On image there's a temp directory for resizing. But I don't feel the need for that here.
         logger.debug(f"Uploading text file from {self.input.temp_dir_path_and_filename}")
-
-        data_tools.upload_to_cloud_storage(
-            temp_local_path = self.input.temp_dir_path_and_filename,
-            blob_path = self.new_text_file.url_signed_blob_path,
-            content_type = "text/plain",
-        )
+        if self.input.type == 'from_text_data':
+            data_tools.upload_from_string(
+                string_data = self.input.text_data,
+                blob_path = self.new_text_file.url_signed_blob_path,
+                content_type = "text/plain",
+            )
+        else:
+            data_tools.upload_to_cloud_storage(
+                temp_local_path = self.input.temp_dir_path_and_filename,
+                blob_path = self.new_text_file.url_signed_blob_path,
+                content_type = "text/plain",
+            )
 
         self.new_text_file.url_signed = data_tools.build_secure_url(self.new_text_file.url_signed_blob_path,
                                                                     new_offset_in_seconds)

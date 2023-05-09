@@ -138,6 +138,7 @@ def input_packet(project_string_id):
             return jsonify(log = log), 400
         log = regular_log.default()
         connection_id_access_token = get_session_string()
+        print('ASDASDASD', input.get('original_filename'))
         diffgram_input = enqueue_packet(project_string_id = project_string_id,
                                         session = session,
                                         media_url = media_url,
@@ -156,6 +157,7 @@ def input_packet(project_string_id):
                                         frame_packet_map = untrusted_input.get('frame_packet_map', None),
                                         batch_id = untrusted_input.get('batch_id', None),
                                         type = input.get('type', None),
+                                        text_data = input.get('text_data', None),
                                         enqueue_immediately = False,
                                         connection_id_access_token = connection_id_access_token,
                                         mode = mode,
@@ -267,6 +269,7 @@ def enqueue_packet(project_string_id,
     project = Project.get(session, project_string_id)
     if connection_id_access_token is not None:
         image_metadata['connection_id_access_token'] = connection_id_access_token
+    print('TEXTT DATAAA', text_data)
     diffgram_input = Input.new(
         image_metadata = image_metadata,
         file_id = file_id,
