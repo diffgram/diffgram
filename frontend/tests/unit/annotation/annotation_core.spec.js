@@ -3,6 +3,8 @@ import Vuetify from "vuetify";
 import {shallowMount, createLocalVue} from "@vue/test-utils";
 import annotation_core from "@/components/annotation/image_and_video_annotation/annotation_core.vue";
 import * as InstanceUtils from "@/utils/instance_utils";
+import axios from "../../../src/services/customInstance";
+
 
 const vuetify = new Vuetify();
 const localVue = createLocalVue();
@@ -10,13 +12,18 @@ import '@/vue-canvas.js'
 
 localVue.use(Vuex);
 
+jest.mock('../../../src/services/customInstance')
 describe("Test annotation_core", () => {
   let props;
 
   beforeEach(() => {
+
     const store = new Vuex.Store({
       mutations: {
         'set_user_is_typing_or_menu_open': jest.fn(),
+        'set_instance_select_for_issue': jest.fn(),
+        'set_instance_select_for_merge': jest.fn(),
+        'set_view_issue_mode': jest.fn(),
       },
       getters: {
         get_clipboard: state => {
@@ -38,21 +45,39 @@ describe("Test annotation_core", () => {
           },
         },
         user: {
-          settings:{
-
-          }
+          settings: {}
         },
-        annotation_state:{
-
-        }
+        annotation_state: {}
 
       },
 
     })
     props = {
+      localVue,
       store,
-      propsData:{
-        label_schema:{
+      stubs: {
+        v_bg: {
+          props: {ord: 1},
+          template: '<span />',
+          methods: {draw: jest.fn()}
+        },
+        target_reticle: {
+          props: {ord: 1},
+          template: '<span />',
+          methods: {draw: jest.fn()}
+        },
+        canvas_instance_list: {
+          props: {ord: 1},
+          template: '<span />',
+          methods: {draw: jest.fn()}
+        },
+        ghost_instance_list_canvas: {props: {ord: 1}, template: '<span />', methods: {draw: jest.fn()}},
+        canvas_current_instance: {props: {ord: 1}, template: '<span />', methods: {draw: jest.fn()}},
+        current_instance_template: {props: {ord: 1}, template: '<span />', methods: {draw: jest.fn()}},
+
+      },
+      propsData: {
+        label_schema: {
           id: 1,
           name: 'test'
         },
@@ -60,6 +85,7 @@ describe("Test annotation_core", () => {
         image_annotation_ctx: {
           label_settings: {},
         },
+
         issues_ui_manager: {},
         annotation_ui_context: {
           current_image_annotation_ctx: {},
@@ -78,10 +104,13 @@ describe("Test annotation_core", () => {
         }
       },
       mocks: {
+        canvas_wrapper: {
+          style: {}
+        },
         $get_sequence_color: () => {
         },
         task: 1,
-        label_schema:{
+        label_schema: {
           id: 1,
           name: 'test'
         },
@@ -132,26 +161,32 @@ describe("Test annotation_core", () => {
     };
     document.getElementById = () => {
       return {
-        addEventListener(type, listener, options) {
-        },
-        getContext(s){
-
-        },
-        __vue__:{
+        __vue__: {
+          draw: () => {
+          },
           height: 1
-        }
-
+        },
+        getContext: () => {
+          return new CanvasRenderingContext2D()
+        },
+        draw: () => {
+        },
+        addEventListener: () => {
+        },
+        style: {}
       }
     }
   });
 
   it("Tests if annotation_core mounts successfully", () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+
+    const wrapper = shallowMount(annotation_core, props);
+
     expect(wrapper.html().includes('id="annotation_core"')).toBeTruthy();
   });
 
   it("Tests if any_frame_saving returns correct value", () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+    const wrapper = shallowMount(annotation_core, props);
     let result = wrapper.vm.any_frame_saving;
 
     expect(result).toBe(false)
@@ -165,14 +200,18 @@ describe("Test annotation_core", () => {
   });
 
   it("Tests if has_pending_frames returns correct value", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+
+    const wrapper = shallowMount(annotation_core, props);
+
     let result = wrapper.vm.has_pending_frames;
 
     expect(result).toBe(false)
 
     await wrapper.setProps({
-      has_pending_frames: true
+      has_pending_frames: true,
     })
+
+
     let result2 = wrapper.vm.has_pending_frames;
 
     expect(result2).toBe(true)
@@ -225,7 +264,7 @@ describe("Test annotation_core", () => {
   // });
 
   it("correctly calls create_instance_from_keypoints()", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+    const wrapper = shallowMount(annotation_core, props);
 
     // Image Case
     let new_instance = wrapper.vm.create_instance_from_keypoints(5, 8);
@@ -235,7 +274,7 @@ describe("Test annotation_core", () => {
   });
 
   it("correctly calls create_polygon()", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+    const wrapper = shallowMount(annotation_core, props);
     wrapper.vm.$refs.autoborder_alert.show_alert = () => {
     };
     wrapper.vm.$store.commit = () => {
@@ -251,7 +290,7 @@ describe("Test annotation_core", () => {
   });
 
   it("correctly calls set_keyframe_loading()", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+    const wrapper = shallowMount(annotation_core, props);
     wrapper.vm.set_keyframe_loading(true);
     expect(wrapper.vm.image_annotation_ctx.go_to_keyframe_loading).toEqual(true)
 
@@ -261,13 +300,15 @@ describe("Test annotation_core", () => {
   });
 
   it("correctly calls on_key_frame_loaded()", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+    const wrapper = shallowMount(annotation_core, props);
     wrapper.vm.$store.commit = () => {
     };
     wrapper.vm.load_frame_instances = () => {
     };
-    wrapper.vm.set_keyframe_loading = () => {};
-    wrapper.vm.add_image_process = () => {};
+    wrapper.vm.set_keyframe_loading = () => {
+    };
+    wrapper.vm.add_image_process = () => {
+    };
     const spy = jest.spyOn(wrapper.vm, 'load_frame_instances')
     const spy2 = jest.spyOn(wrapper.vm, 'set_keyframe_loading')
     const spy3 = jest.spyOn(wrapper.vm, 'add_image_process')
@@ -279,7 +320,7 @@ describe("Test annotation_core", () => {
   });
 
   it("correctly calls load_frame_instances()", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+    const wrapper = shallowMount(annotation_core, props);
     wrapper.vm.$store.commit = () => {
     };
     wrapper.vm.get_instances = () => {
@@ -294,8 +335,8 @@ describe("Test annotation_core", () => {
 
   it("correctly calls add_image_process()", async () => {
     const wrapper = shallowMount(annotation_core, {
-      ...props, canvas_wrapper: {}
-    }, localVue);
+      ...props, canvas_wrapper: {style: {}}
+    });
     wrapper.setData({
       canvas_wrapper: {
         style: {}
@@ -335,7 +376,7 @@ describe("Test annotation_core", () => {
   // });
 
   it("correctly calls add_instance_to_frame_buffer()", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+    const wrapper = shallowMount(annotation_core, props);
     wrapper.setData({
       image_annotation_ctx: {
         label_settings: {},
@@ -354,7 +395,7 @@ describe("Test annotation_core", () => {
   });
 
   it("correctly calls add_instance_to_file()", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+    const wrapper = shallowMount(annotation_core, props);
     wrapper.setData({
       image_annotation_ctx: {
         video_mode: true,
@@ -435,12 +476,14 @@ describe("Test annotation_core", () => {
 
 
   it("correctly calls paste_instance()", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
-    wrapper.vm.$store.commit = () => {}
+    const wrapper = shallowMount(annotation_core, props);
+    wrapper.vm.$store.commit = () => {
+    }
 
-    wrapper.setData({full_file_loading: false })
+    wrapper.setData({full_file_loading: false})
 
-    wrapper.vm.add_pasted_instance_to_instance_list = () => {}
+    wrapper.vm.add_pasted_instance_to_instance_list = () => {
+    }
 
     let test_instance = {};
     let frame_num = 6;
@@ -460,7 +503,7 @@ describe("Test annotation_core", () => {
 
   });
   it("correctly calls calculate_min_max_points()", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
+    const wrapper = shallowMount(annotation_core, props);
     // Curve type
     let instance = {
       type: 'point'
@@ -471,7 +514,7 @@ describe("Test annotation_core", () => {
     expect(instance.y_min).toBeUndefined();
     expect(instance.x_max).toBeUndefined();
     expect(instance.y_max).toBeUndefined();
-    instance.points = [{x:5, y:5}, {x:10, y:10}]
+    instance.points = [{x: 5, y: 5}, {x: 10, y: 10}]
     wrapper.vm.calculate_min_max_points(instance)
     expect(instance.x_min).toBe(5);
     expect(instance.y_min).toBe(5);
@@ -493,7 +536,7 @@ describe("Test annotation_core", () => {
     expect(instance.y_min).toBeUndefined();
     expect(instance.x_max).toBeUndefined();
     expect(instance.y_max).toBeUndefined();
-    instance.front_face ={
+    instance.front_face = {
       top_right: {x: 1, y: 1},
       bot_right: {x: 1, y: 1},
       top_left: {x: 1, y: 1},
@@ -537,8 +580,8 @@ describe("Test annotation_core", () => {
     expect(instance.y_min).toBeUndefined();
     expect(instance.x_max).toBeUndefined();
     expect(instance.y_max).toBeUndefined();
-    instance.p1 = {x: 5, y:8};
-    instance.p2 = {x: 55, y:78}
+    instance.p1 = {x: 5, y: 8};
+    instance.p2 = {x: 55, y: 78}
     wrapper.vm.calculate_min_max_points(instance)
     expect(instance.x_min).toBe(5);
     expect(instance.y_min).toBe(8);
@@ -559,31 +602,40 @@ describe("Test annotation_core", () => {
   });
 
   it("correctly pans when z key is pressed", async () => {
-    const wrapper = shallowMount(annotation_core, props, localVue);
-    wrapper.vm.$store.commit = () => {}
+    const wrapper = shallowMount(annotation_core, props);
+    wrapper.vm.$store.commit = () => {
+    }
 
-    wrapper.vm.move_position_based_on_mouse = () => {};
-    wrapper.vm.move_something = () => {};
+    wrapper.vm.move_position_based_on_mouse = () => {
+    };
+    wrapper.vm.move_something = () => {
+    };
     wrapper.vm.mouse_transform = () => ({x: 25, y: 25});
-    wrapper.vm.helper_difference_absolute = () => {};
-    wrapper.vm.update_mouse_style = () => {};
-    wrapper.vm.detect_other_polygon_points = () => {};
-    wrapper.vm.instance_insert_point = () => {};
-    wrapper.vm.generate_event_interactions = () => {};
+    wrapper.vm.helper_difference_absolute = () => {
+    };
+    wrapper.vm.update_mouse_style = () => {
+    };
+    wrapper.vm.detect_other_polygon_points = () => {
+    };
+    wrapper.vm.instance_insert_point = () => {
+    };
+    wrapper.vm.generate_event_interactions = () => {
+    };
 
     const spy = jest.spyOn(wrapper.vm, 'move_position_based_on_mouse');
     wrapper.setData({
       z_key: true,
       instance_type: 'polygon',
       mouse_position: {x: 25, y: 25},
-      current_polygon_point_list: [{x:1, y:1}],
+      current_polygon_point_list: [{x: 1, y: 1}],
       canvas_element: {
-        style:{
+        style: {
           cursor: 'auto'
         }
       },
       canvas_mouse_tools: {
-        mouse_transform: () => {}
+        mouse_transform: () => {
+        }
       }
     })
     let event = {};

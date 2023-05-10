@@ -39,6 +39,7 @@ describe("Test sensor_fusion_editor.vue", () => {
       actions,
       mutations: {
         'set_user_is_typing_or_menu_open': jest.fn(),
+        'set_instance_select_for_merge': jest.fn(),
       },
       state: {
         project: {
@@ -64,6 +65,7 @@ describe("Test sensor_fusion_editor.vue", () => {
           }
         };
       },
+
       localVue: localVue,
       store: store,
       propsData: {
