@@ -49,6 +49,7 @@ def input_packet(project_string_id):
                  {'directory_id': None},
                  {'original_filename': None},
                  {'raw_data_blob_path': None},
+                 {'text_data': None},
                  {'parent_file_id': {
                      "required": False,
                      "kind": int
@@ -155,6 +156,7 @@ def input_packet(project_string_id):
                                         frame_packet_map = untrusted_input.get('frame_packet_map', None),
                                         batch_id = untrusted_input.get('batch_id', None),
                                         type = input.get('type', None),
+                                        text_data = input.get('text_data', None),
                                         enqueue_immediately = False,
                                         connection_id_access_token = connection_id_access_token,
                                         mode = mode,
@@ -218,6 +220,7 @@ def enqueue_packet(project_string_id,
                    extract_labels_from_batch = False,
                    connection_id_access_token = False,
                    member = None,
+                   text_data: str = None,
                    ordinal: int = 0):
     """
             Creates Input() object and enqueues it for media processing
@@ -265,6 +268,7 @@ def enqueue_packet(project_string_id,
     project = Project.get(session, project_string_id)
     if connection_id_access_token is not None:
         image_metadata['connection_id_access_token'] = connection_id_access_token
+    print('TEXTT DATAAA', text_data)
     diffgram_input = Input.new(
         image_metadata = image_metadata,
         file_id = file_id,
@@ -276,6 +280,7 @@ def enqueue_packet(project_string_id,
         video_parent_length = video_parent_length,
         remove_link = remove_link,
         add_link = add_link,
+        text_data = text_data,
         copy_instance_list = copy_instance_list,
         external_map_id = external_map_id,
         original_filename = original_filename,
@@ -324,6 +329,20 @@ def enqueue_packet(project_string_id,
     return diffgram_input
 
 
+def validate_input_from_text_data(input: dict, log: dict):
+    if input.get('media') is None or input.get('media') == {}:
+        log['error'] = {}
+        log['error']['media'] = 'Provide media data. Needs to be {"type": str, "url": str<optional>}'
+
+    if input.get('media') is not None and input['media'].get('type') is None:
+        log['error'] = {}
+        log['error']['media.type'] = 'Provide media type needs to be ["text"]'
+
+    if input.get('text_data') is None:
+        log['error'] = {}
+        log['error']['text_data'] = 'Provide "text_data" as a string.'
+
+    return log
 def validate_input_from_blob_path(project: Project, input: dict, session: Session, log: dict):
     if input.get('connection_id') is None:
         log['error'] = {}
@@ -388,6 +407,15 @@ def validate_file_data_for_input_packet(session, input, project_string_id, log):
             return False, log, None
         else:
             return True, log, None
+    if input.get('type') == 'from_text_data':
+        log = validate_input_from_text_data(
+            input = input,
+            log = log
+        )
+        if regular_log.log_has_error(log):
+            return False, log, None
+        else:
+            return True, log, None
     valid_id = False
     valid_media_url = False
     valid_file_name = False
@@ -399,7 +427,7 @@ def validate_file_data_for_input_packet(session, input, project_string_id, log):
         media_type = None
 
     file_id = None
-    if input.get('file_id') is None:
+    if input.get('file_id') is None and input.get('type') != 'from_text_data':
         # Validate Media URL Case
         if media_url is None:
             log['error'] = {}
