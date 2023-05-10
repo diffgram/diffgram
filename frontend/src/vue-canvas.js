@@ -22,6 +22,7 @@ import Vue from 'vue'
         });
 
         drawFuncs[uid] = children.map(function (child) {
+          console.log('AAAAA', child)
           return child.componentInstance.draw;
         });
       }

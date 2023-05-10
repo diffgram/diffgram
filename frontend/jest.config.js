@@ -1,12 +1,13 @@
 module.exports = {
   moduleDirectories: ["node_modules", "<rootDir>"],
   moduleFileExtensions: ["js", "ts", "json", "vue"],
+
   transform: {
     "^.+\\.js$": "babel-jest",
-    ".*\\.(vue)$": "vue-jest",
+    ".*\\.(vue)$": "@vue/vue2-jest",
     "^.+\\.tsx?$": "ts-jest",
   },
-
+  "testEnvironment": "jsdom",
   transformIgnorePatterns: [
     "node_modules/(?!(three"
     + "|ol"

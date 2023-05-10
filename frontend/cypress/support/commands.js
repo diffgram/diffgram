@@ -862,7 +862,6 @@ Cypress.Commands.add('upload_3d_file', function (project_string_id, file_name = 
 
             xhr.open("POST", `/api/walrus/project/${store.state.project.current.project_string_id}/upload/large`,);
 
-            xhr.setRequestHeader("Authorization", `Bearer ${window.testToken}`);
 
             await xhr.send(data);
           })

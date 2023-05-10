@@ -43,9 +43,7 @@ describe("Test annotation_ui_factory.vue", () => {
       mocks: {
         $get_sequence_color: () => {
         },
-        $route:{
 
-        },
         task: 1,
         label_schema:{
           id: 1,
@@ -98,7 +96,7 @@ describe("Test annotation_ui_factory.vue", () => {
     };
   });
 
-  it("Tests if annotation_core mounts successfully", () => {
+  it("Tests if ui factory mounts successfully", () => {
     const wrapper = shallowMount(annotation_ui_factory, props);
     expect(wrapper.html().includes('id="annotation_factory_container"')).toBeTruthy();
   });
