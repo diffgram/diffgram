@@ -359,7 +359,7 @@ jobs:
           echo "diffgram_version=${{ steps.comment-branch.outputs.head_ref }}" >> $GITHUB_ENV
 
       - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v4
+        uses: rlespinasse/github-slug-action@v4.4.1
         with:
           slug-maxlength: 30
 

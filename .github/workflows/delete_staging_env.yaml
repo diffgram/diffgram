@@ -9,7 +9,7 @@ jobs:
     environment: staging
     steps:
       - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v4
+        uses: rlespinasse/github-slug-action@v4.4.1
         with:
           slug-maxlength: 30
 
