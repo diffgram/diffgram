@@ -210,11 +210,16 @@ export const project = {
         return
       }
 
-      const role = member.permission_level[0]
-      if(!role){
-        return false
+      for (const role of member.permission_level){
+        if(!role){
+          continue
+        }
+        if(roles_list.includes(role.toLowerCase())){
+          return true
+        }
       }
-      return roles_list.includes(role.toLowerCase())
+      return false
+
     },
     get_current_project_role: state =>  (member_id) => {
       if(!state.current){

@@ -101,7 +101,7 @@
 
             <div v-if="mode=='project'">
               <div v-if="props.item.member_kind == 'human'">
-                {{props.item.permission_level[0]}}
+                {{props.item.permission_level}}
               </div>
             </div>
 
