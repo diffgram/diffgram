@@ -157,8 +157,6 @@
     "http-server": "^0.12.3",
     "jest": "^27.5.1",
     "jest-runner": "^27.5.1",
-    "jsdoc": "^3.6.6",
-    "jsdoc-vuejs": "^3.0.9",
     "jsdom": "^16.4.0",
     "jsdom-global": "^3.0.2",
     "moxios": "^0.4.0",
