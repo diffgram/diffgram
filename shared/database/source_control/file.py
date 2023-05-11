@@ -682,7 +682,7 @@ class File(Base, Caching):
         """
         # Defer image copy is specified in the parameter.
         start_time = time.time()
-
+        print('COPY FROM EXSITING', defer_copy)
         if working_dir:
             working_dir_id = working_dir.id
 
@@ -706,8 +706,10 @@ class File(Base, Caching):
                                 'frame_count': existing_file.video.frame_count if existing_file.video else None
                                 }
             )
+            msg =  'File copy in progress. Please check progress in the file operations progress section.'
             log['info'][
-                'message'] = 'File copy in progress. Please check progress in the file operations progress section.'
+                'message'] = msg
+            logger.info(msg)
             return
 
         file = new_file_database_object_from_existing(session)
@@ -720,8 +722,19 @@ class File(Base, Caching):
         file.project_id = existing_file.project_id
 
         file.image_id = existing_file.image_id
+        file.connection_id = existing_file.connection_id
         file.text_file_id = existing_file.text_file_id
         file.audio_file_id = existing_file.audio_file_id
+        file.ann_is_complete = existing_file.ann_is_complete
+        file.has_some_machine_made_instances = existing_file.has_some_machine_made_instances
+        file.instance_type_count = existing_file.instance_type_count
+        file.file_metadata = existing_file.file_metadata
+        file.ui_schema_id = existing_file.ui_schema_id
+        file.text_tokenizer = existing_file.text_tokenizer
+        file.is_root = existing_file.is_root
+        file.ordinal = existing_file.ordinal
+        file.default_external_map_id = existing_file.default_external_map_id
+        file.point_cloud_id = existing_file.point_cloud_id
         file.label_id = existing_file.label_id
         file.video_id = existing_file.video_id
         file.parent_id = new_parent_id
@@ -752,18 +765,15 @@ class File(Base, Caching):
 
         logger.debug(f"existing_file.type {existing_file.type}")
         logger.debug(f"copy_instance_list {copy_instance_list}")
-        if existing_file.type in ['image', 'frame'] and copy_instance_list is True:
-
+        if existing_file.type in ['image', 'frame', 'audio', 'geospatial', 'text', 'sensor_fusion', 'compound'] and copy_instance_list is True:
             file.count_instances_changed = existing_file.count_instances_changed
             file.set_cache_key_dirty('instance_list')
-
             instance_list = Instance.list(
                 session = session,
                 file_id = existing_file.id,
                 limit = None)  # Excludes removed by default
             logger.debug(f"instance_list len {len(instance_list)}")
             for instance in instance_list:
-
                 instance_sequence_id = instance.sequence_id
                 if sequence_map is not None:
                     logger.debug(f"sequence_map {sequence_map}")
@@ -781,26 +791,67 @@ class File(Base, Caching):
                     width = instance.width,
                     height = instance.height,
                     label_file_id = instance.label_file_id,
+                    is_template = instance.is_template,
+                    attribute_groups = instance.attribute_groups if instance.attribute_groups else {},
                     hash = instance.hash,
+                    nodes = instance.nodes if instance.nodes else {'nodes': []},
+                    edges = instance.edges if instance.edges else {'edges': []},
+                    points = instance.points if instance.points else {'points': []},
+                    mask_url = instance.mask_url,
+                    mask_blob_dir = instance.mask_blob_dir if instance.mask_blob_dir else {'list': []},
+                    mask_url_expiry = instance.mask_url_expiry ,
                     type = instance.type,
+                    status = instance.status,
+                    start_sentence = instance.start_sentence,
+                    end_sentence = instance.end_sentence,
+                    start_token = instance.start_token,
+                    end_token = instance.end_token,
+                    start_char = instance.start_char,
+                    end_char = instance.end_char,
+                    sentence = instance.sentence,
+                    lonlat = instance.lonlat,
+                    coords = instance.coords,
+                    bounds = instance.bounds,
+                    bounds_lonlat = instance.bounds_lonlat,
+                    radius = instance.radius,
+                    start_time = instance.start_time,
+                    end_time = instance.end_time,
+
+                    model_id = instance.model_id,
+                    model_run_id = instance.model_run_id,
+                    change_source = instance.change_source,
                     number = instance.number,
                     frame_number = instance.frame_number,
                     global_frame_number = instance.global_frame_number,
                     machine_made = instance.machine_made,
-                    points = instance.points,
                     soft_delete = instance.soft_delete,
                     center_x = instance.center_x,
                     center_y = instance.center_y,
                     angle = instance.angle,
-                    p1 = instance.p1,
-                    p2 = instance.p2,
-                    cp = instance.cp,
+                    p1 = instance.p1 if instance.p1 else {},
+                    p2 = instance.p2 if instance.p2 else {},
+                    cp = instance.cp if instance.cp else {},
                     interpolated = instance.interpolated,
-                    front_face = instance.front_face,
-                    rear_face = instance.rear_face,
-                    creation_ref_id = instance.creation_ref_id
+                    front_face = instance.front_face if instance.front_face else {},
+                    rear_face = instance.rear_face  if instance.rear_face else {},
+                    creation_ref_id = instance.creation_ref_id,
+                    # Cuboids
+                    rotation_euler_angles = instance.rotation_euler_angles if instance.rotation_euler_angles else {},
+                    position_3d = instance.position_3d if instance.position_3d else {},
+                    center_3d = instance.center_3d if instance.center_3d else {},
+                    max_point_3d = instance.max_point_3d if instance.max_point_3d else {},
+                    min_point_3d = instance.min_point_3d if instance.min_point_3d else {},
+                    dimensions_3d = instance.dimensions_3d if instance.dimensions_3d else {},
+                    text_tokenizer = instance.text_tokenizer,
+                    from_instance_id = instance.from_instance_id,
+                    to_instance_id = instance.to_instance_id,
+                    score = instance.score,
+                    member_created_id = instance.member_created_id,
+
+
                 )
                 session.add(new_instance)
+
 
         end_time = time.time()
         if flush_session:
