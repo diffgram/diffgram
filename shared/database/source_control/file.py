@@ -682,7 +682,6 @@ class File(Base, Caching):
         """
         # Defer image copy is specified in the parameter.
         start_time = time.time()
-        print('COPY FROM EXSITING', defer_copy)
         if working_dir:
             working_dir_id = working_dir.id
 
