@@ -209,7 +209,6 @@ class Share_Project():
     def new(self):
 
         # NEW is untested after refactor
-
         spec_list = [
             {'email': str},
             {'permission_type': str},
@@ -249,6 +248,8 @@ class Share_Project():
                 user = self.user_to_modify,
                 sub_type = self.project_string_id,
                 log = self.log)
+            if permission_result is False or regular_log.log_has_error(self.log):
+                return
 
             RoleMemberObject.new(
                 session = self.session,
@@ -291,7 +292,6 @@ class Share_Project():
 
             signup_link = f'{settings.URL_BASE}user/new?code={signup_code.code}&email={signup_code.email_sent_to}' \
                           f'&project={self.project_string_id}'
-
             self.invite_user(
                 signup_link = signup_link,
                 role_name = input['permission_type'],
@@ -369,27 +369,29 @@ class Share_Project():
             self.log['error']['permission_error'] = "Check right user / project combination"
             return
 
-        # Assumes first permission
-        user_current_permission = self.user_to_modify.permissions_projects[self.project_string_id][0]
+        # Remove all permissions
+        current_perms = self.user_to_modify.permissions_projects[self.project_string_id].copy()
+        for i in range(0, len(current_perms)):
+            user_current_permission = current_perms[i]
+            # user_current_permission = self.user_to_modify.permissions_projects[self.project_string_id][0]
 
-        deletion = Deletion(project = self.project,
-                            member_created = self.user_who_made_request.member,
-                            mode = 'remove_users_project_permission')
-        self.session.add(deletion)
+            deletion = Deletion(project = self.project,
+                                member_created = self.user_who_made_request.member,
+                                mode = 'remove_users_project_permission')
+            self.session.add(deletion)
 
-        deletion.cache = {}
-        deletion.cache['user_modified'] = self.user_to_modify.id
+            deletion.cache = {}
+            deletion.cache['user_modified'] = self.user_to_modify.id
 
-        deletion.cache['permissions'] = user_current_permission
+            deletion.cache['permissions'] = user_current_permission
 
-        # TODO error handling here...
-        Project_permissions.remove(
-            session = self.session,
-            permission = user_current_permission,
-            user = self.user_to_modify,
-            sub_type = self.project_string_id,
-            log = self.log)
-
+            # TODO error handling here...
+            Project_permissions.remove(
+                session = self.session,
+                permission = user_current_permission,
+                user = self.user_to_modify,
+                sub_type = self.project_string_id,
+                log = self.log)
         self.session.add(self.user_to_modify)
         self.user_to_modify.projects.remove(self.project)
 
