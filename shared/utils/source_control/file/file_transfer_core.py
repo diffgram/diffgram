@@ -148,6 +148,7 @@ def file_transfer_core(
 
     """
     new_file = None
+    print('NEW COPY ', file.id, defer_copy)
     if transfer_action == "copy":
         new_file = File.copy_file_from_existing(
             session = session,
@@ -163,6 +164,7 @@ def file_transfer_core(
             batch_id = batch_id,
             new_parent_id = new_parent_id
         )
+        print('COPIED FILE IS', new_file)
         session.flush()
         if defer_copy:
             return log

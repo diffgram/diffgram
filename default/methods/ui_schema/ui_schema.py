@@ -244,8 +244,6 @@ def __ui_schema_update(
     }
 
     for key, value in all_ui_schema_specs.items():
-        print('KEY', key)
-        print('VAL', value)
         if untrusted_input.get(key):
 
             log, result = regular_input.input_check_many(
