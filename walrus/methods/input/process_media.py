@@ -693,7 +693,7 @@ class Process_Media():
 
     def __copy_file(self):
         logger.debug(f"Copying file type: {self.input.media_type} {self.input.file_id}")
-        print('COPY FILEEEE')
+        print('COPY FILEEEE', self.input.file.id)
         self.input.newly_copied_file = File.copy_file_from_existing(
             session = self.session,
             working_dir = None,
@@ -706,11 +706,13 @@ class Process_Media():
             previous_video_parent_id = None,
             flush_session = True,
         )
-        print('CHECKING TYPE.....')
+        print('newly_copied_file', self.input.newly_copied_file.id)
         if self.input.file.type == 'compound':
             child_files = self.input.file.get_child_files(session = self.session)
+            print('child_files',child_files)
             for child in child_files:
-                self.input.newly_copied_file = File.copy_file_from_existing(
+                print('copy child', child.id)
+                File.copy_file_from_existing(
                     session = self.session,
                     working_dir = None,
                     working_dir_id = self.input.directory_id,

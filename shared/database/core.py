@@ -43,7 +43,6 @@ class MutableDict(Mutable, dict):
     @classmethod
     def coerce(cls, key, value):
         "Convert plain dictionaries to MutableDict."
-        print('KEY', key, 'vall', value)
         if not isinstance(value, MutableDict):
             if isinstance(value, dict):
                 return MutableDict(value)
