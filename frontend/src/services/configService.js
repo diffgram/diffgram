@@ -69,3 +69,12 @@ export const get_large_api_chunk_size = async () => {
     return error
   }
 }
+
+export const get_version = async () => {
+  try {
+    let res = await axios.get('/api/configs/version')
+    return res.data
+  } catch(error) {
+    return error
+  }
+}

@@ -6,8 +6,11 @@
 
         <v-card-title>
           <h1>Settings</h1>
-        </v-card-title>
 
+        </v-card-title>
+        <v-card-subtitle class="pt-2">
+          <h5>Diffgram Version: <v-chip x-small>{{version}}</v-chip></h5>
+        </v-card-subtitle>
         <v-container>
         <v-card>
           <v-container>
@@ -76,24 +79,74 @@
               <v_error_multiple :error="error_multiple">
               </v_error_multiple>
 
-              <v-layout column>
+              <v-layout column  class="d-flex">
 
 
-               <!-- Project public start -->
-              <v-flex v-if="project.is_public != true">
+                 <!-- Project public start -->
+                <v-flex class="d-flex align-center justify-start" v-if="project.is_public != true">
+                  <v-alert type="info">
+                    Project is private.
+                  </v-alert>
+                  <v-dialog v-model="project_public_dialog"
+                            >
 
-                <v-alert type="info">
-                  Project is private.
-                </v-alert>
+                    <template v-slot:activator="{ on }">
+                      <v-btn color="error"
+                             v-on="on">
+                        <v-icon left> mdi-earth </v-icon>
+                        make public
+                      </v-btn>
+                    </template>
 
-                <v-dialog v-model="project_public_dialog"
-                          >
+                    <v-card>
+                      <v-container>
+                        <v-alert type="warning">
 
+                          The project will be viewable by all users on the public internet.
+
+                        </v-alert>
+                        <br />
+                        <h2> Type project string id <kbd>{{project_string_id}}</kbd></h2>
+                        <v-text-field label="Project string id"
+                                      v-model="project_string_id_confirm_public"
+                                      :rules="[rules.project_public]">
+                        </v-text-field>
+
+                        <v-btn @click="api_project_update('MAKE_PUBLIC')"
+                               color="error"
+                               :disabled="!project_public_check_passed || api_project_update_loading">
+                          Confirm make public
+                        </v-btn>
+
+                      </v-container>
+                    </v-card>
+
+                  </v-dialog>
+                </v-flex>
+                <!-- Public end -->
+
+                <v-flex v-if="project.is_public == true">
+
+                  <v-alert type="warning">
+                    Project is public.
+                  </v-alert>
+
+                  <v-btn @click="api_project_update('MAKE_PRIVATE')"
+                          color="primary"
+                          :disabled="api_project_update_loading">
+                    <v-icon left> lock </v-icon>
+                    Make private
+                  </v-btn>
+                </v-flex>
+                <v-divider class="ma-2"></v-divider>
+                <!-- Shutdown project start -->
+                <v-flex>
+                  <v-dialog v-model="project_delete_dialog">
                   <template v-slot:activator="{ on }">
                     <v-btn color="error"
                            v-on="on">
-                      <v-icon left> mdi-earth </v-icon>
-                      make public
+                      <v-icon left> delete </v-icon>
+                      shutdown project
                     </v-btn>
                   </template>
 
@@ -101,80 +154,28 @@
                     <v-container>
                       <v-alert type="warning">
 
-                        The project will be viewable by all users on the public internet.
-
+                        The project will be immediately inaccessible.
+                        All data associated with the project may be deleted in approximately 30 days.
                       </v-alert>
                       <br />
                       <h2> Type project string id <kbd>{{project_string_id}}</kbd></h2>
                       <v-text-field label="Project string id"
-                                    v-model="project_string_id_confirm_public"
-                                    :rules="[rules.project_public]">
+                                    v-model="project_string_id_confirm"
+                                    :rules="[rules.project_delete]">
                       </v-text-field>
 
-                      <v-btn @click="api_project_update('MAKE_PUBLIC')"
+                      <v-btn @click="api_project_update('DELETE')"
                              color="error"
-                             :disabled="!project_public_check_passed || api_project_update_loading">
-                        Confirm make public
+                             :disabled="!project_delete_check_passed || api_project_update_loading">
+                        Confirm shutdown project
                       </v-btn>
 
                     </v-container>
                   </v-card>
 
                 </v-dialog>
-              </v-flex>
-              <!-- Public end -->
-
-              <v-flex v-if="project.is_public == true">
-
-                <v-alert type="warning">
-                  Project is public.
-                </v-alert>
-
-                <v-btn @click="api_project_update('MAKE_PRIVATE')"
-                        color="primary"
-                        :disabled="api_project_update_loading">
-                  <v-icon left> lock </v-icon>
-                  Make private
-                </v-btn>
-              </v-flex>
-
-              <!-- Shutdown project start -->
-                <v-flex>
-              <v-dialog v-model="project_delete_dialog">
-                <template v-slot:activator="{ on }">
-                  <v-btn color="error"
-                         v-on="on">
-                    <v-icon left> delete </v-icon>
-                    shutdown project
-                  </v-btn>
-                </template>
-
-                <v-card>
-                  <v-container>
-                    <v-alert type="warning">
-
-                      The project will be immediately inaccessible.
-                      All data associated with the project may be deleted in approximately 30 days.
-                    </v-alert>
-                    <br />
-                    <h2> Type project string id <kbd>{{project_string_id}}</kbd></h2>
-                    <v-text-field label="Project string id"
-                                  v-model="project_string_id_confirm"
-                                  :rules="[rules.project_delete]">
-                    </v-text-field>
-
-                    <v-btn @click="api_project_update('DELETE')"
-                           color="error"
-                           :disabled="!project_delete_check_passed || api_project_update_loading">
-                      Confirm shutdown project
-                    </v-btn>
-
-                  </v-container>
-                </v-card>
-
-              </v-dialog>
-                  </v-flex>
-              <!-- Shutdown project end -->
+                </v-flex>
+                <!-- Shutdown project end -->
 
               </v-layout>
 
@@ -220,7 +221,8 @@
 <script lang="ts">
 // @ts-nocheck
 
-import axios from '../../services/customInstance';
+import axios from '../../services/customInstance/index.js';
+import {get_version}  from '../../services/configService.js';
 
 import Vue from "vue";
 import {create_event} from "../event/create_event";
@@ -235,6 +237,7 @@ export default Vue.extend( {
       },
 
       project_string_id_confirm: "",
+      version: "",
 
       project_delete_dialog: false,
 
@@ -294,10 +297,19 @@ export default Vue.extend( {
   created() {
    this.project = this.$store.state.project.current
   },
-  mounted(){
+  async mounted(){
     this.add_visit_history_event();
+    await this.get_diffgram_version();
   },
     methods: {
+      get_diffgram_version: async function(){
+        try{
+          const version_data = await get_version()
+          this.version = version_data.version
+        } catch (e){
+          console.error(e)
+        }
+      },
       regenerate_file_stats: async function(){
         try{
 
