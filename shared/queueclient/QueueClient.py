@@ -10,6 +10,7 @@ class QueueNames(Enum):
     action_triggers = 'actions.triggers'
     events_new = 'event.new'
     job_tasks = 'job.tasks'
+    scheduler_tasks = 'scheduler.tasks'
 
 
 class Exchanges(Enum):
@@ -17,12 +18,14 @@ class Exchanges(Enum):
     events = 'events'
     exports = 'exports'
     jobs = 'jobs'
+    scheduler = 'scheduler'
 
 
 class RoutingKeys(Enum):
     action_trigger_event_new = 'actions.new_actions_trigger'
     event_new = 'events.new'
     job_add_task = 'job.add_task'
+    scheduler = 'scheduler.all'
 
 
 class QueueClient:

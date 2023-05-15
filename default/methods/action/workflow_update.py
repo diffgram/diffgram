@@ -2,7 +2,7 @@ from methods.regular.regular_api import *
 from shared.database.action.action import Action
 from shared.database.action.workflow import Workflow
 from flasgger import swag_from
-
+from action_update import remove_task_scheduling
 
 @routes.route('/api/v1/project/<string:project_string_id>' +
               '/actions/workflow/update',
@@ -79,6 +79,7 @@ def flow_update_core(
     if mode == "ARCHIVE":
         workflow.archived = True
         workflow.active = False
+        remove_task_scheduling(workflow_id = workflow.id)
         session.add(workflow)
 
         return log
@@ -90,6 +91,8 @@ def flow_update_core(
 
         workflow.name = name
         workflow.active = active
+        if not workflow.active:
+            remove_task_scheduling(workflow_id = workflow.id)
         workflow.time_window = time_window
         workflow.member_updated = member
 
