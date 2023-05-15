@@ -218,7 +218,9 @@ import VueQriously from 'vue-qriously'
 Vue.use(VueQriously)
 
 Vue.config.productionTip = false
-
+import CronVuetify from '@vue-js-cron/vuetify'
+import '@vue-js-cron/vuetify/dist/vuetify.css'
+Vue.use(CronVuetify)
 // This is the "Full" install as we bring in vuetify
 // and the full css file
 // and pass the options straight in.

@@ -25,6 +25,12 @@
         label="Select Task Template"
         :select_this_id="action.config_data.task_template_id"
     />
+    <div v-if="action.trigger_data.event_name === 'time_trigger'">
+      <h2>Trigger Every: </h2>
+      <CronVuetify v-model="action.trigger_data.cron_expression" @error="error=$event"></CronVuetify>
+      <div class="mt-2 grey--text text--darken-1">cron expression: {{action.trigger_data.cron_expression}}</div>
+
+    </div>
   </div>
 </template>
 
@@ -32,7 +38,7 @@
 import Vue from "vue";
 import {Action} from "../Action";
 import global_dataset_selector from "../../attached/global_dataset_selector.vue"
-
+// import {CronVuetify} from '@vue-js-cron/vuetify'
 export default Vue.extend({
     name: 'trigger_config',
     props: {
@@ -65,7 +71,9 @@ export default Vue.extend({
     data() {
       return {
         is_open: true,
+        error: null,
         search: '',
+        cron: '',
         default_triggers_list: [
           {
             name: 'Previous Step Completed',

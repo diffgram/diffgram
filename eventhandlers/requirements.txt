@@ -39,3 +39,4 @@ labelbox==3.16.0
 google-cloud-aiplatform
 azure-ai-textanalytics
 newrelic
+apscheduler==3.10.1
