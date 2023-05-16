@@ -10,14 +10,10 @@ class MongoDBTextFileImportAction(ActionRunner):
     icon = 'https://www.svgrepo.com/show/46774/export.svg'
     kind = 'MongoDBTextFileImport'  # The kind has to be unique to all actions
     category = 'some_category'  # Optional
-
+    precondition = ActionCondition(default_event = None, event_list = [])
     # What events can this action listen to?
     trigger_data = ActionTrigger(default_event = 'some_diffgram_event',
                             event_list = ['some_diffgram_event'])
-
-    # What pre-conditions can this action have?
-    condition_data = ActionCondition(default_event = 'some_diffgram_event',
-                                     event_list = ['some_diffgram_event'])
 
     # How to declare the actions as completed?
     completion_condition_data = ActionCompleteCondition(default_event = 'some_diffgram_event',

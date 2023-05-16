@@ -137,10 +137,10 @@ class User(Base):
     follow_ing_count = Column(Integer, default = 0)  # ADD to db
     follow_ers_count = Column(Integer, default = 0)
 
-    follow_ing_list = relationship("UserFollow",
-                                   foreign_keys = "UserFollow.user_id")
-    follow_ers_list = relationship("UserFollow",
-                                   foreign_keys = "UserFollow.following_user_id")
+    # follow_ing_list = relationship("UserFollow",
+    #                                foreign_keys = "UserFollow.user_id")
+    # follow_ers_list = relationship("UserFollow",
+    #                                foreign_keys = "UserFollow.following_user_id")
 
     # See builder_signup.py
     signup_role = Column(String())  # ie [leadership, product, engineering, student, other]

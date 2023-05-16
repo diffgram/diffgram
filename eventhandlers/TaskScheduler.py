@@ -8,6 +8,7 @@ from shared.helpers import sessionMaker
 logger = get_shared_logger()
 
 
+
 # TODO: move this module to its own independent service to allow eventhandlers to scale horizontally.
 class DiffgramTaskScheduler:
     scheduler: BackgroundScheduler
@@ -48,12 +49,14 @@ class DiffgramTaskScheduler:
         return self.scheduler.get_jobs(jobstore)
 
     def __init__(self, db_engine):
-        self.store = SQLAlchemyJobStore(engine = db_engine, url = settings.DATABASE_URL)
+        self.store = SQLAlchemyJobStore(engine = db_engine, tablename = 'scheduler_jobs')
         self.scheduler = BackgroundScheduler(
             jobstores = {'default': self.store}
         )
 
     def start(self):
+        print('lalalala')
+        logger.info("123123123123")
         self.scheduler.start()
         logger.info('Task Scheduler Started')
 

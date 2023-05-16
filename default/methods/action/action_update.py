@@ -14,7 +14,8 @@ from werkzeug.utils import secure_filename
 from shared.image_tools import imresize
 from imageio import imwrite
 from flasgger import swag_from
-from shared.queueclient.QueueClient import RoutingKeys, Exchanges, QueueClient
+from shared.scheduler.job_scheduling import add_job_scheduling, remove_job_scheduling
+
 
 @routes.route('/api/v1/project/<string:project_string_id>/actions/<int:action_id>',
               methods = ['PUT'])
@@ -40,20 +41,20 @@ def api_action_update(project_string_id, action_id):
         {'archived': bool},
         {'precondition':
             {
-            'default': None,
-            'kind': dict
+                'default': None,
+                'kind': dict
             }
         },
-        {'trigger_data': 
+        {'trigger_data':
             {
-            'default': None,
-            'kind': dict
+                'default': None,
+                'kind': dict
             }
         },
-        {'completion_condition_data': 
+        {'completion_condition_data':
             {
-            'default': None,
-            'kind': dict
+                'default': None,
+                'kind': dict
             }
         },
         {
@@ -111,27 +112,6 @@ def api_action_update(project_string_id, action_id):
                       log = log)
         return out, 200
 
-def remove_task_scheduling(workflow_id):
-    msg_data = {
-        'workflow_id': workflow_id,
-        'action': 'remove',
-    }
-    # Send message for batch processing on Rabbit
-    queueclient = QueueClient()
-    queueclient.send_message(message = msg_data,
-                             routing_key = RoutingKeys.job_add_task.value,
-                             exchange = Exchanges.jobs.value)
-
-def add_task_scheduling(workflow_id):
-    msg_data = {
-        'workflow_id': workflow_id,
-        'action': 'add',
-    }
-    # Send message for batch processing on Rabbit
-    queueclient = QueueClient()
-    queueclient.send_message(message = msg_data,
-                             routing_key = RoutingKeys.job_add_task.value,
-                             exchange = Exchanges.jobs.value)
 
 def action_update_core(session: Session,
                        project: Project,
@@ -159,7 +139,7 @@ def action_update_core(session: Session,
 
     action_template = Action_Template.get_by_id(session = session, id = template_id)
     if action_template is None:
-        log['error']['action_template'] = f'Action template id {action_template_id} not found'
+        log['error']['action_template'] = f'Action template id {template_id} not found'
         return False, log
 
     action = Action.get_by_id(session = session, id = action_id, project_id = project.id)
@@ -186,20 +166,13 @@ def action_update_core(session: Session,
     for key, val in data_to_update.items():
         setattr(action, key, val)
     # Update Scheduler if first action and time schedule set
-    if trigger_data.get('event_name') == 'time_trigger' and trigger_data.get('cron_expression'):
-        msg_data = {
-            'workflow_id': workflow_id,
-            'member_id': member.id,
-            'action_id': action_id,
-        }
+    if trigger_data.get('event_name') == 'time_trigger' and trigger_data.get(
+            'cron_expression') and action.workflow.active:
         # Send message for batch processing on Rabbit
-        queueclient = QueueClient()
-        queueclient.send_message(message = msg_data,
-                                 routing_key = RoutingKeys.job_add_task.value,
-                                 exchange = Exchanges.jobs.value)
-    if previous_trigger_data.get('event_name') == 'time_trigger' and  trigger_data.get('event_name') != 'time_trigger':
+        add_job_scheduling(workflow_id = workflow_id)
+    if previous_trigger_data.get('event_name') == 'time_trigger' and trigger_data.get('event_name') != 'time_trigger':
         # TODO: TODO REMOVE SCHEDULING TASK
-        pass
+        remove_job_scheduling(workflow_id = workflow_id)
     session.add(action)
     res = action.serialize()
 
@@ -291,12 +264,12 @@ import shutil
 # Maybe we do...
 
 def process_image_for_overlay(
-    session,
-    file,
-    file_name,
-    content_type,
-    blob_base,
-    extension):
+        session,
+        file,
+        file_name,
+        content_type,
+        blob_base,
+        extension):
     """
 
     In comparison to other methods we want to

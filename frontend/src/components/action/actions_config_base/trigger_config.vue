@@ -101,6 +101,9 @@ export default Vue.extend({
           if (elm.value === 'action_completed' && !this.prev_action) {
             return false
           }
+          if(elm.value === 'time_trigger' && this.action.ordinal !== 0){
+            return false
+          }
           return true
         })
       },

@@ -24,7 +24,7 @@ class Model(Base):
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
     member_updated_id = Column(Integer, ForeignKey('member.id'))
-    member_updated = relationship("Member", foreign_keys = [member_created_id])
+    member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project", foreign_keys=[project_id])

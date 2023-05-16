@@ -16,7 +16,7 @@ startup_checker = EventHandlerSystemStartupChecker()
 startup_checker.execute_startup_checks()
 
 logger.info('Starting Scheduler...')
-diffgram_scheduler.scheduler.start()
+diffgram_scheduler.start()
 
 logger.info('Scheduler Started successfully.')
 # Register runners

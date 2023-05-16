@@ -9,11 +9,21 @@ from shared.shared_logger import get_shared_logger
 import functools
 from shared.regular import regular_log
 from shared.helpers.sessionMaker import session_scope_threaded
-
+from shared.queueclient.QueueClient import QueueClient, RoutingKeys, Exchanges
+import json
 logger = get_shared_logger()
 
 def trigger_workflow(workflow_id):
-    pass
+    msg = {
+        'workflow_id': workflow_id,
+        'action_id': None
+    }
+    queueclient = QueueClient()
+    msg_data = json.loads(msg)
+    logger.debug(f"Triggering Workflow {workflow_id}..")
+    queueclient.send_message(message = msg_data,
+                             routing_key = RoutingKeys.action_trigger_event_new.value,
+                             exchange = Exchanges.actions.value)
 
 class SchedulerConsumer:
 

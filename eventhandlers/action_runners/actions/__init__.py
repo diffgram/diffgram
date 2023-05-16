@@ -48,6 +48,6 @@ except:
     logger.error(traceback.format_exc())
 try:
     from .MongoDBTextFileImport import MongoDBTextFileImportAction
-    ACTION_RUNNERS_KIND_MAPPER[MongoDBTextFileImport.kind] = MongoDBTextFileImport
+    ACTION_RUNNERS_KIND_MAPPER[MongoDBTextFileImportAction.kind] = MongoDBTextFileImportAction
 except:
     logger.error(traceback.format_exc())
