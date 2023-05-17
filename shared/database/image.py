@@ -17,7 +17,7 @@ class Image(Base):
 
     is_inference = Column(Boolean, default = False)
 
-    file_list = relationship("File")
+    file_list = relationship("File", back_populates="image")
 
     annotation_status = Column(String())  # "complete" "init" "in_progress" ?
 

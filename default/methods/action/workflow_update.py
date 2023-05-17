@@ -91,10 +91,14 @@ def flow_update_core(
 
         workflow.name = name
         workflow.active = active
-        if not workflow.active:
-            remove_job_scheduling(workflow_id = workflow.id)
+        if not workflow.active and workflow.has_time_trigger(session = session):
+            remove_job_scheduling(workflow_id = workflow.id, project_id = workflow.project_id)
         else:
-            add_job_scheduling(workflow_id = workflow.id)
+            if workflow.has_time_trigger(session = session):
+                first_action = workflow.get_first_action(session = session)
+                add_job_scheduling(workflow_id = workflow.id,
+                                   project_id = workflow.project_id,
+                                   cron_expression = first_action.trigger_data.get('cron_expression', None))
         workflow.time_window = time_window
         workflow.member_updated = member
 

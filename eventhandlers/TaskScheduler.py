@@ -21,29 +21,32 @@ class DiffgramTaskScheduler:
 
         return self.scheduler.add_job(func = func,
                                       trigger =  CronTrigger.from_crontab(cron_expr),
-                                      id = job_id,
+                                      id = str(job_id),
                                       *args,
                                       **kwargs)
 
     def modify_job(self, job_id, **changes):
-        return self.scheduler.modify_job(job_id, **changes)
+        return self.scheduler.modify_job(str(job_id), **changes)
 
     def reschedule_job(self, job_id, trigger: str = 'cron', **trigger_args):
-        return self.scheduler.reschedule_job(job_id,
+        return self.scheduler.reschedule_job(str(job_id),
                                              trigger = trigger,
                                              **trigger_args)
 
     def pause_job(self, job_id):
-        return self.scheduler.pause_job(job_id)
+        return self.scheduler.pause_job(str(job_id))
 
     def resume_job(self, job_id):
-        return self.scheduler.resume_job(job_id)
+        return self.scheduler.resume_job(str(job_id))
 
     def remove_job(self, job_id):
-        self.scheduler.remove_job(job_id)
+        job = self.get_job(str(job_id))
+        if not job:
+            return
+        self.scheduler.remove_job(str(job_id))
 
     def get_job(self, job_id):
-        return self.scheduler.get_job(job_id)
+        return self.scheduler.get_job(str(job_id))
 
     def get_jobs(self, jobstore = None):
         return self.scheduler.get_jobs(jobstore)
@@ -55,8 +58,7 @@ class DiffgramTaskScheduler:
         )
 
     def start(self):
-        print('lalalala')
-        logger.info("123123123123")
+
         self.scheduler.start()
         logger.info('Task Scheduler Started')
 

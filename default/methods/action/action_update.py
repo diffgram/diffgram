@@ -169,7 +169,7 @@ def action_update_core(session: Session,
     if trigger_data.get('event_name') == 'time_trigger' and trigger_data.get(
             'cron_expression') and action.workflow.active:
         # Send message for batch processing on Rabbit
-        add_job_scheduling(workflow_id = workflow_id)
+        add_job_scheduling(workflow_id = workflow_id, cron_expression = trigger_data.get('cron_expression'))
     if previous_trigger_data.get('event_name') == 'time_trigger' and trigger_data.get('event_name') != 'time_trigger':
         # TODO: TODO REMOVE SCHEDULING TASK
         remove_job_scheduling(workflow_id = workflow_id)

@@ -11,19 +11,24 @@ from shared.regular import regular_log
 from shared.helpers.sessionMaker import session_scope_threaded
 from shared.queueclient.QueueClient import QueueClient, RoutingKeys, Exchanges
 import json
+from shared.database.action.workflow import Workflow
 logger = get_shared_logger()
 
-def trigger_workflow(workflow_id):
-    msg = {
-        'workflow_id': workflow_id,
-        'action_id': None
-    }
-    queueclient = QueueClient()
-    msg_data = json.loads(msg)
-    logger.debug(f"Triggering Workflow {workflow_id}..")
-    queueclient.send_message(message = msg_data,
-                             routing_key = RoutingKeys.action_trigger_event_new.value,
-                             exchange = Exchanges.actions.value)
+def trigger_workflow(workflow_id: int, project_id: int):
+    with session_scope_threaded() as session:
+        workflow = Workflow.get(session = session, workflow_id = workflow_id)
+        msg = {
+            'workflow_id': workflow_id,
+            'member_id': workflow.member_created_id,
+            'kind': 'time_trigger',
+            'project_id': project_id,
+            'action_id': None
+        }
+        queueclient = QueueClient()
+        logger.debug(f"Triggering Workflow {workflow_id}...")
+        queueclient.send_message(message = msg,
+                                 routing_key = RoutingKeys.action_trigger_event_new.value,
+                                 exchange = Exchanges.actions.value)
 
 class SchedulerConsumer:
 
@@ -78,6 +83,8 @@ class SchedulerConsumer:
         log = regular_log.default()
         if msg_data.get('workflow_id') is None:
             log['error']['workflow_id'] = f'Message must contain workflow_id. Message is: {msg_data}'
+        if msg_data.get('project_id') is None:
+            log['error']['project_id'] = f'Message must contain project_id. Message is: {msg_data}'
         if msg_data.get('action') is None:
             log['error']['action'] = f'Message most contain an action. Message is: {msg_data}'
         if msg_data.get('cron_expression') is None:
@@ -89,11 +96,16 @@ class SchedulerConsumer:
             return
 
         workflow_id = msg_data.get('workflow_id')
+        project_id = msg_data.get('project_id')
         action = msg_data.get('action')
         cron_expression = msg_data.get('cron_expression')
         logger.debug(f'Processing Scheduler event: {msg}')
 
         with session_scope_threaded() as session:
-            if action == 'new':
-                diffgram_scheduler.add_job(job_id = workflow_id, cron_expr = cron_expression)
+            if action == 'add':
+                diffgram_scheduler.add_job(job_id = workflow_id, cron_expr = cron_expression, func = trigger_workflow, args = [workflow_id, project_id])
+            elif action == 'remove':
+                diffgram_scheduler.remove_job(job_id = workflow_id)
+            else:
+                logger.warning(f'Scheduler Consumer: Unknown action type "{action}"')
             logger.debug(f'Scheduler event processed successfully. {msg}')
