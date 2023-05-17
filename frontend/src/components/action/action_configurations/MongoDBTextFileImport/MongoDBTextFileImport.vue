@@ -11,7 +11,10 @@
       :action="action">
 
       <template v-slot:wizard_action_config>
-
+        <mongo_db_text_import_config_details
+          :actions_list="actions_list"
+          :action="action"
+          :project_string_id="project_string_id"></mongo_db_text_import_config_details>
       </template>
 
       <template v-slot:ongoing_usage>
@@ -25,6 +28,7 @@
 <script>
 import action_config_base from "@/components/action/actions_config_base/action_config_base";
 import action_config_mixin from "../action_config_mixin";
+import mongo_db_text_import_config_details from "./mongo_db_text_import_config_details.vue";
 import ActionStepsConfig from '../ActionStepsConfig';
 
 export default {
@@ -32,6 +36,7 @@ export default {
   mixins: [action_config_mixin],
   components: {
     action_config_base,
+    mongo_db_text_import_config_details,
   },
   props: {
     action:{
@@ -42,7 +47,9 @@ export default {
     },
   },
   data (){
-    return {}
+    return {
+      steps_config: null,
+    }
   },
   mounted() {
     this.steps_config = new ActionStepsConfig()

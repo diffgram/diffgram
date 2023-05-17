@@ -369,6 +369,9 @@
             },
             'minio': {
               'image': 'https://min.io/resources/img/logo/MINIO_Bird.png',
+            },
+            'mongo_db': {
+              'image': 'https://w7.pngwing.com/pngs/956/695/png-transparent-mongodb-original-wordmark-logo-icon-thumbnail.png',
             }
           },
         }
@@ -422,10 +425,11 @@
         connection_list() {
           const conn_list = this.$store.state.connection.connection_list.filter(connection => {
             const filterRes = []
-            if (!this.features_filters) {
-              this.features_filters = {}
+            let filters = this.features_filters
+            if (!filters) {
+              filters = {}
             }
-            for (const [key, value] of Object.entries(this.features_filters)) {
+            for (const [key, value] of Object.entries(filters)) {
               filterRes.push(connection.supported_features[key] === value)
             }
             return filterRes.reduce((a, b) => a && b, true);

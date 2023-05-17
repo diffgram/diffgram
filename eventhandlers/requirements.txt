@@ -40,3 +40,4 @@ google-cloud-aiplatform
 azure-ai-textanalytics
 newrelic
 apscheduler==3.10.1
+pymongo

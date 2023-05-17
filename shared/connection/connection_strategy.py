@@ -9,11 +9,13 @@ from shared.connection.azure_connector import AzureConnector
 from shared.connection.s3_connector import S3Connector
 from shared.connection.minio_connector import MinioConnector
 from shared.connection.labelbox_connector import LabelboxConnector
+from shared.connection.mongodb_connector import MongoDBConnector
 
 CONNECTIONS_MAPPING = {
     'google_gcp': GoogleCloudStorageConnector,
     'microsoft_azure': AzureConnector,
     'amazon_aws': S3Connector,
+    'mongo_db': MongoDBConnector,
     'minio': MinioConnector,
     'labelbox': LabelboxConnector,
     'vertex_ai': VertexAIConnector

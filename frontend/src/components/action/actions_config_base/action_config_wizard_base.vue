@@ -1,9 +1,9 @@
 <template>
   <v-stepper v-model="step"
-             style="height: 100%"
+             style="height: 100%; min-height: 600px"
              class="elevation-0"
              >
-    <v-stepper-items style="height: 80%">
+    <v-stepper-items >
       <v_error_multiple :error="error"></v_error_multiple>
 
       <v-stepper-content
@@ -47,6 +47,7 @@
 
         </wizard_navigation>
       </v-stepper-content>
+
       <v-stepper-content :step="Object.keys(steps_config).length + 1">
         <slot name="sucess_config">
           <v-container class="d-flex flex-column justify-center align-center">
@@ -70,7 +71,7 @@
     </v-stepper-items>
 
 
-    <v-stepper-header class="ma-0 pl-8 pr-8 " style="height: 20%">
+    <v-stepper-header class="ma-0 pl-8 pr-8 " >
       <template v-for="(key, index) in Object.keys(steps_config)">
         <v-stepper-step
           :complete="step > steps_config[key].number"
