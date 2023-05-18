@@ -1,29 +1,9 @@
-# OPENCORE - ADD
-import boto3
 import traceback
-import threading
-import io
-import requests
-import urllib.parse
-
-import mimetypes
 from shared.regular.regular_api import *
-from shared.auth.OAuth2Provider import OAuth2Provider
-from shared.helpers import sessionMaker
-from shared.database.project import Project
-from shared.database.auth.member import Member
 from shared.connection.connectors.connectors_base import Connector, with_connection
-from shared.ingest import packet
-from pathlib import Path
-from shared.export.export_view import export_view_core
-from shared.database.export import Export
-from shared.export.export_utils import generate_file_name_from_export, check_export_permissions_and_status
 from shared.regular import regular_log
 from pymongo import MongoClient
-from shared.data_tools_core_s3 import DataToolsS3
-from botocore.config import Config
-from shared.ingest.allowed_ingest_extensions import images_allowed_file_names, videos_allowed_file_names
-
+from bson import ObjectId
 
 def with_mongodb_exception_handler(f):
     def wrapper(*args):
@@ -46,7 +26,6 @@ class MongoDBConnector(Connector):
 
     def connect(self):
         log = regular_log.default()
-        print('ASDAS', self.auth_data)
         try:
             if 'client_secret' not in self.auth_data:
                 log['error']['client_secret'] = 'auth_data must provide a client_secret.'
@@ -110,7 +89,7 @@ class MongoDBConnector(Connector):
         """
         spec_list = [{'db_name': str},
                      {'collection_name': str},
-                     {'exclude_id_list': list, 'allow_empty': True},
+                     {'exclude_id_list': {'required': False, 'type': list, 'allow_empty': True}},
                      {'reference_id': str}]
         log = regular_log.default()
         log, input = regular_input.input_check_many(untrusted_input = opts,
@@ -128,8 +107,9 @@ class MongoDBConnector(Connector):
         collection = db[collection_name]
         query = {}
         if exclude_id_list:
+            if reference_id == '_id':
+                exclude_id_list = [ObjectId(id) for id in exclude_id_list]
             query[reference_id] = {'$nin': exclude_id_list}
-
         items = collection.find(query)
         return {'data': list(items)}
 

@@ -50,7 +50,9 @@ def enqueue_packet(project_string_id,
                    enqueue_immediately = False,
                    action_trigger_id = None,
                    workflow_trigger_id = None,
+                   text_data = None,
                    image_metadata = {},
+                   file_metadata = {},
                    mode = None,
                    allow_duplicates = False,
                    auto_correct_instances_from_image_metadata = False,
@@ -67,7 +69,9 @@ def enqueue_packet(project_string_id,
     diffgram_input.file_id = file_id
     diffgram_input.action_trigger_id = action_trigger_id
     diffgram_input.workflow_trigger_id = workflow_trigger_id
+    diffgram_input.text_data = text_data
     diffgram_input.image_metadata = image_metadata
+    diffgram_input.file_metadata = file_metadata
     diffgram_input.auto_correct_instances_from_image_metadata = auto_correct_instances_from_image_metadata
     diffgram_input.task_id = task_id
     diffgram_input.batch_id = batch_id
@@ -83,6 +87,8 @@ def enqueue_packet(project_string_id,
     diffgram_input.project = project
     diffgram_input.media_type = media_type
     diffgram_input.type = "from_url"
+    if type:
+        diffgram_input.type = type
     diffgram_input.url = media_url
     diffgram_input.video_split_duration = video_split_duration
     diffgram_input.allow_duplicates = allow_duplicates

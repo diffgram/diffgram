@@ -5,8 +5,10 @@ from eventhandlers.action_runners.base.ActionCompleteCondition import ActionComp
 from shared.connection.connection_strategy import ConnectionStrategy
 from shared.database.source_control.working_dir import WorkingDirFileLink
 from shared.database.source_control.file import File
+from shared.database.batch.batch import InputBatch
 from shared.shared_logger import get_shared_logger
 from shared.regular import regular_log
+from shared.ingest.packet import enqueue_packet
 logger = get_shared_logger()
 
 class MongoDBTextFileImportAction(ActionRunner):
@@ -38,8 +40,9 @@ class MongoDBTextFileImportAction(ActionRunner):
         result = []
         files_metadata = session.query(File.file_metadata, File.id)\
             .join(WorkingDirFileLink, File.id == WorkingDirFileLink.file_id)\
-            .filter(WorkingDirFileLink.working_dir_id == directory_id).all()
-        print('EXISTING METADATA', files_metadata)
+            .filter(WorkingDirFileLink.working_dir_id == directory_id,
+                    File.state != "removed").all()
+
         for item in files_metadata:
             metadata = item[0]
             if metadata is None:
@@ -122,8 +125,7 @@ class MongoDBTextFileImportAction(ActionRunner):
         connection_result = connector.connect()
         if 'log' in connection_result:
             logger.error('Error connecting to MongoDB: {}'.format(connection_result['log']))
-        print('ids_to_exclude', ids_to_exclude)
-        print('config data', self.action.config_data)
+
         result = connector.fetch_data({
             'action_type': 'get_documents',
             'event_data': {},
@@ -136,5 +138,31 @@ class MongoDBTextFileImportAction(ActionRunner):
             logger.error('Error fetching data from MongoDB: {}'.format(result['log']))
             return
         documents_to_upload = result['data']
+        batch = InputBatch.new(session = session, project_id = self.action.project_id)
         for document in documents_to_upload:
-            print(document)
+            text_data_key = self.action.config_data['key_mappings']['text_data']
+            file_name_key = self.action.config_data['key_mappings']['file_name']
+            ref_id_key = self.action.config_data['key_mappings']['reference_id']
+            text_data = document.get(text_data_key, None)
+            file_name = document.get(file_name_key, None)
+            document_id = document.get(ref_id_key, None)
+            if not text_data:
+                logger.warning(f'Skipping document with no text data {document}')
+                continue
+            if not file_name:
+                logger.warning(f'Skipping document with no file_name {document}')
+                continue
+            diffgram_input = enqueue_packet(project_string_id = self.action.project.project_string_id,
+                                            session = session,
+                                            media_type = 'text',
+                                            directory_id = self.action.config_data.get('directory_id'),
+                                            original_filename = file_name,
+                                            batch_id = batch.id,
+                                            type = 'from_text_data',
+                                            text_data = text_data,
+                                            mode = "",
+                                            file_metadata = {
+                                                'reference_id': str(document_id),
+                                            },
+                                            member = self.action.member_created)
+            logger.debug('Enqueued packet {}'.format(diffgram_input))
