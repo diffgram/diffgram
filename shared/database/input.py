@@ -154,6 +154,13 @@ class Input(Base):
     batch_id = Column(Integer, ForeignKey('input_batch.id'))
     batch = relationship("InputBatch", foreign_keys = [batch_id])
 
+    # Workflow that triggered the creation of this input
+    workflow_trigger_id = Column(Integer, ForeignKey('workflow.id'))
+    workflow_trigger = relationship("Workflow", foreign_keys = [workflow_trigger_id])
+    # Action that triggered the creation of this input
+    action_trigger_id = Column(Integer, ForeignKey('action.id'))
+    action_trigger = relationship("Action", foreign_keys = [action_trigger_id])
+
     temp_dir = Column(String())
 
     temp_dir_path_and_filename = Column(String())

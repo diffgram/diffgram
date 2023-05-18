@@ -1,54 +1,8 @@
 <template>
   <div class="mb-4">
-    <h2 class="font-weight-light mb-4">3. Import Connection Configuration: </h2>
-    <div class="d-flex flex-column ml-10 pl-8 pa-4" style="border: 1px solid #e0e0e0; width: 80%">
-      <global_dataset_selector
-        v-model="action.config_data.directory_id"
-        @change_directory="on_change_directory"
-      />
-      <connection_select :project_string_id="project_string_id" v-model="action.config_data.connection"/>
-      <diffgram_select
-        v-if="action.config_data.connection && action.config_data.connection.id"
-        :item_list="db_names_list"
-        :return_object="false"
-        value="name"
-        name_key="name"
-        v-model="action.config_data.db_name"
-        label="Database Name"
-        :disabled="loading"
-      >
-      </diffgram_select>
-      <diffgram_select
-        v-if="action.config_data.connection && action.config_data.connection.id && action.config_data.db_name"
-        :item_list="collections_names_list"
-        :return_object="false"
-        value="name"
-        name_key="name"
-        v-model="action.config_data.collection_name"
-        label="Collection Name"
-        :disabled="loading"
-      >
-      </diffgram_select>
-      <div v-if="action.config_data.connection && action.config_data.connection.id &&
-                    action.config_data.db_name &&
-                    action.config_data.collection_name">
-        <h4>Map You Collection Keys: </h4>
-        <v-data-table
-          :hide-default-footer="true"
-          :headers="headers"
-          :items="items" hide-actions>
-          <template v-slot:item="props">
-            <tr>
-              <td>{{ props.item.label }}</td>
-              <td class="ma-auto">
-                <v-text-field v-model="action.config_data.key_mappings[props.item.value]" outlined single-line ></v-text-field>
-              </td>
-            </tr>
-          </template>
-        </v-data-table>
-      </div>
+   <v_input_view :project_string_id="project_string_id" :workflow_id="action.workflow_id" :action_id="action.id">
 
-    </div>
+   </v_input_view>
   </div>
 </template>
 

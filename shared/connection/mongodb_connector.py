@@ -100,6 +100,39 @@ class MongoDBConnector(Connector):
         collection_names = db.list_collection_names()
         return {'data': collection_names}
 
+    @with_connection
+    @with_mongodb_exception_handler
+    def __get_documents(self, opts):
+        """
+            Get documents from a collection
+        :param opts:
+        :return:
+        """
+        spec_list = [{'db_name': str},
+                     {'collection_name': str},
+                     {'exclude_id_list': list, 'allow_empty': True},
+                     {'reference_id': str}]
+        log = regular_log.default()
+        log, input = regular_input.input_check_many(untrusted_input = opts,
+                                                    spec_list = spec_list,
+                                                    log = log)
+        if len(log["error"].keys()) >= 1:
+            return {'log': log}
+
+        database = input['db_name']
+        collection_name = input['collection_name']
+        exclude_id_list = input['exclude_id_list']
+        reference_id = input['reference_id']
+        # Select the database
+        db = self.connection_client[database]
+        collection = db[collection_name]
+        query = {}
+        if exclude_id_list:
+            query[reference_id] = {'$nin': exclude_id_list}
+
+        items = collection.find(query)
+        return {'data': list(items)}
+
     def test_connection(self):
         auth_result = self.connect()
         if 'log' in auth_result:
@@ -134,6 +167,8 @@ class MongoDBConnector(Connector):
             return self.__get_db_list(opts)
         if action_type == 'list_collections_from_db':
             return self.__list_collections_from_db(opts)
+        if action_type == 'get_documents':
+            return self.__get_documents(opts)
 
     @with_connection
     def put_data(self, opts):

@@ -48,6 +48,8 @@ def enqueue_packet(project_string_id,
                    original_filename = None,
                    external_map_action = None,
                    enqueue_immediately = False,
+                   action_trigger_id = None,
+                   workflow_trigger_id = None,
                    image_metadata = {},
                    mode = None,
                    allow_duplicates = False,
@@ -63,6 +65,8 @@ def enqueue_packet(project_string_id,
     diffgram_input = Input()
     project = Project.get(session, project_string_id)
     diffgram_input.file_id = file_id
+    diffgram_input.action_trigger_id = action_trigger_id
+    diffgram_input.workflow_trigger_id = workflow_trigger_id
     diffgram_input.image_metadata = image_metadata
     diffgram_input.auto_correct_instances_from_image_metadata = auto_correct_instances_from_image_metadata
     diffgram_input.task_id = task_id

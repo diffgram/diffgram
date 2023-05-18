@@ -79,7 +79,7 @@ def flow_update_core(
     if mode == "ARCHIVE":
         workflow.archived = True
         workflow.active = False
-        remove_job_scheduling(workflow_id = workflow.id)
+        remove_job_scheduling(workflow_id = workflow.id, project_id = workflow.project_id)
         session.add(workflow)
 
         return log

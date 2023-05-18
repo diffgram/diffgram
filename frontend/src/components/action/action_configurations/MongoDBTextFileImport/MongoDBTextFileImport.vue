@@ -18,7 +18,11 @@
       </template>
 
       <template v-slot:ongoing_usage>
-
+        <text_imports_log
+          :project_string_id="project_string_id"
+          :action="action"
+          :actions_list="actions_list"
+        ></text_imports_log>
       </template>
 
     </action_config_base>
@@ -29,6 +33,7 @@
 import action_config_base from "@/components/action/actions_config_base/action_config_base";
 import action_config_mixin from "../action_config_mixin";
 import mongo_db_text_import_config_details from "./mongo_db_text_import_config_details.vue";
+import text_imports_log from "./text_imports_log.vue";
 import ActionStepsConfig from '../ActionStepsConfig';
 
 export default {
@@ -36,6 +41,7 @@ export default {
   mixins: [action_config_mixin],
   components: {
     action_config_base,
+    text_imports_log,
     mongo_db_text_import_config_details,
   },
   props: {

@@ -676,6 +676,12 @@ export default Vue.extend({
       'task_id': {
         default: null
       },
+      'workflow_id': {
+        default: null
+      },
+      'action_id': {
+        default: null
+      },
       'show_filters': {
         default: true
       },
@@ -883,6 +889,8 @@ export default Vue.extend({
           limit: this.metadata_limit,
           show_archived: this.show_archived,
           show_deferred: this.show_deferred,
+          workflow_trigger_id: this.workflow_id,
+          action_trigger_id: this.action_id,
           status_filter: this.status_filter,
           date_from: this.date ? this.date.from : undefined,
           date_to: this.date ? this.date.to : undefined,
