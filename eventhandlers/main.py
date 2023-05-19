@@ -5,6 +5,7 @@ from ConsumersCreator import ConsumerCreator
 from shared.settings import settings
 from startup.system_startup_checker import EventHandlerSystemStartupChecker
 from action_runners.ActionRegistrar import register_all
+from TaskScheduler import diffgram_scheduler
 from shared.helpers import sessionMaker
 import traceback
 import atexit
@@ -14,11 +15,14 @@ logger = get_shared_logger()
 startup_checker = EventHandlerSystemStartupChecker()
 startup_checker.execute_startup_checks()
 
+logger.info('Starting Scheduler...')
+diffgram_scheduler.start()
+
+logger.info('Scheduler Started successfully.')
 # Register runners
 register_all()
 
 consumer_creator = ConsumerCreator()
-
 logger.info(f'Listening for messages in {settings.RABBITMQ_HOST}:{settings.RABBITMQ_PORT}')
 try:
     consumer_creator.run()

@@ -22,4 +22,4 @@ class InstanceTemplateRelation(Base):
     instance = relationship("Instance")
 
     instance_template_id = Column(Integer, ForeignKey('instance_template.id'))
-    instance_template = relationship("InstanceTemplate")
+    instance_template = relationship("InstanceTemplate",  back_populates="instance_relations")

@@ -62,7 +62,7 @@ class Project(Base, Caching):
     # TODO review, not being used?
     # activity_list = relationship("Activity", back_populates="project")
 
-    directory_list = relationship("Project_Directory_List")
+    directory_list = relationship("Project_Directory_List", back_populates = "project")
 
     directory_default_id = Column(Integer, ForeignKey('working_dir.id'))
     directory_default = relationship("WorkingDir",

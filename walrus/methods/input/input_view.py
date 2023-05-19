@@ -92,6 +92,18 @@ def input_list_web(project_string_id):
             'default': None,
             'required': False
             }
+        },
+        {"workflow_trigger_id": {
+            'kind': int,
+            'default': None,
+            'required': False
+        }
+        },
+        {"action_trigger_id": {
+            'kind': int,
+            'default': None,
+            'required': False
+        }
         }
     ]
 
@@ -118,7 +130,9 @@ def input_list_web(project_string_id):
             task_id = input['task_id'],
             parent_file_id = input['parent_file_id'],
             media_type = input['media_type'],
-            has_attached_instances = input['has_attached_instances']
+            has_attached_instances = input['has_attached_instances'],
+            workflow_trigger_id = input['workflow_trigger_id'],
+            action_trigger_id = input['action_trigger_id'],
         )
 
         input_list_serialized = []
@@ -146,6 +160,8 @@ def build_input_list(
     batch_id: int = None,
     task_id: int = None,
     parent_file_id: int = None,
+    workflow_trigger_id: int = None,
+    action_trigger_id: int = None,
     media_type: str = None,
     has_attached_instances: bool = None):
     """
@@ -198,6 +214,12 @@ def build_input_list(
 
     if batch_id:
         query = query.filter(Input.batch_id == batch_id)
+
+    if workflow_trigger_id:
+        query = query.filter(Input.workflow_trigger_id == workflow_trigger_id)
+
+    if action_trigger_id:
+        query = query.filter(Input.action_trigger_id == action_trigger_id)
 
     if file_id:
         query = query.filter(Input.file_id == file_id)

@@ -99,6 +99,9 @@ class Workflow(Base):
 
         return workflow
 
+    def has_time_trigger(self, session) -> bool:
+        first_action = self.get_first_action(session = session)
+        return first_action and first_action.trigger_data.get('event_name') == 'time_trigger' and first_action.trigger_data.get('cron_expression')
     def get_existing_unmodified_flow(
         session,
         project,
@@ -135,6 +138,16 @@ class Workflow(Base):
             'active': self.active,
             'time_updated': self.time_updated
         }
+
+    @staticmethod
+    def get(session, workflow_id: int):
+        """
+            Gets a single workflow by ID.
+        :param session:
+        :param workflow_id:
+        :return:
+        """
+        return session.query(Workflow).filter(Workflow.id == workflow_id).first()
 
     @staticmethod
     def get_by_id(session,
@@ -212,6 +225,13 @@ class Workflow(Base):
         )
         data['actions_list'] = [a.serialize() for a in actions]
         return data
+
+    def get_first_action(self, session) -> Action:
+        action = session.query(Action).filter(
+            Action.workflow_id == self.id,
+            Action.ordinal == 0,
+            Action.archived == False).first()
+        return action
 
 
 # 'abcdefghijklmnopqrstuvwxyz0123456789'

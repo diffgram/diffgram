@@ -2,6 +2,7 @@ import pika
 from EventsConsumer import EventsConsumer
 from ActionConsumer import ActionsConsumer
 from JobsConsumer import JobsConsumer
+from SchedulerConsumer import SchedulerConsumer
 from shared.settings import settings
 from shared.shared_logger import get_shared_logger
 from pika.channel import Channel
@@ -16,6 +17,7 @@ class ConsumerCreator:
     events_consumer: EventsConsumer
     jobs_consumer: JobsConsumer
     actions_consumer: ActionsConsumer
+    scheduler_consumer: SchedulerConsumer
     stopping: bool
 
     def __init__(self):
@@ -53,6 +55,7 @@ class ConsumerCreator:
         self.events_consumer = EventsConsumer(channel = self.channel, connection = self.connection)
         self.actions_consumer = ActionsConsumer(channel = self.channel, connection = self.connection)
         self.jobs_consumer = JobsConsumer(channel = self.channel, connection = self.connection)
+        self.scheduler_consumer = SchedulerConsumer(channel = self.channel, connection = self.connection)
 
     def open_channel(self):
 

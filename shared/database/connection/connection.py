@@ -42,6 +42,9 @@ INTEGRATION_VENDORS_SUPPORTED_FEATURES = {
     'minio': {
         'files_import': True,
         'files_export': True
+    },
+    'mongo_db': {
+        'import_text': True,
     }
 }
 

@@ -372,6 +372,11 @@ const integration_spec_list_template = [
     'display_name': 'Minio',
     'name': 'minio',
     'image-icon': 'https://min.io/resources/img/logo/MINIO_Bird.png',
+  },
+  {
+    'display_name': 'Mongo DB',
+    'name': 'mongo_db',
+    'image-icon': 'https://w7.pngwing.com/pngs/956/695/png-transparent-mongodb-original-wordmark-logo-icon-thumbnail.png',
   }
 ]
 

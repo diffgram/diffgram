@@ -10,7 +10,7 @@ class PointCloud(Base):
     description = Column(String())
     soft_delete = Column(Boolean, default = False)
 
-    file_list = relationship("File")
+    file_list = relationship("File", back_populates="point_cloud")
 
     url_signed = Column(String())
     url_signed_blob_path = Column(String())

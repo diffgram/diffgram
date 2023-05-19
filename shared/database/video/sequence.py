@@ -48,7 +48,7 @@ class Sequence(Base):
         BUT caution we still use this in other places.
             It does work as expected so long as there are sequences there.
     """
-    instance_list = relationship("Instance")
+    instance_list = relationship("Instance", back_populates = "sequence")
 
     # frame numbers
     # more of a UI thing?

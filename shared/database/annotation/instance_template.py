@@ -20,7 +20,7 @@ class InstanceTemplate(Base):
     project_id = Column(Integer, ForeignKey('project.id'))
     project = relationship("Project")
 
-    instance_relations = relationship(InstanceTemplateRelation)
+    instance_relations = relationship(InstanceTemplateRelation,back_populates="instance_template")
 
     reference_width = Column(Integer)
     reference_height = Column(Integer)
@@ -34,7 +34,7 @@ class InstanceTemplate(Base):
     member_created = relationship("Member", foreign_keys = [member_created_id])
 
     member_updated_id = Column(Integer, ForeignKey('member.id'))
-    member_updated = relationship("Member", foreign_keys = [member_created_id])
+    member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
     created_time = Column(DateTime, default = datetime.datetime.utcnow)
     last_updated_time = Column(DateTime, onupdate = datetime.datetime.utcnow)

@@ -424,6 +424,11 @@
               private_secret: true,
               disabled_ssl_verify: true,
             },
+            'mongo_db': {
+              name: true,
+              private_secret: true,
+              private_secret_label: 'Connection URL String',
+            },
           },
           // WIP
           google_list: [

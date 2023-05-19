@@ -3,6 +3,7 @@ export interface TriggerData {
   event_name: string,
   upload_directory_id_list: Array<number>,
   trigger_action_id: number,
+  cron_expression: string
 
 }
 export interface ConditionData {

@@ -21,7 +21,7 @@ class ExportActionRunner(ActionRunner):
         default_event = 'task_completed', 
         event_list = ["input_file_uploaded",
                       "task_completed", 
-                      "action_completed"])
+                      "action_completed", "time_trigger"])
     precondition = ActionCondition(default_event = 'all_tasks_completed', event_list = ["all_tasks_completed"])
     completion_condition_data = ActionCompleteCondition(default_event = 'export_generate_success', event_list = ["export_generate_success"])
 

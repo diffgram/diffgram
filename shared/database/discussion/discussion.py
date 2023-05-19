@@ -32,9 +32,9 @@ class Discussion(Base):
 
     type = Column(String(), default = 'issue')
 
-    assignees = relationship(DiscussionMember)
+    assignees = relationship(DiscussionMember, back_populates = 'discussion')
 
-    comment_list = relationship("DiscussionComment")
+    comment_list = relationship("DiscussionComment", back_populates = 'discussion')
 
 
     # In future version we might have polygon, boxes etc...

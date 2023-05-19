@@ -16,7 +16,6 @@ class FileCompareExpression(CompareExpression):
         raw_scalar_value = scalar_op.raw_value
         sql_column = query_op.column
         sql_compare_operator = self.operator.operator_value
-        print('raw_scalar_value', raw_scalar_value)
         AliasFile = aliased(File)
         if File.created_time == query_op.column:
             format_string = "%Y-%m-%d"
@@ -35,7 +34,6 @@ class FileCompareExpression(CompareExpression):
             parsed_boolean = raw_scalar_value.replace("'", "")
             parsed_boolean = parsed_boolean.replace('"', "")
             parsed_boolean = env_adapter.bool(parsed_boolean)
-            print('PARSED BOOLEAN', parsed_boolean)
             new_filter_subquery = session.query(AliasFile.id).filter(
                 sql_compare_operator(sql_column, parsed_boolean)).subquery()
         else:

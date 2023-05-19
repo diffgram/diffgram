@@ -5,6 +5,7 @@ import AzureTextAnalyticsSentimentAction from "./action_configurations/azure/Azu
 import hf_zero_shot from "./action_configurations/hugging_face/HuggingFaceZeroShot.vue"
 import VertexTrainDatasetAction from "./action_configurations/VertexTrainDatasetAction/VertexTrainDatasetAction.vue"
 import Webhook from "./action_configurations/Webhook/Webhook.vue"
+import MongoDBTextFileImport from "./action_configurations/MongoDBTextFileImport/MongoDBTextFileImport.vue"
 //IMPORTREPLACE
 
 export default {
@@ -15,5 +16,6 @@ export default {
     'hf_zero_shot': hf_zero_shot,
     'VertexTrainDatasetAction': VertexTrainDatasetAction,
     'Webhook': Webhook,
+    'MongoDBTextFileImport': MongoDBTextFileImport,
     //DECLAREREPLACE
   }
