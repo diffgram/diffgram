@@ -47,7 +47,7 @@ class TestLabelsCompareExpression(testing_setup.DiffgramBaseTestCase):
             session = self.session,
             left_raw = Token(value = 'label.apple', type_ = 'test'),
             right_raw = Token(value = '25', type_ = 'test'),
-            compare_op_raw = Token(value = "in", type_ = 'test'),
+            compare_op_raw = Token(value = ">", type_ = 'test'),
             project_id = self.project.id,
             log = regular_log.default()
         )
