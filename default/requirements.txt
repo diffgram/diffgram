@@ -25,7 +25,7 @@ cryptography==39.0.1
 colorlog==4.2.1
 boto3==1.16.4
 alembic==1.4.2
-sqlalchemy-utils==0.36.6
+sqlalchemy-utils==0.41.1
 azure-storage-blob==12.8.0
 lark
 lark-parser
