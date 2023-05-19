@@ -375,7 +375,7 @@
               open-on-click
             >
               <template v-slot:label="{ item, open }">
-                <v-layout v-if="item.name !== 'Add new'" class="pa-2" style="border: 1px solid #e0e0e0">
+                <v-layout v-if="item.name !== 'Add new'" class="pa-2 d-flex align-center" style="border: 1px solid #e0e0e0">
                   <input
                     style="width: 100%"
                     @click.stop.prevent=""
@@ -422,6 +422,7 @@
                       </v-layout>
                     </template>
                   </button_with_confirm>
+                  <hotkey_setup_widget @pressed_key="set_hotkey_for_attribute"></hotkey_setup_widget>
                   <v-chip class="ma-auto" x-small v-if="$store.state.user.settings.show_ids === true">
                     ID: {{ item.id }}
                   </v-chip>
@@ -593,10 +594,12 @@ import { TreeNode } from "../../helpers/tree_view/Node"
 import { construct_tree, find_all_relatives } from "../../helpers/tree_view/construct_tree"
 import { attribute_update_or_new } from "../../services/attributesService.ts"
 import pLimit from 'p-limit';
+import Hotkey_setup_widget from "../hotkeys/hotkey_setup_widget.vue";
 
 export default Vue.extend( {
   name: 'NewAttributeGroupWizard',
   components:{
+    Hotkey_setup_widget,
     label_select_only,
     attribute_new_or_update,
     draggable,
@@ -682,6 +685,9 @@ export default Vue.extend( {
     }
   },
   methods: {
+    set_hotkey_for_attribute: function(){
+
+    },
     set_global_attribute: function(){
       if(this.group.is_global){
         if(this.group.global_type === 'compound_file'){
