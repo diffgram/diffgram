@@ -49,11 +49,11 @@ def task_template_launch_core(session,
                                task_template=job)
 
     # Add job to all attached directories
-    job_sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-        session=session,
-        job=job,
-        log=log
-    )
+    # job_sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
+    #     session=session,
+    #     job=job,
+    #     log=log
+    # )
 
     assert job is not None
 

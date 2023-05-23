@@ -616,7 +616,7 @@ class Task(Base):
     @staticmethod
     def get_related_pending_tasks(session: 'Session', task: 'Task'):
         query = session.query(Task)
-        query = query.filter(Task.status.notin_('complete'),
+        query = query.filter(Task.status.notin_(['complete']),
                              Task.status != 'archived',
                              Task.id != task.id,
                              Task.file_id == task.file_id)

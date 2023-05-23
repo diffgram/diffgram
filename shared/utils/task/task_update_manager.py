@@ -41,6 +41,7 @@ class Task_Update():
             self.change_status()
         regular_methods.try_to_commit(self)
         self.emit_task_event_based_on_status(old_status, self.task)
+        self.update_related_file_status(old_status, self.task)
         self.task.job.refresh_stat_count_tasks(self.session)
         return
 
