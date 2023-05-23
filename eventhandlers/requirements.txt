@@ -14,7 +14,7 @@ google-api-python-client==1.12.3
 google-cloud-logging==1.15.1
 flask_limiter==1.4
 Flask-SSLify==0.1.5
-requests==2.25.1
+requests==2.31.0
 imageio==2.9.0
 analytics-python==1.2.9
 cryptography==39.0.1
