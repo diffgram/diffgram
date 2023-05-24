@@ -159,11 +159,12 @@ class FileStats(Base, Caching):
         for instance in instance_list:
             if instance.get('soft_delete') is True:
                 continue
-            label_file_id = instance['label_file_id']
-            if label_counts.get(label_file_id):
-                label_counts[label_file_id] += 1
-            else:
-                label_counts[label_file_id] = 1
+            label_file_id = instance.get('label_file_id')
+            if label_file_id:
+                if label_counts.get(label_file_id):
+                    label_counts[label_file_id] += 1
+                else:
+                    label_counts[label_file_id] = 1
             if instance.get('member_created_id') is not None and instance.get('member_created_id') not in members_list:
                 members_list.append(instance['member_created_id'])
 
@@ -183,8 +184,9 @@ class FileStats(Base, Caching):
             if instance.get('soft_delete') is True:
                 continue
             for key, val in instance.get('attribute_groups').items():
-                if not key.isnumeric():
-                    continue
+                if type(key) == str:
+                    if not key.isnumeric():
+                        continue
                 value, attr_type = get_attribute_value(session, int(key), val, project)
                 if value is None:
                     continue
@@ -192,7 +194,7 @@ class FileStats(Base, Caching):
                     FileStats.new(
                         session = session,
                         file_id = file_id,
-                        label_file_id = instance['label_file_id'],
+                        label_file_id = instance.get('label_file_id'),
                         count_instances = None,
                         annotators_member_list = members_list,
                         attribute_value_selected = True,
@@ -201,10 +203,12 @@ class FileStats(Base, Caching):
                     )
                 if attr_type in ['tree', 'multiple_select']:
                     for attr_template_id in value:
+                        if type(attr_template_id) == str and not attr_template_id.isnumeric():
+                            continue
                         FileStats.new(
                             session = session,
                             file_id = file_id,
-                            label_file_id = instance['label_file_id'],
+                            label_file_id = instance.get('label_file_id'),
                             count_instances = None,
                             annotators_member_list = members_list,
                             attribute_value_selected = True,
@@ -216,7 +220,7 @@ class FileStats(Base, Caching):
                     FileStats.new(
                         session = session,
                         file_id = file_id,
-                        label_file_id = instance['label_file_id'],
+                        label_file_id = instance.get('label_file_id'),
                         count_instances = None,
                         annotators_member_list = members_list,
                         attribute_value_selected_time = value,
@@ -226,7 +230,7 @@ class FileStats(Base, Caching):
                     FileStats.new(
                         session = session,
                         file_id = file_id,
-                        label_file_id = instance['label_file_id'],
+                        label_file_id = instance.get('label_file_id'),
                         count_instances = None,
                         annotators_member_list = members_list,
                         attribute_value_selected_date = value,
@@ -236,7 +240,7 @@ class FileStats(Base, Caching):
                     FileStats.new(
                         session = session,
                         file_id = file_id,
-                        label_file_id = instance['label_file_id'],
+                        label_file_id = instance.get('label_file_id'),
                         count_instances = None,
                         annotators_member_list = members_list,
                         attribute_value_number = value,
@@ -246,7 +250,7 @@ class FileStats(Base, Caching):
                     FileStats.new(
                         session = session,
                         file_id = file_id,
-                        label_file_id = instance['label_file_id'],
+                        label_file_id = instance.get('label_file_id'),
                         count_instances = None,
                         annotators_member_list = members_list,
                         attribute_value_text = value,
