@@ -693,7 +693,6 @@ class Process_Media():
 
     def __copy_file(self):
         logger.debug(f"Copying file type: {self.input.media_type} {self.input.file_id}")
-        print('COPY FILEEEE', self.input.file.id)
         self.input.newly_copied_file = File.copy_file_from_existing(
             session = self.session,
             working_dir = None,
@@ -706,12 +705,9 @@ class Process_Media():
             previous_video_parent_id = None,
             flush_session = True,
         )
-        print('newly_copied_file', self.input.newly_copied_file.id)
         if self.input.file.type == 'compound':
             child_files = self.input.file.get_child_files(session = self.session)
-            print('child_files',child_files)
             for child in child_files:
-                print('copy child', child.id)
                 File.copy_file_from_existing(
                     session = self.session,
                     working_dir = None,
@@ -748,7 +744,6 @@ class Process_Media():
 
     def __start_copy_file(self):
         # Prep work
-        print('COPY FILE', self.input.file.id, self.input.file.type)
         if self.input.media_type == "video":
             logger.info(f"Starting Sequenced Copy from File {self.input.file.id}")
             # Get the sequence_map.
@@ -1222,7 +1217,6 @@ class Process_Media():
     def read_raw_text_file(self):
         # Get Raw file
         self.raw_text_file = open(self.input.temp_dir_path_and_filename, "rb")
-        print(self.raw_text_file)
         return self.raw_text_file
 
     def build_file_from_string(self, str_data: str):
@@ -1446,7 +1440,6 @@ class Process_Media():
         """
         if self.frame_number + 2 == self.input.video_parent_length:
             if self.input.parent_file_id and self.input.video_was_split is None:
-                print("Running sequence update")
                 time.sleep(2)  # just give a little breather while stuff is settling.
                 self.update_sequences()
 
@@ -1455,7 +1448,6 @@ class Process_Media():
     def get_parent_input_with_retry(self):
         """
         """
-        print("ran get_parent_input_with_retry")
 
         parent_input = Input.get_by_id(
             session = self.session,

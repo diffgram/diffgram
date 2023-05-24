@@ -57,9 +57,7 @@ class FilePolicyEnforcer(BasePolicyEnforcer):
 
     def has_perm(self, member_id: int, object_type: str, object_id: int, perm: Enum) -> PermissionResult:
         # Check Default Permissions
-        print('HAS PERM', member_id, object_type, object_id, perm)
         default_roles = self.list_default_roles(member_id = member_id, object_id = object_id)
-        print('default_roles', default_roles)
         for role in default_roles:
             if FileRolesPermissions.get(role) is not None:
                 perms_list = FileRolesPermissions.get(role)
