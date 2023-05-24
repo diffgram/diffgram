@@ -76,6 +76,7 @@ celerybeat-schedule
 
 # virtualenv
 venv/
+venvdiffgram/
 ENV/
 
 # Dev container

@@ -28,6 +28,7 @@ import datetime
 from shared.database.auth.member import Member
 from shared.database.annotation.instance_template import InstanceTemplate
 from shared.database.attribute.attribute_template_group import Attribute_Template_Group
+from shared.database.attribute.attribute_template import Attribute_Template
 from shared.database.annotation.instance_template_relation import InstanceTemplateRelation
 from shared.database.video.video import Video
 from shared.database.image import Image
@@ -78,6 +79,14 @@ def create_attribute_template_group(group_data, session):
         group_data['prompt'] = group_data.get('name')
     group = Attribute_Template_Group(
         **group_data
+    )
+    session.add(group)
+    session.commit()
+    return group
+
+def create_attribute_template_option(option_data, session):
+    group = Attribute_Template(
+        **option_data
     )
     session.add(group)
     session.commit()

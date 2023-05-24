@@ -56,7 +56,8 @@ os.environ['RABBITMQ_DEFAULT_PASS'] = 'admin'
 os.environ['RABBITMQ_HOST'] = 'localhost'
 os.environ['RABBITMQ_PORT'] = '5672'
 os.environ['RABBITMQ_USE_SSL'] = 'False'
-os.environ['DIFFGRAM_INSTALL_FINGERPRINT'] = 'dev_pablo'
+os.environ['DIFFGRAM_INSTALL_FINGERPRINT'] = 'develop'
+os.environ['DIFFGRAM_VERSION_TAG'] = 'develop'
 
 # General Oauth2 Settings
 os.environ['USE_OAUTH2'] = 'False'
