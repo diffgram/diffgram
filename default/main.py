@@ -120,7 +120,7 @@ def catch_all_unnamed(path):
 
     print("Post request not found:", path)
 
-    return Response("Not found.", status = 405, mimetype = 'application/json')
+    return Response("Not found.", status = 404, mimetype = 'application/json')
 
 
 app.secret_key = settings.SECRET_KEY
