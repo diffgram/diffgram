@@ -273,6 +273,9 @@
           ctx.setLineDash([0])
           // var startTime = performance.now();
           for (var i in this.instance_list) {
+            if (i % 100 === 0) {
+              setTimeout(()=>{}, 2);
+            }
             this.draw_single_instance(ctx, i)
           }
 

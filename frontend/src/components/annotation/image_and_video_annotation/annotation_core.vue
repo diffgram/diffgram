@@ -7,7 +7,6 @@
       <v-alert v-if="task_error.task_request" type="info">
         {{ task_error.task_request }}
       </v-alert>
-
       <v_error_multiple :error="save_error"></v_error_multiple>
       <v_error_multiple :error="image_annotation_ctx.save_multiple_frames_error"></v_error_multiple>
       <v_error_multiple
@@ -107,8 +106,6 @@
         </v-btn>
       </template>
     </v-snackbar>
-
-
     <v-snackbar
       v-if="auto_border_context && auto_border_context.show_snackbar_auto_border"
       v-model="auto_border_context.show_snackbar_auto_border"
@@ -151,9 +148,6 @@
 
     <v-sheet style="outline: none">
       <v-layout style="outline: none">
-        <!-- Left nav -->
-
-
         <v-container v-if="error_no_permissions.data">
           <v_error_multiple
             class="ma-auto"
@@ -185,10 +179,8 @@
         </v-container>
         <div id="annotation" tabindex="0" v-if="!error_no_permissions.data">
           <!-- Must wrap canvas to detect events in this context
-      Careful, the slider needs to be in this context too
-      in order for the canvas render to detect it
-
-      -->
+              Careful, the slider needs to be in this context too
+              in order for the canvas render to detect it -->
 
           <div
             contenteditable="true"
@@ -269,10 +261,6 @@
                 :degrees="degrees"
               >
               </v_bg>
-
-              <!-- Important, needs at least 1 non dictionary var to trigger
-          reactive changes. ie :x = mouse_position.x -->
-
               <target_reticle
                 :is_active="is_active"
                 :ord="2"
@@ -298,7 +286,6 @@
               >
               </target_reticle>
 
-              <!-- Current file -->
               <canvas_instance_list
                 :ord="3"
                 :instance_list="instance_list"
@@ -2572,6 +2559,9 @@ export default Vue.extend({
         return result;
       }
       for (let i = 0; i < instance_list.length; i++) {
+        if (i % 100 === 0) {
+          setTimeout(()=>{}, 0);
+        }
         let current_instance = instance_list[i];
         // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
         // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
@@ -3320,7 +3310,7 @@ export default Vue.extend({
 
       this.update_smooth_canvas(this.label_settings.smooth_canvas)
 
-      this.$forceUpdate();
+      await this.$forceUpdate();
     },
 
     validate_sequences: function () {
@@ -5106,7 +5096,6 @@ export default Vue.extend({
       }
 
       this.canvas_wrapper.style.display = "";
-
       await this.get_instances();
       let determineSize = function (width, height, degrees) {
         let w, h;
@@ -6574,6 +6563,7 @@ export default Vue.extend({
       this.global_instance = null // reset
 
       // Not sure if a "silent" null check is right here
+
       if (response.data['file_serialized']) {
         let new_instance_list = this.create_instance_list_with_class_types(
           response.data['file_serialized']['instance_list']
@@ -6584,6 +6574,7 @@ export default Vue.extend({
       this.image_annotation_ctx.loading = false
 
       this.trigger_refresh_with_delay();
+
     },
 
     trigger_refresh_with_delay: function () {
@@ -6609,7 +6600,8 @@ export default Vue.extend({
         });
         this.get_instances_core(response);
         this.image_annotation_ctx.annotations_loading = false;
-      } else if (this.$store.state.builder_or_trainer.mode == "builder") {
+      }
+      else if (this.$store.state.builder_or_trainer.mode == "builder") {
         if (this.task && this.task.id) {
           if (this.task.id === '-1' || this.task.id === -1) {
             return
@@ -6699,12 +6691,13 @@ export default Vue.extend({
       } else {
         // Context of Images Only
         await this.get_instance_list_for_image();
-
         this.get_and_set_global_instance(this.instance_list)
       }
       this.add_override_colors_for_model_runs();
+      await new Promise(resolve => setTimeout(resolve, 10));
       this.image_annotation_ctx.annotations_loading = false;
       this.update_canvas();
+
     },
 
     async update_instance_list_from_buffer_or_get_new_buffer(
