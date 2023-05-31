@@ -45,7 +45,6 @@ export default Vue.extend({
       }
     },
     toggle_recording_active: function (event: MouseEvent): void {
-      console.log('asdasdasd', event)
       event.stopPropagation();
       this.set_recording_active(!this.recording_active);
     },

@@ -745,6 +745,7 @@
         }
         if(this.active_hotkeys){
           this.add_hotkey_listeners()
+
         }
       },
       computed: {
@@ -808,6 +809,17 @@
         }
       },
       methods: {
+        process_schema_defined_hotkeys: function(event){
+          if(!this.group.hotkeys){
+            return
+          }
+          for(let hotkey of this.group.hotkeys){
+            if(hotkey.key === event.key && hotkey.shift === event.shiftKey && hotkey.ctrl === event.ctrlKey && hotkey.alt === event.altKey){
+              this.set_attribute_value(hotkey.value)
+            }
+          }
+
+        },
         set_radio_select_value_by_id: function(option_id){
           for(let option of this.select_format){
             if(option.id === option_id){
@@ -838,17 +850,27 @@
 
         },
         attribute_keydown_handler: function(event){
-          if(!['radio', 'select'].includes(this.group.kind)){
+          if(!['radio', 'select', 'tree'].includes(this.group.kind)){
             return
           }
-          let index = this.hotkey_dict[event.keyCode]
-          if(index != undefined){
-            let item_to_select = this.select_format[index]
-            if(item_to_select && item_to_select != this.internal_selected){
-              this.internal_selected = item_to_select
-              this.attribute_change()
+          if(this.group.kind === 'tree'){
+            if(this.group.hotkeys){
+              // User defined hotkeys for tree view.
+              this.process_schema_defined_hotkeys(event)
             }
+          } else{
+            // Numeric hotkeys for radio and select.
+            let index = this.hotkey_dict[event.keyCode]
+            if(index != undefined){
+              let item_to_select = this.select_format[index]
+              if(item_to_select && item_to_select != this.internal_selected){
+                this.internal_selected = item_to_select
+                this.attribute_change()
+              }
+            }
+
           }
+
         },
         tree_input: function(e) {
           const already_selected = this.internal_selected.includes(e.id)

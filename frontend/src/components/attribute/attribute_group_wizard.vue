@@ -422,7 +422,7 @@
                       </v-layout>
                     </template>
                   </button_with_confirm>
-                  <hotkey_setup_widget @pressed_key="set_hotkey_for_attribute"></hotkey_setup_widget>
+                  <hotkey_setup_widget @pressed_key="set_hotkey_for_attribute(item.id, $event)"></hotkey_setup_widget>
                   <v-chip class="ma-auto" x-small v-if="$store.state.user.settings.show_ids === true">
                     ID: {{ item.id }}
                   </v-chip>
@@ -685,8 +685,12 @@ export default Vue.extend( {
     }
   },
   methods: {
-    set_hotkey_for_attribute: function(){
-
+    set_hotkey_for_attribute: function(option_id, hotkeys){
+      console.log('HOTKEYS MAP', hotkeys, option_id)
+      if(!this.group.hotkeys){
+        this.group.hotkeys = {}
+      }
+      this.group.hotkeys[option_id] = hotkeys
     },
     set_global_attribute: function(){
       if(this.group.is_global){
