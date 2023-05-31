@@ -191,6 +191,7 @@
       -->
 
           <div
+            class="canvaswrapper"
             contenteditable="true"
             :id="`canvas_wrapper_${working_file.id}`"
             style="position: relative"
@@ -246,10 +247,11 @@
             </div>
 
             <canvas
-              data-cy="canvas"
-              ref="canvas"
+              class="canvasbg"
+              data-cy="canvasbg"
+              ref="canvasbg"
               v-show="!show_place_holder && !file_cant_be_accessed && !image_annotation_ctx.loading"
-              :id="canvas_id"
+              :id="canvas_bg_id"
               v-canvas:cb="onRendered"
               :height="canvas_height_scaled"
               :width="canvas_width_scaled"
@@ -261,7 +263,6 @@
                 :refresh="refresh"
                 @update_canvas="update_canvas"
                 :canvas_filters="canvas_filters"
-                :canvas_element="canvas_element"
                 :ord="1"
                 :annotations_loading="any_loading"
                 :canvas_width="original_media_width"
@@ -269,35 +270,17 @@
                 :degrees="degrees"
               >
               </v_bg>
-
-              <!-- Important, needs at least 1 non dictionary var to trigger
-          reactive changes. ie :x = mouse_position.x -->
-
-              <target_reticle
-                :is_active="is_active"
-                :ord="2"
-                :x="mouse_position.x"
-                :y="mouse_position.y"
-                :height="original_media_height"
-                :width="original_media_width"
-                :degrees="degrees"
-                :canvas_element="canvas_element"
-                :canvas_mouse_tools="canvas_mouse_tools"
-                :show="show_target_reticle && is_active"
-                :target_colour="
-                  current_label_file ? current_label_file.colour : undefined
-                "
-                :text_color="
-                  this.$get_sequence_color(this.current_instance.sequence_id)
-                "
-                :target_text="this.current_instance.number"
-                :target_type="target_reticle_type"
-                :canvas_transform="canvas_transform"
-                :reticle_size="label_settings.target_reticle_size"
-                :zoom_value="image_annotation_ctx.zoom_value"
-              >
-              </target_reticle>
-
+            </canvas>
+            <canvas
+              class="canvasinstances"
+              data-cy="canvasinstances"
+              ref="canvasinstances"
+              v-show="!show_place_holder && !file_cant_be_accessed && !image_annotation_ctx.loading"
+              :id="canvas_id"
+              v-canvas:cb="onRendered"
+              :height="canvas_height_scaled"
+              :width="canvas_width_scaled"
+            >
               <!-- Current file -->
               <canvas_instance_list
                 :ord="3"
@@ -421,8 +404,43 @@
                 :label_file_colour_map="label_file_colour_map"
               >
               </current_instance_template>
-            </canvas>
 
+            </canvas>
+            <canvas
+              class="canvascursor"
+              data-cy="canvascursor"
+              ref="canvascursor"
+              v-show="!show_place_holder && !file_cant_be_accessed && !image_annotation_ctx.loading"
+              :id="canvas_cursor_id"
+              v-canvas:cb="onRendered"
+              :height="canvas_height_scaled"
+              :width="canvas_width_scaled"
+            >
+              <target_reticle
+                :is_active="is_active"
+                :ord="2"
+                :x="mouse_position.x"
+                :y="mouse_position.y"
+                :height="original_media_height"
+                :width="original_media_width"
+                :degrees="degrees"
+                :canvas_element="canvas_element"
+                :canvas_mouse_tools="canvas_mouse_tools"
+                :show="show_target_reticle && is_active"
+                :target_colour="
+                  current_label_file ? current_label_file.colour : undefined
+                "
+                :text_color="
+                  this.$get_sequence_color(this.current_instance.sequence_id)
+                "
+                :target_text="this.current_instance.number"
+                :target_type="target_reticle_type"
+                :canvas_transform="canvas_transform"
+                :reticle_size="label_settings.target_reticle_size"
+                :zoom_value="image_annotation_ctx.zoom_value"
+              >
+              </target_reticle>
+            </canvas>
             <polygon_borders_context_menu
               :show_context_menu="auto_border_context.show_polygon_border_context_menu"
               :mouse_position="mouse_position"
@@ -1100,6 +1118,11 @@ export default Vue.extend({
       message: "",
       refresh: null,
       canvas_element: null,
+      canvas_element_bg: null,
+      canvas_element_cursor: null,
+      canvas_element_ctx: null,
+      canvas_element_bg_ctx: null,
+      canvas_element_cursor_ctx: null,
 
       current_label_file: {
         id: null,
@@ -1192,6 +1215,12 @@ export default Vue.extend({
   computed: {
     canvas_id: function(){
       return `my_canvas_${this.working_file.id}`
+    },
+    canvas_bg_id: function(){
+      return `my_canvas_bg_${this.working_file.id}`
+    },
+    canvas_cursor_id: function(){
+      return `my_canvas_cursor_${this.working_file.id}`
     },
     label_settings: {
       get: function () {
@@ -1949,25 +1978,28 @@ export default Vue.extend({
         return;
       }
       // Force a canvas reset when changing global scale.
-      if (!this.canvas_element) {
+      if (!this.canvas_element || !this.canvas_element_bg || !this.canvas_element_cursor) {
         return;
       }
       this.label_settings.canvas_scale_global_setting = new_scale;
       this.canvas_mouse_tools.canvas_scale_global = new_scale;
       this.canvas_mouse_tools.scale = new_scale;
-      this.canvas_element_ctx.clearRect(
-        0,
-        0,
-        this.canvas_element.width,
-        this.canvas_element.height
-      );
+      this.canvas_element_ctx.clearRect(0,0, this.canvas_element.width, this.canvas_element.height);
+      this.canvas_element_bg_ctx.clearRect(0,0, this.canvas_element_bg.width, this.canvas_element_bg.height);
+      this.canvas_element_cursor_ctx.clearRect(0,0, this.canvas_element_cursor.width, this.canvas_element_cursor.height);
       this.instance_list = this.instance_list.map(instance => {
         instance.has_changed = true;
         return instance;
       })
       this.canvas_element_ctx.resetTransform();
+      this.canvas_element_bg_ctx.resetTransform();
+      this.canvas_element_cursor_ctx.resetTransform();
       this.canvas_element_ctx.scale(new_scale, new_scale);
+      this.canvas_element_bg_ctx.scale(new_scale, new_scale);
+      this.canvas_element_cursor_ctx.scale(new_scale, new_scale);
       this.canvas_element.width += 0;
+      this.canvas_element_bg.width += 0;
+      this.canvas_element_cursor.width += 0;
       this.canvas_mouse_tools.canvas_width = this.original_media_width;
       this.canvas_mouse_tools.canvas_height = this.original_media_height;
 
@@ -1984,10 +2016,12 @@ export default Vue.extend({
       this.refresh = Date.now();
     },
     update_smooth_canvas: function (event) {
-      if (!this.canvas_element_ctx) {
+      if (!this.canvas_element_ctx || !this.canvas_element_bg_ctx || !this.canvas_element_cursor_ctx) {
         return
       }
       this.canvas_element_ctx.imageSmoothingEnabled = event
+      this.canvas_element_bg_ctx.imageSmoothingEnabled = event
+      this.canvas_element_cursor_ctx.imageSmoothingEnabled = event
     },
     cancel_merge: function () {
       this.$store.commit("set_instance_select_for_merge", false);
@@ -2619,8 +2653,10 @@ export default Vue.extend({
       }
     },
     populate_canvas_element: function () {
-      if (!this.canvas_element) {
+      if (!this.canvas_element || !this.canvas_element_bg || !this.canvas_element_cursor) {
         this.canvas_element = document.getElementById(this.canvas_id);
+        this.canvas_element_bg = document.getElementById(this.canvas_bg_id);
+        this.canvas_element_cursor = document.getElementById(this.canvas_cursor_id);
       }
     },
     fetch_instance_template: async function () {
@@ -2628,8 +2664,6 @@ export default Vue.extend({
         return
       }
       this.loading_instance_templates = true;
-      this.canvas_element = document.getElementById(this.canvas_id);
-      this.canvas_element_ctx = this.canvas_element.getContext("2d");
       const [data, error] = await getInstanceTemplatesFromProject(this.project_string_id, this.label_schema.id);
       if (data && data.instance_template_list) {
         this.instance_template_list =
@@ -3313,10 +3347,14 @@ export default Vue.extend({
     update_canvas: async function () {
       this.refresh = new Date();
       this.canvas_element = document.getElementById(this.canvas_id);
-      if (!this.canvas_element) {
+      this.canvas_element_bg = document.getElementById(this.canvas_bg_id);
+      this.canvas_element_cursor = document.getElementById(this.canvas_cursor_id);
+      if (!this.canvas_element || !this.canvas_element_bg || !this.canvas_element_cursor) {
         return
       }
       this.canvas_element_ctx = this.canvas_element.getContext("2d");
+      this.canvas_element_bg_ctx = this.canvas_element_bg.getContext("2d");
+      this.canvas_element_cursor_ctx = this.canvas_element_cursor.getContext("2d");
 
       this.update_smooth_canvas(this.label_settings.smooth_canvas)
 
@@ -7689,4 +7727,8 @@ export default Vue.extend({
   outline: none;
   -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
 }
+.canvaswrapper{
+  position: relative;
+}
+
 </style>
