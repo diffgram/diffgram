@@ -6,7 +6,11 @@ export class CanvasMouseTools {
   public canvas_translate: any;
   public canvas_rectangle: DOMRect;
   public canvas_ctx: CanvasRenderingContext2D;
+  public canvas_ctx_bg: CanvasRenderingContext2D;
+  public canvas_ctx_cursor: CanvasRenderingContext2D;
   public canvas_elm: HTMLCanvasElement;
+  public canvas_elm_bg: HTMLCanvasElement;
+  public canvas_elm_cursor: HTMLCanvasElement;
   public scale: number;
   public canvas_scale_global: number;
   public canvas_width: number;
@@ -16,11 +20,22 @@ export class CanvasMouseTools {
 
 
 
-  constructor(mouse_position, canvas_translate, canvas_elm, canvas_scale_global, canvas_width, canvas_height) {
+  constructor(mouse_position, canvas_translate, canvas_elm, canvas_elm_bg, canvas_elm_cursor, canvas_scale_global, canvas_width, canvas_height) {
     this.mouse_position = mouse_position;
     this.canvas_translate = canvas_translate;
     this.canvas_elm = canvas_elm;
-    this.canvas_ctx = this.canvas_elm.getContext('2d')
+    this.canvas_elm_bg = canvas_elm_bg;
+    this.canvas_elm_cursor = canvas_elm_cursor;
+    if(this.canvas_elm){
+      this.canvas_ctx = this.canvas_elm.getContext('2d')
+    }
+    if(this.canvas_elm_bg){
+      this.canvas_ctx_bg = this.canvas_elm_bg.getContext('2d')
+    }
+    if(this.canvas_elm_cursor){
+      this.canvas_ctx_cursor = this.canvas_elm_cursor.getContext('2d')
+    }
+
     this.scale = 1;
     this.canvas_scale_global = canvas_scale_global;
     this.canvas_width = canvas_width
@@ -161,14 +176,33 @@ export class CanvasMouseTools {
       this.canvas_elm.width,
       this.canvas_elm.height
     );
+    this.canvas_ctx_bg.clearRect(
+      0,
+      0,
+      this.canvas_elm.width,
+      this.canvas_elm.height
+    );
+    this.canvas_ctx_cursor.clearRect(
+      0,
+      0,
+      this.canvas_elm.width,
+      this.canvas_elm.height
+    );
 
     this.canvas_ctx.translate(point.x, point.y);
-
     this.canvas_ctx.scale(zoom, zoom);
-
     this.canvas_ctx.translate(-point.x, -point.y);
-
     this.canvas_ctx.transform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f)
+
+    this.canvas_ctx_bg.translate(point.x, point.y);
+    this.canvas_ctx_bg.scale(zoom, zoom);
+    this.canvas_ctx_bg.translate(-point.x, -point.y);
+    this.canvas_ctx_bg.transform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f)
+
+    this.canvas_ctx_cursor.translate(point.x, point.y);
+    this.canvas_ctx_cursor.scale(zoom, zoom);
+    this.canvas_ctx_cursor.translate(-point.x, -point.y);
+    this.canvas_ctx_cursor.transform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f)
 
   }
 

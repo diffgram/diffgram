@@ -252,7 +252,6 @@
               ref="canvasbg"
               v-show="!show_place_holder && !file_cant_be_accessed && !image_annotation_ctx.loading"
               :id="canvas_bg_id"
-              v-canvas:cb="onRendered"
               :height="canvas_height_scaled"
               :width="canvas_width_scaled"
             >
@@ -271,176 +270,175 @@
               >
               </v_bg>
             </canvas>
-            <canvas
-              class="canvasinstances"
-              data-cy="canvasinstances"
-              ref="canvasinstances"
-              v-show="!show_place_holder && !file_cant_be_accessed && !image_annotation_ctx.loading"
-              :id="canvas_id"
-              v-canvas:cb="onRendered"
-              :height="canvas_height_scaled"
-              :width="canvas_width_scaled"
-            >
-              <!-- Current file -->
-              <canvas_instance_list
-                :ord="3"
-                :instance_list="instance_list"
-                :default_instance_opacity="default_instance_opacity"
-                :vertex_size="label_settings.vertex_size"
-                :cuboid_corner_move_point="cuboid_corner_move_point"
-                :video_mode="image_annotation_ctx.video_mode"
-                :auto_border_polygon_p1="auto_border_context.auto_border_polygon_p1"
-                :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"
-                :issues_list="issues_list"
-                :current_frame="image_annotation_ctx.current_frame"
-                :label_settings="label_settings"
-                :current_instance="current_instance"
-                :is_actively_drawing="is_actively_drawing"
-                :height="original_media_height"
-                :width="original_media_width"
-                :refresh="refresh"
-                :draw_mode="draw_mode"
-                :mouse_position="mouse_position"
-                @instance_hover_update="
-                  instance_hover_update(
-                    $event[0],
-                    $event[1],
-                    $event[2],
-                    $event[3]
-                  )
-                "
-                @cuboid_face_hover_update="cuboid_face_hover_update"
-                @issue_hover_update="issue_hover_update"
-                :canvas_transform="canvas_transform"
-                :show_annotations="show_annotations"
-                :annotations_loading="image_annotation_ctx.annotations_loading"
-                :label_file_colour_map="label_file_colour_map"
-                :instance_focused_index="instance_focused_index"
-                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"
-                :is_actively_resizing="is_actively_resizing"
-                :emit_instance_hover="!draw_mode || emit_instance_hover"
-                :zoom_value="image_annotation_ctx.zoom_value"
-              >
-              </canvas_instance_list>
+<!--            <canvas-->
+<!--              class="canvasinstances"-->
+<!--              data-cy="canvasinstances"-->
+<!--              ref="canvasinstances"-->
+<!--              v-show="!show_place_holder && !file_cant_be_accessed && !image_annotation_ctx.loading"-->
+<!--              :id="canvas_id"-->
+<!--              v-canvas:cb="onRendered"-->
+<!--              :height="canvas_height_scaled"-->
+<!--              :width="canvas_width_scaled"-->
+<!--            >-->
+<!--              &lt;!&ndash; Current file &ndash;&gt;-->
+<!--              <canvas_instance_list-->
+<!--                :ord="3"-->
+<!--                :instance_list="instance_list"-->
+<!--                :default_instance_opacity="default_instance_opacity"-->
+<!--                :vertex_size="label_settings.vertex_size"-->
+<!--                :cuboid_corner_move_point="cuboid_corner_move_point"-->
+<!--                :video_mode="image_annotation_ctx.video_mode"-->
+<!--                :auto_border_polygon_p1="auto_border_context.auto_border_polygon_p1"-->
+<!--                :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"-->
+<!--                :issues_list="issues_list"-->
+<!--                :current_frame="image_annotation_ctx.current_frame"-->
+<!--                :label_settings="label_settings"-->
+<!--                :current_instance="current_instance"-->
+<!--                :is_actively_drawing="is_actively_drawing"-->
+<!--                :height="original_media_height"-->
+<!--                :width="original_media_width"-->
+<!--                :refresh="refresh"-->
+<!--                :draw_mode="draw_mode"-->
+<!--                :mouse_position="mouse_position"-->
+<!--                @instance_hover_update="-->
+<!--                  instance_hover_update(-->
+<!--                    $event[0],-->
+<!--                    $event[1],-->
+<!--                    $event[2],-->
+<!--                    $event[3]-->
+<!--                  )-->
+<!--                "-->
+<!--                @cuboid_face_hover_update="cuboid_face_hover_update"-->
+<!--                @issue_hover_update="issue_hover_update"-->
+<!--                :canvas_transform="canvas_transform"-->
+<!--                :show_annotations="show_annotations"-->
+<!--                :annotations_loading="image_annotation_ctx.annotations_loading"-->
+<!--                :label_file_colour_map="label_file_colour_map"-->
+<!--                :instance_focused_index="instance_focused_index"-->
+<!--                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"-->
+<!--                :is_actively_resizing="is_actively_resizing"-->
+<!--                :emit_instance_hover="!draw_mode || emit_instance_hover"-->
+<!--                :zoom_value="image_annotation_ctx.zoom_value"-->
+<!--              >-->
+<!--              </canvas_instance_list>-->
 
-              <ghost_instance_list_canvas
-                :ord="4"
-                :show="label_settings.show_ghost_instances"
-                :instance_list="ghost_instance_list"
-                :vertex_size="label_settings.vertex_size"
-                :video_mode="image_annotation_ctx.video_mode"
-                :current_frame="image_annotation_ctx.current_frame"
-                :label_settings="label_settings"
-                :is_actively_drawing="is_actively_drawing"
-                :refresh="refresh"
-                :draw_mode="draw_mode"
-                :mouse_position="mouse_position"
-                :canvas_transform="canvas_transform"
-                :show_annotations="show_annotations"
-                :annotations_loading="image_annotation_ctx.annotations_loading"
-                :label_file_colour_map="label_file_colour_map"
-                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"
-                :is_actively_resizing="is_actively_resizing"
-                :emit_instance_hover="true"
-                @instance_hover_update="
-                  ghost_instance_hover_update($event[0], $event[1], $event[2])
-                "
-                :zoom_value="image_annotation_ctx.zoom_value"
-              >
-              </ghost_instance_list_canvas>
+<!--              <ghost_instance_list_canvas-->
+<!--                :ord="4"-->
+<!--                :show="label_settings.show_ghost_instances"-->
+<!--                :instance_list="ghost_instance_list"-->
+<!--                :vertex_size="label_settings.vertex_size"-->
+<!--                :video_mode="image_annotation_ctx.video_mode"-->
+<!--                :current_frame="image_annotation_ctx.current_frame"-->
+<!--                :label_settings="label_settings"-->
+<!--                :is_actively_drawing="is_actively_drawing"-->
+<!--                :refresh="refresh"-->
+<!--                :draw_mode="draw_mode"-->
+<!--                :mouse_position="mouse_position"-->
+<!--                :canvas_transform="canvas_transform"-->
+<!--                :show_annotations="show_annotations"-->
+<!--                :annotations_loading="image_annotation_ctx.annotations_loading"-->
+<!--                :label_file_colour_map="label_file_colour_map"-->
+<!--                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"-->
+<!--                :is_actively_resizing="is_actively_resizing"-->
+<!--                :emit_instance_hover="true"-->
+<!--                @instance_hover_update="-->
+<!--                  ghost_instance_hover_update($event[0], $event[1], $event[2])-->
+<!--                "-->
+<!--                :zoom_value="image_annotation_ctx.zoom_value"-->
+<!--              >-->
+<!--              </ghost_instance_list_canvas>-->
 
-              <!-- Careful, must have this object exist
-                  prior to loading instance list otherwise it won't update
-                  If there are no instance sit doesn't render anything so that's ok...-->
-              <canvas_instance_list
-                v-if="gold_standard_file"
-                :ord="4"
-                :vertex_size="label_settings.vertex_size"
-                :default_instance_opacity="default_instance_opacity"
-                :cuboid_corner_move_point="cuboid_corner_move_point"
-                :mode="'gold_standard'"
-                :instance_list="gold_standard_file.instance_list"
-                :auto_border_polygon_p1="auto_border_context.auto_border_polygon_p1"
-                :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"
-                :video_mode="image_annotation_ctx.video_mode"
-                :is_actively_drawing="is_actively_drawing"
-                :current_frame="image_annotation_ctx.current_frame"
-                :issues_list="issues_list"
-                :label_settings="label_settings"
-                :current_instance="current_instance"
-                :refresh="refresh"
-                :draw_mode="draw_mode"
-                :mouse_position="mouse_position"
-                :canvas_transform="canvas_transform"
-                :show_annotations="show_annotations"
-                :annotations_loading="image_annotation_ctx.annotations_loading"
-                :label_file_colour_map="label_file_colour_map"
-                :is_actively_resizing="is_actively_resizing"
-                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"
-              >
-              </canvas_instance_list>
+<!--              &lt;!&ndash; Careful, must have this object exist-->
+<!--                  prior to loading instance list otherwise it won't update-->
+<!--                  If there are no instance sit doesn't render anything so that's ok...&ndash;&gt;-->
+<!--              <canvas_instance_list-->
+<!--                v-if="gold_standard_file"-->
+<!--                :ord="4"-->
+<!--                :vertex_size="label_settings.vertex_size"-->
+<!--                :default_instance_opacity="default_instance_opacity"-->
+<!--                :cuboid_corner_move_point="cuboid_corner_move_point"-->
+<!--                :mode="'gold_standard'"-->
+<!--                :instance_list="gold_standard_file.instance_list"-->
+<!--                :auto_border_polygon_p1="auto_border_context.auto_border_polygon_p1"-->
+<!--                :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"-->
+<!--                :video_mode="image_annotation_ctx.video_mode"-->
+<!--                :is_actively_drawing="is_actively_drawing"-->
+<!--                :current_frame="image_annotation_ctx.current_frame"-->
+<!--                :issues_list="issues_list"-->
+<!--                :label_settings="label_settings"-->
+<!--                :current_instance="current_instance"-->
+<!--                :refresh="refresh"-->
+<!--                :draw_mode="draw_mode"-->
+<!--                :mouse_position="mouse_position"-->
+<!--                :canvas_transform="canvas_transform"-->
+<!--                :show_annotations="show_annotations"-->
+<!--                :annotations_loading="image_annotation_ctx.annotations_loading"-->
+<!--                :label_file_colour_map="label_file_colour_map"-->
+<!--                :is_actively_resizing="is_actively_resizing"-->
+<!--                :hidden_label_id_list="annotation_ui_context.hidden_label_id_list"-->
+<!--              >-->
+<!--              </canvas_instance_list>-->
 
-              <canvas_current_instance
-                :ord="5"
-                :current_instance="current_instance"
-                :mouse_position="mouse_position"
-                :canvas_transform="canvas_transform"
-                :draw_mode="draw_mode"
-                :is_actively_drawing="is_actively_drawing"
-                :label_file_colour_map="label_file_colour_map"
-                :zoom_value="image_annotation_ctx.zoom_value"
-              >
-              </canvas_current_instance>
-              <current_instance_template
-                :ord="6"
-                :current_instance_template="actively_drawing_instance_template"
-                :vertex_size="label_settings.vertex_size"
-                :instance_template_start_point="instance_template_start_point"
-                :instance_template_draw_started="instance_template_draw_started"
-                :mouse_position="mouse_position"
-                :canvas_transform="canvas_transform"
-                :draw_mode="draw_mode"
-                :is_actively_drawing="is_actively_drawing"
-                :label_file_colour_map="label_file_colour_map"
-              >
-              </current_instance_template>
+<!--              <canvas_current_instance-->
+<!--                :ord="5"-->
+<!--                :current_instance="current_instance"-->
+<!--                :mouse_position="mouse_position"-->
+<!--                :canvas_transform="canvas_transform"-->
+<!--                :draw_mode="draw_mode"-->
+<!--                :is_actively_drawing="is_actively_drawing"-->
+<!--                :label_file_colour_map="label_file_colour_map"-->
+<!--                :zoom_value="image_annotation_ctx.zoom_value"-->
+<!--              >-->
+<!--              </canvas_current_instance>-->
+<!--              <current_instance_template-->
+<!--                :ord="6"-->
+<!--                :current_instance_template="actively_drawing_instance_template"-->
+<!--                :vertex_size="label_settings.vertex_size"-->
+<!--                :instance_template_start_point="instance_template_start_point"-->
+<!--                :instance_template_draw_started="instance_template_draw_started"-->
+<!--                :mouse_position="mouse_position"-->
+<!--                :canvas_transform="canvas_transform"-->
+<!--                :draw_mode="draw_mode"-->
+<!--                :is_actively_drawing="is_actively_drawing"-->
+<!--                :label_file_colour_map="label_file_colour_map"-->
+<!--              >-->
+<!--              </current_instance_template>-->
 
-            </canvas>
-            <canvas
-              class="canvascursor"
-              data-cy="canvascursor"
-              ref="canvascursor"
-              v-show="!show_place_holder && !file_cant_be_accessed && !image_annotation_ctx.loading"
-              :id="canvas_cursor_id"
-              v-canvas:cb="onRendered"
-              :height="canvas_height_scaled"
-              :width="canvas_width_scaled"
-            >
-              <target_reticle
-                :is_active="is_active"
-                :ord="2"
-                :x="mouse_position.x"
-                :y="mouse_position.y"
-                :height="original_media_height"
-                :width="original_media_width"
-                :degrees="degrees"
-                :canvas_element="canvas_element"
-                :canvas_mouse_tools="canvas_mouse_tools"
-                :show="show_target_reticle && is_active"
-                :target_colour="
-                  current_label_file ? current_label_file.colour : undefined
-                "
-                :text_color="
-                  this.$get_sequence_color(this.current_instance.sequence_id)
-                "
-                :target_text="this.current_instance.number"
-                :target_type="target_reticle_type"
-                :canvas_transform="canvas_transform"
-                :reticle_size="label_settings.target_reticle_size"
-                :zoom_value="image_annotation_ctx.zoom_value"
-              >
-              </target_reticle>
-            </canvas>
+<!--            </canvas>-->
+<!--            <canvas-->
+<!--              class="canvascursor"-->
+<!--              data-cy="canvascursor"-->
+<!--              ref="canvascursor"-->
+<!--              v-show="!show_place_holder && !file_cant_be_accessed && !image_annotation_ctx.loading"-->
+<!--              :id="canvas_cursor_id"-->
+<!--              :height="canvas_height_scaled"-->
+<!--              :width="canvas_width_scaled"-->
+<!--            >-->
+<!--              <target_reticle-->
+<!--                :is_active="is_active"-->
+<!--                :ord="2"-->
+<!--                :x="mouse_position.x"-->
+<!--                :y="mouse_position.y"-->
+<!--                :height="original_media_height"-->
+<!--                :width="original_media_width"-->
+<!--                :degrees="degrees"-->
+<!--                :canvas_element="canvas_element"-->
+<!--                :canvas_mouse_tools="canvas_mouse_tools"-->
+<!--                :show="show_target_reticle && is_active"-->
+<!--                :target_colour="-->
+<!--                  current_label_file ? current_label_file.colour : undefined-->
+<!--                "-->
+<!--                :text_color="-->
+<!--                  this.$get_sequence_color(this.current_instance.sequence_id)-->
+<!--                "-->
+<!--                :target_text="this.current_instance.number"-->
+<!--                :target_type="target_reticle_type"-->
+<!--                :canvas_transform="canvas_transform"-->
+<!--                :reticle_size="label_settings.target_reticle_size"-->
+<!--                :zoom_value="image_annotation_ctx.zoom_value"-->
+<!--              >-->
+<!--              </target_reticle>-->
+<!--            </canvas>-->
             <polygon_borders_context_menu
               :show_context_menu="auto_border_context.show_polygon_border_context_menu"
               :mouse_position="mouse_position"
@@ -3245,6 +3243,8 @@ export default Vue.extend({
         this.mouse_position,
         this.canvas_translate,
         this.canvas_element,
+        this.canvas_element_bg,
+        this.canvas_element_cursor,
         this.canvas_scale_global,
         this.original_media_width,
         this.original_media_height,
@@ -7729,6 +7729,20 @@ export default Vue.extend({
 }
 .canvaswrapper{
   position: relative;
+}
+.canvasbg, .canvascursor, .canvasinstances{
+  position: absolute;
+}
+.canvasbg{
+  z-index: 1;
+}
+
+.canvasinstances{
+  z-index: 2;
+}
+
+.canvascursor{
+  z-index: 3;
 }
 
 </style>

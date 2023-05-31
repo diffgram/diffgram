@@ -53,7 +53,7 @@
           return
         }
         let local_brightness = this.canvas_filters['brightness']
-
+        console.log('DRAW BG', ctx.canvas)
         let rotationDegrees = 0;
         let brightness = `brightness(${local_brightness}%)`
         let contrast = `contrast(${this.canvas_filters['contrast']}%)`

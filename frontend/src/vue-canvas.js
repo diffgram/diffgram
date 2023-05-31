@@ -9,6 +9,7 @@ import Vue from 'vue'
 
       var uid = vnode.context._uid;
 
+      console.log('draw uid', uid, vnode.children)
       var children = vnode.children;
 
       if (!drawFuncs[uid]) {
@@ -81,7 +82,7 @@ import Vue from 'vue'
         }
 
       }
-
+      console.log('BING', canvas, vnode.children)
       vnode.children.forEach(function (c) {
 
         if (c.tag && c.componentInstance && c.elm.localName == "v-canvas-wrapper") {

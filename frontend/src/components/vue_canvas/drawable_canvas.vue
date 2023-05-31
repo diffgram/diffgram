@@ -218,6 +218,8 @@
         this.mouse_position,
         this.canvas_translate,
         this.canvas_element,
+        null,
+        null,
         this.canvas_scale_global
       )
       this.canvas_wrapper = document.getElementById(this.$props.canvas_wrapper_id)
