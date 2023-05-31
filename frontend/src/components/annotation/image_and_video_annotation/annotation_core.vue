@@ -1961,6 +1961,10 @@ export default Vue.extend({
         this.canvas_element.width,
         this.canvas_element.height
       );
+      this.instance_list = this.instance_list.map(instance => {
+        instance.has_changed = true;
+        return instance;
+      })
       this.canvas_element_ctx.resetTransform();
       this.canvas_element_ctx.scale(new_scale, new_scale);
       this.canvas_element.width += 0;
@@ -3077,17 +3081,20 @@ export default Vue.extend({
 
       return true;
     },
-    created: function () {
+    created: async function () {
       this.update_label_settings_from_schema()
       this.update_user_settings_from_store();
+
       this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore();
       // Initial File Set
       if (this.working_file) {
-        this.on_change_current_file();
+        await this.on_change_current_file();
       } else if (this.task) {
-        this.on_change_current_task();
+        await this.on_change_current_task();
       }
-
+      if(this.instance_list.length > 100){
+        this.label_settings.show_text = false;
+      }
 
     },
     update_label_settings_from_schema: function () {
@@ -5776,10 +5783,8 @@ export default Vue.extend({
 
 
       }
-
       // For new Refactored instance types
       this.mouse_up_v2_handler(event)
-
     },
     stop_ellipse_resize: function () {
       this.ellipse_hovered_instance = undefined;

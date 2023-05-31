@@ -49,6 +49,11 @@ def input_packet(project_string_id):
                  {'directory_id': None},
                  {'original_filename': None},
                  {'raw_data_blob_path': None},
+                 {'instance_list': {
+                     "required": False,
+                     "kind": list,
+
+                 }},
                  {'text_data': None},
                  {'parent_file_id': {
                      "required": False,
@@ -343,6 +348,8 @@ def validate_input_from_text_data(input: dict, log: dict):
         log['error']['text_data'] = 'Provide "text_data" as a string.'
 
     return log
+
+
 def validate_input_from_blob_path(project: Project, input: dict, session: Session, log: dict):
     if input.get('connection_id') is None:
         log['error'] = {}

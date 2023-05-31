@@ -269,11 +269,15 @@
 
 
           // MAIN loop
-
+          ctx.textAlign = "start";
+          ctx.setLineDash([0])
+          // var startTime = performance.now();
           for (var i in this.instance_list) {
             this.draw_single_instance(ctx, i)
           }
 
+          // var endTime = performance.now();
+          // console.log("Instance List Draw Execution time: " + (endTime - startTime) + " milliseconds.");
           this.draw_issues_markers(ctx);
 
           this.check_null_hover_case()    // careful, these should fire outside of main loop
@@ -487,7 +491,7 @@
           // TODO review this.colour isolation here
 
 
-          ctx.textAlign = "start";
+
           // WIP , restrict movement to center point only
           //draw_circle(instance, instance.x_min + instance.width/2, instance.y_min + instance.height/2, ctx)
 
@@ -506,6 +510,7 @@
           if (instance.type == "box") {
             let box: BoxInstance = instance as BoxInstance
             box.draw(ctx)
+            return
           }
 
           else if (["polygon"].includes(instance.type)) {
@@ -568,24 +573,11 @@
 
           }
 
-          // TODO we may want to add the edit circle things
-          // (right now the stroke goes over the fill and it looks funny)
-
-          // TODO maybe could be a fancier highlight method
-          // ie maybe rect plus shaded or something
-          // ie https://stackoverflow.com/questions/10487882/html5-change-opacity-of-a-draw-rectangle
           ctx.stroke()
           // Reset line width after drawing.
           ctx.lineWidth = '2'
-            /*
-            if (this.instance_focused_index != undefined) {
-              if (instance.id === this.instance_focused_index) {
-                ctx.strokeStyle = "blue"
-              }
-            }
-            */
 
-           this.draw_icons(instance, ctx)
+         this.draw_icons(instance, ctx)
 
         },
 

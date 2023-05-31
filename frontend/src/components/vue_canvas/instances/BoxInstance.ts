@@ -275,7 +275,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
     this.draw_circle(this.x_max, this.y_max, ctx)
     ctx.moveTo(this.x_min, this.y_max);
     this.draw_circle(this.x_min, this.y_max, ctx)
-    ctx.fill()
+
   }
 
   private check_box_hovered(ctx) {
@@ -309,17 +309,20 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
 
   public draw(ctx: CanvasRenderingContext2D): void {
     ctx.beginPath()
+    let x_min = Math.round(this.x_min);
+    let y_min = Math.round(this.y_min);
     if (this.sequence_id) {
       ctx.fillStyle = get_sequence_color(this.sequence_id)
     }
 
 
-    this.draw_label(ctx, this.x_min, this.y_min)
+    this.draw_label(ctx, x_min, y_min)
     this.grab_color_from_instance(ctx)
-    ctx.fillText(this.label_file.label.name, this.x_min, this.y_min);
-    ctx.setLineDash([0])
-    ctx.rect(this.x_min,
-      this.y_min,
+    if(this.image_label_settings.show_text){
+      ctx.fillText(this.label_file.label.name, this.x_min, this.y_min);
+    }
+    ctx.rect(x_min,
+      y_min,
       this.width,
       this.height)
 
@@ -328,11 +331,13 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
       this.draw_box_edit_corners(ctx)
     }
 
-    if(this.image_label_settings){
+    if(this.image_label_settings && this.image_label_settings.spatial_line_size != this.line_width){
       ctx.lineWidth = this.image_label_settings.spatial_line_size
+      this.line_width = this.image_label_settings.spatial_line_size
     }
 
     ctx.stroke()
+    ctx.closePath()
   }
 
 

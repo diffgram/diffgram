@@ -10,10 +10,12 @@ export abstract class InstanceImage2D extends Instance {
   public canvas_transform: ImageCanvasTransform;
   public canvas_element: HTMLCanvasElement
   public strokeColor: string = 'black';
+  public line_width: number = 4;
   public fillColor: string = 'white';
   public image_label_settings: ImageLabelSettings
   public is_moving: boolean = false;
   protected is_actively_drawing: boolean = false;
+  protected has_changed: boolean = false;
   public canvas_mouse_tools: CanvasMouseTools;
 
   public get_canvas_transform(): ImageCanvasTransform {
@@ -63,8 +65,12 @@ export abstract class InstanceImage2D extends Instance {
   }
 
   protected grab_color_from_instance(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = this.fillColor
-    ctx.strokeStyle = this.strokeColor
+    if(this.fillColor != ctx.fillStyle){
+      ctx.fillStyle = this.fillColor
+    }
+    if(this.strokeColor != ctx.strokeStyle){
+      ctx.strokeStyle = this.strokeColor
+    }
 
   }
 

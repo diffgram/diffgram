@@ -138,7 +138,7 @@
               </v-btn>
           </v-expansion-panel-header>
 
-          <v-expansion-panel-header class="d-flex justify-start pa-0 pb-2 sidebar-accordeon-header align-center">
+          <v-expansion-panel-header v-if="instance_list_count < 100" class="d-flex justify-start pa-0 pb-2 sidebar-accordeon-header align-center">
 
             <v-icon left class="ml-5 flex-grow-0" color="primary" size="18">
               mdi-brush
@@ -156,11 +156,12 @@
           <v-expansion-panel-content class="ml-2">
             <v-chip v-if="current_instance
                       && current_instance.id
-                      && $store.state.user.settings.show_ids == true" x-small class="ma-2" color="secondary">
+                      && $store.state.user.settings.show_ids == true " x-small class="ma-2" color="secondary">
               <span class="font-weight-bold mr-2">Selected: </span> <span>{{ current_instance.id }}</span>
             </v-chip>
             <v-data-table v-if="grouped_list &&
-                                    grouped_list.instance_list.length > 0"
+                                grouped_list.instance_list.length > 0
+                                && grouped_list.instance_list.length < 100"
                           style="overflow-y:auto; max-height: 450px"
                           :headers="header"
                           :items="grouped_list.instance_list"
