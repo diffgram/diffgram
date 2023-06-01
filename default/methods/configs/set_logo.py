@@ -32,7 +32,7 @@ def admin_set_logo_core(session, file_binary, log = regular_log.default()):
     temp_dir = tempfile.gettempdir()
     extension = file_binary.filename.split('.')[len(file_binary.filename.split('.')) - 1]
     allowed_formats = ['jpg', 'png', 'webp', 'jpeg']
-    if extension not in allowed_formats:
+    if extension.lower() not in allowed_formats:
         log['error']['image'] = f'Invalid image format only support {allowed_formats}.'
         return None, log
     file_path = f"{temp_dir}/{uuid.uuid4()}.{extension}"
