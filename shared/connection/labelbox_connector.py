@@ -1114,12 +1114,16 @@ class LabelboxConnector(Connector):
         project_id = opts['labelbox_project_id']
         project = self.connection_client.get_project(project_id = project_id)
         datasets = project.datasets()
+        batch_list = project.batches()
         ontology = project.ontology()
         labels = ontology.tools()
         dataset_count = 0
+        batch_count = 0
         labels_count = len(labels)
         for d in datasets:
             dataset_count += 1
+        for batch in batch_list:
+            batch_count +=1
 
         attr_count = 0
         attr_global_count = 0
@@ -1134,6 +1138,7 @@ class LabelboxConnector(Connector):
                 'attr_count': attr_count,
                 'labels_count': labels_count,
                 'attr_global_count': attr_global_count,
+                'batch_count': batch_count
             }
         }
 

@@ -3,7 +3,7 @@
     <v_error_multiple :error="error"></v_error_multiple>
     <h1 class="font-weight-light">3. Confirm</h1>
 
-    <h2 class="mt-4 mb-2">You Are about to import data from an external source into diffgram.</h2>
+    <h2 class="mt-4 mb-2">You are about to import data from an external source into diffgram.</h2>
     <h2 class="font-weight-regular warning--text">
       <v-icon size="32" color="warning">mdi-alert</v-icon>
       If you selected files import too, it will create datasets and files in this project.
@@ -13,23 +13,28 @@
       <h1 class="mb-4">Data to Import: </h1>
       <p style="font-size: 1.2rem">
         <v-icon size="48" color="success">mdi-check</v-icon>
-        <strong class="primary--text">Number of Attributes: </strong>
+        <strong class="primary--text">Attributes: </strong>
         <strong style="font-size: 1.5rem" class="secondary--text">{{stats.attr_count}}</strong>
       </p>
       <p style="font-size: 1.2rem">
         <v-icon size="48" color="success">mdi-check</v-icon>
-        <strong class="primary--text">Number of Global Attributes: </strong>
+        <strong class="primary--text">Global Attributes: </strong>
         <strong style="font-size: 1.5rem" class="secondary--text">{{stats.attr_global_count}}</strong>
       </p>
       <p style="font-size: 1.2rem">
         <v-icon size="48" color="success">mdi-check</v-icon>
-        <strong class="primary--text">Number of Labels: </strong>
+        <strong class="primary--text">Labels: </strong>
         <strong style="font-size: 1.5rem" class="secondary--text">{{stats.labels_count}}</strong>
       </p>
       <p style="font-size: 1.2rem">
         <v-icon size="48" color="success">mdi-check</v-icon>
-        <strong class="primary--text">Number of Datasets: </strong>
+        <strong class="primary--text">Datasets: </strong>
         <strong style="font-size: 1.5rem" class="secondary--text">{{stats.dataset_count}}</strong>
+      </p>
+      <p style="font-size: 1.2rem">
+        <v-icon size="48" color="success">mdi-check</v-icon>
+        <strong class="primary--text">Batches: </strong>
+        <strong style="font-size: 1.5rem" class="secondary--text">{{stats.batch_count}}</strong>
       </p>
     </v-container>
 
