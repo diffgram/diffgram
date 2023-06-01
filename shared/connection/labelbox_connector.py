@@ -891,12 +891,14 @@ class LabelboxConnector(Connector):
                                   project_migration,
                                   current_count,
                                   total_count,
-                                  lb_dataset):
-        total_dataset_count = lb_dataset.row_count
+                                  lb_batch_or_dataset):
         i = 0
         self.log['info']['data_rows_total_count'] = total_count
 
-        data_row_iterator = lb_dataset.data_rows()
+        try:
+            data_row_iterator = lb_batch_or_dataset.data_rows()
+        except:
+            data_row_iterator = lb_batch_or_dataset.export_data_rows()
 
         for data_row in self.defensive_wrapper(data_row_iterator):
 
@@ -943,7 +945,7 @@ class LabelboxConnector(Connector):
             regular_methods.commit_with_rollback(session)
 
             logger.debug(f'Progress {project_migration.percent_complete}')
-            logger.debug(f'Data Row {data_row.uid} {i}/{total_dataset_count} enqueued successfully to Diffgram')
+            logger.debug(f'Data Row {data_row.uid} {i}/{total_count} enqueued successfully to Diffgram')
             i += 1
 
     def __create_diffgram_dataset(self,
@@ -951,7 +953,7 @@ class LabelboxConnector(Connector):
                                   member,
                                   ontology,
                                   diffgram_project,
-                                  lb_dataset,
+                                  lb_name,
                                   labelbox_project,
                                   total_file_count,
                                   current_count,
@@ -959,15 +961,15 @@ class LabelboxConnector(Connector):
         """
             Creates a dataset in diffgram. Optionally create all files inside dataset
         :param diffgram_project:
-        :param lb_dataset:
         :return:
         """
-        diffgram_dataset_link = Project_Directory_List.get_by_name(session, diffgram_project.id, lb_dataset.name)
+
+        diffgram_dataset_link = Project_Directory_List.get_by_name(session, diffgram_project.id, lb_name)
         if not diffgram_dataset_link:
-            logger.info(f'Creating new dataset {lb_dataset.name}')
+            logger.info(f'Creating new dataset {lb_name}')
             diffgram_dataset = WorkingDir.new_blank_directory(
                 session = session,
-                nickname = lb_dataset.name,
+                nickname = lb_name,
                 project_id = diffgram_project.id,
                 project_default = False
             )
@@ -975,7 +977,7 @@ class LabelboxConnector(Connector):
                 session = session,
                 working_dir_id = diffgram_dataset.id,
                 project_id = diffgram_project.id,
-                nickname = lb_dataset.name
+                nickname = lb_name
             )
             diffgram_project.set_cache_key_dirty('directory_list')
             dataset_description = f'Created dataset {diffgram_dataset.nickname} with ID {diffgram_dataset.id}'
@@ -983,32 +985,15 @@ class LabelboxConnector(Connector):
             self.log['info']['dataset description'] = dataset_description
         else:
             diffgram_dataset = WorkingDir.get_by_id(session, diffgram_dataset_link.working_dir_id)
-            logger.debug(f'Dataset {lb_dataset.name} already exists.')
+            logger.debug(f'Dataset {lb_name} already exists.')
             logger.debug(f'Using {diffgram_dataset.nickname} with ID {diffgram_dataset.id}')
 
         project_migration.external_mapping_project.dataset_id = diffgram_dataset.id
 
-        logger.info(f'Creating files for dataset: {lb_dataset.name} ')
-
-        input_batch = InputBatch.new(
-            session = session,
-            status = 'pending',
-            project_id = diffgram_project.id,
-            member_created_id = member.id,
-            memeber_updated_id = member.id,
-            pre_labeled_data = None
-        )
-        self.__create_files_in_dataset(diffgram_dataset = diffgram_dataset,
-                                       session = session,
-                                       ontology = ontology,
-                                       member = member,
-                                       current_count = current_count,
-                                       project_migration = project_migration,
-                                       input_batch = input_batch,
-                                       total_count = total_file_count,
-                                       lb_dataset = lb_dataset)
+        logger.info(f'Creating files for dataset: {lb_name} ')
 
         return diffgram_dataset
+
 
     def __import_files_and_datasets(self,
                                     session,
@@ -1020,11 +1005,26 @@ class LabelboxConnector(Connector):
         ontology = labelbox_project.ontology()
         total_file_count = 0
         current_count = 0
-        for lb_dataset in labelbox_project.datasets():
+
+        labelbox_datasets = list(labelbox_project.datasets())
+        labelbox_batches = list(labelbox_project.batches())
+
+        for lb_dataset in labelbox_datasets:
             total_file_count += lb_dataset.row_count
 
-        for lb_dataset in labelbox_project.datasets():
-            self.__create_diffgram_dataset(
+        for lb_batch in labelbox_batches:
+            total_file_count += lb_batch.size
+
+        logger.info(f'len(labelbox_datasets): {len(labelbox_datasets)} ')
+        logger.info(f'len(labelbox_batches): {len(labelbox_batches)} ')
+
+        all_lb_batches_and_datasets = labelbox_datasets + labelbox_batches
+
+        for lb_batch_or_dataset in all_lb_batches_and_datasets:
+
+            lb_name = lb_batch_or_dataset.name
+
+            new_diffgram_dataset = self.__create_diffgram_dataset(
                 session = session,
                 diffgram_project = diffgram_project,
                 project_migration = project_migration,
@@ -1032,8 +1032,29 @@ class LabelboxConnector(Connector):
                 total_file_count = total_file_count,
                 member = member,
                 ontology = ontology,
-                lb_dataset = lb_dataset,
+                lb_name = lb_name,
                 labelbox_project = labelbox_project)
+
+            input_batch = InputBatch.new(
+                session = session,
+                status = 'pending',
+                project_id = diffgram_project.id,
+                member_created_id = member.id,
+                memeber_updated_id = member.id,
+                pre_labeled_data = None
+            )
+
+            self.__create_files_in_dataset(
+                diffgram_dataset = new_diffgram_dataset,
+                session = session,
+                ontology = ontology,
+                member = member,
+                current_count = current_count,
+                project_migration = project_migration,
+                input_batch = input_batch,
+                total_count = total_file_count,
+                lb_batch_or_dataset = lb_batch_or_dataset)
+
 
     def __import_global_attributes_to_project(self,
                                               session,
