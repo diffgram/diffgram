@@ -23,6 +23,7 @@
         },
         "instance_list": {},
         "issues_list": undefined,
+        "canvas_mouse_tools": undefined,
         "width": undefined,
         "height": undefined,
         "compare_to_instance_list_set": {
@@ -254,6 +255,7 @@
 
         },
 
+
         // MAIN function
         draw: function (ctx, done) {
           if (this.show_annotations != true) {
@@ -271,13 +273,20 @@
           // MAIN loop
           ctx.textAlign = "start";
           ctx.setLineDash([0])
+
+
           // var startTime = performance.now();
-          for (var i in this.instance_list) {
-            if (i % 100 === 0) {
-              setTimeout(()=>{}, 2);
+          if(!this.canvas_mouse_tools){
+            for (let i in this.instance_list) {
+              this.draw_single_instance(ctx, i)
             }
-            this.draw_single_instance(ctx, i)
+          } else{
+
+            for (let i in this.canvas_mouse_tools.visible_instances) {
+              this.draw_single_instance(ctx, i)
+            }
           }
+
 
           // var endTime = performance.now();
           // console.log("Instance List Draw Execution time: " + (endTime - startTime) + " milliseconds.");
@@ -478,7 +487,13 @@
         },
 
         draw_single_instance: function (ctx, i) {
-          var instance = this.instance_list[i]
+          var instance
+          if(!this.canvas_mouse_tools){
+            instance = this.instance_list[i]
+          } else{
+            instance = this.canvas_mouse_tools.visible_instances[i]
+          }
+
 
           let result = this.draw_single_instance_limits(instance, i)
           if (result == false)  {

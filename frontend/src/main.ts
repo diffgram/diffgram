@@ -26,6 +26,7 @@ import './css/vue_dropzone.css'
  *
  */
 
+Vue.config.performance = true
 import file_preview from './components/source_control/file_preview'
 Vue.component('file_preview', file_preview)
 

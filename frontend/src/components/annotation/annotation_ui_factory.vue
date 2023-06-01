@@ -280,6 +280,7 @@
             </file_manager_sheet>
         </div>
         <v-dialog
+              v-if="dialog"
               v-model="dialog"
               max-width="290"
         >
@@ -370,7 +371,11 @@ import toolbar_factory from "./toolbar_factory.vue"
 import sidebar_factory from "./sidebar_factory.vue";
 import panel_metadata from "./panel_metadata.vue";
 
-import {duplicate_instance, initialize_instance_object} from "../../utils/instance_utils";
+import {
+  duplicate_instance,
+  initialize_instance_object,
+  to_serializable_instance_list
+} from "../../utils/instance_utils";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
@@ -1322,11 +1327,12 @@ export default Vue.extend({
                 }
 
             }
+
             if (!instance_list) {
                 return
             }
 
-            if (frame_number && this.get_save_loading(frame_number)) return
+            if (this.video_mode && frame_number && this.get_save_loading(frame_number)) return
             if (this.any_loading) return
 
             if (
@@ -1337,6 +1343,7 @@ export default Vue.extend({
                 )
             ) return
             this.set_save_loading(true, frame_number);
+            instance_list = to_serializable_instance_list(instance_list)
             let [has_duplicate_instances, dup_ids, dup_indexes] =
                 AnnotationSavePrechecks.has_duplicate_instances(instance_list);
             let dup_instance_list = dup_indexes.map((i) => ({
@@ -1385,7 +1392,7 @@ export default Vue.extend({
                 video_data,
                 child_file_save_id: this.root_file.type === 'compound' ? this.annotation_ui_context.working_file.id : undefined
             }
-
+          console.log('save_request preeee')
             const [result, error] = await this.save_request(payload)
             if (result) {
                 // Save global instances video

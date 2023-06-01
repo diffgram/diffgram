@@ -73,7 +73,7 @@
       </template>
     </v-snackbar>
     <div v-if="instance_type === 'polygon'">
-      <v-snackbar dismissible type="info" v-model="alert_info_drawing">
+      <v-snackbar v-if="alert_info_drawing" dismissible type="info" v-model="alert_info_drawing">
         To complete polygon click first point again, or
         <kbd>Enter</kbd> key, or hover in turbo mode.
       </v-snackbar>
@@ -194,18 +194,16 @@
             :style="canvas_style"
           >
             <!-- Diffgram loading loading your data -->
-            <v-fade-transition :hide-on-leave="true">
-              <v-container v-show="show_place_holder" style="width: 100%">
-                <h2 class="font-weight-light">Loading File...</h2>
-                <v-progress-linear indeterminate></v-progress-linear>
-                <v-img
-                  src="https://storage.googleapis.com/diffgram_public/app/Empty_state_card.svg"
-                  alt=""
-                  style="max-width: 100%; width: 100%"
-                ></v-img>
-                <!-- https://storage.googleapis.com/diffgram_public/app/Copy-of-Loading-Placeholder.png -->
-              </v-container>
-            </v-fade-transition>
+            <v-container v-if="show_place_holder" style="width: 100%">
+              <h2 class="font-weight-light">Loading File...</h2>
+              <v-progress-linear indeterminate></v-progress-linear>
+              <v-img
+                src="https://storage.googleapis.com/diffgram_public/app/Empty_state_card.svg"
+                alt=""
+                style="max-width: 100%; width: 100%"
+              ></v-img>
+              <!-- https://storage.googleapis.com/diffgram_public/app/Copy-of-Loading-Placeholder.png -->
+            </v-container>
             <autoborder_avaiable_alert
               :x_position="canvas_alert_x"
               :y_position="canvas_alert_y"
@@ -288,6 +286,7 @@
 
               <canvas_instance_list
                 :ord="3"
+                :canvas_mouse_tools="canvas_mouse_tools"
                 :instance_list="instance_list"
                 :default_instance_opacity="default_instance_opacity"
                 :vertex_size="label_settings.vertex_size"
@@ -627,7 +626,7 @@ import v_sequence_list from "../../video/sequence_list"
 import {
   initialize_instance_object,
   duplicate_instance,
-  duplicate_instance_template, post_init_instance
+  duplicate_instance_template, post_init_instance, to_serializable_instance_list
 } from '../../../utils/instance_utils.ts';
 import {
   InteractionEvent,
@@ -772,6 +771,7 @@ export default Vue.extend({
       if (this.working_file.type === "image") {
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
+        this.canvas_mouse_tools.update_visible_instances()
         this.$emit('instance_list_updated', newVal, this.working_file.id, this.working_file.type)
       }
     },
@@ -3204,6 +3204,8 @@ export default Vue.extend({
         this.canvas_scale_global,
         this.original_media_width,
         this.original_media_height,
+        this.instance_store,
+        this.task ? this.task.file_id : this.working_file.id,
       );
       this.on_canvas_scale_global_changed();
       // assumes canvas wrapper available
@@ -3476,7 +3478,7 @@ export default Vue.extend({
         this.image_annotation_ctx.video_mode = false;
         this.original_media_width = file.image.width;
         this.original_media_height = file.image.height;
-
+        this.canvas_mouse_tools.set_canvas_width_height(this.original_media_width, this.original_media_height)
         const new_image = await this.addImageProcess(file.image.url_signed);
         this.html_image = new_image;
         this.loading = false;
@@ -3490,9 +3492,10 @@ export default Vue.extend({
 
         this.original_media_width = file.video.width;
         this.original_media_height = file.video.height;
-
+        this.canvas_mouse_tools.set_canvas_width_height(this.original_media_width, this.original_media_height)
         this.$refs.video_controllers.reset_cache();
         await this.$refs.video_controllers.get_video_single_image();
+        this.canvas_mouse_tools.update_visible_instances()
       }
     },
     // todo why not make this part of rest of event stuff
@@ -5041,6 +5044,7 @@ export default Vue.extend({
 
       this.original_media_width = file.video.width;
       this.original_media_height = file.video.height;
+      this.canvas_mouse_tools.set_canvas_width_height(this.original_media_width, this.original_media_height)
       this.image_annotation_ctx.video_mode = true;
       this.current_video = file.video;
       this.current_video_file_id = file.id;
@@ -5116,7 +5120,7 @@ export default Vue.extend({
       let newSize = determineSize(file.image.width, file.image.height, this.degrees)
       this.original_media_width = newSize.width;
       this.original_media_height = newSize.height;
-
+      this.canvas_mouse_tools.set_canvas_width_height(this.original_media_width, this.original_media_height)
       await this.addImageProcess_with_canvas_refresh(file);
     },
 
@@ -7049,6 +7053,7 @@ export default Vue.extend({
           this.refresh = Date.now();
           this.original_media_width = file.image.width;
           this.original_media_height = file.image.height;
+          this.canvas_mouse_tools.set_canvas_width_height(this.original_media_width, this.original_media_height)
           this.update_canvas();
 
 
@@ -7577,8 +7582,9 @@ export default Vue.extend({
     },
     set_clipboard: function (instance_list) {
       let file_id = this.working_file.id;
+      const inst_list_clipboard = to_serializable_instance_list(instance_list)
       this.$store.commit("set_clipboard", {
-        instance_list: instance_list,
+        instance_list: inst_list_clipboard,
         file_id: file_id,
       });
     },

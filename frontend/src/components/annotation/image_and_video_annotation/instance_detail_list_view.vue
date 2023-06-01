@@ -2,6 +2,7 @@
   <div v-cloak style="height: 100%">
     <v-alert type="success"
              class="ma-0"
+             v-if="focus_mode"
              :value="focus_mode">
       <div class="d-flex flex-column">
         <div class="d-flex">
@@ -14,7 +15,7 @@
       </div>
     </v-alert>
 
-    <ui_schema name="attribute_preview">
+    <ui_schema name="attribute_preview" v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task">
       <attribute_preview
         v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task"
         :global_attribute_groups_list="global_attribute_groups_list"
@@ -537,6 +538,7 @@
       </v-expansion-panels>
 
       <v-alert type="warning"
+               v-if="label_settings.show_removed_instances"
                :value="label_settings.show_removed_instances == true">
         Showing removed.
       </v-alert>
@@ -763,6 +765,12 @@ export default Vue.extend({
         if(this.instance_list == undefined){
           return
         }
+        // TODO: Optimize to support model runs and avoid doing a filter on the code below.
+        if(this.instance_list.length > 300){
+          return [{model_run: null, instance_list: this.instance_list}]
+        }
+
+
         const instance_list = this.instance_list.map((inst, i) => ({
           ...inst,
           instance_list_index: i

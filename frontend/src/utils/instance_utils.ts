@@ -15,6 +15,15 @@ import {PolygonInstance} from "../components/vue_canvas/instances/PolygonInstanc
 import {CanvasMouseTools} from "../components/vue_canvas/CanvasMouseTools";
 import {GlobalInstance} from "../components/vue_canvas/instances/GlobalInstance";
 
+export const to_serializable_instance_list =  function (inst_list){
+  // Removes any references to objects preventing the instance to be serialzed as a JSON.
+  const copy = [...inst_list]
+  const res = copy.map(inst => {
+
+    return {...inst, canvas_mouse_tools: undefined}
+  })
+  return res
+}
 export const duplicate_for_undo = function() {
   let duplicate_instance = new BoxInstance(
     this.ctx,
