@@ -6707,7 +6707,7 @@ export default Vue.extend({
         this.get_and_set_global_instance(this.instance_list)
       }
       this.add_override_colors_for_model_runs();
-      await new Promise(resolve => setTimeout(resolve, 10));
+
       this.image_annotation_ctx.annotations_loading = false;
       this.update_canvas();
 
