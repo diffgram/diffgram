@@ -778,14 +778,10 @@ export default Vue.extend({
     instance_buffer_dict: {
       deep: true,
       handler: function (newVal, old) {
-        if(isEqual(newVal, old)){
-          return
-        }
         if (this.working_file.type === "video") {
           this.instance_store.set_instance_list(this.working_file.id, newVal)
           this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
           this.canvas_mouse_tools.instance_store = this.instance_store
-          this.canvas_mouse_tools.update_visible_instances()
         }
       },
     },
@@ -2570,9 +2566,6 @@ export default Vue.extend({
         return result;
       }
       for (let i = 0; i < instance_list.length; i++) {
-        if (i % 100 === 0) {
-          setTimeout(()=>{}, 0);
-        }
         let current_instance = instance_list[i];
         // Note that this variable may now be one of any of the classes on vue_canvas/instances folder.
         // Or (for now) it could also be a vanilla JS object (for those types) that haven't been refactored.
