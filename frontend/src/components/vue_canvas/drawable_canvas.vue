@@ -220,6 +220,10 @@
         this.canvas_element,
         this.canvas_scale_global,
         this.instance_list,
+        this.canvas_height,
+        null,
+        null,
+        null,
       )
       this.canvas_wrapper = document.getElementById(this.$props.canvas_wrapper_id)
       if(this.$props.allow_zoom){

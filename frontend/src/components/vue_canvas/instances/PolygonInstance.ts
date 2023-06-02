@@ -123,6 +123,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
       point.x = Math.ceil(point.x)
       point.y = Math.ceil(point.y)
     }
+    this.update_min_max_points()
   }
   public duplicate_for_undo() {
     let duplicate_instance = new PolygonInstance(
@@ -189,6 +190,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     this.y_min = Math.ceil(this.y_min)
     this.x_max = Math.ceil(this.x_max)
     this.y_max = Math.ceil(this.y_max)
+    this.update_min_max_points()
   }
 
 
@@ -208,6 +210,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
     point.x = Math.round(point.x)
     point.y = Math.round(point.y)
     this.points.push({...point} as PolygonPoint)
+    this.update_min_max_points()
   }
 
   public update_min_max_points() {
@@ -326,6 +329,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
   public delete_point(p_index: number){
     this.points.splice(p_index, 1);
+    this.update_min_max_points()
   }
 
   private check_poly_hovered(ctx, figure_id: string = undefined) {

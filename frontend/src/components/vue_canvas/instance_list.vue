@@ -276,12 +276,11 @@
 
 
           // var startTime = performance.now();
-          if(!this.canvas_mouse_tools){
+          if(!this.canvas_mouse_tools || this.video_mode){
             for (let i in this.instance_list) {
               this.draw_single_instance(ctx, i)
             }
           } else{
-
             for (let i in this.canvas_mouse_tools.visible_instances) {
               this.draw_single_instance(ctx, i)
             }
@@ -488,7 +487,7 @@
 
         draw_single_instance: function (ctx, i) {
           var instance
-          if(!this.canvas_mouse_tools){
+          if(!this.canvas_mouse_tools || this.video_mode){
             instance = this.instance_list[i]
           } else{
             instance = this.canvas_mouse_tools.visible_instances[i]

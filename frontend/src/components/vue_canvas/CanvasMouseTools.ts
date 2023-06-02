@@ -1,13 +1,15 @@
-import {size} from "lodash";
+import {size, isEqual} from "lodash";
 import {MousePosition, Point} from "../../types/mouse_position";
 import {Instance} from "./instances/Instance";
 import * as math from 'mathjs'
 import InstanceStore from "../../helpers/InstanceStore";
 import {File} from "../../types/files";
+import {ImageAnnotationUIContext} from "../../types/AnnotationUIContext";
 
 export class CanvasMouseTools {
   public mouse_position: MousePosition;
   public canvas_translate: any;
+  public image_annotation_ctx: ImageAnnotationUIContext;
   public visible_instances: Instance[];
   public instance_store: InstanceStore;
   public transform_matrix: any;
@@ -33,7 +35,7 @@ export class CanvasMouseTools {
   public mouse_is_down: boolean
 
 
-  constructor(mouse_position, canvas_translate, canvas_elm, canvas_scale_global, canvas_width, canvas_height, instance_store, file_id: number) {
+  constructor(mouse_position, canvas_translate, canvas_elm, canvas_scale_global, canvas_width, canvas_height, instance_store, file_id: number, image_annotation_ctx: ImageAnnotationUIContext) {
     this.mouse_position = mouse_position;
     this.canvas_translate = canvas_translate;
     this.canvas_elm = canvas_elm;
@@ -43,6 +45,7 @@ export class CanvasMouseTools {
     this.canvas_width = canvas_width
     this.canvas_height = canvas_height
     this.instance_store = instance_store
+    this.image_annotation_ctx = image_annotation_ctx
     this.file_id = file_id
     var transform = this.canvas_ctx.getTransform();
     this.update_visible_instances(transform);
@@ -95,10 +98,12 @@ export class CanvasMouseTools {
 
   public pan_x(movement_x) {
     this.canvas_ctx.translate(-movement_x, 0);
+    this.update_visible_instances()
   }
 
   public pan_y(movement_y) {
     this.canvas_ctx.translate(0, -movement_y);
+    this.update_visible_instances()
   }
 
   public getMousePos(canvas, evt) {
@@ -152,7 +157,6 @@ export class CanvasMouseTools {
     mouse_position.y = y;
     mouse_position.raw.x = x_raw;
     mouse_position.raw.y = y_raw;
-    console.log('mouse x y', mouse_position.x, mouse_position.y)
     return mouse_position;
   }
 
@@ -196,12 +200,20 @@ export class CanvasMouseTools {
 
 
   public update_visible_instances(transform = undefined) {
+    if(!this.instance_store){
+      return
+    }
     if(!transform){
       transform = this.canvas_ctx.getTransform()
     }
 
+
     this.visible_instances = [];
-    const instance_list = this.instance_store.get_instance_list(this.file_id)
+    let frame_number
+    if(this.image_annotation_ctx.video_mode){
+      frame_number = this.image_annotation_ctx.current_frame
+    }
+    const instance_list = this.instance_store.get_instance_list(this.file_id, frame_number)
     if(!instance_list){
       return
     }

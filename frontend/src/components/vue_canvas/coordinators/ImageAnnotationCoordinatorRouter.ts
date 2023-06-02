@@ -77,7 +77,7 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
 
   public generate_from_instance(instance: Instance, type: string): ImageAnnotationCoordinator {
     if (instance && type === 'keypoints') {
-      return new KeypointInstanceCoordinator(instance as KeypointInstance, this.draw_mode, this.command_manager) as ImageAnnotationCoordinator
+      return new KeypointInstanceCoordinator(instance as KeypointInstance, this.draw_mode, this.command_manager)
     }
 
     else if (type === 'box') {
@@ -112,8 +112,10 @@ export class ImageAnnotationCoordinatorRouter implements CoordinatorGenerator {
 
 
     const instance = this.get_hovered_priority()
+
     let instance_type = null
     if(instance){
+
       instance_type = instance.type
     }
     else{

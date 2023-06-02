@@ -295,7 +295,7 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
 
     } else {
       if(this.is_hovered && box_hover_point == 'not_intersecting_special_points'){
-        this.is_hovered = false
+        this.is_hovered = false;
         if(this.on_instance_unhovered){
           this.on_instance_unhovered(this)
         }

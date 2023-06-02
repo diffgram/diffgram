@@ -258,6 +258,7 @@ export const post_init_instance = function (instance: Instance,
   if(instance.creation_ref_id == undefined){
     instance.creation_ref_id = uuidv4()
   }
+
   if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance.type)) {
     let inst = instance as InstanceImage2D
     inst.set_label_file_colour_map(colour_map)

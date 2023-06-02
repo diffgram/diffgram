@@ -26,7 +26,6 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
 
 
   public select(annotation_event) {
-
     super.select(annotation_event);
     let box = this.instance as BoxInstance
     box.show_box_corners()
@@ -252,9 +251,11 @@ export class BoxInstanceCoordinator extends ImageAnnotationCoordinator {
     this.route_event_to_box_drawing(annotation_event, result)
 
     // Box Select
+
     if (this.should_select_instance(annotation_event)) {
       this.select(annotation_event)
     }
+
     else if (this.should_deselect_instance(annotation_event)) {
       this.deselect(annotation_event)
     }

@@ -609,7 +609,7 @@ import {
 import {ImageAnnotationCoordinator} from "../../vue_canvas/coordinators/coordinator_types/ImageAnnotationCoordinator";
 import {polygon} from "../../vue_canvas/polygon.js";
 import {v4 as uuidv4} from "uuid";
-import {cloneDeep} from "lodash";
+import {cloneDeep, isEqual} from "lodash";
 import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../../vue_canvas/instances/Instance";
 import userscript from "./userscript/userscript.vue";
 import toolbar from "./toolbar.vue";
@@ -771,17 +771,21 @@ export default Vue.extend({
       if (this.working_file.type === "image") {
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
+        this.canvas_mouse_tools.instance_store = this.instance_store
         this.canvas_mouse_tools.update_visible_instances()
-        this.$emit('instance_list_updated', newVal, this.working_file.id, this.working_file.type)
       }
     },
     instance_buffer_dict: {
       deep: true,
-      handler: function (newVal) {
+      handler: function (newVal, old) {
+        if(isEqual(newVal, old)){
+          return
+        }
         if (this.working_file.type === "video") {
           this.instance_store.set_instance_list(this.working_file.id, newVal)
           this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
-          this.$emit('instance_buffer_dict_updated', newVal, this.working_file.id, this.working_file.type)
+          this.canvas_mouse_tools.instance_store = this.instance_store
+          this.canvas_mouse_tools.update_visible_instances()
         }
       },
     },
@@ -2540,10 +2544,17 @@ export default Vue.extend({
       if (this.instance_hover_index == undefined) {
         return;
       }
-      if (this.instance_list[this.instance_hover_index].creation_ref_id === instance.creation_ref_id && this.instance_list.indexOf(instance) === this.instance_hover_index) {
+      let index = null;
+      for(let i = 0; i <  this.instance_list.length; i++){
+        let inst = this.instance_list[i];
+        if(inst.creation_ref_id === instance.creation_ref_id){
+          index = i
+        }
+      }
+      if (this.instance_list[this.instance_hover_index].creation_ref_id === instance.creation_ref_id && index === this.instance_hover_index) {
+        this.instance_list[this.instance_hover_index].is_hovered = false;
         this.instance_hover_index = null;
         this.instance_hover_type = null;
-
       }
       if (instance.type === 'box' && !instance.selected) {
         let box: BoxInstance = instance
@@ -3205,7 +3216,8 @@ export default Vue.extend({
         this.original_media_width,
         this.original_media_height,
         this.instance_store,
-        this.task ? this.task.file_id : this.working_file.id,
+        this.task ? this.task.file.id : this.working_file.id,
+        this.image_annotation_ctx,
       );
       this.on_canvas_scale_global_changed();
       // assumes canvas wrapper available
@@ -3400,6 +3412,7 @@ export default Vue.extend({
         this.video_pause = Date.now();
         this.get_instances(true);
       }
+      this.canvas_mouse_tools.update_visible_instances()
       this.add_override_colors_for_model_runs();
     },
 
@@ -3447,6 +3460,7 @@ export default Vue.extend({
       }
       await this.load_frame_instances(url)
       this.set_keyframe_loading(false);
+      this.canvas_mouse_tools.update_visible_instances()
       this.seeking = false;
     },
     load_frame_instances: async function (url) {
@@ -3483,6 +3497,7 @@ export default Vue.extend({
         this.html_image = new_image;
         this.loading = false;
         this.refresh = Date.now();
+        this.canvas_mouse_tools.update_visible_instances()
       }
 
       if (file.type == "video") {
@@ -6418,6 +6433,7 @@ export default Vue.extend({
       instance.on('hover_out', this.instance_unhovered)
       this.update_canvas()
       this.$emit('set_has_changed', true);
+      this.canvas_mouse_tools.update_visible_instances()
     },
     mouse_down_v2_handler: function (event) {
 
@@ -7500,6 +7516,15 @@ export default Vue.extend({
         this.deselect_instance(instance)
       }
       let pasted_instance = initialize_instance_object(instance_clipboard, this);
+      pasted_instance = post_init_instance(pasted_instance,
+        this.label_file_map,
+        this.canvas_element,
+        this.label_settings,
+        this.canvas_transform,
+        this.instance_hovered,
+        this.instance_unhovered,
+        this.canvas_mouse_tools
+      )
       if (next_frames != undefined) {
         let next_frames_to_add = parseInt(next_frames, 10);
         const frames_to_save = [];
@@ -7579,6 +7604,7 @@ export default Vue.extend({
 
 
       this.set_clipboard(new_clipboard_instance_list);
+      this.canvas_mouse_tools.update_visible_instances()
     },
     set_clipboard: function (instance_list) {
       let file_id = this.working_file.id;
