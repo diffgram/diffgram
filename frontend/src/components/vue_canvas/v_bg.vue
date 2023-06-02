@@ -101,12 +101,7 @@ export default Vue.extend({
         let scale_x = ctx.canvas.width / this.image.width;
         let scale_y = ctx.canvas.height / this.image.height;
         let scaledImage = drawOptimizedImage(this.image, this.degrees)
-        // ctx.clearRect(
-        //   0,
-        //   0,
-        //   this.image.width,
-        //   this.image.height
-        // );
+
         ctx.resetTransform();
         ctx.drawImage(
           scaledImage,
