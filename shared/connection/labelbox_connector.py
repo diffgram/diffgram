@@ -118,6 +118,27 @@ class LabelboxConnector(Connector):
         res = self.connection_client.execute(query, data)
         return {'result': res}
 
+    @with_labelbox_exception_handler
+    @with_connection
+    def __get_detailed_data_row_with_issue(self, data_row_id):
+        logger.info(f"data_row_id {data_row_id}")
+        data = {}
+        data['dataRowId'] = data_row_id
+        query = """
+                query GetDetailedDataRowWithIssue($dataRowId: ID!) {
+                    dataRow(where: {id: $dataRowId}) {
+                        id
+                        externalId
+                        globalKey
+                        rowData
+                        createdAt
+                    }
+                }
+                """
+        res = self.connection_client.execute(query, data)
+        return res
+
+
     def __map_instance_type(self, labelbox_type):
 
         instance_types_mapping = {
@@ -921,9 +942,15 @@ class LabelboxConnector(Connector):
                 'height': data_row.media_attributes.get('height')
             }
 
+            signed_url = data_row.row_data
+            logger.info(f"{data_row}")
+            detailed_row = self.__get_detailed_data_row_with_issue(data_row.uid)
+            logger.info(f"{detailed_row}")
+            signed_url = detailed_row['dataRow']['rowData']
+
             diffgram_input = packet.enqueue_packet(project_string_id = diffgram_dataset.project.project_string_id,
                                             session = session,
-                                            media_url = data_row.row_data,
+                                            media_url = signed_url,
                                             media_type = media_type,
                                             job_id = None,
                                             file_id = None,
