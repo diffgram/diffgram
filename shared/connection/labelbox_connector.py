@@ -942,10 +942,10 @@ class LabelboxConnector(Connector):
                 'height': data_row.media_attributes.get('height')
             }
 
-            signed_url = data_row.row_data
-            logger.info(f"{data_row}")
-            detailed_row = self.__get_detailed_data_row_with_issue(data_row.uid)
-            logger.info(f"{detailed_row}")
+            signed_url = data_row.row_data      # Default from SDK
+            #logger.info(f"{data_row}") 
+            detailed_row = self.__get_detailed_data_row_with_issue(data_row.uid)    # Because SDK no longer has signed URL sometimes
+            #logger.info(f"{detailed_row}")
             signed_url = detailed_row['dataRow']['rowData']
 
             diffgram_input = packet.enqueue_packet(project_string_id = diffgram_dataset.project.project_string_id,
