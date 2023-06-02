@@ -1392,7 +1392,6 @@ export default Vue.extend({
                 video_data,
                 child_file_save_id: this.root_file.type === 'compound' ? this.annotation_ui_context.working_file.id : undefined
             }
-          console.log('save_request preeee')
             const [result, error] = await this.save_request(payload)
             if (result) {
                 // Save global instances video

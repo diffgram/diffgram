@@ -52,6 +52,7 @@
         @attribute_change="compound_global_attribute_change($event)"
         :title="'Compound Files Attribute'"
       />
+
       <global_attributes_list
         v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0"
         :global_attribute_groups_list="global_attribute_groups_list"
