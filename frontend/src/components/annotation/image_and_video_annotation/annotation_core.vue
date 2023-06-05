@@ -626,7 +626,8 @@ import v_sequence_list from "../../video/sequence_list"
 import {
   initialize_instance_object,
   duplicate_instance,
-  duplicate_instance_template, post_init_instance, to_serializable_instance_list
+  duplicate_instance_template,
+  post_init_instance
 } from '../../../utils/instance_utils.ts';
 import {
   InteractionEvent,
@@ -7604,7 +7605,6 @@ export default Vue.extend({
     },
     set_clipboard: function (instance_list) {
       let file_id = this.working_file.id;
-      const inst_list_clipboard = to_serializable_instance_list(instance_list)
       this.$store.commit("set_clipboard", {
         instance_list: inst_list_clipboard,
         file_id: file_id,
