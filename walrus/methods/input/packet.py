@@ -142,7 +142,7 @@ def input_packet(project_string_id):
                                         job_id = job_id,
                                         file_id = file_id,
                                         directory_id = directory_id,
-                                        instance_list = untrusted_input.get('instance_list', None),
+                                        instance_list = input.get('instance_list', None),
                                         parent_file_id = untrusted_input.get('parent_file_id', None),
                                         original_filename = input.get('original_filename', None),
                                         raw_data_blob_path = input.get('raw_data_blob_path', None),
