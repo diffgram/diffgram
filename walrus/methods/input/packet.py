@@ -116,14 +116,6 @@ def input_packet(project_string_id):
 
     log["info"] = "Started processing"
 
-    # QUESTION how early do we want to record input here?
-    # ie do we want to record 400 type errors? or stictly after we
-    # have a "valid" starting point
-
-    # Do we actually want to use a long running operation here?
-    # If we do can't pass input directly.... sigh
-    # need to revist if want to do this using imediate mode or not
-
     diffgram_input_id = None
     video_split_duration = input['video_split_duration']
 
@@ -273,7 +265,7 @@ def enqueue_packet(project_string_id,
     project = Project.get(session, project_string_id)
     if connection_id_access_token is not None:
         image_metadata['connection_id_access_token'] = connection_id_access_token
-    print('TEXTT DATAAA', text_data)
+
     diffgram_input = Input.new(
         image_metadata = image_metadata,
         file_id = file_id,
