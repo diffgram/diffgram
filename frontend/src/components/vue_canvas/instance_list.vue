@@ -301,6 +301,10 @@
             return false
           }
 
+          if(instance.in_viewport == false){
+            return false
+          }
+
           if (instance.soft_delete == true &&
             this.label_settings.show_removed_instances != true) {
             return false

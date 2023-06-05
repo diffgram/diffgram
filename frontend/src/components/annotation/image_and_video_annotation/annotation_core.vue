@@ -3324,6 +3324,8 @@ export default Vue.extend({
       }
       this.canvas_element_ctx = this.canvas_element.getContext("2d");
 
+      this.refresh_instances_in_viewport(this.instance_list)
+
       this.update_smooth_canvas(this.label_settings.smooth_canvas)
       await this.$forceUpdate();
     },
@@ -5234,6 +5236,9 @@ export default Vue.extend({
 
         this.canvas_mouse_tools.pan_y(movementY);
       }
+
+      this.refresh_instances_in_viewport(this.instance_list)
+
     },
 
     mouse_move: function (event) {

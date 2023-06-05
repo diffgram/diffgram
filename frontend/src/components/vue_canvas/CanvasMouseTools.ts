@@ -215,6 +215,8 @@ export class CanvasMouseTools {
     let isBboxInside = this.doesBboxCollide(min_transformed.x, max_transformed.x, min_transformed.y, max_transformed.y)
     if(isBboxInside){
       return true
+    } else {
+      return false
     }
   }
 
