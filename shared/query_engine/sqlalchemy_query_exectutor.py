@@ -254,6 +254,6 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
                 logger.error('Invalid query. Please check your syntax and try again.')
                 return None, self.log
 
-        logger.info(str(self.final_query))
+        logger.debug(str(self.final_query))
 
         return self.final_query, self.log

@@ -396,7 +396,6 @@ class File(Base, Caching):
     def serialize_with_type(self, session = None, regen_url = True):
         file = self.serialize_base_file()
         if self.type == "image":
-            print('SERIALIZEEE', self.id, self.bucket_name, self.connection_id, regen_url)
             if self.image:
                 file['image'] = self.image.serialize_for_source_control(session = session,
                                                                         connection_id = self.connection_id,
