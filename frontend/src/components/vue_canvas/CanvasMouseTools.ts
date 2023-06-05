@@ -10,7 +10,6 @@ export class CanvasMouseTools {
   public mouse_position: MousePosition;
   public canvas_translate: any;
   public image_annotation_ctx: ImageAnnotationUIContext;
-  public visible_instances: Instance[];
   public instance_store: InstanceStore;
   public transform_matrix: any;
   public transform_matrix_inv: any;
@@ -35,7 +34,14 @@ export class CanvasMouseTools {
   public mouse_is_down: boolean
 
 
-  constructor(mouse_position, canvas_translate, canvas_elm, canvas_scale_global, canvas_width, canvas_height, instance_store, file_id: number, image_annotation_ctx: ImageAnnotationUIContext) {
+  constructor(
+      mouse_position,
+      canvas_translate,
+      canvas_elm: HTMLCanvasElement,
+      canvas_scale_global: number,
+      canvas_width: number,
+      canvas_height: number) {
+
     this.mouse_position = mouse_position;
     this.canvas_translate = canvas_translate;
     this.canvas_elm = canvas_elm;
@@ -44,16 +50,10 @@ export class CanvasMouseTools {
     this.canvas_scale_global = canvas_scale_global;
     this.canvas_width = canvas_width
     this.canvas_height = canvas_height
-    this.instance_store = instance_store
-    this.image_annotation_ctx = image_annotation_ctx
-    this.file_id = file_id
-    var transform = this.canvas_ctx.getTransform();
-    this.update_visible_instances(transform);
   }
   public set_canvas_width_height(w, h){
     this.canvas_width = w
     this.canvas_height = h
-    this.update_visible_instances(this.canvas_ctx.getTransform());
   }
   public zoom_to_point(point, scale) {
     if (scale <= this.canvas_scale_global) {
@@ -98,12 +98,10 @@ export class CanvasMouseTools {
 
   public pan_x(movement_x) {
     this.canvas_ctx.translate(-movement_x, 0);
-    this.update_visible_instances()
   }
 
   public pan_y(movement_y) {
     this.canvas_ctx.translate(0, -movement_y);
-    this.update_visible_instances()
   }
 
   public getMousePos(canvas, evt) {
@@ -183,7 +181,11 @@ export class CanvasMouseTools {
     return matrix.a === 1 && matrix.b === 0 && matrix.c === 0 && matrix.d === 1 && matrix.e === 0 && matrix.f === 0;
   }
 
-  public doesBboxCollide(x_min_transformed, x_max_transformed, y_min_transformed, y_max_transformed) {
+  public doesBboxCollide(
+    x_min_transformed,
+    x_max_transformed,
+    y_min_transformed,
+    y_max_transformed) {
     // The canvas width and height define the bounds
     let canvasMinX = 0;
     let canvasMaxX = this.canvas_width;
@@ -199,41 +201,23 @@ export class CanvasMouseTools {
   }
 
 
-  public update_visible_instances(transform = undefined) {
-    if(!this.instance_store){
-      return
-    }
-    if(!transform){
-      transform = this.canvas_ctx.getTransform()
-    }
+  public check_is_instance_in_viewport(
+      instance: Instance) {
 
-
-    this.visible_instances = [];
-    let frame_number
-    if(this.image_annotation_ctx.video_mode){
-      frame_number = this.image_annotation_ctx.current_frame
-    }
-    const instance_list = this.instance_store.get_instance_list(this.file_id, frame_number)
-    if(!instance_list){
-      return
-    }
+    let transform = this.canvas_ctx.getTransform()
     // Show all instances if no transforms apply (ie no zoom)
     if(this.isTransformReset()){
-      this.visible_instances = instance_list
-      return
+      return true
     }
-    // Filter visible instances to viewport
-    for (let instance of instance_list) {
-      if(instance.soft_delete || instance.type === 'global'){
-        continue
-      }
-      let min_transformed = this.map_point_from_matrix(instance.x_min, instance.y_min, transform);
-      let max_transformed = this.map_point_from_matrix(instance.x_max, instance.y_max, transform);
-      let isBboxInside = this.doesBboxCollide(min_transformed.x, max_transformed.x, min_transformed.y, max_transformed.y)
-      if(isBboxInside){
-        this.visible_instances.push(instance)
-      }
 
+    if(instance.soft_delete || instance.type === 'global'){
+      return undefined
+    }
+    let min_transformed = this.map_point_from_matrix(instance.x_min, instance.y_min, transform);
+    let max_transformed = this.map_point_from_matrix(instance.x_max, instance.y_max, transform);
+    let isBboxInside = this.doesBboxCollide(min_transformed.x, max_transformed.x, min_transformed.y, max_transformed.y)
+    if(isBboxInside){
+      return true
     }
   }
 
@@ -267,7 +251,7 @@ export class CanvasMouseTools {
 
     this.canvas_ctx.transform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f)
     let newTransform = this.canvas_ctx.getTransform();
-    this.update_visible_instances(newTransform)
+    this.update_instances_in_viewport(newTransform)
   }
 
   public zoom_wheel(event): void {

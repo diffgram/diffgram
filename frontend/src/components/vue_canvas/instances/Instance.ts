@@ -51,6 +51,7 @@ export class Instance {
   public soft_delete: boolean = false;
   public is_hovered: boolean = false;
   public is_resizing: boolean = false;
+  public in_viewport: boolean = undefined
   public interpolated: boolean = false;
   public prev_attribute: any = undefined;
   public status: string = '';

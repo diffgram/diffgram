@@ -1948,15 +1948,12 @@ export default Vue.extend({
         this.canvas_element.width,
         this.canvas_element.height
       );
-      this.instance_list = this.instance_list.map(instance => {
-        instance.has_changed = true;
-        return instance;
-      })
       this.canvas_element_ctx.resetTransform();
       this.canvas_element_ctx.scale(new_scale, new_scale);
       this.canvas_element.width += 0;
       this.canvas_mouse_tools.canvas_width = this.original_media_width;
       this.canvas_mouse_tools.canvas_height = this.original_media_height;
+      this.refresh_instances_in_viewport(this.instance_list)
 
       await this.$nextTick();
       this.canvas_mouse_tools.reset_transform_with_global_scale();
@@ -2560,6 +2557,13 @@ export default Vue.extend({
         poly.set_default_hover_out_style(poly)
       }
     },
+
+    refresh_instances_in_viewport: function (instance_list) {
+      for (let i = 0; i < instance_list.length; i++) {
+        instance_list[i].in_viewport = this.canvas_mouse_tools.check_is_instance_in_viewport(instance_list[i])
+      }
+    },
+
     create_instance_list_with_class_types: function (instance_list) {
       const result = [];
       if (!instance_list) {
@@ -3207,10 +3211,7 @@ export default Vue.extend({
         this.canvas_element,
         this.canvas_scale_global,
         this.original_media_width,
-        this.original_media_height,
-        this.instance_store,
-        this.task ? this.task.file.id : this.working_file.id,
-        this.image_annotation_ctx,
+        this.original_media_height
       );
       this.on_canvas_scale_global_changed();
       // assumes canvas wrapper available
@@ -3316,7 +3317,6 @@ export default Vue.extend({
       this.canvas_element_ctx = this.canvas_element.getContext("2d");
 
       this.update_smooth_canvas(this.label_settings.smooth_canvas)
-
       await this.$forceUpdate();
     },
 
@@ -6569,13 +6569,9 @@ export default Vue.extend({
 
     },
     get_instances_core: function (response) {
-      // TODO improve to take dict instead of response
 
-      // since may use in other contexts
       this.show_annotations = true
       this.global_instance = null // reset
-
-      // Not sure if a "silent" null check is right here
 
       if (response.data['file_serialized']) {
         let new_instance_list = this.create_instance_list_with_class_types(

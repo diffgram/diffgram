@@ -1222,6 +1222,7 @@ export default Vue.extend({
             let ann_factory_ref = this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0]
             return ann_factory_ref.$refs[ref_name]
         },
+
         save_multiple_frames: async function (frames_list) {
             try {
                 this.annotation_ui_context.current_image_annotation_ctx.save_multiple_frames_error = {};
@@ -1239,6 +1240,7 @@ export default Vue.extend({
                 console.error(err);
             }
         },
+
         save_compound_global_attributes: async function (and_complete, video_data) {
             const payload = {
                 instance_list: this.annotation_ui_context.compound_global_attributes_instance_list,
@@ -1254,6 +1256,7 @@ export default Vue.extend({
             }
             return result
         },
+
         process_text_save: async function (and_complete = false) {
             // TODO: Move out of component and into a class.
             this.set_has_changed(false)
@@ -1286,6 +1289,7 @@ export default Vue.extend({
             this.set_save_loading(false)
 
         },
+
         save: async function (
             and_complete = false,
             frame_number_param = undefined,
