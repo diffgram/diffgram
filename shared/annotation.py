@@ -494,8 +494,6 @@ class Annotation_Update():
 
         ids_not_included = []
 
-        logger.info(f"len instance_list_existing {len(self.instance_list_existing)}, len new_id_list {len(new_id_list)}")
-
         for instance in self.instance_list_existing:
             # We don't check for soft_deleted instances
             if instance.soft_delete:
@@ -505,7 +503,7 @@ class Annotation_Update():
 
         if len(ids_not_included) > 0:
             frame_numbers_instance_list_new = [x.get('frame_number') for x in self.instance_list_new]
-            logger.error(f"Invalid payload on annotation update missing IDs {ids_not_included}")
+            logger.error(f"Invalid payload on annotation update. Frontend missing IDs {ids_not_included}")
             if self.video_mode == True:
                 logger.error(f"Frame Number {self.frame_number}")
                 logger.error(f"frame_numbers_instance_list_new: {frame_numbers_instance_list_new}")
