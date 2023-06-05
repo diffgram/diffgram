@@ -323,7 +323,7 @@ class Event(Base):
         if flush_session:
             session.flush()
         Event.track_user(event, email)
-        logger.info(f'Created event {event.id}:{event.kind}')
+        logger.debug(f'Created event {event.id}:{event.kind}')
         event.send_to_eventhub()
         event.broadcast()
         return event
@@ -348,7 +348,7 @@ class Event(Base):
             event_data['install_fingerprint'] = settings.DIFFGRAM_INSTALL_FINGERPRINT
             result = requests.post(settings.EVENTHUB_URL, json = event_data, timeout = 3)
             if result.status_code == 200:
-                logger.info(f"Sent event: {self.id} to Diffgram Eventhub")
+                logger.debug(f"Sent event: {self.id} to Diffgram Eventhub")
             else:
                 logger.error(
                     f"Error sending ID: {self.id} to Eventhub. Status Code: {result.status_code}. result.text: {result.text}")
