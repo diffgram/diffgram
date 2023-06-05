@@ -15,12 +15,11 @@ def generate_random_bounding_box():
 
 bounding_box = generate_random_bounding_box()
 
+# FIll with project
 project = Project(
-    project_string_id = "test-compounds",
-    client_id = "LIVE__hvxq812l74cahekrl7qj",
-    client_secret = "w53x665rq517ik1colnhn2t2hn3b42bfdnkzzs2he0yokfqf779gmjrn7pt0",
     debug = True
 )
+
 instance_list = []
 for i in range(0, 2000):
     bounding_box = generate_random_bounding_box()
