@@ -9,8 +9,6 @@ import {ImageAnnotationUIContext} from "../../types/AnnotationUIContext";
 export class CanvasMouseTools {
   public mouse_position: MousePosition;
   public canvas_translate: any;
-  public image_annotation_ctx: ImageAnnotationUIContext;
-  public instance_store: InstanceStore;
   public transform_matrix: any;
   public transform_matrix_inv: any;
   public canvas_rectangle: DOMRect;
@@ -26,7 +24,6 @@ export class CanvasMouseTools {
   public bottom_right: Point;
   public top_right: Point;
   public bottom_left: Point;
-  public file_id: number;
 
   public canvas_width: number;
   public canvas_height: number;
@@ -250,8 +247,6 @@ export class CanvasMouseTools {
     this.canvas_ctx.translate(-point.x, -point.y);
 
     this.canvas_ctx.transform(transform.a, transform.b, transform.c, transform.d, transform.e, transform.f)
-    let newTransform = this.canvas_ctx.getTransform();
-    this.update_instances_in_viewport(newTransform)
   }
 
   public zoom_wheel(event): void {

@@ -23,7 +23,6 @@
         },
         "instance_list": {},
         "issues_list": undefined,
-        "canvas_mouse_tools": undefined,
         "width": undefined,
         "height": undefined,
         "compare_to_instance_list_set": {
@@ -276,19 +275,12 @@
 
 
           // var startTime = performance.now();
-          if(!this.canvas_mouse_tools || this.video_mode){
-            for (let i in this.instance_list) {
-              this.draw_single_instance(ctx, i)
-            }
-          } else{
-            for (let i in this.canvas_mouse_tools.visible_instances) {
-              this.draw_single_instance(ctx, i)
-            }
+          for (var i in this.instance_list) {	
+            this.draw_single_instance(ctx, i)
           }
-
-
           // var endTime = performance.now();
           // console.log("Instance List Draw Execution time: " + (endTime - startTime) + " milliseconds.");
+
           this.draw_issues_markers(ctx);
 
           this.check_null_hover_case()    // careful, these should fire outside of main loop
@@ -486,13 +478,8 @@
         },
 
         draw_single_instance: function (ctx, i) {
-          var instance
-          if(!this.canvas_mouse_tools || this.video_mode){
-            instance = this.instance_list[i]
-          } else{
-            instance = this.canvas_mouse_tools.visible_instances[i]
-          }
 
+          var instance = this.instance_list[i]
 
           let result = this.draw_single_instance_limits(instance, i)
           if (result == false)  {
@@ -505,14 +492,8 @@
           if (instance.selected == undefined){
             instance.selected = false
           }
-          // TODO review this.colour isolation here
-
-
-
           // WIP , restrict movement to center point only
           //draw_circle(instance, instance.x_min + instance.width/2, instance.y_min + instance.height/2, ctx)
-
-
 
           const color_data = this.color_instance(instance, ctx)
 

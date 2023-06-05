@@ -771,8 +771,6 @@ export default Vue.extend({
       if (this.working_file.type === "image") {
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
-        this.canvas_mouse_tools.instance_store = this.instance_store
-        this.canvas_mouse_tools.update_visible_instances()
       }
     },
     instance_buffer_dict: {
@@ -781,7 +779,6 @@ export default Vue.extend({
         if (this.working_file.type === "video") {
           this.instance_store.set_instance_list(this.working_file.id, newVal)
           this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
-          this.canvas_mouse_tools.instance_store = this.instance_store
         }
       },
     },
@@ -3091,10 +3088,21 @@ export default Vue.extend({
         await this.on_change_current_task();
       }
       if(this.instance_list.length > 100){
-        this.label_settings.show_text = false;
+        this.set_performance_optimizations_on()
       }
 
     },
+
+    set_performance_optimizations_on: function () {
+      this.label_settings.show_text = false;
+
+    },
+
+    set_performance_optimizations_off: function () {
+      this.label_settings.show_text = true;
+
+    },
+
     update_label_settings_from_schema: function () {
       if (!this.task) {
         return
@@ -3405,7 +3413,6 @@ export default Vue.extend({
         this.video_pause = Date.now();
         this.get_instances(true);
       }
-      this.canvas_mouse_tools.update_visible_instances()
       this.add_override_colors_for_model_runs();
     },
 
@@ -3453,7 +3460,6 @@ export default Vue.extend({
       }
       await this.load_frame_instances(url)
       this.set_keyframe_loading(false);
-      this.canvas_mouse_tools.update_visible_instances()
       this.seeking = false;
     },
     load_frame_instances: async function (url) {
@@ -3490,7 +3496,6 @@ export default Vue.extend({
         this.html_image = new_image;
         this.loading = false;
         this.refresh = Date.now();
-        this.canvas_mouse_tools.update_visible_instances()
       }
 
       if (file.type == "video") {
@@ -3503,7 +3508,6 @@ export default Vue.extend({
         this.canvas_mouse_tools.set_canvas_width_height(this.original_media_width, this.original_media_height)
         this.$refs.video_controllers.reset_cache();
         await this.$refs.video_controllers.get_video_single_image();
-        this.canvas_mouse_tools.update_visible_instances()
       }
     },
     // todo why not make this part of rest of event stuff
@@ -6426,7 +6430,6 @@ export default Vue.extend({
       instance.on('hover_out', this.instance_unhovered)
       this.update_canvas()
       this.$emit('set_has_changed', true);
-      this.canvas_mouse_tools.update_visible_instances()
     },
     mouse_down_v2_handler: function (event) {
 
@@ -7593,7 +7596,6 @@ export default Vue.extend({
 
 
       this.set_clipboard(new_clipboard_instance_list);
-      this.canvas_mouse_tools.update_visible_instances()
     },
     set_clipboard: function (instance_list) {
       let file_id = this.working_file.id;
