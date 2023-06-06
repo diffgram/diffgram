@@ -24,7 +24,7 @@ memory-profiler==0.55.0
 cryptography==41.0.0
 colorlog==4.2.1
 boto3==1.16.4
-alembic==1.4.2
+alembic==1.11.1
 sqlalchemy-utils==0.41.1
 azure-storage-blob==12.8.0
 lark
