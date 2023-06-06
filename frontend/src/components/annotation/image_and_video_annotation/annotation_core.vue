@@ -268,7 +268,6 @@
                 :width="original_media_width"
                 :degrees="degrees"
                 :canvas_element="canvas_element"
-                :canvas_mouse_tools="canvas_mouse_tools"
                 :show="show_target_reticle && is_active"
                 :target_colour="
                   current_label_file ? current_label_file.colour : undefined
@@ -286,7 +285,6 @@
 
               <canvas_instance_list
                 :ord="3"
-                :canvas_mouse_tools="canvas_mouse_tools"
                 :instance_list="instance_list"
                 :default_instance_opacity="default_instance_opacity"
                 :vertex_size="label_settings.vertex_size"
