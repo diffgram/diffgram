@@ -15,6 +15,7 @@ import {PolygonInstance} from "../components/vue_canvas/instances/PolygonInstanc
 import {CanvasMouseTools} from "../components/vue_canvas/CanvasMouseTools";
 import {GlobalInstance} from "../components/vue_canvas/instances/GlobalInstance";
 
+
 export const duplicate_for_undo = function() {
   let duplicate_instance = new BoxInstance(
     this.ctx,
@@ -249,6 +250,7 @@ export const post_init_instance = function (instance: Instance,
   if(instance.creation_ref_id == undefined){
     instance.creation_ref_id = uuidv4()
   }
+
   if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(instance.type)) {
     let inst = instance as InstanceImage2D
     inst.set_label_file_colour_map(colour_map)

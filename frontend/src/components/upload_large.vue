@@ -111,7 +111,9 @@
         </v-card-title>
         <v-card-text>
           Do you want to create sample data?
-          This will add 3 sample images to the directory: {{current_directory.nickname}}
+          <div v-if="current_directory">
+            This will add 3 sample images to the directory: {{current_directory.nickname}}
+          </div>
         </v-card-text>
         <v_error_multiple :error="error_sample_data">
         </v_error_multiple>

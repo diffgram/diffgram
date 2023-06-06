@@ -218,7 +218,9 @@
         this.mouse_position,
         this.canvas_translate,
         this.canvas_element,
-        this.canvas_scale_global
+        this.canvas_scale_global,
+        this.canvas_width,
+        this.canvas_height
       )
       this.canvas_wrapper = document.getElementById(this.$props.canvas_wrapper_id)
       if(this.$props.allow_zoom){
@@ -295,13 +297,10 @@
       },
       onRendered: function (ctx) {
         this.canvas_ctx = ctx;
-
-
       },
       update_canvas: function(){
         this.refresh = new Date();
         this.canvas_element_ctx = this.canvas_element.getContext('2d');
-
         this.$forceUpdate();
       },
       zoom_in: function() {

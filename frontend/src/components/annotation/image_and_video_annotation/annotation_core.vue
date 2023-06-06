@@ -7,7 +7,6 @@
       <v-alert v-if="task_error.task_request" type="info">
         {{ task_error.task_request }}
       </v-alert>
-
       <v_error_multiple :error="save_error"></v_error_multiple>
       <v_error_multiple :error="image_annotation_ctx.save_multiple_frames_error"></v_error_multiple>
       <v_error_multiple
@@ -74,7 +73,7 @@
       </template>
     </v-snackbar>
     <div v-if="instance_type === 'polygon'">
-      <v-snackbar dismissible type="info" v-model="alert_info_drawing">
+      <v-snackbar v-if="alert_info_drawing" dismissible type="info" v-model="alert_info_drawing">
         To complete polygon click first point again, or
         <kbd>Enter</kbd> key, or hover in turbo mode.
       </v-snackbar>
@@ -107,8 +106,6 @@
         </v-btn>
       </template>
     </v-snackbar>
-
-
     <v-snackbar
       v-if="auto_border_context && auto_border_context.show_snackbar_auto_border"
       v-model="auto_border_context.show_snackbar_auto_border"
@@ -151,9 +148,6 @@
 
     <v-sheet style="outline: none">
       <v-layout style="outline: none">
-        <!-- Left nav -->
-
-
         <v-container v-if="error_no_permissions.data">
           <v_error_multiple
             class="ma-auto"
@@ -185,10 +179,8 @@
         </v-container>
         <div id="annotation" tabindex="0" v-if="!error_no_permissions.data">
           <!-- Must wrap canvas to detect events in this context
-      Careful, the slider needs to be in this context too
-      in order for the canvas render to detect it
-
-      -->
+              Careful, the slider needs to be in this context too
+              in order for the canvas render to detect it -->
 
           <div
             contenteditable="true"
@@ -202,18 +194,16 @@
             :style="canvas_style"
           >
             <!-- Diffgram loading loading your data -->
-            <v-fade-transition :hide-on-leave="true">
-              <v-container v-show="show_place_holder" style="width: 100%">
-                <h2 class="font-weight-light">Loading File...</h2>
-                <v-progress-linear indeterminate></v-progress-linear>
-                <v-img
-                  src="https://storage.googleapis.com/diffgram_public/app/Empty_state_card.svg"
-                  alt=""
-                  style="max-width: 100%; width: 100%"
-                ></v-img>
-                <!-- https://storage.googleapis.com/diffgram_public/app/Copy-of-Loading-Placeholder.png -->
-              </v-container>
-            </v-fade-transition>
+            <v-container v-if="show_place_holder" style="width: 100%">
+              <h2 class="font-weight-light">Loading File...</h2>
+              <v-progress-linear indeterminate></v-progress-linear>
+              <v-img
+                src="https://storage.googleapis.com/diffgram_public/app/Empty_state_card.svg"
+                alt=""
+                style="max-width: 100%; width: 100%"
+              ></v-img>
+              <!-- https://storage.googleapis.com/diffgram_public/app/Copy-of-Loading-Placeholder.png -->
+            </v-container>
             <autoborder_avaiable_alert
               :x_position="canvas_alert_x"
               :y_position="canvas_alert_y"
@@ -269,10 +259,6 @@
                 :degrees="degrees"
               >
               </v_bg>
-
-              <!-- Important, needs at least 1 non dictionary var to trigger
-          reactive changes. ie :x = mouse_position.x -->
-
               <target_reticle
                 :is_active="is_active"
                 :ord="2"
@@ -282,7 +268,6 @@
                 :width="original_media_width"
                 :degrees="degrees"
                 :canvas_element="canvas_element"
-                :canvas_mouse_tools="canvas_mouse_tools"
                 :show="show_target_reticle && is_active"
                 :target_colour="
                   current_label_file ? current_label_file.colour : undefined
@@ -298,7 +283,6 @@
               >
               </target_reticle>
 
-              <!-- Current file -->
               <canvas_instance_list
                 :ord="3"
                 :instance_list="instance_list"
@@ -623,7 +607,7 @@ import {
 import {ImageAnnotationCoordinator} from "../../vue_canvas/coordinators/coordinator_types/ImageAnnotationCoordinator";
 import {polygon} from "../../vue_canvas/polygon.js";
 import {v4 as uuidv4} from "uuid";
-import {cloneDeep} from "lodash";
+import {cloneDeep, isEqual} from "lodash";
 import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../../vue_canvas/instances/Instance";
 import userscript from "./userscript/userscript.vue";
 import toolbar from "./toolbar.vue";
@@ -640,7 +624,8 @@ import v_sequence_list from "../../video/sequence_list"
 import {
   initialize_instance_object,
   duplicate_instance,
-  duplicate_instance_template, post_init_instance
+  duplicate_instance_template,
+  post_init_instance
 } from '../../../utils/instance_utils.ts';
 import {
   InteractionEvent,
@@ -785,16 +770,14 @@ export default Vue.extend({
       if (this.working_file.type === "image") {
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
-        this.$emit('instance_list_updated', newVal, this.working_file.id, this.working_file.type)
       }
     },
     instance_buffer_dict: {
       deep: true,
-      handler: function (newVal) {
+      handler: function (newVal, old) {
         if (this.working_file.type === "video") {
           this.instance_store.set_instance_list(this.working_file.id, newVal)
           this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
-          this.$emit('instance_buffer_dict_updated', newVal, this.working_file.id, this.working_file.type)
         }
       },
     },
@@ -1966,6 +1949,7 @@ export default Vue.extend({
       this.canvas_element.width += 0;
       this.canvas_mouse_tools.canvas_width = this.original_media_width;
       this.canvas_mouse_tools.canvas_height = this.original_media_height;
+      this.refresh_instances_in_viewport(this.instance_list)
 
       await this.$nextTick();
       this.canvas_mouse_tools.reset_transform_with_global_scale();
@@ -2549,10 +2533,17 @@ export default Vue.extend({
       if (this.instance_hover_index == undefined) {
         return;
       }
-      if (this.instance_list[this.instance_hover_index].creation_ref_id === instance.creation_ref_id && this.instance_list.indexOf(instance) === this.instance_hover_index) {
+      let index = null;
+      for(let i = 0; i <  this.instance_list.length; i++){
+        let inst = this.instance_list[i];
+        if(inst.creation_ref_id === instance.creation_ref_id){
+          index = i
+        }
+      }
+      if (this.instance_list[this.instance_hover_index].creation_ref_id === instance.creation_ref_id && index === this.instance_hover_index) {
+        this.instance_list[this.instance_hover_index].is_hovered = false;
         this.instance_hover_index = null;
         this.instance_hover_type = null;
-
       }
       if (instance.type === 'box' && !instance.selected) {
         let box: BoxInstance = instance
@@ -2562,6 +2553,13 @@ export default Vue.extend({
         poly.set_default_hover_out_style(poly)
       }
     },
+
+    refresh_instances_in_viewport: function (instance_list) {
+      for (let i = 0; i < instance_list.length; i++) {
+        instance_list[i].in_viewport = this.canvas_mouse_tools.check_is_instance_in_viewport(instance_list[i])
+      }
+    },
+
     create_instance_list_with_class_types: function (instance_list) {
       const result = [];
       if (!instance_list) {
@@ -3077,19 +3075,33 @@ export default Vue.extend({
 
       return true;
     },
-    created: function () {
+    created: async function () {
       this.update_label_settings_from_schema()
       this.update_user_settings_from_store();
+
       this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore();
       // Initial File Set
       if (this.working_file) {
-        this.on_change_current_file();
+        await this.on_change_current_file();
       } else if (this.task) {
-        this.on_change_current_task();
+        await this.on_change_current_task();
+      }
+      if(this.instance_list.length > 100){
+        this.set_performance_optimizations_on()
       }
 
+    },
+
+    set_performance_optimizations_on: function () {
+      this.label_settings.show_text = false;
 
     },
+
+    set_performance_optimizations_off: function () {
+      this.label_settings.show_text = true;
+
+    },
+
     update_label_settings_from_schema: function () {
       if (!this.task) {
         return
@@ -3206,7 +3218,7 @@ export default Vue.extend({
         this.canvas_element,
         this.canvas_scale_global,
         this.original_media_width,
-        this.original_media_height,
+        this.original_media_height
       );
       this.on_canvas_scale_global_changed();
       // assumes canvas wrapper available
@@ -3311,9 +3323,10 @@ export default Vue.extend({
       }
       this.canvas_element_ctx = this.canvas_element.getContext("2d");
 
-      this.update_smooth_canvas(this.label_settings.smooth_canvas)
+      this.refresh_instances_in_viewport(this.instance_list)
 
-      this.$forceUpdate();
+      this.update_smooth_canvas(this.label_settings.smooth_canvas)
+      await this.$forceUpdate();
     },
 
     validate_sequences: function () {
@@ -3479,7 +3492,7 @@ export default Vue.extend({
         this.image_annotation_ctx.video_mode = false;
         this.original_media_width = file.image.width;
         this.original_media_height = file.image.height;
-
+        this.canvas_mouse_tools.set_canvas_width_height(this.original_media_width, this.original_media_height)
         const new_image = await this.addImageProcess(file.image.url_signed);
         this.html_image = new_image;
         this.loading = false;
@@ -3493,7 +3506,7 @@ export default Vue.extend({
 
         this.original_media_width = file.video.width;
         this.original_media_height = file.video.height;
-
+        this.canvas_mouse_tools.set_canvas_width_height(this.original_media_width, this.original_media_height)
         this.$refs.video_controllers.reset_cache();
         await this.$refs.video_controllers.get_video_single_image();
       }
@@ -5044,6 +5057,7 @@ export default Vue.extend({
 
       this.original_media_width = file.video.width;
       this.original_media_height = file.video.height;
+      this.canvas_mouse_tools.set_canvas_width_height(this.original_media_width, this.original_media_height)
       this.image_annotation_ctx.video_mode = true;
       this.current_video = file.video;
       this.current_video_file_id = file.id;
@@ -5099,7 +5113,6 @@ export default Vue.extend({
       }
 
       this.canvas_wrapper.style.display = "";
-
       await this.get_instances();
       let determineSize = function (width, height, degrees) {
         let w, h;
@@ -5120,7 +5133,7 @@ export default Vue.extend({
       let newSize = determineSize(file.image.width, file.image.height, this.degrees)
       this.original_media_width = newSize.width;
       this.original_media_height = newSize.height;
-
+      this.canvas_mouse_tools.set_canvas_width_height(this.original_media_width, this.original_media_height)
       await this.addImageProcess_with_canvas_refresh(file);
     },
 
@@ -5222,6 +5235,9 @@ export default Vue.extend({
 
         this.canvas_mouse_tools.pan_y(movementY);
       }
+
+      this.refresh_instances_in_viewport(this.instance_list)
+
     },
 
     mouse_move: function (event) {
@@ -5776,10 +5792,8 @@ export default Vue.extend({
 
 
       }
-
       // For new Refactored instance types
       this.mouse_up_v2_handler(event)
-
     },
     stop_ellipse_resize: function () {
       this.ellipse_hovered_instance = undefined;
@@ -6562,13 +6576,10 @@ export default Vue.extend({
 
     },
     get_instances_core: function (response) {
-      // TODO improve to take dict instead of response
 
-      // since may use in other contexts
       this.show_annotations = true
       this.global_instance = null // reset
 
-      // Not sure if a "silent" null check is right here
       if (response.data['file_serialized']) {
         let new_instance_list = this.create_instance_list_with_class_types(
           response.data['file_serialized']['instance_list']
@@ -6579,6 +6590,7 @@ export default Vue.extend({
       this.image_annotation_ctx.loading = false
 
       this.trigger_refresh_with_delay();
+
     },
 
     trigger_refresh_with_delay: function () {
@@ -6604,7 +6616,8 @@ export default Vue.extend({
         });
         this.get_instances_core(response);
         this.image_annotation_ctx.annotations_loading = false;
-      } else if (this.$store.state.builder_or_trainer.mode == "builder") {
+      }
+      else if (this.$store.state.builder_or_trainer.mode == "builder") {
         if (this.task && this.task.id) {
           if (this.task.id === '-1' || this.task.id === -1) {
             return
@@ -6694,12 +6707,13 @@ export default Vue.extend({
       } else {
         // Context of Images Only
         await this.get_instance_list_for_image();
-
         this.get_and_set_global_instance(this.instance_list)
       }
       this.add_override_colors_for_model_runs();
+
       this.image_annotation_ctx.annotations_loading = false;
       this.update_canvas();
+
     },
 
     async update_instance_list_from_buffer_or_get_new_buffer(
@@ -7051,6 +7065,7 @@ export default Vue.extend({
           this.refresh = Date.now();
           this.original_media_width = file.image.width;
           this.original_media_height = file.image.height;
+          this.canvas_mouse_tools.set_canvas_width_height(this.original_media_width, this.original_media_height)
           this.update_canvas();
 
 
@@ -7497,6 +7512,15 @@ export default Vue.extend({
         this.deselect_instance(instance)
       }
       let pasted_instance = initialize_instance_object(instance_clipboard, this);
+      pasted_instance = post_init_instance(pasted_instance,
+        this.label_file_map,
+        this.canvas_element,
+        this.label_settings,
+        this.canvas_transform,
+        this.instance_hovered,
+        this.instance_unhovered,
+        this.canvas_mouse_tools
+      )
       if (next_frames != undefined) {
         let next_frames_to_add = parseInt(next_frames, 10);
         const frames_to_save = [];

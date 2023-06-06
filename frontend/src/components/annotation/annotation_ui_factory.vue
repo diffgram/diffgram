@@ -280,6 +280,7 @@
             </file_manager_sheet>
         </div>
         <v-dialog
+              v-if="dialog"
               v-model="dialog"
               max-width="290"
         >
@@ -370,7 +371,11 @@ import toolbar_factory from "./toolbar_factory.vue"
 import sidebar_factory from "./sidebar_factory.vue";
 import panel_metadata from "./panel_metadata.vue";
 
-import {duplicate_instance, initialize_instance_object} from "../../utils/instance_utils";
+import {
+  duplicate_instance,
+  initialize_instance_object
+  }
+from "../../utils/instance_utils";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
@@ -1217,6 +1222,7 @@ export default Vue.extend({
             let ann_factory_ref = this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0]
             return ann_factory_ref.$refs[ref_name]
         },
+
         save_multiple_frames: async function (frames_list) {
             try {
                 this.annotation_ui_context.current_image_annotation_ctx.save_multiple_frames_error = {};
@@ -1234,6 +1240,7 @@ export default Vue.extend({
                 console.error(err);
             }
         },
+
         save_compound_global_attributes: async function (and_complete, video_data) {
             const payload = {
                 instance_list: this.annotation_ui_context.compound_global_attributes_instance_list,
@@ -1249,6 +1256,7 @@ export default Vue.extend({
             }
             return result
         },
+
         process_text_save: async function (and_complete = false) {
             // TODO: Move out of component and into a class.
             this.set_has_changed(false)
@@ -1281,12 +1289,19 @@ export default Vue.extend({
             this.set_save_loading(false)
 
         },
+
         save: async function (
             and_complete = false,
             frame_number_param = undefined,
             instance_list_param = undefined
         ) {
             // TODO: Move out of component into a InstanceListSaver class
+
+            if (this.annotation_ui_context.get_current_ann_ctx().save_loading == true){
+              return
+            }
+            if (this.any_loading) return
+
             if (this.annotation_ui_context.working_file.type === 'text') {
                 await this.process_text_save(and_complete)
                 return
@@ -1322,12 +1337,11 @@ export default Vue.extend({
                 }
 
             }
+
             if (!instance_list) {
                 return
             }
-
-            if (frame_number && this.get_save_loading(frame_number)) return
-            if (this.any_loading) return
+            if (this.video_mode && frame_number && this.get_save_loading(frame_number)) return
 
             if (
                 this.annotation_ui_context.current_image_annotation_ctx.video_mode &&
@@ -1337,6 +1351,7 @@ export default Vue.extend({
                 )
             ) return
             this.set_save_loading(true, frame_number);
+   
             let [has_duplicate_instances, dup_ids, dup_indexes] =
                 AnnotationSavePrechecks.has_duplicate_instances(instance_list);
             let dup_instance_list = dup_indexes.map((i) => ({
@@ -1385,7 +1400,6 @@ export default Vue.extend({
                 video_data,
                 child_file_save_id: this.root_file.type === 'compound' ? this.annotation_ui_context.working_file.id : undefined
             }
-
             const [result, error] = await this.save_request(payload)
             if (result) {
                 // Save global instances video

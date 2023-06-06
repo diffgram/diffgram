@@ -35,7 +35,7 @@ transformers==4.20.0
 deepchecks[vision]
 memory-profiler==0.55.0
 opencv-contrib-python==4.7.0.72
-labelbox==3.16.0
+labelbox==3.47.1
 google-cloud-aiplatform
 azure-ai-textanalytics
 newrelic

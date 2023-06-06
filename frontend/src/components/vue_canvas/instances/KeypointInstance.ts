@@ -9,8 +9,6 @@ export class KeypointInstance extends InstanceImage2D implements InstanceBehavio
   public mouse_position: any;
   private CONTROL_POINTS_DISPLACEMENT: number = 3
   private MINIMUM_CONTROL_POINTS_DISTANCE: number = 20
-
-  private line_width: number = 2;
   public instance_context: InstanceContext = undefined;
   public is_node_hovered: boolean = false;
   public is_edge_hovered: boolean = false;

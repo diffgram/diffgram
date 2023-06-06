@@ -62,7 +62,7 @@ def log_request_info():
         else:
             out = request.get_json(force = True)
         out['path'] = request.path  # Because may not log in line with normal path printing.
-        logger.info(out)
+        logger.debug(out)
     except Exception as e:
         print(f"[Default] {request.path} Warning: Failed to log request payload. Request is not in JSON ", e)
         print(f"out: {request.data}")

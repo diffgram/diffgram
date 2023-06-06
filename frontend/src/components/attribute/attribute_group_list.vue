@@ -431,6 +431,9 @@ export default Vue.extend({
         }
 
         let attr_values = this.current_instance.attribute_groups
+        if(!attr_values){
+          return
+        }
         let attribute_value = attr_values[attribute_group_id]
         let attribute_group = this.attribute_group_list.find(group => group.id === attribute_group_id)
         if(!attribute_value){

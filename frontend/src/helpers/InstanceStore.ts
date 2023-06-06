@@ -37,4 +37,19 @@ export default class InstanceStore {
     this.instance_store[file_id] = instance_list
     Vue.set(this.instance_store, file_id, instance_list)
   }
+
+  // directional idea for organizing instance list better
+  /*
+  set_instance(
+    initialized_instance_list: any[],
+    creation_ref: string,
+    key: any,
+    value: any): void {
+
+    let instance = initialized_instance_list.find(elm => elm.creation_ref === creation_ref);
+    let index = initialized_instance_list.indexOf(instance)
+    initialized_instance_list[index].value = value 
+  }
+  */
+
 }

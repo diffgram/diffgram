@@ -36,7 +36,7 @@ markupsafe==2.1.2
 pika
 python-keycloak
 pyjwt==2.6.0
-labelbox==3.23.3
+labelbox==3.47.1
 pytz==2021.3
 flasgger==0.9.5
 pymongo

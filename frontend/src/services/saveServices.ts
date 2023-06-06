@@ -16,6 +16,7 @@ export const saveFileAnnotations = async (project_string_id: string, file_id: nu
     return [response, null]
   }
   catch(e) {
+    console.error(e)
     return [null, e]
   }
 }

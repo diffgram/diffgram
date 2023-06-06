@@ -47,7 +47,7 @@
     "lodash": "^4.17.21",
     "lodash.debounce": "^4.0.8",
     "mailslurp-client": "^10.2.1",
-    "mathjs": "^7.5.1",
+    "mathjs": "^11.8.0",
     "mime": "^2.4.7",
     "mime-types": "^2.1.27",
     "moment-timezone": "^0.5.35",

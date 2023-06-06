@@ -2,6 +2,7 @@
   <div v-if="!do_not_show_menu" style="padding: 0">
 
     <v-snackbar
+      v-if="$store.state.error.permission"
       v-model="$store.state.error.permission"
       top
       color="error"
@@ -13,6 +14,7 @@
     </v-snackbar>
 
     <v-snackbar
+      v-if="$store.state.alert.success_refresh"
       v-model="$store.state.alert.success_refresh"
       top
       color="info"

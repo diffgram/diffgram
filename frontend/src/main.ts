@@ -11,10 +11,6 @@ import vue2Dropzone from 'vue2-dropzone'
 import './css/vue_dropzone.css'
 
 
-
-// Look into https://vuejs.org/v2/guide/mixins.html#Global-Mixin
-// for say that api error handling thing
-
 /**
  *
  *  NOTE we only need to import things here
@@ -26,6 +22,7 @@ import './css/vue_dropzone.css'
  *
  */
 
+// Vue.config.performance = true
 import file_preview from './components/source_control/file_preview'
 Vue.component('file_preview', file_preview)
 

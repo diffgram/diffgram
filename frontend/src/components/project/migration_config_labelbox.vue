@@ -14,6 +14,8 @@
       :items="labelbox_projects"
       v-model="project_migration_data.labelbox_project_id"
       ref="labelbox_project_selector"
+      :disabled="loading_labelbox_projects"
+      :loading="loading_labelbox_projects"
       @change="$refs.labelbox_project_selector.blur()"
                     >
     </v-autocomplete>
@@ -49,6 +51,7 @@ export default Vue.extend({
     data() {
       return {
         labelbox_projects: [],
+        loading_labelbox_projects: false,
         error: null,
       }
     },
@@ -60,6 +63,7 @@ export default Vue.extend({
 
       get_labelbox_projects: async function () {
         this.labelbox_projects = [];
+        this.loading_labelbox_projects = true
         if(!this.project_migration_data){
           return
         }
@@ -72,6 +76,7 @@ export default Vue.extend({
           return
         }
         this.labelbox_projects = data.result;
+        this.loading_labelbox_projects = false
 
       },
     }

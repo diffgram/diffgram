@@ -245,7 +245,6 @@ class DataToolsS3:
         :param bucket: string for the bucket type (either 'web' or 'ml') defaults to 'web'
         :return: the string for the presigned url
         """
-        print('build_secure_url s4', blob_name, expiration_offset, bucket)
         if expiration_offset is None:
             expiration_offset = settings.SIGNED_URL_CACHE_NEW_OFFSET_SECONDS_VALID
 
@@ -257,7 +256,7 @@ class DataToolsS3:
             bucket_name = self.s3_bucket_name_ml
 
         filename = blob_name.split("/")[-1]
-        #print('SECONDS VALID', expiration_offset)
+
         signed_url = self.s3_client.generate_presigned_url('get_object',
                                                            Params = {
                                                                'Bucket': bucket_name,

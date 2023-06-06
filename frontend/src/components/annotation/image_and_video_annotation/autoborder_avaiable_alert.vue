@@ -1,6 +1,7 @@
 <template>
   <v-menu
     top
+    v-if="show_menu"
     v-model="show_menu"
     max-width="250"
     :position-x="x_position"
