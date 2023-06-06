@@ -79,6 +79,6 @@ if context.is_offline_mode():
 else:
     try:
         run_migrations_online()
-    except exception as e:
+    except Exception as e:
         print(e)
         print("Migrations: If you have run migrations offline already ignore this. Online Migrations Failed.")
