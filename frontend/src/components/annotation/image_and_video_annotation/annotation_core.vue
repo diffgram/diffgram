@@ -7604,7 +7604,7 @@ export default Vue.extend({
     set_clipboard: function (instance_list) {
       let file_id = this.working_file.id;
       this.$store.commit("set_clipboard", {
-        instance_list: inst_list_clipboard,
+        instance_list: instance_list,
         file_id: file_id,
       });
     },
