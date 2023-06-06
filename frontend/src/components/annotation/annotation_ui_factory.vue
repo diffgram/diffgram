@@ -1296,6 +1296,12 @@ export default Vue.extend({
             instance_list_param = undefined
         ) {
             // TODO: Move out of component into a InstanceListSaver class
+
+            if (this.annotation_ui_context.get_current_ann_ctx().save_loading == true){
+              return
+            }
+            if (this.any_loading) return
+
             if (this.annotation_ui_context.working_file.type === 'text') {
                 await this.process_text_save(and_complete)
                 return
@@ -1336,7 +1342,6 @@ export default Vue.extend({
                 return
             }
             if (this.video_mode && frame_number && this.get_save_loading(frame_number)) return
-            if (this.any_loading) return
 
             if (
                 this.annotation_ui_context.current_image_annotation_ctx.video_mode &&
