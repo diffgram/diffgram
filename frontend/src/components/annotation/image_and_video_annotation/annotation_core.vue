@@ -588,7 +588,6 @@ import ghost_instance_list_canvas from "../../vue_canvas/ghost_instance_list";
 import v_bg from "../../vue_canvas/v_bg";
 import v_text from "../../vue_canvas/v_text";
 import target_reticle from "../../vue_canvas/target_reticle";
-import task_status_icons from "../../regular_concrete/task_status_icons";
 import context_menu from "../../context_menu/context_menu.vue";
 import polygon_borders_context_menu from "../../context_menu/polygon_borders_context_menu.vue";
 
@@ -618,7 +617,6 @@ import {File} from "../../../types/files";
 import {update_file_metadata} from "../../../services/fileServices";
 import {getInstanceTemplatesFromProject} from "../../../services/instanceTemplateService.js";
 import {File} from "../../../types/files";
-import task_status from "./task_status.vue"
 import v_sequence_list from "../../video/sequence_list"
 import {
   initialize_instance_object,
@@ -675,12 +673,10 @@ export default Vue.extend({
     v_bg,
     v_text,
     target_reticle,
-    task_status_icons,
     context_menu,
     userscript,
     ghost_canvas_available_alert,
     qa_carousel,
-    task_status
   },
   props: {
     draw_mode: {
