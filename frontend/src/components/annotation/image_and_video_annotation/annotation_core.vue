@@ -607,10 +607,9 @@ import {
 import {ImageAnnotationCoordinator} from "../../vue_canvas/coordinators/coordinator_types/ImageAnnotationCoordinator";
 import {polygon} from "../../vue_canvas/polygon.js";
 import {v4 as uuidv4} from "uuid";
-import {cloneDeep, isEqual} from "lodash";
+import {cloneDeep} from "lodash";
 import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../../vue_canvas/instances/Instance";
 import userscript from "./userscript/userscript.vue";
-import toolbar from "./toolbar.vue";
 import {InstanceContext} from "../../vue_canvas/instances/InstanceContext";
 import {CanvasMouseTools} from "../../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
@@ -649,8 +648,6 @@ import {PolygonMergeTool} from "../../vue_canvas/advanced_tools/PolygonMergeTool
 import IssuesAnnotationUIManager from "./../issues/IssuesAnnotationUIManager";
 import {BaseAnnotationUIContext, ImageAnnotationUIContext} from "../../../types/AnnotationUIContext";
 import {AutoBorderContext} from "../../vue_canvas/advanced_tools/PolygonAutoBorderTool";
-import store from '../../../../src/store.js'
-import {BoxInstanceCoordinator} from "../../vue_canvas/coordinators/coordinator_types/BoxInstanceCoordinator";
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
 
@@ -681,7 +678,6 @@ export default Vue.extend({
     task_status_icons,
     context_menu,
     userscript,
-    toolbar,
     ghost_canvas_available_alert,
     qa_carousel,
     task_status
