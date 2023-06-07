@@ -58,6 +58,7 @@
               @task_update_toggle_deferred="() => task_update('toggle_deferred')"
               @change_task="(event) => trigger_task_change(event, annotation_ui_context.task, false)"
               @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
+              @annotation_show="annotation_show($event)"
         />
         <!--  Temporal v-if condition while other sidebars are migrated inside sidebar factory  -->
         <sidebar_factory
@@ -222,6 +223,7 @@
                               :instance_type="annotation_ui_context.instance_type"
                               :bulk_mode="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().bulk_mode"
                               :search_mode="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().search_mode"
+                              :annotation_show_event="annotation_show_event"
                               @activate_hotkeys="activate_hotkeys"
                               @request_file_change="request_file_change"
                               @change_label_schema="on_change_label_schema"
@@ -471,6 +473,7 @@ export default Vue.extend({
             missing_credentials: [],
             label_schema_list: [],
 
+            annotation_show_event: null,
 
             view_only: false,
 
@@ -778,6 +781,11 @@ export default Vue.extend({
         },
     },
     methods: {
+
+      annotation_show: function (event){
+        this.annotation_show_event = event
+      },
+
         execute_button_actions: async function(custom_button: CustomButton){
           if(!custom_button.workflow){
             return

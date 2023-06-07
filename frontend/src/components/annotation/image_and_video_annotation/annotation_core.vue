@@ -732,6 +732,7 @@ export default Vue.extend({
     annotation_ui_context: {type: Object as BaseAnnotationUIContext, required: true},
     image_annotation_ctx: {type: Object as ImageAnnotationUIContext, required: true},
     is_active: {type: Boolean, required: true, default: true},
+    annotation_show_event: {default: null},
   },
   watch: {
     is_active: function (){
@@ -852,6 +853,10 @@ export default Vue.extend({
         }
       }
     },
+    annotation_show_event: function (event) {
+      this.annotation_show_activate(event)
+    }
+
   },
   data: function() {
     return {
@@ -6892,7 +6897,8 @@ export default Vue.extend({
 
     },
     annotation_show_activate(show_type) {
-      return
+
+      console.log("Showing annotation show")
       this.annotation_show_on = !this.annotation_show_on
       this.annotation_show_type = show_type
       if (this.$refs.qa_carrousel && this.annotation_show_on) {
@@ -7389,6 +7395,7 @@ export default Vue.extend({
       if (this.ctrl_key && event.keyCode == vKey) {
         this.paste_instance(undefined, undefined, frame_number_locked);
       }
+      // TBD this is a bad one since it's also refresh ?
       if (this.shift_key && event.keyCode === 82) { // CTRL + r
         this.annotation_show_activate(!this.task && this.working_file && this.working_file.id ? 'file' : 'task')
       }

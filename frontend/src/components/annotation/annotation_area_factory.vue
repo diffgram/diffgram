@@ -312,7 +312,8 @@ export default Vue.extend({
     child_annotation_ctx_list: {
       type: Array,
       default: []
-    }
+    },
+    annotation_show_event: {default: null}
   },
   computed: {
     current_interface_ref: function () {

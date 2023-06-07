@@ -35,6 +35,8 @@
       :added_attributes="current_global_instance && current_global_instance.attribute_groups ? Object.keys(current_global_instance.attribute_groups) : []"
     />
 
+    {{instance_list.length}}
+
     <div class="d-flex flex-column">
 
       <div v-if="render_mode=='gold_standard'">Gold standard instances</div>
