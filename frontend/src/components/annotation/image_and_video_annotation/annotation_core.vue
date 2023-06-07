@@ -588,7 +588,6 @@ import ghost_instance_list_canvas from "../../vue_canvas/ghost_instance_list";
 import v_bg from "../../vue_canvas/v_bg";
 import v_text from "../../vue_canvas/v_text";
 import target_reticle from "../../vue_canvas/target_reticle";
-import task_status_icons from "../../regular_concrete/task_status_icons";
 import context_menu from "../../context_menu/context_menu.vue";
 import polygon_borders_context_menu from "../../context_menu/polygon_borders_context_menu.vue";
 
@@ -607,10 +606,9 @@ import {
 import {ImageAnnotationCoordinator} from "../../vue_canvas/coordinators/coordinator_types/ImageAnnotationCoordinator";
 import {polygon} from "../../vue_canvas/polygon.js";
 import {v4 as uuidv4} from "uuid";
-import {cloneDeep, isEqual} from "lodash";
+import {cloneDeep} from "lodash";
 import {Instance, SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES} from "../../vue_canvas/instances/Instance";
 import userscript from "./userscript/userscript.vue";
-import toolbar from "./toolbar.vue";
 import {InstanceContext} from "../../vue_canvas/instances/InstanceContext";
 import {CanvasMouseTools} from "../../vue_canvas/CanvasMouseTools";
 import pLimit from "p-limit";
@@ -619,7 +617,6 @@ import {File} from "../../../types/files";
 import {update_file_metadata} from "../../../services/fileServices";
 import {getInstanceTemplatesFromProject} from "../../../services/instanceTemplateService.js";
 import {File} from "../../../types/files";
-import task_status from "./task_status.vue"
 import v_sequence_list from "../../video/sequence_list"
 import {
   initialize_instance_object,
@@ -649,8 +646,6 @@ import {PolygonMergeTool} from "../../vue_canvas/advanced_tools/PolygonMergeTool
 import IssuesAnnotationUIManager from "./../issues/IssuesAnnotationUIManager";
 import {BaseAnnotationUIContext, ImageAnnotationUIContext} from "../../../types/AnnotationUIContext";
 import {AutoBorderContext} from "../../vue_canvas/advanced_tools/PolygonAutoBorderTool";
-import store from '../../../../src/store.js'
-import {BoxInstanceCoordinator} from "../../vue_canvas/coordinators/coordinator_types/BoxInstanceCoordinator";
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
 
@@ -678,13 +673,10 @@ export default Vue.extend({
     v_bg,
     v_text,
     target_reticle,
-    task_status_icons,
     context_menu,
     userscript,
-    toolbar,
     ghost_canvas_available_alert,
     qa_carousel,
-    task_status
   },
   props: {
     draw_mode: {

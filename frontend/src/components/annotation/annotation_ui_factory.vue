@@ -1746,9 +1746,7 @@ export default Vue.extend({
         on_task_annotation_complete_and_save: async function () {
             await this.save(true);
             const response = await finishTaskAnnotation(this.annotation_ui_context.task.id);
-
             const new_status = response.data.task.status;
-            this.annotation_ui_context.task.status = new_status;
 
             if (new_status !== "complete") {
               this.submitted_to_review = true;
