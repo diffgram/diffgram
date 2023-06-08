@@ -1361,31 +1361,8 @@ export default Vue.extend({
     },
 
     canvas_scale_global() {
-      /* The window size is defined as
-       * window_size = image_size * global_scale
-       * a = b * c
-       * which is equal to
-       * a/b = (b * c)/b
-       * a/b = c   (simplified)
-       * So window_width / image_size = global scale
-       *
-       * Then the question becomes how to set it relative to other elements.
-       * (That's what the extra little number is for)
-       *
-       * For user set, could have a "zoom" slider too. But I think people also sometimes
-       * like setting a number?
-       *
-       * Note that "_setting" is the automatic or user set number,
-       * where as withoout that suffix it's the "internal" system used value.
-       *
-       * Still needs more work in relation to auto components but strong step in direction
-       *
-       * At the moment the user setting thing doesn't really make sense (if auto is working well)
-       * but perhaps in future as we allow more control over how other components
-       * are positioned it will.
-       * Context here is that it's not a "zoom".
-       */
-      // Manual override
+      // https://diffgram.readme.io/docs/canvas_scale_global
+
       if (this.label_settings.canvas_scale_global_is_automatic == false) {
         return this.label_settings.canvas_scale_global_setting;
       }
@@ -1395,21 +1372,10 @@ export default Vue.extend({
 
 
       if (this.original_media_width) {
-        //  TODO rename 'canvas' thing here as it's more like original media width
-        // the 'canvas_scaled' is what's being used for actual canvas stuff?
         image_size_width = this.original_media_width;
         image_size_height = this.original_media_height;
       }
-      // basically the math above does work but it needs right image size
 
-      /*
-       * magic_nav_spacer is
-       * rough space between actual pane size and padding on either side of image.
-       * meant as a reminder to review that concept a bit more closely doesn't quite feel
-       * right yet
-       *
-       * the goal of calculation is to make it relative to left and right panel
-       */
       let toolbar_height = 80;
       let middle_pane_height, middle_pane_width;
       if(this.use_full_window){
@@ -1429,11 +1395,6 @@ export default Vue.extend({
         middle_pane_height = this.container_height
       }
 
-
-
-
-
-      // get media core height
       if (document.getElementById("media_core")) {
         this.media_core_height =
           document.getElementById("media_core").__vue__.height;
