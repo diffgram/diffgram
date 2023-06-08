@@ -1711,7 +1711,6 @@ export default Vue.extend({
     this.save_watcher();
     this.save_and_complete_watcher();
     this.refresh_video_buffer_watcher();
-    //console.debug("Destroyed")
   },
 
   mounted() {
@@ -1898,12 +1897,6 @@ export default Vue.extend({
       this.update_canvas();
     },
 
-
-    update_label_settings: function (event) {
-      // Add new events individually in toolbar, e.g. @change="$emit('update_something').
-      this.label_settings = event  // this is actually be reference once connected.
-      this.refresh = Date.now();
-    },
     update_smooth_canvas: function (event) {
       if (!this.canvas_element_ctx) {
         return
