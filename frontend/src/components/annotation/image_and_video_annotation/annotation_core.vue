@@ -1903,6 +1903,13 @@ export default Vue.extend({
       }
       this.canvas_element_ctx.imageSmoothingEnabled = event
     },
+    update_large_annotation_volume_performance_mode: function (event) {
+      if (event === true) {
+        this.set_performance_optimizations_on()
+      } else {
+        this.set_performance_optimizations_off()
+      }
+    },
     cancel_merge: function () {
       this.$store.commit("set_instance_select_for_merge", false);
       this.polygon_merge_tool = null
@@ -3027,11 +3034,15 @@ export default Vue.extend({
     },
 
     set_performance_optimizations_on: function () {
+      this.label_settings.large_annotation_volume_performance_mode = true
+
       this.label_settings.show_text = false;
 
     },
 
     set_performance_optimizations_off: function () {
+      this.label_settings.large_annotation_volume_performance_mode = false
+
       this.label_settings.show_text = true;
 
     },
@@ -3260,6 +3271,7 @@ export default Vue.extend({
       this.refresh_instances_in_viewport(this.instance_list)
 
       this.update_smooth_canvas(this.label_settings.smooth_canvas)
+      this.update_large_annotation_volume_performance_mode(this.label_settings.large_annotation_volume_performance_mode)
       await this.$forceUpdate();
     },
 
