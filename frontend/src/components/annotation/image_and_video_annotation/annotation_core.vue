@@ -1489,12 +1489,7 @@ export default Vue.extend({
     },
 
     current_instance: function () {
-      // QUESTIONs
-      // how do we want to name space this better as we get more instance types
-      // some shared stuff though...
 
-      // we use computed function here since label referecnes this.current_label_file
-      // and this won't work in data dictionary
       if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(this.instance_type)) {
         return this.build_current_instance_class()
       }
@@ -1677,13 +1672,6 @@ export default Vue.extend({
     },
 
     current_label_file_id: function () {
-      /*
-        * Jan 4, we sometimes need the "id" ie for change detection
-          BUT it creates awkward thing that if current_label_file becomes
-          undefined, it crashes interface
-
-          Using this as a workaround into shared computed property
-        */
       if (this.annotation_ui_context.current_label_file) {
         return this.annotation_ui_context.current_label_file.id;
       } else {
