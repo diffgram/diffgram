@@ -210,6 +210,7 @@ export class CanvasMouseTools {
     if(instance.soft_delete || instance.type === 'global'){
       return undefined
     }
+    if(!instance.x_min || !instance.y_min) { return undefined }
     let min_transformed = this.map_point_from_matrix(instance.x_min, instance.y_min, transform);
     let max_transformed = this.map_point_from_matrix(instance.x_max, instance.y_max, transform);
     let isBboxInside = this.doesBboxCollide(min_transformed.x, max_transformed.x, min_transformed.y, max_transformed.y)
