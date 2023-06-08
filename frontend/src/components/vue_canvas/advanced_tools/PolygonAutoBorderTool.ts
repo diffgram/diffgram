@@ -29,7 +29,6 @@ export class PolygonAutoBorderTool {
   private find_auto_border_point(points: PolygonPoint[], instance_index: number) {
     let found_point = false;
     let point_index = 0;
-    console.log('find_auto_border_point', points, instance_index)
     for (const point of points) {
       if (point.hovered_while_drawing) {
         if (!this.context.auto_border_polygon_p1) {
@@ -81,7 +80,6 @@ export class PolygonAutoBorderTool {
           points,
           instance_index
         );
-        console.log('FOUNT POINT', instance_index, autoborder_point_exists)
         if (autoborder_point_exists) {
           found_point = true;
         }
