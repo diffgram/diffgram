@@ -2496,6 +2496,9 @@ export default Vue.extend({
     },
 
     refresh_instances_in_viewport: function (instance_list) {
+
+      if (this.label_settings.large_annotation_volume_performance_mode === false) { return }
+
       for (let i = 0; i < instance_list.length; i++) {
         instance_list[i].in_viewport = this.canvas_mouse_tools.check_is_instance_in_viewport(instance_list[i])
       }
