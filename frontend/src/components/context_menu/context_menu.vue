@@ -416,8 +416,7 @@
       <v-list-item
         link
         dense
-        v-if="instance_hover_index_locked
-              && selected_instance
+        v-if="selected_instance
               && selected_instance.id
               && video_mode != true"
         :ref="`change_label_button_instance_${selected_instance.id}`"
