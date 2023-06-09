@@ -15,7 +15,8 @@
       </div>
     </v-alert>
 
-    <ui_schema name="attribute_preview" v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task">
+    <ui_schema name="attribute_preview"
+               v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task">
       <attribute_preview
         v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task"
         :global_attribute_groups_list="global_attribute_groups_list"
@@ -36,9 +37,6 @@
     />
 
     <div class="d-flex flex-column">
-
-      <div v-if="render_mode=='gold_standard'">Gold standard instances</div>
-
 
       <global_attributes_list
         data-cy="global-attributes-compound-list"
