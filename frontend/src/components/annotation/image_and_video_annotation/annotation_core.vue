@@ -1272,6 +1272,7 @@ export default Vue.extend({
       if (!this.draw_mode) {
         return false;
       }
+
       if (this.annotation_ui_context.show_context_menu) {
         return false;
       }
@@ -2760,15 +2761,11 @@ export default Vue.extend({
       this.$refs.video_controllers.move_frame(direction)
     },
 
-    hide_context_menu: function () {
-      // search tags: close close_context
+    hide_context_menu: function () {    //  close close_context
       this.annotation_ui_context.show_context_menu = false;
-      // this.emit_instance_hover = false;   // computation optimzation
-      // there's a timing issue with doing this though so leave off for now.
     },
 
     open_context_menu: function () {
-      //this.emit_instance_hover = true;
       this.annotation_ui_context.show_context_menu = true;
       this.update_canvas()
     },
