@@ -428,7 +428,6 @@
               :label_file_list_prop=label_file_list
               :select_this_id_at_load=selected_instance.label_file_id
               @label_file="update_label($event)"
-                                @click=""
             >
             </label_select_only>
           </div>
