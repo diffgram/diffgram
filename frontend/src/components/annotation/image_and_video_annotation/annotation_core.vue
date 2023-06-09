@@ -3032,6 +3032,7 @@ export default Vue.extend({
       } else {
         this.set_performance_optimizations_off()
       }
+      this.$emit('instance_list_updated', this.instance_list, this.working_file.id, this.working_file.type)
 
     },
 
