@@ -65,6 +65,11 @@
       <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"></v-divider>
       <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"></v-divider>
 
+      <v-chip x-small v-if="label_settings.large_annotation_volume_performance_mode == true && instance_list_count > 0"
+                      class="justify-center">
+        {{ instance_list_count }} Annotations
+      </v-chip>
+
       <v-expansion-panels
         v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"
         v-model="instance_detail_open"
@@ -138,8 +143,9 @@
               </v-btn>
           </v-expansion-panel-header>
 
+
           <v-expansion-panel-header
-                :disabled="label_settings.large_annotation_volume_performance_mode == true"
+                v-if="label_settings.large_annotation_volume_performance_mode == false"
                 class="d-flex justify-start pa-0 pb-2 sidebar-accordeon-header align-center">
 
             <v-icon left class="ml-5 flex-grow-0" color="primary" size="18">
