@@ -422,26 +422,16 @@
               && video_mode != true"
         :ref="`change_label_button_instance_${selected_instance.id}`"
       >
-        <v-list-item-icon>
-          <tooltip_icon
-            icon="mdi-format-paint"
-            color="primary"
-          />
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title class="pr-4">
-
+          <div class="pt-2">
             <label_select_only
               :enable_hotkeys="true"
               :label_file_list_prop=label_file_list
               :select_this_id_at_load=selected_instance.label_file_id
               @label_file="update_label($event)"
-                               @click=""
+                                @click=""
             >
             </label_select_only>
-
-          </v-list-item-title>
-        </v-list-item-content>
+          </div>
       </v-list-item>
 
 
