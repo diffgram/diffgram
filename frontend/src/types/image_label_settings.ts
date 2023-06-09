@@ -26,7 +26,8 @@ export type ImageLabelSettings = {
   left_nav_width: number,
   on_instance_creation_advance_sequence: boolean,
   ghost_instances_closed_by_open_view_edit_panel: boolean,
-  smooth_canvas: boolean
+  smooth_canvas: boolean,
+  large_annotation_volume_performance_mode: boolean
 }
 
 export function createDefaultLabelSettings(): ImageLabelSettings{
@@ -57,6 +58,7 @@ export function createDefaultLabelSettings(): ImageLabelSettings{
     left_nav_width: 450,
     on_instance_creation_advance_sequence: true,
     ghost_instances_closed_by_open_view_edit_panel: false,
-    smooth_canvas: true
+    smooth_canvas: true,
+    large_annotation_volume_performance_mode: true
   }
 }

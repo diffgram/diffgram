@@ -9,6 +9,7 @@
     style="overflow: hidden; padding: 0; border-bottom: 1px solid #e0e0e0"
   >
     <v-toolbar-items>
+
       <v-chip
         v-if="working_file && working_file.state === 'removed'"
         color="error"
@@ -64,6 +65,7 @@
       <!-- Undo Redo -->
 
       <div class="d-flex align-center" v-if="show_undo_redo == true && command_manager">
+
         <ui_schema name="undo">
           <standard_button
             :disabled="
@@ -918,6 +920,15 @@
                   </v-checkbox>
 
                   <v-checkbox
+                    label="Large Volume Annotation Performance Mode"
+                    data-cy="label_settings_large_annotation_volume_performance_mode"
+                    v-model="
+                      label_settings_local.large_annotation_volume_performance_mode
+                    "
+                  >
+                  </v-checkbox>
+
+                  <v-checkbox
                     label="On Instance Creation: Advance Sequence Number"
                     data-cy="on_instance_creation_advance_sequence"
                     v-model="
@@ -1045,7 +1056,7 @@ export default Vue.extend({
   name: "image_and_video_toolbar",
   components: {
     logo,
-    CustomButtonsSection,
+    CustomButtonsSection, // custom-button-section
     Guided_1_click_mode_selector,
     label_select_annotation,
     label_schema_selector,

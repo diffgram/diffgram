@@ -43,7 +43,7 @@
               :disabled="view_only_mode"
               v-for="item in select_format"
               :key="item.name"
-              :label="`${item.display_name} [${item.id}]`"
+              :label="get_label(item)"
               :value="item"
             ></v-radio>
           </v-radio-group>
@@ -201,7 +201,7 @@
                   />
               </template>
               <template v-slot:append="{item}">
-                <v-chip v-if="show_ids" x-small>
+                <v-chip v-if="show_ids && $store.state.user.settings.show_ids == true " x-small>
                   ID: {{ item.id }}
                 </v-chip>
               </template>
@@ -816,6 +816,15 @@
             }
           }
         },
+        get_label: function(item){
+
+          let label = item.display_name
+          if (this.$store.state.user.settings.show_ids == true) {
+            label += " [" +  item.id + "]"
+          }
+          return label
+        },
+
         set_attribute_value: function(value){
           if(['radio', 'select'].includes(this.group.kind)){
               // Assume value is the ID for this case

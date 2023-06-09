@@ -15,7 +15,8 @@
       </div>
     </v-alert>
 
-    <ui_schema name="attribute_preview" v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task">
+    <ui_schema name="attribute_preview"
+               v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task">
       <attribute_preview
         v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task"
         :global_attribute_groups_list="global_attribute_groups_list"
@@ -38,9 +39,6 @@
     {{instance_list.length}}
 
     <div class="d-flex flex-column">
-
-      <div v-if="render_mode=='gold_standard'">Gold standard instances</div>
-
 
       <global_attributes_list
         data-cy="global-attributes-compound-list"
@@ -68,6 +66,11 @@
 
       <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"></v-divider>
       <v-divider v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"></v-divider>
+
+      <v-chip x-small v-if="label_settings.large_annotation_volume_performance_mode == true && instance_list_count > 0"
+                      class="justify-center">
+        {{ instance_list_count }} Annotations
+      </v-chip>
 
       <v-expansion-panels
         v-if="attribute_group_list_computed.length != 0 || (current_instance && current_instance.attribute_groups && Object.keys(current_instance.attribute_groups) > 0)"
@@ -142,7 +145,10 @@
               </v-btn>
           </v-expansion-panel-header>
 
-          <v-expansion-panel-header v-if="instance_list_count < 100" class="d-flex justify-start pa-0 pb-2 sidebar-accordeon-header align-center">
+
+          <v-expansion-panel-header
+                v-if="label_settings.large_annotation_volume_performance_mode == false"
+                class="d-flex justify-start pa-0 pb-2 sidebar-accordeon-header align-center">
 
             <v-icon left class="ml-5 flex-grow-0" color="primary" size="18">
               mdi-brush
@@ -158,14 +164,17 @@
           </v-expansion-panel-header>
 
           <v-expansion-panel-content class="ml-2">
+
             <v-chip v-if="current_instance
                       && current_instance.id
                       && $store.state.user.settings.show_ids == true " x-small class="ma-2" color="secondary">
               <span class="font-weight-bold mr-2">Selected: </span> <span>{{ current_instance.id }}</span>
             </v-chip>
+
             <v-data-table v-if="grouped_list &&
-                                grouped_list.instance_list.length > 0
-                                && grouped_list.instance_list.length < 100"
+                                grouped_list.instance_list.length > 0 &&
+                                label_settings.large_annotation_volume_performance_mode == false"
+
                           style="overflow-y:auto; max-height: 450px"
                           :headers="header"
                           :items="grouped_list.instance_list"

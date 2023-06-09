@@ -866,7 +866,6 @@ export default Vue.extend({
       global_instance: undefined,
 
       locked_editing_instance: null as Instance,
-      current_instance_v2: null as Instance,
       current_interaction: null as Interaction,
       current_drawing_box_instance: new BoxInstance(),
       current_drawing_polygon_instance: new PolygonInstance(),
@@ -880,7 +879,6 @@ export default Vue.extend({
 
       file_cant_be_accessed: null,
       file_cant_be_accessed_error: null,
-      instance_list_global: [],
 
       snackbar_paste_message: '',
       ghost_instance_hover_index: null,
@@ -938,8 +936,6 @@ export default Vue.extend({
       ellipse_hovered_instance: undefined,
       ellipse_hovered_instance_index: undefined,
 
-
-
       drawing_curve: false,
       curve_hovered_point: undefined,
 
@@ -948,8 +944,7 @@ export default Vue.extend({
       user_requested_file_id: null,
 
       instance_clipboard: undefined,
-      media_core_height: 300, // assumes admin mode, minimize "jerk" by defaulting
-      // it takes time for media_core to pass real value, so we want this to be close to real value
+      media_core_height: 0,
       emit_instance_hover: true, // ie can set to true to get hover updates
 
       // Sequence design doc https://docs.google.com/document/d/1EVvPke7Ms25KsmDKpwrQcqB1k6pgB5SNs5WDbwGmLCo/edit#heading=h.oo1xxxn8bkpp
@@ -1366,31 +1361,8 @@ export default Vue.extend({
     },
 
     canvas_scale_global() {
-      /* The window size is defined as
-       * window_size = image_size * global_scale
-       * a = b * c
-       * which is equal to
-       * a/b = (b * c)/b
-       * a/b = c   (simplified)
-       * So window_width / image_size = global scale
-       *
-       * Then the question becomes how to set it relative to other elements.
-       * (That's what the extra little number is for)
-       *
-       * For user set, could have a "zoom" slider too. But I think people also sometimes
-       * like setting a number?
-       *
-       * Note that "_setting" is the automatic or user set number,
-       * where as withoout that suffix it's the "internal" system used value.
-       *
-       * Still needs more work in relation to auto components but strong step in direction
-       *
-       * At the moment the user setting thing doesn't really make sense (if auto is working well)
-       * but perhaps in future as we allow more control over how other components
-       * are positioned it will.
-       * Context here is that it's not a "zoom".
-       */
-      // Manual override
+      // https://diffgram.readme.io/docs/canvas_scale_global
+
       if (this.label_settings.canvas_scale_global_is_automatic == false) {
         return this.label_settings.canvas_scale_global_setting;
       }
@@ -1400,21 +1372,10 @@ export default Vue.extend({
 
 
       if (this.original_media_width) {
-        //  TODO rename 'canvas' thing here as it's more like original media width
-        // the 'canvas_scaled' is what's being used for actual canvas stuff?
         image_size_width = this.original_media_width;
         image_size_height = this.original_media_height;
       }
-      // basically the math above does work but it needs right image size
 
-      /*
-       * magic_nav_spacer is
-       * rough space between actual pane size and padding on either side of image.
-       * meant as a reminder to review that concept a bit more closely doesn't quite feel
-       * right yet
-       *
-       * the goal of calculation is to make it relative to left and right panel
-       */
       let toolbar_height = 80;
       let middle_pane_height, middle_pane_width;
       if(this.use_full_window){
@@ -1434,11 +1395,6 @@ export default Vue.extend({
         middle_pane_height = this.container_height
       }
 
-
-
-
-
-      // get media core height
       if (document.getElementById("media_core")) {
         this.media_core_height =
           document.getElementById("media_core").__vue__.height;
@@ -1533,12 +1489,7 @@ export default Vue.extend({
     },
 
     current_instance: function () {
-      // QUESTIONs
-      // how do we want to name space this better as we get more instance types
-      // some shared stuff though...
 
-      // we use computed function here since label referecnes this.current_label_file
-      // and this won't work in data dictionary
       if (SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(this.instance_type)) {
         return this.build_current_instance_class()
       }
@@ -1721,13 +1672,6 @@ export default Vue.extend({
     },
 
     current_label_file_id: function () {
-      /*
-        * Jan 4, we sometimes need the "id" ie for change detection
-          BUT it creates awkward thing that if current_label_file becomes
-          undefined, it crashes interface
-
-          Using this as a workaround into shared computed property
-        */
       if (this.annotation_ui_context.current_label_file) {
         return this.annotation_ui_context.current_label_file.id;
       } else {
@@ -1767,7 +1711,6 @@ export default Vue.extend({
     this.save_watcher();
     this.save_and_complete_watcher();
     this.refresh_video_buffer_watcher();
-    //console.debug("Destroyed")
   },
 
   mounted() {
@@ -1954,17 +1897,18 @@ export default Vue.extend({
       this.update_canvas();
     },
 
-
-    update_label_settings: function (event) {
-      // Add new events individually in toolbar, e.g. @change="$emit('update_something').
-      this.label_settings = event  // this is actually be reference once connected.
-      this.refresh = Date.now();
-    },
     update_smooth_canvas: function (event) {
       if (!this.canvas_element_ctx) {
         return
       }
       this.canvas_element_ctx.imageSmoothingEnabled = event
+    },
+    update_large_annotation_volume_performance_mode: function (event) {
+      if (event === true) {
+        this.set_performance_optimizations_on()
+      } else {
+        this.set_performance_optimizations_off()
+      }
     },
     cancel_merge: function () {
       this.$store.commit("set_instance_select_for_merge", false);
@@ -2530,6 +2474,9 @@ export default Vue.extend({
       if (this.instance_hover_index == undefined) {
         return;
       }
+      if (instance.type === 'global') {
+        return;
+      }
       let index = null;
       for(let i = 0; i <  this.instance_list.length; i++){
         let inst = this.instance_list[i];
@@ -2537,7 +2484,7 @@ export default Vue.extend({
           index = i
         }
       }
-      if (this.instance_list[this.instance_hover_index].creation_ref_id === instance.creation_ref_id && index === this.instance_hover_index) {
+      if (index === this.instance_hover_index) {
         this.instance_list[this.instance_hover_index].is_hovered = false;
         this.instance_hover_index = null;
         this.instance_hover_type = null;
@@ -2552,6 +2499,9 @@ export default Vue.extend({
     },
 
     refresh_instances_in_viewport: function (instance_list) {
+
+      if (this.label_settings.large_annotation_volume_performance_mode === false) { return }
+
       for (let i = 0; i < instance_list.length; i++) {
         instance_list[i].in_viewport = this.canvas_mouse_tools.check_is_instance_in_viewport(instance_list[i])
       }
@@ -3017,7 +2967,6 @@ export default Vue.extend({
         instance.attribute_groups[group.id] = value;
 
         if (instance.type === "global") {
-
           this.global_instance = instance
           this.annotation_ui_context.instance_store.set_global_instance(this.working_file.id, this.global_instance)
         }
@@ -3085,16 +3034,23 @@ export default Vue.extend({
       }
       if(this.instance_list.length > 100){
         this.set_performance_optimizations_on()
+      } else {
+        this.set_performance_optimizations_off()
       }
+      this.$emit('instance_list_updated', this.instance_list, this.working_file.id, this.working_file.type)
 
     },
 
     set_performance_optimizations_on: function () {
+      this.label_settings.large_annotation_volume_performance_mode = true
+
       this.label_settings.show_text = false;
 
     },
 
     set_performance_optimizations_off: function () {
+      this.label_settings.large_annotation_volume_performance_mode = false
+
       this.label_settings.show_text = true;
 
     },
@@ -3323,6 +3279,7 @@ export default Vue.extend({
       this.refresh_instances_in_viewport(this.instance_list)
 
       this.update_smooth_canvas(this.label_settings.smooth_canvas)
+      this.update_large_annotation_volume_performance_mode(this.label_settings.large_annotation_volume_performance_mode)
       await this.$forceUpdate();
     },
 
@@ -4059,7 +4016,6 @@ export default Vue.extend({
       return midpoint_hover;
     },
     detect_hover_polygon_midpoints: function () {
-      // https://diffgram.teamwork.com/#/tasks/23511334
 
       if (!this.selected_instance) {
         return;
@@ -4135,8 +4091,8 @@ export default Vue.extend({
         this.detect_hover_on_curve_control_points();
 
 
-        // this.detect_nearest_polygon_point();
-        // this.detect_hover_polygon_midpoints();
+        this.detect_nearest_polygon_point();
+        this.detect_hover_polygon_midpoints();
 
         this.detect_issue_hover();
 
@@ -4178,24 +4134,6 @@ export default Vue.extend({
       return false;
     },
     detect_nearest_polygon_point: function () {
-      /*
-       * Caution updates mouse cursor as side effect.
-       */
-
-      // TODO find nearest point
-      // ie if it's interesting "point" type instances or lines?
-      // could just naively loop over it but feels like there has to to be another way
-      // maybe when we are rendering each thing, if the mouse is over it then
-      // could do that? or something more generic here
-
-      /* So what's interesting is that at the moment this runs twice
-       * for a singular point - but it's "generic"
-       * in the sense that it still works
-       * This could probably be similar for lines too?
-       */
-
-      // TODO get a flag from polygon multiple to detect if
-      // Should change to pointer here
       this.polygon_point_hover_index = null;
 
       if (

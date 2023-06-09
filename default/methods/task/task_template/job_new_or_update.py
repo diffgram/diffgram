@@ -685,22 +685,7 @@ def new_or_update_core(session,
                        review_chance=0,
                        tag_list=None
                        ):
-    """
 
-    Even if the user wants to copy an existing directory exactly
-    for the job for isolation we create a new directory and pointers to it
-
-    Allows selection of a a subset of the directory (ie only non-completed images)
-    Assumption is data “flows”
-    We expect more data to be added to a user’s original directory after job is created
-    Can merge files fairly easily in theory but can’t go back in time and undo if it doesn’t exist in the first place
-
-    """
-
-    # Limits on "Created" time... ie only create once every 3 seconds
-
-    # CAUTION some of the stuff is outside of core right now
-    # needs to be reviewed (see API function above)
     is_updating = False
     if job is None:
         job = Job(member_created=member,
