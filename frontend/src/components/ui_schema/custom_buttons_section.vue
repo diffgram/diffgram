@@ -1,4 +1,5 @@
 <template>
+<div>
   <div v-if="editing" class="d-flex" style="width: 100%">
     <div  style="width: 100%" class="d-flex justify-start align-center" >
      <v-btn
@@ -12,7 +13,9 @@
     </div>
     <button_edit_context_menu :project_string_id="project_string_id" ref="button_config_menu" :button="current_button"></button_edit_context_menu>
   </div>
-  <div v-else class="d-flex" style="width: 100%">
+  <div v-if="custom_buttons && custom_buttons.length && !editing"
+       class="d-flex"
+       style="width: 100%">
     <div  style="width: 100%" class="d-flex justify-start align-center" >
       <v-btn
         class="mr-1"
@@ -22,7 +25,7 @@
       </v-btn>
     </div>
   </div>
-
+</div>
 </template>
 
 <script lang="ts">
@@ -46,7 +49,6 @@ export default Vue.extend({
 
   },
   data() {
-    // move context menu off the page out of view when hidden
     return {
       current_button: null,
       custom_buttons: [],
@@ -100,15 +102,13 @@ export default Vue.extend({
           const newButton = new CustomButton({...button})
           result.push(newButton)
         }
-
-
       }
       return result
     },
+
     do_button_action: function(custom_button){
 
       if(custom_button && custom_button.workflow){
-        console.log('DO ACTION', custom_button)
         this.$emit('execute_button_actions', custom_button)
       }
 

@@ -358,7 +358,6 @@ export default Vue.extend({
       render_offset: 23.5,
 
       current_global_instance: null,
-      instance_list_global: [],
 
       // New command pattern
       instance_list: undefined,
