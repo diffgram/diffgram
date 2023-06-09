@@ -2474,6 +2474,9 @@ export default Vue.extend({
       if (this.instance_hover_index == undefined) {
         return;
       }
+      if (instance.type === 'global') {
+        return;
+      }
       let index = null;
       for(let i = 0; i <  this.instance_list.length; i++){
         let inst = this.instance_list[i];
@@ -2481,7 +2484,7 @@ export default Vue.extend({
           index = i
         }
       }
-      if (this.instance_list[this.instance_hover_index].creation_ref_id === instance.creation_ref_id && index === this.instance_hover_index) {
+      if (index === this.instance_hover_index) {
         this.instance_list[this.instance_hover_index].is_hovered = false;
         this.instance_hover_index = null;
         this.instance_hover_type = null;
@@ -2964,7 +2967,6 @@ export default Vue.extend({
         instance.attribute_groups[group.id] = value;
 
         if (instance.type === "global") {
-
           this.global_instance = instance
           this.annotation_ui_context.instance_store.set_global_instance(this.working_file.id, this.global_instance)
         }
@@ -4011,7 +4013,6 @@ export default Vue.extend({
       return midpoint_hover;
     },
     detect_hover_polygon_midpoints: function () {
-      // https://diffgram.teamwork.com/#/tasks/23511334
 
       if (!this.selected_instance) {
         return;
@@ -4087,8 +4088,8 @@ export default Vue.extend({
         this.detect_hover_on_curve_control_points();
 
 
-        // this.detect_nearest_polygon_point();
-        // this.detect_hover_polygon_midpoints();
+        this.detect_nearest_polygon_point();
+        this.detect_hover_polygon_midpoints();
 
         this.detect_issue_hover();
 
@@ -4130,24 +4131,6 @@ export default Vue.extend({
       return false;
     },
     detect_nearest_polygon_point: function () {
-      /*
-       * Caution updates mouse cursor as side effect.
-       */
-
-      // TODO find nearest point
-      // ie if it's interesting "point" type instances or lines?
-      // could just naively loop over it but feels like there has to to be another way
-      // maybe when we are rendering each thing, if the mouse is over it then
-      // could do that? or something more generic here
-
-      /* So what's interesting is that at the moment this runs twice
-       * for a singular point - but it's "generic"
-       * in the sense that it still works
-       * This could probably be similar for lines too?
-       */
-
-      // TODO get a flag from polygon multiple to detect if
-      // Should change to pointer here
       this.polygon_point_hover_index = null;
 
       if (
