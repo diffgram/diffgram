@@ -315,9 +315,12 @@ export class BoxInstance extends InstanceImage2D implements InstanceBehaviour2D 
       ctx.fillStyle = get_sequence_color(this.sequence_id)
     }
 
-
     this.draw_label(ctx, x_min, y_min)
+
+    let set_color_result = this.set_color_from_label()
+
     this.get_color_from_instance(ctx)
+
     if(this.image_label_settings.show_text){
       ctx.fillText(this.label_file.label.name, this.x_min, this.y_min);
     }
