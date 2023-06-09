@@ -487,9 +487,7 @@
             return
           }
 
-          // note this is a convience function for toher things that test falsyness
-          // may nto need it, but that's why it's here and not in limits
-          // (glancing at it looks like it's a return thing but it's not.)
+ 
           if (instance.selected == undefined){
             instance.selected = false
           }
@@ -498,8 +496,6 @@
 
           const color_data = this.color_instance(instance, ctx)
 
-          // TODO abstract to function ie for use with other "screen
-          // rendered types" like polygon
           if (instance.rating) {
             for (let rating_index = 0; rating_index < instance.rating; rating_index++) {
               let x = instance.x_min + (rating_index * 35)
