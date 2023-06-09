@@ -430,6 +430,7 @@
               :instance_list="instance_list"
               :sequence_list="sequence_list_local_copy"
               :video_mode="image_annotation_ctx.video_mode"
+              :label_file_list="label_list"
               @instance_update="instance_update($event)"
               @share_dialog_open="open_share_dialog"
               @focus_instance="on_context_menu_click_focus_instance"
