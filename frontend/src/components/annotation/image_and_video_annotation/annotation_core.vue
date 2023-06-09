@@ -3039,7 +3039,6 @@ export default Vue.extend({
         this.set_performance_optimizations_off()
       }
       this.$emit('instance_list_updated', this.instance_list, this.working_file.id, this.working_file.type)
-
     },
 
     set_performance_optimizations_on: function () {
@@ -4269,27 +4268,6 @@ export default Vue.extend({
         }
       }
 
-    },
-    box_update_position: function (instance, i) {
-      instance.width = instance.x_max - instance.x_min;
-      instance.height = instance.y_max - instance.y_min;
-
-      // Handle inverting origin point
-      if (instance.x_max < instance.x_min) {
-        let x_max_temp = instance.x_max;
-        instance.x_max = instance.x_min;
-        instance.x_min = x_max_temp;
-      }
-
-      if (instance.y_max < instance.y_min) {
-        let y_max_temp = instance.y_max;
-        instance.y_max = instance.y_min;
-        instance.y_min = y_max_temp;
-      }
-
-      instance.status = "updated";
-
-      this.instance_list.splice(i, 1, instance);
     },
 
     move_curve: function (event) {
