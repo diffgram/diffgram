@@ -103,7 +103,7 @@
                         </v-layout>
                       </template>
                     </button_with_confirm>
-                    <v-chip v-if="show_ids" x-small>ID {{ group.id }}</v-chip>
+                    <v-chip v-if="show_ids && $store.state.user.settings.show_ids == true " x-small>ID {{ group.id }}</v-chip>
                   </h4>
                   <!-- Archive button -->
                   <!-- TODO maybe, play with this more
@@ -181,7 +181,7 @@
                    <p class="ma-0 pa-0" style="max-width: 135px;overflow: hidden; white-space: nowrap; text-overflow: ellipsis;"> {{get_attribute_value(group.id)}}</p>
                   </v-chip>
                 </div>
-                <v-chip v-if="show_ids" x-small>ID {{ group.id }}</v-chip>
+                <v-chip v-if="show_ids && $store.state.user.settings.show_ids == true " x-small>ID {{ group.id }}</v-chip>
               </h4>
               <!-- Archive button -->
               <!-- TODO maybe, play with this more
