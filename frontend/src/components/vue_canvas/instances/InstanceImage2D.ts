@@ -55,7 +55,6 @@ export abstract class InstanceImage2D extends Instance {
     let colour = this.get_label_file_colour_map()[this.label_file_id]
 
     if (colour) {
-      console.log("changed color")
       this.set_border_color(colour.hex)
       this.set_fill_color(colour.rgba.r, colour.rgba.g, colour.rgba.b, 0.1)
       this.previous_label_file_id = this.label_file_id // cache for speed
