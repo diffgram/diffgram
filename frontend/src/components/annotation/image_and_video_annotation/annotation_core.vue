@@ -875,7 +875,6 @@ export default Vue.extend({
 
       file_cant_be_accessed: null,
       file_cant_be_accessed_error: null,
-      instance_list_global: [],
 
       snackbar_paste_message: '',
       ghost_instance_hover_index: null,
