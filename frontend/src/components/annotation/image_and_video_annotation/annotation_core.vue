@@ -3042,6 +3042,7 @@ export default Vue.extend({
       this.label_settings.large_annotation_volume_performance_mode = true
 
       this.label_settings.show_text = false;
+      this.label_settings.left_nav_width = 300
 
     },
 
