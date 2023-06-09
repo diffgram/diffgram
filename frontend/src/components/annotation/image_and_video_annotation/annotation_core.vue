@@ -861,7 +861,6 @@ export default Vue.extend({
       global_instance: undefined,
 
       locked_editing_instance: null as Instance,
-      current_instance_v2: null as Instance,
       current_interaction: null as Interaction,
       current_drawing_box_instance: new BoxInstance(),
       current_drawing_polygon_instance: new PolygonInstance(),
@@ -932,8 +931,6 @@ export default Vue.extend({
       ellipse_hovered_instance: undefined,
       ellipse_hovered_instance_index: undefined,
 
-
-
       drawing_curve: false,
       curve_hovered_point: undefined,
 
@@ -942,8 +939,7 @@ export default Vue.extend({
       user_requested_file_id: null,
 
       instance_clipboard: undefined,
-      media_core_height: 300, // assumes admin mode, minimize "jerk" by defaulting
-      // it takes time for media_core to pass real value, so we want this to be close to real value
+      media_core_height: 0,
       emit_instance_hover: true, // ie can set to true to get hover updates
 
       // Sequence design doc https://docs.google.com/document/d/1EVvPke7Ms25KsmDKpwrQcqB1k6pgB5SNs5WDbwGmLCo/edit#heading=h.oo1xxxn8bkpp
