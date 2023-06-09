@@ -3029,6 +3029,8 @@ export default Vue.extend({
       }
       if(this.instance_list.length > 100){
         this.set_performance_optimizations_on()
+      } else {
+        this.set_performance_optimizations_off()
       }
 
     },
