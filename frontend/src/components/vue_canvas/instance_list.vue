@@ -421,9 +421,6 @@
             }
           } else {
 
-            // good to have defaults here
-            // in case something wacky with if (exists) logic
-
             if (this.mode == 'gold_standard') {
               strokeColor = "#FFD700"
             }
