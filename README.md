@@ -12,14 +12,14 @@ _________________
 •
 [Enterprise](https://diffgram.com/main/enterprise)
 
-# Integrate Human Supervision into your Platform.
-Diffgram has a “Platform” level approach meaning that you can integrate Diffgram into your application. We support your team programmatically changing the UI (Schema, layout, etc.) like in Streamlit. This means that you can collect and annotate timely data from users. In other words, we are the platform behind your platform, an integrated part of your application, to ship new & better AI products faster.
+# Add Human Supervision into your Platform.
+Add AI Supervision into your app. Customize the entire UI (Schema, layout, etc.). Collect and annotate data from many users and Subject Matter Experts (SEMs). Ship new & better AI products faster.
 
 * [Annotation](https://diffgram.com/main/product) display ML outputs and annotated data customized to your application needs, collect human feedback and supervision, smoothly integrate with your ML (Machine Learning) programs.
 * [Catalog](https://diffgram.com/main/catalog): query and stream annotated data.
 * [Workflow](https://diffgram.com/main/workflow-product) unlocks an ecosystem of tools to take your training to the next level.
 
-### New March 2023 
+### New
 [Conversational & LLM (Preview)](https://diffgram.readme.io/docs/conversational-annotation)
 Use Diffgram as your UI to display large-language model (LLM) outputs, collect user feedback (such as preferred response, ratings, and more), and display results back to the user. We are actively collecting feedback on this new area please join our slack channel to discuss your needs.
 
