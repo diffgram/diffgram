@@ -259,6 +259,7 @@
                 :degrees="degrees"
               >
               </v_bg>
+
               <target_reticle
                 :is_active="is_active"
                 :ord="2"
@@ -268,7 +269,7 @@
                 :width="original_media_width"
                 :degrees="degrees"
                 :canvas_element="canvas_element"
-                :show="show_target_reticle && is_active"
+                :show="show_target_reticle && is_active && annotation_ui_context && !annotation_ui_context.show_context_menu"
                 :target_colour="
                   current_label_file ? current_label_file.colour : undefined
                 "
@@ -1270,10 +1271,6 @@ export default Vue.extend({
       }
 
       if (!this.draw_mode) {
-        return false;
-      }
-
-      if (this.annotation_ui_context.show_context_menu) {
         return false;
       }
 
