@@ -3,7 +3,6 @@
     v-if="selected.length > 0"
     class="attribute-preview"
   >
-    <h4>Global attributes applied:</h4>
     <div class="attribute-preview-chips">
       <div
         v-for="(item, index) in selected"
