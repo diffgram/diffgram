@@ -259,6 +259,7 @@
                 :degrees="degrees"
               >
               </v_bg>
+
               <target_reticle
                 :is_active="is_active"
                 :ord="2"
@@ -268,7 +269,7 @@
                 :width="original_media_width"
                 :degrees="degrees"
                 :canvas_element="canvas_element"
-                :show="show_target_reticle && is_active"
+                :show="show_target_reticle && is_active && annotation_ui_context && !annotation_ui_context.show_context_menu"
                 :target_colour="
                   current_label_file ? current_label_file.colour : undefined
                 "
@@ -292,7 +293,7 @@
                 :video_mode="image_annotation_ctx.video_mode"
                 :auto_border_polygon_p1="auto_border_context.auto_border_polygon_p1"
                 :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"
-                :issues_list="issues_list"
+                :issues_list="issues_ui_manager.issues_list"
                 :current_frame="image_annotation_ctx.current_frame"
                 :label_settings="label_settings"
                 :current_instance="current_instance"
@@ -366,7 +367,6 @@
                 :video_mode="image_annotation_ctx.video_mode"
                 :is_actively_drawing="is_actively_drawing"
                 :current_frame="image_annotation_ctx.current_frame"
-                :issues_list="issues_list"
                 :label_settings="label_settings"
                 :current_instance="current_instance"
                 :refresh="refresh"
@@ -430,10 +430,11 @@
               :instance_list="instance_list"
               :sequence_list="sequence_list_local_copy"
               :video_mode="image_annotation_ctx.video_mode"
+              :label_file_list="label_list"
               @instance_update="instance_update($event)"
               @share_dialog_open="open_share_dialog"
-              @focus_instance="on_context_menu_click_focus_instance"
-              @stop_focus_instance="on_context_menu_click_stop_focus_instance"
+              @focus_instance="focus_instance({index: $event})"
+              @stop_focus_instance="focus_instance_show_all()"
               @open_issue_panel="$emit('open_issue_panel', $event)"
               @on_click_polygon_unmerge="polygon_unmerge"
               @on_click_polygon_merge="start_polygon_select_for_merge"
@@ -720,7 +721,6 @@ export default Vue.extend({
     label_list: {},
     task_mode_prop: {default: null},
     request_save: {},
-    annotator_email: {},
     model_run_id_list: {default: null},
     model_run_color_list: {default: null},
     view_only_mode: {default: false,},
@@ -916,7 +916,6 @@ export default Vue.extend({
       instance_context: new InstanceContext(),
       instance_template_draw_started: false,
       mouse_down_delta_event: {x: 0, y: 0},
-      issues_list: [],
       canvas_alert_x: undefined,
       canvas_alert_y: undefined,
       original_edit_instance: undefined,
@@ -1269,9 +1268,6 @@ export default Vue.extend({
       }
 
       if (!this.draw_mode) {
-        return false;
-      }
-      if (this.annotation_ui_context.show_context_menu) {
         return false;
       }
 
@@ -1852,21 +1848,7 @@ export default Vue.extend({
         'Hold "N" while drawing to mark occluded. Esc to exit.'
       )
     },
-    on_context_menu_click_focus_instance: function (instance_index) {
-      if (this.$refs.instance_detail_list) {
-        this.$refs.instance_detail_list.toggle_instance_focus(instance_index);
-      }
-      this.update_canvas()
 
-    },
-    on_context_menu_click_stop_focus_instance: function (instance_index) {
-      if (this.$refs.instance_detail_list) {
-        this.$refs.instance_detail_list.show_all();
-
-      }
-      this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
-      this.update_canvas();
-    },
     on_canvas_scale_global_changed: async function (new_scale) {
       if (!new_scale) {
         return;
@@ -2759,15 +2741,11 @@ export default Vue.extend({
       this.$refs.video_controllers.move_frame(direction)
     },
 
-    hide_context_menu: function () {
-      // search tags: close close_context
+    hide_context_menu: function () {    //  close close_context
       this.annotation_ui_context.show_context_menu = false;
-      // this.emit_instance_hover = false;   // computation optimzation
-      // there's a timing issue with doing this though so leave off for now.
     },
 
     open_context_menu: function () {
-      //this.emit_instance_hover = true;
       this.annotation_ui_context.show_context_menu = true;
       this.update_canvas()
     },
@@ -2821,6 +2799,7 @@ export default Vue.extend({
     },
 
     focus_instance_show_all() {
+      console.log("Stop")
       this.instance_focused_index = null;
       this.snapped_to_instance = undefined;
       this.selected_instance_list = [];
@@ -3038,13 +3017,13 @@ export default Vue.extend({
         this.set_performance_optimizations_off()
       }
       this.$emit('instance_list_updated', this.instance_list, this.working_file.id, this.working_file.type)
-
     },
 
     set_performance_optimizations_on: function () {
       this.label_settings.large_annotation_volume_performance_mode = true
 
       this.label_settings.show_text = false;
+      this.label_settings.left_nav_width = 300
 
     },
 
@@ -4180,15 +4159,18 @@ export default Vue.extend({
       if (this.view_only_mode == true) {
         return;
       }
+      if (!this.issues_ui_manager || !this.issues_ui_manager.issues_list) { return }
       if (
         this.issue_hover_index == undefined ||
         isNaN(this.issue_hover_index)
       ) {
         return;
       } // careful 0 index is ok
-      if (!this.issues_list[this.issue_hover_index]) {
+    
+      if (!this.issues_ui_manager.issues_list[this.issue_hover_index]) {
         return;
       }
+  
       if (this.draw_mode) {
         return;
       }
@@ -4198,7 +4180,7 @@ export default Vue.extend({
       if (this.view_issue_mode && this.instance_select_for_merge) {
         return;
       }
-      const issue = this.issues_list[this.issue_hover_index];
+      const issue = this.issues_ui_manager.issues_list[this.issue_hover_index];
       this.open_view_edit_panel(issue);
     },
 
@@ -4268,27 +4250,6 @@ export default Vue.extend({
         }
       }
 
-    },
-    box_update_position: function (instance, i) {
-      instance.width = instance.x_max - instance.x_min;
-      instance.height = instance.y_max - instance.y_min;
-
-      // Handle inverting origin point
-      if (instance.x_max < instance.x_min) {
-        let x_max_temp = instance.x_max;
-        instance.x_max = instance.x_min;
-        instance.x_min = x_max_temp;
-      }
-
-      if (instance.y_max < instance.y_min) {
-        let y_max_temp = instance.y_max;
-        instance.y_max = instance.y_min;
-        instance.y_min = y_max_temp;
-      }
-
-      instance.status = "updated";
-
-      this.instance_list.splice(i, 1, instance);
     },
 
     move_curve: function (event) {

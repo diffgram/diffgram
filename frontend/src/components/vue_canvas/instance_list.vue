@@ -187,6 +187,7 @@
           this.is_mouse_in_path_issue(ctx, region, i, issue)
         },
         draw_issues_markers(ctx){
+
           if(!this.$props.issues_list || this.$props.issues_list.length === 0){
             return
           }
@@ -421,9 +422,6 @@
             }
           } else {
 
-            // good to have defaults here
-            // in case something wacky with if (exists) logic
-
             if (this.mode == 'gold_standard') {
               strokeColor = "#FFD700"
             }
@@ -490,9 +488,7 @@
             return
           }
 
-          // note this is a convience function for toher things that test falsyness
-          // may nto need it, but that's why it's here and not in limits
-          // (glancing at it looks like it's a return thing but it's not.)
+ 
           if (instance.selected == undefined){
             instance.selected = false
           }
@@ -501,8 +497,6 @@
 
           const color_data = this.color_instance(instance, ctx)
 
-          // TODO abstract to function ie for use with other "screen
-          // rendered types" like polygon
           if (instance.rating) {
             for (let rating_index = 0; rating_index < instance.rating; rating_index++) {
               let x = instance.x_min + (rating_index * 35)

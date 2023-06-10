@@ -4,7 +4,7 @@
     <v-layout class="d-flex">
 
       <v-select :items="label_list_with_limit"
-                style="min-height: 55px"
+                style="min-height: 20px"
                 v-model="selected"
                 :label="label_prompt"
                 return-object
@@ -23,23 +23,10 @@
             flag
           </v-icon>
 
-
-          <!-- hacky word around because
+          <!--  word around because
               when we use the custom template select thing
               it seems to get confused on highlight colors
-
-              The assumption is that it should still do the highlighting
-              properly, but I guess because we are controling it doesn't
-
-              I can't seem to find a good reference for what property
-              is setting if each item is selected or not.
-              (ie I would expect a state of item.selected == true or something)
-              perhaps they are doing this when the default selection thing is there
-              OR it's just a bug? either way leaving it for now, maybe
-              something can do a ticket about later but already spent waay
-              too much time here.
-
-              -->
+          -->
           <v-chip v-if="is_selected(data.item)"
                   class="pa-0"
                   color="white"
@@ -56,10 +43,6 @@
         </template>
 
         <template v-slot:selection="data">
-
-          <!-- Not sure if fan of "chip" thing,
-              but  either way want to not have the "left" thing for
-              icon I think here-->
 
           <span color="white">
             <v-icon

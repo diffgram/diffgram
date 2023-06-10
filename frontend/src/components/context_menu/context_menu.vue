@@ -15,6 +15,8 @@
   import share_instance_dialog from '../share/share_instance_dialog.vue';
   import node_name_editor_keypoint_instance from '../annotation/image_and_video_annotation/node_name_editor_keypoint_instance.vue';
   import sequence_select from '../video/sequence_select.vue'
+  import label_select_only from '../label/label_select_only.vue'
+
 
   export default Vue.extend({
     name: 'ContextMenu',
@@ -22,7 +24,8 @@
       user_icon,
       share_instance_dialog,
       node_name_editor_keypoint_instance,
-      sequence_select
+      sequence_select,
+      label_select_only
     },
     props: {
       'mouse_position': {
@@ -81,6 +84,10 @@
         default: null,
       },
       'sequence_list': {
+        type: Array,
+        default: null,
+      },
+      'label_file_list': {
         type: Array,
         default: null,
       }
@@ -196,6 +203,17 @@
         this.$emit('focus_instance', this.instance_hover_index_locked);
         this.close();
       },
+
+      update_label: function (event) {
+         let instance_update = {
+          index: this.instance_hover_index_locked,
+          mode: "update_label",
+          instance_id: this.selected_instance.id,
+          payload: event
+        }
+        this.emit_update_and_hide_instance(instance_update)
+      },
+
       on_node_updated: function(){
         let instance_update = {
           index: this.instance_hover_index_locked,
@@ -389,34 +407,31 @@
     :class="{visible: show_context_menu}"
     :style="{top: top, left: left}"
   >
-    <!-- Instance context -->
     <v-card
-
       class="mx-auto"
       max-width="300"
       tile
     >
-      <!--  Change Sequence -->
-      <!-- I like idea of hiding this behind a button but seems like
-        it adds an extra step maybe-->
-      <!--
+      <!-- Change Label -->
       <v-list-item
         link
+        dense
+        v-if="selected_instance
+              && selected_instance.id
+              && video_mode != true"
+        :ref="`change_label_button_instance_${selected_instance.id}`"
       >
-        <v-list-item-icon>
-          <tooltip_icon
-            tooltip_message="Change Sequence"
-            icon="mdi-delta"
-            color="primary"
-          />
-        </v-list-item-icon>
-        <v-list-item-content>
-          <v-list-item-title class="pr-4">
-            Change Sequence
-          </v-list-item-title>
-        </v-list-item-content>
+          <div class="pt-2">
+            <label_select_only
+              :enable_hotkeys="true"
+              :label_file_list_prop=label_file_list
+              :select_this_id_at_load=selected_instance.label_file_id
+              @label_file="update_label($event)"
+            >
+            </label_select_only>
+          </div>
       </v-list-item>
-      -->
+
 
       <div v-if="video_mode == true">
         <sequence_select
@@ -547,17 +562,17 @@
       >
         <v-list-item-icon>
           <tooltip_icon
-            tooltip_message="Focus Instance"
             icon="mdi-image-filter-center-focus-strong"
             color="primary"
           ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
-            Focus
+            Focus only this (f)
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+
       <v-list-item
         v-if="instance_hover_index_locked != undefined && instance_focused_index != undefined"
         dense

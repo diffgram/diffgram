@@ -15,26 +15,6 @@
       </div>
     </v-alert>
 
-    <ui_schema name="attribute_preview"
-               v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task">
-      <attribute_preview
-        v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task"
-        :global_attribute_groups_list="global_attribute_groups_list"
-        :current_instance="current_global_instance"
-        :added_attributes="current_global_instance && current_global_instance.attribute_groups ? Object.keys(current_global_instance.attribute_groups) : []"
-      />
-    </ui_schema>
-
-    <attribute_preview
-      v-if="
-        global_attribute_groups_list && global_attribute_groups_list.length > 0 &&
-        $store.state.user.settings.show_attribute_preview &&
-        !task
-      "
-      :global_attribute_groups_list="global_attribute_groups_list"
-      :current_instance="current_global_instance"
-      :added_attributes="current_global_instance && current_global_instance.attribute_groups ? Object.keys(current_global_instance.attribute_groups) : []"
-    />
 
     <div class="d-flex flex-column">
 
@@ -46,6 +26,7 @@
         :schema_id="schema_id"
         :project_string_id="project_string_id"
         :view_only_mode="view_only_mode"
+        :task="task"
         ref="compound_attributes_list"
         @attribute_change="compound_global_attribute_change($event)"
         :title="'Compound Files Attribute'"
@@ -58,6 +39,7 @@
         :schema_id="schema_id"
         :project_string_id="project_string_id"
         :view_only_mode="view_only_mode"
+        :task="task"
         ref="global_attributes_list"
         @attribute_change="global_attribute_change($event)"
       />
@@ -566,7 +548,6 @@ import rating_review from './rating_review.vue'
 import attribute_group_list from '../../attribute/attribute_group_list.vue';
 import label_select_only from '../../label/label_select_only.vue'
 import global_attributes_list from '../../attribute/global_attributes_list.vue'
-import attribute_preview from "../../base/attribute_preview.vue"
 
 export default Vue.extend({
     name: 'instance_detail_list',
@@ -574,8 +555,7 @@ export default Vue.extend({
       rating_review,
       attribute_group_list,
       label_select_only,
-      global_attributes_list,
-      attribute_preview
+      global_attributes_list
     },
     // TODO defaults with dicts here
     props: [

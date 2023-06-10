@@ -494,7 +494,7 @@ export default Vue.extend({
       allow_reviews: false,
 
       page_number: 0,
-      per_page_limit: 25,
+      per_page_limit: 10,
       per_page_limit_options: [5, 10, 25, 100, 250],
 
       selected: [],

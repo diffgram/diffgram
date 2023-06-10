@@ -26,7 +26,27 @@
           mdi-file
         </v-icon>
 
-        <h4>{{ title }}</h4>
+        <ui_schema name="attribute_preview"
+                    v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task">
+          <attribute_preview
+            v-if="global_attribute_groups_list && global_attribute_groups_list.length > 0 && task"
+            :global_attribute_groups_list="global_attribute_groups_list"
+            :current_instance="current_global_instance"
+            :added_attributes="current_global_instance && current_global_instance.attribute_groups ? Object.keys(current_global_instance.attribute_groups) : []"
+          />
+        </ui_schema>
+
+        <attribute_preview
+          v-if="
+            global_attribute_groups_list && global_attribute_groups_list.length > 0 &&
+            $store.state.user.settings.show_attribute_preview &&
+            !task
+          "
+          :global_attribute_groups_list="global_attribute_groups_list"
+          :current_instance="current_global_instance"
+          :added_attributes="current_global_instance && current_global_instance.attribute_groups ? Object.keys(current_global_instance.attribute_groups) : []"
+        />
+        
 
         <v-spacer></v-spacer>
 
@@ -61,11 +81,13 @@
 <script lang="ts">
 import attribute_group_list from './attribute_group_list.vue';
 import Vue from "vue";
+import attribute_preview from "@/components/base/attribute_preview.vue"
 
 export default Vue.extend({
     name: 'global_attributes_list',
     components: {
-      attribute_group_list: attribute_group_list
+      attribute_group_list: attribute_group_list,
+      attribute_preview
     },
     props: {
       global_attribute_groups_list: {type: Array, default: null},
@@ -74,7 +96,7 @@ export default Vue.extend({
       schema_id: {type: Number, required: true},
       project_string_id: {type: String, required: true},
       open_state: {type: Boolean || undefined, default: undefined},
-      title: {type: String, default: 'Active File Attributes:'},
+      task: {type: Object, default: null},
     },
     data() {
       return {

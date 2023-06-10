@@ -42,25 +42,7 @@ import Vue from 'vue'
       promise.then(done);
     }
   };
-  let drawGrid = function (canvas) {
-    var ctx = canvas.getContext('2d');
-    var padding = 0;
-    ctx.save()
-    ctx.resetTransform();
-    for (var x = 0; x <= canvas.width; x += 10) {
-      ctx.moveTo( x + padding, padding);
-      ctx.lineTo( x + padding, canvas.height + padding);
-    }
 
-    for (var x = 0; x <= canvas.height; x += 10) {
-      ctx.moveTo(padding, x + padding);
-      ctx.lineTo(canvas.width + padding, x + padding);
-    }
-    ctx.lineWidth = 1
-    ctx.strokeStyle = "gray";
-    ctx.stroke()
-    ctx.restore();
-  };
   Vue.directive('canvas', {
     bind: function (el, binding, vnode) {
       var canvas = el;

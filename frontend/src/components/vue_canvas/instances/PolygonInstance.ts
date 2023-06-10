@@ -556,7 +556,7 @@ export class PolygonInstance extends InstanceImage2D implements InstanceBehaviou
 
 
     this.draw_label(ctx, this.x_min, this.y_min)
-    this.grab_color_from_instance(ctx)
+    this.get_color_from_instance(ctx)
     if (this.is_actively_drawing) {
       ctx.beginPath()
       this.draw_actively_drawing_polygon(ctx)

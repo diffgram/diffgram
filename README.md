@@ -13,7 +13,9 @@ _________________
 [Enterprise](https://diffgram.com/main/enterprise)
 
 # Add Human Supervision into your Platform.
-Add AI Supervision into your app. Customize the entire UI (Schema, layout, etc.). Collect and annotate data from many users and Subject Matter Experts (SEMs). Ship new & better AI products faster.
+Add AI Supervision into your app. Customize the entire UI (Schema, layout, etc.). 
+Collect and annotate data from many users and Subject Matter Experts (SMEs). 
+Ship new & better AI products faster.
 
 * [Annotation](https://diffgram.com/main/product) display ML outputs and annotated data customized to your application needs, collect human feedback and supervision, smoothly integrate with your ML (Machine Learning) programs.
 * [Catalog](https://diffgram.com/main/catalog): query and stream annotated data.
