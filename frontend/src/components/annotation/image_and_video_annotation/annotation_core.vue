@@ -721,7 +721,6 @@ export default Vue.extend({
     label_list: {},
     task_mode_prop: {default: null},
     request_save: {},
-    annotator_email: {},
     model_run_id_list: {default: null},
     model_run_color_list: {default: null},
     view_only_mode: {default: false,},
