@@ -293,7 +293,7 @@
                 :video_mode="image_annotation_ctx.video_mode"
                 :auto_border_polygon_p1="auto_border_context.auto_border_polygon_p1"
                 :auto_border_polygon_p2="auto_border_context.auto_border_polygon_p2"
-                :issues_list="issues_list"
+                :issues_list="issues_ui_manager.issues_list"
                 :current_frame="image_annotation_ctx.current_frame"
                 :label_settings="label_settings"
                 :current_instance="current_instance"
@@ -367,7 +367,6 @@
                 :video_mode="image_annotation_ctx.video_mode"
                 :is_actively_drawing="is_actively_drawing"
                 :current_frame="image_annotation_ctx.current_frame"
-                :issues_list="issues_list"
                 :label_settings="label_settings"
                 :current_instance="current_instance"
                 :refresh="refresh"
@@ -918,7 +917,6 @@ export default Vue.extend({
       instance_context: new InstanceContext(),
       instance_template_draw_started: false,
       mouse_down_delta_event: {x: 0, y: 0},
-      issues_list: [],
       canvas_alert_x: undefined,
       canvas_alert_y: undefined,
       original_edit_instance: undefined,
@@ -4162,15 +4160,18 @@ export default Vue.extend({
       if (this.view_only_mode == true) {
         return;
       }
+      if (!this.issues_ui_manager || !this.issues_ui_manager.issues_list) { return }
       if (
         this.issue_hover_index == undefined ||
         isNaN(this.issue_hover_index)
       ) {
         return;
       } // careful 0 index is ok
-      if (!this.issues_list[this.issue_hover_index]) {
+    
+      if (!this.issues_ui_manager.issues_list[this.issue_hover_index]) {
         return;
       }
+  
       if (this.draw_mode) {
         return;
       }
@@ -4180,7 +4181,7 @@ export default Vue.extend({
       if (this.view_issue_mode && this.instance_select_for_merge) {
         return;
       }
-      const issue = this.issues_list[this.issue_hover_index];
+      const issue = this.issues_ui_manager.issues_list[this.issue_hover_index];
       this.open_view_edit_panel(issue);
     },
 

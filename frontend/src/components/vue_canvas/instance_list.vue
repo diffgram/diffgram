@@ -187,6 +187,7 @@
           this.is_mouse_in_path_issue(ctx, region, i, issue)
         },
         draw_issues_markers(ctx){
+
           if(!this.$props.issues_list || this.$props.issues_list.length === 0){
             return
           }
