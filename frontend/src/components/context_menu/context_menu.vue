@@ -562,17 +562,17 @@
       >
         <v-list-item-icon>
           <tooltip_icon
-            tooltip_message="Focus Instance"
             icon="mdi-image-filter-center-focus-strong"
             color="primary"
           ></tooltip_icon>
         </v-list-item-icon>
         <v-list-item-content>
           <v-list-item-title class="pr-4">
-            Focus
+            Focus only this (f)
           </v-list-item-title>
         </v-list-item-content>
       </v-list-item>
+
       <v-list-item
         v-if="instance_hover_index_locked != undefined && instance_focused_index != undefined"
         dense
