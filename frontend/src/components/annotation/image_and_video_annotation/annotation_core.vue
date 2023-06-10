@@ -434,8 +434,8 @@
               :label_file_list="label_list"
               @instance_update="instance_update($event)"
               @share_dialog_open="open_share_dialog"
-              @focus_instance="on_context_menu_click_focus_instance"
-              @stop_focus_instance="on_context_menu_click_stop_focus_instance"
+              @focus_instance="focus_instance({index: $event})"
+              @stop_focus_instance="focus_instance_show_all()"
               @open_issue_panel="$emit('open_issue_panel', $event)"
               @on_click_polygon_unmerge="polygon_unmerge"
               @on_click_polygon_merge="start_polygon_select_for_merge"
@@ -1851,21 +1851,7 @@ export default Vue.extend({
         'Hold "N" while drawing to mark occluded. Esc to exit.'
       )
     },
-    on_context_menu_click_focus_instance: function (instance_index) {
-      if (this.$refs.instance_detail_list) {
-        this.$refs.instance_detail_list.toggle_instance_focus(instance_index);
-      }
-      this.update_canvas()
 
-    },
-    on_context_menu_click_stop_focus_instance: function (instance_index) {
-      if (this.$refs.instance_detail_list) {
-        this.$refs.instance_detail_list.show_all();
-
-      }
-      this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
-      this.update_canvas();
-    },
     on_canvas_scale_global_changed: async function (new_scale) {
       if (!new_scale) {
         return;
@@ -2816,6 +2802,7 @@ export default Vue.extend({
     },
 
     focus_instance_show_all() {
+      console.log("Stop")
       this.instance_focused_index = null;
       this.snapped_to_instance = undefined;
       this.selected_instance_list = [];
