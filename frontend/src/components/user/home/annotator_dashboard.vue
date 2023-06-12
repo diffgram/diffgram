@@ -231,7 +231,7 @@ export default Vue.extend({
         filters: {
           mode_data: 'list',
           all_my_jobs: true,
-          limit_count: 25,
+          limit_count: 10,
           page_number: 0,
           project_string_id: this.project_string_id,
         },

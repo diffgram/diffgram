@@ -27,7 +27,7 @@ def task_list_by_job_api(job_id):
                          'kind': int
                      }},
                      {'incoming_directory_id': None},
-                     {'limit_count': {'required': False, 'kind': int, 'default': 25}},
+                     {'limit_count': {'required': False, 'kind': int, 'default': 10}},
                      {'mode_data': str}]
 
         log, input, untrusted_input = regular_input.master(request = request,
