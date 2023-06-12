@@ -113,7 +113,10 @@
                   </h1>
 
                 </div>
-                <div class="flex-grow-1 ml-2" >
+
+                <v-spacer></v-spacer>
+
+                <div class="pa-2" >
                   <v-btn
                     color="success"
                     large
@@ -132,7 +135,8 @@
 
                   </v-btn>
                 </div>
-                <div class="pa-2">
+
+                <div class="pa-2 pt-4">
                   <v-btn
                     color="primary"
                     small
