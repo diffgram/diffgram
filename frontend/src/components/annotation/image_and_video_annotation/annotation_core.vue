@@ -1373,12 +1373,26 @@ export default Vue.extend({
       }
 
       let toolbar_height = 80;
+
+      let left_panel_spacer = 100;
+
+      if (document.getElementById("media_core")) {
+        this.media_core_height =
+          document.getElementById("media_core").__vue__.height;
+      } else {
+        this.media_core_height = 0;
+      }
+      if (this.task) {
+        this.magic_nav_spacer = 0;
+        this.media_core_height = 0;
+      }
+
       let middle_pane_height, middle_pane_width;
       if(this.use_full_window){
         middle_pane_width =
           this.window_width_from_listener -
           this.label_settings.left_nav_width -
-          this.magic_nav_spacer;
+          left_panel_spacer;
 
         middle_pane_height =
           this.window_height_from_listener -
@@ -1389,16 +1403,6 @@ export default Vue.extend({
       } else{
         middle_pane_width = this.container_width
         middle_pane_height = this.container_height
-      }
-
-      if (document.getElementById("media_core")) {
-        this.media_core_height =
-          document.getElementById("media_core").__vue__.height;
-      } else {
-        this.media_core_height = 0; // reset eg for task mode
-      }
-      if (this.task) {
-        this.magic_nav_spacer = 0;
       }
 
       if (this.image_annotation_ctx.video_mode == true) {
@@ -1426,6 +1430,7 @@ export default Vue.extend({
       this.label_settings.canvas_scale_global_setting = new_size;
 
       return new_size;
+
     },
 
     canvas_width_scaled: function (): number {
@@ -5137,6 +5142,7 @@ export default Vue.extend({
     },
 
     mouse_move: function (event) {
+
       if(!this.is_active){
         return
       }
