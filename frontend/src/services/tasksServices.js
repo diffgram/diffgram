@@ -1,4 +1,5 @@
 import axios from './customInstance'
+import pLimit from "p-limit";
 
 
 export const nextTask = async job_id => {
@@ -175,7 +176,7 @@ export const getTaskListFromJob = async (job_id, filters) =>{
   }
 }
 
-export const getTaskListFromProject = async (project_string_id, filters) =>{
+export const getTaskListFromProject = async (project_string_id, filters) => {
 
   try{
     const response = await axios.post(
@@ -194,3 +195,36 @@ export const getTaskListFromProject = async (project_string_id, filters) =>{
     return [null, e]
   }
 }
+
+
+export const get_file_with_annotations = async (task) => {
+  if (task.file.type != "image") {    return;  }
+
+  let url = "/api/v1/task/" + task.id + "/annotation/list";
+
+  try {
+    const response = await axios.post(url, {});
+
+    task.file = response.data.file_serialized
+
+  } catch (error) {
+    console.error(error)
+    return error
+  } 
+}
+
+export const update_tasks_with_file_annotations = async (task_list) => {
+  const limit = pLimit(5); // Max concurrent request.
+  try {
+    const promises = task_list.map((task) => {
+      return limit(() => get_file_with_annotations(task));
+    });
+    const result = await Promise.all(promises);
+    return result;
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+
+

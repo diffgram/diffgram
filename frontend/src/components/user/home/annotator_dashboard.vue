@@ -113,7 +113,10 @@
                   </h1>
 
                 </div>
-                <div class="flex-grow-1 ml-2" >
+
+                <v-spacer></v-spacer>
+
+                <div class="pa-2" >
                   <v-btn
                     color="success"
                     large
@@ -132,7 +135,8 @@
 
                   </v-btn>
                 </div>
-                <div class="pa-2">
+
+                <div class="pa-2 pt-4">
                   <v-btn
                     color="primary"
                     small
@@ -199,8 +203,8 @@
 <script lang="ts">
 
 import axios from '../../../services/customInstance';
-import {getTaskListFromProject} from '../../../services/tasksServices.js';
-import report_dashboard from '../../report/report_dashboard'
+import {getTaskListFromProject, update_tasks_with_file_annotations} from '../../../services/tasksServices.js';
+import report_dashboard from '../../report/report_dashboard';
 import user_visit_history_list from '../../event/user_visit_history_list.vue'
 import project_pipeline from '../../project/project_pipeline'
 
@@ -210,6 +214,8 @@ import task_list_headers from "../../task/task/task_list_headers.vue";
 import Project_discussions from "../../discussions/project_discussions.vue";
 import Stats_task from "../../report/stats_task.vue";
 import stats_panel from "../../stats/stats_panel.vue";
+
+
 
 export default Vue.extend({
     name: 'annotator_dashboard_me',
@@ -231,7 +237,7 @@ export default Vue.extend({
         filters: {
           mode_data: 'list',
           all_my_jobs: true,
-          limit_count: 25,
+          limit_count: 10,
           page_number: 0,
           project_string_id: this.project_string_id,
         },
@@ -298,6 +304,9 @@ export default Vue.extend({
 
           const [task_list_data, err] = await getTaskListFromProject(this.project_string_id, filters)
           this.task_list = task_list_data.task_list
+
+          update_tasks_with_file_annotations(this.task_list)
+
           this.total_task_count = task_list_data.total_count
           if (err) {
             console.error(err)

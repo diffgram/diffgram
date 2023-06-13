@@ -1388,7 +1388,10 @@ export default Vue.extend({
 
       update_local_data_from_remote_report_template: function (report_template) {
 
+        if (!report_template) { return }
+
         this.job_select_this_id = report_template.job_id
+
         // avoid circular updates, since we expect job component to reupdate
         // report template from this id
         this.report_template = {

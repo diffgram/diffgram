@@ -117,12 +117,14 @@
           </v-text-field>
 
           <v-layout>
-            <v-select :items="permission_type_list"
-                      v-model="permission_type"
-                      label="Select permission"
-                      item-value="text"
-                      :disabled="loading"
-                      prepend-icon="security"></v-select>
+            <diffgram_select
+                :item_list="permission_type_list"
+                v-model="permission_type"
+                label="Select Permission"
+                :disabled="loading"
+                prepend_icon="security"
+                >
+            </diffgram_select>
 
             <standard_button
                 tooltip_message="Help"
@@ -224,7 +226,29 @@ import Vue from "vue"; export default Vue.extend( {
       member_kind_list: ['User', 'Developer Authentication (API/SDK)'],
       member_kind: 'User',
 
-      permission_type_list: ['admin', 'Editor',  'annotator', 'Viewer'],
+      permission_type_list: [
+          { 'name': 'admin',
+            'display_name': 'Admin - All functions in project.',
+            'icon': 'mdi-shield-crown',
+            'color': 'primary'
+          },
+          { 'name': 'Editor',
+            'display_name': 'Editor - All except: add, remove, edit users.',
+            'icon': 'mdi-account-edit',
+            'color': 'primary'
+          },
+          { 'name': 'annotator',
+            'display_name': 'Annotator - All task and annotation related functions.',
+            'icon': 'mdi-account',
+            'color': 'primary'
+          },
+          { 'name': 'Viewer',
+            'display_name': 'Viewer - View only, no write access.',
+            'icon': 'mdi-eye',
+            'color': 'primary'
+          }
+      ],
+
       permission_type: 'Editor',
 
 

@@ -2,64 +2,6 @@
   <div v-cloak>
     <v-card data-cy="task_list_container">
       <v-layout>
-        <!-- Temporary button -->
-
-        <v-layout
-          v-if="
-            external_interface === 'labelbox' &&
-            !pending_initial_dir_sync &&
-            task_list.length > 0
-          "
-        >
-          <v-row>
-            <v-col cols="12" class="d-flex align-center justify-center">
-              <h3 class="mr-4">Start labeling with</h3>
-              <img
-                width="100px"
-                height="80px"
-                src="https://labelbox.com/static/images/logo-v3.svg"
-                alt=""
-              />
-              <a
-                :href="`https://editor.labelbox.com/?project=${labelbox_project_id}`"
-                target="_blank"
-              >
-                <v-btn type="primary" color="primary" class="ml-4">
-                  <v-icon>mdi-play</v-icon>
-                  Start Labeling
-                </v-btn>
-              </a>
-            </v-col>
-          </v-row>
-        </v-layout>
-        <v-layout
-          v-else-if="
-            external_interface === 'datasaur' &&
-            !pending_initial_dir_sync &&
-            task_list.length > 0
-          "
-        >
-          <v-row>
-            <v-col cols="12" class="d-flex align-center justify-center">
-              <h3 class="mr-4">Start labeling with</h3>
-              <img
-                width="150px"
-                height="100px"
-                src="https://venturebeat.com/wp-content/uploads/2020/02/datasaur.png?w=1200&strip=all"
-                alt=""
-              />
-              <a
-                :href="`https://datasaur.ai/projects/${datasaur_project_id}/`"
-                target="_blank"
-              >
-                <v-btn type="primary" color="primary" class="ml-4">
-                  <v-icon>mdi-play</v-icon>
-                  Start Labeling
-                </v-btn>
-              </a>
-            </v-col>
-          </v-row>
-        </v-layout>
 
         <v-container>
           <v-layout>
@@ -427,12 +369,12 @@ import {
   assignUserToTask,
   batchAssignUserToTask,
   batchRemoveUserFromTask,
-  getTaskListFromJob
+  getTaskListFromJob,
+  update_tasks_with_file_annotations
 } from "../../../services/tasksServices.js"
+
 import {get_task_template_members} from "../../../services/taskTemplateService.js"
 import global_dataset_selector from "../../attached/global_dataset_selector.vue"
-
-import pLimit from "p-limit";
 
 import Vue from "vue";
 
@@ -914,7 +856,7 @@ export default Vue.extend({
             this.column_list_all = this.column_list_all.filter(col => !["AssignedReviewer"].includes(col))
           }
 
-          this.update_tasks_with_file_annotations(this.task_list);
+          update_tasks_with_file_annotations(this.task_list);
         }
         return task_data;
       } catch (error) {
@@ -925,39 +867,6 @@ export default Vue.extend({
       }
     },
 
-    update_tasks_with_file_annotations: async function (task_list) {
-      const limit = pLimit(10); // Max concurrent request.
-      try {
-        const promises = task_list.map((task) => {
-          return limit(() => this.get_file_with_annotations(task));
-        });
-        const result = await Promise.all(promises);
-        return result;
-      } catch (error) {
-        this.file_update_error = this.$route_api_errors(error);
-        console.error(error);
-      }
-    },
-
-    async get_file_with_annotations(task) {
-      if (task.file.type != "image") {
-        return;
-      }
-
-      let url = "/api/v1/task/" + task.id + "/annotation/list";
-      this.get_annotations_error = {};
-      this.get_annotations_loading = true;
-
-      try {
-        const response = await axios.post(url, {});
-        task.file = response.data.file_serialized;
-      } catch (error) {
-        console.debug(error);
-        this.get_annotations_error = this.$route_api_errors(error);
-      } finally {
-        this.get_annotations_loading = false;
-      }
-    },
 
     async refresh_task_list() {
       this.loading = true;

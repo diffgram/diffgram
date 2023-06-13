@@ -39,6 +39,7 @@
             @focus="$emit('focus', $event)"
             :data-cy="`${data_cy}`"
             :clearable="clearable"
+            :prepend-icon="prepend_icon"
             >
 
     <!-- Menu OPEN -->
@@ -245,6 +246,10 @@ export default Vue.extend( {
       type: Boolean
     },
     'default_icon': {
+      default: null,
+      type: String
+    },
+    'prepend_icon': {
       default: null,
       type: String
     },
