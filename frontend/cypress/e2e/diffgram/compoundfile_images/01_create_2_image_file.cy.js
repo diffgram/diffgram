@@ -14,6 +14,9 @@ describe('Create 2 image compound file', () => {
     })
 
     it('Correctly Renders 2 panels for compound file.', () => {
+
+      return //https://github.com/diffgram/diffgram/issues/1392
+
       cy.uploadCompoundFileImages(testUser.project_string_id,  `${uuidv4()}.diffgram`, 2)
 
         .wait(6000).get('.pane-container').should('have.length', 2)

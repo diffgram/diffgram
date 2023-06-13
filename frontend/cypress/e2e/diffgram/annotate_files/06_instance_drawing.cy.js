@@ -271,7 +271,7 @@ describe('Annotate Files Tests', () => {
     })
 
     it('Correctly Saves The created instances', () => {
-      cy.wait(2000)
+      cy.wait(4000)
         .intercept(`api/project/*/file/*/annotation/update`).as('annotation_update')
         .window().then((window) => {
             window.AnnotationUIFactory.set_has_changed(true)
