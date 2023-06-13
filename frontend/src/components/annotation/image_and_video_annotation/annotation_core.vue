@@ -965,8 +965,6 @@ export default Vue.extend({
 
       lock_point_hover_change: false,
 
-      full_screen_height_extra_spacer: 80,
-
       space_bar: false,
 
       mouse_down_limits_result: true,
@@ -1381,7 +1379,6 @@ export default Vue.extend({
         this.media_core_height = 0;
       }
       if (this.task) {
-        this.full_screen_height_extra_spacer = 0;
         this.media_core_height = 0;
       }
 
@@ -1398,8 +1395,7 @@ export default Vue.extend({
         middle_pane_height =
           this.window_height_from_listener -
           toolbar_height -
-          this.media_core_height -
-          this.full_screen_height_extra_spacer;
+          this.media_core_height;
 
       } else{
         middle_pane_width = this.container_width
