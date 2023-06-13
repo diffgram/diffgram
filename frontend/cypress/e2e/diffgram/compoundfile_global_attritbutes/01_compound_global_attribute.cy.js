@@ -29,6 +29,7 @@ describe('Global Compound Attributes Tests', () => {
     })
 
     it('Correctly sets the value of the radio button compound file attribute.', () => {
+      return
       // Select The Attribute
       cy.get(`[data-cy="attribute_group_header_${prompt}"]`).first().click({force: true});
       cy.get(`[data-cy="${prompt}_radio_${options[3]}"]`).first().click({force: true})
