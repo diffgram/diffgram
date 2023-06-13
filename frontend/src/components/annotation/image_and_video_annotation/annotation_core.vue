@@ -965,7 +965,7 @@ export default Vue.extend({
 
       lock_point_hover_change: false,
 
-      magic_nav_spacer: 80,
+      full_screen_height_extra_spacer: 80,
 
       space_bar: false,
 
@@ -1374,8 +1374,6 @@ export default Vue.extend({
 
       let toolbar_height = 80;
 
-      let left_panel_spacer = 100;
-
       if (document.getElementById("media_core")) {
         this.media_core_height =
           document.getElementById("media_core").__vue__.height;
@@ -1383,22 +1381,25 @@ export default Vue.extend({
         this.media_core_height = 0;
       }
       if (this.task) {
-        this.magic_nav_spacer = 0;
+        this.full_screen_height_extra_spacer = 0;
         this.media_core_height = 0;
       }
 
       let middle_pane_height, middle_pane_width;
       if(this.use_full_window){
+
+        let extra_spacer = 60;
+
         middle_pane_width =
           this.window_width_from_listener -
           this.label_settings.left_nav_width -
-          left_panel_spacer;
+          extra_spacer;
 
         middle_pane_height =
           this.window_height_from_listener -
           toolbar_height -
           this.media_core_height -
-          this.magic_nav_spacer;
+          this.full_screen_height_extra_spacer;
 
       } else{
         middle_pane_width = this.container_width
