@@ -149,6 +149,7 @@ def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEU
 
     if FRAME_QUEUE.qsize() >= 30:
         logger.info(f"FRAME QUEUE LIMIT {str(FRAME_QUEUE.qsize())}")
+        logger.info(f"Processing May Be Stuck.")
         return add_deferred_items_time
 
     with sessionMaker.session_scope_threaded() as session:
@@ -398,15 +399,9 @@ class Process_Media():
 
         check_and_wait_for_memory(memory_limit_float = 85.0)
 
-        ### Warm up
         self.get_input_with_retry()
 
-        # We update this here because
-        # it may be set to retry, but not start processing for a while
-        # So we only want to set this time when we start processing it
         self.input.time_last_attempted = start_time
-
-        # Jan 20, 2020, TODO can we safely remove self.project
 
         self.project = self.input.project
 
