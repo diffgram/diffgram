@@ -495,7 +495,6 @@ def input_from_local(session,
     input.original_filename = os.path.split(original_filename)[1]
     input.parent_file_id = parent_file_id
     input.ordinal = ordinal
-    print('parent_file_id', parent_file_id)
 
     input.temp_dir = tempfile.mkdtemp()
     input.temp_dir_path_and_filename = input.temp_dir + \
@@ -538,8 +537,6 @@ def input_from_local(session,
             input = input)
 
         result = process_media.main_entry()
-
-        # Always return input along with file?
 
         if result == True:
             return True, log, input
