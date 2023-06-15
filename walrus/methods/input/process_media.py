@@ -132,7 +132,7 @@ def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
 
         check_and_wait_for_memory(memory_limit_float = 85.0)
 
-        logger.info("[Media Queue Heartbeat]")
+        logger.info(f"[Media Queue Heartbeat] V: {settings.DIFFGRAM_VERSION_TAG}")
         try:
             add_deferred_items_time = check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEUE)
         except Exception as exception:
