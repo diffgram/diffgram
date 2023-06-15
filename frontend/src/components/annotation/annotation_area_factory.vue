@@ -4,7 +4,7 @@
     <div v-if="!interface_type || !interface_type && !initializing">
       <empty_file_editor_placeholder
         :message="`File ID: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.id : 'N/A'}. File Type: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.type : 'N/A'}`"
-        :title="'Invalid File loaded'"
+        :title="'No File Loaded'"
       />
     </div>
     <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing" >
