@@ -17,14 +17,6 @@
                         v-model="name">
           </v-text-field>
 
-            <!-- Future, could have option to select
-              another GROUP here -->
-
-          <!-- TODO if enter value, numeric or string -->
-
-          <!-- TODO if enter open children, then open children -->
-
-
 
           <!-- Hide on overlay since already created -->
 
@@ -164,14 +156,6 @@ import { attribute_update_or_new } from "../../services/attributesService.ts"
         this.count.label_file_id = label_file.id
 
         this.overlay.label_file_id = label_file.id
-
-      },
-
-      recieve_brain: function (brain) {
-
-        // TODO maybe just to "brain" not "brain_run"
-
-        this.brain_run.id = brain.id
 
       },
 
