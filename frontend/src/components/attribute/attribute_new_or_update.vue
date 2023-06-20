@@ -165,12 +165,14 @@ import { attribute_update_or_new } from "../../services/attributesService.ts"
         this.error = {}
         this.success = false
 
-        const { status, error } = await attribute_update_or_new(mode, this.project_string_id, this.attribute)
+        const { status, data, error } = await attribute_update_or_new(mode, this.project_string_id, this.attribute)
         this.error = error
 
         if (status === 200) {
-          this.$store.commit('attribute_refresh_group_list')
           this.success = true
+          this.attribute.id = data.attribute_template.id
+          this.attribute.name = data.attribute_template.name
+          this.$emit('attribute_updated', this.attribute)
         }
 
         this.loading = false

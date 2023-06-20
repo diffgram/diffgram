@@ -6,9 +6,6 @@
 
         <v-layout row>
 
-          <!-- do we just send the "attribute" to front
-              end and not worry about template part -->
-
         <h3 class="font-weight-medium ml-6 mt-2 text--primary flex-grow-1">{{ attribute.name }}</h3>
 
         <v_error_multiple :error="error">
@@ -33,6 +30,7 @@
               :attribute_prop = "attribute"
               :group_id = "attribute.group_id"
               :mode = " 'UPDATE' "
+              @attribute_updated="$emit('attribute_updated', $event)"
                   >
             </attribute_new_or_update>
 
@@ -40,12 +38,6 @@
           </template>
 
         </button_with_menu>
-
-          <!-- Prior we had a more dots icon
-              but it just seems like not needed
-          and if we do want to bring it back should be a seperate
-          button_with_menu  component
-          -->
 
         <standard_button
             tooltip_message="Archive"
@@ -70,8 +62,6 @@
 
 <script lang="ts">
 
-
-import axios from '../../services/customInstance';
 import attribute_new_or_update from './attribute_new_or_update.vue';
 import { attribute_update_or_new } from "../../services/attributesService.ts"
 
@@ -100,9 +90,6 @@ export default Vue.extend( {
         loading: false,
         error: {},
         success: false,
-
-        name: null,
-
         show_menu: true,
 
         show_edit: false
@@ -111,12 +98,6 @@ export default Vue.extend( {
       }
     },
     watch: {
-
-      // we refresh list, so if we don't close it on current vuetify version
-      // it ends up being in wrong spot. can remove or change if that thing gets fixed
-      attribute() {
-        this.show_edit = false
-      }
 
     },
     methods: {
