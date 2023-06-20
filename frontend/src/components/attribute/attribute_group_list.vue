@@ -1,9 +1,10 @@
 <template>
   <div>
     <v-progress-linear
-      v-if="loading"
+      v-if="loading || loading_update_all_attributes"
       indeterminate
       class="mt-4"
+      attach
     />
     <div
       style="overflow-y:auto"
@@ -51,7 +52,7 @@
           :hover="false"
           :tile="true"
         >
-          <draggable  @end="on_drag_end" v-if="draggable" v-bind="dragOptions" class="list-group">
+          <draggable  @end="on_drag_end" v-if="draggable" v-bind="dragOptions" class="list-group" :disabled="loading_update_all_attributes">
 
             <transition-group type="transition" name="flip-list">
               <v-expansion-panel
@@ -59,6 +60,7 @@
                 class="list-group-item"
                 v-for="(group, index) in attribute_group_list_computed"
                 :key="group.id"
+                :disabled="loading_update_all_attributes"
               >
                 <v-expansion-panel-header
                   :ref="`attribute_group_${group.id}_header`"
@@ -91,7 +93,7 @@
                       color="red"
                       tooltip_message="Archive Entire Attribute and All Options"
                       :loading="loading"
-                      :disabled="loading"
+                      :disabled="loading || loading_update_all_attributes"
                       :icon_style="true"
                       @confirm_click="api_group_archive(group)"
                     >
@@ -219,8 +221,9 @@ import attribute_group from './attribute_group.vue'
 import {attribute_group_list, archive_attribute_group, attribute_group_update} from '../../services/attributesService.ts'
 import attribute_kind_icons from './attribute_kind_icons.vue'
 import attribute_group_new from './attribute_group_new.vue'
+import pLimit from 'p-limit';
 import Vue from "vue"
-import {at} from "lodash";
+
 
 export default Vue.extend({
     name: 'attribute_group_list',
@@ -249,6 +252,7 @@ export default Vue.extend({
         attribute_group_list: [] as Array<any>,
         out_of_schema_attributes: [] as Array<any>,
         openedPanel: null as Number,
+        loading_update_all_attributes: false as Boolean,
         hotkey_dict: {
           38: 'previous',
           40: 'next',
@@ -484,10 +488,16 @@ export default Vue.extend({
         }
         this.update_all_attributes()
       },
-      update_all_attributes: function(){
-        for (let attr of this.attribute_group_list){
-          attribute_group_update(this.project_string_id, 'UPDATE', attr)
-        }
+      update_all_attributes: async function(){
+        if (this.loading_update_all_attributes == true ) {return}
+        const limit = pLimit(3); // Max concurrent request.
+        this.loading_update_all_attributes = true
+        const promises = this.attribute_group_list.map(attribute_group => {
+            return limit(() => attribute_group_update(this.project_string_id, 'UPDATE', attribute_group))
+        });
+        const result = await Promise.all(promises);
+        this.loading_update_all_attributes = false
+        return result
       },
       api_group_archive: async function (group: any) {
         this.loading = true

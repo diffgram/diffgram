@@ -33,8 +33,6 @@ def api_attribute_update_or_new(project_string_id):
 
         user = User.get(session = session)
         project = Project.get(session, project_string_id)
-
-        # Caution, declaring as user.member for now.
         member = get_member(session = session)
 
         attribute_session = Attribute_Session(
@@ -47,13 +45,12 @@ def api_attribute_update_or_new(project_string_id):
             parent_id = input['attribute'].get('parent_id') if input['attribute'] else None,
         )
 
-        # For init errors
         if len(attribute_session.log["error"].keys()) >= 1:
             return jsonify(log = log), 400
 
         if attribute_session.mode in ["UPDATE", "ARCHIVE"]:
 
-            attribute_session.update_or_archive_mode_init()
+            attribute_session.update_or_archive_mode_init(log)
 
             if len(attribute_session.log["error"].keys()) >= 1:
                 return jsonify(log = log), 400
@@ -122,7 +119,7 @@ class Attribute_Session():
         # FUNCTIONS
         self.verify_and_set_group_id()
 
-    def update_or_archive_mode_init(self):
+    def update_or_archive_mode_init(self, log):
 
         self.attribute_template = Attribute_Template.get_by_id(
             session = self.session,

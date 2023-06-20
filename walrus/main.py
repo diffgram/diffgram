@@ -111,6 +111,9 @@ sync_actions_thread = SyncActionsHandlerThread(thread_sleep_time_min = settings.
                                                run_once = False)
 
 print("Startup in", time.time() - start_time)
+
+logger.info(f"DIFFGRAM_VERSION_TAG: {settings.DIFFGRAM_VERSION_TAG}")
+
 if __name__ == '__main__':
 
     settings.NAME_EQUALS_MAIN = True  # can adjust this for local deferral testing if needed?

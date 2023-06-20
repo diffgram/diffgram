@@ -687,7 +687,7 @@ class File_Browser():
                 resp = jsonify(log=self.log)
                 resp.status = 401
                 raise Unauthorized(response = resp)
-            print('with_children_files', self.metadata.get('with_children_files'))
+
             query, count = WorkingDirFileLink.file_list(
                 session = self.session,
                 working_dir_id = self.directory.id,

@@ -62,7 +62,7 @@ class Attribute_Template_Group(Base):
     # Allowed Values: [compound_file, file]
     global_type = Column(String(), default = 'file')  # Expansion direction eg for frame, series, etc.
 
-    ordinal = Column(Integer, default = 0)
+    ordinal = Column(Integer, default = 99999)
     @staticmethod
     def new(session,
             project,

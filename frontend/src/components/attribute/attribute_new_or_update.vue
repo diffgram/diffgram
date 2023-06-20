@@ -17,14 +17,6 @@
                         v-model="name">
           </v-text-field>
 
-            <!-- Future, could have option to select
-              another GROUP here -->
-
-          <!-- TODO if enter value, numeric or string -->
-
-          <!-- TODO if enter open children, then open children -->
-
-
 
           <!-- Hide on overlay since already created -->
 
@@ -167,26 +159,20 @@ import { attribute_update_or_new } from "../../services/attributesService.ts"
 
       },
 
-      recieve_brain: function (brain) {
-
-        // TODO maybe just to "brain" not "brain_run"
-
-        this.brain_run.id = brain.id
-
-      },
-
 
       api_attribute_update_or_new: async function (mode) {
         this.loading = true
         this.error = {}
         this.success = false
 
-        const { status, error } = await attribute_update_or_new(mode, this.project_string_id, this.attribute)
+        const { status, data, error } = await attribute_update_or_new(mode, this.project_string_id, this.attribute)
         this.error = error
 
         if (status === 200) {
-          this.$store.commit('attribute_refresh_group_list')
           this.success = true
+          this.attribute.id = data.attribute_template.id
+          this.attribute.name = data.attribute_template.name
+          this.$emit('attribute_updated', this.attribute)
         }
 
         this.loading = false

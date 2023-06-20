@@ -13,7 +13,6 @@ from shared.database.attribute.attribute_template_group_to_file import Attribute
 def api_attribute_template_group_update(project_string_id):
     """
 
-
     """
 
     spec_list = [
@@ -30,7 +29,11 @@ def api_attribute_template_group_update(project_string_id):
         }},
         {'name': None},
         {'prompt': None},
-        {'kind': str},
+        {'kind': {
+            "required": False,
+            "type": str
+            }
+        },
         {'label_file_list': None},
         {'default_value': None},
         {'default_id': None},

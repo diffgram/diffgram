@@ -320,6 +320,7 @@
                     :project_string_id="project_string_id"
                     :group_id="group.id"
                     :menu_open="props.menu_open"
+                    @attribute_updated="attribute_updated($event)"
                   >
 
                   </attribute_new_or_update>
@@ -345,6 +346,7 @@
                     :project_string_id="project_string_id"
                     :attribute="item"
                     :key="item.id"
+                    @attribute_updated="attribute_updated($event)"
                   >
                   </attribute>
 
@@ -682,6 +684,17 @@ export default Vue.extend( {
     }
   },
   methods: {
+
+    attribute_updated: function (attribute_template){
+      const attribute_template_existing = this.group.attribute_template_list.find(a => a.id === attribute_template.id)
+      if (attribute_template_existing) {
+        let index = this.group.attribute_template_list.indexOf(attribute_template_existing)
+        this.group.attribute_template_list[index].name = attribute_template.name
+      } else {
+        this.group.attribute_template_list.push(attribute_template)
+      }
+    },
+
     set_global_attribute: function(){
       if(this.group.is_global){
         if(this.group.global_type === 'compound_file'){
@@ -696,6 +709,9 @@ export default Vue.extend( {
       }
     },
     build_tree_data: function(){
+
+      if (this.group.kind != 'tree') { return }
+
       this.group.attribute_template_list.map(attr => {
         const new_node = new TreeNode(attr.group_id, attr.name)
         new_node.initialize_existing_node(attr.id, attr.parent_id)
