@@ -49,15 +49,6 @@ def check_integrations_support(session, task_template, log):
     connection = task_template.interface_connection
     files_count = task_template.get_attached_files(session=session, return_kind='count')
 
-    if connection.integration_name == 'labelbox':
-        if task_template.instance_type not in ['box', 'polygon', 'line']:
-            log['error'][
-                'labelbox_interface'] = 'Cannot use instance type {} for Labelbox UI please choose one of'.format(
-                task_template.instance_type,
-                '"box", "polygon" or "line".')
-            if files_count == 0:
-                log['error']['file_count'] = 'Datasets must contains at least 1 file to launch.'
-
     if connection.integration_name == 'scale_ai':
         if task_template.instance_type not in ['box', 'polygon']:
             log['error'][
