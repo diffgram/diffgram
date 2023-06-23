@@ -348,7 +348,7 @@ def job_output_dir_update(project_string_id):
         }
         },
         {"output_dir": {
-            'kind': str,
+            'kind': int,
             'default': None,
             'required': False
         }},
