@@ -449,7 +449,7 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
             endpoint,
             data=json.dumps(request_data),
             headers={
-                'directory_id': str(job.project.directory_default_id),
+                'directory_id': job.project.directory_default_id,
                 'Authorization': f"Basic {credentials}"
             }
         )

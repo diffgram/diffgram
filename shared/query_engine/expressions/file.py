@@ -5,6 +5,8 @@ from sqlalchemy.orm import aliased
 from sqlalchemy.sql import Selectable
 from shared.settings.env_adapter import EnvAdapter
 from datetime import datetime, time
+from shared.shared_logger import get_shared_logger
+logger = get_shared_logger()
 
 class FileCompareExpression(CompareExpression):
 
@@ -23,21 +25,19 @@ class FileCompareExpression(CompareExpression):
             parsed_date = parsed_date.replace("'", "")
             parsed_date = parsed_date.replace('"', "")
             parsed_date = datetime.strptime(parsed_date, format_string)
-            end_of_day = time(23, 59, 59)
-            parsed_date = parsed_date.replace(hour = end_of_day.hour, minute = end_of_day.minute,
-                                              second = end_of_day.second)
+            start_of_day = time(0, 0, 0)
+            parsed_date = parsed_date.replace(hour = start_of_day.hour, minute = start_of_day.minute,
+                                              second = start_of_day.second)
 
-            new_filter_subquery = session.query(AliasFile.id).filter(
-                sql_compare_operator(sql_column, parsed_date)).subquery()
+            self.expression = sql_compare_operator(sql_column, parsed_date)
         elif File.ann_is_complete == query_op.column:
             env_adapter = EnvAdapter()
             parsed_boolean = raw_scalar_value.replace("'", "")
             parsed_boolean = parsed_boolean.replace('"', "")
             parsed_boolean = env_adapter.bool(parsed_boolean)
-            new_filter_subquery = session.query(AliasFile.id).filter(
-                sql_compare_operator(sql_column, parsed_boolean)).subquery()
+            self.expression = sql_compare_operator(sql_column, parsed_boolean)
         else:
-            new_filter_subquery = session.query(AliasFile.id).filter(sql_compare_operator(sql_column, raw_scalar_value)).subquery()
+            self.expression = sql_compare_operator(sql_column, raw_scalar_value)
 
-        self.subquery = new_filter_subquery
-        return self.subquery
+
+        return 
