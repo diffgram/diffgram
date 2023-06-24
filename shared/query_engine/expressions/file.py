@@ -25,9 +25,9 @@ class FileCompareExpression(CompareExpression):
             parsed_date = parsed_date.replace("'", "")
             parsed_date = parsed_date.replace('"', "")
             parsed_date = datetime.strptime(parsed_date, format_string)
-            end_of_day = time(23, 59, 59)
-            parsed_date = parsed_date.replace(hour = end_of_day.hour, minute = end_of_day.minute,
-                                              second = end_of_day.second)
+            start_of_day = time(0, 0, 0)
+            parsed_date = parsed_date.replace(hour = start_of_day.hour, minute = start_of_day.minute,
+                                              second = start_of_day.second)
 
             self.expression = sql_compare_operator(sql_column, parsed_date)
         elif File.ann_is_complete == query_op.column:
