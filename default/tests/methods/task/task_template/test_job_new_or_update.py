@@ -437,7 +437,7 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
         }, self.session)
         file = data_mocking.create_file({'project_id': job.project.id, 'job_id': job.id}, self.session)
         request_data = {
-            'output_dir': str(directory.id),
+            'output_dir': directory.id,
             'output_dir_action': 'copy',
             'job_id': job.id,
         }
@@ -457,7 +457,7 @@ class TestJobNewUpdate(testing_setup.DiffgramBaseTestCase):
         new_session = sessionMaker.session_factory()
         updated_job = Job.get_by_id(new_session, job.id)
         self.assertEqual(updated_job.output_dir_action, request_data['output_dir_action'])
-        self.assertEqual(str(updated_job.completion_directory_id), request_data['output_dir'])
+        self.assertEqual(updated_job.completion_directory_id, request_data['output_dir'])
         # Now test a wrong action
         request_data_error = {
             'output_dir': 58,
