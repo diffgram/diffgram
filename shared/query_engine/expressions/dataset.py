@@ -24,7 +24,5 @@ class DatasetCompareExpression(CompareExpression):
         #     .filter(sql_compare_operator(sql_column, raw_scalar_value),
         #             File.project_id == self.project_id,
         #             File.state != 'removed').subquery(name = "ds_compare")
-        self.expression = and_(sql_compare_operator(sql_column, raw_scalar_value),
-                             File.project_id == self.project_id,
-                             File.state != 'removed')
+        self.expression = sql_compare_operator(sql_column, raw_scalar_value)
         return self.expression

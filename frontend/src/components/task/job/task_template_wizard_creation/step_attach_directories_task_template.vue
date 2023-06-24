@@ -125,7 +125,7 @@
             const response = await axios.post(
               `/api/v1/project/${this.project_string_id}/job/set-output-dir`,
               {
-                output_dir: this.output_dir.directory ? this.output_dir.directory.directory_id.toString() : undefined,
+                output_dir: this.output_dir.directory ? this.output_dir.directory.directory_id : undefined,
                 output_dir_action: this.output_dir.action,
                 job_id: parseInt(this.job.id),
               })
