@@ -916,7 +916,7 @@ class Process_Media():
 
     def create_task_on_job_sync_directories(self):
         """
-            Given a file list, attach create tasks from those files attached to the given
+            Given a file, attach create tasks from those files attached to the given
             job.
         :param session:
         :param job:
