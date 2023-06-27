@@ -123,12 +123,6 @@ def enqueue_packet(project_string_id,
 
     diffgram_input_id = diffgram_input.id
 
-    queue_limit = 0
-    if media_type == "image":
-        queue_limit = 30  # 50
-    if media_type == "video":
-        queue_limit = 1
-
     # Temporary workaround until new Rabbit MQ implmentation for walrus
     if on_walrus:
 
