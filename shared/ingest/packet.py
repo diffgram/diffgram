@@ -2,8 +2,6 @@
 from shared.regular.regular_api import *
 from shared.regular import regular_methods
 
-import tempfile
-
 from shared.database.input import Input
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.video.video import Video
@@ -99,7 +97,6 @@ def enqueue_packet(project_string_id,
 
     if frame_packet_map:
         diffgram_input.frame_packet_map = frame_packet_map
-    # print(diffgram_input.frame_packet_map)
 
     session.add(diffgram_input)
     session.flush()
@@ -110,11 +107,6 @@ def enqueue_packet(project_string_id,
             upload_tools.extract_instance_list_from_batch(input = diffgram_input,
                                                           input_batch_id = batch_id,
                                                           file_name = file_name)
-    # Expect temp dir to be None here.
-    # because each machine should assign it's own temp dir
-    # Something else to consider for future here!
-    # Once this is part of input, it will be smoothly handled at right time as part of
-    # processing queue
     diffgram_input.job_id = job_id
 
     # Process media handles checking if the directory id is valid
