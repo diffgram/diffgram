@@ -60,18 +60,13 @@ class GracefulKiller(metaclass = Singleton):
 
         logger.warning('Staring Graceful Shutdown...')
         while num_retries < self.MAX_CHECKS:
-            # Check if there are still inputs processing
-            if process_media_queue_manager.VIDEO_QUEUE.qsize() == 0 \
-                and process_media_queue_manager.FRAME_QUEUE.qsize() == 0 \
-                    and len(process_media_queue_manager.PROCESSING_INPUT_LIST) == 0:
 
+            if len(process_media_queue_manager.PROCESSING_INPUT_LIST) == 0:
                 logger.warning('No More Inputs to Process shutting down...')
                 self.kill_now = True
                 break
             else:
                 logger.warning('Pending Data to Process: ')
-                logger.warning(f"VIDEO_QUEUE: {process_media_queue_manager.VIDEO_QUEUE.qsize()}")
-                logger.warning(f"FRAME_QUEUE: {process_media_queue_manager.FRAME_QUEUE.qsize()}")
                 logger.warning(f"PROCESSING_INPUTS: {len(process_media_queue_manager.PROCESSING_INPUT_LIST)}")
 
             time.sleep(self.SLEEP_TIME)
@@ -82,8 +77,6 @@ class GracefulKiller(metaclass = Singleton):
         else:
             logger.error('Unable to shutdown gracefully. MAX RETRIES After {} seconds.'.format(
                 self.MAX_CHECKS * self.SLEEP_TIME))
-            logger.error(f"VIDEO_QUEUE: {process_media_queue_manager.VIDEO_QUEUE.qsize()}")
-            logger.error(f"FRAME_QUEUE: {process_media_queue_manager.FRAME_QUEUE.qsize()}")
             logger.error(f"PROCESSING_INPUTS: {len(process_media_queue_manager.PROCESSING_INPUT_LIST)}")
             self.set_inputs_with_error_status(process_media_queue_manager.PROCESSING_INPUT_LIST)
             # TODO: set failed inputs to failed status

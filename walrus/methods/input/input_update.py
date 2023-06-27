@@ -63,7 +63,7 @@ def api_input_update(project_string_id):
                 return jsonify(log = update_input.log), 400
 
         # For testing it's handy to run this right away here
-        # check_if_add_items_to_queue(add_deferred_items_time = 0)
+        # check_if_add_items_to_queue(remote_queue_sleep_time = 0)
 
         if input['mode'] == "ARCHIVE":
             update_input = Update_Input(

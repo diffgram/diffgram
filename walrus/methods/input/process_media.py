@@ -85,156 +85,7 @@ class PrioritizedItem:
     total_frames: int = 0
     num_frames_to_update: int = 0
     media_type: str = None
-
-
-def process_media_unit_of_work(item):
-    from methods.input.process_media_queue_manager import process_media_queue_manager
-    with sessionMaker.session_scope_threaded() as session:
-
-        process_media = Process_Media(
-            session = session,
-            input_id = item.input_id,
-            input = item.input,
-            item = item)
-
-        if settings.PROCESS_MEDIA_TRY_BLOCK_ON is True:
-            try:
-
-                process_media_queue_manager.add_item_to_processing_list(item)
-                process_media.main_entry()
-                process_media_queue_manager.remove_item_from_processing_list(item)
-
-            except Exception as e:
-                logger.error(f"[Process Media] Main failed on {item.input_id}")
-                logger.error(str(e))
-                logger.error(traceback.format_exc())
-                process_media_queue_manager.remove_item_from_processing_list(item)
-        else:
-            process_media_queue_manager.add_item_to_processing_list(item)
-            process_media.main_entry()
-            process_media_queue_manager.remove_item_from_processing_list(item)
-
-
-# REMOTE queue
-def start_queue_check_loop(VIDEO_QUEUE, FRAME_QUEUE):
-    # https://diffgram.com/docs/remote-queue-start_queue_check_loop
-    from methods.input.process_media_queue_manager import process_media_queue_manager
-    if settings.PROCESS_MEDIA_REMOTE_QUEUE_ON == False:
-        return
-
-    add_deferred_items_time = 5
-
-    while True:
-        time.sleep(add_deferred_items_time)
-        if process_media_queue_manager.STOP_PROCESSING_DATA:
-            logger.warning('Rejected Item: processing, data stopped. Waiting for termination...')
-            break
-
-        check_and_wait_for_memory(memory_limit_float = 85.0)
-
-        logger.info(f"[Media Queue Heartbeat] V: {settings.DIFFGRAM_VERSION_TAG}")
-        try:
-            add_deferred_items_time = check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEUE)
-        except Exception as exception:
-            logger.info(f"[Media Queue Failed] {str(exception)}")
-            add_deferred_items_time = 30  # reset
-
-
-def check_if_add_items_to_queue(add_deferred_items_time, VIDEO_QUEUE, FRAME_QUEUE):
-    # https://diffgram.com/docs/remote-queue-check_if_add_items_to_queue
-
-    queue_limit = 1
-    if VIDEO_QUEUE.qsize() >= queue_limit:
-        return add_deferred_items_time
-
-    if FRAME_QUEUE.qsize() >= 30:
-        logger.info(f"FRAME QUEUE LIMIT {str(FRAME_QUEUE.qsize())}")
-        logger.info(f"Processing May Be Stuck.")
-        return add_deferred_items_time
-
-    with sessionMaker.session_scope_threaded() as session:
-
-        try:
-            update_input = Update_Input(session = session).automatic_retry()
-        except Exception as exception:
-            logger.error(f"Couldn't find Update_Input {str(exception)}")
-            return 30
-
-        input = session.query(Input).with_for_update(skip_locked = True).filter(
-            Input.processing_deferred == True,
-            Input.archived == False,
-            Input.status != 'success'
-        ).first()
-
-        if input is None:
-            add_deferred_items_time += 30
-            add_deferred_items_time = min(add_deferred_items_time, 200)
-            return add_deferred_items_time
-
-        add_deferred_items_time = 3  # reset, fast process if None available
-        # we trust if video queue is busy it will be handled and not reach to this point
-
-        session.add(input)
-        input.processing_deferred = False
-
-        item = PrioritizedItem(
-            priority = 100,  # 100 is current default priority
-            input_id = input.id)
-        add_item_to_queue(item)
-        logger.info(f"{str(input.id)} Added to queue.")
-
-        return add_deferred_items_time
-
-
-# https://diffgram.com/docs/process-media-local-worker-queues
-
-
-def add_item_to_queue(item):
-    # https://diffgram.com/docs/add_item_to_queue
-    from methods.input.process_media_queue_manager import process_media_queue_manager
-    if item.media_type and item.media_type == "video":
-        process_media_queue_manager.VIDEO_QUEUE.put(item)
-    else:
-        wait_until_queue_pressure_is_lower(
-            queue = process_media_queue_manager.FRAME_QUEUE,
-            limit = process_media_queue_manager.frame_threads * 2,
-            check_interval = 1)
-        process_media_queue_manager.FRAME_QUEUE.put(item)
-
-
-def wait_until_queue_pressure_is_lower(queue, limit, check_interval = 1):
-    while True:
-        if queue.qsize() < limit:
-            return True
-        else:
-            logger.warn(f"Queue Presure Too High: {str(queue.qsize())} size is above limit of {limit} ")
-            time.sleep(check_interval)
-
-
-def process_media_queue_worker(queue, queue_type, frame_queue_lock, video_queue_lock):
-    queue_lock = None
-    if queue_type == 'frame':
-        queue_lock = frame_queue_lock
-    elif queue_type == 'video':
-        queue_lock = video_queue_lock
-    else:
-        logger.error('Invalid queue type')
-        return
-    while True:
-        process_media_queue_getter(queue, queue_lock)
-
-
-def process_media_queue_getter(queue, queue_lock):
-    # https://diffgram.com/docs/process_media_queue_getter
-    queue_lock.acquire()
-    if not queue.empty():
-        item = queue.get()
-        queue_lock.release()
-        process_media_unit_of_work(item)
-        queue.task_done()
-    else:
-        queue_lock.release()
-        time.sleep(0.1)
+    mode: str = None
 
 
 class Process_Media():
@@ -359,7 +210,6 @@ class Process_Media():
         if self.input and not isinstance(self.input, Input):
             raise Exception("input should be class Input object. Use input_id for ints")
 
-    ### TODO move these other main entry things over to init
 
     @retry(wait = wait_random_exponential(multiplier = 1, max = 5),
            stop = stop_after_attempt(4))
@@ -388,6 +238,7 @@ class Process_Media():
 
         if not self.input.update_log:
             self.input.update_log = regular_log.default()
+
 
     def main_entry(self):
         """
