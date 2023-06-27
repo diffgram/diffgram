@@ -24,7 +24,6 @@ class FileQueryElement(QueryElement):
 
     def build_query(self, session: 'Session', token: Token) -> Selectable:
         file_key = token.value.split('.')[1]
-        print('build_query File', token)
         reserved_columns = ['created_time', 'type', 'ann_is_complete', 'original_filename', 'task_id', 'frame_number', 'parent_id']
         if file_key not in reserved_columns:
             return self.build_metadata_query(session, file_key = file_key)
