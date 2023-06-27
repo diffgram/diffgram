@@ -19,7 +19,7 @@ class FileCompareExpression(CompareExpression):
         sql_column = query_op.column
         sql_compare_operator = self.operator.operator_value
         AliasFile = aliased(File)
-        if File.created_time == query_op.column:
+        if query_op.column in [File.created_time, File.time_last_updated]:
             format_string = "%Y-%m-%d"
             parsed_date = raw_scalar_value
             parsed_date = parsed_date.replace("'", "")

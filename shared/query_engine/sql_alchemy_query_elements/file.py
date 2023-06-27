@@ -8,7 +8,7 @@ from lark import Token
 
 class FileQueryElement(QueryElement):
     top_level_key = "file"
-    reserved_columns = ['created_time', 'type', 'ann_is_complete', 'original_filename', 'task_id', 'frame_number', 'parent_id']
+    reserved_columns = ['created_time', 'time_last_updated', 'type', 'ann_is_complete', 'original_filename', 'task_id', 'frame_number', 'parent_id']
 
     def __init__(self):
         pass
