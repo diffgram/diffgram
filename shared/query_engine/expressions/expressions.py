@@ -156,8 +156,6 @@ class AndExpression:
     def __init__(self, expression_list: List[CompareExpression]):
         self.expression_list = expression_list
         self.sql_and_statement = and_(*expression_list)
-        print(len(expression_list), "LEEEEND")
-        print('sql and statement', self.sql_and_statement)
 
     def add_expression(self, selectable_expr_elm: Selectable):
         self.expression_list.append(selectable_expr_elm)
