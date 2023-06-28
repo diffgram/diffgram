@@ -7,7 +7,7 @@ from werkzeug.utils import secure_filename
 from methods.input.process_media import Process_Media
 
 from methods.input.process_media import PrioritizedItem
-from methods.input.process_media import add_item_to_queue
+from methods.input.process_media_queue_manager import process_media_queue_manager
 
 from shared.database.input import Input
 from shared.database.batch.batch import InputBatch
@@ -227,7 +227,7 @@ class Upload():
             media_type = input.media_type,  # For routing to right queue
             input_id = input.id)
 
-        add_item_to_queue(item)
+        process_media_queue_manager.router(item)
 
         user = User.get(session = self.session)
         kind = 'input_from_upload_UI'
@@ -553,6 +553,6 @@ def input_from_local(session,
         media_type = input.media_type
     )
 
-    add_item_to_queue(item)
+    process_media_queue_manager.router(item)
 
     return True, log, input

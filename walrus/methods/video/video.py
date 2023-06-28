@@ -19,6 +19,7 @@ from shared.database.video.sequence import Sequence
 from shared.database.input import Input
 
 from methods.input import process_media
+from methods.input.process_media_queue_manager import process_media_queue_manager
 from shared.utils.memory_checks import check_and_wait_for_memory
 from shared.data_tools_core import Data_tools
 from shared.feature_flags.feature_checker import FeatureChecker
@@ -480,7 +481,7 @@ class New_video():
             frame_number = input.frame_number  # Careful, downstream process currently expects it
         )
 
-        process_media.add_item_to_queue(item)
+        process_media_queue_manager.router(item)
 
     def add_frame_to_queue(
         self,
@@ -595,7 +596,7 @@ class New_video():
             media_type = input.media_type
         )
 
-        process_media.add_item_to_queue(item)
+        process_media_queue_manager.router(item)
 
     # TODO use this video attributes
     # content_type = None,
@@ -844,7 +845,7 @@ class New_video():
                 frame_number = frame.frame_number  # Careful, downstream process currently expects it
             )
 
-            process_media.add_item_to_queue(item)
+            process_media_queue_manager.router(item)
         return source_video_frames
 
     def add_sequence_map_to_input(

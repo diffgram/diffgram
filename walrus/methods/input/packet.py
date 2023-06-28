@@ -10,7 +10,6 @@ from shared.database.video.video import Video
 
 try:
     from methods.input.process_media import PrioritizedItem
-    from methods.input.process_media import add_item_to_queue
 except:
     pass
 from shared.regular import regular_methods, regular_log
@@ -19,6 +18,7 @@ from shared.database.connection.connection import Connection
 from sqlalchemy.orm.session import Session
 from shared.helpers.permissions import get_session_string
 from shared.url_generation import get_custom_url_supported_connector
+from methods.input.process_media_queue_manager import process_media_queue_manager
 
 
 @routes.route('/api/walrus/v1/project/<string:project_string_id>/input/packet',
@@ -319,7 +319,7 @@ def enqueue_packet(project_string_id,
             priority = 10000,  # individual frames have a priority here.
             input_id = diffgram_input_id,
             media_type = media_type)
-        add_item_to_queue(item)
+        process_media_queue_manager.router(item)
     else:
         diffgram_input.processing_deferred = True  # Default
 

@@ -109,8 +109,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
     def stop_processing(self):
         self.STOP_PROCESSING_DATA = True
 
-    def start_process_media_threads(self):
-        # Kick off worker threads for global queue
+    def start(self):
 
         for process_media_queue in self.queue_list:
             for i in range(process_media_queue.threads_count):

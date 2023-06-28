@@ -1984,6 +1984,7 @@ class Process_Media():
             True if completed
 
         """
+        from methods.input.process_media_queue_manager import process_media_queue_manager
 
         row_limit = 10000
         with open(self.input.temp_dir_path_and_filename) as csv_file:
@@ -2017,7 +2018,7 @@ class Process_Media():
                 item = PrioritizedItem(
                     priority = 100,
                     input_id = row_input.id)
-                add_item_to_queue(item)
+                process_media_queue_manager.router(item)
 
         # TODO how to handle removing from directory
         # When we end up adding process media things to a queue instead
