@@ -10,12 +10,10 @@ on_walrus = True
 
 try:
     from walrus.methods.input.process_media import PrioritizedItem
-    from walrus.methods.input.process_media import add_item_to_queue
     from walrus.methods.input.upload import Upload
 except:
     try:
         from methods.input.process_media import PrioritizedItem
-        from methods.input.process_media import add_item_to_queue
         from methods.input.upload import Upload
     except:
         on_walrus = False
