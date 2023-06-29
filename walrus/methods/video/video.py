@@ -18,8 +18,8 @@ from shared.database.video.video import Video
 from shared.database.video.sequence import Sequence
 from shared.database.input import Input
 
-from methods.input.process_media import PrioritizedItem
-from methods.input.process_media_queue_manager import process_media_queue_manager
+from shared.ingest.prioritized_item import PrioritizedItem
+from shared.system_startup.start_media_queue import process_media_queue_manager
 from shared.utils.memory_checks import check_and_wait_for_memory
 from shared.data_tools_core import Data_tools
 from shared.feature_flags.feature_checker import FeatureChecker
@@ -49,10 +49,6 @@ class FrameCompletionControl:
 
 class New_video():
     """
-    1. Get video file (in temp directory)
-    2. Do work
-
-    TODO better way to batch sessions
     """
 
     def __init__(

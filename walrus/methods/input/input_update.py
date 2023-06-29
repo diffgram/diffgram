@@ -9,9 +9,6 @@ from shared.database.input import Input
 from shared.permissions.super_admin_only import Super_Admin
 
 
-# from methods.input.process_media import check_if_add_items_to_queue
-# circular import...
-
 
 @routes.route('/api/walrus/v1/project/<string:project_string_id>' +
               '/input/update',
@@ -61,9 +58,6 @@ def api_input_update(project_string_id):
 
             if len(update_input.log["error"].keys()) >= 1:
                 return jsonify(log = update_input.log), 400
-
-        # For testing it's handy to run this right away here
-        # check_if_add_items_to_queue(remote_queue_sleep_time = 0)
 
         if input['mode'] == "ARCHIVE":
             update_input = Update_Input(
@@ -195,8 +189,8 @@ class Update_Input():
 
         self.session.add(self.input)
         if settings.PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY:
-            from methods.input.process_media import PrioritizedItem
-            from methods.input.process_media_queue_manager import process_media_queue_manager
+            from shared.ingest.prioritized_item import PrioritizedItem
+            from shared.system_startup.start_media_queue import process_media_queue_manager
             item = PrioritizedItem(
                 priority = 10000,  # individual frames have a priority here.
                 input_id = self.input.id,

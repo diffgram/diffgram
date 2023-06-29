@@ -47,7 +47,7 @@ class GracefulKiller(metaclass = Singleton):
         :param args:
         :return:
         """
-        from methods.input.process_media_queue_manager import process_media_queue_manager
+        from shared.system_startup.start_media_queue import process_media_queue_manager
 
         logger.info('Exiting gracefully...')
         if self.killing_gracefully:

@@ -6,17 +6,15 @@ from shared.database.input import Input
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.video.video import Video
 
+from shared.ingest.prioritized_item import PrioritizedItem
+
 on_walrus = True
 
 try:
-    from walrus.methods.input.process_media import PrioritizedItem
     from walrus.methods.input.upload import Upload
-    from walrus.methods.input.process_media_queue_manager import process_media_queue_manager
 except:
     try:
-        from methods.input.process_media import PrioritizedItem
         from methods.input.upload import Upload
-        from methods.input.process_media_queue_manager import process_media_queue_manager
     except:
         on_walrus = False
 
@@ -117,6 +115,7 @@ def enqueue_packet(project_string_id,
 
     # Temporary workaround until new Rabbit MQ implmentation for walrus
     if on_walrus:
+        from shared.system_startup.start_media_queue import process_media_queue_manager
 
         if settings.PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY is True or enqueue_immediately:
             if commit_input:
