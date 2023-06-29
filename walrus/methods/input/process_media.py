@@ -69,24 +69,6 @@ data_tools = Data_tools().data_tools
 STOP_PROCESSING_DATA = False
 
 
-@dataclass(order = True)
-class PrioritizedItem:
-    # https://diffgram.com/docs/prioritizeditem
-    priority: int
-    input_id: int = field(compare = False, default = None)
-    input: int = field(compare = False, default = None)
-    file_is_numpy_array: bool = field(compare = False, default = False)
-    raw_numpy_image: Any = field(compare = False, default = None)
-    video_id: Any = field(compare = False, default = None)
-    video_parent_file: Any = field(compare = False, default = None)
-    frame_number: Any = field(compare = False, default = None)
-    global_frame_number: Any = field(compare = False, default = None)
-    frame_completion_controller: Any = None
-    total_frames: int = 0
-    num_frames_to_update: int = 0
-    media_type: str = None
-    mode: str = None
-
 
 class Process_Media():
     """
@@ -1984,7 +1966,7 @@ class Process_Media():
             True if completed
 
         """
-        from methods.input.process_media_queue_manager import process_media_queue_manager
+        from shared.system_startup.start_media_queue import process_media_queue_manager
 
         row_limit = 10000
         with open(self.input.temp_dir_path_and_filename) as csv_file:
