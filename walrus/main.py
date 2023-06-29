@@ -104,7 +104,7 @@ sync_actions_thread = SyncActionsHandlerThread(thread_sleep_time_min = settings.
                                                thread_sleep_time_max = settings.SYNC_ACTIONS_THREAD_SLEEP_TIME_MAX,
                                                run_once = False)
 
-print("Startup in", time.time() - start_time)
+logger.info("STARTUP TIME: ", time.time() - start_time)
 
 logger.info(f"DIFFGRAM_VERSION_TAG: {settings.DIFFGRAM_VERSION_TAG}")
 
