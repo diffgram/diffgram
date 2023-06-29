@@ -14,13 +14,7 @@ app = Flask('Diffgram',
 
 start_time = time.time()
 
-# app.app_context()
 sslify = SSLify(app, subdomains = True)
-
-# This is so all the ORM can map the shared modules
-# Appears to be needed even if not directly using them
-# Maybe a setting we can look into
-# Unlikely to need all of these BUT not worth energy to figure out right now
 
 import shared.database_setup_supporting
 from methods.connectors import connector_interface
@@ -97,7 +91,7 @@ try:
     setup_swagger(app)
 except:
     logger.info('Did not generate swagger spec')
-# This starts the queue loop for processing media uploads.
+
 process_media_queue_manager = ProcessMediaQueueManager()
 process_media_queue_manager.start()
 
