@@ -15,7 +15,6 @@ from shared.utils.job_launch_utils import task_template_label_attach
 from shared.utils.source_control.file.file_transfer_core import file_transfer_core
 import random
 import uuid
-import uuid
 from shared.regular import regular_log
 
 data_gen_spec_list = [
