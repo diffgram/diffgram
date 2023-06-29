@@ -17,8 +17,11 @@ start_time = time.time()
 sslify = SSLify(app, subdomains = True)
 
 import shared.database_setup_supporting
+
+import shared.system_startup.start_media_queue
+
 from methods.connectors import connector_interface
-from methods.input.upload import api_project_upload_large
+from methods.input.upload_api import api_project_upload_large
 
 from methods.input.packet import input_packet
 from methods.input.input_view import input_list_web
@@ -79,21 +82,20 @@ from methods.task.task_template.task_template_launch_handler import TaskTemplate
 from methods.sync_events.sync_actions_handler import SyncActionsHandlerThread
 from shared.helpers.security import limiter
 from methods.startup.system_startup_checker import WalrusServiceSystemStartupChecker
-from methods.input.process_media_queue_manager import ProcessMediaQueueManager
 
 limiter.init_app(app)
 
 settings.DIFFGRAM_SERVICE_NAME = 'walrus_service'
+
 startup_checker = WalrusServiceSystemStartupChecker()
 startup_checker.execute_startup_checks()
+
 from swagger_setup import setup_swagger
 try:
     setup_swagger(app)
 except:
     logger.info('Did not generate swagger spec')
 
-process_media_queue_manager = ProcessMediaQueueManager()
-process_media_queue_manager.start()
 
 # This starts the thread for checking job launches queue.
 job_launcher_thread = TaskTemplateLauncherThread(
@@ -104,7 +106,7 @@ sync_actions_thread = SyncActionsHandlerThread(thread_sleep_time_min = settings.
                                                thread_sleep_time_max = settings.SYNC_ACTIONS_THREAD_SLEEP_TIME_MAX,
                                                run_once = False)
 
-logger.info("STARTUP TIME: ", time.time() - start_time)
+logger.info(f"STARTUP TIME: {time.time() - start_time}")
 
 logger.info(f"DIFFGRAM_VERSION_TAG: {settings.DIFFGRAM_VERSION_TAG}")
 
