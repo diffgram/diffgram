@@ -1,7 +1,6 @@
 import uuid
 
 from methods.regular.regular_api import *
-from methods.video.video import New_video
 
 try:
     from methods.video.video_preprocess import Video_Preprocess
@@ -63,6 +62,9 @@ from shared.ingest.allowed_ingest_extensions import images_allowed_file_names, \
     audio_allowed_file_names, \
     csv_allowed_file_names, \
     existing_instances_allowed_file_names
+
+from shared.ingest.prioritized_item import PrioritizedItem
+
 
 data_tools = Data_tools().data_tools
 
@@ -452,6 +454,9 @@ class Process_Media():
             # For declaring success on the video file when no frames are available (i.e no instances)
             self.declare_success(input = self.input)
             return
+
+        global New_video  # important
+        from methods.video.video import New_video
 
         # COPY INSTANCES, Sequences, and Frames
         new_video = New_video(
