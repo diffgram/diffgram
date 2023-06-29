@@ -254,4 +254,4 @@ class ProcessMediaQueueManager(metaclass = Singleton):
             self.router(item)
 
 
-process_media_queue_manager = ProcessMediaQueueManager()
+
