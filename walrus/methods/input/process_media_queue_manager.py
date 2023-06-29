@@ -1,8 +1,10 @@
+from methods.regular.regular_api import *
 import threading
 from shared.data_tools_core import Singleton
 from shared.settings import settings
 from queue import PriorityQueue
-from methods.input.process_media import PrioritizedItem, Process_Media
+from shared.ingest.prioritized_item import PrioritizedItem
+from methods.input.process_media import Process_Media
 from methods.utils.graceful_killer import GracefulKiller
 from shared.utils.memory_checks import check_and_wait_for_memory
 global Update_Input
@@ -16,8 +18,8 @@ class ProcessMediaQueue():
         self.queue = PriorityQueue()
         self.lock = threading.Lock()
         self.threads_count = threads_count
-        self.name = name
-        self.limit = limit
+        self.name : str = name 
+        self.limit : int = limit 
 
 
 class ProcessMediaQueueManager(metaclass = Singleton):
@@ -54,7 +56,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
         self.remote_queue_sleep_time = 2
     
 
-    def router(self, item):
+    def router(self, item : PrioritizedItem):
         logger.info(f"item.mode {item.mode}")
         if item.media_type and item.media_type == "video":
             self.VIDEO_QUEUE.queue.put(item)
@@ -63,10 +65,10 @@ class ProcessMediaQueueManager(metaclass = Singleton):
         else:
             self.ALL_OTHER_QUEUE.queue.put(item)
           
-        logger.info(f"{str(input.id)} Added to queue.")
+        logger.info(f"{str(item.input_id)} Added to queue.")
 
 
-    def process_media_queue_worker(process_media_queue):
+    def process_media_queue_worker(self, process_media_queue):
         while True:
             over_limit = self.is_queue_over_limit(process_media_queue)
             if over_limit is True:
@@ -76,28 +78,28 @@ class ProcessMediaQueueManager(metaclass = Singleton):
             self.process_media_queue_getter(process_media_queue)
 
 
-    def process_media_queue_getter(process_media_queue):
+    def process_media_queue_getter(self, process_media_queue):
         # docs/process_media_queue_getter
 
         process_media_queue.lock.acquire()
         if not process_media_queue.queue.empty():
             item = process_media_queue.queue.get()
             process_media_queue.lock.release()
-            process_media_unit_of_work(item)
+            self.process_media_unit_of_work(item)
             process_media_queue.queue.task_done()
         else:
             process_media_queue.lock.release()
             time.sleep(0.1)
 
 
-    def is_queue_over_limit(process_media_queue):
+    def is_queue_over_limit(self, process_media_queue):
         if process_media_queue.limit is None:
             return False
-        if process_media_queue.queue.qsize() > process_media_queue.limit:
+        current_size = process_media_queue.queue.qsize()
+        if current_size > process_media_queue.limit:
+            logger.warn(f"Queue: {process_media_queue.name} Size {str(current_size)} is above limit of {process_media_queue.limit}")
             return True
         else:
-            logger.warn(f"Queue Presure: {process_media_queue.name}")
-            logger.warn(f"{str(process_media_queue.queue.qsize())} size is above limit of {process_media_queue.limit} ")
             return False
 
     def add_item_to_processing_list(self, item: PrioritizedItem):
@@ -115,13 +117,13 @@ class ProcessMediaQueueManager(metaclass = Singleton):
             for i in range(process_media_queue.threads_count):
                 t = threading.Thread(
                     target = self.process_media_queue_worker,
-                    args = (process_media_queue)
+                    args = [process_media_queue]
                 )
                 t.daemon = True  # Allow hot reload to work
                 t.start()
                 self.threads.append(t)
 
-        t = threading.Timer(20, start_remote_queue_check)
+        t = threading.Timer(20, self.start_remote_queue_check)
         t.daemon = True  # Allow hot reload to work
         t.start()
 
@@ -179,13 +181,13 @@ class ProcessMediaQueueManager(metaclass = Singleton):
             try:
                 self.get_remote_items()
             except Exception as exception:
-                logger.error(f"[Media Queue Remote Getter Failed with:] {str(exception)}")
+                logger.error(f"[Remote Queue [Media] Getter Failed with:] {str(exception)}")
                 logger.error(traceback.format_exc())
 
             try:
                 self.get_remote_items_file_operations()
             except Exception as exception:
-                logger.error(f"[Media Queue Remote Getter [File Ops] Failed with:] {str(exception)}")
+                logger.error(f"[Remote [File Ops] Getter Failed with:] {str(exception)}")
                 logger.error(traceback.format_exc())
 
 
@@ -227,6 +229,8 @@ class ProcessMediaQueueManager(metaclass = Singleton):
 
             input = self.get_remote_input(session)
 
+            if input is None: return
+
             session.add(input)
             input.processing_deferred = False
 
@@ -242,6 +246,8 @@ class ProcessMediaQueueManager(metaclass = Singleton):
         with sessionMaker.session_scope_threaded() as session:
 
             input = self.get_remote_input_file_operations(session)
+
+            if input is None: return
 
             session.add(input)
             input.processing_deferred = False
