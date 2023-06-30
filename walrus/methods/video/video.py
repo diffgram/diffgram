@@ -18,7 +18,8 @@ from shared.database.video.video import Video
 from shared.database.video.sequence import Sequence
 from shared.database.input import Input
 
-from methods.input import process_media
+from shared.ingest.prioritized_item import PrioritizedItem
+from shared.system_startup.start_media_queue import process_media_queue_manager
 from shared.utils.memory_checks import check_and_wait_for_memory
 from shared.data_tools_core import Data_tools
 from shared.feature_flags.feature_checker import FeatureChecker
@@ -48,10 +49,6 @@ class FrameCompletionControl:
 
 class New_video():
     """
-    1. Get video file (in temp directory)
-    2. Do work
-
-    TODO better way to batch sessions
     """
 
     def __init__(
@@ -473,14 +470,14 @@ class New_video():
         self,
         input: Input):
 
-        item = process_media.PrioritizedItem(
+        item = PrioritizedItem(
             input = input,
             media_type = input.media_type,  # declaring here helps with routing
             priority = 100 + input.frame_number,  # Process in frame priority
             frame_number = input.frame_number  # Careful, downstream process currently expects it
         )
 
-        process_media.add_item_to_queue(item)
+        process_media_queue_manager.router(item)
 
     def add_frame_to_queue(
         self,
@@ -584,7 +581,7 @@ class New_video():
         # to cloud storage, then setting "processing deferred" to True here.
 
         # Process frames of videos started before new videos
-        item = process_media.PrioritizedItem(
+        item = PrioritizedItem(
             priority = 100 + index,  # Process in frame priority
             input = input,
             raw_numpy_image = frame,
@@ -595,7 +592,7 @@ class New_video():
             media_type = input.media_type
         )
 
-        process_media.add_item_to_queue(item)
+        process_media_queue_manager.router(item)
 
     # TODO use this video attributes
     # content_type = None,
@@ -834,7 +831,7 @@ class New_video():
                 media_type = 'frame',
             )
 
-            item = process_media.PrioritizedItem(
+            item = PrioritizedItem(
                 input = frame_input,
                 frame_completion_controller = frame_completion_controller,
                 total_frames = source_video_frames[len(source_video_frames) - 1].frame_number,
@@ -844,7 +841,7 @@ class New_video():
                 frame_number = frame.frame_number  # Careful, downstream process currently expects it
             )
 
-            process_media.add_item_to_queue(item)
+            process_media_queue_manager.router(item)
         return source_video_frames
 
     def add_sequence_map_to_input(

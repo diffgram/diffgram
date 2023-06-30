@@ -50,12 +50,7 @@ class File(Base, Caching):
 
     id = Column(BIGINT, primary_key = True)
     created_time = Column(DateTime, default = datetime.datetime.utcnow)
-
-    # TODO would be good to standarized the naming convention for time with other stuff
     time_last_updated = Column(DateTime, onupdate = datetime.datetime.utcnow)
-
-    # A way to disable auto update while doing migration? not 100% sure this works
-    # time_last_updated = Column(DateTime)
 
     count_instances_changed = Column(Integer)
 

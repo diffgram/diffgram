@@ -2,22 +2,18 @@
 from shared.regular.regular_api import *
 from shared.regular import regular_methods
 
-import tempfile
-
 from shared.database.input import Input
 from shared.database.source_control.working_dir import WorkingDir
 from shared.database.video.video import Video
 
+from shared.ingest.prioritized_item import PrioritizedItem
+
 on_walrus = True
 
 try:
-    from walrus.methods.input.process_media import PrioritizedItem
-    from walrus.methods.input.process_media import add_item_to_queue
     from walrus.methods.input.upload import Upload
 except:
     try:
-        from methods.input.process_media import PrioritizedItem
-        from methods.input.process_media import add_item_to_queue
         from methods.input.upload import Upload
     except:
         on_walrus = False
@@ -99,7 +95,6 @@ def enqueue_packet(project_string_id,
 
     if frame_packet_map:
         diffgram_input.frame_packet_map = frame_packet_map
-    # print(diffgram_input.frame_packet_map)
 
     session.add(diffgram_input)
     session.flush()
@@ -110,11 +105,6 @@ def enqueue_packet(project_string_id,
             upload_tools.extract_instance_list_from_batch(input = diffgram_input,
                                                           input_batch_id = batch_id,
                                                           file_name = file_name)
-    # Expect temp dir to be None here.
-    # because each machine should assign it's own temp dir
-    # Something else to consider for future here!
-    # Once this is part of input, it will be smoothly handled at right time as part of
-    # processing queue
     diffgram_input.job_id = job_id
 
     # Process media handles checking if the directory id is valid
@@ -123,14 +113,9 @@ def enqueue_packet(project_string_id,
 
     diffgram_input_id = diffgram_input.id
 
-    queue_limit = 0
-    if media_type == "image":
-        queue_limit = 30  # 50
-    if media_type == "video":
-        queue_limit = 1
-
     # Temporary workaround until new Rabbit MQ implmentation for walrus
     if on_walrus:
+        from shared.system_startup.start_media_queue import process_media_queue_manager
 
         if settings.PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY is True or enqueue_immediately:
             if commit_input:
@@ -139,7 +124,7 @@ def enqueue_packet(project_string_id,
                 priority = 10000,  # individual frames have a priority here.
                 input_id = diffgram_input_id,
                 media_type = media_type)
-            add_item_to_queue(item)
+            process_media_queue_manager.router(item)
         else:
             diffgram_input.processing_deferred = True  # Default
     else:

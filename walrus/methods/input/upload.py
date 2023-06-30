@@ -1,4 +1,3 @@
-# OPENCORE - ADD
 from methods.regular.regular_api import *
 import os
 import tempfile
@@ -6,8 +5,8 @@ from werkzeug.utils import secure_filename
 # not needed now, as we don't call directly
 from methods.input.process_media import Process_Media
 
-from methods.input.process_media import PrioritizedItem
-from methods.input.process_media import add_item_to_queue
+from shared.ingest.prioritized_item import PrioritizedItem
+from shared.system_startup.start_media_queue import process_media_queue_manager
 
 from shared.database.input import Input
 from shared.database.batch.batch import InputBatch
@@ -18,49 +17,6 @@ from shared.database.source_control.file import File
 import traceback
 
 data_tools = Data_tools().data_tools
-
-
-@routes.route('/api/walrus/project/<string:project_string_id>/upload/large',
-              methods = ['POST'])
-@Project_permissions.user_has_project(
-    Roles = ['admin', "Editor"],
-    apis_user_list = ['api_enabled_builder',
-                      'security_email_verified'])
-@limiter.limit("4 per second")
-def api_project_upload_large(project_string_id):
-    """
-    Error handling: Do we want a pattern of looking at logs
-        or the input item... depends maybe both depends on context
-    """
-
-    with sessionMaker.session_scope() as session:
-
-        project = Project.get(session, project_string_id)
-        member = get_member(session)
-        upload = Upload(
-            session = session,
-            project = project,
-            request = request,
-            member = member)
-
-        upload.route_from_unique_id()
-        if len(upload.log["error"].keys()) >= 1:
-            return jsonify(log = upload.log), 400
-
-        upload.process_chunk(
-            request = upload.request,
-            input = upload.input)
-
-        if len(upload.log["error"].keys()) >= 1:
-            return jsonify(log = upload.log), 400
-
-        more_chunks_expected: bool = int(upload.dzchunkindex) + 1 != int(upload.dztotalchunkcount)
-
-        if more_chunks_expected is False and upload.input is not None:
-            regular_methods.commit_with_rollback(session)
-            upload.start_media_processing(input = upload.input)
-
-        return jsonify(success = True), 200
 
 
 class Upload():
@@ -227,7 +183,7 @@ class Upload():
             media_type = input.media_type,  # For routing to right queue
             input_id = input.id)
 
-        add_item_to_queue(item)
+        process_media_queue_manager.router(item)
 
         user = User.get(session = self.session)
         kind = 'input_from_upload_UI'
@@ -372,187 +328,98 @@ class Upload():
         )
 
 
-@routes.route('/api/walrus/v1/project/<string:project_string_id>/input/from_local',
-              methods = ['POST'])
-@Project_permissions.user_has_project(
-    Roles = ['admin', "Editor"],
-    apis_user_list = ['api_enabled_builder',
-                      'security_email_verified'])
-def api_project_input_from_local(project_string_id):
-    try:
-        json_parsed = json.loads(request.form.get('json'))
-    except:
-        temp_log = regular_log.default_api_log()
-        temp_log["error"]["input"] = "Expecting a key 'json' in form request."
-        return jsonify(log = temp_log), 400
+    def input_from_local(session,
+                         log,
+                         project_string_id,
+                         http_input,
+                         file,
+                         directory_id,
+                         parent_file_id=None,
+                         ordinal = 0
+                        ):
+        immediate_mode = True
 
-    spec_list = [
-        {"directory_id": {
-            'default': None,
-            'kind': int,
-            'required': False
-        }},
-        {"parent_file_id": {
-            'default': None,
-            'kind': int,
-            'required': False
-        }},
-        {'ordinal': {
-            "required": False,
-            "kind": int
-        }},
-        {"instance_list": {
-            'default': None,
-            'kind': list,
-            'allow_empty': True,
-            'required': False
-        }
-        },
-        {"frame_packet_map": {  # WIP
-            'default': None,
-            'kind': dict,
-            'required': False
-        },
-        }
-    ]
+        input = Input()
+        input.directory_id = directory_id
 
-    log, input, untrusted_input = regular_input.master(
-        request = request,
-        spec_list = spec_list,
-        untrusted_input = json_parsed)
+        if http_input['instance_list']:
+            input.instance_list = {}
+            input.instance_list['list'] = http_input['instance_list']
 
-    if len(log["error"].keys()) >= 1:
-        return jsonify(log = log), 400
+        if http_input['frame_packet_map']:
+            input.frame_packet_map = http_input['frame_packet_map']
 
-    with sessionMaker.session_scope() as session:
+        # only need to make temp dir if file doesn't already exist...
+
+        original_filename = secure_filename(file.filename)  # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
+
+        input.extension = os.path.splitext(original_filename)[1].lower()
+        input.original_filename = os.path.split(original_filename)[1]
+        input.parent_file_id = parent_file_id
+        input.ordinal = ordinal
+
+        input.temp_dir = tempfile.mkdtemp()
+        input.temp_dir_path_and_filename = input.temp_dir + \
+                                           "/" + original_filename + input.extension
 
         project = Project.get(session, project_string_id)
 
-        directory = WorkingDir.get_with_fallback(
-            session = session,
-            project = project,
-            directory_id = input.get('directory_id')
-        )
-        if directory is False:
-            log['error'] = f"Bad directory_id: {input.get('directory_id')}"
-            return jsonify(log = log), 400
+        input.project = project
 
-        file = request.files.get('file')
-        if not file:
-            log['error'] = "No files"
-            return jsonify(log = log), 400
-
-        result, log, input = input_from_local(
-            session = session,
-            log = log,
-            project_string_id = project_string_id,
-            file = file,
-            directory_id = directory.id,
-            parent_file_id = input.get('parent_file_id'),
-            http_input = input,
-            ordinal = input.get('ordinal', 0),
-            )
-
-        if result is not True:
-            return jsonify(
-                log = log,
-                input = input.serialize()), 400
-
-        if result is True:
-            log['success'] = True
-            return jsonify(
-                log = log,
-                input = input.serialize(),
-                file = input.file.serialize()), 200
-
-
-def input_from_local(session,
-                     log,
-                     project_string_id,
-                     http_input,
-                     file,
-                     directory_id,
-                     parent_file_id=None,
-                     ordinal = 0
-                    ):
-    immediate_mode = True
-
-    input = Input()
-    input.directory_id = directory_id
-
-    if http_input['instance_list']:
-        input.instance_list = {}
-        input.instance_list['list'] = http_input['instance_list']
-
-    if http_input['frame_packet_map']:
-        input.frame_packet_map = http_input['frame_packet_map']
-
-    # only need to make temp dir if file doesn't already exist...
-
-    original_filename = secure_filename(file.filename)  # http://flask.pocoo.org/docs/0.12/patterns/fileuploads/
-
-    input.extension = os.path.splitext(original_filename)[1].lower()
-    input.original_filename = os.path.split(original_filename)[1]
-    input.parent_file_id = parent_file_id
-    input.ordinal = ordinal
-
-    input.temp_dir = tempfile.mkdtemp()
-    input.temp_dir_path_and_filename = input.temp_dir + \
-                                       "/" + original_filename + input.extension
-
-    project = Project.get(session, project_string_id)
-
-    input.project = project
-
-    input.media_type = None
-    input.media_type = Process_Media.determine_media_type(input.extension)
-    if not input.media_type:
-        input.status = "failed"
-        input.status_text = f"Invalid file type: {input.extension}"
-        return False, log, input
-
-    session.add(input)
-    session.flush()
-
-    with open(input.temp_dir_path_and_filename, "wb") as f:
-
-        f.write(file.stream.read())
-
-    # For LOCAL not normal upload
-    file_size_limit = 9 * 1024 * 1024 * 1024
-
-    file_size = os.path.getsize(input.temp_dir_path_and_filename)  # gets size in bytes
-
-    if file_size > file_size_limit:
-        input.status = "failed"
-        input.status_text = "Exceeded max file size"
-        return False, log, input
-
-    if immediate_mode == True or immediate_mode is None:
-        # Leave this as a direct call for time being, as we pass
-        # the input back to thing on front end
-
-        process_media = Process_Media(
-            session = session,
-            input = input)
-
-        result = process_media.main_entry()
-
-        if result == True:
-            return True, log, input
-
-        if result == False:
+        input.media_type = None
+        input.media_type = Process_Media.determine_media_type(input.extension)
+        if not input.media_type:
+            input.status = "failed"
+            input.status_text = f"Invalid file type: {input.extension}"
             return False, log, input
 
-    # Default
-    priority = 100
+        session.add(input)
+        session.flush()
 
-    item = PrioritizedItem(
-        priority = priority,
-        input_id = input.id,
-        media_type = input.media_type
-    )
+        with open(input.temp_dir_path_and_filename, "wb") as f:
 
-    add_item_to_queue(item)
+            f.write(file.stream.read())
 
-    return True, log, input
+        # For LOCAL not normal upload
+        file_size_limit = 9 * 1024 * 1024 * 1024
+
+        file_size = os.path.getsize(input.temp_dir_path_and_filename)  # gets size in bytes
+
+        if file_size > file_size_limit:
+            input.status = "failed"
+            input.status_text = "Exceeded max file size"
+            return False, log, input
+
+        if immediate_mode == True or immediate_mode is None:
+            # Leave this as a direct call for time being, as we pass
+            # the input back to thing on front end
+
+            process_media = Process_Media(
+                session = session,
+                input = input)
+
+            result = process_media.main_entry()
+
+            if result == True:
+                return True, log, input
+
+            if result == False:
+                return False, log, input
+
+        # Default
+        priority = 100
+
+        item = PrioritizedItem(
+            priority = priority,
+            input_id = input.id,
+            media_type = input.media_type
+        )
+
+        process_media_queue_manager.router(item)
+
+        return True, log, input
+
+
+
+
+

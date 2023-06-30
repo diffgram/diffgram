@@ -19,6 +19,8 @@ grammar_definition = """
     %import common.NUMBER
     %import common.LETTER
     %import common.DIGIT
+    %import common.NEWLINE
+    %ignore NEWLINE
     _WHITESPACE: /[ \t]+/ 
     %ignore _WHITESPACE
 """
