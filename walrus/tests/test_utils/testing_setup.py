@@ -20,7 +20,7 @@ def create_walrus_testing_app():
         with all the appropriate configuration
     :return:
     """
-    from methods.input.upload import api_project_upload_large
+    from methods.input.upload_api import api_project_upload_large
     from methods.input.packet import input_packet
     from methods.input.input_view import input_list_web
     from methods.input.input_update import api_input_update
