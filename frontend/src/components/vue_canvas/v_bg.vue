@@ -45,6 +45,22 @@ export default Vue.extend({
   },
 
   methods: {
+    draw_png_background: function (ctx) {
+      // clear background for transparant pngs
+      if (this.current_file && this.current_file.image) {
+        let name = this.current_file.image.original_filename
+        if (name) {
+          let extension = name.substring(name.lastIndexOf('.') + 1)
+          if(extension && extension.toLowerCase() === 'png') {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, this.image.width, this.image.height);
+          }
+        }
+      }
+      return true
+
+    },
+
     draw_image_bg: function (ctx) {
       if (!ctx.canvas) {
         return
@@ -63,10 +79,12 @@ export default Vue.extend({
       let drawOptimizedImage = (image, degrees) => {
         var canvas = document.createElement('canvas');
         let ctx = canvas.getContext('2d')
+
         ctx.save()
 
         canvas.width = this.canvas_width
         canvas.height = this.canvas_height
+
         ctx.translate(canvas.width / 2, canvas.height / 2)
         ctx.rotate(degrees * Math.PI / 180)
 
@@ -75,10 +93,13 @@ export default Vue.extend({
         } else { // 90 or 270 degrees (values for width and height are swapped for these rotation positions)
           ctx.drawImage(image, -this.canvas_height / 2, -this.canvas_width / 2, this.canvas_height, this.canvas_width)
         }
+
         ctx.restore()
 
         return canvas
       }
+
+      let png_result = this.draw_png_background(ctx)
 
       if (!this.$props.auto_scale_bg) {
         if (this.degrees != 0) {
@@ -103,6 +124,7 @@ export default Vue.extend({
         let scaledImage = drawOptimizedImage(this.image, this.degrees)
 
         ctx.resetTransform();
+
         ctx.drawImage(
           scaledImage,
           0,
