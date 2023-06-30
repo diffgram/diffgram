@@ -255,7 +255,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
             item = PrioritizedItem(
                 priority = 100,  # 100 is current default priority
                 input_id = input.id,
-                mode = input.mode)
+                mode = input.mode)  # Note mode supplied here to route to file ops queue
 
             self.router(item)
 
