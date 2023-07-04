@@ -55,13 +55,13 @@ class ProcessMediaQueueManager(metaclass = Singleton):
 
         self.default_media_remote_queue = RemoteQueue(
             getter_function=self.get_remote_media_items,
-            cycle_time=1.9,
+            cycle_time=2,
             name="Default Media"
             )
 
         self.file_operations_remote_queue = RemoteQueue(
             getter_function=self.get_remote_items_file_operations,
-            cycle_time=3,
+            cycle_time=4,
             name="File Ops"
             )
 
