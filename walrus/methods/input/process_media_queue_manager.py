@@ -11,6 +11,7 @@ from shared.utils.cpu_checks import check_and_wait_for_cpu
 global Update_Input
 from shared.database.input import Input
 import traceback
+import random
 
 
 class ProcessMediaQueue():
@@ -55,7 +56,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
 
         self.default_media_remote_queue = RemoteQueue(
             getter_function=self.get_remote_media_items,
-            cycle_time=2,
+            cycle_time=random.randint(2, 4),
             name="Default Media"
             )
 
@@ -67,7 +68,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
 
         self.auto_retry_remote_queue = RemoteQueue(
             getter_function=self.refresh_stale_with_auto_retry,
-            cycle_time=30,
+            cycle_time=random.randint(120, 180),
             name="Auto Retry"
             )
 
