@@ -177,10 +177,15 @@ class Input(Base):
     member_updated_id = Column(Integer, ForeignKey('member.id'))
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
+
     __table_args__ = (
         Index('index__processing_deferred__archived',
               "processing_deferred", "archived",
-              postgresql_where = (archived.is_(True))),
+              postgresql_where = (processing_deferred.is_(True))),
+        Index('index__input_processing_deferred'),
+        Index('index__input_archived'),
+        Index('index__input_status'),
+        Index('index__input_mode')
     )
 
     def parent_input(self, session):
