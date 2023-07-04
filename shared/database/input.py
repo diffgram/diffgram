@@ -38,18 +38,12 @@ class Input(Base):
     url = Column(String())
     media_type = Column(String())  # image, frame, video, csv
 
-    #  Why not name this "source"
-    # TODO naming of this attribute could probably be improved.
     type = Column(String())  # ["from_url", "from_video_split", "from_blob_path"]
 
     allow_csv = Column(Boolean())
 
     allow_duplicates = Column(Boolean(), default = False)
 
-    # By default we don't defer processing, but can if needed
-    # At the moment this flag is only used "in flight"
-    # So eventually, in theory, all the flags will be False.
-    # Not sure if that's ok or bad?
     processing_deferred = Column(Boolean(), default = False)
 
     status = Column(String(), default = "init")
@@ -183,10 +177,15 @@ class Input(Base):
     member_updated_id = Column(Integer, ForeignKey('member.id'))
     member_updated = relationship("Member", foreign_keys = [member_updated_id])
 
+
     __table_args__ = (
         Index('index__processing_deferred__archived',
               "processing_deferred", "archived",
-              postgresql_where = (archived.is_(True))),
+              postgresql_where = (processing_deferred.is_(True))),
+        Index('index__input_processing_deferred'),
+        Index('index__input_archived'),
+        Index('index__input_status'),
+        Index('index__input_mode')
     )
 
     def parent_input(self, session):

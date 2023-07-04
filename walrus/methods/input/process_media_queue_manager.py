@@ -7,6 +7,7 @@ from shared.ingest.prioritized_item import PrioritizedItem
 from methods.input.process_media import Process_Media
 from methods.utils.graceful_killer import GracefulKiller
 from shared.utils.memory_checks import check_and_wait_for_memory
+from shared.utils.cpu_checks import check_and_wait_for_cpu
 global Update_Input
 from shared.database.input import Input
 import traceback
@@ -20,6 +21,14 @@ class ProcessMediaQueue():
         self.threads_count = threads_count
         self.name : str = name 
         self.limit : int = limit 
+
+
+class RemoteQueue():
+
+    def __init__(self, getter_function=None, cycle_time=2, name=None):
+        self.getter_function: function = getter_function
+        self.cycle_time: float = cycle_time
+        self.name: str = name
 
 
 class ProcessMediaQueueManager(metaclass = Singleton):
@@ -44,16 +53,36 @@ class ProcessMediaQueueManager(metaclass = Singleton):
             limit = None
             )
 
+        self.default_media_remote_queue = RemoteQueue(
+            getter_function=self.get_remote_media_items,
+            cycle_time=2,
+            name="Default Media"
+            )
+
+        self.file_operations_remote_queue = RemoteQueue(
+            getter_function=self.get_remote_items_file_operations,
+            cycle_time=4,
+            name="File Ops"
+            )
+
+        self.auto_retry_remote_queue = RemoteQueue(
+            getter_function=self.refresh_stale_with_auto_retry,
+            cycle_time=30,
+            name="Auto Retry"
+            )
+
         self.queue_list = [self.VIDEO_QUEUE, self.ALL_OTHER_QUEUE, self.COPY_QUEUE]
+
+        self.remote_queues_list = [self.default_media_remote_queue, 
+                                   self.file_operations_remote_queue, 
+                                   self.auto_retry_remote_queue]
 
         self.STOP_PROCESSING_DATA = False
         self.PROCESSING_INPUT_LIST = []
         self.threads = []
 
-        self.frame_threads = settings.PROCESS_MEDIA_NUM_FRAME_THREADS
         self.killer = GracefulKiller()
 
-        self.remote_queue_sleep_time = 2
     
 
     def router(self, item : PrioritizedItem):
@@ -113,6 +142,15 @@ class ProcessMediaQueueManager(metaclass = Singleton):
 
     def start(self):
 
+        self.start_all_local_queues()
+
+        if settings.PROCESS_MEDIA_REMOTE_QUEUE_ON == True:    
+            self.start_all_remote_queues()
+
+        logger.info(f"[Process Media] Started.")
+
+
+    def start_all_local_queues(self):
         for process_media_queue in self.queue_list:
             for i in range(process_media_queue.threads_count):
                 t = threading.Thread(
@@ -123,11 +161,16 @@ class ProcessMediaQueueManager(metaclass = Singleton):
                 t.start()
                 self.threads.append(t)
 
-        t = threading.Timer(20, self.start_remote_queue_check)
-        t.daemon = True  # Allow hot reload to work
-        t.start()
 
-        logger.info(f"[Process Media] Started.")
+    def start_all_remote_queues(self):
+
+        for remote_queue in self.remote_queues_list:
+            t = threading.Thread(
+                target = self.start_remote_queue,
+                args = [remote_queue]
+            )
+            t.daemon = True  # Allow hot reload to work
+            t.start()
 
 
     def process_media_unit_of_work(self, item):
@@ -156,47 +199,38 @@ class ProcessMediaQueueManager(metaclass = Singleton):
             self.remove_item_from_processing_list(item)
 
 
-    def start_remote_queue_check(self):
-
-        # /docs/remote-queue-start_queue_check_loop
-
-        if settings.PROCESS_MEDIA_REMOTE_QUEUE_ON == False:
-            return
+    def start_remote_queue(self, remote_queue: RemoteQueue):
 
         while True:
             if self.STOP_PROCESSING_DATA:
                 logger.warning('Rejected Item: processing, data stopped. Waiting for termination...')
                 break
 
-            time.sleep(self.remote_queue_sleep_time)
+            time.sleep(remote_queue.cycle_time)
 
             check_and_wait_for_memory(memory_limit_float = 85.0)
+            check_and_wait_for_cpu(limit = 80.0)
 
             for process_media_queue in self.queue_list:
                 over_limit = self.is_queue_over_limit(process_media_queue)
                 if over_limit is True:
                     continue               
 
-            logger.info(f"[Media Queue Heartbeat] V: {settings.DIFFGRAM_VERSION_TAG}")
+            logger.info(f"[[{remote_queue.name}] Heartbeat] V: {settings.DIFFGRAM_VERSION_TAG}")
             try:
-                self.get_remote_items()
+                remote_queue.getter_function()
             except Exception as exception:
-                logger.error(f"[Remote Queue [Media] Getter Failed with:] {str(exception)}")
-                logger.error(traceback.format_exc())
-
-            try:
-                self.get_remote_items_file_operations()
-            except Exception as exception:
-                logger.error(f"[Remote [File Ops] Getter Failed with:] {str(exception)}")
+                logger.error(f"[Remote Queue [{remote_queue.name}] Getter Failed with:] {str(exception)}")
                 logger.error(traceback.format_exc())
 
 
-    def refresh_stale_with_auto_retry(self, session):
+    def refresh_stale_with_auto_retry(self):
         from methods.input.input_update import Update_Input
-        try:
-            update_input = Update_Input(session = session).automatic_retry()
-        except Exception as exception:
-            logger.error(f"Couldn't find Update_Input {str(exception)}")
+        with sessionMaker.session_scope_threaded() as session:
+            try:
+                update_input = Update_Input(session = session).automatic_retry()
+            except Exception as exception:
+                logger.error(f"{str(exception)}")
 
 
     def get_remote_input(self, session):
@@ -215,17 +249,13 @@ class ProcessMediaQueueManager(metaclass = Singleton):
                 Input.archived == False,
                 Input.status != 'success',
                 Input.mode == 'copy_file'
-            ).first()
+            ).limit(10).all()
         return input
 
 
-    def get_remote_items(self):
-
-        from methods.input.input_update import Update_Input
+    def get_remote_media_items(self):
 
         with sessionMaker.session_scope_threaded() as session:
-
-            self.refresh_stale_with_auto_retry(session = session)
 
             input = self.get_remote_input(session)
 
@@ -245,19 +275,21 @@ class ProcessMediaQueueManager(metaclass = Singleton):
 
         with sessionMaker.session_scope_threaded() as session:
 
-            input = self.get_remote_input_file_operations(session)
+            input_list = self.get_remote_input_file_operations(session)
 
-            if input is None: return
+            logger.debug(f'input_list {input_list}')
+            if input_list is None: return
 
-            session.add(input)
-            input.processing_deferred = False
+            for input in input_list:
+                session.add(input)
+                input.processing_deferred = False
 
-            item = PrioritizedItem(
-                priority = 100,  # 100 is current default priority
-                input_id = input.id,
-                mode = input.mode)  # Note mode supplied here to route to file ops queue
+                item = PrioritizedItem(
+                    priority = 100,  # 100 is current default priority
+                    input_id = input.id,
+                    mode = input.mode)  # Note mode supplied here to route to file ops queue
 
-            self.router(item)
+                self.router(item)
 
 
 

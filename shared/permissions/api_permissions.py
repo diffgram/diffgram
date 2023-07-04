@@ -44,11 +44,11 @@ class API_Permissions():
 
         # Gets actual auth object
         auth = Auth_api.get(session, client_id)
-        logger.info(f'Checking Permissions: {auth}')
+        logger.debug(f'Checking Permissions: {auth}')
         if auth is None:
             logger.warning(f'Auth API was not found for client ID: {client_id}')
             return False
-        logger.info(f'Checking Permissions: {auth.project_string_id} - {auth.is_valid} - {auth.permission_level} ')
+        logger.debug(f'Checking Permissions: {auth.project_string_id} - {auth.is_valid} - {auth.permission_level} ')
         if auth.is_valid != True:
             logger.warning(f'Auth API is invalid ')
             return False
