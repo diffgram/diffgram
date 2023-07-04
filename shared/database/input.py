@@ -185,7 +185,8 @@ class Input(Base):
         Index('index__input_processing_deferred'),
         Index('index__input_archived'),
         Index('index__input_status'),
-        Index('index__input_mode')
+        Index('index__input_mode'),
+        Index('index__input_project_id')
     )
 
     def parent_input(self, session):

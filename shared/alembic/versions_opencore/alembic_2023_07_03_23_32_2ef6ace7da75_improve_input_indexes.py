@@ -25,6 +25,8 @@ def upgrade():
         op.create_index('index__input_status', 'input', ['status'],
                         postgresql_concurrently = True)
         op.create_index('index__input_mode', 'input', ['mode'],
+                        postgresql_concurrently = True),
+        op.create_index('index__input_project_id', 'input', ['project_id'],
                         postgresql_concurrently = True)
 
 def downgrade():
@@ -32,3 +34,4 @@ def downgrade():
     op.drop_index('index__input_archived', 'input')
     op.drop_index('index__input_status', 'input')
     op.drop_index('index__input_mode', 'input')
+    op.drop_index('index__input_project_id', 'input')
