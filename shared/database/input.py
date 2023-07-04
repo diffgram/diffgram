@@ -38,18 +38,12 @@ class Input(Base):
     url = Column(String())
     media_type = Column(String())  # image, frame, video, csv
 
-    #  Why not name this "source"
-    # TODO naming of this attribute could probably be improved.
     type = Column(String())  # ["from_url", "from_video_split", "from_blob_path"]
 
     allow_csv = Column(Boolean())
 
     allow_duplicates = Column(Boolean(), default = False)
 
-    # By default we don't defer processing, but can if needed
-    # At the moment this flag is only used "in flight"
-    # So eventually, in theory, all the flags will be False.
-    # Not sure if that's ok or bad?
     processing_deferred = Column(Boolean(), default = False)
 
     status = Column(String(), default = "init")
