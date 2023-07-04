@@ -216,7 +216,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
                 if over_limit is True:
                     continue               
 
-            logger.info(f"[[{remote_queue.name}] Heartbeat] V: {settings.DIFFGRAM_VERSION_TAG}")
+            logger.info(f"[[{remote_queue.name}] Heartbeat] V: {settings.DIFFGRAM_VERSION_TAG} T: {threading.get_ident()}")
             try:
                 remote_queue.getter_function()
             except Exception as exception:
