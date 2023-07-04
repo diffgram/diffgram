@@ -7,6 +7,7 @@ from shared.ingest.prioritized_item import PrioritizedItem
 from methods.input.process_media import Process_Media
 from methods.utils.graceful_killer import GracefulKiller
 from shared.utils.memory_checks import check_and_wait_for_memory
+from shared.utils.cpu_checks import check_and_wait_for_cpu
 global Update_Input
 from shared.database.input import Input
 import traceback
@@ -60,7 +61,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
 
         self.file_operations_remote_queue = RemoteQueue(
             getter_function=self.get_remote_items_file_operations,
-            cycle_time=2.1,
+            cycle_time=3.1,
             name="File Ops"
             )
 
@@ -208,6 +209,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
             time.sleep(remote_queue.cycle_time)
 
             check_and_wait_for_memory(memory_limit_float = 85.0)
+            check_and_wait_for_cpu(limit = 80.0)
 
             for process_media_queue in self.queue_list:
                 over_limit = self.is_queue_over_limit(process_media_queue)
