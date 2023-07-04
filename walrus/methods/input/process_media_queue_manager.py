@@ -61,13 +61,13 @@ class ProcessMediaQueueManager(metaclass = Singleton):
 
         self.file_operations_remote_queue = RemoteQueue(
             getter_function=self.get_remote_items_file_operations,
-            cycle_time=3.1,
+            cycle_time=3,
             name="File Ops"
             )
 
         self.auto_retry_remote_queue = RemoteQueue(
             getter_function=self.refresh_stale_with_auto_retry,
-            cycle_time=10,
+            cycle_time=30,
             name="Auto Retry"
             )
 
@@ -249,7 +249,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
                 Input.archived == False,
                 Input.status != 'success',
                 Input.mode == 'copy_file'
-            ).first()
+            ).limit(10).all()
         return input
 
 
@@ -275,19 +275,21 @@ class ProcessMediaQueueManager(metaclass = Singleton):
 
         with sessionMaker.session_scope_threaded() as session:
 
-            input = self.get_remote_input_file_operations(session)
+            input_list = self.get_remote_input_file_operations(session)
 
-            if input is None: return
+            logger.debug(f'input_list {input_list}')
+            if input_list is None: return
 
-            session.add(input)
-            input.processing_deferred = False
+            for input in input_list:
+                session.add(input)
+                input.processing_deferred = False
 
-            item = PrioritizedItem(
-                priority = 100,  # 100 is current default priority
-                input_id = input.id,
-                mode = input.mode)  # Note mode supplied here to route to file ops queue
+                item = PrioritizedItem(
+                    priority = 100,  # 100 is current default priority
+                    input_id = input.id,
+                    mode = input.mode)  # Note mode supplied here to route to file ops queue
 
-            self.router(item)
+                self.router(item)
 
 
 
