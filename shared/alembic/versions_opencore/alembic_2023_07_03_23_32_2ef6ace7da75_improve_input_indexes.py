@@ -25,7 +25,7 @@ def upgrade():
         op.create_index('index__input_status', 'input', ['status'],
                         postgresql_concurrently = True)
         op.create_index('index__input_mode', 'input', ['mode'],
-                        postgresql_concurrently = True),
+                        postgresql_concurrently = True)
         op.create_index('index__input_project_id', 'input', ['project_id'],
                         postgresql_concurrently = True)
 
