@@ -115,7 +115,7 @@ PROCESS_MEDIA_ENQUEUE_LOCALLY_IMMEDIATELY = env_adapter.bool(os.environ.get('PRO
                                                                             False))  # default False because generally for production we don't want it
 
 # Eventhub Settings
-EVENTHUB_URL = os.getenv('EVENTHUB_URL', 'https://diffgram.com/api/walrus/eventhub/new')
+EVENTHUB_URL = os.getenv('EVENTHUB_URL', 'https://app.diffgram.com/api/walrus/eventhub/new')
 ALLOW_EVENTHUB = env_adapter.bool(os.environ.get('ALLOW_EVENTHUB', False))
 
 # Stripe

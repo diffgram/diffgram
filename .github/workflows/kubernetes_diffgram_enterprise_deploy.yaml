@@ -172,7 +172,7 @@ jobs:
         env:
           diffgramVersion: ${{ env.diffgram_version }}
           diffgramEdition: opencore
-          diffgramDomain: diffgram.com
+          diffgramDomain: app.diffgram.com
           useCertManager: true
           useTls: true
           dbSettings.dbProvider: azure
