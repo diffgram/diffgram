@@ -239,7 +239,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
                 Input.processing_deferred == True,
                 Input.archived == False,
                 Input.status != 'success',
-                Input.mode != 'copy_file'
+                or_(Input.mode == None, Input.mode != 'copy_file')
             ).first()
         return input
 
