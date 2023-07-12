@@ -1,22 +1,6 @@
 <template>
   <v-layout class="d-flex justify-center align-center flex-column">
     <h1 class="font-weight-light">Label Schema: </h1>
-    <v-alert
-      v-if="label_select_view_only_mode == false"
-      type="info"
-      icon="mdi-lock"
-    >
-      Schema is locked by default for each group of Tasks. To apply the
-      new desired Schema to this set of tasks, select it here and then
-      click save. Note Attributes follow labels, so if an attribute for a
-      label has changed, simply click save directly.
-      <a
-        style="color: white"
-        href="https://diffgram.readme.io/docs/updating-existing-tasks"
-      >
-        Docs
-      </a>
-    </v-alert>
 
     <v_error_multiple :error="error"> </v_error_multiple>
 
