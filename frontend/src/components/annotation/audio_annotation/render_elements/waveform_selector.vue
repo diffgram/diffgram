@@ -19,7 +19,7 @@
 
 import Vue from "vue";
 import WaveSurfer from 'wavesurfer.js';
-import RegionPlugin from 'wavesurfer.js/dist/plugin/wavesurfer.regions.min.js';
+import Regions from 'wavesurfer.js/dist/plugins/regions.js'
 
 export default Vue.extend({
   name: 'waveform_selector',
@@ -87,7 +87,7 @@ export default Vue.extend({
       height: 300,
       backend: 'MediaElement',
       plugins: [
-        RegionPlugin.create()
+        Regions.create()
       ]
     });
 
