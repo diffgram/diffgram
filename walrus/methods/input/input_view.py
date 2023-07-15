@@ -3,6 +3,67 @@ from methods.regular.regular_api import *
 from shared.database.export import Export
 from shared.database.input import Input
 from sqlalchemy.orm import defer
+import datetime
+
+
+@routes.route('/api/walrus/v1/project/<string:project_string_id>' +
+              '/input/compound/status',
+              methods = ['POST'])
+@Project_permissions.user_has_project(["admin", "Editor", "Viewer"])
+def api_get_compound_input_status(project_string_id):
+    spec_list = [
+        {"parent_file_id": {
+            'kind': int,
+            'default': None,
+            'required': True
+            }
+        }
+    ]
+
+    log, input, untrusted_input = regular_input.master(request = request,
+                                                       spec_list = spec_list)
+    if len(log["error"].keys()) >= 1:
+        return jsonify(log = log), 400
+
+    with sessionMaker.session_scope() as session:
+        parent = get_compound_input_status(session, parent_file_id=input['parent_file_id'])
+
+        return jsonify(status = parent.status), 200
+
+
+def get_compound_input_status(session, parent_file_id):
+
+    parent = session.query(Input).filter(
+        Input.file_id == parent_file_id,
+        Input.media_type == 'compound',
+        Input.type == 'from_compound'
+        ).first()
+
+    logger.info(f"{parent_file_id}")
+
+    if not parent:
+        return False
+
+    if parent.status == 'success':
+        return parent
+
+    child_input_list = session.query(Input).filter(
+        Input.parent_file_id == parent_file_id
+        ).all()
+
+    success_all = None
+    for child in child_input_list:
+        logger.info(f"{child.status}")
+        if child.status == 'success':
+            success_all = True
+        else:
+            success_all = False
+
+    if success_all == True:
+        parent.status = 'success'
+        session.add(parent)
+
+    return parent
 
 
 @routes.route('/api/walrus/v1/project/<string:project_string_id>' +
@@ -41,8 +102,8 @@ def input_list_web(project_string_id):
         {"status_filter": {
             'kind': str,
             'default': None,
-            'valid_values_list': [
-                'All', 'Success', 'Failed', 'Processing']
+            'valid_values_list': 
+            ['All', 'Success', 'Failed', 'Processing', 'Base_Object_Created', 'Init']
         }
         },
         {"date_from": {
@@ -191,7 +252,7 @@ def build_input_list(
 
         status_filter = status_filter.lower()
 
-        if status_filter in ['success', 'failed']:
+        if status_filter in ['success', 'failed', 'init', 'base_object_created']:
             query = query.filter(Input.status == status_filter)
 
         elif status_filter == "processing":
