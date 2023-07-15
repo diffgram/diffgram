@@ -234,13 +234,13 @@ class ProcessMediaQueueManager(metaclass = Singleton):
                 logger.error(f"{str(exception)}")
 
 
-    def get_remote_input(self, session):
+    def get_remote_input(self, session, limit=2):
         input = session.query(Input).with_for_update(skip_locked = True).filter(
                 Input.processing_deferred == True,
                 Input.archived == False,
                 Input.status != 'success',
                 or_(Input.mode == None, Input.mode != 'copy_file')
-            ).first()
+            ).limit(limit).all()
         return input
 
 
@@ -254,25 +254,34 @@ class ProcessMediaQueueManager(metaclass = Singleton):
         return input
 
 
+    def route_all_items(self, item_list):
+        for item in item_list:
+            self.router(item)
+
     def get_remote_media_items(self):
+
+        item_list = []
 
         with sessionMaker.session_scope_threaded() as session:
 
-            input = self.get_remote_input(session)
+            input_list = self.get_remote_input(session, limit=2)
 
-            if input is None: return
+            if input_list is None: return
 
-            session.add(input)
-            input.processing_deferred = False
-            input.status = 'local_processing_queue'
+            for input in input_list:
+                session.add(input)
+                input.processing_deferred = False
+                input.status = 'local_processing_queue'
 
-            item = PrioritizedItem(
-                priority = 100,  # 100 is current default priority
-                input_id = input.id)
+                item = PrioritizedItem(
+                    priority = 100,  # 100 is current default priority
+                    input_id = input.id)
         
+                item_list.append(item)
+
         # Note we closed the session before we route the item
         # This prevents some timing issues since we get a lock on the input
-        self.router(item)
+        self.route_all_items(item_list)
 
 
     def get_remote_items_file_operations(self):
@@ -298,8 +307,8 @@ class ProcessMediaQueueManager(metaclass = Singleton):
 
                 item_list.append(item)
 
-        for item in item_list:
-            self.router(item)
+        self.route_all_items(item_list)
+
 
 
 
