@@ -264,6 +264,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
 
             session.add(input)
             input.processing_deferred = False
+            input.status = 'local_processing_queue'
 
             item = PrioritizedItem(
                 priority = 100,  # 100 is current default priority
