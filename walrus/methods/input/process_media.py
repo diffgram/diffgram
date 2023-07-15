@@ -224,7 +224,7 @@ class Process_Media():
         """
         """
 
-        logger.info("reinsert attempt ")
+        logger.info("reinsert attempt")
 
         input = Input.get_by_id(
                 session = self.session,
