@@ -15,6 +15,13 @@
       <h2> Application Admin </h2>
 
         <div class="pa-4">
+          <v-btn @click="$router.push('/admin/queue/status')">
+            Queue Status
+          </v-btn>
+        </div>
+
+
+        <div class="pa-4">
           <v-btn @click="$router.push('/admin/logo')">
             Set Install Logo
           </v-btn>

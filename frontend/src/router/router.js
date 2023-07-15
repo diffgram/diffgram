@@ -26,6 +26,11 @@ const routerOptions = [
     meta: {requiresAuth: true}
   },
   {
+    path: '/admin/queue/status',
+    component: 'diffgram/admin_queue_status',
+    meta: {requiresAuth: true}
+  },
+  {
     path: '/admin/logo',
     component: 'diffgram/admin_set_logo',
     meta: {requiresAuth: true}
