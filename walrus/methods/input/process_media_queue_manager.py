@@ -258,6 +258,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
         for item in item_list:
             self.router(item)
 
+
     def get_remote_media_items(self):
 
         item_list = []
