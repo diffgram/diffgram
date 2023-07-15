@@ -15,7 +15,7 @@ from flask import request
 class Super_Admin():
 
     @staticmethod
-    def is_super():
+    def is_super(allow_support=False):
         """
         Must be super admin
 
@@ -34,6 +34,10 @@ class Super_Admin():
 
                     if user is None:
                         raise Unauthorized("No access.")
+
+                    if allow_support is True:
+                        if user.is_support_user() is True:
+                            return func(*args, **kwds)
 
                     if user.is_super_admin == True:
                         return func(*args, **kwds)
