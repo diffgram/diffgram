@@ -13,74 +13,6 @@ from shared.database import hashing_functions
 from shared.database.account.account import Account
 
 
-@routes.route('/api/v1/user/pro/new',
-              methods = ['POST'])
-@limiter.limit("3 per day")  # May have some errors so a few chances
-def user_pro_new_api():
-    spec_list = [
-        {"email": {
-            'kind': str,
-            'required': True
-        }
-        },
-        {"signup_code": {
-            'kind': str,
-            'required': False
-        }
-        },  # Not yet supported for Pros
-        {"password": {
-            'kind': str,
-            'required': True
-        }
-        },
-        {"password_check": {
-            'kind': str,
-            'required': True
-        }
-        }
-    ]
-
-    log, input, untrusted_input = regular_input.master(
-        request = request,
-        spec_list = spec_list)
-
-    if len(log["error"].keys()) >= 1: return jsonify(log = log), 400
-
-    if not valid_password(input['password']):
-        log['error']['password'] = "Password must be between 8 and 200 characters."
-        return jsonify(log = log), 400
-
-    if input['password'] != input['password_check']:
-        log['error']['password'] = "Passwords must match"
-        return jsonify(log = log), 400
-
-    with sessionMaker.session_scope() as session:
-
-        email = input['email'].lower()
-
-        new_user, log = user_new_core(session = session, email = email, log = log)
-
-        if regular_log.log_has_error(log = log):
-            return jsonify(log = log), 400
-
-        setSecureCookie(new_user)
-
-        User.new_login_history(session = session,
-                               success = True,
-                               otp_success = None,
-                               remote_address = request.remote_addr,
-                               user_id = new_user.id)
-
-        new_user.password_hash = hashing_functions.make_password_hash(
-            new_user.email,
-            input['password']
-        )
-
-        log['success'] = True
-
-        return jsonify(log = log), 200
-
-
 def validate_email_and_existing_from_raw(
     email: str,
     log: dict,
@@ -145,7 +77,6 @@ def set_password_and_login_history(session, new_user, password, token_data = Non
 
 @routes.route('/api/v1/user/new',
               methods = ['POST'])
-@limiter.limit("500 per day")  # May have some errors so a few chances
 def user_new_api():
     spec_list = [
         {"email": {
@@ -175,8 +106,14 @@ def user_new_api():
         spec_list = spec_list)
 
     if settings.DISABLE_SELF_REGISTRATION:
-        log['error']['DISABLE_SELF_REGISTRATION'] = 'Self registration is disabled. Change install settings to enable.'
-        return jsonify(log = log), 400
+        try:
+            domain_name = input['email'].split('@')[1]
+        except:
+            domain_name = None
+        if domain_name != 'diffgram.com':
+            log['error']['DISABLE_SELF_REGISTRATION'] = 'Self registration is disabled. Change install settings to enable.'
+            return jsonify(log = log), 400
+
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
