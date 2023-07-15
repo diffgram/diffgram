@@ -54,7 +54,7 @@ class TestProcessMedia(testing_setup.DiffgramBaseTestCase):
             )
             self.assertEqual(result, 'image')
 
-        for extension in [".mp4", ".mov", ".avi", ".m4v", ".quicktime"]:
+        for extension in [".mp4", ".mov", ".avi", ".m4a", ".m4v", ".quicktime"]:
             result = process_media.Process_Media.determine_media_type(
                 input_type = input_type,
                 extension = extension,

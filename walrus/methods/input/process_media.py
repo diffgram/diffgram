@@ -39,7 +39,7 @@ from shared.database.audio.audio_file import AudioFile
 from shared.database.model.model import Model
 from shared.utils import job_dir_sync_utils
 from shared.database.task.job.job import Job
-from tenacity import retry, wait_random_exponential, stop_after_attempt
+from tenacity import retry, wait_random_exponential, stop_after_attempt, wait_fixed
 from shared.database.text_file import TextFile
 from shared.database.task.job.job_working_dir import JobWorkingDir
 from shared.model.model_manager import ModelManager
@@ -195,33 +195,55 @@ class Process_Media():
             raise Exception("input should be class Input object. Use input_id for ints")
 
 
-    @retry(wait = wait_random_exponential(multiplier = 1, max = 5),
-           stop = stop_after_attempt(4))
+    @retry(wait = wait_random_exponential(multiplier = .5, max = 120),
+           stop = stop_after_attempt(30))
     def get_input_with_retry(self):
         """
-        If we already have a valid input object we skip this
-            else get it from DB.
-
-            In general the assumption for deferred processing
-            is that we won't have the object.
-            If processing is using the input "pattern"
-            but needs local (ie 'frame') type
-            then it can have it.
         """
 
-        if self.input is None:
-
+        if self.input:
+           return
+       
+        try:
+            logger.info(f"Getting input {self.input_id}")
             self.input = Input.get_by_id(
                 session = self.session,
                 id = self.input_id)
 
-            # Oracle if get_by_id() failed
-            # Do we want to log this somewhere on 'final' failure?
             if self.input is None:
-                raise Exception('Input not Found.')
+                raise Exception  
+            
+        except Exception as e:
+            logger.warn(f"Unable to fetch input ID: {self.input_id}")
+            self.attempt_reinsert_input()
 
-        if not self.input.update_log:
-            self.input.update_log = regular_log.default()
+
+    @retry(wait = wait_random_exponential(multiplier = 2, max = 1024),
+           stop = stop_after_attempt(50))
+    def attempt_reinsert_input(self):
+        """
+        """
+
+        logger.info("reinsert attempt")
+
+        input = Input.get_by_id(
+                session = self.session,
+                id = self.input_id)
+
+        if not input: raise Exception
+
+        if not input.retry_count:
+            input.retry_count = 1
+        else:
+            input.retry_count += 1
+
+        if input.retry_count < 3:
+            input.status = 'retry/failed_to_fetch_input'
+            input.processing_deferred = True
+            logger.warn(f"Reset procesing status on: {self.input_id}")
+        else:
+            input.status = 'failed'
+            input.description = "failed_to_fetch Adjust Database configs database may be overloaded."
 
 
     def main_entry(self):
@@ -236,7 +258,14 @@ class Process_Media():
 
         self.get_input_with_retry()
 
+        if self.input is None:
+            logger.error("input is None")
+            return
+
         self.input.time_last_attempted = start_time
+
+        if not self.input.update_log:
+            self.input.update_log = regular_log.default()
 
         self.project = self.input.project
 

@@ -357,7 +357,8 @@ class Input(Base):
             'update_log': self.update_log,
             'instance_list': self.instance_list,
             # 'frame_packet_map': self.frame_packet_map,
-            'newly_copied_file_id': self.newly_copied_file_id
+            'newly_copied_file_id': self.newly_copied_file_id,
+            'parent_input_id': self.parent_input_id
         }
 
     def serialize_with_frame_packet(self):

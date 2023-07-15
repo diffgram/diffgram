@@ -98,6 +98,15 @@
           <!-- Admin only
                as we are still reviewing this feature -->
 
+          <standard_button
+            tooltip_message="Check Status of Selected Inputs"
+            @click="check_status_of_compound()"
+            icon="mdi-database-refresh"
+            :disabled="loading || selected.length == 0"
+            :text_style="true"
+            color="primary">
+          </standard_button>
+
           <!-- Retry -->
           <standard_button
             tooltip_message="Retry Selected Inputs"
@@ -107,7 +116,6 @@
             :text_style="true"
             color="primary">
           </standard_button>
-
 
           <button_with_confirm
             v-if="$store.state.user.current.is_super_admin == true"
@@ -185,6 +193,15 @@
                   -->
 
                 <v-layout>
+
+                  <div v-if="props.item.status == 'base_object_created'">
+                    <tooltip_icon
+                      tooltip_message="Base Object Created"
+                      icon="mdi-database"
+                      color="black">
+                    </tooltip_icon>
+                  </div>
+
                   <div v-if="props.item.status == 'processing' && props.item.processing_deferred != true">
                     <v-tooltip bottom>
                       <!-- Use negation here as we are adding a bunch of new
@@ -724,6 +741,14 @@ export default Vue.extend({
           {
             'name': 'Processing',
             'icon': ''
+          },
+          {
+            'name': 'Base_Object_Created',
+            'icon': ''
+          },
+          {
+            'name': 'Init',
+            'icon': ''
           }
         ],
         status_filter: "All",
@@ -956,6 +981,33 @@ export default Vue.extend({
           console.error(e)
         })
       },
+
+      check_status_of_compound(){
+
+        this.loading = true
+
+        for (var input of this.selected) {
+
+          if (input.media_type != 'compound') {continue }
+    
+          axios.post('/api/walrus/v1/project/' + String(this.project_string_id)
+            + '/input/compound/status', {
+            parent_file_id: parseInt(input.file_id)
+          })
+            .then(response => {
+
+            }).catch(e => {
+            console.error(e)
+            this.loading = false
+          })
+        }
+
+        this.loading = false
+
+        this.get_input_list()
+
+      },
+
 
       update_import(id, mode) {
 

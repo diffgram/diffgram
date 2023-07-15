@@ -159,6 +159,7 @@ def do_routes_importing():
     from methods.configs.oauth2_is_set import oauth2_is_set
     from methods.configs.set_logo import api_admin_set_logo
     from methods.configs.admin_install_info import api_admin_install_info
+    from methods.configs.admin_queue_status import api_admin_queue_status
     from methods.configs.get_system_logo import api_system_get_logo
     from methods.configs.is_open_source import api_is_open_source
     from methods.configs.large_api_chunk_size import large_api_chunk_size

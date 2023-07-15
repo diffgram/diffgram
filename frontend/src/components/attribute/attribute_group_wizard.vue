@@ -39,7 +39,7 @@
             :complete="step > 4"
             step="4"
           >
-            Editable
+            Access
           </v-stepper-step>
 
 
@@ -50,7 +50,7 @@
             editable
             :complete="step > 5"
             step="5">
-           Visible When
+           Triggers
           </v-stepper-step>
 
           <v-divider></v-divider>
@@ -60,7 +60,7 @@
             :complete="step > 6"
             step="6"
           >
-            {{ group.kind !== "tree" ? "Options" : "Tree" }}
+            Values
           </v-stepper-step>
 
           <v-divider v-if="group.kind !== 'tree'"></v-divider>
@@ -88,7 +88,7 @@
 
           <v-stepper-content step="1" style="height: 100%" data-cy="attribute_wizard_step_1">
 
-            <h2 class="pb-2"> 1. What Kind of Question? </h2>
+            <h1 class="pb-2">Kind</h1>
 
             <diffgram_select
               v-if="group"
@@ -115,7 +115,7 @@
 
           <v-stepper-content step="2" style="height: 100%" data-cy="attribute_wizard_step_2">
 
-            <h2> 2. Name Your Question </h2>
+            <h1>Name</h1>
 
             <v-layout>
               <v-text-field
@@ -167,16 +167,16 @@
 
           <v-stepper-content step="3" style="height: 100%" data-cy="attribute_wizard_step_3">
 
-            <h2> 3. Per Annotation Or File? (Optional) </h2>
+            <h1>Scope</h1>
 
-            <br>
             <p>
-            The Default is per Annotation: each annotation instance - e.g. a box or entity - has different values.
+              Scope determines the Attribute's relation to Annotations, Files or Objects.
+              <br>
+              Learn more about
+            <a href="https://diffgram.readme.io/docs/attribute-scope" target="_blank">
+                Attribute Scope.
+            </a>
             </p>
-            <p>
-            The Alternative is per File: each file - e.g. an image, video, text - has only one set of these values.
-            </p>
-            <br>
 
             <v-layout class="justify-center align-center">
               <v-btn-toggle color="secondary" v-model="toggle_global_attribute" @change="set_is_global($event, group)">
@@ -184,7 +184,7 @@
                   <v-icon left color="primary" size="18">
                     mdi-brush
                   </v-icon>
-                  Per Annotation (Default)
+                  Annotation
                 </v-btn>
 
                 <v-btn data-cy="global-attribute-button">
@@ -192,16 +192,16 @@
                     mdi-file
                   </v-icon>
 
-                   Per File
+                   File
 
                 </v-btn>
 
                 <v-btn data-cy="global-compound-attribute-button">
-                  <v-icon left color="primary" size="18">
+                  <v-icon class="pl-2 pr-2" left color="primary" size="18">
                     mdi-file-table-box-multiple
                   </v-icon>
 
-                  Per Root Compound File
+                    Object
 
                 </v-btn>
               </v-btn-toggle>
@@ -219,21 +219,25 @@
 
           <v-stepper-content step="4" style="height: 100%" data-cy="attribute_wizard_step_4">
 
-            <h2> 4. Read Only or Editable? </h2>
+            <h1> Access Control </h1>
 
-            <br>
             <p>
-              The Default is editable. You can use read only attributes to upload additional metadata to files, this metadata
-              will not be changed by annotators. I can only be set at upload time, via the API/SDK.
+              Control Access for this Attribute.
+              <br>
+              Learn more about
+              <a href="https://diffgram.readme.io/docs/attribute-access-control" target="_blank">
+                  Attribute Access Control.
+              </a>
             </p>
 
-            <br>
+
+            <h2> Read Only? </h2>
 
             <v-layout class="justify-center align-center">
               <v-checkbox
                 clearable
                 v-model="group.is_read_only"
-                label="Read only?"
+                label="Read Only?"
                 @change="$emit('change')"
               >
               </v-checkbox>
@@ -252,15 +256,19 @@
 
           <v-stepper-content step="5" style="height: 100%" data-cy="attribute_wizard_step_5">
 
-            <h2 class="pb-2" > 4. When Do You Want to Show This? </h2>
+            <h1 class="pb-2" >Triggers</h1>
 
-            <p v-if="group.is_global" class="d-flex flex-column">
-              <v-icon color="secondary" size="85">mdi-pencil</v-icon>
-              <strong class="secondary--text">
-              Cannot select labels because attribute is a File Level
-              Attribute. Change it to instance attribute to allow labels selection.
+            <div v-if="group.is_global" class="d-flex flex-column">
+            <strong class="secondary--text">
+              <v-icon color="secondary" size="85">mdi-check</v-icon>
+              <p>
+                Scope is set to Global which is always shown.
+              </p>
+              <p>
+              Change Scope to Per Annotation to trigger conditional visibility.
+              </p>
             </strong>
-            </p>
+            </div>
             <label_select_only
               v-if="!group.is_global"
               :disabled="group.is_global"
@@ -288,18 +296,37 @@
 
           <v-stepper-content step="6" style="height: 100%" data-cy="attribute_wizard_step_6">
 
-          <v-layout v-if="group.kind !== 'tree'" column>
+          <h1 class="pb-2">
+          Values
+          </h1>
+
+          <div v-if="group.kind == 'text'" >
+            <strong class="secondary--text">
+              <v-icon color="secondary" size="85">mdi-check</v-icon>
+              <p>
+                There are no values to set on Free Text.
+              </p>
+            </strong>
+          </div>
+
+          <div v-if="group.kind == 'slider'" >
+            <strong class="secondary--text">
+              <v-icon color="secondary" size="85">mdi-check</v-icon>
+              <p>
+                Use Defaults to set slider Defaults.
+              </p>
+            </strong>
+          </div>
+
+          <v-layout v-if="['select', 'multiple_select', 'radio'].includes(group.kind)" column>
 
             <v_error_multiple :error="error">
             </v_error_multiple>
 
-            <h2 class="pb-2">
-            5. Options:
-            </h2>
             <div class="pa-2">
               <button_with_menu
-                tooltip_message="New Option"
-                button_text="New Option"
+                tooltip_message="New"
+                button_text="New"
                 datacy="new_attribute_option_button"
                 datacyclose="close_button_new_attribute"
                 v-if="group && group.kind != 'text' && group.kind != 'slider' "
@@ -338,7 +365,6 @@
                 v-model="group.attribute_template_list"
                 draggable=false
               >
-              <h4>Options List:</h4>
                 <template
                   v-for="item in group.attribute_template_list">
 
@@ -366,10 +392,9 @@
 
           </v-layout>
 
-          <v-layout v-else column>
+          <v-layout v-if="group.kind == 'tree'" column>
             <v_error_multiple :error="error" />
 
-            <h2 class="pb-2"> 5. Create your tree attribute:</h2>
             <v-treeview
               :items="tree_items"
               :active="[]"

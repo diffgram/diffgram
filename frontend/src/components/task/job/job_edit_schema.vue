@@ -2,21 +2,6 @@
   <div>
     <v-progress-linear v-if="loading"></v-progress-linear>
     <v-container v-if="job" class="d-flex flex-column">
-      <v-alert
-        type="info"
-        icon="mdi-lock"
-      >
-        Schema is locked by default for each group of Tasks. To apply the
-        new desired Schema to this set of tasks, select it here and then
-        click save. Note Attributes follow labels, so if an attribute for a
-        label has changed, simply click save directly.
-        <a
-          style="color: white"
-          href="https://diffgram.readme.io/docs/updating-existing-tasks"
-        >
-          Docs
-        </a>
-      </v-alert>
 
       <label_schema_selector
         :initial_schema="job.label_schema"

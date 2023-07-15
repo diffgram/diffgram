@@ -151,6 +151,17 @@ class User(Base):
     default_plan = relationship(Plan,
                                 foreign_keys = [default_plan_id])
 
+
+    def is_support_user(self):
+        try:
+            domain_name = self.email.split('@')[1]
+        except:
+            domain_name = None
+        if domain_name == 'diffgram.com':
+            return True
+
+        return False
+    
     def bind_to_oidc_login(self, session, oidc_id):
         self.oidc_id = oidc_id
         session.add(self)

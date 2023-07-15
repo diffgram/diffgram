@@ -7,7 +7,7 @@ from shared.permissions.super_admin_only import Super_Admin
 
 @routes.route('/api/v1/admin/install/info',
               methods = ['GET'])
-@Super_Admin.is_super()
+@Super_Admin.is_super(allow_support=True)
 def api_admin_install_info():
     with sessionMaker.session_scope() as session:
         install_info = serialize_public_env_variables()
@@ -44,7 +44,7 @@ def serialize_public_env_variables():
         'OAUTH2_PROVIDER_NAME': settings.OAUTH2_PROVIDER_NAME,
         'OAUTH2_PROVIDER_HOST': settings.OAUTH2_PROVIDER_HOST,
         'OAUTH2_PROVIDER_CLIENT_ID': settings.OAUTH2_PROVIDER_CLIENT_ID,
-        'OAUTH2_PROVIDER_CLIENT_SECRET': settings.OAUTH2_PROVIDER_CLIENT_SECRET,
+        'OAUTH2_PROVIDER_CLIENT_SECRET': bool(settings.OAUTH2_PROVIDER_CLIENT_SECRET),
         'OAUTH2_PROVIDER_PUBLIC_KEY': settings.OAUTH2_PROVIDER_PUBLIC_KEY,
         'COGNITO_LOGIN_URL': settings.COGNITO_LOGIN_URL,
     }

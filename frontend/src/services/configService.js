@@ -33,6 +33,17 @@ export const get_install_info = async () => {
     }
 }
 
+export const get_queue_status = async () => {
+    try {
+        const { data } = await axios.get('/api/v1/admin/queue/status')
+        return data
+    } catch(error) {
+        return {
+            error
+        }
+    }
+}
+
 export const get_walrus_status = async () => {
     try {
         return await axios.get('/api/walrus/status')
