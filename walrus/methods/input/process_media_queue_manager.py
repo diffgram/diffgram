@@ -269,11 +269,15 @@ class ProcessMediaQueueManager(metaclass = Singleton):
             item = PrioritizedItem(
                 priority = 100,  # 100 is current default priority
                 input_id = input.id)
-
-            self.router(item)
+        
+        # Note we closed the session before we route the item
+        # This prevents some timing issues since we get a lock on the input
+        self.router(item)
 
 
     def get_remote_items_file_operations(self):
+
+        item_list = []
 
         with sessionMaker.session_scope_threaded() as session:
 
@@ -285,13 +289,17 @@ class ProcessMediaQueueManager(metaclass = Singleton):
             for input in input_list:
                 session.add(input)
                 input.processing_deferred = False
+                input.status = 'local_processing_queue'
 
                 item = PrioritizedItem(
                     priority = 100,  # 100 is current default priority
                     input_id = input.id,
                     mode = input.mode)  # Note mode supplied here to route to file ops queue
 
-                self.router(item)
+                item_list.append(item)
+
+        for item in item_list:
+            self.router(item)
 
 
 
