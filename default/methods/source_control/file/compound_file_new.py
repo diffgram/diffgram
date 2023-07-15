@@ -169,7 +169,8 @@ def file_compound_new_core(session: Session,
     )
     input_obj.file_id = file.id
     input_obj.original_filename = name
-    input_obj.status = 'success'
+    input_obj.status = 'base_object_created'
+    input_obj.processing_deferred = False
     input_obj.percent_complete = 100
     session.add(input_obj)
     session.flush()
