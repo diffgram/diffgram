@@ -95,12 +95,10 @@ def input_packet(project_string_id):
     if len(log["error"].keys()) >= 1:
         return jsonify(log = log), 400
 
-    # log = {"success" : False, "errors" : []}
     # Careful, getting this from headers...
     # TODO: Remove usage of directory ID in headers.
     directory_id = request.headers.get('directory_id', None)
     if directory_id is None:
-        # Try to get it from payload
         directory_id = input['directory_id']
 
     if directory_id is None and input['mode'] != 'update':
