@@ -211,8 +211,8 @@ def user_new_core(session,
 
     # For Open Core Installs
     # Make the first user the super admin by default.
-    user_list = session.query(User).all()
-    if len(user_list) == 0:
+    existing_user = session.query(User).first()
+    if not existing_user:
         new_user.is_super_admin = True
         new_user.security_email_verified = True
 
