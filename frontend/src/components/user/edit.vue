@@ -79,28 +79,6 @@
 
         </v-layout>
 
-        <div v-if="$store.state.builder_or_trainer.mode =='builder'">
-          <h2 class="pa-4"> Beta </h2>
-
-          <div v-if="!$store.state.user.current.api.api_actions">
-            <v-btn  color="blue darken-1"
-                   dark
-                   outlined
-                    @click="api_user_update('api_actions')"
-                    >
-              <v-icon left>mdi-brain</v-icon>
-                Enable Actions and Brains
-            </v-btn>
-           <v-icon right color="primary"> mdi-new-box </v-icon>
-          </div>
-
-          <v-alert :value="$store.state.user.current.api.api_actions"
-                  type="success"
-                  >
-            Actions and Brains Enabled. See Action Menu on Header.
-          </v-alert>
-        </div>
-
 
       </v-container>
 
