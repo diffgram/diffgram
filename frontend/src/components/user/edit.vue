@@ -120,14 +120,7 @@ import Vue from "vue"; export default Vue.extend( {
   },
 
   computed: {
-    // could check if valid email when user clicks on next box...
-    example_url: function () {
-      if (this.url != null) {
-        return "diffgram.com/u/" + this.url
-      } else {
-        return "diffgram.com/u/public_profile_url"
-      }
-    }
+
   },
 
   created() {
