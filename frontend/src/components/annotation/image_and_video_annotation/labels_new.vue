@@ -9,7 +9,6 @@
             data-cy="label_name_text_field"
             label="Label Name"
             v-model="new_label_name"
-            :rules="[rules.new_label_name]"
             :disabled="loading"
             class="pl-2 pr-2"
             >
@@ -97,15 +96,7 @@ import Vue from "vue"; export default Vue.extend( {
         id: null
       },
 
-      Labels: [],
-
-      rules: {
-        required: (value) => !!value || 'Required.',
-        new_label_name: (value) => {
-          const pattern = new RegExp("^[a-zA-Z0-9_ ]{1,30}$")
-          return pattern.test(value) || 'No special characters. Between 1 - 30 characters.'
-        }
-      },
+      Labels: []
     }
   },
   mounted: function () {
