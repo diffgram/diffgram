@@ -10,7 +10,7 @@ services:
     - default
     - walrus
     environment:
-      SAME_HOST: ${SAME_HOST}
+      DOCKER_CONTEXT: True
   frontend:
     image: diffgram/frontend:${DIFFGRAM_VERSION_TAG}
     ports:

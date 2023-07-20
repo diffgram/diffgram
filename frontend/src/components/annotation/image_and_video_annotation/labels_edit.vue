@@ -23,7 +23,6 @@
                       label="Name"
                       v-if="current_label_file.label"
                       v-model="current_label_file.label.name"
-                      :rules="[rules.new_label_name]"
                       :disabled="loading">
         </v-text-field>
         {{ new_label_error }}
@@ -124,16 +123,7 @@ import Vue from "vue"; export default Vue.extend( {
       },
       error_name: null,
 
-      new_label_error: null,
-
-
-      rules: {
-        required: (value) => !!value || 'Required.',
-        new_label_name: (value) => {
-          const pattern = new RegExp("^[a-zA-Z0-9_ ]{1,30}$")
-          return pattern.test(value) || 'No special characters. Between 1 - 30 characters.'
-        }
-      }
+      new_label_error: null
     }
   },
   mounted() {
