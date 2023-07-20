@@ -9,11 +9,8 @@ else
 endif
 clean:
 	rm -rf venvdiffgram
-	rm .env
 	docker compose down
 setup-env-backend:
-	@echo "Setting up environment..."
-	cp .env.copy .env
 	@echo "Creating virtual environment..."
 	$(PYTHONEXEC) -m venv venvdiffgram
 	@echo "Activating virtual environment..."
