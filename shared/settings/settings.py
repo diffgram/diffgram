@@ -4,17 +4,6 @@ from .env_adapter import EnvAdapter
 
 env_adapter = EnvAdapter()
 
-# To read more about Environment Variables and settings in Diffgram visit:
-# https://diffgram.com/docs/settings-environment-variables-and-secrets
-
-# Secrets are always loaded from Environment Variables
-# However, those can be set by another program, or loaded from another source
-# Here is one example of loading them from a python file first before settings load.
-try:
-    from shared.settings.secrets import *
-except Exception as e:
-    print('Error loading secrets: ')
-    print(e)
 
 
 # Main Settings
