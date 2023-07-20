@@ -486,7 +486,7 @@
           annotation_example: false,
 
           format: 'JSON',
-          format_options: ['JSON'], // ['JSON', 'YAML'],  // aug 12, 2020 pending weak ref resolution on yaml thing
+          format_options: ['JSON'],
 
           error: {},
 

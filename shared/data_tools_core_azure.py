@@ -336,13 +336,6 @@ class DataToolsAzure:
     # Could have seperate method to do from working dir
     # This is the iterative update method?
 
-    def yaml_new_internal(self, session, version, project):
-        """
-        Load existing YAML file
-        Do updates
-        Save YAML file to version directory
-        """
-        raise NotImplementedError
 
     # OLD TODO refactor to new style
     def categoryMap(session):

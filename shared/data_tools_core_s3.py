@@ -355,18 +355,6 @@ class DataToolsS3:
     def label_map_new(self, session, ai):
         raise NotImplementedError
 
-    # TODO refactor internal / external methods for more clarity
-    # Could have seperate method to do from working dir
-    # This is the iterative update method?
-
-    def yaml_new_internal(self, session, version, project):
-        """
-        Load existing YAML file
-        Do updates
-        Save YAML file to version directory
-        """
-        raise NotImplementedError
-
     # OLD TODO refactor to new style
     def categoryMap(session):
         raise NotImplementedError

@@ -3,7 +3,7 @@ from google.cloud import storage
 import numpy as np
 import sys
 import json
-import requests, time, tempfile, yaml
+import requests, time, tempfile
 from io import BytesIO
 from shared.helpers.permissions import get_gcs_service_account
 from shared.settings import settings
@@ -400,83 +400,6 @@ class DataToolsGCP:
     # Could have seperate method to do from working dir
     # This is the iterative update method?
 
-    def yaml_new_internal(self, session, version, project):
-
-        """
-        Load existing YAML file
-        Do updates
-        Save YAML file to version directory
-        """
-        annotations_list = []
-        len_images = None
-
-        for image in version.image_file_list:
-            if image.soft_delete != True:
-                # TODO review test image and done_labelling
-                # if image.soft_delete != True and image.is_test_image != True and image.done_labeling == True:
-                image_dict = {'blob_name': images_dir + str(image.id),
-                              'width': image.width,
-                              'height': image.height,
-                              'filename': image.original_filename}
-
-                packet = {'packet': {'image': image_dict}}
-
-                if ai.ml.method == "object_detection":
-                    box_dict_list = []
-                    for box in image.boxes:
-                        if box.soft_delete is True:
-                            continue
-                        if box.label.soft_delete is True:
-                            continue
-                        box_dict_list.append({'label_id': box.label_id,
-                                              'label_name': box.label.name,
-                                              'x_min': box.x_min,
-                                              'x_max': box.x_max,
-                                              'y_min': box.y_min,
-                                              'y_max': box.y_max})
-                    packet['packet']['boxes'] = box_dict_list
-
-                if ai.ml.method == "semantic_segmentation":
-                    if image.mask_joint_blob_name:
-                        image_dict['mask_joint_blob_name'] = image.mask_joint_blob_name
-
-                if ai.ml.method == "semantic_segmentation" or ai.ml.sub_method == "mask_rcnn":
-                    polygon_dict_list = []
-                    for polygon in image.polygons:
-                        if polygon.soft_delete is not True:
-                            if polygon.label.soft_delete is not True:
-
-                                polygon_dict = {'label_id': polygon.label_id,
-                                                'label_name': polygon.label.name,
-                                                'x_min': polygon.x_min,
-                                                'x_max': polygon.x_max,
-                                                'y_min': polygon.y_min,
-                                                'y_max': polygon.y_max}
-
-                                if polygon.mask_blob_name:
-                                    polygon_dict['mask_blob_name_list'] = polygon.mask_blob_name['list']
-
-                                polygon_dict_list.append(polygon_dict)
-
-                    packet['packet']['polygons'] = polygon_dict_list
-
-                annotations_list.append(packet)
-
-            if counter % 100 == 0:
-                print("Percent done", (counter / len_images) * 100, file = sys.stderr)
-            counter += 1
-
-        yaml_data = yaml.dump(annotations_list, default_flow_style = False)
-        json_data = json.dumps(annotations_list)
-        ai.ml.annotations_string_yaml = f"{ai.ml.blob_dir}/annotations.yaml"
-        ai.ml.annotations_string_json = f"{ai.ml.blob_dir}/annotations.json"
-        session.add(ai)
-        blob = self.ML_bucket.blob(ai.ml.annotations_string_yaml)
-        blob.upload_from_string(yaml_data, content_type = 'text/yaml')
-        blob = self.ML_bucket.blob(ai.ml.annotations_string_json)
-        blob.upload_from_string(json_data, content_type = 'text/json')
-
-        return "success"
 
     # OLD TODO refactor to new style
     def categoryMap(session):

@@ -7,7 +7,7 @@ from shared.image_tools import imresize
 
 import sys
 import json
-import os, requests, time, logging, yaml
+import os, requests, time, logging
 import threading
 import tempfile
 from shared.settings import settings
