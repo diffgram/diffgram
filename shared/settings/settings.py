@@ -4,7 +4,11 @@ from .env_adapter import EnvAdapter
 
 env_adapter = EnvAdapter()
 
+DOCKER_CONTEXT = env_adapter.bool(os.getenv('DOCKER_CONTEXT', False))
 
+if DOCKER_CONTEXT is False:
+    from dotenv import load_dotenv, find_dotenv
+    load_dotenv(find_dotenv('.env'))  # replace with your specific .env file
 
 # Main Settings
 DIFFGRAM_SYSTEM_MODE = os.environ.get('DIFFGRAM_SYSTEM_MODE', 'sandbox')
@@ -27,15 +31,6 @@ INTER_SERVICE_SECRET = os.environ.get('INTER_SERVICE_SECRET', 'default_inter_ser
 FERNET_KEY = os.getenv('FERNET_KEY', 'NeL_RED6zZ1XF3XT7Yd1hzFPYyebrg6UdkECTOLHEdI=')
 
 
-# Logger Settings - Defaults to INFO
-# CRITICAL = 50
-# FATAL = CRITICAL
-# ERROR = 40
-# WARNING = 30
-# WARN = WARNING
-# INFO = 20
-# DEBUG = 10
-# NOTSET = 0
 SANDBOX_LOGGER_TYPE = int(os.getenv('SANDBOX_LOGGER_TYPE', logging.INFO))
 
 
