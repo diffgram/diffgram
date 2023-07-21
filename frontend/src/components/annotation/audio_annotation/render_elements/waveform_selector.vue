@@ -82,10 +82,8 @@ export default Vue.extend({
       normalize: true,
       autoCenter: true,
       mediaControls: true,
-      loading_audio: true,
+      autoplay: true,
       responsive: true,
-      height: 300,
-      backend: 'MediaElement',
       plugins: [
         Regions.create()
       ]
