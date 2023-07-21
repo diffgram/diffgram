@@ -12,7 +12,7 @@
       />
     </div>
 
-    <audio ref="audio" preload="auto" controls="controls"></audio>
+    <audio class="audio-controls" ref="audio" preload="auto" controls="controls"></audio>
 
   </div>
 </template>
@@ -59,7 +59,7 @@ export default Vue.extend({
       this.wavesurfer.zoom(this.zoom)
     },
     force_watch_trigger: function() {
-      //this.update_render()
+      this.update_render()
     },
     audio_file: function(new_file, old_file){
       this.load_audio();
@@ -67,9 +67,7 @@ export default Vue.extend({
     current_label: function() {
       if (this.current_label) {
         const { r, g, b } = this.current_label.colour.rgba
-        this.regions.enableDragSelection({
-          color: `rgba(${r}, ${g}, ${b}, 0.5)`
-        })
+        this.updateRegionColor(r, g, b)
       }
     }
   },
@@ -83,11 +81,11 @@ export default Vue.extend({
       progressColor: '#595959',
       normalize: true,
       autoCenter: true,
-      autoplay: true,
       media: this.$refs.audio
     });
 
     this.regions = this.wavesurfer.registerPlugin(Regions.create())
+
 
     this.regions.enableDragSelection({
       color: 'rgba(255, 0, 0, 0.1)',
@@ -101,23 +99,24 @@ export default Vue.extend({
       region.play()
     })
 
+    if (this.current_label) {
+      const { r, g, b } = this.current_label.colour.rgba
+      this.updateRegionColor(r, g, b)
+    }
+
     this.load_audio();
     this.update_render()
   },
   methods: {
     update_render: function() {
 
-      const region_keys = Object.keys(this.regions.list || {})
+      const regionsList = this.regions.regions
+      const regionsIds = this.regions.regions.map(({id}) => id)
 
-      const instances_to_add = this.instance_list.filter(inst => !inst.audiosurfer_id || !region_keys.includes(inst.audiosurfer_id))
-
-      console.log('foo instances_to_add', instances_to_add)
+      const instances_to_add = this.instance_list.filter(inst => !inst.audiosurfer_id || !regionsIds.includes(inst.audiosurfer_id))
 
       instances_to_add.forEach(inst => {
         const { r, g, b } = inst.label_file.colour.rgba
-
-        console.log('foo inst', inst)
-
 
         const added_region = this.regions.addRegion({
             id: inst.audiosurfer_id,
@@ -128,25 +127,33 @@ export default Vue.extend({
         this.$emit('asign_wavesurfer_id', inst.id, added_region.id)
       })
 
-      region_keys.map(key => {
-        const instance = this.instance_list.find(inst => inst.audiosurfer_id === key)
-        if (instance) {
+      regionsList.forEach((region, idx) => {
+        const instance = this.instance_list.find(inst => inst.audiosurfer_id === region.id)
+
+        if ( instance ) {
           const { start_time, end_time, label_file } = instance
           if (!this.invisible_labels.includes(label_file.id)) {
             const { r, g, b } = instance.label_file.colour.rgba
-            const region_to_update = this.wavesurfer.regions.list[key]
-            region_to_update.color = `rgba(${r}, ${g}, ${b}, 0.5)`
-            region_to_update.start = start_time
-            region_to_update.end = end_time
-            region_to_update.updateRender()
+            region.setOptions({
+              color: `rgba(${r}, ${g}, ${b}, 0.5)`,
+              start: start_time,
+              end: end_time,
+            })
           } else {
-            this.wavesurfer.regions.list[key].remove()
+            region.remove()
           }
         } else {
-          this.wavesurfer.regions.list[key].remove()
+            region.remove()
         }
       })
     },
+
+    updateRegionColor(r, g, b) {
+        this.regions.enableDragSelection({
+          color: `rgba(${r}, ${g}, ${b}, 0.5)`
+        })
+    },
+
     load_audio: function(){
       this.loading_audio = true
       if(!this.audio_file || !this.audio_file.audio || !this.audio_file.audio.url_signed){
@@ -179,6 +186,11 @@ export default Vue.extend({
 <style scoped>
 
 .wave-form-container{
+  width: 100%;
+}
+
+.audio-controls {
+  margin-top: 30px;
   width: 100%;
 }
 
