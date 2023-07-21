@@ -161,10 +161,8 @@ class DockerIngress(Ingress):
         self.name = "docker"
 
         self.default.host = 'http://default'
-        self.walrus.host = 'http://walrus'
-      
+        self.walrus.host = 'http://walrus'     
         self.frontend.host = 'http://frontend'
-        self.frontend.port = 80
 
         self.app = Flask(__name__, 
                                static_url_path = '/dispatcher-static-files')
@@ -195,7 +193,7 @@ class Router():
 
         self.ingress.app.logger.setLevel(logging.INFO)
 
-        self.ingress.app.debug = True
+        self.ingress.app.debug = False
         self.ingress.app.run(host = '0.0.0.0', port = self.ingress.port)
 
     

@@ -9,12 +9,8 @@ else
 endif
 clean:
 	rm -rf venvdiffgram
-	rm shared/settings/secrets.py
 	docker compose down
 setup-env-backend:
-	@echo "Setting up environment..."
-	cp .env.copy .env
-	cp shared/settings/secrets.dev.py shared/settings/secrets.py
 	@echo "Creating virtual environment..."
 	$(PYTHONEXEC) -m venv venvdiffgram
 	@echo "Activating virtual environment..."

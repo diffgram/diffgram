@@ -1,3 +1,5 @@
+ENV DOCKER_CONTEXT=True
+
 FROM python:3.7.16-bullseye
 LABEL python_version=python3.7.16
 

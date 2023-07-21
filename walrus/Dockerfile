@@ -1,3 +1,5 @@
+ENV DOCKER_CONTEXT=True
+
 FROM ubuntu:22.04
 LABEL python_version=python3.11.1
 
