@@ -1,7 +1,7 @@
-ENV DOCKER_CONTEXT=True
-
 FROM python:3.11.1-bullseye
 LABEL python_version=python3.11.1
+
+ENV DOCKER_CONTEXT=True
 
 RUN seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{}
 RUN for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done
