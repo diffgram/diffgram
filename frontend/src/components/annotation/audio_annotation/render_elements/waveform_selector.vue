@@ -12,6 +12,8 @@
       />
     </div>
 
+    <audio ref="audio" preload="auto" controls="controls"></audio>
+
   </div>
 </template>
 
@@ -48,7 +50,8 @@ export default Vue.extend({
     return{
       loading_audio: false,
       wavesurfer: null,
-      zoom: 0
+      zoom: 0,
+      regions: null,
     }
   },
   watch:{
@@ -62,17 +65,17 @@ export default Vue.extend({
       this.load_audio();
     },
     current_label: function() {
+      console.log('foo this.current_label', this.current_label)
       if (this.current_label) {
-        this.wavesurfer.disableDragSelection()
-  
         const { r, g, b } = this.current_label.colour.rgba
-        this.wavesurfer.enableDragSelection({
+        this.regions.enableDragSelection({
           color: `rgba(${r}, ${g}, ${b}, 0.5)`
         })
       }
     }
   },
   mounted() {
+
     this.wavesurfer = WaveSurfer.create({
       container: '#waveform',
       fillParent: true,
@@ -81,35 +84,43 @@ export default Vue.extend({
       progressColor: '#595959',
       normalize: true,
       autoCenter: true,
-      mediaControls: true,
-      loading_audio: true,
-      responsive: true,
-      height: 300,
-      backend: 'MediaElement',
-      plugins: [
-        Regions.create()
-      ]
+      autoplay: true,
+      media: this.$refs.audio
     });
 
-    this.wavesurfer.on('region-update-end', this.on_annotate)
+    this.regions = this.wavesurfer.registerPlugin(Regions.create())
 
-    this.wavesurfer.on('region-click', function(region, e) {
-        e.stopPropagation();
-        region.wavesurfer.play(region.start, region.end);
-    });
+    this.regions.enableDragSelection({
+      color: 'rgba(255, 0, 0, 0.1)',
+    })
+
+    this.regions.on('region-updated', this.on_annotate)
+    this.regions.on('region-created', this.on_annotate)
+
+    this.regions.on('region-clicked', (region, e) => {
+      e.stopPropagation() // prevent triggering a click on the waveform
+      region.play()
+    })
 
     this.load_audio();
     this.update_render()
   },
   methods: {
     update_render: function() {
-      const region_keys = Object.keys(this.wavesurfer.regions.list)
+
+      const region_keys = Object.keys(this.regions.list || {})
+
       const instances_to_add = this.instance_list.filter(inst => !inst.audiosurfer_id || !region_keys.includes(inst.audiosurfer_id))
 
-      instances_to_add.map(inst => {
+      console.log('foo instances_to_add', instances_to_add)
+
+      instances_to_add.forEach(inst => {
         const { r, g, b } = inst.label_file.colour.rgba
 
-        const added_region = this.wavesurfer.addRegion({
+        console.log('foo inst', inst)
+
+
+        const added_region = this.regions.addRegion({
             id: inst.audiosurfer_id,
             start: inst.start_time,
             end: inst.end_time,
