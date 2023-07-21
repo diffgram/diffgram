@@ -59,7 +59,7 @@ export default Vue.extend({
       this.wavesurfer.zoom(this.zoom)
     },
     force_watch_trigger: function() {
-      this.update_render()
+      //this.update_render()
     },
     audio_file: function(new_file, old_file){
       this.load_audio();
