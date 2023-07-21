@@ -40,3 +40,4 @@ azure-ai-textanalytics
 newrelic
 apscheduler==3.10.1
 pymongo
+python-dotenv==1.0.0

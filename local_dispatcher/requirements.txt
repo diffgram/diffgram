@@ -1,3 +1,4 @@
 Flask==2.2.5
 requests==2.31.0
 markupsafe==2.1.2
+python-dotenv==1.0.0

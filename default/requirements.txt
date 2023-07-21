@@ -39,3 +39,4 @@ labelbox==3.47.1
 pytz==2021.3
 flasgger==0.9.5
 pymongo
+python-dotenv==1.0.0

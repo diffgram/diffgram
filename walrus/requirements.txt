@@ -44,3 +44,4 @@ imageio-ffmpeg==0.2.0
 google-cloud-aiplatform
 flasgger
 pymongo
+python-dotenv==1.0.0
