@@ -47,6 +47,7 @@ jobs:
         RABBITMQ_DEFAULT_USER: diffgram
         RABBITMQ_DEFAULT_PASS: diffgram
         DEBUG: cypress:* cypress run
+        DOCKER_CONTEXT: true
     services:
       # Label used to access the service container
       postgres:

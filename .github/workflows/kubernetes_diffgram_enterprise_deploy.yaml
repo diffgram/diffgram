@@ -144,6 +144,7 @@ jobs:
       SMTP_PORT: ${{secrets.SMTP_PORT}}
       SMTP_FROM_EMAIL: ${{secrets.SMTP_FROM_EMAIL}}
       ACTIONS_ALLOW_UNSECURE_COMMANDS: true
+      DOCKER_CONTEXT: true
     steps:
       - name: Check out repository code
         uses: actions/checkout@v2

@@ -35,6 +35,7 @@ jobs:
         CLOUD_STORAGE_BUCKET: ${{ secrets.CLOUD_STORAGE_BUCKET }}
         ML__CLOUD_STORAGE_BUCKET: ${{ secrets.ML__CLOUD_STORAGE_BUCKET }}
         SERVICE_ACCOUNT_FULL_PATH: /gcp/gcloud-service-key.json
+        DOCKER_CONTEXT: true
     services:
       # Label used to access the service container
       postgres:

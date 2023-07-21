@@ -1,14 +1,24 @@
 import os
 import logging
 from .env_adapter import EnvAdapter
+import traceback
 
 env_adapter = EnvAdapter()
 
 DOCKER_CONTEXT = env_adapter.bool(os.getenv('DOCKER_CONTEXT', False))
 
-if DOCKER_CONTEXT is False:
-    from dotenv import load_dotenv, find_dotenv
-    load_dotenv(find_dotenv('.env'))  # replace with your specific .env file
+
+def load_local_dev_env():
+    if DOCKER_CONTEXT is True:
+        return
+
+    try:
+        from dotenv import load_dotenv, find_dotenv
+        load_dotenv(find_dotenv('.env'))  # replace with your specific .env file
+    except Exception as e:
+        print(traceback.format_exc())
+
+load_local_dev_env()
 
 # Main Settings
 DIFFGRAM_SYSTEM_MODE = os.environ.get('DIFFGRAM_SYSTEM_MODE', 'sandbox')
