@@ -65,7 +65,6 @@ export default Vue.extend({
       this.load_audio();
     },
     current_label: function() {
-      console.log('foo this.current_label', this.current_label)
       if (this.current_label) {
         const { r, g, b } = this.current_label.colour.rgba
         this.regions.enableDragSelection({
