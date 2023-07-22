@@ -52,6 +52,7 @@ export default Vue.extend({
       wavesurfer: null,
       zoom: 0,
       regions: null,
+      disableDragSelection: null,
     }
   },
   watch:{
@@ -72,7 +73,6 @@ export default Vue.extend({
     }
   },
   mounted() {
-
     this.wavesurfer = WaveSurfer.create({
       container: '#waveform',
       fillParent: true,
@@ -85,11 +85,6 @@ export default Vue.extend({
     });
 
     this.regions = this.wavesurfer.registerPlugin(Regions.create())
-
-
-    this.regions.enableDragSelection({
-      color: 'rgba(255, 0, 0, 0.1)',
-    })
 
     this.regions.on('region-updated', this.on_annotate)
     this.regions.on('region-created', this.on_annotate)
@@ -106,6 +101,11 @@ export default Vue.extend({
 
     this.load_audio();
     this.update_render()
+  },
+  unmounted () {
+    if (typeof this.disableDragSelection === 'function') {
+      this.disableDragSelection()
+    }
   },
   methods: {
     update_render: function() {
@@ -149,9 +149,13 @@ export default Vue.extend({
     },
 
     updateRegionColor(r, g, b) {
-        this.regions.enableDragSelection({
-          color: `rgba(${r}, ${g}, ${b}, 0.5)`
-        })
+      if (typeof this.disableDragSelection === 'function') {
+        this.disableDragSelection()
+      }
+
+      this.disableDragSelection = this.regions.enableDragSelection({
+        color: `rgba(${r}, ${g}, ${b}, 0.5)`
+      })
     },
 
     load_audio: function(){
