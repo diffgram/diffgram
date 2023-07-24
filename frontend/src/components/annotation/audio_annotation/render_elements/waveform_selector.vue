@@ -12,6 +12,8 @@
       />
     </div>
 
+    <audio class="audio-controls" ref="audio" preload="auto" controls="controls"></audio>
+
   </div>
 </template>
 
@@ -48,7 +50,9 @@ export default Vue.extend({
     return{
       loading_audio: false,
       wavesurfer: null,
-      zoom: 0
+      zoom: 0,
+      regions: null,
+      disableDragSelection: null,
     }
   },
   watch:{
@@ -63,12 +67,8 @@ export default Vue.extend({
     },
     current_label: function() {
       if (this.current_label) {
-        this.wavesurfer.disableDragSelection()
-  
         const { r, g, b } = this.current_label.colour.rgba
-        this.wavesurfer.enableDragSelection({
-          color: `rgba(${r}, ${g}, ${b}, 0.5)`
-        })
+        this.updateRegionColor(r, g, b)
       }
     }
   },
@@ -81,35 +81,44 @@ export default Vue.extend({
       progressColor: '#595959',
       normalize: true,
       autoCenter: true,
-      mediaControls: true,
-      loading_audio: true,
-      responsive: true,
-      height: 300,
-      backend: 'MediaElement',
-      plugins: [
-        Regions.create()
-      ]
+      media: this.$refs.audio
     });
 
-    this.wavesurfer.on('region-update-end', this.on_annotate)
+    this.regions = this.wavesurfer.registerPlugin(Regions.create())
 
-    this.wavesurfer.on('region-click', function(region, e) {
-        e.stopPropagation();
-        region.wavesurfer.play(region.start, region.end);
-    });
+    this.regions.on('region-updated', this.on_annotate)
+    this.regions.on('region-created', this.on_annotate)
+
+    this.regions.on('region-clicked', (region, e) => {
+      e.stopPropagation() // prevent triggering a click on the waveform
+      region.play()
+    })
+
+    if (this.current_label) {
+      const { r, g, b } = this.current_label.colour.rgba
+      this.updateRegionColor(r, g, b)
+    }
 
     this.load_audio();
     this.update_render()
   },
+  unmounted () {
+    if (typeof this.disableDragSelection === 'function') {
+      this.disableDragSelection()
+    }
+  },
   methods: {
     update_render: function() {
-      const region_keys = Object.keys(this.wavesurfer.regions.list)
-      const instances_to_add = this.instance_list.filter(inst => !inst.audiosurfer_id || !region_keys.includes(inst.audiosurfer_id))
 
-      instances_to_add.map(inst => {
+      const regionsList = this.regions.regions
+      const regionsIds = this.regions.regions.map(({id}) => id)
+
+      const instances_to_add = this.instance_list.filter(inst => !inst.audiosurfer_id || !regionsIds.includes(inst.audiosurfer_id))
+
+      instances_to_add.forEach(inst => {
         const { r, g, b } = inst.label_file.colour.rgba
 
-        const added_region = this.wavesurfer.addRegion({
+        const added_region = this.regions.addRegion({
             id: inst.audiosurfer_id,
             start: inst.start_time,
             end: inst.end_time,
@@ -118,25 +127,37 @@ export default Vue.extend({
         this.$emit('asign_wavesurfer_id', inst.id, added_region.id)
       })
 
-      region_keys.map(key => {
-        const instance = this.instance_list.find(inst => inst.audiosurfer_id === key)
-        if (instance) {
+      regionsList.forEach((region, idx) => {
+        const instance = this.instance_list.find(inst => inst.audiosurfer_id === region.id)
+
+        if ( instance ) {
           const { start_time, end_time, label_file } = instance
           if (!this.invisible_labels.includes(label_file.id)) {
             const { r, g, b } = instance.label_file.colour.rgba
-            const region_to_update = this.wavesurfer.regions.list[key]
-            region_to_update.color = `rgba(${r}, ${g}, ${b}, 0.5)`
-            region_to_update.start = start_time
-            region_to_update.end = end_time
-            region_to_update.updateRender()
+            region.setOptions({
+              color: `rgba(${r}, ${g}, ${b}, 0.5)`,
+              start: start_time,
+              end: end_time,
+            })
           } else {
-            this.wavesurfer.regions.list[key].remove()
+            region.remove()
           }
         } else {
-          this.wavesurfer.regions.list[key].remove()
+            region.remove()
         }
       })
     },
+
+    updateRegionColor(r, g, b) {
+      if (typeof this.disableDragSelection === 'function') {
+        this.disableDragSelection()
+      }
+
+      this.disableDragSelection = this.regions.enableDragSelection({
+        color: `rgba(${r}, ${g}, ${b}, 0.5)`
+      })
+    },
+
     load_audio: function(){
       this.loading_audio = true
       if(!this.audio_file || !this.audio_file.audio || !this.audio_file.audio.url_signed){
@@ -169,6 +190,11 @@ export default Vue.extend({
 <style scoped>
 
 .wave-form-container{
+  width: 100%;
+}
+
+.audio-controls {
+  margin-top: 30px;
   width: 100%;
 }
 
