@@ -373,7 +373,7 @@ export default Vue.extend({
   },
   computed: {
     real_container_width: function() {
-      if (this.container_width) return this.container_width - 100
+      if (this.container_width) return this.container_width - 30
       else return window.innerWidth - 350
     },
     render_rects: function () {
@@ -1095,7 +1095,7 @@ export default Vue.extend({
     on_select_instance: function(instance) {
       this.annotation_ui_context.get_current_ann_ctx().current_instance = instance
     },
-    on_update_attribute: function(event, is_global) {
+    update_attribute: function(event, is_global) {
       const attribute = event
       let command
 

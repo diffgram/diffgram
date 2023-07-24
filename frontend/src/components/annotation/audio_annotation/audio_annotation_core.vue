@@ -1,54 +1,7 @@
 <template>
 <div>
-  <div style="position: relative">
-    <main_menu
-      :height="`${!task ? '100px' : '50px'}`"
-      :show_default_navigation="!task"
-    >
-      <template slot="second_row">
-        <audio_toolbar
-          :undo_disabled="undo_disabled"
-          :redo_disabled="redo_disabled"
-          :has_changed="has_changed"
-          :save_loading="save_loading"
-          :loading="loading"
-          :label_schema="label_schema"
-          :project_string_id="project_string_id"
-          :label_list="label_list"
-          :label_file_colour_map="label_file_colour_map"
-          :task="task"
-          :file="file"
-          @on_task_annotation_complete_and_save="on_task_annotation_complete_and_save"
-          @task_update_toggle_deferred="defer_task"
-          @change_label_file="change_label_file"
-          @change_label_visibility="change_label_visibility"
-          @change_file="change_file"
-          @change_label_schema="on_change_label_schema"
-          @save="save"
-          @change_task="trigger_task_change"
-          @undo="undo()"
-          @redo="redo()"
-        />
-      </template>
-    </main_menu>
-
+  <div style="position: relative; width: 100%; height: 100%">
     <div class="d-flex" style="width: 100%; height: 100%">
-      <audio_sidebar
-        :current_instance="current_instance"
-        :label_file_colour_map="label_file_colour_map"
-        :schema_id="label_schema.id"
-        :label_list="label_list"
-        :toolbar_height="`${!task ? '100px' : '50px'}`"
-        :instance_list="instance_list ? instance_list.get().filter(instance => !instance.soft_delete) : []"
-        :attribute_group_list_prop="label_list"
-        :per_instance_attribute_groups_list="per_instance_attribute_groups_list"
-        :loading="loading"
-        :project_string_id="project_string_id"
-        @on_select_instance="on_select_instance"
-        @change_instance_label="change_instance_label"
-        @delete_instance="delete_instance"
-        @on_update_attribute="update_attribute"
-      />
       <waveform_selector
         v-if="instance_list"
         :force_watch_trigger="force_watch_trigger"
@@ -90,7 +43,7 @@ export default {
     audio_sidebar,
     waveform_selector
   },
-    props: {
+  props: {
     file: {
       type: Object,
       default: undefined
@@ -126,7 +79,15 @@ export default {
     label_schema: {
       type: Object,
       default: {}
-    }
+    },
+    instance_store: {
+      type: Object,
+      required: true
+    },
+    working_file: {
+      type: Object,
+      default: undefined
+    },
   },
   data: function(){
     return{
@@ -152,6 +113,16 @@ export default {
       command_manager: undefined,
       history: undefined,
     }
+  },
+  watch: {
+    instance_list: function (newVal) {
+      if (this.working_file.type === "audio" && newVal) {
+        console.log('foo audio_annotation_core watch instance_list', this.working_file.id, newVal )
+        this.instance_store.set_instance_list(this.working_file.id, newVal)
+        this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
+        this.$emit('instance_list_updated', newVal, this.working_file.id, this.working_file.type)
+      }
+    },
   },
   computed: {
     undo_disabled: function () {
