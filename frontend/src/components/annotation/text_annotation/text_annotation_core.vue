@@ -760,7 +760,7 @@ export default Vue.extend({
       this.initial_words_measures.map((word, index) => {
         const refs = this.$refs[`word_${index}_file_${this.working_file.id}`]
         let current_token_width = 0
-        if(refs.length >  0){
+        if(refs && refs.length >  0){
           current_token_width = refs[0].getBoundingClientRect().width
 
         }

@@ -35,6 +35,7 @@ import {
 import { AudioAnnotationInstance } from "../../vue_canvas/instances/AudioInstance"
 import { deferTask, finishTaskAnnotation } from "../../../services/tasksServices"
 import { getInstanceList, postInstanceList } from "../../../services/instanceList";
+import { BaseAnnotationUIContext } from "../../../types/AnnotationUIContext";
 
 export default {
   name: "audio_annotation_core",
@@ -88,6 +89,10 @@ export default {
       type: Object,
       default: undefined
     },
+    annotation_ui_context: {
+      type: Object,
+      required: true
+    },
   },
   data: function(){
     return{
@@ -110,31 +115,21 @@ export default {
       invisible_labels: [],
       // Command
       instance_list: undefined,
-      command_manager: undefined,
-      history: undefined,
     }
   },
   watch: {
     instance_list: function (newVal) {
       if (this.working_file.type === "audio" && newVal) {
-        console.log('foo audio_annotation_core watch instance_list', this.working_file.id, newVal )
         this.instance_store.set_instance_list(this.working_file.id, newVal)
         this.instance_store.set_file_type(this.working_file.id, this.working_file.type)
         this.$emit('instance_list_updated', newVal, this.working_file.id, this.working_file.type)
       }
     },
-  },
-  computed: {
-    undo_disabled: function () {
-      return !this.history || !this.history.undo_posible
+    'annotation_ui_context.current_label_file': function (label) {
+      this.current_label = label
     },
-    redo_disabled: function () {
-      return !this.history || !this.history.redo_posible
-    }
   },
   mounted() {
-    this.history = new History()
-    this.command_manager = new CommandManager(this.history)
     this.instance_list = new InstanceList()
 
     this.initialize_interface_data()
@@ -197,7 +192,7 @@ export default {
         command = new UpdateInstanceAudioCoordinatesCommand([instance_already_exists], this.instance_list)
         command.set_new_geo_coords(start_time, end_time)
       }
-      this.command_manager.executeCommand(command)
+      this.annotation_ui_context.command_manager.executeCommand(command)
       this.has_changed = true
       this.update_trigger()
     },
@@ -270,21 +265,22 @@ export default {
     update_attribute: function(attribute) {
       const command = new UpdateInstanceAttributeCommand([this.instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.instance_list)
       command.set_new_attribute(attribute[0].id, {...attribute[1]})
-      this.command_manager.executeCommand(command)
+      this.annotation_ui_context.command_manager.executeCommand(command)
       this.has_changed = true
       this.update_trigger()
     },
     delete_instance: async function (instance) {
       const delete_command = new DeleteInstanceCommand([instance], this.instance_list)
-      this.command_manager.executeCommand(delete_command)
+      this.annotation_ui_context.command_manager.executeCommand(delete_command)
       this.has_changed = true
+      this.$emit('set_has_changed', true)
       this.update_trigger()
     },
     change_instance_label: async function (event) {
       const { instance, label } = event
       const command = new UpdateInstanceLabelCommand([instance], this.instance_list)
       command.set_new_label(label)
-      this.command_manager.executeCommand(command)
+      this.annotation_ui_context.command_manager.executeCommand(command)
       this.has_changed = true
       this.update_trigger()
     },
@@ -294,7 +290,7 @@ export default {
     undo: function () {
       if (!this.history.undo_posible) return;
 
-      let undone = this.command_manager.undo();
+      let undone = this.annotation_ui_context.command_manager.undo();
       this.update_trigger()
       this.current_instance = null
 
@@ -303,7 +299,7 @@ export default {
     redo: function () {
       if (!this.history.redo_posible) return;
 
-      let redone = this.command_manager.redo();
+      let redone = this.annotation_ui_context.command_manager.redo();
       this.update_trigger()
       this.current_instance = null
 
