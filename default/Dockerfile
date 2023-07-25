@@ -1,7 +1,7 @@
-ENV DOCKER_CONTEXT=True
-
 FROM python:3.11.1-bullseye
 LABEL python_version=python3.11.1
+
+ENV DOCKER_CONTEXT=True
 
 # Set virtualenv environment variables. This is equivalent to running
 # source /env/bin/activate

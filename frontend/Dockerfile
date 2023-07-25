@@ -1,7 +1,6 @@
-ENV DOCKER_CONTEXT=True
-
-# stage1 as builder
 FROM node:16 as builder
+
+ENV DOCKER_CONTEXT=True
 
 WORKDIR /vue-ui
 
