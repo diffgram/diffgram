@@ -449,7 +449,14 @@ export default Vue.extend({
     label_schema: {
       type: Object,
       required: true
+    },
+    history: {
+      type: Object,
+      required: true
     }
+  },
+  mounted() {
+    console.log('foo audio_tollbar mounted', this)
   }
 })
 </script>
