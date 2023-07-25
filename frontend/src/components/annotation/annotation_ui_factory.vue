@@ -1093,11 +1093,13 @@ export default Vue.extend({
             if (!this.annotation_ui_context.command_manager) return
             const redone = this.annotation_ui_context.command_manager.redo()
             if (redone) this.set_has_changed(true)
+            this.handle_update_canvas()
         },
         undo: function () {
             if (!this.annotation_ui_context.command_manager) return
             const undone = this.annotation_ui_context.command_manager.undo()
             if (undone) this.set_has_changed(true)
+            this.handle_update_canvas()
         },
         clear_unsaved: function () {
             this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].clear_unsaved()
