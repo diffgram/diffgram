@@ -504,7 +504,9 @@ export default Vue.extend({
 
             if (this.interface_type === 'image' || this.interface_type === 'video') {
                 this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
-            } else {
+            }
+
+            if (this.interface_type === 'text' || this.interface_type === 'audio') {
                 this.annotation_ui_context.history = new History()
                 this.annotation_ui_context.command_manager = new CommandManager(this.annotation_ui_context.history)
             }
