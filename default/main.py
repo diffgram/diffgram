@@ -152,7 +152,7 @@ if __name__ == '__main__':
 
     limiter.enabled = False
     settings.NAME_EQUALS_MAIN = True
-
+    logger.setLevel(level = logging.DEBUG)
     app.run(host = '0.0.0.0', port = 8080, debug = True)
 # CAUTION . app.run() is BLOCKING
 # code below app.run will not execute!!!
