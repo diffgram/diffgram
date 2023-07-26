@@ -827,8 +827,7 @@ class Process_Media():
 
 
     def check_is_child_of_compound_file(self):
-        if self.input.file:
-            if self.input.file.parent_file_id: 
+        if self.input.type == 'from_compound': 
                 return True
         return False
 

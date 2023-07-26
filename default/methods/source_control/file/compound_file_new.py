@@ -182,7 +182,7 @@ def file_compound_new_core(session: Session,
         if regular_log.log_has_error(log):
             return None, log
 
-    __update_input(input_obj, file)
+    __update_input(input_obj, file, name)
 
     session.add(input_obj)
     session.flush()
@@ -202,7 +202,7 @@ def file_compound_new_core(session: Session,
 
 
 
-def __update_input(input_obj, file):
+def __update_input(input_obj, file, name):
     input_obj.file_id = file.id
     input_obj.original_filename = name
     input_obj.status = 'base_object_created'
