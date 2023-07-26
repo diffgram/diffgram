@@ -504,7 +504,9 @@ export default Vue.extend({
 
             if (this.interface_type === 'image' || this.interface_type === 'video') {
                 this.annotation_ui_context.command_manager = new CommandManagerAnnotationCore()
-            } else {
+            }
+
+            if (this.interface_type === 'text' || this.interface_type === 'audio') {
                 this.annotation_ui_context.history = new History()
                 this.annotation_ui_context.command_manager = new CommandManager(this.annotation_ui_context.history)
             }
@@ -1118,11 +1120,13 @@ export default Vue.extend({
             if (!this.annotation_ui_context.command_manager) return
             const redone = this.annotation_ui_context.command_manager.redo()
             if (redone) this.set_has_changed(true)
+            this.handle_update_canvas()
         },
         undo: function () {
             if (!this.annotation_ui_context.command_manager) return
             const undone = this.annotation_ui_context.command_manager.undo()
             if (undone) this.set_has_changed(true)
+            this.handle_update_canvas()
         },
         clear_unsaved: function () {
             this.$refs[`annotation_area_factory_${this.annotation_ui_context.working_file.id}`][0].$refs[`annotation_core_${this.annotation_ui_context.working_file.id}`].clear_unsaved()
