@@ -12,9 +12,10 @@ class GracefulKiller(metaclass = Singleton):
     kill_now = False
     killing_gracefully = False
     # To reason this do: SLEEP_TIME x MAX_CHECKS
-    # For default case we will wait for the walrus to finish processing for 1 hours 55mins max.
-    MAX_CHECKS = 12 * 55 * 2
-    SLEEP_TIME = 5
+    # For default case we will wait for the walrus to finish processing.
+    # Note for long processing cases e.g. video this may need to be higher
+    MAX_CHECKS = 120
+    SLEEP_TIME = 1
 
     def __init__(self):
         signal(SIGINT, self.exit_gracefully)
@@ -22,7 +23,7 @@ class GracefulKiller(metaclass = Singleton):
         logger.info('Listening for SIGTERM events for graceful shutdown')
 
     def exit_process(self):
-        logger.info('bye! :)')
+        logger.info('Exiting now')
         sys.exit(0)
 
     def set_inputs_with_error_status(self, item_list):
