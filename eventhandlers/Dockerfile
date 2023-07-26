@@ -10,7 +10,6 @@ RUN apt-get install -y libpq-dev python3-dev build-essential
 ADD eventhandlers/requirements.txt /app/
 RUN pip3 install --upgrade pip
 RUN pip3 install setuptools_rust
-RUN pip3 install --no-build-isolation tokenizers torch==2.0
 RUN apt-get install -y curl
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y  # Add this line
 ENV PATH="/root/.cargo/bin:${PATH}"
