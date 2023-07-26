@@ -224,7 +224,7 @@ Vue.use(CronVuetify)
 
 import Vuetify from 'vuetify'
 import '@mdi/font/css/materialdesignicons.css'
-import './css/vuetify-v2.4.7.min.css'
+import './css/vuetify-v2.7.0.min.css'
 import './css/custom_changes.css'
 import './css/mxgraph.css'
 
