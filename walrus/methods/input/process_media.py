@@ -419,14 +419,94 @@ class Process_Media():
 
         process_instance_result = self.process_existing_instance_list()
 
-        self.may_attach_to_job()
-
-        self.update_jobs_with_attached_dirs()
+        self.update_jobs()
 
         end_time = time.time()
         self.log['info']['run_time'] = end_time - start_time
 
         return True
+
+
+    def update_jobs(self):
+
+        if self.check_is_child_of_compound_file() is True:
+            return
+
+        self.may_attach_to_job()
+
+        self.update_jobs_with_attached_dirs()
+
+
+    def may_attach_to_job(self):
+
+        if not self.input or not self.input.file:
+            return
+
+        if not self.input.job_id:
+            return
+
+        Job_permissions.check_job_after_project_already_valid(
+            job = self.input.job,
+            project = self.project)
+
+        result, log = WorkingDirFileLink.file_link_update(
+            session = self.session,
+            add_or_remove = "add",
+            incoming_directory = self.input.directory,
+            directory = self.input.job.directory,  # difference is this is from job
+            file_id = self.input.file.id,
+            job = self.input.job
+        )
+
+        # If job is not completed we should be creating tasks for the new files attached.
+        if self.input.job.status in ['active', 'in_review']:
+            self.create_task_on_job_sync_directories()
+
+
+    def update_jobs_with_attached_dirs(self):
+
+        # Whitelist for allow types here, otherwise it opens a ton of connections while say processing frames
+        if self.input.media_type not in ['image', 'video', 'sensor_fusion', 'text', 'audio', 'geospatial']:
+            return
+
+        file = self.input.file
+
+        directory = self.input.directory
+        if directory is None:
+            directory = self.project.directory_default
+            logger.info(f"[update_jobs_with_attached_dirs] Default Dir Used : {self.project.directory_default}")
+
+        jobs = JobWorkingDir.list(
+            session = self.session,
+            sync_type = 'sync',
+            class_to_return = Job,
+            working_dir_id = directory.id
+        )
+        for job in jobs:
+            job_sync_dir_manger = job_dir_sync_utils.JobDirectorySyncManager(
+                session = self.session,
+                job = job,
+                log = self.log
+            )
+            job_sync_dir_manger.create_file_links_for_attached_dirs(
+                sync_only = True,
+                create_tasks = True,
+                file_to_link = file,
+                file_to_link_dataset = self.working_dir,
+                related_input = self.input,
+                member = self.member
+            )
+            job.update_file_count_statistic(session = self.session)
+
+            # Refresh the task stat count to the latest value.
+            # We want to do this because there may be cases where 2 frames updated the task count
+            # concurrently and that may lead to a bad end result of the counter.
+
+            # Commit any update job/task data.
+
+            job.refresh_stat_count_tasks(self.session)
+        self.try_to_commit()
+
 
     def __file_does_not_exist_in_target_directory(self):
         """
@@ -615,6 +695,8 @@ class Process_Media():
             self.__copy_frame()
         else:
             self.__copy_file()
+
+
     def __update_existing_file(self,
                                file,
                                init_existing_instances = False):
@@ -797,79 +879,21 @@ class Process_Media():
         )
         return job_sync_manager.create_task_from_file(self.input.file)
 
-    def update_jobs_with_attached_dirs(self):
-        # From the file directory, get all related jobs.
-        # TODO confirm how this works for pre processing case
-        # Whitelist for allow types here, otherwise it opens a ton of connections while say processing frames
-        if self.input.media_type not in ['image', 'video', 'sensor_fusion', 'text', 'audio', 'geospatial']:
-            return
 
-        file = self.input.file
-        if self.input.file.parent_id is not None:
-            # Avoid adding child of a compound file
-            file = File.get_by_id(session = self.session, file_id = self.input.file.parent_id)
+    def check_is_compound_file(self):
+        if self.input.file:
+            if self.input.file.type == 'compound': 
+                return True
+        return False
 
-        directory = self.input.directory
-        if directory is None:
-            directory = self.project.directory_default
-            logger.info(f"[update_jobs_with_attached_dirs] Default Dir Used : {self.project.directory_default}")
 
-        jobs = JobWorkingDir.list(
-            session = self.session,
-            sync_type = 'sync',
-            class_to_return = Job,
-            working_dir_id = directory.id
-        )
-        for job in jobs:
-            job_sync_dir_manger = job_dir_sync_utils.JobDirectorySyncManager(
-                session = self.session,
-                job = job,
-                log = self.log
-            )
-            job_sync_dir_manger.create_file_links_for_attached_dirs(
-                sync_only = True,
-                create_tasks = True,
-                file_to_link = file,
-                file_to_link_dataset = self.working_dir,
-                related_input = self.input,
-                member = self.member
-            )
-            job.update_file_count_statistic(session = self.session)
+    def check_is_child_of_compound_file(self):
+        if self.input.file:
+            if self.input.file.parent_file_id: 
+                return True
+        return False
 
-            # Refresh the task stat count to the latest value.
-            # We want to do this because there may be cases where 2 frames updated the task count
-            # concurrently and that may lead to a bad end result of the counter.
 
-            # Commit any update job/task data.
-
-            job.refresh_stat_count_tasks(self.session)
-        self.try_to_commit()
-    def may_attach_to_job(self):
-
-        if not self.input or not self.input.file:
-            return
-
-        if not self.input.job_id:
-            return
-
-        # We could use Job_permissions.check_job_after_project_already_valid()
-        # But I'm not sure if raising in a thread is a good idea.
-        Job_permissions.check_job_after_project_already_valid(
-            job = self.input.job,
-            project = self.project)
-
-        result, log = WorkingDirFileLink.file_link_update(
-            session = self.session,
-            add_or_remove = "add",
-            incoming_directory = self.input.directory,
-            directory = self.input.job.directory,  # difference is this is from job
-            file_id = self.input.file.id,
-            job = self.input.job
-        )
-
-        # If job is not completed we should be creating tasks for the new files attached.
-        if self.input.job.status in ['active', 'in_review']:
-            self.create_task_on_job_sync_directories()
 
     def process_geo_tiff_file(self):
         geotiff_processor = GeoTiffProcessor(
