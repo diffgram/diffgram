@@ -13,6 +13,8 @@ from shared.database.model.model import Model
 from shared.database.model.model_run import ModelRun
 from shared.annotation import Annotation_Update
 from shared.shared_logger import get_shared_logger
+from shared.utils.job_dir_sync_utils import JobDirectorySyncManager
+
 
 logger = get_shared_logger()
 
@@ -167,13 +169,7 @@ def file_compound_new_core(session: Session,
         project_id = project.id,  # TODO test if project_id is working as expected here
         input_id = input_obj.id
     )
-    input_obj.file_id = file.id
-    input_obj.original_filename = name
-    input_obj.status = 'base_object_created'
-    input_obj.processing_deferred = False
-    input_obj.percent_complete = 100
-    session.add(input_obj)
-    session.flush()
+
     if len(instance_list) > 0:
         result, log = process_compound_instance_list(
             session = session,
@@ -185,6 +181,30 @@ def file_compound_new_core(session: Session,
         )
         if regular_log.log_has_error(log):
             return None, log
+
+    __update_input(input_obj, file)
+
+    session.add(input_obj)
+    session.flush()
+
     file_data = file.serialize_base_file()
     file_data['input'] = input_obj.serialize()
+
+    JobDirectorySyncManager.create_all_tasks_for_new_file(
+            session = session, 
+            file = file, 
+            directory = dataset, 
+            input = input_obj, 
+            member = member, 
+            log = log)
+
     return file_data, log
+
+
+
+def __update_input(input_obj, file):
+    input_obj.file_id = file.id
+    input_obj.original_filename = name
+    input_obj.status = 'base_object_created'
+    input_obj.processing_deferred = False
+    input_obj.percent_complete = 100

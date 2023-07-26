@@ -1,4 +1,5 @@
 # OPENCORE - ADD
+from abc import abstractclassmethod
 from shared.database.source_control.working_dir import WorkingDir, WorkingDirFileLink
 from shared.database.task.task import Task
 from shared.database.task.job.job import Job
@@ -19,6 +20,37 @@ class JobDirectorySyncManager:
     job: any = None
     directory: any = None
     file: File = None  # WIP maybe more clear to do this, although there are cases with multiple files...
+
+
+
+    def create_all_tasks_for_new_file(session, file, directory, input, member, log):
+
+        job_list = JobWorkingDir.list(
+            session = session,
+            sync_type = 'sync',
+            class_to_return = Job,
+            working_dir_id = directory.id
+        )
+
+        for job in job_list:
+
+            job_dir_sync = JobDirectorySyncManager(
+                session = session,
+                job = job,
+                log = log
+            )
+            job_dir_sync.create_file_links_for_attached_dirs(
+                sync_only = True,
+                create_tasks = True,
+                file_to_link = file,
+                file_to_link_dataset = directory,
+                related_input = input,
+                member = member
+            )
+            job.update_file_count_statistic(session = session)
+
+            job.refresh_stat_count_tasks(session)
+
 
     def add_file_into_job(
         self,

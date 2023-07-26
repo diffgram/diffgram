@@ -1009,8 +1009,8 @@ class Job(Base, Caching):
             working_dir_id = self.directory_id,
             counts_only = True,
             limit = 1000)
-
         session.add(self)
+
 
     def refresh_stat_count_tasks(self, session):
         task_count_available = Task.list(

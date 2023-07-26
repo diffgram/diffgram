@@ -37,7 +37,7 @@ from methods.input.input_update import Update_Input
 from shared.database.model.model_run import ModelRun
 from shared.database.audio.audio_file import AudioFile
 from shared.database.model.model import Model
-from shared.utils import job_dir_sync_utils
+from shared.utils.job_dir_sync_utils import JobDirectorySyncManager
 from shared.database.task.job.job import Job
 from tenacity import retry, wait_random_exponential, stop_after_attempt, wait_fixed
 from shared.database.text_file import TextFile
@@ -432,45 +432,34 @@ class Process_Media():
         if self.check_is_child_of_compound_file() is True:
             return
 
-        self.update_jobs_with_attached_dirs()
-
-
-    def update_jobs_with_attached_dirs(self):
-
         # Whitelist for allow types here, otherwise it opens a ton of connections while say processing frames
         if self.input.media_type not in ['image', 'video', 'sensor_fusion', 'text', 'audio', 'geospatial']:
             return
 
-        file = self.input.file
+        self.create_all_tasks_for_new_file(self.input.file)
 
+
+    def get_directory(self):
         directory = self.input.directory
         if directory is None:
             directory = self.project.directory_default
-            logger.info(f"[update_jobs_with_attached_dirs] Default Dir Used : {self.project.directory_default}")
+            logger.info(f"Default Dir Used : {self.project.directory_default}")
 
-        jobs = JobWorkingDir.list(
-            session = self.session,
-            sync_type = 'sync',
-            class_to_return = Job,
-            working_dir_id = directory.id
-        )
-        for job in jobs:
-            job_sync_dir_manger = job_dir_sync_utils.JobDirectorySyncManager(
-                session = self.session,
-                job = job,
-                log = self.log
-            )
-            job_sync_dir_manger.create_file_links_for_attached_dirs(
-                sync_only = True,
-                create_tasks = True,
-                file_to_link = file,
-                file_to_link_dataset = self.working_dir,
-                related_input = self.input,
-                member = self.member
-            )
-            job.update_file_count_statistic(session = self.session)
+        return directory
 
-            job.refresh_stat_count_tasks(self.session)
+
+    def create_all_tasks_for_new_file(self, file : File):
+
+        directory = self.get_directory()
+
+        JobDirectorySyncManager.create_all_tasks_for_new_file(
+            session = self.session, 
+            file = file, 
+            directory = directory, 
+            input = self.input, 
+            member = self.member, 
+            log = self.log)
+
         self.try_to_commit()
 
 
