@@ -71,8 +71,8 @@ jobs:
         docker tag diffgram/default diffgram/default:${{ env.diffgram_version }}
         docker push diffgram/default
 
-        docker build . -t diffgram/default -f default/Dockerfile.newrelic
-        docker tag diffgram/default diffgram/default:newrelic-${{ env.diffgram_version }}
+        docker build . -t diffgram/default -f default/Dockerfile
+        docker tag diffgram/default diffgram/default:${{ env.diffgram_version }}
         docker push diffgram/default --all-tags
 
   Publish-Eventhandlers-Docker-Image:
@@ -132,8 +132,8 @@ jobs:
         docker tag diffgram/eventhandlers diffgram/eventhandlers:${{ env.diffgram_version }}
         docker push diffgram/eventhandlers
 
-        docker build . -t diffgram/eventhandlers -f eventhandlers/Dockerfile.newrelic
-        docker tag diffgram/eventhandlers diffgram/eventhandlers:newrelic-${{ env.diffgram_version }}
+        docker build . -t diffgram/eventhandlers -f eventhandlers/Dockerfile
+        docker tag diffgram/eventhandlers diffgram/eventhandlers:${{ env.diffgram_version }}
         docker push diffgram/eventhandlers --all-tags
 
   Publish-Walrus-Docker-Image:
@@ -192,8 +192,8 @@ jobs:
         docker push diffgram/walrus
         docker push diffgram/walrus:${{ env.diffgram_version }}
 
-        docker build . -t diffgram/walrus -f walrus/Dockerfile.newrelic
-        docker tag diffgram/walrus diffgram/walrus:newrelic-${{ env.diffgram_version }}
+        docker build . -t diffgram/walrus -f walrus/Dockerfile
+        docker tag diffgram/walrus diffgram/walrus:${{ env.diffgram_version }}
         docker push diffgram/walrus --all-tags
   Publish-Frontend-Docker-Image:
     runs-on: ubuntu-latest
@@ -244,7 +244,7 @@ jobs:
         docker push diffgram/frontend
 
         docker build . -t diffgram/frontend -f frontend/Dockerfile
-        docker tag diffgram/frontend diffgram/frontend:newrelic-${{ env.diffgram_version }}
+        docker tag diffgram/frontend diffgram/frontend:${{ env.diffgram_version }}
         docker push diffgram/frontend --all-tags
   Publish-Dispatcher-Docker-Image:
     runs-on: ubuntu-latest
@@ -295,5 +295,5 @@ jobs:
         docker push diffgram/local_dispatcher
 
         docker build . -t diffgram/local_dispatcher -f local_dispatcher/Dockerfile
-        docker tag diffgram/local_dispatcher diffgram/local_dispatcher:newrelic-${{ env.diffgram_version }}
+        docker tag diffgram/local_dispatcher diffgram/local_dispatcher:${{ env.diffgram_version }}
         docker push diffgram/local_dispatcher --all-tags
