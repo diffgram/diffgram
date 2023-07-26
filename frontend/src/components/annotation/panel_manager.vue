@@ -18,7 +18,7 @@
     >
       <pane
         v-for="(item, row_index) in num_rows" :key="`row_${row_index}`"
-        :style="`height: ${child_annotation_ctx_list[row_index].container_height}px`"
+        :style="{height: child_annotation_ctx_list[row_index] ? `${child_annotation_ctx_list[row_index].container_height}px` : undefined }"
       >
         <splitpanes
           @pane-click="$emit('pane-click', row_index, $event)"
@@ -27,7 +27,7 @@
           <pane
             v-for="(col, col_index) in parseInt(num_columns)"
             :key="`row_${row_index}_col_${col_index}`"
-            :style="`align-items: ${get_file_type(row_index, col_index) == 'text' ? 'flex-start' : 'center'}`"
+            :style="`align-items: ${get_file_type(row_index, col_index) == 'text' ? 'flex-start' : 'center'}; overflow-y: auto;`"
             :class="{'pane-container-unselected': selected_row !== row_index || selected_col !== col_index, 'pane-container': true}"
           >
             <slot :name="`panel_${row_index}:${col_index}`">

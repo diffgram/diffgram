@@ -440,6 +440,7 @@ export default Vue.extend({
   watch: {
     initial_words_measures: function(newVal) {
       if (newVal) {
+        this.image_annotation_ctx.rendering = true
         setTimeout(this.initialize_token_render, 1000)
       }
     },
