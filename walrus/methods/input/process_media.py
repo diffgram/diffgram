@@ -432,35 +432,7 @@ class Process_Media():
         if self.check_is_child_of_compound_file() is True:
             return
 
-        self.may_attach_to_job()
-
         self.update_jobs_with_attached_dirs()
-
-
-    def may_attach_to_job(self):
-
-        if not self.input or not self.input.file:
-            return
-
-        if not self.input.job_id:
-            return
-
-        Job_permissions.check_job_after_project_already_valid(
-            job = self.input.job,
-            project = self.project)
-
-        result, log = WorkingDirFileLink.file_link_update(
-            session = self.session,
-            add_or_remove = "add",
-            incoming_directory = self.input.directory,
-            directory = self.input.job.directory,  # difference is this is from job
-            file_id = self.input.file.id,
-            job = self.input.job
-        )
-
-        # If job is not completed we should be creating tasks for the new files attached.
-        if self.input.job.status in ['active', 'in_review']:
-            self.create_task_on_job_sync_directories()
 
 
     def update_jobs_with_attached_dirs(self):
@@ -497,12 +469,6 @@ class Process_Media():
                 member = self.member
             )
             job.update_file_count_statistic(session = self.session)
-
-            # Refresh the task stat count to the latest value.
-            # We want to do this because there may be cases where 2 frames updated the task count
-            # concurrently and that may lead to a bad end result of the counter.
-
-            # Commit any update job/task data.
 
             job.refresh_stat_count_tasks(self.session)
         self.try_to_commit()
@@ -862,22 +828,6 @@ class Process_Media():
         self.clean_up_temp_dir_on_thread()
 
         return True
-
-    def create_task_on_job_sync_directories(self):
-        """
-            Given a file, attach create tasks from those files attached to the given
-            job.
-        :param session:
-        :param job:
-        :param files:
-        :return:
-        """
-        job_sync_manager = job_dir_sync_utils.JobDirectorySyncManager(
-            session = self.session,
-            job = self.input.job,
-            log = self.log
-        )
-        return job_sync_manager.create_task_from_file(self.input.file)
 
 
     def check_is_compound_file(self):
