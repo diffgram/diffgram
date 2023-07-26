@@ -24,5 +24,5 @@ RUN rm -rf /usr/share/nginx/html/*
 # Copy from the stahg 1
 COPY --from=builder /vue-ui/dist /usr/share/nginx/html
 
-EXPOSE 80
+EXPOSE 80 8081
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
