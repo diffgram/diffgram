@@ -404,7 +404,7 @@ class JobDirectorySyncManager:
                 sync_event_manager = sync_event_manager,
             )
             if result is not True:
-                log['error']['sync_file_dirs'] = f"Error syncing dirs for file id: {file_to_link.id}"
+                log['error']['sync_file_dirs'] = f"Error syncing dirs for file_to_link: {file_to_link.id}"
             if regular_log.log_has_error(log):
                 return False, log
         self.job.update_file_count_statistic(session = self.session)
