@@ -1000,12 +1000,6 @@ class Job(Base, Caching):
         self,
         session):
         """
-        In theory we could count each file as it gets added
-        but that seems prone to off by 1 errors in distributed systems
-        context.
-        Instead we just query the count,
-        and update it here?
-
         Slight problem is that this statistic could be out if
         the file doesn't get remove properly from the job...
 
@@ -1014,7 +1008,7 @@ class Job(Base, Caching):
             session = session,
             working_dir_id = self.directory_id,
             counts_only = True,
-            limit = None)
+            limit = 1000)
 
         session.add(self)
 
