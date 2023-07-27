@@ -56,26 +56,7 @@ class DiffgramLogger:
             self.logger = self.configure_default_logger()
         return self.logger
 
-    def configure_gcp_logger(self):
-        # Imports the Google Cloud client library
 
-        if DiffgramLogger.logging_initialized.get(self.logger_name):
-            return logging.getLogger(self.logger_name)
-
-        from google.cloud import logging as gcp_logging
-        from google.cloud.logging.handlers import CloudLoggingHandler
-
-        # Instantiates a client
-        fmt_str = '[%(asctime)s] %(levelname)s %(module)s.py @ line %(lineno)d: %(message)s'
-        logging.basicConfig(level = logging.INFO, format = fmt_str)
-        logging_client = gcp_logging.Client()
-        handler = CloudLoggingHandler(logging_client, name = self.logger_name)
-        handler.setFormatter(logging.Formatter(fmt_str))
-        logger = logging.getLogger(self.logger_name)
-        logger.addHandler(handler)
-        logger.info(f"Logger {self.logger_name} setup success.")
-        DiffgramLogger.logging_initialized[self.logger_name] = True
-        return logger
 
     def configure_sandbox_testing_logger(self):
         import colorlog
