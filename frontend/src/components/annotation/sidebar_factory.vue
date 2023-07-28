@@ -62,6 +62,7 @@
     @change_instance_label="(e) => $emit('on_change_instance_label', e)"
     @delete_instance="(e) => $emit('on_delete_instance', e)"
     @on_update_attribute="(e, is_global) => $emit('on_update_attribute', e, is_global)"
+    ref="sidebar_audio"
   />
 </div>
 </template>
@@ -106,6 +107,9 @@ export default Vue.extend({
       }
       else if(this.interface_type === 'text') {
         return this.$refs.sidebar_text
+      }
+      else if(this.interface_type==='text') {
+        return this.$refs.sidebar_audio
       }
       // TODO: ADD OTHER INTERFACE TYPES HERE.
     },
