@@ -114,7 +114,6 @@
               :min="group.min_value"
               :max="group.max_value"
               v-model="internal_selected"
-              :label="group.prompt"
               :disabled="loading || view_only_mode"
               @change="attribute_change()"
             >
