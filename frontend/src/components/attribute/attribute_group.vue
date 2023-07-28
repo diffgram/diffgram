@@ -108,17 +108,23 @@
           >
           </diffgram_select>
 
-          <v-container class="d-flex align-content-center justify-start"  v-if="group.kind === 'slider' || !group.kind">
-            <v-slider
-              :data-cy="`${group.prompt}_value_slider`"
-              :min="group.min_value"
-              :max="group.max_value"
-              v-model="internal_selected"
-              :disabled="loading || view_only_mode"
-              @change="attribute_change()"
-            >
-            </v-slider>
-            <p>{{internal_selected}}</p>
+          <v-container  v-if="group.kind === 'slider' || !group.kind">
+            <v-layout>
+              <p></p>
+              <v-slider
+                :data-cy="`${group.prompt}_value_slider`"
+                :min="group.min_value"
+                :max="group.max_value"
+                :tick-labels="tickLabels"
+                show-ticks="always"
+                :tick-size="group.max_value"
+                thumb-label="always"
+                v-model="internal_selected"
+                :disabled="loading || view_only_mode"
+                @change="attribute_change()"
+              >
+              </v-slider>
+            </v-layout>
           </v-container>
 
           <v-time-picker
@@ -586,6 +592,14 @@
 
       data() {
         return {
+
+          tickLabels: [
+            'Not at all',
+            'Several days',
+            'More than half the days',
+            'Nearly every day',
+          ],
+
           search: "",
           tree_force_rerender: false,
           tree_rerender_timeout: null,
@@ -1099,12 +1113,6 @@
             }
           }
           else if(this.group.kind === 'slider'){
-            if(!this.group.min_value){
-              this.group.min_value = 1;
-            }
-            if(!this.group.max_value){
-              this.group.max_value = 10;
-            }
             this.internal_selected = parseInt(value, 10)
           }
           else if(this.group.kind === 'time'){
@@ -1227,21 +1235,17 @@
             // so doing this as a work around
             group.kind = "ARCHIVE"
           }
-          let min_value, max_value;
+ 
           if(group.kind === 'slider'){
-            min_value = parseInt(this.min_value, 10);
-            max_value = parseInt(this.max_value, 10);
-            if(max_value < parseInt(group.default_value, 10)){
-              max_value = parseInt(group.default_value, 10)
-              group.max_value = max_value;
+
+            if(!this.group.min_value) {
+              this.group.min_value=1;
             }
-            if(min_value > parseInt(group.default_value, 10)){
-              min_value = parseInt(group.default_value, 10)
-              group.min_value = min_value;
+            if(!this.group.max_value) {
+              this.group.max_value=10;
             }
           }
-          group.max_value = max_value;
-          group.min_value = min_value;
+
           try{
             let [data, error] = await attribute_group_update(this.project_string_id, mode, group)
             this.success = true
@@ -1260,14 +1264,6 @@
               // only refresh on archive?
 
               this.$store.commit('attribute_refresh_group_list')
-            }
-            if(this.group.kind === 'slider'){
-              if(!this.group.min_value){
-                this.group.min_value = 1;
-              }
-              if(!this.group.max_value){
-                this.group.max_value = 10;
-              }
             }
           }
           catch (error){
