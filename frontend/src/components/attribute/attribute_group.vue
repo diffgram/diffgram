@@ -116,7 +116,6 @@
                 :min="group.min_value"
                 :max="group.max_value"
                 :tick-labels="tickLabels"
-                show-ticks="always"
                 :tick-size="group.max_value"
                 thumb-label="always"
                 v-model="internal_selected"
@@ -594,10 +593,10 @@
         return {
 
           tickLabels: [
-            'Not at all',
+            'None',
             'Several days',
-            'More than half the days',
-            'Nearly every day',
+            'More >50%',
+            'Every day',
           ],
 
           search: "",
