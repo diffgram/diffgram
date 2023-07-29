@@ -163,6 +163,7 @@ class DockerIngress(Ingress):
         self.default.host = 'http://default'
         self.walrus.host = 'http://walrus'     
         self.frontend.host = 'http://frontend'
+        self.frontend.port = 80
 
         self.app = Flask(__name__, 
                                static_url_path = '/dispatcher-static-files')
