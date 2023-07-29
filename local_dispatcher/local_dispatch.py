@@ -125,9 +125,6 @@ class Ingress():
 
             self.app.logger.info(f"Service: {service.name} \t Ingress: {ingress.name} \t URL: {url}")
 
-            if service.name == 'frontend':
-                return requests.get(url).text
-
             response = self.build_request(url)
 
             return self.default_response_formatting(response)
