@@ -269,9 +269,9 @@ class DiffgramInstallTool:
                                       aws_access_key_id=access_id, aws_secret_access_key=access_secret, region_name=bucket_region)
             else:
                 client = boto3.client('s3', endpoint_url=endpoint_url, aws_access_key_id=access_id, aws_secret_access_key=access_secret, region_name=bucket_region)
-            print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Connection To S3 Account")
+            print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Connection To Storage")
         except Exception as e:
-            print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Connection To S3 Account")
+            print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Connection To Storage")
             bcolors.printcolor('Error Connecting to S3: Please check you entered valid credentials.', bcolors.FAIL)
             print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update credentials and try again', bcolors.OKBLUE)
@@ -285,7 +285,7 @@ class DiffgramInstallTool:
             print(f"{bcolors.OKGREEN}[OK] {bcolors.ENDC}Write Permissions")
         except:
             print(f"{bcolors.FAIL}[ERROR] {bcolors.ENDC}Write Permissions")
-            bcolors.printcolor('Error Connecting to S3: Please check you have write permissions on the S3 bucket.',
+            bcolors.printcolor('Error Connecting to storage bucket: Please check you have write permissions on the bucket.',
                                bcolors.FAIL)
             print(f"Details: {traceback.format_exc()}")
             bcolors.printcolor('Please update permissions and try again', bcolors.OKBLUE)
@@ -568,9 +568,7 @@ class DiffgramInstallTool:
     def set_diffgram_version(self):
         version = bcolors.inputcolor('Enter diffgram version: [Or Press Enter to Get The Latest Version]: ')
         if version == "":
-            response = requests.get("https://api.github.com/repos/diffgram/diffgram/releases/latest")
-            latest_release = response.json()['tag_name']
-            self.diffgram_version = latest_release
+            self.diffgram_version = 'latest'
         else:
             self.diffgram_version = version
 
