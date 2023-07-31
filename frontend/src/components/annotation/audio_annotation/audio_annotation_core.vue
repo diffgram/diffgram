@@ -10,7 +10,8 @@
         :audio_file="task ? task.file : file"
         :invisible_labels="invisible_labels"
         @asign_wavesurfer_id="asign_wavesurfer_id"
-        @instance_create_update="instance_create_update"
+        @instance_create="instance_create"
+        @instance_update="instance_update"
       />
     </div>
 
@@ -177,23 +178,41 @@ export default {
         }
       })
     },
-    instance_create_update: function(audiosurfer_id, start_time, end_time) {
+    instance_create(audiosurfer_id, start_time, end_time) {
       let instance;
       let command;
 
       const instance_already_exists = this.instance_list.get().find(inst => inst.audiosurfer_id === audiosurfer_id && !inst.soft_delete)
 
-      if (!instance_already_exists) {
-        instance = new AudioAnnotationInstance()
-        instance.create_frontend_instance(audiosurfer_id, start_time, end_time, {... this.current_label}, {})
-        this.instance_list.push([instance])
-        command = new CreateInstanceCommand([instance], this.instance_list)
-      } else {
-        command = new UpdateInstanceAudioCoordinatesCommand([instance_already_exists], this.instance_list)
-        command.set_new_geo_coords(start_time, end_time)
+      if (instance_already_exists) {
+        return
       }
+
+      instance = new AudioAnnotationInstance()
+      instance.create_frontend_instance(audiosurfer_id, start_time, end_time, {... this.current_label}, {})
+      this.instance_list.push([instance])
+      command = new CreateInstanceCommand([instance], this.instance_list)
+
       this.annotation_ui_context.command_manager.executeCommand(command)
-      this.has_changed = true
+      this.$emit('set_has_changed', true)
+      this.update_trigger()
+    },
+    instance_update(audiosurfer_id, start_time, end_time) {
+
+      let instance;
+      let command;
+
+      const instance_exists = this.instance_list.get().find(inst => inst.audiosurfer_id === audiosurfer_id && !inst.soft_delete)
+
+      if (!instance_exists) {
+        return
+      }
+
+      command = new UpdateInstanceAudioCoordinatesCommand([instance_already_exists], this.instance_list)
+      command.set_new_geo_coords(start_time, end_time)
+
+      this.annotation_ui_context.command_manager.executeCommand(command)
+      this.$emit('set_has_changed', true)
       this.update_trigger()
     },
     defer_task: async function () {
