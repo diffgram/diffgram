@@ -133,13 +133,13 @@ class Export(Base):
         self
     ):
 
-        docs_high_level = "https://diffgram.com/docs/export-walkthrough"
-        docs_low_level = "https://diffgram.com/docs/understanding-diffgrams-json-file-format"
-        docs_coordinate_system = "https://diffgram.com/docs/export#coordinate-system"
+        docs_high_level = "https://diffgram.readme.io/docs/export-walkthrough"
+        docs_low_level = "https://diffgram.readme.io/docs/understanding-diffgrams-json-file-format"
+        docs_coordinate_system = "https://diffgram.readme.io/docs/export#coordinate-system"
         support = "support@diffgram.com"
         open_source = "https://github.com/diffgram/diffgram"
         python_sdk = "https://github.com/diffgram/python-sdk"
-        new_to_diffgram = "Create a free account to play with: https://diffgram.com/user/data_platform/new"
+        new_to_diffgram = "Create a free account to play with: https://diffgram.readme.io/user/data_platform/new"
 
         share_request = None
         if self.user:
@@ -154,7 +154,7 @@ class Export(Base):
             'python_sdk': python_sdk,
             'new_to_diffgram': new_to_diffgram,
             'share_request': share_request,
-            'diffgram': "Diffgram: https://diffgram.com. Data Annotation & Training Data Software"
+            'diffgram': "Diffgram: https://diffgram.readme.io. Data Annotation & Training Data Software"
         }
 
     def get_by_id(
