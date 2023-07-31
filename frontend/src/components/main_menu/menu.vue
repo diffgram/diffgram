@@ -52,15 +52,6 @@
               </v-toolbar-title>
             </ahref_seo_optimal>
 
-
-            <div class="hidden-sm-and-down"
-                 v-if="$store.state.user.logged_in != true ">
-
-              <menu_marketing>
-
-              </menu_marketing>
-
-            </div>
             <div v-if="$store.state.user.logged_in == true ">
 
 
@@ -297,7 +288,6 @@
   import logo from "../diffgram/logo.vue";
   import pending_files_dialog from "../input/pending_files_dialog";
   import {getProjectList} from "../../services/projectServices";
-  import menu_marketing from './menu_marketing'
   import menu_super_admin from "./menu_super_admin";
 
   import Vue from "vue";
@@ -308,7 +298,6 @@
       main_menu_project,
       menu_tasks,
       pending_files_dialog,
-      menu_marketing,
       menu_super_admin,
       logo
     },
