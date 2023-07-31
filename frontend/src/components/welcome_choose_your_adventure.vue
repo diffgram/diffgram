@@ -18,7 +18,7 @@
                       large
                       outlined
                       color="primary"
-                      href="https://diffgram.com/studio/annotate/coco-dataset/explorer"
+                      href="https://app.diffgram.com/studio/annotate/coco-dataset/explorer"
                       target="_blank">
                 Explore Sample
               </v-btn>
@@ -27,7 +27,7 @@
                       large
                       outlined
                       color="primary"
-                      href="https://diffgram.com/studio/annotate/coco-dataset/explorer"
+                      href="https://app.diffgram.com/studio/annotate/coco-dataset/explorer"
                       target="_blank">
                 Explore Sample on Diffgram.com
               </v-btn>
