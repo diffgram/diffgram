@@ -33,7 +33,7 @@
               :filtered_instance_type_list_function="filtered_instance_type_list"
               :show_default_navigation="show_default_navigation"
               :current_label_file="annotation_ui_context.current_label_file"
-              :has_changed="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().has_changed || has_pending_frames"
+              :has_changed="has_changed"
               :save_loading="annotation_ui_context.current_image_annotation_ctx.video_mode ?
         annotation_ui_context.current_image_annotation_ctx.save_loading_frames_list.length > 0 : annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().save_loading"
               :annotations_loading="annotation_ui_context.current_image_annotation_ctx.annotations_loading"
@@ -193,7 +193,7 @@
                               :get_userscript="get_userscript"
                               :instance_type_list="instance_type_list"
                               :save_loading_frames_list="child_annotation_ctx_list[index].save_loading_frames_list"
-                              :has_changed="annotation_ui_context.get_current_ann_ctx().has_changed"
+                              :has_changed="has_changed"
                               :instance_buffer_metadata="child_annotation_ctx_list[index].instance_buffer_metadata"
                               :create_instance_template_url="create_instance_template_url"
                               :has_pending_frames="has_pending_frames"
@@ -497,6 +497,11 @@ export default Vue.extend({
                 {name: "ellipse", display_name: "Ellipse & Circle", icon: "mdi-ellipse-outline"},
                 {name: "curve", display_name: "Curve Quadratic", icon: "mdi-chart-bell-curve-cumulative"},
             ],
+          current_ann_ctx: {
+            container_height: null,
+            container_width: null,
+            has_changed: null,
+          },
         }
     },
     watch: {
@@ -663,6 +668,9 @@ export default Vue.extend({
         this.initializing = false
     },
     computed: {
+        has_changed() {
+          return this.current_ann_ctx && this.current_ann_ctx.has_changed
+        },
         annotation_area_container_max_height: function () {
             let heightWindow = this.window_height && document.documentElement.clientHeight ?
                 Math.min(this.window_height, document.documentElement.clientHeight) :
@@ -1143,19 +1151,15 @@ export default Vue.extend({
             this.$store.commit("set_last_selected_tool", instance_type);
         },
         change_current_label_file_template: function (label_file) {
-            console.log('foo change_current_label_file_template', label_file)
             this.annotation_ui_context.current_label_file = label_file;
             this.$emit('change_current_label_file', this.annotation_ui_context.current_label_file)
         },
 
         update_current_instance_list: function (instance_list, file_id, file_type) {
-            console.log('foo update_current_instance_list', instance_list, file_id, file_type)
             if (file_id !== this.annotation_ui_context.working_file.id) {
                 return
             }
             let inst_list = this.annotation_ui_context.instance_store.get_instance_list(file_id)
-
-            console.log('foo update_current_instance_list inst_list', inst_list)
 
             this.current_instance_list = inst_list ? inst_list : []
             this.annotation_ui_context.current_global_instance = this.annotation_ui_context.instance_store.get_global_instance(file_id)
@@ -1252,6 +1256,10 @@ export default Vue.extend({
         set_has_changed: function (value) {
             let ann_ctx = this.annotation_ui_context.get_current_ann_ctx()
             ann_ctx.has_changed = value
+
+            if ( this.current_ann_ctx ) {
+              this.current_ann_ctx.has_changed = value
+            }
         },
 
         get_current_annotation_area_ref: function () {
@@ -1303,6 +1311,47 @@ export default Vue.extend({
             return result
         },
 
+        process_audio_save: async function () {
+
+          const file_id = this.annotation_ui_context.working_file.id
+
+          const {
+              instance_list
+          } = this.annotation_ui_context.instance_store.get_instance_list(file_id) || {}
+
+          console.log('foo process_audio_save instance_list', file_id, instance_list)
+
+          if (!instance_list) {
+            return
+          }
+
+          this.set_has_changed(false)
+          this.set_save_loading(true)
+
+          const task = this.annotation_ui_context.task
+
+          let url;
+          if ( task && task.id ) {
+            url = `/api/v1/task/${task.id}/annotation/update`;
+          } else {
+            url = `/api/project/${this.project_string_id}/file/${file_id}/annotation/update`
+          }
+
+          const res = await postInstanceList(url, instance_list)
+
+          const { added_instances } = res
+
+          instance_list.map(instance => {
+            const instance_uuid = instance.creation_ref_id
+            const updated_instance = added_instances.find(added_instance => added_instance.creation_ref_id === instance_uuid)
+            if (updated_instance) {
+                instance.id = updated_instance.id
+            }
+          })
+
+          this.set_save_loading(false)
+        },
+
         process_text_save: async function (and_complete = false) {
             // TODO: Move out of component and into a class.
             this.set_has_changed(false)
@@ -1351,6 +1400,11 @@ export default Vue.extend({
             if (this.annotation_ui_context.working_file.type === 'text') {
                 await this.process_text_save(and_complete)
                 return
+            }
+
+            if (this.annotation_ui_context.working_file.type === 'audio') {
+              await this.process_audio_save()
+              return
             }
 
             this.save_error = {}
@@ -1883,8 +1937,8 @@ export default Vue.extend({
             if (this.listeners_map()) this.listeners_map()['resize']()
         },
         change_active_working_file: async function (file) {
-            console.log('foo change_active_working_file', file)
             this.annotation_ui_context.working_file = file
+
             //await this.$nextTick()
             let ann_ctx = this.get_child_annotation_ctx(file)
             if (file.type === 'video' || file.type === 'image') {
@@ -1913,9 +1967,7 @@ export default Vue.extend({
                 this.annotation_ui_context.current_sensor_fusion_annotation_ctx = ann_ctx
             }
 
-            console.log('foo change_active_working_file this.current_instance_list', this.current_instance_list)
-
-
+            this.current_ann_ctx = this.annotation_ui_context.get_current_ann_ctx()
         },
         set_compound_global_attributes_instance_list: async function (file) {
             let file_data

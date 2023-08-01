@@ -133,6 +133,10 @@ export default {
   mounted() {
     this.instance_list = new InstanceList()
 
+    if (this.annotation_ui_context) {
+      this.current_label = this.annotation_ui_context.current_label_file
+    }
+
     this.initialize_interface_data()
     this.start_autosave()
     this.hot_key_listeners()
@@ -208,7 +212,7 @@ export default {
         return
       }
 
-      command = new UpdateInstanceAudioCoordinatesCommand([instance_already_exists], this.instance_list)
+      command = new UpdateInstanceAudioCoordinatesCommand([instance_exists], this.instance_list)
       command.set_new_geo_coords(start_time, end_time)
 
       this.annotation_ui_context.command_manager.executeCommand(command)
