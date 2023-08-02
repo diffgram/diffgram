@@ -55,6 +55,7 @@
     </div>
     <div v-else-if="interface_type === 'audio'">
       <audio_annotation_core
+        v-if="!changing_file && !changing_task && image_annotation_ctx != undefined"
         v-bind="$props"
         v-on="$listeners"
         :ref="`audio_annotation_core_${working_file.id}`"

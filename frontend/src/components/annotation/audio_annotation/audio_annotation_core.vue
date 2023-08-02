@@ -7,7 +7,7 @@
         :force_watch_trigger="force_watch_trigger"
         :instance_list="instance_list.get()"
         :current_label="current_label"
-        :audio_file="task ? task.file : file"
+        :audio_file="working_file"
         :invisible_labels="invisible_labels"
         @asign_wavesurfer_id="asign_wavesurfer_id"
         @instance_create="instance_create"
@@ -154,12 +154,14 @@ export default {
                     directory_id: this.$store.state.project.current_directory.directory_id,
                     job_id: this.job_id,
                     attached_to_job: this.task.file.attached_to_job,
+                    task_child_file_id: this.working_file.id,
                 }
             } else {
                 url = `/api/project/${this.$props.project_string_id}/file/${this.$props.file.id}/annotation/list`;
                 payload = {}
             }
             const raw_instance_list = await getInstanceList(url, payload)
+
             // Get instances from teh backend and render them
             const initial_instances = raw_instance_list.map(instance_object => {
               const { id, start_time, end_time, label_file, attribute_groups } = instance_object
@@ -243,48 +245,6 @@ export default {
         this.$emit("request_file_change", direction, file);
       }
     },
-    save: async function(){
-      this.has_changed = false
-      this.save_loading = true
-      let url;
-      if (this.task && this.task.id) {
-        url = `/api/v1/task/${this.task.id}/annotation/update`;
-      } else {
-        url = `/api/project/${this.project_string_id}/file/${this.file.id}/annotation/update`
-      }
-
-      const res = await postInstanceList(url, this.instance_list.get_all())
-      const { added_instances } = res
-      this.instance_list.get_all().map(instance => {
-        const instance_uuid = instance.creation_ref_id
-        const updated_instance = added_instances.find(added_instance => added_instance.creation_ref_id === instance_uuid)
-        if (updated_instance) {
-            instance.id = updated_instance.id
-        }
-      })
-      this.save_loading = false
-    },
-    trigger_task_change: async function (direction, assign_to_user = false) {
-      if (this.has_changed) {
-        await this.save();
-        await this.save();
-      }
-      this.$emit("request_new_task", direction, this.task, assign_to_user);
-    },
-    on_task_annotation_complete_and_save: async function () {
-      await this.save();
-      await this.save();
-      const response = await finishTaskAnnotation(this.task.id);
-      const new_status = response.data.task.status;
-      this.task.status = new_status;
-      if (new_status !== "complete") {
-        this.submitted_to_review = true;
-      }
-      if (this.$props.task && this.$props.task.id) {
-        this.save_loading_image = false;
-        this.trigger_task_change("next", this.$props.task, true);
-      }
-    },
     update_attribute: function(attribute) {
       const command = new UpdateInstanceAttributeCommand([this.instance_list.get().find(inst => inst.creation_ref_id === this.current_instance.creation_ref_id)], this.instance_list)
       command.set_new_attribute(attribute[0].id, {...attribute[1]})
@@ -310,24 +270,6 @@ export default {
     on_select_instance: function(instance) {
       this.current_instance = instance
     },
-    undo: function () {
-      if (!this.history.undo_posible) return;
-
-      let undone = this.annotation_ui_context.command_manager.undo();
-      this.update_trigger()
-      this.current_instance = null
-
-      if (undone) this.has_changed = true;
-    },
-    redo: function () {
-      if (!this.history.redo_posible) return;
-
-      let redone = this.annotation_ui_context.command_manager.redo();
-      this.update_trigger()
-      this.current_instance = null
-
-      if (redone) this.has_changed = true;
-    },
     start_autosave: function () {
       this.interval_autosave = setInterval(
         this.detect_is_ok_to_save,
@@ -336,7 +278,7 @@ export default {
     },
     detect_is_ok_to_save: async function () {
       if (this.has_changed) {
-        await this.save();
+        this.$emit('save');
       }
     },
     hot_key_listeners: function() {
@@ -348,7 +290,7 @@ export default {
     },
     keydown_event_listeners: async function(e) {
       if (e.keyCode === 83) {
-        await this.save()
+        this.$emit('save')
       }
     },
     on_change_label_schema: function(schema){

@@ -455,8 +455,5 @@ export default Vue.extend({
       required: true
     }
   },
-  mounted() {
-    console.log('foo audio_tollbar mounted', this)
-  }
 })
 </script>
