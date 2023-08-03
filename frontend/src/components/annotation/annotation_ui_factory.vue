@@ -1337,7 +1337,7 @@ export default Vue.extend({
             url = `/api/project/${this.project_string_id}/file/${file_id}/annotation/update`
           }
 
-          const res = await postInstanceList(url, instance_list)
+          const res = await postInstanceList(url, instance_list, file_id)
 
           const { added_instances } = res
 
