@@ -1034,36 +1034,9 @@ export default Vue.extend({
                 return {size: 100 / this.annotation_ui_context.panel_settings.rows}
             })
             this.rows_panes_size = default_pane_sizes_rows
-            this.calc_init_rows_dimensions(default_pane_sizes_rows)
+            this.recalculate_pane_rows_dimensions(default_pane_sizes_rows)
             this.$forceUpdate()
         },
-
-        calc_init_rows_dimensions(panes_list) {
-            if (!this.$refs.panels_manager) {
-                return
-            }
-
-            const avail_height = this.annotation_ui_context.task
-              ?  window.innerHeight - 50
-              :  window.innerHeight - 100
-
-            let total_height = this.$refs.panels_manager.$el.clientHeight
-
-            let total_rows = this.annotation_ui_context.panel_settings.rows
-
-            const splittersTotalHeight = total_rows * 7
-
-            for (let row_index = 0; row_index < panes_list.length; row_index++) {
-                let row_files = this.annotation_ui_context.working_file_list.filter(file => file.row === row_index)
-                for (let file of row_files) {
-                    let i = this.annotation_ui_context.working_file_list.indexOf(file)
-                    // Set default initial values.
-                    this.child_annotation_ctx_list[i].container_height = (avail_height - splittersTotalHeight) / total_rows;
-                }
-            }
-
-        },
-
         on_panes_rows_resized: function (panes_list) {
             this.rows_panes_size = panes_list
             this.recalculate_pane_rows_dimensions(panes_list)
@@ -1318,8 +1291,6 @@ export default Vue.extend({
           const {
               instance_list
           } = this.annotation_ui_context.instance_store.get_instance_list(file_id) || {}
-
-          console.log('foo process_audio_save instance_list', file_id, instance_list)
 
           if (!instance_list) {
             return
@@ -1939,7 +1910,7 @@ export default Vue.extend({
         change_active_working_file: async function (file) {
             this.annotation_ui_context.working_file = file
 
-            //await this.$nextTick()
+            await this.$nextTick()
             let ann_ctx = this.get_child_annotation_ctx(file)
             if (file.type === 'video' || file.type === 'image') {
                 let frame_num;
@@ -2002,14 +1973,10 @@ export default Vue.extend({
             file.instance_list = this.annotation_ui_context.compound_global_attributes_instance_list
         },
         set_default_layout_for_child_files: function (child_files, root_file = null) {
-            // TDDO: change back to original after demo today
-            this.annotation_ui_context.panel_settings.rows = child_files.length
-            this.annotation_ui_context.panel_settings.columns = 1
+            let cols = child_files.length < 4 ? child_files.length : 4
 
-//            let cols = child_files.length < 4 ? child_files.length : 4
-//
-//            if (root_file && root_file.subtype === 'conversational') cols = 1
-//            this.annotation_ui_context.panel_settings.set_cols_and_rows_from_total_items(cols, child_files.length)
+            if (root_file && root_file.subtype === 'conversational') cols = 1
+            this.annotation_ui_context.panel_settings.set_cols_and_rows_from_total_items(cols, child_files.length)
         },
         update_root_file: async function (raw_file) {
             if (!raw_file) {

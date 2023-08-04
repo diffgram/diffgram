@@ -23,7 +23,6 @@
 import audio_toolbar from './audio_toolbar'
 import audio_sidebar from './audio_sidebar.vue'
 import waveform_selector from './render_elements/waveform_selector.vue'
-import CommandManager from "../../../helpers/command/command_manager"
 import InstanceList from "../../../helpers/instance_list"
 import History from "../../../helpers/history"
 import {
@@ -188,9 +187,9 @@ export default {
       let instance;
       let command;
 
-      const instance_already_exists = this.instance_list.get().find(inst => inst.audiosurfer_id === audiosurfer_id && !inst.soft_delete)
+      const existing_instance = this.instance_list.get().find(inst => inst.audiosurfer_id === audiosurfer_id && !inst.soft_delete)
 
-      if (instance_already_exists) {
+      if (existing_instance) {
         return
       }
 
@@ -208,13 +207,13 @@ export default {
       let instance;
       let command;
 
-      const instance_exists = this.instance_list.get().find(inst => inst.audiosurfer_id === audiosurfer_id && !inst.soft_delete)
+      const existing_instance = this.instance_list.get().find(inst => inst.audiosurfer_id === audiosurfer_id && !inst.soft_delete)
 
-      if (!instance_exists) {
+      if (!existing_instance) {
         return
       }
 
-      command = new UpdateInstanceAudioCoordinatesCommand([instance_exists], this.instance_list)
+      command = new UpdateInstanceAudioCoordinatesCommand([existing_instance], this.instance_list)
       command.set_new_geo_coords(start_time, end_time)
 
       this.annotation_ui_context.command_manager.executeCommand(command)
