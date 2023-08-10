@@ -46,7 +46,6 @@ WORKDIR /app/
 
 ENV PYTHONPATH=/app
 ENV NEW_RELIC_CONFIG_FILE=/app/newrelic.ini
-#CMD exec gunicorn --bind :$PORT --timeout 120 --worker-class eventlet --workers 3 --no-sendfile --config python:my_conf main:app
 EXPOSE 8080
 
 ENTRYPOINT gunicorn --bind :8080 --timeout 120 --worker-class sync --workers 3 --no-sendfile main:app

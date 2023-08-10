@@ -125,9 +125,6 @@ class Ingress():
 
             self.app.logger.info(f"Service: {service.name} \t Ingress: {ingress.name} \t URL: {url}")
 
-            if service.name == 'frontend':
-                return requests.get(url).text
-
             response = self.build_request(url)
 
             return self.default_response_formatting(response)
@@ -154,15 +151,16 @@ class BaremetalIngress(Ingress):
                                static_folder = "../frontend/dist/static")
 
 
-class DockerIngress(Ingress):
+class DockerComposeIngress(Ingress):
     def __init__(self, host=None):
         super().__init__(host)
 
-        self.name = "docker"
+        self.name = "Docker Compose"
 
         self.default.host = 'http://default'
         self.walrus.host = 'http://walrus'     
         self.frontend.host = 'http://frontend'
+        self.frontend.port = 80
 
         self.app = Flask(__name__, 
                                static_url_path = '/dispatcher-static-files')
@@ -198,12 +196,18 @@ class Router():
 
     
 
-DOCKER_CONTEXT = env_adapter.bool(os.getenv('DOCKER_CONTEXT', False))
+def determine_ingress_from_env():
+    DOCKER_CONTEXT = env_adapter.bool(os.getenv('DOCKER_CONTEXT', False))
+    DIFFGRAM_SYSTEM_MODE = os.getenv('DIFFGRAM_SYSTEM_MODE', None)
 
-if DOCKER_CONTEXT is True:
-    ingress = DockerIngress()
-else:
-    ingress = BaremetalIngress()
+    ingress = BaremetalIngress()   # Default
+  
+    if DIFFGRAM_SYSTEM_MODE != 'testing_e2e':
+        if DOCKER_CONTEXT is True:
+            ingress = DockerComposeIngress() 
+            
+    return ingress
 
+ingress = determine_ingress_from_env()
 router = Router(ingress)
 router.start()

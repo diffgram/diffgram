@@ -14,6 +14,7 @@ module.exports = {
     + "|quick-lru"
     + "|ol-ext"
     + "|yet-another-module"
+    + "|wavesurfer.js"
     + ")/)",
 
   ],

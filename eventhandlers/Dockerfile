@@ -1,8 +1,6 @@
 FROM python:3.11.1-bullseye
 LABEL python_version=python3.11.1
 
-ENV DOCKER_CONTEXT=True
-
 RUN seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{}
 RUN for i in {1..8}; do mkdir -p "/usr/share/man/man$i"; done
 RUN apt-get update
@@ -24,4 +22,5 @@ ENV HF_HOME=/tmp/
 WORKDIR /app/
 EXPOSE 8086
 
-CMD ["python", "main.py"]
+
+CMD exec newrelic-admin run-program python main.py

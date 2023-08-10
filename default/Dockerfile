@@ -18,6 +18,6 @@ ADD shared /app/shared
 
 WORKDIR /app/
 RUN ["chmod", "+x", "/app/db-init.sh"]
-#CMD exec gunicorn --bind :$PORT --timeout 120 --worker-class eventlet --workers 3 --no-sendfile --config python:my_conf main:app
+
 EXPOSE 8080
 CMD exec gunicorn --bind :8080 --timeout 120 --worker-class sync --workers 5 --no-sendfile main:app

@@ -294,7 +294,7 @@
         this.instance_index_to_paste = hovered_instance_index;
         this.show_paste_menu = true
       },
-      on_click_create_instance_template: function (e) {
+      on_click_create_instance_template: function () {
         this.show_instance_template_menu = false
         const hovered_instance_index = this.instance_hover_index_locked;
         this.instance_index_to_create_instance_template = hovered_instance_index;
@@ -327,7 +327,7 @@
         this.locked_mouse_position = {...this.mouse_position};
       },
 
-      pause_object(event) {
+      pause_object() {
         let instance_update = {
           index: this.instance_hover_index_locked,
           mode: "pause_object"
