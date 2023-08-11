@@ -53,11 +53,16 @@ export default Vue.extend({
       zoom: 0,
       regions: null,
       disableDragSelection: null,
+      // NOTE: regionIdToIsCreatedMap is used to keep track of rendered regions
+      regionIdToIsCreatedMap: {},
     }
   },
   watch:{
     zoom: function() {
       this.wavesurfer.zoom(this.zoom)
+    },
+    instance_list() {
+      this.update_render()
     },
     force_watch_trigger: function() {
       this.update_render()
@@ -86,8 +91,8 @@ export default Vue.extend({
 
     this.regions = this.wavesurfer.registerPlugin(Regions.create())
 
-    this.regions.on('region-updated', this.on_annotate)
-    this.regions.on('region-created', this.on_annotate)
+    this.regions.on('region-updated', this.on_region_update)
+    this.regions.on('region-created', this.on_region_create)
 
     this.regions.on('region-clicked', (region, e) => {
       e.stopPropagation() // prevent triggering a click on the waveform
@@ -111,8 +116,12 @@ export default Vue.extend({
     update_render: function() {
 
       const regionsList = this.regions.regions
-      const regionsIds = this.regions.regions.map(({id}) => id)
+      // NOTE: initiall used this.regions.regions.map(({id}) => id) to keep track of ids for
+      // regions that were added but this.regions.regions take too much time to update which
+      // results in same regions get rendered more than once
+      const regionsIds = Object.keys(this.regionIdToIsCreatedMap)
 
+      // true if instance doesn't have audiosurfer_id set or has but it's not present
       const instances_to_add = this.instance_list.filter(inst => !inst.audiosurfer_id || !regionsIds.includes(inst.audiosurfer_id))
 
       instances_to_add.forEach(inst => {
@@ -124,6 +133,9 @@ export default Vue.extend({
             end: inst.end_time,
             color: `rgba(${r}, ${g}, ${b}, 0.5)`
           })
+
+        this.regionIdToIsCreatedMap[added_region.id] = true
+
         this.$emit('asign_wavesurfer_id', inst.id, added_region.id)
       })
 
@@ -132,7 +144,7 @@ export default Vue.extend({
 
         if ( instance ) {
           const { start_time, end_time, label_file } = instance
-          if (!this.invisible_labels.includes(label_file.id)) {
+          if (!this.invisible_labels.includes(label_file.id) && !instance.soft_delete ) {
             const { r, g, b } = instance.label_file.colour.rgba
             region.setOptions({
               color: `rgba(${r}, ${g}, ${b}, 0.5)`,
@@ -140,9 +152,11 @@ export default Vue.extend({
               end: end_time,
             })
           } else {
+            delete this.regionIdToIsCreatedMap[region.id]
             region.remove()
           }
         } else {
+            delete this.regionIdToIsCreatedMap[region.id]
             region.remove()
         }
       })
@@ -169,10 +183,19 @@ export default Vue.extend({
       this.wavesurfer.on('error', this.on_audio_error);
 
     },
-    on_annotate: function(e) {
+
+    on_region_create: function(e) {
       const { id, start, end } = e
-      this.$emit('instance_create_update', id, start, end)
+
+      this.regionIdToIsCreatedMap[id] = true
+      this.$emit('instance_create', id, start, end)
     },
+
+    on_region_update: function(e) {
+      const { id, start, end } = e
+      this.$emit('instance_update', id, start, end)
+    },
+
     on_audio_ready: function(){
       this.loading_audio = false;
     },

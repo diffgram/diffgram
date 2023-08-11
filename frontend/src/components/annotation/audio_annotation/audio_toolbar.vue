@@ -4,7 +4,7 @@
     width="100%"
     elevation="0"
     fixed
-    :height="height"
+    :height="`${height}px`"
     style="overflow: hidden; padding: 0; border-bottom: 1px solid #e0e0e0; border-top: 1px solid #e0e0e0"
   >
   <v-toolbar-items v-if="task">
@@ -56,7 +56,7 @@
                     icon="mdi-undo"
                     tooltip_message="Undo (ctrl+z)"
                     ui_schema_name="undo"
-                    :disabled="undo_disabled"
+                    :disabled="!history.undo_posible"
                     :icon_style="true"
                     :bottom="true"
                     @click="$emit('undo')"
@@ -67,7 +67,7 @@
                     icon="mdi-redo"
                     tooltip_message="Redo (ctrl+y)"
                     ui_schema_name="redo"
-                    :disabled="redo_disabled"
+                    :disabled="!history.redo_posible"
                     :icon_style="true"
                     :bottom="true"
                     @click="$emit('redo')"
@@ -266,7 +266,7 @@
         icon="mdi-undo"
         tooltip_message="Undo (ctrl+z)"
         ui_schema_name="undo"
-        :disabled="undo_disabled"
+        :disabled="!history.undo_posible"
         :icon_style="true"
         :bottom="true"
         @click="$emit('undo')"
@@ -277,7 +277,7 @@
         icon="mdi-redo"
         tooltip_message="Redo (ctrl+y)"
         ui_schema_name="redo"
-        :disabled="redo_disabled"
+        :disabled="!history.redo_posible"
         :icon_style="true"
         :bottom="true"
         @click="$emit('redo')"
@@ -419,8 +419,8 @@ export default Vue.extend({
       default: false
     },
     height: {
-      type: String,
-      default: '50px'
+      type: Number,
+      default: 50
     },
     project_string_id: {
       type: String,
@@ -449,7 +449,11 @@ export default Vue.extend({
     label_schema: {
       type: Object,
       required: true
+    },
+    history: {
+      type: Object,
+      required: true
     }
-  }
+  },
 })
 </script>
