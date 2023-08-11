@@ -114,8 +114,7 @@
               <v-slider
                 :data-cy="`${group.prompt}_value_slider`"
                 :min="group.min_value"
-                :max="group.max_value"
-                :tick-labels="tickLabels"
+                :max="group.max_value"                
                 :tick-size="group.max_value"
                 thumb-label="always"
                 v-model="internal_selected"
@@ -591,13 +590,6 @@
 
       data() {
         return {
-
-          tickLabels: [
-            'None',
-            'Several days',
-            'More >50%',
-            'Every day',
-          ],
 
           search: "",
           tree_force_rerender: false,
