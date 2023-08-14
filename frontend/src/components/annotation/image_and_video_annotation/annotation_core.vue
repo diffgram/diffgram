@@ -7,21 +7,21 @@
       <v-alert v-if="task_error.task_request" type="info">
         {{ task_error.task_request }}
       </v-alert>
+
+      <div v-if="working_file && working_file.image && working_file.image.error">
+        <v_error_multiple :error="working_file.image.error"></v_error_multiple>
+      </div>
       <v_error_multiple :error="save_error"></v_error_multiple>
       <v_error_multiple :error="image_annotation_ctx.save_multiple_frames_error"></v_error_multiple>
-      <v_error_multiple
-        :error="image_annotation_ctx.save_warning"
-        type="warning"
-        data-cy="save_warning"
-      >
+      <v_error_multiple :error="image_annotation_ctx.save_warning"
+                        type="warning"
+                        data-cy="save_warning">
       </v_error_multiple>
       <div fluid v-if="display_refresh_cache_button">
-        <v-btn
-          small
-          color="warning"
-          @click="regenerate_file_cache"
-          :loading="regenerate_file_cache_loading"
-        >
+        <v-btn small
+               color="warning"
+               @click="regenerate_file_cache"
+               :loading="regenerate_file_cache_loading">
           <v-icon>mdi-refresh</v-icon>
           Refresh File Data
         </v-btn>
