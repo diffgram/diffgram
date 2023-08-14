@@ -256,14 +256,17 @@ class S3Connector(Connector):
         url_path = f'{self.url_signer_service}/{bucket_name}'
         
         error = None
+        signed_url = None
 
         try:
             params = {'key': blob_name, "method": "get"}
             result = requests.get(url = url_path, headers = headers, params = params)
             if result.status_code == 200:
-
-                data = result.json()
-                signed_url = data['url']
+                try:
+                    data = result.json()
+                    signed_url = data['url']
+                except:
+                    error = result.text
                 logger.debug(f'GET Presign URL response {result.text}')
                 return {
                     "signed_url" : signed_url, 
