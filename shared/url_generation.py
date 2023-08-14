@@ -74,25 +74,28 @@ def default_url_regenerate(session: Session,
     return blob_object, log
 
 
-def get_url_from_connector(connector, params, log):
-    """
-        Gets signed URL from given connector.
-    :param connector:
-    :param params:
-    :param log:
-    :return:
-    """
-    connector.connect()
-    response = connector.fetch_data(params)
+
+def response_error_handling(response, params):
+    
     if response is None or response.get('result') is None:
         msg = f'Error from connector: {params}. Response: {response}'
         if response.get('log') is not None and type(response.get('log')) == dict:
             log = response.get('log')
         log['error']['connector_client'] = msg
         logger.error(msg)
-        return None, log
-    response_data = response.get('result')
-    return response_data, log
+        return False, log
+
+    return True, None
+
+
+def get_from_connector(connector, params, log):
+    connector.connect()
+    response = connector.fetch_data(params)
+
+    is_error, updated_log = response_error_handling(response, params)
+    if is_error: return None, updated_log
+
+    return response.get('result'), log
 
 
 def upload_thumbnail_for_connection_image(session: Session,
@@ -127,7 +130,7 @@ def upload_thumbnail_for_connection_image(session: Session,
     )
     if regular_log.log_has_error(log):
         return blob_object, log
-    put_data, log = get_url_from_connector(connector = client, params = params, log = log)
+    put_data, log = get_from_connector(connector = client, params = params, log = log)
     if regular_log.log_has_error(log):
         if 'blob_exists' in log['error']:
             log = regular_log.default()
@@ -218,7 +221,7 @@ def generate_text_token_url(
     client: any,
 ):
     params['path'] = blob_object.tokens_url_signed_blob_path
-    token_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+    token_signed_url, log = get_from_connector(connector = client, params = params, log = log)
     if regular_log.log_has_error(log):
         return blob_object, log
     blob_object.tokens_url_signed = token_signed_url
@@ -232,20 +235,11 @@ def connection_url_regenerate(session: Session,
                               new_offset_in_seconds: int,
                               access_token: str = None,
                               reference_file: File = None,
-                              create_thumbnails: bool = True) -> [DiffgramBlobObjectType, dict]:
-    """
-        Regenerates signed url from the given connection ID, bucket and blob path.
-    :param session:
-    :param blob_object:
-    :param connection_id:
-    :param bucket_name:
-    :param new_offset_in_seconds:
-    :return:
-    """
+                              create_thumbnails: bool = True) -> list[DiffgramBlobObjectType, dict]:
 
     log = regular_log.default()
-
     member = get_member(session = session)
+
     params = {
         'bucket_name': bucket_name,
         'path': blob_object.url_signed_blob_path if reference_file is None else reference_file.get_blob_path(),
@@ -264,7 +258,7 @@ def connection_url_regenerate(session: Session,
     if regular_log.log_has_error(log):
         return blob_object, log
 
-    result, log = get_url_from_connector(
+    result, log = get_from_connector(
         connector = client, 
         params = params, 
         log = log)
@@ -296,7 +290,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
                         bucket_name: str = None,
                         access_token: str = None,
                         reference_file: File = None,
-                        create_thumbnails: bool = True) -> [str, dict]:
+                        create_thumbnails: bool = True) -> list[object, dict]:
     """
         Regenerates the signed url of the given blob object.
     :param blob_object:
