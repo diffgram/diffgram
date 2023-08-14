@@ -394,7 +394,7 @@ class S3Connector(Connector):
                                                                        'Bucket': bucket_name,
                                                                        'Key': blob_name},
                                                                    ExpiresIn = int(expiration_offset))
-        return {'result': signed_url}
+        return {'signed_url': signed_url}
 
     @with_connection
     @with_s3_exception_handler

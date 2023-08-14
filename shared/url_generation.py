@@ -69,33 +69,19 @@ def default_url_regenerate(session: Session,
     except Exception as e:
         msg = traceback.format_exc()
         logger.error(msg)
+        if type(blob_object) == Image:
+            blob_object.error = msg
         log['error']['default_url_regenerate'] = msg
         return blob_object, log
     return blob_object, log
 
 
 
-def response_error_handling(response, params):
-    
-    if response is None or response.get('result') is None:
-        msg = f'Error from connector: {params}. Response: {response}'
-        if response.get('log') is not None and type(response.get('log')) == dict:
-            log = response.get('log')
-        log['error']['connector_client'] = msg
-        logger.error(msg)
-        return False, log
-
-    return True, None
-
 
 def get_from_connector(connector, params, log):
     connector.connect()
     response = connector.fetch_data(params)
-
-    is_error, updated_log = response_error_handling(response, params)
-    if is_error: return None, updated_log
-
-    return response.get('result'), log
+    return response, log
 
 
 def upload_thumbnail_for_connection_image(session: Session,
@@ -234,8 +220,7 @@ def connection_url_regenerate(session: Session,
                               bucket_name: str,
                               new_offset_in_seconds: int,
                               access_token: str = None,
-                              reference_file: File = None,
-                              create_thumbnails: bool = True) -> list[DiffgramBlobObjectType, dict]:
+                              reference_file: File = None) -> list[DiffgramBlobObjectType, dict]:
 
     log = regular_log.default()
     member = get_member(session = session)
@@ -268,7 +253,7 @@ def connection_url_regenerate(session: Session,
     
     blob_object.url_signed = result.get('signed_url')
     blob_object.url_signed_thumb = result.get('signed_url')
-    blob_object.error = result.get('error')
+    blob_object.error = str(result.get('error'))
 
     # Extra assets (Depending on type)
 
@@ -280,7 +265,9 @@ def connection_url_regenerate(session: Session,
             log = log,
             client = client,
         )
-    session.add(blob_object)
+    session.add(blob_object)    # TODO review if needed to add to session here
+    # If it's unique for every user then it's not clear why we would need to do this
+    # And adds processing delays for viewing large amounts at once.
     return blob_object, log
 
 
@@ -291,14 +278,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
                         access_token: str = None,
                         reference_file: File = None,
                         create_thumbnails: bool = True) -> list[object, dict]:
-    """
-        Regenerates the signed url of the given blob object.
-    :param blob_object:
-    :param session:
-    :param connection_id:
-    :param bucket_name:
-    :return:
-    """
+
     if not blob_object.url_signed_blob_path:
         return
 
@@ -335,8 +315,10 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
     if regular_log.log_has_error(log):
         logger.error(f'Failed to regenerate Blob URL {log}')
         blob_object.url_signed = None
+        blob_object.error = str(log)
         session.add(blob_object)
         return blob_object, log
+
     return blob_object, log
 
 
