@@ -251,9 +251,11 @@ class S3Connector(Connector):
             'Content-Type': content_type
         }
 
-        logger.info(f'Custom Signer Headers: {headers}')
+        logger.debug(f'Custom Signer Headers: {headers}')
         blob_name_encoded = urllib.parse.quote(blob_name, safe = '')
         url_path = f'{self.url_signer_service}/{bucket_name}'
+        
+        error = None
 
         try:
             params = {'key': blob_name, "method": "get"}
@@ -261,19 +263,29 @@ class S3Connector(Connector):
             if result.status_code == 200:
 
                 data = result.json()
-                url_result = data['url']
+                signed_url = data['url']
                 logger.debug(f'GET Presign URL response {result.text}')
-                return url_result
+                return {
+                    "signed_url" : signed_url, 
+                    "error": error
+                }
             else:
                 logger.error(f'Error generating signed url with: {url_path}')
                 logger.error(f'Error payload: {result.text}')
                 logger.error(f'Request payload: {params}')
-                return None
+                result = {
+                    "signed_url": None,
+                    "error": result.text
+                }
+                return result
         except Exception as e:
-            err = traceback.format_exc()
+            error = traceback.format_exc()
             logger.error(f'Error generating signed url with: {url_path}')
-            logger.error(f'Error payload: {err}')
-            return None
+            logger.error(f'Error payload: {error}')
+            return {
+                    "signed_url": None,
+                    "error": error
+                }
 
     def __image_upload_url(self, bucket_name: str, blob_name: str, expiration_offset: int, log: dict) -> dict:
         """
@@ -372,9 +384,10 @@ class S3Connector(Connector):
         bucket_name = opts['bucket_name']
 
         if self.url_signer_service:
-            signed_url = self.__custom_presign_url(bucket_name = bucket_name,
-                                                   blob_name = blob_name)
-            return {'result': signed_url}
+            result = self.__custom_presign_url(
+                bucket_name = bucket_name,
+                blob_name = blob_name)
+            return result
 
         signed_url = self.connection_client.generate_presigned_url('get_object',
                                                                    Params = {
