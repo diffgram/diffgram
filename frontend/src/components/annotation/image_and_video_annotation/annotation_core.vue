@@ -9,7 +9,9 @@
       </v-alert>
 
       <div v-if="working_file && working_file.image && working_file.image.error">
-        <v_error_multiple :error="working_file.image.error"></v_error_multiple>
+        <v-alert type="info">
+          {{ working_file.image.error}}
+        </v-alert>
       </div>
       <v_error_multiple :error="save_error"></v_error_multiple>
       <v_error_multiple :error="image_annotation_ctx.save_multiple_frames_error"></v_error_multiple>
