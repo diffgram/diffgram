@@ -387,10 +387,9 @@ class S3Connector(Connector):
         bucket_name = opts['bucket_name']
 
         if self.url_signer_service:
-            result = self.__custom_presign_url(
+            return self.__custom_presign_url(
                 bucket_name = bucket_name,
                 blob_name = blob_name)
-            return result
 
         signed_url = self.connection_client.generate_presigned_url('get_object',
                                                                    Params = {
