@@ -4,11 +4,6 @@
     <div v-if="!interface_type || !interface_type && !initializing">
       No Interface Type Defined.
     </div>
-    <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing" >
-      <empty_file_editor_placeholder
-        :message="'Try adding child files to this compound file.'"
-        :title="'This compound file has no child files.'" />
-    </div>
     <div v-else-if="!credentials_granted && !initializing">
       <empty_file_editor_placeholder
         icon="mdi-account-cancel"
