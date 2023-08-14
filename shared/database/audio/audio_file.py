@@ -28,14 +28,13 @@ class AudioFile(Base, SerializerMixin):
     def get_by_id(session, id):
         return session.query(AudioFile).filter(AudioFile.id == id).first()
 
-    def serialize(self, session, connection_id = None, bucket_name = None, regen_url = True, create_thumbnails = True):
+    def serialize(self, session, connection_id = None, bucket_name = None, regen_url = True):
         if regen_url:
             from shared.url_generation import blob_regenerate_url
             blob_regenerate_url(blob_object = self,
                                 session = session,
                                 connection_id = connection_id,
-                                bucket_name = bucket_name,
-                                create_thumbnails = create_thumbnails)
+                                bucket_name = bucket_name)
 
         data = self.to_dict(rules = ())
 

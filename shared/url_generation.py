@@ -276,8 +276,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
                         connection_id: int = None,
                         bucket_name: str = None,
                         access_token: str = None,
-                        reference_file: File = None,
-                        create_thumbnails: bool = True) -> list[object, dict]:
+                        reference_file: File = None) -> list[object, dict]:
 
     if not blob_object.url_signed_blob_path:
         return
@@ -308,8 +307,7 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
             bucket_name = bucket_name,
             new_offset_in_seconds = new_offset_in_seconds,
             reference_file = reference_file,
-            access_token = access_token,
-            create_thumbnails = create_thumbnails
+            access_token = access_token
         )
 
     if regular_log.log_has_error(log):
