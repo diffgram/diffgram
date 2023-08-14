@@ -253,8 +253,12 @@ def connection_url_regenerate(session: Session,
     
     blob_object.url_signed = result.get('signed_url')
     blob_object.url_signed_thumb = result.get('signed_url')
-    blob_object.error = str(result.get('error'))
-
+    error = result.get('error')
+    if error:
+        try:
+            blob_object.error = result.get('error')
+        except:
+            blob_object.error = str(result.get('error'))
     # Extra assets (Depending on type)
 
     if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
