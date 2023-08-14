@@ -31,6 +31,8 @@ class Image(Base):
     url_signed = Column(String())
     url_signed_blob_path = Column(String())
 
+    error = Column(String())
+
     # key assumption is that
     # rebuild_secure_urls_image() handles BOTH regular images
     # and thumbnail images...
@@ -99,6 +101,7 @@ class Image(Base):
             'soft_delete': self.soft_delete,
             'url_signed': self.url_signed,
             'url_signed_thumb': self.url_signed_thumb,
+            'error': self.error,
             'url_signed_blob_path': self.url_signed_blob_path,
             'annotation_status': self.annotation_status,
             'id': self.id

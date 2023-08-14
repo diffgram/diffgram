@@ -245,13 +245,16 @@ def generate_thumbnails_for_image(
             return blob_object, log
     params['path'] = blob_object.url_signed_thumb_blob_path
     params['action_type'] = 'get_pre_signed_url'
-    thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+    result, log = get_url_from_connector(connector = client, params = params, log = log)
     if regular_log.log_has_error(log):
         # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
         log = regular_log.default()
         session.add(blob_object)
         return blob_object, log
-    blob_object.url_signed_thumb = thumb_signed_url
+
+
+    blob_object.url_signed_thumb = result.get('signed_url')
+    blob_object.error = result.get('error')
     return blob_object, log
 
 
@@ -309,31 +312,20 @@ def connection_url_regenerate(session: Session,
     if regular_log.log_has_error(log):
         return blob_object, log
 
-    signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+    result, log = get_url_from_connector(
+        connector = client, 
+        params = params, 
+        log = log)
+    
     if regular_log.log_has_error(log):
         return blob_object, log
-    if regular_log.log_has_error(log):
-        return blob_object, log
-    blob_object.url_signed = signed_url
+    
+    blob_object.url_signed = result.get('signed_url')
+    blob_object.url_signed_thumb = result.get('signed_url')
+    blob_object.error = result.get('error')
 
     # Extra assets (Depending on type)
-    if type(blob_object) == Image and create_thumbnails:
-        blob_object.url_signed_thumb = signed_url
-        # Temp removal to re use original image instead of building thumbnail
 
-        # blob_object, url = generate_thumbnails_for_image(
-        #     session = session,
-        #     log = log,
-        #     blob_object = blob_object,
-        #     params = params,
-        #     client = client,
-        #     connection_id = connection_id,
-        #     bucket_name = bucket_name,
-        #     new_offset_in_seconds = new_offset_in_seconds,
-        #     member = member,
-        #     access_token = None,
-        #     reference_file = reference_file
-        # )
     if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
         blob_object, log = generate_text_token_url(
             session = session,
