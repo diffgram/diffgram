@@ -31,6 +31,8 @@ class Image(Base):
     url_signed = Column(String())
     url_signed_blob_path = Column(String())
 
+    error = Column(String())
+
     # key assumption is that
     # rebuild_secure_urls_image() handles BOTH regular images
     # and thumbnail images...
@@ -81,16 +83,14 @@ class Image(Base):
                                      connection_id = None,
                                      bucket_name = None,
                                      reference_file: 'File' = None,
-                                     regen_url = True,
-                                     create_thumbnails: bool = True):
+                                     regen_url = True):
         if regen_url:
             from shared.url_generation import blob_regenerate_url
             blob_regenerate_url(blob_object = self,
                                 session = session,
                                 connection_id = connection_id,
                                 bucket_name = bucket_name,
-                                reference_file = reference_file,
-                                create_thumbnails = create_thumbnails)
+                                reference_file = reference_file)
         return {
             'original_filename': self.original_filename,
             'width': self.width,
@@ -99,6 +99,7 @@ class Image(Base):
             'soft_delete': self.soft_delete,
             'url_signed': self.url_signed,
             'url_signed_thumb': self.url_signed_thumb,
+            'error': self.error,
             'url_signed_blob_path': self.url_signed_blob_path,
             'annotation_status': self.annotation_status,
             'id': self.id

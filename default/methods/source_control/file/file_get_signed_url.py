@@ -21,8 +21,7 @@ def api_file_get_signed_url(project_string_id, file_id):
        """
     # For now, no filters needed. But might add in the future.
     log = regular_log.default()
-    create_thumbnails = request.args['create_thumbnails']
-    create_thumbnails = False if create_thumbnails == 'false' else False
+
     with sessionMaker.session_scope() as session:
         project = Project.get_by_string_id(session, project_string_id)
         member = get_member(session)
@@ -31,8 +30,7 @@ def api_file_get_signed_url(project_string_id, file_id):
             log = log,
             project = project,
             member = member,
-            file_id = file_id,
-            create_thumbnails = create_thumbnails,
+            file_id = file_id
         )
         if len(log["error"].keys()) >= 1:
             return jsonify(log = log), 400
@@ -44,8 +42,7 @@ def get_file_signed_url_core(session: Session,
                              project: Project,
                              file_id: int,
                              member: Member,
-                             log: dict = regular_log.default(),
-                             create_thumbnails: bool = True):
+                             log: dict = regular_log.default()):
     """
         List comments of the discussion. At this point we assume data has been validated so no extra checks are
         done to the input data.
@@ -71,8 +68,8 @@ def get_file_signed_url_core(session: Session,
                                                                            connection_id = file.connection_id,
                                                                            bucket_name = file.bucket_name,
                                                                            reference_file = file,
-                                                                           regen_url = True,
-                                                                           create_thumbnails = True)
+                                                                           regen_url = True
+                                                                           )
     elif file.type == "video":
         if file.video:
             file_data[file.type] = file.video.serialize_list_view(session = session,
@@ -84,24 +81,24 @@ def get_file_signed_url_core(session: Session,
             file_data[file.type] = file.text_file.serialize(session = session,
                                                             connection_id = file.connection_id,
                                                             bucket_name = file.bucket_name,
-                                                            regen_url = True,
-                                                            create_thumbnails = True)
+                                                            regen_url = True
+                                                            )
 
     elif file.type == "geospatial":
         file_data[file.type] = {
             'layers': file.serialize_geospatial_assets(session = session,
                                                        connection_id = file.connection_id,
                                                        bucket_name = file.bucket_name,
-                                                       regen_url = True,
-                                                       create_thumbnails = True)
+                                                       regen_url = True
+                                                       )
         }
     if file.type == "audio":
         if file.audio_file:
             file_data[file.type] = file.audio_file.serialize(session = session,
                                                              connection_id = file.connection_id,
                                                              bucket_name = file.bucket_name,
-                                                             regen_url = True,
-                                                             create_thumbnails = True)
+                                                             regen_url = True
+                                                             )
 
     elif file.type == "sensor_fusion":
         point_cloud_file = file.get_child_point_cloud_file(session = session)
@@ -109,7 +106,7 @@ def get_file_signed_url_core(session: Session,
             file_data['point_cloud'] = point_cloud_file.point_cloud.serialize(session = session,
                                                                               connection_id = file.connection_id,
                                                                               bucket_name = file.bucket_name,
-                                                                              regen_url = True,
-                                                                              create_thumbnails = True)
+                                                                              regen_url = True
+                                                                              )
     
     return file_data, log

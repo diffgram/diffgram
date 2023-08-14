@@ -380,12 +380,12 @@ class File(Base, Caching):
         ).all()
         return assets
 
-    def serialize_geospatial_assets(self, session, connection_id = None, bucket_name = None, regen_url = True, create_thumbnails: bool = True):
+    def serialize_geospatial_assets(self, session, connection_id = None, bucket_name = None, regen_url = True):
         assets_list = self.get_geo_assets(session)
         result = []
         for asset in assets_list:
             result.append(asset.serialize(session, connection_id = connection_id, bucket_name = bucket_name,
-                                          regen_url = regen_url, create_thumbnails = create_thumbnails))
+                                          regen_url = regen_url))
         return result
 
     def serialize_with_type(self, session = None, regen_url = True):

@@ -2,15 +2,7 @@
   <div>
     <v_error_multiple :error="error" />
     <div v-if="!interface_type || !interface_type && !initializing">
-      <empty_file_editor_placeholder
-        :message="`File ID: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.id : 'N/A'}. File Type: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.type : 'N/A'}`"
-        :title="'No File Loaded'"
-      />
-    </div>
-    <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing" >
-      <empty_file_editor_placeholder
-        :message="'Try adding child files to this compound file.'"
-        :title="'This compound file has no child files.'" />
+      No Interface Type Defined.
     </div>
     <div v-else-if="!credentials_granted && !initializing">
       <empty_file_editor_placeholder
