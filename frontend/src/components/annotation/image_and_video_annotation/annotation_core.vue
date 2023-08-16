@@ -1273,6 +1273,9 @@ export default Vue.extend({
 
       return true;
     },
+    is_mouse_down() {
+      return this.$store.state.annotation_state.mouse_down
+    },
     mouse_computed: function () {
       if (this.$store.state.annotation_state.mouse_down == false) {
         // Becuase we only want this to update when the mouse is down, otherwise for example starting point for event is misaligned.
@@ -5142,6 +5145,10 @@ export default Vue.extend({
 
     mouse_move: function (event) {
 
+      const is_panning = this.is_mouse_down
+        && this.instance_hover_index == null
+        && !this.draw_mode
+
       if(!this.is_active){
         return
       }
@@ -5150,7 +5157,12 @@ export default Vue.extend({
         this.canvas_element.style.cursor = "move";
         this.$forceUpdate();
         return;
+      } else if (is_panning) {
+        this.move_position_based_on_mouse(-event.movementX, -event.movementY);
+        this.canvas_element.style.cursor = "move";
+        this.$forceUpdate();
       }
+
       this.mouse_position = this.mouse_transform(event, this.mouse_position);
 
       this.move_something(event);
