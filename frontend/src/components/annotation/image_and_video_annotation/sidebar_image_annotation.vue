@@ -228,7 +228,7 @@ export default Vue.extend({
     compound_global_instance: {type: Object},
     height: {type: Number},
     root_file: {type: Object},
-    instance_list: {type: Array as Instance[], required: true, default: ()=>{return[]}},
+    instance_list: {type: Array as Instance[], required: false, default: ()=>{return[]}},
     video_parent_file_instance_list: {type: Array as Instance[], required: true, default: ()=>{return[]}},
   },
   computed: {
