@@ -1164,6 +1164,9 @@ export default Vue.extend({
     };
   },
   computed: {
+    is_fully_zoomed_out() {
+      return this.image_annotation_ctx.zoom_value === this.canvas_mouse_tools.canvas_scale_global
+    },
     canvas_id: function(){
       return `my_canvas_${this.working_file.id}`
     },
@@ -3472,6 +3475,11 @@ export default Vue.extend({
       this.hide_context_menu();
       this.canvas_mouse_tools.zoom_wheel(event);
       this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
+
+      if ( this.instance_hover_index == null ) {
+        this.canvas_element.style.cursor = this.is_fully_zoomed_out ? "default" : "grab";
+      }
+
       this.update_canvas();
     },
 
@@ -3479,6 +3487,9 @@ export default Vue.extend({
       this.canvas_mouse_tools.reset_transform_with_global_scale();
       this.canvas_mouse_tools.scale = this.canvas_mouse_tools.canvas_scale_global;
       this.image_annotation_ctx.zoom_value = this.canvas_mouse_tools.scale;
+      if ( this.instance_hover_index == null ) {
+        this.canvas_element.style.cursor = "default";
+      }
       this.update_canvas();
     },
 
@@ -4064,7 +4075,7 @@ export default Vue.extend({
         if (this.lock_point_hover_change == false) {
           let hovered_instance = this.instance_list[this.instance_hover_index]
           if (this.canvas_element && (!hovered_instance || !SUPPORTED_IMAGE_CLASS_INSTANCE_TYPES.includes(hovered_instance.type))) {
-            this.canvas_element.style.cursor = "default";
+            this.canvas_element.style.cursor = this.is_fully_zoomed_out ? "default" : "grab";
           }
 
         }
@@ -5152,14 +5163,15 @@ export default Vue.extend({
       if(!this.is_active){
         return
       }
-      if (this.z_key === true || this.mouse_wheel_button) {
+
+      if ( !this.is_fully_zoomed_out && ( this.z_key === true || this.mouse_wheel_button ) ) {
         this.move_position_based_on_mouse(event.movementX, event.movementY);
         this.canvas_element.style.cursor = "move";
         this.$forceUpdate();
         return;
-      } else if (is_panning) {
+      } else if (is_panning && !this.is_fully_zoomed_out ) {
         this.move_position_based_on_mouse(-event.movementX, -event.movementY);
-        this.canvas_element.style.cursor = "move";
+        this.canvas_element.style.cursor = "grabbing";
         this.$forceUpdate();
       }
 
