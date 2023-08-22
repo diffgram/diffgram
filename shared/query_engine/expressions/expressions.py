@@ -9,6 +9,7 @@ from sqlalchemy.sql.elements import FunctionFilter
 from sqlalchemy.sql.expression import and_, or_, BinaryExpression
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator, QueryEntity
 from shared.query_engine.sql_alchemy_query_elements.scalar import ScalarQueryElement
+from shared.database.project import Project
 
 from shared.regular import regular_log
 
@@ -34,10 +35,14 @@ class CompareExpression:
     scalar_op: QueryElement
     query_op: QueryElement
     project_id: int
+    project: Project
+    member: any # TODO: Is there a type for this?
     log: dict
 
     def __init__(self,
                  session: Session,
+                 project: Project,
+                member: any,
                  left_raw: Token or object,
                  right_raw: Token or object,
                  compare_op_raw: Token or object):
@@ -45,6 +50,9 @@ class CompareExpression:
         self.left_raw = left_raw
         self.right_raw = right_raw
         self.compare_op_raw = compare_op_raw
+
+        self.member = member
+        self.project = project
 
     @staticmethod
     def determine_entity_from_query_operator(left_elm: QueryElement, right_elm: QueryElement) -> str:
@@ -56,6 +64,8 @@ class CompareExpression:
 
     @staticmethod
     def new(session: Session,
+            project: Project,
+            member: any,
             left_raw: Token,
             compare_op_raw: Token,
             right_raw: Token,
@@ -101,6 +111,8 @@ class CompareExpression:
 
         compare_expression = CompareExpClass(
             session = session,
+            project = project,
+            member = member,
             left_raw = left_raw,
             compare_op_raw = compare_op_raw,
             right_raw = right_raw

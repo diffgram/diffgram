@@ -1,12 +1,10 @@
 try:
     from methods.regular.regular_api import *
     from methods.source_control.file.remove import remove_core as file_remove_core
-    from methods.source_control.file.file_browser import File_Browser
 
 except:
     from default.methods.regular.regular_api import *
     from default.methods.source_control.file.remove import remove_core as file_remove_core
-    from default.methods.source_control.file.file_browser import File_Browser
 
 from sqlalchemy.orm.session import Session
 from flasgger import swag_from

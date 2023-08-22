@@ -202,6 +202,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         compare_expression, self.log = CompareExpression.new(
             session = self.session,
+            project = self.diffgram_query.project,
+            member = self.diffgram_query.member,
             left_raw = children[0],
             compare_op_raw = children[1],
             right_raw = children[2],

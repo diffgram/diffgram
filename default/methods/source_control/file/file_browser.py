@@ -372,6 +372,54 @@ def get_instance_buffer(session, video_file_id, start, end):
     return buffer
 
 
+@routes.route('/api/project/<string:project_string_id>/files', methods = ['GET'])
+@Project_permissions.user_has_project([
+    "admin", "Editor", "Viewer", "allow_if_project_is_public"])
+def get_files(project_string_id):
+
+    with sessionMaker.session_scope() as session:
+
+        project = Project.get(session, project_string_id)
+
+        data = request.get_json(force = True)
+        query = request.args.get('query')
+
+        metadata_proposed = data.get('metadata')
+
+        if not metadata_proposed:
+            return jsonify("Error no metadata"), 400
+
+        # Add query to the proposed metadata so that File_Browser doesnt need to be changed
+        metadata_proposed['query'] = query
+
+        user = User.get(session)
+        member = None
+        if user:
+            member = user.member
+        else:
+            # In some cases there can be no authorization (since project can be public)
+            # So we check if authorization exists in request.
+            if request.authorization:
+                client_id = request.authorization.get('username', None)
+                auth = Auth_api.get(session, client_id)
+                member = auth.member
+        file_browser_instance = File_Browser(
+            session = session,
+            project = project,
+            metadata_proposed = metadata_proposed,
+            member = member
+        )
+        output_file_list = file_browser_instance.file_view_core(
+            mode = "serialize")
+
+        if len(file_browser_instance.log['error'].keys()) > 0:
+            return jsonify(log=file_browser_instance.log), 400
+
+        return jsonify(file_list = output_file_list,
+                       metadata = file_browser_instance.metadata), 200
+
+
+# Deprecated
 @routes.route('/api/project/<string:project_string_id>' +
               '/user/<string:username>/file/list',
               methods = ['POST'])
@@ -426,7 +474,7 @@ def view_file_list_web_route(project_string_id, username):
         return jsonify(file_list = output_file_list,
                        metadata = file_browser_instance.metadata), 200
 
-
+# TODO: Would like to take the `directory` param out of this class, but there's a lot of dependencies on it still.
 class File_Browser():
     """
 
@@ -675,6 +723,7 @@ class File_Browser():
                 return False
             file_count += count
         else:
+            # TODO: I think we can remove this now?
             policy_engine = PolicyEngine(session = self.session, project = self.project)
             perm_result = policy_engine.member_has_perm(
                 member = self.member,

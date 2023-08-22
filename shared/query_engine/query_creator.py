@@ -26,6 +26,7 @@ class QueryCreator:
         self.member = member
         self.directory = directory
         # Additional security check just for sanity
+        # TODO: This is duplicated from sqlalchemy_query_executor __init__, I think we can remove?
         Project_permissions.by_project_core(
             project_string_id = self.project.project_string_id,
             Roles = ["admin", "Editor", "Viewer", "allow_if_project_is_public"],
@@ -111,6 +112,6 @@ class QueryCreator:
             if query_string:
                 tree = self.parser.parse(query_string)
             # print(tree.pretty())
-            return DiffgramQuery(tree, self.project, self.member, directory = self.directory)
+            return DiffgramQuery(tree, self.project, self.member)
         except Exception as e:
             self.log['error']['parser'] = str(e)

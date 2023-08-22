@@ -170,6 +170,7 @@ class WorkingDir(Base):
         from shared.database.permissions.roles import ValidObjectTypes
 
         # Permissions: get datasets that user can see
+        # TODO: Can we remove this now? 
         policy_engine = PolicyEngine(session = session, project = project)
         perm_result = policy_engine.get_allowed_object_id_list(
             member = member,
@@ -278,13 +279,27 @@ class WorkingDir(Base):
         Other ways we could do this but this seems to work as a basic check
         Future perhaps permissions on individual directories
         """
-        directory = session.query(WorkingDir).filter(
-            WorkingDir.project_id == project.id,
-            WorkingDir.id == directory_id).first()
-        if directory:
+        
+        directory = WorkingDir.get(session, directory_id, project.id)
+        return bool(directory)
+    
+    # TODO: add tests
+    def can_member_view_datasets(session, project, member, dataset_ids):
+        # TODO: How come we do this inline?
+        from shared.database.permissions.roles import ValidObjectTypes
+    
+        policy_engine = PolicyEngine(session = session, project = project)
+        perm_result = policy_engine.get_allowed_object_id_list(
+            member = member,
+            object_type = ValidObjectTypes.dataset,
+            perm = DatasetPermissions.dataset_view
+        )
+        
+        if perm_result.allow_all:
             return True
+        
+        return set(dataset_ids).issubset(set(perm_result.allowed_object_id_list))
 
-        return False
 
     @staticmethod
     def get(
