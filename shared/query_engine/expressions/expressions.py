@@ -51,6 +51,7 @@ class CompareExpression:
         self.right_raw = right_raw
         self.compare_op_raw = compare_op_raw
 
+        # TODO: Look at other cleanups that can be done now that this is here
         self.member = member
         self.project = project
 

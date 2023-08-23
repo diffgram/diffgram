@@ -375,7 +375,7 @@ def get_instance_buffer(session, video_file_id, start, end):
 @routes.route('/api/project/<string:project_string_id>/files', methods = ['GET'])
 @Project_permissions.user_has_project([
     "admin", "Editor", "Viewer", "allow_if_project_is_public"])
-def get_files(project_string_id):
+def api_get_files(project_string_id):
 
     with sessionMaker.session_scope() as session:
 
@@ -392,17 +392,8 @@ def get_files(project_string_id):
         # Add query to the proposed metadata so that File_Browser doesnt need to be changed
         metadata_proposed['query'] = query
 
-        user = User.get(session)
-        member = None
-        if user:
-            member = user.member
-        else:
-            # In some cases there can be no authorization (since project can be public)
-            # So we check if authorization exists in request.
-            if request.authorization:
-                client_id = request.authorization.get('username', None)
-                auth = Auth_api.get(session, client_id)
-                member = auth.member
+        member = get_member(session)
+        
         file_browser_instance = File_Browser(
             session = session,
             project = project,
@@ -712,6 +703,7 @@ class File_Browser():
             if requested_order_by == "time_last_updated":
                 order_by_class_and_attribute = File.time_last_updated
 
+        # TODO: Split up this if & else below. 
         if self.metadata.get('file_view_mode') == 'explorer':
             working_dir_file_list, count = self.build_and_execute_query(
                 limit = self.metadata["limit"],
