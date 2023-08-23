@@ -371,45 +371,6 @@ def get_instance_buffer(session, video_file_id, start, end):
 
     return buffer
 
-
-@routes.route('/api/project/<string:project_string_id>/files', methods = ['GET'])
-@Project_permissions.user_has_project([
-    "admin", "Editor", "Viewer", "allow_if_project_is_public"])
-def api_get_files(project_string_id):
-
-    with sessionMaker.session_scope() as session:
-
-        project = Project.get(session, project_string_id)
-
-        data = request.get_json(force = True)
-        query = request.args.get('query')
-
-        metadata_proposed = data.get('metadata')
-
-        if not metadata_proposed:
-            return jsonify("Error no metadata"), 400
-
-        # Add query to the proposed metadata so that File_Browser doesnt need to be changed
-        metadata_proposed['query'] = query
-
-        member = get_member(session)
-        
-        file_browser_instance = File_Browser(
-            session = session,
-            project = project,
-            metadata_proposed = metadata_proposed,
-            member = member
-        )
-        output_file_list = file_browser_instance.file_view_core(
-            mode = "serialize")
-
-        if len(file_browser_instance.log['error'].keys()) > 0:
-            return jsonify(log=file_browser_instance.log), 400
-
-        return jsonify(file_list = output_file_list,
-                       metadata = file_browser_instance.metadata), 200
-
-
 # Deprecated
 @routes.route('/api/project/<string:project_string_id>' +
               '/user/<string:username>/file/list',
@@ -453,6 +414,44 @@ def view_file_list_web_route(project_string_id, username):
             session = session,
             project = project,
             directory = directory,
+            metadata_proposed = metadata_proposed,
+            member = member
+        )
+        output_file_list = file_browser_instance.file_view_core(
+            mode = "serialize")
+
+        if len(file_browser_instance.log['error'].keys()) > 0:
+            return jsonify(log=file_browser_instance.log), 400
+
+        return jsonify(file_list = output_file_list,
+                       metadata = file_browser_instance.metadata), 200
+
+
+@routes.route('/api/project/<string:project_string_id>/files', methods = ['GET'])
+@Project_permissions.user_has_project([
+    "admin", "Editor", "Viewer", "allow_if_project_is_public"])  # TODO: This array of perms seems commonly used. Can we create a constant for it somewhere to reduce boilerplate?
+def api_get_files(project_string_id):
+
+    with sessionMaker.session_scope() as session:
+
+        project = Project.get(session, project_string_id)
+
+        data = request.get_json(force = True)
+        query = request.args.get('query')
+
+        metadata_proposed = data.get('metadata')
+
+        if not metadata_proposed:
+            return jsonify("Error no metadata"), 400
+
+        # Add query to the proposed metadata so that File_Browser doesnt need to be changed
+        metadata_proposed['query'] = query
+
+        member = get_member(session)
+        
+        file_browser_instance = File_Browser(
+            session = session,
+            project = project,
             metadata_proposed = metadata_proposed,
             member = member
         )
