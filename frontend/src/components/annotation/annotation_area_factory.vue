@@ -306,7 +306,8 @@ export default Vue.extend({
       type: Array,
       default: []
     },
-    annotation_show_event: {default: null}
+    annotation_show_event: {default: null},
+    hotkey_listener: { type: Object }
   },
   computed: {
     current_interface_ref: function () {

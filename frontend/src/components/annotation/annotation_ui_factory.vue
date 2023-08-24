@@ -226,6 +226,7 @@
                               :bulk_mode="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().bulk_mode"
                               :search_mode="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().search_mode"
                               :annotation_show_event="annotation_show_event"
+                              :hotkey_listener="hotkey_listener"
                               @activate_hotkeys="activate_hotkeys"
                               @request_file_change="request_file_change"
                               @change_label_schema="on_change_label_schema"
@@ -380,6 +381,10 @@ import {
   initialize_instance_object
   }
 from "../../utils/instance_utils";
+
+import {
+  HotkeyListener
+} from "../../utils/hotkey_listener";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
@@ -401,7 +406,6 @@ import HotKeyManager from "./hotkeys/HotKeysManager"
 import {GlobalInstance} from "../vue_canvas/instances/GlobalInstance";
 import {postInstanceList} from "../../services/instanceList"
 import {CustomButton} from "../../types/ui_schema/Buttons";
-
 
 export default Vue.extend({
     name: "annotation_ui_factory",
@@ -440,6 +444,7 @@ export default Vue.extend({
             },
             show_ui_schema_context_menu: false,
             hotkey_manager: null,
+            hotkey_listener: null,
             window_width: 0,
             window_height: 0,
             annotation_ui_context: new BaseAnnotationUIContext(),
@@ -589,6 +594,11 @@ export default Vue.extend({
         if (this.enabled_edit_schema == true) {
             this.edit_ui_schema()
         }
+        this.hotkey_listener = HotkeyListener.getInstance()
+        // NOTE: setting scope to image here for now so event handlers get activated
+        // for annotation_core.vue. Move this logic to a function that fires when
+        // selected file changes
+        this.hotkey_listener.setScope('image')
     },
     beforeDestroy() {
         this.hotkey_manager.deactivate()
@@ -596,7 +606,7 @@ export default Vue.extend({
             "resize",
             this.update_window_size_from_listener
         );
-
+        this.hotkey_listener.clearAll()
     },
 
     async mounted() {

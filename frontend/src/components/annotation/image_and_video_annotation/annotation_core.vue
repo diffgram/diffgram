@@ -649,6 +649,8 @@ import {PolygonMergeTool} from "../../vue_canvas/advanced_tools/PolygonMergeTool
 import IssuesAnnotationUIManager from "./../issues/IssuesAnnotationUIManager";
 import {BaseAnnotationUIContext, ImageAnnotationUIContext} from "../../../types/AnnotationUIContext";
 import {AutoBorderContext} from "../../vue_canvas/advanced_tools/PolygonAutoBorderTool";
+import { HotkeyListener } from "../../../utils/hotkey_listener";
+
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
 
@@ -735,6 +737,7 @@ export default Vue.extend({
     image_annotation_ctx: {type: Object as ImageAnnotationUIContext, required: true},
     is_active: {type: Boolean, required: true, default: true},
     annotation_show_event: {default: null},
+    hotkey_listener: {type: Object as HotkeyListener, required: true}
   },
   watch: {
     is_active: function (){
@@ -1725,6 +1728,8 @@ export default Vue.extend({
     }
     this.mounted();
 
+    this.setupHotkeys()
+
     if (
       this.annotation_ui_context.working_file_list[0].id === this.annotation_ui_context.working_file.id
     ) {
@@ -1733,6 +1738,30 @@ export default Vue.extend({
   },
   // TODO 312 Methods!! refactor in multiple files and classes.
   methods: {
+
+    setupHotkeys() {
+
+      this.hotkey_listener.onKeyup({ keys: 's', scope: 'image' }, () => {
+        this.$emit('save');
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'f', scope: 'image' }, () => {
+        this.snap_to_instance()
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'left,a', scope: 'image' }, (event, handler) => {
+        console.log('foo left, a', handler)
+        this.toggle_shift_frame_left()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'shift+left,shift+a', scope: 'image' }, (event, handler) => {
+        console.log('foo shift+left,shift+a', handler)
+        this.toggle_file_change_left()
+      })
+
+    },
+
+
     rotate_instance_selection_hotkeys_index: function(dir: string = 'next'){
       if(this.draw_mode){
         this.$emit('draw_mode_change', false)
@@ -7160,31 +7189,55 @@ export default Vue.extend({
       }
     },
 
-    may_toggle_file_change_left: function (event) {
-      if (event.keyCode === 37 || event.key === "a") {
-        // left arrow or A
-        if (this.shift_key) {
-          if (!this.task) {
-            this.change_file("previous");
-          } else {
-            this.$emit("change_task", "previous", this.task, false)
-          }
-        } else {
-          if (this.annotation_show_on) {
-            return
-          }
-          this.shift_frame_via_store(-1);
-        }
+
+    toggle_file_change_left() {
+      if (!this.task) {
+        this.change_file("previous");
+      } else {
+        this.$emit("change_task", "previous", this.task, false)
       }
     },
 
-    may_snap_to_instance: function (event) {
-      if (event.key === "f") {
-        if (this.instance_hover_index != undefined) {
-          this.focus_instance({index: this.instance_hover_index})
-        } else {
-          this.focus_instance_show_all()
-        }
+    toggle_shift_frame_left() {
+      if (this.annotation_show_on) {
+        return
+      }
+      this.shift_frame_via_store(-1);
+    },
+
+    //    may_toggle_file_change_left: function (event) {
+    //      if (event.keyCode === 37 || event.key === "a") {
+    //        // left arrow or A
+    //        if (this.shift_key) {
+    //          if (!this.task) {
+    //            this.change_file("previous");
+    //          } else {
+    //            this.$emit("change_task", "previous", this.task, false)
+    //          }
+    //        } else {
+    //          if (this.annotation_show_on) {
+    //            return
+    //          }
+    //          this.shift_frame_via_store(-1);
+    //        }
+    //      }
+    //    },
+
+    //    may_snap_to_instance: function (event) {
+    //      if (event.key === "f") {
+    //        if (this.instance_hover_index != undefined) {
+    //          this.focus_instance({index: this.instance_hover_index})
+    //        } else {
+    //          this.focus_instance_show_all()
+    //        }
+    //      }
+    //    },
+
+    snap_to_instance: function () {
+      if (this.instance_hover_index != undefined) {
+        this.focus_instance({index: this.instance_hover_index})
+      } else {
+        this.focus_instance_show_all()
       }
     },
 
@@ -7233,12 +7286,12 @@ export default Vue.extend({
       }
     },
 
-    may_save: function (event) {
-      if (event.key === "s" && this.shift_key == false) {
-        // save
-        this.$emit('save');
-      }
-    },
+    //    may_save: function (event) {
+    //      if (event.key === "s" && this.shift_key == false) {
+    //        // save
+    //        this.$emit('save');
+    //      }
+    //    },
 
     keyboard_events_global_down: function (event) {
       var ctrlKey = 17,
@@ -7266,11 +7319,11 @@ export default Vue.extend({
       if (event.keyCode === 90) {
         this.z_key = true;
       }
-      this.may_save(event);
+      //      this.may_save(event);
 
-      this.may_snap_to_instance(event);
+      // this.may_snap_to_instance(event);
 
-      this.may_toggle_file_change_left(event);
+      //this.may_toggle_file_change_left(event);
       this.may_toggle_file_change_right(event);
 
       this.may_toggle_instance_transparency(event);
