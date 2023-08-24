@@ -1,12 +1,9 @@
 from shared.query_engine.expressions.expressions import CompareExpression
-from sqlalchemy.orm.session import Session
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement
 from shared.database.source_control.file import File
 from shared.database.source_control.working_dir import WorkingDir
-from shared.database.project import Project
 from sqlalchemy.orm import aliased
 from sqlalchemy.sql import Selectable
-from sqlalchemy.sql.expression import and_, or_
 
 
 class DatasetCompareExpression(CompareExpression):
@@ -23,8 +20,7 @@ class DatasetCompareExpression(CompareExpression):
         can_view = WorkingDir.can_member_view_datasets(session = session, project = self.project, dataset_ids = raw_scalar_value, member = self.member)
         
         if not can_view:
-            # TODO: How to handle this better? Should we throw? 
-            # # Also seems like an awkard place to do validation in general, is there a better place? Difficulty is that we need access to the dataset ids to do this validation.
+            # TODO: How to handle this better? Should we throw?
             self.log['error']['unauthorized'] = f'You do not have access to these datasets'
 
         AliasFile = aliased(File)

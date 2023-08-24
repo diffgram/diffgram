@@ -159,23 +159,15 @@ class WorkingDir(Base):
         :param order_by_direction:
         :return:
         """
+
+        # TODO: I believe this can be removed, all callers of this function already have `project` available so we can pass that in directly
         from shared.database.project import Project
         project = Project.get_by_id(session = session, id = project_id)
+        
         query = session.query(WorkingDir).filter(
             WorkingDir.project_id == project_id,
             or_(WorkingDir.archived == False, WorkingDir.archived.is_(None))
 
-        )
-
-        from shared.database.permissions.roles import ValidObjectTypes
-
-        # Permissions: get datasets that user can see
-        # TODO: Can we remove this now? 
-        policy_engine = PolicyEngine(session = session, project = project)
-        perm_result = policy_engine.get_allowed_object_id_list(
-            member = member,
-            object_type = ValidObjectTypes.dataset,
-            perm = DatasetPermissions.dataset_view
         )
 
         if nickname:
@@ -201,10 +193,13 @@ class WorkingDir(Base):
                 created_time_string = 'created_time'
             )
 
+        # Permissions: get datasets that user can see
+        perm_result = WorkingDir.get_dataset_viewing_permissions(session, project, member)
         if not perm_result.allow_all:
             query = query.filter(
                 WorkingDir.id.in_(perm_result.allowed_object_id_list)
             )
+
         # Must call order by before limit / offset?
         if order_by_class_and_attribute:
             query = query.order_by(
@@ -282,10 +277,9 @@ class WorkingDir(Base):
         
         directory = WorkingDir.get(session, directory_id, project.id)
         return bool(directory)
-    
-    # TODO: add tests
-    def can_member_view_datasets(session, project, member, dataset_ids):
-        # TODO: How come we do this inline?
+        
+    @staticmethod
+    def get_dataset_viewing_permissions(session, project, member) -> PermissionResultObjectSet:
         from shared.database.permissions.roles import ValidObjectTypes
     
         policy_engine = PolicyEngine(session = session, project = project)
@@ -294,11 +288,23 @@ class WorkingDir(Base):
             object_type = ValidObjectTypes.dataset,
             perm = DatasetPermissions.dataset_view
         )
-        
+
+        return perm_result
+
+    # TODO: add tests
+    # TODO: See what else can use this before coming up with abstraction
+    # reqs: grab list of datasets allowed, get bool if can view list of datasets, 
+    @staticmethod
+    def can_member_view_datasets(session, project, member, candidate_dataset_ids):
+        perm_result = WorkingDir.get_dataset_viewing_permissions(session, project, member)
+
         if perm_result.allow_all:
             return True
-        
-        return set(dataset_ids).issubset(set(perm_result.allowed_object_id_list))
+            
+        candidate_ids_set = set(candidate_dataset_ids)
+        allowed_ids_set = set(perm_result.allowed_object_id_list)
+
+        return candidate_ids_set.issubset(allowed_ids_set)
 
 
     @staticmethod
