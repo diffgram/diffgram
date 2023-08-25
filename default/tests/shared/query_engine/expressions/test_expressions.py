@@ -58,7 +58,6 @@ class TestCompareExpression(testing_setup.DiffgramBaseTestCase):
             left_raw = Token(value = 'value_left', type_ = "test"),
             right_raw = Token(value = 'value_right', type_ = "test"),
             compare_op_raw = Token(value = 'value_op', type_ = "test"),
-            project_id = self.project.id,
             project = self.project,
             member = self.member,
             log = regular_log.default()
@@ -74,7 +73,6 @@ class TestCompareExpression(testing_setup.DiffgramBaseTestCase):
             left_raw = Token(value = 'labels.car', type_ = "test"),
             right_raw = Token(value = '8', type_ = "test"),
             compare_op_raw = Token(value = '>=', type_ = "test"),
-            project_id = self.project.id,
             project = self.project,
             member = self.member,
             log = regular_log.default()

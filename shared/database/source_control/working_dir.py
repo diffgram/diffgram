@@ -287,8 +287,6 @@ class WorkingDir(Base):
 
         return perm_result
 
-    # TODO: See what else can use this before coming up with abstraction
-    # reqs: grab list of datasets allowed, get bool if can view list of datasets, 
     @staticmethod
     def can_member_view_datasets(session, project, member, candidate_dataset_ids):
         perm_result = WorkingDir.get_dataset_viewing_permissions(session, project, member)

@@ -196,7 +196,6 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
                 left_raw = token,
                 right_raw = token2,
                 compare_op_raw = operator,
-                project_id = self.project.id,
                 project = self.project,
                 member = self.member,
                 log = regular_log.default()
@@ -213,7 +212,6 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
                 left_raw = token,
                 right_raw = token2,
                 compare_op_raw = operator,
-                project_id = self.project.id,
                 project = self.project,
                 member = self.member,
                 log = regular_log.default()
@@ -232,7 +230,6 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
                 left_raw = token,
                 right_raw = token2,
                 compare_op_raw = operator,
-                project_id = self.project.id,
                 project = self.project,
                 member = self.member,
                 log = regular_log.default()

@@ -10,6 +10,7 @@ from sqlalchemy.sql.expression import and_, or_, BinaryExpression
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, CompareOperator, QueryEntity
 from shared.query_engine.sql_alchemy_query_elements.scalar import ScalarQueryElement
 from shared.database.project import Project
+from shared.database.auth.member import Member
 
 from shared.regular import regular_log
 
@@ -34,26 +35,23 @@ class CompareExpression:
     right_raw: Token or object
     scalar_op: QueryElement
     query_op: QueryElement
-    project_id: int
     project: Project
-    member: any # TODO: Is there a type for this?
+    member: Member
     log: dict
 
     def __init__(self,
                  session: Session,
                  project: Project,
-                 member: any,
+                 member: Member,
                  left_raw: Token or object,
                  right_raw: Token or object,
                  compare_op_raw: Token or object):
         self.session = session
+        self.member = member
+        self.project = project
         self.left_raw = left_raw
         self.right_raw = right_raw
         self.compare_op_raw = compare_op_raw
-
-        # TODO: Look at other cleanups that can be done now that this is here
-        self.member = member
-        self.project = project
 
     @staticmethod
     def determine_entity_from_query_operator(left_elm: QueryElement, right_elm: QueryElement) -> str:
@@ -66,11 +64,10 @@ class CompareExpression:
     @staticmethod
     def new(session: Session,
             project: Project,
-            member: any,
+            member: Member,
             left_raw: Token,
             compare_op_raw: Token,
             right_raw: Token,
-            project_id: int,
             log: dict) -> ['CompareExpression', dict]:
         from shared.query_engine.expressions.dataset import DatasetCompareExpression
         from shared.query_engine.expressions.file import FileCompareExpression
@@ -80,7 +77,7 @@ class CompareExpression:
         query_element_left, log = QueryElement.new(
             session = session,
             log = log,
-            project_id = project_id,
+            project_id = project.id,
             token = left_raw
         )
         if regular_log.log_has_error(log):
@@ -90,7 +87,7 @@ class CompareExpression:
         query_element_right, log = QueryElement.new(
             session = session,
             log = log,
-            project_id = project_id,
+            project_id = project.id,
             token = right_raw
         )
 
@@ -119,7 +116,7 @@ class CompareExpression:
             right_raw = right_raw
         )
         compare_expression.query_left = query_element_left
-        compare_expression.project_id = project_id
+        compare_expression.project_id = project.id
         compare_expression.query_right = query_element_right
         compare_expression.log = log
         compare_expression.set_compare_op_from_token(compare_expression.compare_op_raw)

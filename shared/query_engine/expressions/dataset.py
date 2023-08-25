@@ -20,8 +20,8 @@ class DatasetCompareExpression(CompareExpression):
         can_view = WorkingDir.can_member_view_datasets(session = session, project = self.project, dataset_ids = raw_scalar_value, member = self.member)
 
         if not can_view:
-            # TODO: How to handle this better? Should we throw? Seems dangerous to continue the function if we hit this point
             self.log['error']['unauthorized'] = f'You do not have access to these datasets'
+            return
 
         AliasFile = aliased(File)
         # self.subquery = session.query(AliasFile.id) \
