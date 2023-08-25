@@ -598,7 +598,7 @@ export default Vue.extend({
         // NOTE: setting scope to image here for now so event handlers get activated
         // for annotation_core.vue. Move this logic to a function that fires when
         // selected file changes
-        this.hotkey_listener.setScope('image')
+        this.hotkey_listener.addScope('image')
     },
     beforeDestroy() {
         this.hotkey_manager.deactivate()
@@ -606,7 +606,7 @@ export default Vue.extend({
             "resize",
             this.update_window_size_from_listener
         );
-        this.hotkey_listener.clearAll()
+        this.hotkey_listener.clear()
     },
 
     async mounted() {

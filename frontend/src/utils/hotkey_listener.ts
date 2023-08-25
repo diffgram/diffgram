@@ -1,4 +1,4 @@
-import hotkeys, {HotkeysEvent} from 'hotkeys-js';
+import hotkeys, { HotkeysEvent } from 'hotkeys-js'
 
 interface HotkeysOptions {
   keys: string
@@ -8,117 +8,154 @@ interface HotkeysOptions {
 
 type KeysOrOpts = string | HotkeysOptions
 
-const GLOBAL_SCOPE: string = 'all'
-
-// NOTE:
-// 1. Using command only works with keydown events, not keyup events
+type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => void
+/**
+ * `HotkeyListener` - A utility class to manage keyboard hotkeys using the `hotkeys-js` library.
+ *
+ * Features:
+ * - **Scoped Hotkeys**: Allows the definition of hotkeys within specific scopes. This enables modular applications 
+ *   to define and manage hotkeys that make sense in their specific context without interference.
+ *
+ * - **Flexible Unbinding**: Offers the ability to clear hotkeys, either entirely, by a specific scope, or by key combinations, 
+ *   providing granular control over the registered hotkeys.
+ *
+ * Usage:
+ *
+ * 1. **Initialization**:
+ *      - Fetch the listener instance: `const listener = HotkeyListener.getInstance()`.
+ *
+ * 2. **Hotkey Registration**:
+ *      - Register a hotkey that reacts on keyup: `listener.onKeyup('ctrl+b', callback)`.
+ *      - For keydown events: `listener.onKeydown('ctrl+b', callback)`.
+ *
+ * 3. **Scopes**:
+ *      - Introduce a new scope: `listener.addScope('myScope')`.
+ *      - Note: A hotkey will only trigger if its scope is among the added scopes.
+ *
+ * 4. **Unbinding**:
+ *      - Clear hotkeys for a specific scope and key combination: `listener.clear('myScope', 'ctrl+b')`.
+ *      - To clear all for a scope: `listener.clear('myScope')`.
+ *      - Clear all registered hotkeys: `listener.clear()`.
+ *
+ * **Important**: Due to `hotkeys-js` providing a singleton instance, `HotkeyListener` uses the singleton pattern 
+ * to ensure a single centralized management point.
+ *
+ * @class
+ */
 export class HotkeyListener {
-
   private static instance: HotkeyListener
+  private selectedScopes: string[] = []
+  private scopeCallbackRegistry: {
+    [scope: string]: { keys: string, callback: (event: KeyboardEvent, handler: HotkeysEvent) => void }[]
+  } = {}
 
-  private static GLOBAL_SCOPE: string = GLOBAL_SCOPE
-
-  private selectedScope: string = GLOBAL_SCOPE
-
-  private origHotkeysFilter: (event: KeyboardEvent) => boolean = hotkeys.filter
-
-  private isAllDisabled: boolean = false
-
-  private constructor() { }
+  private constructor() {}
 
   public static getInstance(): HotkeyListener {
     if (!HotkeyListener.instance) {
-      HotkeyListener.instance = new HotkeyListener();
+      HotkeyListener.instance = new HotkeyListener()
     }
-
-    return HotkeyListener.instance;
+    return HotkeyListener.instance
   }
 
-  private forceOpts( keysOrOpts: KeysOrOpts ) : HotkeysOptions {
+  private forceOpts(keysOrOpts: KeysOrOpts): HotkeysOptions {
     if (typeof keysOrOpts === 'string') {
-      return { keys: keysOrOpts }
+      return { keys: keysOrOpts, scope: this.selectedScopes[0] }
     } else {
-      return keysOrOpts
+      return {
+        keys: keysOrOpts.keys,
+        scope: keysOrOpts.scope || this.selectedScopes[0],
+        element: keysOrOpts.element
+      }
     }
   }
 
-  onKeyup( keysOrOpts: KeysOrOpts, cb: (event: any, handler: any ) => void ) {
-    const {
-      keys, scope = this.selectedScope, element
-    } = this.forceOpts(keysOrOpts)
-    hotkeys(keys, {scope, element, keyup: true, keydown: false}, cb)
-  }
-
-  onKeydown( keysOrOpts: KeysOrOpts, cb: (event: any, handler: any ) => void ) {
-    const {
-      keys, scope = this.selectedScope, element
-    } = this.forceOpts(keysOrOpts)
-    hotkeys(keys, {scope, element, keyup: false, keydown: true}, cb)
-  }
-
-  setGlobalScope() {
-    this.selectedScope = HotkeyListener.GLOBAL_SCOPE
-    hotkeys.setScope(HotkeyListener.GLOBAL_SCOPE)
-  }
-
-  setScope( scope: string ) : void {
-    this.selectedScope = scope
-    hotkeys.setScope(scope)
-  }
-
-  getScope() : string {
-    return this.selectedScope
-  }
-
-  deleteScope( scope: string ) {
-    if ( this.selectedScope === scope ) {
-      this.selectedScope = HotkeyListener.GLOBAL_SCOPE
-      hotkeys.setScope(this.selectedScope)
+  private bindKey(type: 'keyup' | 'keydown', keysOrOpts: KeysOrOpts, cb: KeyEventHandler) {
+    const { keys, scope, element } = this.forceOpts(keysOrOpts)
+    const scopedCallback = (event: KeyboardEvent, handler: HotkeysEvent) => {
+      if (this.selectedScopes.includes(scope)) {
+        return cb(event, handler)
+      }
     }
-    return hotkeys.deleteScope(scope)
+
+    if ( type === 'keyup' ) {
+      hotkeys(keys, { scope: 'all', element, keyup: true, keydown: false }, scopedCallback)
+    } else { // keydown
+      hotkeys(keys, { scope: 'all', element, keyup: false, keydown: true }, scopedCallback)
+    }
+
+
+    if (!this.scopeCallbackRegistry[scope]) {
+      this.scopeCallbackRegistry[scope] = []
+    }
+    this.scopeCallbackRegistry[scope].push({ keys, callback: scopedCallback })
   }
 
-  disableSelectedScope() {
-    // setting hotkyes intrenally to global scope,
-    // so currently selected scope event handlers do not fire
-    hotkeys.setScope(HotkeyListener.GLOBAL_SCOPE)
+  onKeyup(keysOrOpts: KeysOrOpts, cb: KeyEventHandler) {
+    this.bindKey('keyup', keysOrOpts, cb)
   }
 
-  enableSelectedScope() {
-    hotkeys.setScope(this.selectedScope)
+  onKeydown(keysOrOpts: KeysOrOpts, cb: KeyEventHandler) {
+    this.bindKey('keydown', keysOrOpts, cb)
   }
 
-  disableAll() {
-    if ( this.isAllDisabled ) {
+  addScope(scope: string) {
+    if (!this.selectedScopes.includes(scope)) {
+      this.selectedScopes.push(scope)
+    }
+  }
+
+  removeScope(scope: string) {
+    const index = this.selectedScopes.indexOf(scope)
+    if (index > -1) {
+      this.selectedScopes.splice(index, 1)
+    }
+  }
+
+  clear(scope?: string, keys?: string | string[]) {
+    // If neither scope nor keys are provided, clear all hotkeys
+    if (!scope && !keys) {
+      hotkeys.unbind()
+      this.scopeCallbackRegistry = {} // Reset the registry
       return
     }
 
-    hotkeys.filter = () => false
-
-    this.isAllDisabled = true
-  }
-
-  enableAll() {
-    if ( !this.isAllDisabled ) {
-      return
+    // If only scope is provided, clear all hotkeys for that scope
+    if (scope && !keys) {
+      if (this.scopeCallbackRegistry[scope]) {
+        for (const callback of this.scopeCallbackRegistry[scope]) {
+          hotkeys.unbind(callback.keys, callback.callback)
+        }
+        delete this.scopeCallbackRegistry[scope]
+      }
+      return;
     }
 
-    hotkeys.filter = this.origHotkeysFilter
+    // If both scope and keys are provided, clear specific hotkeys within that scope
+    if (scope && keys) {
+      // Convert keys to array if it's a single string
+      if (typeof keys === 'string') {
+        keys = [keys]
+      }
 
-    this.enableSelectedScope()
+      // Filter callbacks for the specific scope and keys
+      const callbacksToRemove =
+        this.scopeCallbackRegistry[scope] && this.scopeCallbackRegistry[scope].filter(callback => keys.includes(callback.keys))
 
-    this.isAllDisabled = false
+      if (callbacksToRemove) {
+        callbacksToRemove.forEach(callback => {
+          hotkeys.unbind(callback.keys, callback.callback)
+        });
+      }
+    }
   }
 
-  trigger( keys: string, scope ?: string ) {
-    hotkeys.trigger(keys, scope)
-  }
+  deleteScope(scope: string) {
+    this.clear(scope)
+    if (this.scopeCallbackRegistry[scope]) {
+      delete this.scopeCallbackRegistry[scope]
+    }
 
-  clearAll() {
-    hotkeys.unbind()
-  }
-
-  getAllKeyCodes() {
-    return hotkeys.getAllKeyCodes()
+    this.removeScope(scope)
   }
 }

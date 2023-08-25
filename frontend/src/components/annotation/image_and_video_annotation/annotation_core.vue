@@ -1759,6 +1759,13 @@ export default Vue.extend({
         this.toggle_file_change_left()
       })
 
+       this.hotkey_listener.onKeydown({ keys: 'ctrl+b', scope: 'text' }, (event, handler) => {
+         console.log('foo ctrl+b keydown', handler)
+       })
+
+       this.hotkey_listener.onKeyup({ keys: 'ctrl+b', scope: 'text' }, (event, handler) => {
+         console.log('foo ctrl+b keyup', handler)
+       })
     },
 
 
