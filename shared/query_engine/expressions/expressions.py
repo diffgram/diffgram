@@ -42,7 +42,7 @@ class CompareExpression:
     def __init__(self,
                  session: Session,
                  project: Project,
-                member: any,
+                 member: any,
                  left_raw: Token or object,
                  right_raw: Token or object,
                  compare_op_raw: Token or object):

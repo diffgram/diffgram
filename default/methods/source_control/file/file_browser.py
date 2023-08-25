@@ -714,7 +714,6 @@ class File_Browser():
                 return False
             file_count += count
         else:
-            # TODO: I think we can remove this now?
             policy_engine = PolicyEngine(session = self.session, project = self.project)
             perm_result = policy_engine.member_has_perm(
                 member = self.member,

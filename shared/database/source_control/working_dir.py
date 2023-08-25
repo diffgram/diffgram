@@ -291,7 +291,6 @@ class WorkingDir(Base):
 
         return perm_result
 
-    # TODO: add tests
     # TODO: See what else can use this before coming up with abstraction
     # reqs: grab list of datasets allowed, get bool if can view list of datasets, 
     @staticmethod

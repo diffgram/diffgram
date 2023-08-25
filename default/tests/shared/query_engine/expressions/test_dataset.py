@@ -1,12 +1,12 @@
 from methods.regular.regular_api import *
 from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
+from unittest.mock import patch
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, QueryEntity
 from shared.query_engine.expressions.expressions import CompareExpression, CompareOperator
 from shared.query_engine.sql_alchemy_query_elements.scalar import ScalarQueryElement
 from shared.query_engine.expressions.dataset import DatasetCompareExpression
 from lark import Token
-
 
 class TestDatasetCompareExpression(testing_setup.DiffgramBaseTestCase):
     """
@@ -35,15 +35,51 @@ class TestDatasetCompareExpression(testing_setup.DiffgramBaseTestCase):
         self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
         self.member = self.auth_api.member
 
-    def test_build_expression_subquery(self):
+    #TODO: split out the compare expression setup into its own method
+    @patch("shared.query_engine.expressions.dataset.WorkingDir")
+    def test_build_expression_subquery(self, MockWorkingDir):
+        # Arrange
+        MockWorkingDir.can_member_view_datasets.return_value = True
         expr, log = CompareExpression.new(
             session = self.session,
             left_raw = Token(value = 'dataset.id', type_ = 'test'),
-            right_raw = Token(value = '25', type_ = 'test'),
+            right_raw = Token(value = ['25'], type_ = 'test'),
             compare_op_raw = Token(value = '=', type_ = 'test'),
             project_id = self.project.id,
+            project = self.project,
+            member = self.member,
             log = regular_log.default()
         )
-        self.assertEqual(type(expr), DatasetCompareExpression)
+
+        # Act
         expr.build_expression_subquery(session = self.session)
+
+        # Assert
+        self.assertEqual(type(expr), DatasetCompareExpression)
+        MockWorkingDir.can_member_view_datasets.assert_called_once_with(session = self.session, project = self.project, dataset_ids = ['25'], member = self.member)
+        self.assertIsNotNone(expr.expression)
+        self.assertEqual(log['error'], {})
+
+    @patch("shared.query_engine.expressions.dataset.WorkingDir")
+    def test_build_expression_subquery_unauthorized(self, MockWorkingDir):
+        # Arrange
+        MockWorkingDir.can_member_view_datasets.return_value = False
+        expr, log = CompareExpression.new(
+            session = self.session,
+            left_raw = Token(value = 'dataset.id', type_ = 'test'),
+            right_raw = Token(value = ['25'], type_ = 'test'),
+            compare_op_raw = Token(value = '=', type_ = 'test'),
+            project_id = self.project.id,
+            project = self.project,
+            member = self.member,
+            log = regular_log.default()
+        )
+
+        # Act
+        expr.build_expression_subquery(session = self.session)
+
+        # Assert
+        self.assertEqual(type(expr), DatasetCompareExpression)
+        MockWorkingDir.can_member_view_datasets.assert_called_once_with(session = self.session, project = self.project, dataset_ids = ['25'], member = self.member)
+        self.assertEqual(log['error']['unauthorized'], 'You do not have access to these datasets')
         self.assertIsNotNone(expr.expression)
