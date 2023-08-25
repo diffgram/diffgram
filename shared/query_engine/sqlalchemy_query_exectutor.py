@@ -220,7 +220,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         local_tree = args[0]
         if len(local_tree.children) != 3:
             self.log['error']['compare_expr'] = f"Invalid compare expression {str(args)}"
-
+            return
+        
         children = local_tree.children
 
         compare_expression: CompareExpression = self.init_compare_expression(children)
