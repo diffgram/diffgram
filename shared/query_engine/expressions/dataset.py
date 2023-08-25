@@ -17,7 +17,7 @@ class DatasetCompareExpression(CompareExpression):
         sql_column = query_op.column
         sql_compare_operator = self.operator.operator_value
 
-        can_view = WorkingDir.can_member_view_datasets(session = session, project = self.project, dataset_ids = raw_scalar_value, member = self.member)
+        can_view = WorkingDir.can_member_view_datasets(session = session, project = self.project, candidate_dataset_ids = raw_scalar_value, member = self.member)
 
         if not can_view:
             self.log['error']['unauthorized'] = f'You do not have access to these datasets'

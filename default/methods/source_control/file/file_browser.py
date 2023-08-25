@@ -464,7 +464,6 @@ def api_get_files(project_string_id):
         return jsonify(file_list = output_file_list,
                        metadata = file_browser_instance.metadata), 200
 
-# TODO: Would like to take the `directory` param out of this class, but there's a lot of dependencies on it still.
 class File_Browser():
     """
 
@@ -613,55 +612,58 @@ class File_Browser():
             media_type_query = 'audio'
         return media_type_query
 
-    def file_view_core(
-        self,
-        mode = "serialize"):
-        """
-        mode
-            serialize is in context of web, ie serialize the resulting list
-                currently defaults to this context
-            objects returns the database objects, ie for auto commit
+    def get_query_file_list(self):
+        working_dir_file_list, count = self.build_and_execute_query(
+            limit = self.metadata["limit"],
+            offset = self.metadata["start_index"],
+        )
+        if not working_dir_file_list or regular_log.log_has_error(self.log):
+            return None, None
 
-        """
-        output_file_list = []
-        limit_counter = 0
-        file_count = 0  # File count includes ones we don't actually query
-        # outside of limits...
+        return working_dir_file_list, count
+    
+    def get_job_file_list(self):
+        
+        # TODO permissions check on job id?
 
-        if self.metadata['file_view_mode'] is None or \
-            self.metadata['file_view_mode'] not in ["changes", "annotation", "home", "task", "explorer", "base", 'ids_only']:
-            self.log['error']['file_view_mode'] = 'Invalid file_view_mode "{}"'.format(self.metadata['file_view_mode'])
-            return None
-        ignore_id_list = None
+        # TODO handling for larger file sizes
 
-        # For creating / viewing Jobs
+        # TODO better null handling here... a lot of assumptions
+        # Would prefer to declare "new" job condition
+        # Instead of inferring from file_view_mode and job_id being present
 
-        if self.metadata['file_view_mode'] == "task" and self.metadata['job_id']:
+        job = Job.get_by_id(session = self.session,
+                            job_id = self.metadata['job_id'])
 
-            # TODO permissions check on job id?
+        file_list_attached_to_job = WorkingDirFileLink.file_list(
+            session = self.session,
+            working_dir_id = job.directory_id,
+            limit = None)
 
-            # TODO handling for larger file sizes
+        # TODO future maybe just get ids only from sql
+        ignore_id_list = [i.id for i in file_list_attached_to_job]
+        output_job_file_list = []
 
-            # TODO better null handling here... a lot of assumptions
-            # Would prefer to declare "new" job condition
-            # Instead of inferring from file_view_mode and job_id being present
+        for index_file_attach, file in enumerate(file_list_attached_to_job):
+            file_serialized = file.serialize_with_type(session = self.session)
+            output_job_file_list.append(file_serialized)
+            output_job_file_list[index_file_attach]['attached_to_job'] = True
 
-            job = Job.get_by_id(session = self.session,
-                                job_id = self.metadata['job_id'])
+        return output_job_file_list, ignore_id_list
 
-            file_list_attached_to_job = WorkingDirFileLink.file_list(
-                session = self.session,
-                working_dir_id = job.directory_id,
-                limit = None)
 
-            # TODO future maybe just get ids only from sql
-            ignore_id_list = [i.id for i in file_list_attached_to_job]
-
-            for index_file_attach, file in enumerate(file_list_attached_to_job):
-                file_serialized = file.serialize_with_type(session = self.session)
-                output_file_list.append(file_serialized)
-                output_file_list[index_file_attach]['attached_to_job'] = True
-
+    def get_all_file_list(self, ignore_id_list = None):
+        policy_engine = PolicyEngine(session = self.session, project = self.project)
+        perm_result = policy_engine.member_has_perm(
+            member = self.member,
+            object_id = self.directory.id,
+            object_type = ValidObjectTypes.dataset,
+            perm = DatasetPermissions.dataset_view
+        )
+        if not perm_result.allowed:
+            self.log['error']['unauthorized'] = f'Cannot view dataset ID: {self.directory.id}'
+            return None, None
+            
         ann_is_complete = None
         if self.metadata['annotation_status'] == "Completed":
             ann_is_complete = True
@@ -702,60 +704,33 @@ class File_Browser():
             if requested_order_by == "time_last_updated":
                 order_by_class_and_attribute = File.time_last_updated
 
-        # TODO: Split up this if & else below. 
-        if self.metadata.get('file_view_mode') == 'explorer':
-            working_dir_file_list, count = self.build_and_execute_query(
-                limit = self.metadata["limit"],
-                offset = self.metadata["start_index"],
-            )
-            if regular_log.log_has_error(self.log):
-                return None
-            if not working_dir_file_list or regular_log.log_has_error(self.log):
-                return False
-            file_count += count
-        else:
-            policy_engine = PolicyEngine(session = self.session, project = self.project)
-            perm_result = policy_engine.member_has_perm(
-                member = self.member,
-                object_id = self.directory.id,
-                object_type = ValidObjectTypes.dataset,
-                perm = DatasetPermissions.dataset_view
-            )
-            if not perm_result.allowed:
-                self.log['error']['unauthorized'] = f'Cannot view dataset ID: {self.directory.id}'
-                resp = jsonify(log=self.log)
-                resp.status = 401
-                raise Unauthorized(response = resp)
+        query, count = WorkingDirFileLink.file_list(
+            session = self.session,
+            working_dir_id = self.directory.id,
+            ann_is_complete = ann_is_complete,
+            type = media_type_query,
+            return_mode = "query",
+            limit = self.metadata["limit"],
+            date_from = self.metadata["date_from"],
+            date_to = self.metadata["date_to"],
+            issues_filter = self.metadata["issues_filter"],
+            offset = self.metadata["start_index"],
+            original_filename = self.metadata['search_term'],
+            order_by_class_and_attribute = File.id,
+            order_by_direction = order_by_direction,
+            exclude_removed = exclude_removed,
+            file_view_mode = self.metadata['file_view_mode'],
+            job_id = job_id,
+            has_some_machine_made_instances = has_some_machine_made_instances,
+            ignore_id_list = ignore_id_list,
+            count_before_limit = True,
+            include_children_compound = self.metadata['with_children_files']
+        )
 
-            query, count = WorkingDirFileLink.file_list(
-                session = self.session,
-                working_dir_id = self.directory.id,
-                ann_is_complete = ann_is_complete,
-                type = media_type_query,
-                return_mode = "query",
-                limit = self.metadata["limit"],
-                date_from = self.metadata["date_from"],
-                date_to = self.metadata["date_to"],
-                issues_filter = self.metadata["issues_filter"],
-                offset = self.metadata["start_index"],
-                original_filename = self.metadata['search_term'],
-                order_by_class_and_attribute = File.id,
-                order_by_direction = order_by_direction,
-                exclude_removed = exclude_removed,
-                file_view_mode = self.metadata['file_view_mode'],
-                job_id = job_id,
-                has_some_machine_made_instances = has_some_machine_made_instances,
-                ignore_id_list = ignore_id_list,
-                count_before_limit = True,
-                include_children_compound = self.metadata['with_children_files']
+        working_dir_file_list = query.all()
+        return working_dir_file_list, count
 
-            )
-
-            file_count += count
-
-            working_dir_file_list = query.all()
-
-
+    def add_pagination_metadata(self, file_count):
         self.metadata['total_pages'] = math.ceil(float(file_count) / float(self.metadata['limit']))
         if self.metadata['page'] >= self.metadata['total_pages']:
             self.metadata['next_page'] = None
@@ -767,23 +742,68 @@ class File_Browser():
             else:
                 self.metadata['prev_page'] = None
 
+    def serialize_file_list(self, file_list):
+        serialized_file_list = []
+        for index_file, file in enumerate(file_list):
+            if self.metadata['file_view_mode'] == 'explorer':
+                file_serialized = file.serialize_with_annotations(self.session, regen_url = self.metadata["regen_url"])
+
+            elif self.metadata['file_view_mode'] == 'ids_only':
+                file_serialized = file.id
+
+            elif self.metadata['file_view_mode'] == 'base':
+                file_serialized = file.serialize_base_file()
+            else:
+                file_serialized = file.serialize_with_type(self.session, regen_url = self.metadata["regen_url"])
+            
+            serialized_file_list.append(file_serialized)
+        
+        return serialized_file_list
+
+    def file_view_core(
+        self,
+        mode = "serialize"):
+        """
+        mode
+            serialize is in context of web, ie serialize the resulting list
+                currently defaults to this context
+            objects returns the database objects, ie for auto commit
+
+        """
+        output_file_list = []
+        file_count = 0  # File count includes ones we don't actually query
+        # outside of limits...
+
+        if self.metadata['file_view_mode'] is None or \
+            self.metadata['file_view_mode'] not in ["changes", "annotation", "home", "task", "explorer", "base", 'ids_only']:
+            self.log['error']['file_view_mode'] = 'Invalid file_view_mode "{}"'.format(self.metadata['file_view_mode'])
+            return None
+
+        if self.metadata.get('file_view_mode') == 'explorer':
+            working_dir_file_list, count = self.get_query_file_list()
+        else:
+            ignore_id_list = None
+            # For creating / viewing Jobs
+            if self.metadata['file_view_mode'] == "task" and self.metadata['job_id']:
+                job_output_file_list, ignore_id_list = self.get_file_lists_for_job()
+                output_file_list.extend(job_output_file_list)
+
+            working_dir_file_list, count = self.get_all_file_list(ignore_id_list = ignore_id_list)
+            
+        if not working_dir_file_list or regular_log.log_has_error(self.log):
+            return None
+
+        file_count += count
+        limit_counter = 0
+
+        self.add_pagination_metadata(file_count = file_count)
+
         if mode == "serialize":
-            for index_file, file in enumerate(working_dir_file_list):
-                if self.metadata['file_view_mode'] == 'explorer':
-                    file_serialized = file.serialize_with_annotations(self.session, regen_url = self.metadata["regen_url"])
+            serialized_working_dir_file_list = self.serialize_file_list(file_list = working_dir_file_list)
+            limit_counter += len(serialized_working_dir_file_list)
+            output_file_list.extend(serialized_working_dir_file_list)
 
-                elif self.metadata['file_view_mode'] == 'ids_only':
-                    file_serialized = file.id
-
-                elif self.metadata['file_view_mode'] == 'base':
-                    file_serialized = file.serialize_base_file()
-                else:
-                    file_serialized = file.serialize_with_type(self.session, regen_url = self.metadata["regen_url"])
-                output_file_list.append(file_serialized)
-
-                limit_counter += 1
-
-        if mode == "objects":
+        elif mode == "objects":
             output_file_list.extend(working_dir_file_list)
             limit_counter += len(working_dir_file_list)
 
