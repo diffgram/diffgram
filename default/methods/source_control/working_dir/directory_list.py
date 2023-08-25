@@ -52,7 +52,7 @@ def list_directory_api(project_string_id):
         member = get_member(session)
         directory_list = WorkingDir.list(
             session = session,
-            project_id = project.id,
+            project = project,
             member = member,
             limit = input['limit'],
             date_from_string = input['date_from'],

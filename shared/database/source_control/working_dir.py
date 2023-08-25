@@ -127,7 +127,7 @@ class WorkingDir(Base):
     @staticmethod
     def list(
         session,
-        project_id,
+        project,
         member,
         exclude_archived = True,
         limit = None,
@@ -145,7 +145,7 @@ class WorkingDir(Base):
         """
             Lists directories/datasets in a project
         :param session:
-        :param project_id:
+        :param project:
         :param exclude_archived:
         :param limit:
         :param return_kind:
@@ -159,13 +159,9 @@ class WorkingDir(Base):
         :param order_by_direction:
         :return:
         """
-
-        # TODO: I believe this can be removed, all callers of this function already have `project` available so we can pass that in directly
-        from shared.database.project import Project
-        project = Project.get_by_id(session = session, id = project_id)
         
         query = session.query(WorkingDir).filter(
-            WorkingDir.project_id == project_id,
+            WorkingDir.project_id == project.id,
             or_(WorkingDir.archived == False, WorkingDir.archived.is_(None))
 
         )

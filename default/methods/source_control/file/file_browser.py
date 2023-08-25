@@ -429,7 +429,7 @@ def view_file_list_web_route(project_string_id, username):
 
 @routes.route('/api/project/<string:project_string_id>/files', methods = ['GET'])
 @Project_permissions.user_has_project([
-    "admin", "Editor", "Viewer", "allow_if_project_is_public"])  # TODO: This array of perms seems commonly used. Can we create a constant for it somewhere to reduce boilerplate?
+    "admin", "Editor", "Viewer", "allow_if_project_is_public"])
 def api_get_files(project_string_id):
 
     with sessionMaker.session_scope() as session:

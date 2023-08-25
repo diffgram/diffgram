@@ -75,7 +75,7 @@ class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
 
         dirs = WorkingDir.list(
             session = self.session,
-            project_id = self.project.id,
+            project = self.project,
             member = user.member,
         )
         dirs_id_list = [x.id for x in dirs]
@@ -88,7 +88,7 @@ class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
 
         dirs = WorkingDir.list(
             session = self.session,
-            project_id = self.project.id,
+            project = self.project,
             member = user.member,
         )
         dirs_id_list = [x.id for x in dirs]
