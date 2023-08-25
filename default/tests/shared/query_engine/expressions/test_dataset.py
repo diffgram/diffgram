@@ -35,11 +35,7 @@ class TestDatasetCompareExpression(testing_setup.DiffgramBaseTestCase):
         self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
         self.member = self.auth_api.member
 
-    #TODO: split out the compare expression setup into its own method
-    @patch("shared.query_engine.expressions.dataset.WorkingDir")
-    def test_build_expression_subquery(self, MockWorkingDir):
-        # Arrange
-        MockWorkingDir.can_member_view_datasets.return_value = True
+    def initialize_compare_expression(self):
         expr, log = CompareExpression.new(
             session = self.session,
             left_raw = Token(value = 'dataset.id', type_ = 'test'),
@@ -50,6 +46,14 @@ class TestDatasetCompareExpression(testing_setup.DiffgramBaseTestCase):
             member = self.member,
             log = regular_log.default()
         )
+
+        return expr, log
+
+    @patch("shared.query_engine.expressions.dataset.WorkingDir")
+    def test_build_expression_subquery(self, MockWorkingDir):
+        # Arrange
+        MockWorkingDir.can_member_view_datasets.return_value = True
+        expr, log = self.initialize_compare_expression()
 
         # Act
         expr.build_expression_subquery(session = self.session)
@@ -64,16 +68,7 @@ class TestDatasetCompareExpression(testing_setup.DiffgramBaseTestCase):
     def test_build_expression_subquery_unauthorized(self, MockWorkingDir):
         # Arrange
         MockWorkingDir.can_member_view_datasets.return_value = False
-        expr, log = CompareExpression.new(
-            session = self.session,
-            left_raw = Token(value = 'dataset.id', type_ = 'test'),
-            right_raw = Token(value = ['25'], type_ = 'test'),
-            compare_op_raw = Token(value = '=', type_ = 'test'),
-            project_id = self.project.id,
-            project = self.project,
-            member = self.member,
-            log = regular_log.default()
-        )
+        expr, log = self.initialize_compare_expression()
 
         # Act
         expr.build_expression_subquery(session = self.session)

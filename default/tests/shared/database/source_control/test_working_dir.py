@@ -123,10 +123,10 @@ class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
     @patch("shared.database.source_control.working_dir.WorkingDir.get_dataset_viewing_permissions")
     def test_can_member_view_datasets_allow_all(self, mock_get_dataset_viewing_permissions):
         # Arrange
-        candidate_dataset_ids = [1, 2, 3]
         mock_perm_result = Mock()
         mock_perm_result.allow_all = True
         mock_get_dataset_viewing_permissions.return_value = mock_perm_result
+        candidate_dataset_ids = [1, 2, 3]
 
         # Act
         result = WorkingDir.can_member_view_datasets(self.session, self.project, self.member, candidate_dataset_ids)
@@ -137,11 +137,11 @@ class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
     @patch("shared.database.source_control.working_dir.WorkingDir.get_dataset_viewing_permissions")
     def test_can_member_view_datasets_subset_allowed(self, mock_get_dataset_viewing_permissions):
         # Arrange
-        candidate_dataset_ids = [1, 2]
         mock_perm_result = Mock()
         mock_perm_result.allow_all = False
         mock_perm_result.allowed_object_id_list = [2, 3, 1, 4]
         mock_get_dataset_viewing_permissions.return_value = mock_perm_result
+        candidate_dataset_ids = [1, 2]
 
         # Act
         result = WorkingDir.can_member_view_datasets(self.session, self.project, self.member, candidate_dataset_ids)
@@ -152,11 +152,11 @@ class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
     @patch("shared.database.source_control.working_dir.WorkingDir.get_dataset_viewing_permissions")
     def test_can_member_view_datasets_not_allowed(self, mock_get_dataset_viewing_permissions):
         # Arrange
-        candidate_dataset_ids = [1, 2]
         mock_perm_result = Mock()
         mock_perm_result.allow_all = False
         mock_perm_result.allowed_object_id_list = [1,3,4]
         mock_get_dataset_viewing_permissions.return_value = mock_perm_result
+        candidate_dataset_ids = [1, 2]
 
         # Act
         result = WorkingDir.can_member_view_datasets(self.session, self.project, self.member, candidate_dataset_ids)
