@@ -76,4 +76,4 @@ class TestDatasetCompareExpression(testing_setup.DiffgramBaseTestCase):
         self.assertEqual(type(expr), DatasetCompareExpression)
         MockWorkingDir.can_member_view_datasets.assert_called_once_with(session = self.session, project = self.project, dataset_ids = ['25'], member = self.member)
         self.assertEqual(log['error']['unauthorized'], 'You do not have access to these datasets')
-        self.assertIsNotNone(expr.expression)
+        self.assertFalse(hasattr(expr, 'expression'))
