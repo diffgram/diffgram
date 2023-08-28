@@ -185,7 +185,6 @@
               in order for the canvas render to detect it -->
 
           <div
-            contenteditable="true"
             :id="`canvas_wrapper_${working_file.id}`"
             style="position: relative"
             @mousemove="mouse_move"
@@ -1746,25 +1745,68 @@ export default Vue.extend({
       })
 
       this.hotkey_listener.onKeyup({ keys: 'f', scope: 'image' }, () => {
-        this.snap_to_instance()
+        this.trigger_instance_focus()
       })
 
       this.hotkey_listener.onKeyup({ keys: 'left,a', scope: 'image' }, (event, handler) => {
-        console.log('foo left, a', handler)
         this.toggle_shift_frame_left()
       })
 
-      this.hotkey_listener.onKeydown({ keys: 'shift+left,shift+a', scope: 'image' }, (event, handler) => {
-        console.log('foo shift+left,shift+a', handler)
+      this.hotkey_listener.onKeyup({ keys: 'shift+left,shift+a', scope: 'image' }, (event, handler) => {
         this.toggle_file_change_left()
       })
 
-       this.hotkey_listener.onKeydown({ keys: 'ctrl+b', scope: 'text' }, (event, handler) => {
-         console.log('foo ctrl+b keydown', handler)
+      this.hotkey_listener.onKeyup({ keys: 'right,d', scope: 'image' }, (event, handler) => {
+        this.toggle_shift_frame_right()
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'shift+right,shift+d', scope: 'image' }, (event, handler) => {
+        this.toggle_file_change_right()
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'shift+t', scope: 'image' }, (event, handler) => {
+        this.toggle_instance_transparency()
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'shift+o,o', scope: 'image' }, (event, handler) => {
+        this.toggle_show_hide_occlusion()
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'shift+n', scope: 'image' }, (event, handler) => {
+        this.jump_to_next_instance_frame()
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'x', scope: 'image' }, (event, handler) => {
+        this.reset_drawing()
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'shift+c', scope: 'image' }, (event, handler) => {
+        this.complete_and_move()
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'esc', scope: 'image' }, (event, handler) => {
+        this.toggle_escape_key()
+      })
+
+      window.addEventListener("keyup", (event) => {
+          return
+          console.log('window keyup', event)
        })
 
-       this.hotkey_listener.onKeyup({ keys: 'ctrl+b', scope: 'text' }, (event, handler) => {
-         console.log('foo ctrl+b keyup', handler)
+       document.addEventListener("keyup", (event) => {
+
+          return
+        const target = event.target || event.srcElement;
+        const { tagName } = target;
+          let flag = true;
+          // ignore: isContentEditable === 'true', <input> and <textarea> when readOnly state is false, <select>
+          if (
+            target.isContentEditable
+            || ((tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT') && !target.readOnly)
+          ) {
+            console.log('foo', target.isContentEditable, tagName, target.readOnly, target)
+          }
+          console.log('document keyup', event)
        })
     },
 
@@ -7183,16 +7225,25 @@ export default Vue.extend({
       }
     },
 
-    may_toggle_instance_transparency: function (event) {
-      if (event.keyCode === 84) {
-        // shift + t
-        if (this.shift_key) {
-          if (this.default_instance_opacity === 1) {
-            this.default_instance_opacity = 0.25;
-          } else {
-            this.default_instance_opacity = 1;
-          }
-        }
+    //    may_toggle_instance_transparency: function (event) {
+    //      if (event.keyCode === 84) {
+    //        // shift + t
+    //        if (this.shift_key) {
+    //          if (this.default_instance_opacity === 1) {
+    //            this.default_instance_opacity = 0.25;
+    //          } else {
+    //            this.default_instance_opacity = 1;
+    //          }
+    //        }
+    //      }
+    //    },
+
+
+    toggle_instance_transparency: function () {
+      if (this.default_instance_opacity === 1) {
+        this.default_instance_opacity = 0.25;
+      } else {
+        this.default_instance_opacity = 1;
       }
     },
 
@@ -7240,7 +7291,7 @@ export default Vue.extend({
     //      }
     //    },
 
-    snap_to_instance: function () {
+    trigger_instance_focus: function () {
       if (this.instance_hover_index != undefined) {
         this.focus_instance({index: this.instance_hover_index})
       } else {
@@ -7248,49 +7299,86 @@ export default Vue.extend({
       }
     },
 
-    may_toggle_file_change_right: function (event) {
-      if (event.keyCode === 39 || event.key === "d") {
-        // right arrow
-        if (this.shift_key) {
-          if (!this.task) {
-            this.change_file("next");
-          } else {
-            this.$emit("change_task", "next", this.task, false)
-          }
+    //    may_toggle_file_change_right: function (event) {
+    //      if (event.keyCode === 39 || event.key === "d") {
+    //        // right arrow
+    //        if (this.shift_key) {
+    //          if (!this.task) {
+    //            this.change_file("next");
+    //          } else {
+    //            this.$emit("change_task", "next", this.task, false)
+    //          }
+    //
+    //        } else {
+    //          if (this.annotation_show_on) {
+    //            return
+    //          }
+    //          this.shift_frame_via_store(1);
+    //        }
+    //      }
+    //    },
 
-        } else {
-          if (this.annotation_show_on) {
-            return
-          }
-          this.shift_frame_via_store(1);
-        }
+    toggle_shift_frame_right() {
+      if (this.annotation_show_on) {
+        return
+      }
+      this.shift_frame_via_store(1);
+    },
+
+    toggle_file_change_right() {
+      if (!this.task) {
+        this.change_file("next");
+      } else {
+        this.$emit("change_task", "next", this.task, false)
       }
     },
 
-    may_toggle_show_hide_occlusion: function (event) {
-      if (event.key === "o" || event.key === "O") {
-        this.label_settings.show_occluded_keypoints =
-          !this.label_settings.show_occluded_keypoints;
-        this.refresh = new Date();
-      }
+    //    may_toggle_show_hide_occlusion: function (event) {
+    //      console.log('foo may_toggle_show_hide_occlusion', event.key)
+    //      if (event.key === "o" || event.key === "O") {
+    //        this.label_settings.show_occluded_keypoints =
+    //          !this.label_settings.show_occluded_keypoints;
+    //        this.refresh = new Date();
+    //      }
+    //    },
+
+    toggle_show_hide_occlusion: function () {
+      this.label_settings.show_occluded_keypoints =
+        !this.label_settings.show_occluded_keypoints;
+      this.refresh = new Date();
     },
 
-    may_toggle_escape_key: function (event) {
-      if (event.keyCode === 27) {
-        // Esc
-        if (this.view_only_mode == true) {
-          return;
-        }
-        if (this.instance_select_for_issue || this.view_issue_mode) {
-          return;
-        }
-        if (this.instance_select_for_merge) {
-          return;
-        }
+    //    may_toggle_escape_key: function (event) {
+    //      if (event.keyCode === 27) {
+    //        // Esc
+    //        if (this.view_only_mode == true) {
+    //          return;
+    //        }
+    //        if (this.instance_select_for_issue || this.view_issue_mode) {
+    //          return;
+    //        }
+    //        if (this.instance_select_for_merge) {
+    //          return;
+    //        }
+    //
+    //        this.edit_mode_toggle(this.draw_mode);
+    //        this.is_actively_drawing = false;
+    //      }
+    //    },
 
-        this.edit_mode_toggle(this.draw_mode);
-        this.is_actively_drawing = false;
+    toggle_escape_key: function () {
+      if (this.view_only_mode == true) {
+        return;
       }
+      if (this.instance_select_for_issue || this.view_issue_mode) {
+        return;
+      }
+      if (this.instance_select_for_merge) {
+        return;
+      }
+
+      this.edit_mode_toggle(this.draw_mode);
+      this.is_actively_drawing = false;
     },
 
     //    may_save: function (event) {
@@ -7327,46 +7415,38 @@ export default Vue.extend({
         this.z_key = true;
       }
       //      this.may_save(event);
-
       // this.may_snap_to_instance(event);
 
       //this.may_toggle_file_change_left(event);
-      this.may_toggle_file_change_right(event);
+      //this.may_toggle_file_change_right(event);
 
-      this.may_toggle_instance_transparency(event);
-      this.may_toggle_show_hide_occlusion(event);
+      //this.may_toggle_instance_transparency(event);
+      //this.may_toggle_show_hide_occlusion(event);
 
-      if (event.key === "N") {
-        // shift + n
-        if (this.shift_key) {
-          this.$refs.video_controllers.next_instance();
-        }
-      }
-      if (event.keyCode == 88) {
-        // x key
-        this.reset_drawing();
-      }
-      if (event.keyCode === 67 && this.shift_key) {
-        // c
+      //      if (event.key === "N") {
+      //        // shift + n
+      //        if (this.shift_key) {
+      //          this.$refs.video_controllers.next_instance();
+      //        }
+      //      }
+      //      if (event.keyCode == 88) {
+      //        // x key
+      //        this.reset_drawing();
+      //      }
+      //      if (event.keyCode === 67 && this.shift_key) {
+      //        // c
+      //
+      //        if (
+      //          this.working_file &&
+      //          this.working_file.ann_is_complete == true ||
+        //          this.view_only_mode == true
+      //        ) {
+      //          return;
+      //        }
+      //        this.$emit('save', true); // and_complete == true
+      //      }
 
-        if (
-          this.working_file &&
-          this.working_file.ann_is_complete == true ||
-          this.view_only_mode == true
-        ) {
-          return;
-        }
-        if (
-          this.working_file &&
-          this.working_file.ann_is_complete == true ||
-          this.view_only_mode == true
-        ) {
-          return;
-        }
-        this.$emit('save', true); // and_complete == true
-      }
-
-      this.may_toggle_escape_key(event);
+      // this.may_toggle_escape_key(event);
 
       if (event.keyCode === 32) {
         // space
@@ -7397,6 +7477,22 @@ export default Vue.extend({
         this.redo();
       }
     },
+
+    jump_to_next_instance_frame() {
+      this.$refs.video_controllers.next_instance();
+    },
+
+    complete_and_move() {
+      if (
+        this.working_file &&
+        this.working_file.ann_is_complete == true ||
+        this.view_only_mode == true
+      ) {
+        return;
+      }
+      this.$emit('save', true); // and_complete == true
+    },
+
     reset_drawing: function () {
       if (this.view_only_mode == true) {
         return;

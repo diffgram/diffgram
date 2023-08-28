@@ -49,7 +49,14 @@ export class HotkeyListener {
     [scope: string]: { keys: string, callback: (event: KeyboardEvent, handler: HotkeysEvent) => void }[]
   } = {}
 
-  private constructor() {}
+  private filters: Array<(event: KeyboardEvent) => boolean>
+  private defaultFilter: (event: KeyboardEvent) => boolean
+
+  private constructor() {
+    this.defaultFilter = hotkeys.filter
+    this.filters = [this.defaultFilter]
+    this.updateHotkeysFilter()
+  }
 
   public static getInstance(): HotkeyListener {
     if (!HotkeyListener.instance) {
@@ -158,4 +165,56 @@ export class HotkeyListener {
 
     this.removeScope(scope)
   }
+
+  /**
+   * Add a filter. The filter should return `true` if the event should be processed, and `false` otherwise.
+   * @param filter - The filter function to add.
+   */
+  addFilter(filter: (event: KeyboardEvent) => boolean) {
+    this.filters.push(filter)
+    this.updateHotkeysFilter()
+  }
+
+  /**
+   * Remove a filter.
+   * @param filter - The filter function to remove.
+   */
+  removeFilter(filter: (event: KeyboardEvent) => boolean) {
+    const index = this.filters.indexOf(filter)
+    if (index !== -1) {
+      this.filters.splice(index, 1)
+    }
+    this.updateHotkeysFilter()
+  }
+
+  /**
+   * Clear all filters
+   */
+  clearFilters() {
+    this.filters = []
+    this.updateHotkeysFilter()
+  }
+
+  /**
+   * Restore the default hotkeys-js filters and remove all the other filters
+   */
+  restoreDefaultFilters() {
+    this.filters = [this.defaultFilter]
+    this.updateHotkeysFilter()
+  }
+
+  /**
+   * This internal method sets the hotkeys filter based on the current list of filters.
+   */
+  private updateHotkeysFilter() {
+    hotkeys.filter = (event: KeyboardEvent) => {
+      for (const filter of this.filters) {
+        if (!filter(event)) {
+          return false
+        }
+      }
+      return true
+    }
+  }
+
 }

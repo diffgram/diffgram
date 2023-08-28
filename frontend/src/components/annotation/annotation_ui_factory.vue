@@ -595,6 +595,11 @@ export default Vue.extend({
             this.edit_ui_schema()
         }
         this.hotkey_listener = HotkeyListener.getInstance()
+
+        this.hotkey_listener.addFilter(() => {
+          return !this.$store.state.user.is_typing_or_menu_open
+        })
+
         // NOTE: setting scope to image here for now so event handlers get activated
         // for annotation_core.vue. Move this logic to a function that fires when
         // selected file changes
@@ -607,6 +612,7 @@ export default Vue.extend({
             this.update_window_size_from_listener
         );
         this.hotkey_listener.clear()
+        this.hotkey_listener.restoreDefaultFilters()
     },
 
     async mounted() {
