@@ -1,7 +1,5 @@
 from methods.regular.regular_api import *
 from default.tests.test_utils import testing_setup
-from shared.tests.test_utils import common_actions, data_mocking
-from base64 import b64encode
 from shared.annotation import Annotation_Update
 from unittest.mock import patch, MagicMock, Mock, call
 
@@ -9,16 +7,12 @@ from unittest.mock import patch, MagicMock, Mock, call
 class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
 
     def setUp(self):
-        # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
-        # For future tests a mechanism of setting up and tearing down the database should be created.
         super(TestAnnotationUpdate, self).setUp()
         self.mock_session = MagicMock()
         self.mock_project = MagicMock()
         self.mock_member = MagicMock()
         self.mock_file = MagicMock()
-        
-        # TODO: Try this out if we have to instantiate the class often
-        # self.instance = Annotation_Update(session=self.mock_session, file=self.mock_file, member=self.mock_member, project=self.mock_project)
+        self.instance = Annotation_Update(session=self.mock_session, file=self.mock_file, member=self.mock_member, project=self.mock_project)
   
     # TODO: How can we clean this up / re-use all the setup?
 
@@ -100,11 +94,10 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
     @patch('shared.annotation.logger')
     def test_instance_template_main_empty_instance_list_new(self, mock_logger, mock_update_instance_list):
         # Arrange
-        instance = Annotation_Update(session=self.mock_session, file=self.mock_file, member=self.mock_member, project=self.mock_project)
-        instance.instance_list_new = []
+        self.instance.instance_list_new = []
 
         # Act
-        result = instance.instance_template_main()
+        result = self.instance.instance_template_main()
 
         # Assert
         self.assertIsNone(result)
@@ -114,33 +107,31 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
     @patch('shared.annotation.Annotation_Update.update_instance_list')
     def test_instance_template_main_success(self, mock_update_instance_list):
         # Arrange
-        instance = Annotation_Update(session=self.mock_session, file=self.mock_file, member=self.mock_member, project=self.mock_project)
-        instance.instance_list_new = [{'instance_id': 1}, {'instance_id': 2}]
-        instance.per_instance_spec_list = [{'label_file_id': {'required': True}}, {'some_other_key': 'value'}]
+        self.instance.instance_list_new = [{'instance_id': 1}, {'instance_id': 2}]
+        self.instance.per_instance_spec_list = [{'label_file_id': {'required': True}}, {'some_other_key': 'value'}]
         mock_new_added_instances = Mock()
-        instance.new_added_instances = mock_new_added_instances
+        self.instance.new_added_instances = mock_new_added_instances
 
         # Act
-        result = instance.instance_template_main()
+        result = self.instance.instance_template_main()
 
         # Assert
         self.assertEqual(result, mock_new_added_instances)
         mock_update_instance_list.assert_called_with(hash_instances=False, validate_label_file=False, overwrite_existing_instances=True)
-        self.assertEqual(instance.per_instance_spec_list, [{'label_file_id': {'required': False}}, {'some_other_key': 'value'}])
+        self.assertEqual(self.instance.per_instance_spec_list, [{'label_file_id': {'required': False}}, {'some_other_key': 'value'}])
         
     @patch('shared.annotation.logger')
     @patch('shared.annotation.Annotation_Update.update_instance_list')
     @patch('shared.annotation.Annotation_Update.return_orginal_file_type')
     def test_instance_template_main_error_detected(self, mock_return_orginal_file_type, mock_update_instance_list, mock_logger):
         # Arrange
-        instance = Annotation_Update(session=self.mock_session, file=self.mock_file, member=self.mock_member, project=self.mock_project)
         mock_error_log = { "error": { "some_error": "error_message" }, "info": {}, "success": False }
         mock_instance_list = [{'instance_id': 1}, {'instance_id': 2}]
-        instance.instance_list_new = mock_instance_list
-        instance.log["error"] = mock_error_log["error"]
+        self.instance.instance_list_new = mock_instance_list
+        self.instance.log["error"] = mock_error_log["error"]
 
         # Act
-        result = instance.instance_template_main()
+        result = self.instance.instance_template_main()
 
         # Assert
         self.assertEqual(result, mock_return_orginal_file_type.return_value)
