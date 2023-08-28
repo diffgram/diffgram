@@ -458,6 +458,7 @@ class Annotation_Update():
 
         self.refresh_instance_count()
 
+    # Tested
     def instance_template_main(self):
         """
             This is the main flow for creating/updating
