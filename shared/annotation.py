@@ -430,6 +430,7 @@ class Annotation_Update():
 
     # https://diffgram.readme.io/docs/general-annotation-update
 
+    # Tested
     def __post_init__(self):
 
         self.log = regular_log.default()
