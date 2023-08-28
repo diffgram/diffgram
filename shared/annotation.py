@@ -484,6 +484,7 @@ class Annotation_Update():
 
         return self.new_added_instances
 
+    # Tested
     def __check_all_instances_available_in_new_instance_list(self):
         if not self.do_init_existing_instances:
             return True
@@ -536,18 +537,21 @@ class Annotation_Update():
             # return False
         return True
 
+    # Tested
     def append_new_instance_list_hash(self, instance):
         if instance.soft_delete is False:
             self.new_instance_dict_hash[instance.hash] = instance
             return True
         return False
 
+    # Tested
     def order_new_instances_by_date(self):
         self.instance_list_new.sort(
             key = lambda item: (item.get('client_created_time') is not None, item.get('client_created_time')),
             reverse = True)
         return self.instance_list_new
 
+    # Tested measily, needs a big cleanup
     def annotation_update_main(self):
 
         """
@@ -605,6 +609,7 @@ class Annotation_Update():
             logger.error(f"Error updating annotation {str(self.log)}")
         return self.return_orginal_file_type()
 
+    # TODO: Whats the point of this?
     def main(self):
         return self.annotation_update_main()
 
@@ -724,7 +729,8 @@ class Annotation_Update():
                     task = self.task
                 )
                 self.is_new_file = True
-
+    
+    # Tested
     def detect_and_remove_collisions(self, instance_list):
         result = []
         hashes_dict = {}
@@ -1576,6 +1582,7 @@ class Annotation_Update():
             if instance.get('id') == id:
                 return i
 
+    # Tested
     def update_sequence_id_in_cache_list(self, instance):
         """
             Updates the sequences ID in the cache list.
@@ -1591,6 +1598,7 @@ class Annotation_Update():
             if existing_serialized_instance.get('id') == instance.id:
                 existing_serialized_instance['sequence_id'] = instance.sequence_id
 
+    # Tested
     def update_cache_single_instance_in_list_context(self):
         """
         CAUTION this assumes that instance_list_kept_serialized will exist etc
@@ -1682,6 +1690,7 @@ class Annotation_Update():
             self.file = File.copy_file_from_existing(
                 self.session, directory, self.file)
 
+    # Tested
     def add_missing_ids_to_new_relations(self):
 
         for relation_elm in self.new_instance_relations_list_no_ids:
@@ -1703,6 +1712,7 @@ class Annotation_Update():
             instance.hash_instance()
             self.session.add(instance)
 
+    # Tested
     def check_relations_id_existence(self, from_id, to_id, from_ref, to_ref):
         """
             Checks if current instance is a relations and if ID's are available for saving.
@@ -2045,6 +2055,7 @@ class Annotation_Update():
 
             return sequence
 
+    # Tested
     def check_polygon_points_and_build_bounds(self):
         self.instance.x_min = 99999
         self.instance.x_max = 0
