@@ -624,6 +624,7 @@ class Annotation_Update():
                 self.external_map.instance = self.instance
                 self.session.add(self.external_map)
 
+    # Tested
     def instance_list_cache_update(self):
         """
         High level idea of caching
@@ -660,7 +661,7 @@ class Annotation_Update():
             project = self.project
         )
 
-
+    # Tested
     def return_orginal_file_type(self):
         """
         Not a fan of this setup... but at least this way

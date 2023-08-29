@@ -180,3 +180,49 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
 
         # Assert
         self.instance.session.add.assert_not_called()
+
+    @patch('shared.annotation.FileStats.update_file_stats_data')
+    def test_instance_list_cache_update(self, mock_update_file_stats_data):
+        # Arrange
+        mock_instance_list_kept_serialized = Mock()
+        self.instance.instance_list_kept_serialized = mock_instance_list_kept_serialized
+
+        # Act
+        self.instance.instance_list_cache_update()
+
+        # Assert
+        self.instance.file.set_cache_by_key.assert_called_once_with(cache_key='instance_list', value=mock_instance_list_kept_serialized)
+        mock_update_file_stats_data.assert_called_once_with(session=self.instance.session, instance_list=mock_instance_list_kept_serialized, file_id=self.instance.file.id, project=self.instance.project)
+
+    @patch('shared.annotation.FileStats.update_file_stats_data')
+    def test_instance_list_cache_update_no_file(self, mock_update_file_stats_data):
+        # Arrange
+        self.instance.file = None
+
+        # Act
+        self.instance.instance_list_cache_update()
+
+        # Assert
+        mock_update_file_stats_data.assert_not_called()
+
+    def test_return_orginal_file_type_video_parent_file(self):
+        # Arrange
+        mock_video_parent_file = Mock()
+        self.instance.video_parent_file = mock_video_parent_file
+
+        # Act
+        result = self.instance.return_orginal_file_type()
+
+        # Assert
+        self.assertEqual(result, mock_video_parent_file)
+
+    def test_return_orginal_file_type_base_file(self):
+        # Arrange
+        self.instance.video_parent_file = None
+
+        # Act
+        result = self.instance.return_orginal_file_type()
+
+        # Assert
+        self.assertEqual(result, self.instance.file)
+
