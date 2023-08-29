@@ -226,3 +226,68 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         # Assert
         self.assertEqual(result, self.instance.file)
 
+    @patch('shared.annotation.logger')
+    def test_rehash_existing_instances_same_hash(self, mock_logger):
+        # Arrange
+        mock_instance = Mock()
+        mock_instance.hash = 'hash1'
+        mock_instance_list = [mock_instance]
+
+        # Act
+        result = self.instance.rehash_existing_instances(mock_instance_list)
+
+        # Assert
+        self.assertEqual(result, mock_instance_list)
+        self.instance.session.add.assert_not_called()
+        self.assertEqual(self.instance.system_upgrade_hash_changes, [])
+        mock_logger.info.assert_not_called()
+
+    # TODO: side_effect isnt working here
+    @patch('shared.annotation.logger')
+    def test_rehash_existing_instances_different_hash(self, mock_logger):
+           # Arrange
+        mock_instance = Mock(spec=Annotation_Update).return_value
+        mock_instance.id = '123'
+        mock_instance.hash = 'hash1'
+        mock_instance.hash_instances = Mock()
+
+        def side_effect():
+            mock_instance.hash = 'hash2'
+
+        mock_instance.hash_instances.side_effect = side_effect
+        mock_instance_list = [mock_instance]
+
+        print("HASH IS: ", mock_instance.hash)
+        # Act
+        result = self.instance.rehash_existing_instances(mock_instance_list)
+        print("HASH NOW: ", mock_instance.hash)
+
+        # Assert
+        self.instance.session.add.assert_called_once_with(mock_instance)
+        self.assertEqual(self.instance.system_upgrade_hash_changes, [['hash1', 'hash2']])
+        mock_logger.info.assert_called_once_with(
+            'Warning: Hashing algorithm upgrade Instance ID: {} has changed \n from: {} \n to: {}'.format(
+                mock_instance.id,
+                'hash1',
+                'hash2'
+        ))
+        self.assertEqual(result, mock_instance_list)
+
+    # def rehash_existing_instances(self, instance_list):
+    #     result = []
+    #     for instance in instance_list:
+    #         prev_hash = instance.hash
+    #         instance.hash_instance()
+    #         new_hash = instance.hash
+    #         if prev_hash != new_hash:
+    #             logger.info(
+    #                 'Warning: Hashing algorithm upgrade Instance ID: {} has changed \n from: {} \n to: {}'.format(
+    #                     instance.id,
+    #                     prev_hash,
+    #                     new_hash
+    #                 ))
+    #             self.system_upgrade_hash_changes.append([prev_hash, new_hash])
+    #             self.session.add(instance)
+    #         result.append(instance)
+
+    #     return result
