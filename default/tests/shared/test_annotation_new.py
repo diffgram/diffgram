@@ -142,3 +142,41 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         ]
         mock_logger.error.assert_has_calls(expected_logger_calls)
         
+
+    def test___perform_external_map_action(self):
+        # Arrange
+        self.instance.external_map = Mock()
+        self.instance.external_map_action = 'set_instance_id'
+        self.instance.instance = Mock()
+
+        # Act
+        self.instance._Annotation_Update__perform_external_map_action()
+
+        # Assert
+        self.assertEqual(self.instance.external_map.instance, self.instance.instance)
+        self.instance.session.add.assert_called_once_with(self.instance.external_map)
+
+    def test___perform_external_map_action_wrong_action(self):
+        # Arrange
+        self.instance.external_map = Mock()
+        self.instance.external_map_action = 'something_else'
+        self.instance.instance = Mock()
+
+        # Act
+        self.instance._Annotation_Update__perform_external_map_action()
+
+        # Assert
+        self.assertNotEqual(self.instance.external_map.instance, self.instance.instance)
+        self.instance.session.add.assert_not_called()
+
+    def test___perform_external_map_action_no_external_map(self):
+        # Arrange
+        self.instance.external_map = None
+        self.instance.external_map_action = 'set_instance_id'
+        self.instance.instance = Mock()
+
+        # Act
+        self.instance._Annotation_Update__perform_external_map_action()
+
+        # Assert
+        self.instance.session.add.assert_not_called()

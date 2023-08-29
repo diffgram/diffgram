@@ -615,6 +615,7 @@ class Annotation_Update():
     def main(self):
         return self.annotation_update_main()
 
+    # Tested
     def __perform_external_map_action(self):
         if not self.external_map:
             return
