@@ -2,11 +2,11 @@ import hotkeys, { HotkeysEvent } from 'hotkeys-js'
 
 interface HotkeysOptions {
   keys: string
-  scope ?: string
+  scope: string
   element ?: HTMLElement
 }
 
-type KeysOrOpts = string | HotkeysOptions
+type KeysOrOpts = HotkeysOptions
 
 type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => void
 /**
@@ -29,8 +29,10 @@ type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => void
  *      - For keydown events: `listener.onKeydown('ctrl+b', callback)`.
  *
  * 3. **Scopes**:
- *      - Introduce a new scope: `listener.addScope('myScope')`.
- *      - Note: A hotkey will only trigger if its scope is among the added scopes.
+ *      - Select scope and create if doesn't exist already: `listener.addScope('myScope')`.
+ *      - Cancle selection of a scope: `listener.removeScope('myScope')`.
+ *      - Delete scope and all hotkey bindings: `listener.deleteScope('myScope')`.
+ *      - Note: A hotkey will only trigger if its scope is among the selected scopes.
  *
  * 4. **Unbinding**:
  *      - Clear hotkeys for a specific scope and key combination: `listener.clear('myScope', 'ctrl+b')`.
@@ -40,6 +42,10 @@ type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => void
  * **Important**: Due to `hotkeys-js` providing a singleton instance, `HotkeyListener` uses the singleton pattern 
  * to ensure a single centralized management point.
  *
+ * TODO:
+ * 1. If we are ever in situation where we need to have many too many scopes registered
+ * at the same time, we can enhance HotkeyListener logic so it unregisters callbacks for non-active scopes.
+ * This will reduce the number of active callbacks
  * @class
  */
 export class HotkeyListener {
@@ -65,20 +71,8 @@ export class HotkeyListener {
     return HotkeyListener.instance
   }
 
-  private forceOpts(keysOrOpts: KeysOrOpts): HotkeysOptions {
-    if (typeof keysOrOpts === 'string') {
-      return { keys: keysOrOpts, scope: this.selectedScopes[0] }
-    } else {
-      return {
-        keys: keysOrOpts.keys,
-        scope: keysOrOpts.scope || this.selectedScopes[0],
-        element: keysOrOpts.element
-      }
-    }
-  }
-
-  private bindKey(type: 'keyup' | 'keydown', keysOrOpts: KeysOrOpts, cb: KeyEventHandler) {
-    const { keys, scope, element } = this.forceOpts(keysOrOpts)
+  private bindKey(type: 'keyup' | 'keydown', opts: HotkeysOptions, cb: KeyEventHandler) {
+    const { keys, scope, element } = opts
     const scopedCallback = (event: KeyboardEvent, handler: HotkeysEvent) => {
       if (this.selectedScopes.includes(scope)) {
         return cb(event, handler)
@@ -98,12 +92,12 @@ export class HotkeyListener {
     this.scopeCallbackRegistry[scope].push({ keys, callback: scopedCallback })
   }
 
-  onKeyup(keysOrOpts: KeysOrOpts, cb: KeyEventHandler) {
-    this.bindKey('keyup', keysOrOpts, cb)
+  onKeyup(opts: HotkeysOptions, cb: KeyEventHandler) {
+    this.bindKey('keyup', opts, cb)
   }
 
-  onKeydown(keysOrOpts: KeysOrOpts, cb: KeyEventHandler) {
-    this.bindKey('keydown', keysOrOpts, cb)
+  onKeydown(opts: HotkeysOptions, cb: KeyEventHandler) {
+    this.bindKey('keydown', opts, cb)
   }
 
   addScope(scope: string) {

@@ -596,14 +596,9 @@ export default Vue.extend({
         }
         this.hotkey_listener = HotkeyListener.getInstance()
 
-        this.hotkey_listener.addFilter(() => {
+        this.hotkey_listener.addFilter((event) => {
           return !this.$store.state.user.is_typing_or_menu_open
         })
-
-        // NOTE: setting scope to image here for now so event handlers get activated
-        // for annotation_core.vue. Move this logic to a function that fires when
-        // selected file changes
-        this.hotkey_listener.addScope('image')
     },
     beforeDestroy() {
         this.hotkey_manager.deactivate()

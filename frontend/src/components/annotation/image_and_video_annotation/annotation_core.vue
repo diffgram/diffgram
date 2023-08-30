@@ -1163,6 +1163,7 @@ export default Vue.extend({
 
       window_width_from_listener: 1280,
       window_height_from_listener: 650,
+      hotkeyListenerScope: null,
     };
   },
   computed: {
@@ -1719,6 +1720,10 @@ export default Vue.extend({
     this.save_watcher();
     this.save_and_complete_watcher();
     this.refresh_video_buffer_watcher();
+
+    this.hotkey_listener.deleteScope(this.hotkeyListenerScope)
+
+    this.cleanUpHotkeys(this.hotkeyListenerScope)
   },
 
   mounted() {
@@ -1727,7 +1732,9 @@ export default Vue.extend({
     }
     this.mounted();
 
-    this.setupHotkeys()
+    this.hotkeyListenerScope = `image ${this.working_file.hash}`
+
+    this.setupHotkeys(this.hotkeyListenerScope)
 
     if (
       this.annotation_ui_context.working_file_list[0].id === this.annotation_ui_context.working_file.id
@@ -1738,76 +1745,155 @@ export default Vue.extend({
   // TODO 312 Methods!! refactor in multiple files and classes.
   methods: {
 
-    setupHotkeys() {
+    cleanUpHotkeys(scope) {
+      this.hotkey_listener.deleteScope(scope)
+      this.hotkey_listener.removeFilter(this.hotkeyListenerFilter)
+    },
 
-      this.hotkey_listener.onKeyup({ keys: 's', scope: 'image' }, () => {
+    hotkeyListenerFilter() {
+      return !this.annotation_ui_context.show_context_menu
+    },
+
+    setupHotkeys(scope) {
+
+      this.hotkey_listener.addScope(scope)
+
+      this.hotkey_listener.addFilter(this.hotkeyListenerFilter)
+
+      this.hotkey_listener.onKeyup({ keys: 's', scope }, () => {
         this.$emit('save');
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'f', scope: 'image' }, () => {
+      this.hotkey_listener.onKeyup({ keys: 'f', scope }, () => {
         this.trigger_instance_focus()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'left,a', scope: 'image' }, (event, handler) => {
+      this.hotkey_listener.onKeyup({ keys: 'left,a', scope }, () => {
         this.toggle_shift_frame_left()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+left,shift+a', scope: 'image' }, (event, handler) => {
+      this.hotkey_listener.onKeyup({ keys: 'shift+left,shift+a', scope }, () => {
         this.toggle_file_change_left()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'right,d', scope: 'image' }, (event, handler) => {
+      this.hotkey_listener.onKeyup({ keys: 'right,d', scope }, () => {
         this.toggle_shift_frame_right()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+right,shift+d', scope: 'image' }, (event, handler) => {
+      this.hotkey_listener.onKeyup({ keys: 'shift+right,shift+d', scope }, () => {
         this.toggle_file_change_right()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+t', scope: 'image' }, (event, handler) => {
+      this.hotkey_listener.onKeyup({ keys: 'shift+t', scope }, () => {
         this.toggle_instance_transparency()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+o,o', scope: 'image' }, (event, handler) => {
+      this.hotkey_listener.onKeyup({ keys: 'shift+o,o', scope }, () => {
         this.toggle_show_hide_occlusion()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+n', scope: 'image' }, (event, handler) => {
+      this.hotkey_listener.onKeyup({ keys: 'shift+n', scope }, () => {
         this.jump_to_next_instance_frame()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'x', scope: 'image' }, (event, handler) => {
+      this.hotkey_listener.onKeyup({ keys: 'x', scope }, () => {
         this.reset_drawing()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+c', scope: 'image' }, (event, handler) => {
+      this.hotkey_listener.onKeyup({ keys: 'shift+c', scope }, () => {
         this.complete_and_move()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'esc', scope: 'image' }, (event, handler) => {
+      this.hotkey_listener.onKeyup({ keys: 'esc', scope }, () => {
         this.toggle_escape_key()
       })
 
-      window.addEventListener("keyup", (event) => {
-          return
-          console.log('window keyup', event)
-       })
+      this.hotkey_listener.onKeyup({ keys: 'ctrl+c', scope }, () => {
+        this.copy_instance(true)
+      })
 
-       document.addEventListener("keyup", (event) => {
+      this.hotkey_listener.onKeyup({ keys: 'ctrl+v', scope }, () => {
+        this.paste_instance(undefined, undefined, this.image_annotation_ctx.current_frame)
+      })
 
+      this.hotkey_listener.onKeyup({ keys: 'shift+r', scope }, () => {
+        this.annotation_show_activate(
+          !this.task && this.working_file && this.working_file.id ? 'file' : 'task'
+        )
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'ctrl+z', scope }, () => {
+        this.undo();
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'ctrl+y', scope }, () => {
+        this.redo();
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'n', scope }, () => {
+        this.force_new_sequence_request = Date.now();
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'h', scope }, () => {
+        this.show_annotations = !this.show_annotations;
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'g', scope }, () => {
+        this.label_settings.show_ghost_instances =
+          !this.label_settings.show_ghost_instances;
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 't', scope }, () => {
+        this.insert_tag_type();
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'r', scope }, () => {
+        console.log('foo r')
+        const file = this.working_file
+        if ( !file.image ) {
           return
-        const target = event.target || event.srcElement;
-        const { tagName } = target;
-          let flag = true;
-          // ignore: isContentEditable === 'true', <input> and <textarea> when readOnly state is false, <select>
-          if (
-            target.isContentEditable
-            || ((tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT') && !target.readOnly)
-          ) {
-            console.log('foo', target.isContentEditable, tagName, target.readOnly, target)
-          }
-          console.log('document keyup', event)
-       })
+        }
+        let current_rotation_degrees = file.image.rotation_degrees
+        current_rotation_degrees += 90
+        if (current_rotation_degrees == 360) {
+          current_rotation_degrees = 0
+        }
+        this.on_image_rotation(current_rotation_degrees);
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'enter', scope }, () => {
+        if (this.instance_type == "polygon") {
+          this.finish_polygon_drawing(event)
+        }
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'ctrl+a,ctrl+left', scope }, () => {
+        this.rotate_instance_selection_hotkeys_index('previous')
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'ctrl+d,ctrl+right', scope }, () => {
+        this.rotate_instance_selection_hotkeys_index('next')
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'l', scope }, () => {
+        let instance = this.selected_instance
+        if(instance){
+          this.$emit('open_label_change_dialog', instance.id)
+        }
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'space', scope }, () => {
+        if (this.annotation_show_on) {
+          return
+        }
+        this.toggle_pause_play();
+        this.canvas_element.style.cursor = "pointer";
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'del', scope }, () => {
+        this.delete_instance();
+      })
+
     },
 
 
@@ -3178,15 +3264,6 @@ export default Vue.extend({
         this.update_window_size_from_listener
       );
 
-      // local
-      this.annotation_area.removeEventListener(
-        "keydown",
-        this.keyboard_events_local_down
-      );
-      this.annotation_area.removeEventListener(
-        "keyup",
-        this.keyboard_events_local_up
-      );
       this.canvas_wrapper.removeEventListener("wheel", this.wheel);
     },
 
@@ -3200,15 +3277,7 @@ export default Vue.extend({
       // rather have canvas_wrapper inside this functionsss in case it needs to "refresh" it
 
       this.annotation_area = document.getElementById("annotation");
-      // window.addEventListener("beforeunload", this.warn_user_unload);
-      this.annotation_area.addEventListener(
-        "keyup",
-        this.keyboard_events_local_up
-      );
-      this.annotation_area.addEventListener(
-        "keydown",
-        this.keyboard_events_local_down
-      );
+
       // window.addEventListener("keydown", this.keyboard_events_global_down);
       // document.addEventListener("mousedown", this.mouse_events_global_down);
       // window.addEventListener("keyup", this.keyboard_events_global_up);
@@ -7098,147 +7167,6 @@ export default Vue.extend({
       }
     },
 
-    keyboard_events_local_up: function (event) {
-      // TODO would it be better to have a dictionary or somthing to map this?
-      if (event.keyCode === 46) {
-        // delete
-        this.delete_instance();
-      }
-    },
-
-    keyboard_events_local_down: function (event) {
-    },
-
-    set_control_key: function (event) {
-      // Caution used name commands here to that when multiple keys are pressed it still works
-      if (event.ctrlKey == false || event.metaKey == false) {
-        // ctrlKey cmd key
-        this.ctrl_key = false;
-      }
-      if (event.ctrlKey == true || event.metaKey == true) {
-        // ctrlKey cmd key
-        this.ctrl_key = true;
-      }
-    },
-
-    set_alt_key: function (event) {
-      // Caution used name commands here to that when multiple keys are pressed it still works
-      if (event.keyCode === 18) {
-        // ctrlKey cmd key
-        this.alt_key = false;
-      }
-      if (event.keyCode === 18) {
-        // ctrlKey cmd key
-        this.alt_key = true;
-      }
-    },
-
-    // hotkey hotkeys
-    keyboard_events_global_up: function (event) {
-      if (this.$store.state.user.is_typing_or_menu_open == true) {
-        return; // Caution must be near top to prevent when typing
-      }
-      let locked_frame_number = this.image_annotation_ctx.current_frame;
-
-      this.set_control_key(event);
-      this.set_alt_key(event);
-
-      if (this.annotation_ui_context.show_context_menu) {
-        return;
-      }
-
-      if (event.keyCode === 16) {
-        // shift
-        //
-        this.shift_key = false;
-      }
-
-      if (event.keyCode === 78) {
-        // shift
-        //
-        this.n_key = false;
-      }
-      if (event.keyCode === 90) {
-        this.z_key = false;
-      }
-
-      if (event.keyCode === 72) {
-        // h key
-        this.show_annotations = !this.show_annotations;
-      }
-
-      if (event.key === "n") {
-        this.force_new_sequence_request = Date.now();
-      }
-
-      if (event.key === "g") {
-        this.label_settings.show_ghost_instances =
-          !this.label_settings.show_ghost_instances;
-      }
-
-      if (event.key === "t") {
-        this.insert_tag_type();
-      }
-
-      if (event.key === "r" && !this.alt_key && !this.ctrl_key && !this.shift_key) {
-
-        const file = this.working_file
-        let current_rotation_degrees = file.image.rotation_degrees
-        current_rotation_degrees += 90
-        if (current_rotation_degrees == 360) {
-          current_rotation_degrees = 0
-        }
-        this.on_image_rotation(current_rotation_degrees);
-      }
-
-      if (event.keyCode === 13) {
-        // enter
-        if (this.instance_type == "polygon") {
-          this.finish_polygon_drawing(event)
-        }
-      }
-
-      // Left or right arrows
-      if(this.ctrl_key && (event.keyCode === 37 || event.keyCode === 39)){
-        this.rotate_instance_selection_hotkeys_index(event.keyCode === 37 ? 'previous' : 'next')
-      }
-      if(event.keyCode === 76 ){
-        let instance = this.selected_instance
-        if(instance){
-          this.$emit('open_label_change_dialog', instance.id)
-        }
-
-      }
-
-      if (event.keyCode === 32) {
-        // space
-        if (this.annotation_show_on) {
-          return
-        }
-        this.toggle_pause_play();
-        this.space_bar = false;
-        this.canvas_element.style.cursor = "pointer";
-      }
-      if (event.keyCode === 46) {
-        // delete
-        this.delete_instance();
-      }
-    },
-
-    //    may_toggle_instance_transparency: function (event) {
-    //      if (event.keyCode === 84) {
-    //        // shift + t
-    //        if (this.shift_key) {
-    //          if (this.default_instance_opacity === 1) {
-    //            this.default_instance_opacity = 0.25;
-    //          } else {
-    //            this.default_instance_opacity = 1;
-    //          }
-    //        }
-    //      }
-    //    },
-
-
     toggle_instance_transparency: function () {
       if (this.default_instance_opacity === 1) {
         this.default_instance_opacity = 0.25;
@@ -7263,34 +7191,6 @@ export default Vue.extend({
       this.shift_frame_via_store(-1);
     },
 
-    //    may_toggle_file_change_left: function (event) {
-    //      if (event.keyCode === 37 || event.key === "a") {
-    //        // left arrow or A
-    //        if (this.shift_key) {
-    //          if (!this.task) {
-    //            this.change_file("previous");
-    //          } else {
-    //            this.$emit("change_task", "previous", this.task, false)
-    //          }
-    //        } else {
-    //          if (this.annotation_show_on) {
-    //            return
-    //          }
-    //          this.shift_frame_via_store(-1);
-    //        }
-    //      }
-    //    },
-
-    //    may_snap_to_instance: function (event) {
-    //      if (event.key === "f") {
-    //        if (this.instance_hover_index != undefined) {
-    //          this.focus_instance({index: this.instance_hover_index})
-    //        } else {
-    //          this.focus_instance_show_all()
-    //        }
-    //      }
-    //    },
-
     trigger_instance_focus: function () {
       if (this.instance_hover_index != undefined) {
         this.focus_instance({index: this.instance_hover_index})
@@ -7298,25 +7198,6 @@ export default Vue.extend({
         this.focus_instance_show_all()
       }
     },
-
-    //    may_toggle_file_change_right: function (event) {
-    //      if (event.keyCode === 39 || event.key === "d") {
-    //        // right arrow
-    //        if (this.shift_key) {
-    //          if (!this.task) {
-    //            this.change_file("next");
-    //          } else {
-    //            this.$emit("change_task", "next", this.task, false)
-    //          }
-    //
-    //        } else {
-    //          if (this.annotation_show_on) {
-    //            return
-    //          }
-    //          this.shift_frame_via_store(1);
-    //        }
-    //      }
-    //    },
 
     toggle_shift_frame_right() {
       if (this.annotation_show_on) {
@@ -7333,38 +7214,11 @@ export default Vue.extend({
       }
     },
 
-    //    may_toggle_show_hide_occlusion: function (event) {
-    //      console.log('foo may_toggle_show_hide_occlusion', event.key)
-    //      if (event.key === "o" || event.key === "O") {
-    //        this.label_settings.show_occluded_keypoints =
-    //          !this.label_settings.show_occluded_keypoints;
-    //        this.refresh = new Date();
-    //      }
-    //    },
-
     toggle_show_hide_occlusion: function () {
       this.label_settings.show_occluded_keypoints =
         !this.label_settings.show_occluded_keypoints;
       this.refresh = new Date();
     },
-
-    //    may_toggle_escape_key: function (event) {
-    //      if (event.keyCode === 27) {
-    //        // Esc
-    //        if (this.view_only_mode == true) {
-    //          return;
-    //        }
-    //        if (this.instance_select_for_issue || this.view_issue_mode) {
-    //          return;
-    //        }
-    //        if (this.instance_select_for_merge) {
-    //          return;
-    //        }
-    //
-    //        this.edit_mode_toggle(this.draw_mode);
-    //        this.is_actively_drawing = false;
-    //      }
-    //    },
 
     toggle_escape_key: function () {
       if (this.view_only_mode == true) {
@@ -7379,103 +7233,6 @@ export default Vue.extend({
 
       this.edit_mode_toggle(this.draw_mode);
       this.is_actively_drawing = false;
-    },
-
-    //    may_save: function (event) {
-    //      if (event.key === "s" && this.shift_key == false) {
-    //        // save
-    //        this.$emit('save');
-    //      }
-    //    },
-
-    keyboard_events_global_down: function (event) {
-      var ctrlKey = 17,
-        cmdKey = 91,
-        shiftKey = 16,
-        vKey = 86,
-        cKey = 67;
-
-      this.set_control_key(event);
-      this.set_alt_key(event);
-      let frame_number_locked = this.image_annotation_ctx.current_frame;
-      if (this.$store.state.user.is_typing_or_menu_open == true) {
-        return; // this guard should be at highest level
-      }
-      if (event.keyCode === 78) {
-        // shift
-        //
-        this.n_key = true;
-      }
-      if (event.keyCode === shiftKey) {
-        // shift
-        //
-        this.shift_key = true;
-      }
-      if (event.keyCode === 90) {
-        this.z_key = true;
-      }
-      //      this.may_save(event);
-      // this.may_snap_to_instance(event);
-
-      //this.may_toggle_file_change_left(event);
-      //this.may_toggle_file_change_right(event);
-
-      //this.may_toggle_instance_transparency(event);
-      //this.may_toggle_show_hide_occlusion(event);
-
-      //      if (event.key === "N") {
-      //        // shift + n
-      //        if (this.shift_key) {
-      //          this.$refs.video_controllers.next_instance();
-      //        }
-      //      }
-      //      if (event.keyCode == 88) {
-      //        // x key
-      //        this.reset_drawing();
-      //      }
-      //      if (event.keyCode === 67 && this.shift_key) {
-      //        // c
-      //
-      //        if (
-      //          this.working_file &&
-      //          this.working_file.ann_is_complete == true ||
-        //          this.view_only_mode == true
-      //        ) {
-      //          return;
-      //        }
-      //        this.$emit('save', true); // and_complete == true
-      //      }
-
-      // this.may_toggle_escape_key(event);
-
-      if (event.keyCode === 32) {
-        // space
-
-        event.preventDefault(); // rationale stop space bar from opening focused elements (eg dataset list)
-        this.space_bar = true;
-
-        // we update this directly otherwise it has to wait for mousemove
-        // and that could be confusing
-      }
-      if (this.ctrl_key && event.keyCode == cKey) {
-        this.copy_instance(true);
-      }
-      if (this.ctrl_key && event.keyCode == vKey) {
-        this.paste_instance(undefined, undefined, frame_number_locked);
-      }
-      // TBD this is a bad one since it's also refresh ?
-      if (this.shift_key && event.keyCode === 82) { // CTRL + r
-        this.annotation_show_activate(!this.task && this.working_file && this.working_file.id ? 'file' : 'task')
-      }
-      if (event.keyCode === 90 && this.ctrl_key) {
-        // ctrl + z
-        this.undo();
-      }
-
-      if (event.keyCode === 89 && this.ctrl_key) {
-        // ctrl + z
-        this.redo();
-      }
     },
 
     jump_to_next_instance_frame() {
