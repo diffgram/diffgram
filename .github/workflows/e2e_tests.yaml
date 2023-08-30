@@ -107,7 +107,7 @@ jobs:
     - run: echo ${{ secrets.GOOGLE_SERVICE_ACCOUNT_ENCODED }} | base64 --decode --ignore-garbage > /gcp/gcloud-service-key.json
     - name: Check processes
       run: ls -a
-    - run: yarn --cwd frontend/ install --network-timeout 600000
+    - run: yarn --cwd frontend/ install
     #    - run: yarn --cwd frontend/ run cypress install
     - run: yarn --cwd frontend/ build
     # Populate DB
