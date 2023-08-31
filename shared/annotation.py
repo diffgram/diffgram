@@ -553,7 +553,7 @@ class Annotation_Update():
             reverse = True)
         return self.instance_list_new
 
-    # Tested measily, needs a big cleanup
+    # Tested
     def annotation_update_main(self):
 
         """
@@ -758,7 +758,8 @@ class Annotation_Update():
                 self.session.add(inst)
 
         return result
-
+    
+    # Tested
     def rehash_existing_instances(self, instance_list):
         result = []
         for instance in instance_list:
