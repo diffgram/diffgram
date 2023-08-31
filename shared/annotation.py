@@ -611,7 +611,6 @@ class Annotation_Update():
             logger.error(f"Error updating annotation {str(self.log)}")
         return self.return_orginal_file_type()
 
-    # TODO: Whats the point of this?
     def main(self):
         return self.annotation_update_main()
 
