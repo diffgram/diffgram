@@ -100,6 +100,10 @@ export class HotkeyListener {
     this.bindKey('keydown', opts, cb)
   }
 
+  getScopes() : Array<string> {
+    return this.selectedScopes
+  }
+
   addScope(scope: string) {
     if (!this.selectedScopes.includes(scope)) {
       this.selectedScopes.push(scope)
