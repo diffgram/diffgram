@@ -426,8 +426,9 @@ def view_file_list_web_route(project_string_id, username):
         return jsonify(file_list = output_file_list,
                        metadata = file_browser_instance.metadata), 200
 
-
-@routes.route('/api/project/<string:project_string_id>/files', methods = ['GET'])
+# NOTE: This route only supports explorer mode, since other modes require a main directory to be passed.
+# Instead now we determine the directory via the query, so the directory we pass to File_Browser is None.
+@routes.route('/api/project/<string:project_string_id>/files/query', methods = ['POST'])
 @Project_permissions.user_has_project([
     "admin", "Editor", "Viewer", "allow_if_project_is_public"])
 def api_get_files(project_string_id):
@@ -437,9 +438,9 @@ def api_get_files(project_string_id):
         project = Project.get(session, project_string_id)
 
         data = request.get_json(force = True)
-        query = request.args.get('query')
 
         metadata_proposed = data.get('metadata')
+        query = data.get('query')
 
         if not metadata_proposed:
             return jsonify("Error no metadata"), 400
@@ -453,7 +454,9 @@ def api_get_files(project_string_id):
             session = session,
             project = project,
             metadata_proposed = metadata_proposed,
-            member = member
+            member = member,
+            # Note that we are passing None here. This means only explorer mode will work, since other modes require this field.
+            directory = None 
         )
         output_file_list = file_browser_instance.file_view_core(
             mode = "serialize")
