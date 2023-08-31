@@ -8,7 +8,7 @@ on:
       - master
 jobs:
   E2E-Tests:
-    runs-on: k8s-diffgram-runner
+    runs-on: k8s-diffgram-arc-runner-set
 #     Service containers to run with `container-job`
     strategy:
       matrix:
