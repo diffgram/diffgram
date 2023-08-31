@@ -14,7 +14,7 @@ class TestAnnotationUpdate(testing_setup.DiffgramBaseTestCase):
         self.mock_file = MagicMock()
         self.instance = Annotation_Update(session=self.mock_session, file=self.mock_file, member=self.mock_member, project=self.mock_project)
   
-    # TODO: How can we clean this up / re-use all the setup?
+    # TODO: Look at how we can clean up all the patching, ideally some way we can re-use it between tests
 
     @patch('shared.annotation.regular_log.default')
     @patch('shared.annotation.Project.get_by_id')
