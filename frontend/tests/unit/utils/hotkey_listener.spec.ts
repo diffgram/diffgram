@@ -57,7 +57,7 @@ describe('HotkeyListener', () => {
       listener.addScope('testScope')
 
       listener.onKeydown({ keys: 'ctrl+b', scope: 'testScope' }, (event, handler) => {
-          // NOTE: testing against capital 'B' because hotkey-js binds using capital letter
+          // NOTE: testing against capital 'B' because hotkey-js binds keys using capital letters
           expect(String.fromCharCode(event.keyCode)).toBe('B')
           expect(event.ctrlKey).toBe(true)
           done()
@@ -70,6 +70,7 @@ describe('HotkeyListener', () => {
       listener.addScope('testScope')
 
       listener.onKeyup({ keys: 'ctrl+a', scope: 'testScope' }, (event, handler) => {
+          // NOTE: testing against capital 'A' because hotkey-js binds keys using capital letters
           expect(String.fromCharCode(event.keyCode)).toBe('A')
           expect(event.ctrlKey).toBe(true)
           done()

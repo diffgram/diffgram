@@ -865,7 +865,6 @@ export default Vue.extend({
   data: function() {
     return {
       degrees: 0,
-      n_key: false,
       mouse_wheel_button: false,
       global_instance: undefined,
 
@@ -878,6 +877,7 @@ export default Vue.extend({
       instance_rotate_control_mouse_hover: null,
       actively_drawing_instance_template: null,
       z_key: false,
+      shift_key: true,
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
 
@@ -925,7 +925,6 @@ export default Vue.extend({
       original_edit_instance: undefined,
       original_edit_instance_index: undefined,
       loading_sequences: false,
-      alt_key: false,
       command_manager: undefined,
 
       show_snackbar_paste: false,
@@ -1151,8 +1150,6 @@ export default Vue.extend({
       zoom_canvas: 1,
       error_no_permissions: {},
       snap_to_edges: 5,
-      shift_key: false,
-      ctrl_key: false,
 
       metadata: {
         length: null,
@@ -1760,95 +1757,94 @@ export default Vue.extend({
 
       this.hotkey_listener.addFilter(this.hotkeyListenerFilter)
 
-      this.hotkey_listener.onKeyup({ keys: 's', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 's', scope }, () => {
         this.$emit('save');
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'f', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'f', scope }, () => {
         this.trigger_instance_focus()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'left,a', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'left,a', scope }, () => {
         this.toggle_shift_frame_left()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+left,shift+a', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'shift+left,shift+a', scope }, () => {
         this.toggle_file_change_left()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'right,d', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'right,d', scope }, () => {
         this.toggle_shift_frame_right()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+right,shift+d', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'shift+right,shift+d', scope }, () => {
         this.toggle_file_change_right()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+t', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'shift+t', scope }, () => {
         this.toggle_instance_transparency()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+o,o', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'shift+o,o', scope }, () => {
         this.toggle_show_hide_occlusion()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+n', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'shift+n', scope }, () => {
         this.jump_to_next_instance_frame()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'x', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'x', scope }, () => {
         this.reset_drawing()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+c', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'shift+c', scope }, () => {
         this.complete_and_move()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'esc', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'esc', scope }, () => {
         this.toggle_escape_key()
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'ctrl+c', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+c', scope, platformDependent: true }, () => {
         this.copy_instance(true)
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'ctrl+v', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+v', scope, platformDependent: true }, () => {
         this.paste_instance(undefined, undefined, this.image_annotation_ctx.current_frame)
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift+r', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'shift+r', scope }, () => {
         this.annotation_show_activate(
           !this.task && this.working_file && this.working_file.id ? 'file' : 'task'
         )
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'ctrl+z', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+z', scope, platformDependent: true }, () => {
         this.undo();
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'ctrl+y', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+y', scope, platformDependent: true }, () => {
         this.redo();
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'n', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'n', scope }, () => {
         this.force_new_sequence_request = Date.now();
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'h', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'h', scope }, () => {
         this.show_annotations = !this.show_annotations;
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'g', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'g', scope }, () => {
         this.label_settings.show_ghost_instances =
           !this.label_settings.show_ghost_instances;
       })
 
-      this.hotkey_listener.onKeyup({ keys: 't', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 't', scope }, () => {
         this.insert_tag_type();
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'r', scope }, () => {
-        console.log('foo r')
+      this.hotkey_listener.onKeydown({ keys: 'r', scope }, () => {
         const file = this.working_file
         if ( !file.image ) {
           return
@@ -1861,28 +1857,28 @@ export default Vue.extend({
         this.on_image_rotation(current_rotation_degrees);
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'enter', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'enter', scope }, () => {
         if (this.instance_type == "polygon") {
           this.finish_polygon_drawing(event)
         }
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'ctrl+a,ctrl+left', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+left', scope, platformDependent: true }, (event) => {
         this.rotate_instance_selection_hotkeys_index('previous')
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'ctrl+d,ctrl+right', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+right', scope, platformDependent: true }, () => {
         this.rotate_instance_selection_hotkeys_index('next')
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'l', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'l', scope }, () => {
         let instance = this.selected_instance
         if(instance){
           this.$emit('open_label_change_dialog', instance.id)
         }
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'space', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'space', scope }, () => {
         if (this.annotation_show_on) {
           return
         }
@@ -1890,9 +1886,27 @@ export default Vue.extend({
         this.canvas_element.style.cursor = "pointer";
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'del', scope }, () => {
+      this.hotkey_listener.onKeydown({ keys: 'del', scope }, () => {
         this.delete_instance();
       })
+
+      this.hotkey_listener.onKeydown({ keys: 'z', scope }, () => {
+        this.z_key = true
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'z', scope }, () => {
+        this.z_key = false
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'shift', scope }, () => {
+        this.shift_key = true
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'shift', scope }, () => {
+        this.shift_key = false
+      })
+
+
 
     },
 

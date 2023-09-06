@@ -1,14 +1,29 @@
+import { debounce } from 'lodash'
 import hotkeys, { HotkeysEvent } from 'hotkeys-js'
+import platformDetect from 'platform-detect/os.mjs'
+
+const DEFAULT_DEBOUNCE_THRESHOLD = 100
+
+const DEFAULT_HOTKEYS_OPTIONS = {
+  debounceThreshold: 100,
+  platformDependent: false,
+  preventDefaultEvent: true,
+}
+
+export type Platform = 'win' | 'mac' | 'linux'
 
 interface HotkeysOptions {
   keys: string
   scope: string
-  element ?: HTMLElement
+  element ?: HTMLElement,
+  debounceThreshold?: number
+  platformDependent: boolean
+  preventDefaultEvent: boolean
 }
 
-type KeysOrOpts = HotkeysOptions
+export type KeysOrOpts = HotkeysOptions
 
-type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => void
+export type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => void
 /**
  * `HotkeyListener` - A utility class to manage keyboard hotkeys using the `hotkeys-js` library.
  *
@@ -72,17 +87,34 @@ export class HotkeyListener {
   }
 
   private bindKey(type: 'keyup' | 'keydown', opts: HotkeysOptions, cb: KeyEventHandler) {
-    const { keys, scope, element } = opts
+    const {
+      keys, scope, element,
+      debounceThreshold = DEFAULT_HOTKEYS_OPTIONS.debounceThreshold,
+      platformDependent = DEFAULT_HOTKEYS_OPTIONS.platformDependent,
+      preventDefaultEvent = DEFAULT_HOTKEYS_OPTIONS.preventDefaultEvent,
+    } = opts
+
+    const bindKeys = platformDependent
+      ? this.getPlatformBasedKeys(keys)
+      : keys
+
     const scopedCallback = (event: KeyboardEvent, handler: HotkeysEvent) => {
       if (this.selectedScopes.includes(scope)) {
+        if (preventDefaultEvent) {
+          event.preventDefault()
+        }
         return cb(event, handler)
       }
     }
 
     if ( type === 'keyup' ) {
-      hotkeys(keys, { scope: 'all', element, keyup: true, keydown: false }, scopedCallback)
+      hotkeys(bindKeys, { scope: 'all', element, keyup: true, keydown: false }, scopedCallback)
     } else { // keydown
-      hotkeys(keys, { scope: 'all', element, keyup: false, keydown: true }, scopedCallback)
+      hotkeys(
+        bindKeys,
+        { scope: 'all', element, keyup: false, keydown: true },
+        debounce(scopedCallback, debounceThreshold, {trailing: false, leading: true}),
+      )
     }
 
 
@@ -214,5 +246,35 @@ export class HotkeyListener {
       return true
     }
   }
+
+  toMacStyleHotkeys( keys: string ) : string {
+    return keys.replace(/\b(ctrl|control)\b/gi, 'command')
+  }
+
+  getPlatform() : Platform | undefined {
+    const {
+      windows, linux, macos
+    } = platformDetect
+
+    if (windows) {
+      return 'win'
+    } else if (macos) {
+      return 'mac'
+    } else if (linux) {
+      return 'linux'
+    }
+  }
+
+  // this function asumes that keys argument has windows styles keys (e.g. ctrl)
+  private getPlatformBasedKeys( keys: string ) : string {
+    const platform = this.getPlatform()
+
+    if (platform === 'mac') {
+      return this.toMacStyleHotkeys(keys)
+    } else {
+      return keys
+    }
+  }
+
 
 }
