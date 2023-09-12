@@ -1,8 +1,5 @@
 import { debounce } from 'lodash'
 import hotkeys, { HotkeysEvent } from 'hotkeys-js'
-import platformDetect from 'platform-detect/os.mjs'
-
-const DEFAULT_DEBOUNCE_THRESHOLD = 100
 
 const DEFAULT_HOTKEYS_OPTIONS = {
   debounceThreshold: 100,
@@ -41,7 +38,8 @@ export type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => v
  *
  * 2. **Hotkey Registration**:
  *      - Register a hotkey that reacts on keyup: `listener.onKeyup('ctrl+b', callback)`.
- *      - For keydown events: `listener.onKeydown('ctrl+b', callback)`.
+ *      - For keydown events: `listener.onKeydown('ctrl+b', callback)`.]
+ *      - For binding to individual special keys like shift, ctrl, etc. use onSpecialKeydown and onSpecialKeyup: `listener.onSpecialKeydown('shift', callback)`
  *
  * 3. **Scopes**:
  *      - Select scope and create if doesn't exist already: `listener.addScope('myScope')`.
@@ -72,6 +70,15 @@ export class HotkeyListener {
 
   private filters: Array<(event: KeyboardEvent) => boolean>
   private defaultFilter: (event: KeyboardEvent) => boolean
+
+  private specialKeyState: { [key: string]: boolean } = {
+      shift: false,
+      control: false,
+      alt: false,
+      option: false,
+      cmd: false,
+      command: false,
+  };
 
   private constructor() {
     this.defaultFilter = hotkeys.filter
@@ -251,18 +258,19 @@ export class HotkeyListener {
     return keys.replace(/\b(ctrl|control)\b/gi, 'command')
   }
 
-  getPlatform() : Platform | undefined {
-    const {
-      windows, linux, macos
-    } = platformDetect
+  getPlatform() : Platform {
+    const userAgent = window.navigator.userAgent;
+    const platform = window.navigator.platform;
+    const macosPlatforms = ['Macintosh', 'MacIntel', 'MacPPC', 'Mac68K'];
+    let os: Platform = 'win'; // by default assume Windows
 
-    if (windows) {
-      return 'win'
-    } else if (macos) {
-      return 'mac'
-    } else if (linux) {
-      return 'linux'
+    if (macosPlatforms.indexOf(platform) !== -1) {
+      os = 'mac';
+    } else if (/Linux/.test(platform)) {
+      os = 'linux';
     }
+
+    return os;
   }
 
   // this function asumes that keys argument has windows styles keys (e.g. ctrl)
@@ -274,6 +282,99 @@ export class HotkeyListener {
     } else {
       return keys
     }
+  }
+
+  private parseSpecialKeyBinding(binding: string) {
+    return binding.split(',').map(group => group.split('+').map(key => key.trim()));
+  }
+
+  private checkSpecialKeyBindingPressed(bindings: string[][]): boolean {
+    return bindings.some(group =>
+      group.every(key => this.specialKeyState[key]) // All keys in a group should be pressed
+    );
+  }
+
+  private updateSpecialKeyState(event: KeyboardEvent) {
+    this.specialKeyState = {
+      shift: event.shiftKey,
+      control: event.ctrlKey,
+      alt: event.altKey,
+      option: hotkeys.option, // or use appropriate mapping
+      cmd: hotkeys.cmd, // or use appropriate mapping
+      command: hotkeys.command, // or use appropriate mapping
+    };
+  }
+
+  onSpecialKeydown(opts: HotkeysOptions, cb: KeyEventHandler) {
+    const {
+      keys, scope, element,
+      debounceThreshold = DEFAULT_HOTKEYS_OPTIONS.debounceThreshold,
+      platformDependent = DEFAULT_HOTKEYS_OPTIONS.platformDependent,
+      preventDefaultEvent = DEFAULT_HOTKEYS_OPTIONS.preventDefaultEvent,
+    } = opts
+
+
+    const bindKeys = platformDependent
+      ? this.getPlatformBasedKeys(keys)
+      : keys
+
+    const bindings = this.parseSpecialKeyBinding(bindKeys);
+
+    const scopedCallback = (event: KeyboardEvent, handler: HotkeysEvent) => {
+      this.updateSpecialKeyState(event);
+
+      if (!this.selectedScopes.includes(scope) || !this.checkSpecialKeyBindingPressed(bindings)) {
+        return
+      }
+
+      if (preventDefaultEvent) {
+        event.preventDefault()
+      }
+
+      cb(event, handler)
+    }
+
+    hotkeys(
+      '*',
+      { element, keyup: false, keydown: true },
+      debounce(scopedCallback, debounceThreshold, {trailing: false, leading: true}),
+    )
+  }
+
+
+  onSpecialKeyup(opts: HotkeysOptions, cb: KeyEventHandler) {
+    const {
+      keys, scope, element,
+      debounceThreshold = DEFAULT_HOTKEYS_OPTIONS.debounceThreshold,
+      platformDependent = DEFAULT_HOTKEYS_OPTIONS.platformDependent,
+      preventDefaultEvent = DEFAULT_HOTKEYS_OPTIONS.preventDefaultEvent,
+    } = opts
+
+
+    const bindKeys = platformDependent
+      ? this.getPlatformBasedKeys(keys)
+      : keys
+
+    const bindings = this.parseSpecialKeyBinding(bindKeys);
+
+    const scopedCallback = (event: KeyboardEvent, handler: HotkeysEvent) => {
+
+      if (!this.selectedScopes.includes(scope) || !this.checkSpecialKeyBindingPressed(bindings)) {
+        return
+      }
+
+      if (preventDefaultEvent) {
+        event.preventDefault()
+      }
+
+      cb(event, handler)
+    }
+
+    hotkeys(
+      '*',
+      { element, keyup: true, keydown: false },
+      debounce(scopedCallback, debounceThreshold, {trailing: false, leading: true}),
+    )
   }
 
 

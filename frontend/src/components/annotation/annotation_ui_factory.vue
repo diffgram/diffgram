@@ -14,6 +14,7 @@
         </ui_schema_context_menu>
         <toolbar_factory
               v-if="annotation_ui_context.working_file && annotation_ui_context.command_manager"
+              :platform="platform"
               :task="annotation_ui_context.task"
               :show_ui_schema_context_menu="show_ui_schema_context_menu"
               :annotation_ui_context="annotation_ui_context"
@@ -444,6 +445,9 @@ export default Vue.extend({
             },
             show_ui_schema_context_menu: false,
             hotkey_manager: null,
+            platform: {
+              default: 'win'
+            },
             hotkey_listener: null,
             window_width: 0,
             window_height: 0,
@@ -595,6 +599,7 @@ export default Vue.extend({
             this.edit_ui_schema()
         }
         this.hotkey_listener = HotkeyListener.getInstance()
+        this.platform = this.hotkey_listener.getPlatform()
 
         this.hotkey_listener.addFilter((event) => {
           return !this.$store.state.user.is_typing_or_menu_open
