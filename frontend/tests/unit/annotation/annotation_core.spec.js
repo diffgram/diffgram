@@ -82,6 +82,8 @@ describe("Test annotation_core", () => {
           addFilter: jest.fn(),
           onKeyup: jest.fn(),
           onKeydown: jest.fn(),
+          onSpecialKeydown: jest.fn(),
+          onSpecialKeyup: jest.fn(),
         },
         label_schema: {
           id: 1,

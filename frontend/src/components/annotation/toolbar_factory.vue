@@ -52,6 +52,9 @@ export default Vue.extend({
     audio_toolbar
   },
   props: {
+    platform: {
+      default: 'win',
+    },
     project_string_id: { type: String, required: true },
     working_file: { type: Object, required: true },
     command_manager: { type: Object, required: true },

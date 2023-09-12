@@ -17609,11 +17609,6 @@ pkg-dir@^5.0.0:
   dependencies:
     find-up "^5.0.0"
 
-platform-detect@^3.0.1:
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/platform-detect/-/platform-detect-3.0.1.tgz#84cd928f1b5ec61277306d4aefdb229a808f4677"
-  integrity sha512-qAXFCIPz8Kd1b7RXuxsMNoZgLq+NR/fzJBFWpyUYARzh/ORG1xMG6suRLOFg/DkJXtS+pvsjawMfwq1htVBpUg==
-
 pnp-webpack-plugin@1.6.4:
   version "1.6.4"
   resolved "https://registry.yarnpkg.com/pnp-webpack-plugin/-/pnp-webpack-plugin-1.6.4.tgz#c9711ac4dc48a685dabafc86f8b6dd9f8df84149"

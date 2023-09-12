@@ -877,7 +877,7 @@ export default Vue.extend({
       instance_rotate_control_mouse_hover: null,
       actively_drawing_instance_template: null,
       z_key: false,
-      shift_key: true,
+      shift_key: false,
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
 
@@ -1898,15 +1898,13 @@ export default Vue.extend({
         this.z_key = false
       })
 
-      this.hotkey_listener.onKeydown({ keys: 'shift', scope }, () => {
+      this.hotkey_listener.onSpecialKeydown({ keys: 'shift', scope }, () => {
         this.shift_key = true
       })
 
-      this.hotkey_listener.onKeyup({ keys: 'shift', scope }, () => {
+      this.hotkey_listener.onSpecialKeyup({ keys: 'shift', scope }, () => {
         this.shift_key = false
       })
-
-
 
     },
 
