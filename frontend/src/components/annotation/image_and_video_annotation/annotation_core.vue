@@ -1905,7 +1905,6 @@ export default Vue.extend({
       this.hotkey_listener.onSpecialKeyup({ keys: 'shift', scope }, () => {
         this.shift_key = false
       })
-
     },
 
 
