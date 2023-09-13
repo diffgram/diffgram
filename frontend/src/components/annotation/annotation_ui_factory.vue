@@ -14,6 +14,7 @@
         </ui_schema_context_menu>
         <toolbar_factory
               v-if="annotation_ui_context.working_file && annotation_ui_context.command_manager"
+              :platform="platform"
               :task="annotation_ui_context.task"
               :show_ui_schema_context_menu="show_ui_schema_context_menu"
               :annotation_ui_context="annotation_ui_context"
@@ -226,6 +227,7 @@
                               :bulk_mode="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().bulk_mode"
                               :search_mode="annotation_ui_context.get_current_ann_ctx() && annotation_ui_context.get_current_ann_ctx().search_mode"
                               :annotation_show_event="annotation_show_event"
+                              :hotkey_listener="hotkey_listener"
                               @activate_hotkeys="activate_hotkeys"
                               @request_file_change="request_file_change"
                               @change_label_schema="on_change_label_schema"
@@ -380,6 +382,10 @@ import {
   initialize_instance_object
   }
 from "../../utils/instance_utils";
+
+import {
+  HotkeyListener
+} from "../../utils/hotkey_listener";
 import TaskPrefetcher from "../../helpers/task/TaskPrefetcher"
 import IssuesAnnotationUIManager from "./issues/IssuesAnnotationUIManager"
 import InstanceStore from "../../helpers/InstanceStore"
@@ -401,7 +407,6 @@ import HotKeyManager from "./hotkeys/HotKeysManager"
 import {GlobalInstance} from "../vue_canvas/instances/GlobalInstance";
 import {postInstanceList} from "../../services/instanceList"
 import {CustomButton} from "../../types/ui_schema/Buttons";
-
 
 export default Vue.extend({
     name: "annotation_ui_factory",
@@ -440,6 +445,10 @@ export default Vue.extend({
             },
             show_ui_schema_context_menu: false,
             hotkey_manager: null,
+            platform: {
+              default: 'win'
+            },
+            hotkey_listener: null,
             window_width: 0,
             window_height: 0,
             annotation_ui_context: new BaseAnnotationUIContext(),
@@ -589,6 +598,12 @@ export default Vue.extend({
         if (this.enabled_edit_schema == true) {
             this.edit_ui_schema()
         }
+        this.hotkey_listener = HotkeyListener.getInstance()
+        this.platform = this.hotkey_listener.getPlatform()
+
+        this.hotkey_listener.addFilter((event) => {
+          return !this.$store.state.user.is_typing_or_menu_open
+        })
     },
     beforeDestroy() {
         this.hotkey_manager.deactivate()
@@ -596,7 +611,8 @@ export default Vue.extend({
             "resize",
             this.update_window_size_from_listener
         );
-
+        this.hotkey_listener.clear()
+        this.hotkey_listener.restoreDefaultFilters()
     },
 
     async mounted() {

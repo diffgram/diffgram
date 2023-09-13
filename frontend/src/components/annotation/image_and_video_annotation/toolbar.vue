@@ -468,7 +468,7 @@
         :close_by_button="true"
       >
         <template slot="content">
-          <hotkeys></hotkeys>
+          <hotkeys :is_mac_os="platform === 'mac'"></hotkeys>
         </template>
       </button_with_menu>
 
@@ -1069,6 +1069,9 @@ export default Vue.extend({
     task_status
   },
   props: {
+    platform: {
+      default: 'win',
+    },
     project_string_id: {},
     video_mode: {
       default: false

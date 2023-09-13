@@ -185,7 +185,6 @@
               in order for the canvas render to detect it -->
 
           <div
-            contenteditable="true"
             :id="`canvas_wrapper_${working_file.id}`"
             style="position: relative"
             @mousemove="mouse_move"
@@ -649,6 +648,8 @@ import {PolygonMergeTool} from "../../vue_canvas/advanced_tools/PolygonMergeTool
 import IssuesAnnotationUIManager from "./../issues/IssuesAnnotationUIManager";
 import {BaseAnnotationUIContext, ImageAnnotationUIContext} from "../../../types/AnnotationUIContext";
 import {AutoBorderContext} from "../../vue_canvas/advanced_tools/PolygonAutoBorderTool";
+import { HotkeyListener } from "../../../utils/hotkey_listener";
+
 Vue.prototype.$ellipse = new ellipse();
 Vue.prototype.$polygon = new polygon();
 
@@ -735,6 +736,7 @@ export default Vue.extend({
     image_annotation_ctx: {type: Object as ImageAnnotationUIContext, required: true},
     is_active: {type: Boolean, required: true, default: true},
     annotation_show_event: {default: null},
+    hotkey_listener: {type: Object as HotkeyListener, required: true}
   },
   watch: {
     is_active: function (){
@@ -863,7 +865,6 @@ export default Vue.extend({
   data: function() {
     return {
       degrees: 0,
-      n_key: false,
       mouse_wheel_button: false,
       global_instance: undefined,
 
@@ -876,6 +877,7 @@ export default Vue.extend({
       instance_rotate_control_mouse_hover: null,
       actively_drawing_instance_template: null,
       z_key: false,
+      shift_key: false,
       snapped_to_instance: undefined,
       canvas_wrapper: undefined,
 
@@ -923,7 +925,6 @@ export default Vue.extend({
       original_edit_instance: undefined,
       original_edit_instance_index: undefined,
       loading_sequences: false,
-      alt_key: false,
       command_manager: undefined,
 
       show_snackbar_paste: false,
@@ -1149,8 +1150,6 @@ export default Vue.extend({
       zoom_canvas: 1,
       error_no_permissions: {},
       snap_to_edges: 5,
-      shift_key: false,
-      ctrl_key: false,
 
       metadata: {
         length: null,
@@ -1161,6 +1160,7 @@ export default Vue.extend({
 
       window_width_from_listener: 1280,
       window_height_from_listener: 650,
+      hotkeyListenerScope: null,
     };
   },
   computed: {
@@ -1717,6 +1717,10 @@ export default Vue.extend({
     this.save_watcher();
     this.save_and_complete_watcher();
     this.refresh_video_buffer_watcher();
+
+    this.hotkey_listener.deleteScope(this.hotkeyListenerScope)
+
+    this.cleanUpHotkeys(this.hotkeyListenerScope)
   },
 
   mounted() {
@@ -1724,6 +1728,10 @@ export default Vue.extend({
       window.AnnotationCore = this;
     }
     this.mounted();
+
+    this.hotkeyListenerScope = `image ${this.working_file.hash}`
+
+    this.setupHotkeys(this.hotkeyListenerScope)
 
     if (
       this.annotation_ui_context.working_file_list[0].id === this.annotation_ui_context.working_file.id
@@ -1733,6 +1741,173 @@ export default Vue.extend({
   },
   // TODO 312 Methods!! refactor in multiple files and classes.
   methods: {
+
+    cleanUpHotkeys(scope) {
+      this.hotkey_listener.deleteScope(scope)
+      this.hotkey_listener.removeFilter(this.hotkeyListenerFilter)
+    },
+
+    hotkeyListenerFilter() {
+      return !this.annotation_ui_context.show_context_menu
+    },
+
+    setupHotkeys(scope) {
+
+      this.hotkey_listener.addScope(scope)
+
+      this.hotkey_listener.addFilter(this.hotkeyListenerFilter)
+
+      this.hotkey_listener.onKeydown({ keys: 's', scope }, () => {
+        this.$emit('save');
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'f', scope }, () => {
+        this.trigger_instance_focus()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'left,a', scope }, () => {
+        this.toggle_shift_frame_left()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'shift+left,shift+a', scope }, () => {
+        this.toggle_file_change_left()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'right,d', scope }, () => {
+        this.toggle_shift_frame_right()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'shift+right,shift+d', scope }, () => {
+        this.toggle_file_change_right()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'shift+t', scope }, () => {
+        this.toggle_instance_transparency()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'shift+o,o', scope }, () => {
+        this.toggle_show_hide_occlusion()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'shift+n', scope }, () => {
+        this.jump_to_next_instance_frame()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'x', scope }, () => {
+        this.reset_drawing()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'shift+c', scope }, () => {
+        this.complete_and_move()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'esc', scope }, () => {
+        this.toggle_escape_key()
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+c', scope, platformDependent: true }, () => {
+        this.copy_instance(true)
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+v', scope, platformDependent: true }, () => {
+        this.paste_instance(undefined, undefined, this.image_annotation_ctx.current_frame)
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'shift+r', scope }, () => {
+        this.annotation_show_activate(
+          !this.task && this.working_file && this.working_file.id ? 'file' : 'task'
+        )
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+z', scope, platformDependent: true }, () => {
+        this.undo();
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+y', scope, platformDependent: true }, () => {
+        this.redo();
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'n', scope }, () => {
+        this.force_new_sequence_request = Date.now();
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'h', scope }, () => {
+        this.show_annotations = !this.show_annotations;
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'g', scope }, () => {
+        this.label_settings.show_ghost_instances =
+          !this.label_settings.show_ghost_instances;
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 't', scope }, () => {
+        this.insert_tag_type();
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'r', scope }, () => {
+        const file = this.working_file
+        if ( !file.image ) {
+          return
+        }
+        let current_rotation_degrees = file.image.rotation_degrees
+        current_rotation_degrees += 90
+        if (current_rotation_degrees == 360) {
+          current_rotation_degrees = 0
+        }
+        this.on_image_rotation(current_rotation_degrees);
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'enter', scope }, () => {
+        if (this.instance_type == "polygon") {
+          this.finish_polygon_drawing(event)
+        }
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+left', scope, platformDependent: true }, (event) => {
+        this.rotate_instance_selection_hotkeys_index('previous')
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'ctrl+right', scope, platformDependent: true }, () => {
+        this.rotate_instance_selection_hotkeys_index('next')
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'l', scope }, () => {
+        let instance = this.selected_instance
+        if(instance){
+          this.$emit('open_label_change_dialog', instance.id)
+        }
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'space', scope }, () => {
+        if (this.annotation_show_on) {
+          return
+        }
+        this.toggle_pause_play();
+        this.canvas_element.style.cursor = "pointer";
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'del', scope }, () => {
+        this.delete_instance();
+      })
+
+      this.hotkey_listener.onKeydown({ keys: 'z', scope }, () => {
+        this.z_key = true
+      })
+
+      this.hotkey_listener.onKeyup({ keys: 'z', scope }, () => {
+        this.z_key = false
+      })
+
+      this.hotkey_listener.onSpecialKeydown({ keys: 'shift', scope }, () => {
+        this.shift_key = true
+      })
+
+      this.hotkey_listener.onSpecialKeyup({ keys: 'shift', scope }, () => {
+        this.shift_key = false
+      })
+    },
+
+
     rotate_instance_selection_hotkeys_index: function(dir: string = 'next'){
       if(this.draw_mode){
         this.$emit('draw_mode_change', false)
@@ -3100,15 +3275,6 @@ export default Vue.extend({
         this.update_window_size_from_listener
       );
 
-      // local
-      this.annotation_area.removeEventListener(
-        "keydown",
-        this.keyboard_events_local_down
-      );
-      this.annotation_area.removeEventListener(
-        "keyup",
-        this.keyboard_events_local_up
-      );
       this.canvas_wrapper.removeEventListener("wheel", this.wheel);
     },
 
@@ -3122,15 +3288,7 @@ export default Vue.extend({
       // rather have canvas_wrapper inside this functionsss in case it needs to "refresh" it
 
       this.annotation_area = document.getElementById("annotation");
-      // window.addEventListener("beforeunload", this.warn_user_unload);
-      this.annotation_area.addEventListener(
-        "keyup",
-        this.keyboard_events_local_up
-      );
-      this.annotation_area.addEventListener(
-        "keydown",
-        this.keyboard_events_local_down
-      );
+
       // window.addEventListener("keydown", this.keyboard_events_global_down);
       // document.addEventListener("mousedown", this.mouse_events_global_down);
       // window.addEventListener("keyup", this.keyboard_events_global_up);
@@ -7020,323 +7178,89 @@ export default Vue.extend({
       }
     },
 
-    keyboard_events_local_up: function (event) {
-      // TODO would it be better to have a dictionary or somthing to map this?
-      if (event.keyCode === 46) {
-        // delete
-        this.delete_instance();
+    toggle_instance_transparency: function () {
+      if (this.default_instance_opacity === 1) {
+        this.default_instance_opacity = 0.25;
+      } else {
+        this.default_instance_opacity = 1;
       }
     },
 
-    keyboard_events_local_down: function (event) {
-    },
 
-    set_control_key: function (event) {
-      // Caution used name commands here to that when multiple keys are pressed it still works
-      if (event.ctrlKey == false || event.metaKey == false) {
-        // ctrlKey cmd key
-        this.ctrl_key = false;
-      }
-      if (event.ctrlKey == true || event.metaKey == true) {
-        // ctrlKey cmd key
-        this.ctrl_key = true;
+    toggle_file_change_left() {
+      if (!this.task) {
+        this.change_file("previous");
+      } else {
+        this.$emit("change_task", "previous", this.task, false)
       }
     },
 
-    set_alt_key: function (event) {
-      // Caution used name commands here to that when multiple keys are pressed it still works
-      if (event.keyCode === 18) {
-        // ctrlKey cmd key
-        this.alt_key = false;
+    toggle_shift_frame_left() {
+      if (this.annotation_show_on) {
+        return
       }
-      if (event.keyCode === 18) {
-        // ctrlKey cmd key
-        this.alt_key = true;
+      this.shift_frame_via_store(-1);
+    },
+
+    trigger_instance_focus: function () {
+      if (this.instance_hover_index != undefined) {
+        this.focus_instance({index: this.instance_hover_index})
+      } else {
+        this.focus_instance_show_all()
       }
     },
 
-    // hotkey hotkeys
-    keyboard_events_global_up: function (event) {
-      if (this.$store.state.user.is_typing_or_menu_open == true) {
-        return; // Caution must be near top to prevent when typing
+    toggle_shift_frame_right() {
+      if (this.annotation_show_on) {
+        return
       }
-      let locked_frame_number = this.image_annotation_ctx.current_frame;
+      this.shift_frame_via_store(1);
+    },
 
-      this.set_control_key(event);
-      this.set_alt_key(event);
+    toggle_file_change_right() {
+      if (!this.task) {
+        this.change_file("next");
+      } else {
+        this.$emit("change_task", "next", this.task, false)
+      }
+    },
 
-      if (this.annotation_ui_context.show_context_menu) {
+    toggle_show_hide_occlusion: function () {
+      this.label_settings.show_occluded_keypoints =
+        !this.label_settings.show_occluded_keypoints;
+      this.refresh = new Date();
+    },
+
+    toggle_escape_key: function () {
+      if (this.view_only_mode == true) {
+        return;
+      }
+      if (this.instance_select_for_issue || this.view_issue_mode) {
+        return;
+      }
+      if (this.instance_select_for_merge) {
         return;
       }
 
-      if (event.keyCode === 16) {
-        // shift
-        //
-        this.shift_key = false;
-      }
-
-      if (event.keyCode === 78) {
-        // shift
-        //
-        this.n_key = false;
-      }
-      if (event.keyCode === 90) {
-        this.z_key = false;
-      }
-
-      if (event.keyCode === 72) {
-        // h key
-        this.show_annotations = !this.show_annotations;
-      }
-
-      if (event.key === "n") {
-        this.force_new_sequence_request = Date.now();
-      }
-
-      if (event.key === "g") {
-        this.label_settings.show_ghost_instances =
-          !this.label_settings.show_ghost_instances;
-      }
-
-      if (event.key === "t") {
-        this.insert_tag_type();
-      }
-
-      if (event.key === "r" && !this.alt_key && !this.ctrl_key && !this.shift_key) {
-
-        const file = this.working_file
-        let current_rotation_degrees = file.image.rotation_degrees
-        current_rotation_degrees += 90
-        if (current_rotation_degrees == 360) {
-          current_rotation_degrees = 0
-        }
-        this.on_image_rotation(current_rotation_degrees);
-      }
-
-      if (event.keyCode === 13) {
-        // enter
-        if (this.instance_type == "polygon") {
-          this.finish_polygon_drawing(event)
-        }
-      }
-
-      // Left or right arrows
-      if(this.ctrl_key && (event.keyCode === 37 || event.keyCode === 39)){
-        this.rotate_instance_selection_hotkeys_index(event.keyCode === 37 ? 'previous' : 'next')
-      }
-      if(event.keyCode === 76 ){
-        let instance = this.selected_instance
-        if(instance){
-          this.$emit('open_label_change_dialog', instance.id)
-        }
-
-      }
-
-      if (event.keyCode === 32) {
-        // space
-        if (this.annotation_show_on) {
-          return
-        }
-        this.toggle_pause_play();
-        this.space_bar = false;
-        this.canvas_element.style.cursor = "pointer";
-      }
-      if (event.keyCode === 46) {
-        // delete
-        this.delete_instance();
-      }
+      this.edit_mode_toggle(this.draw_mode);
+      this.is_actively_drawing = false;
     },
 
-    may_toggle_instance_transparency: function (event) {
-      if (event.keyCode === 84) {
-        // shift + t
-        if (this.shift_key) {
-          if (this.default_instance_opacity === 1) {
-            this.default_instance_opacity = 0.25;
-          } else {
-            this.default_instance_opacity = 1;
-          }
-        }
-      }
+    jump_to_next_instance_frame() {
+      this.$refs.video_controllers.next_instance();
     },
 
-    may_toggle_file_change_left: function (event) {
-      if (event.keyCode === 37 || event.key === "a") {
-        // left arrow or A
-        if (this.shift_key) {
-          if (!this.task) {
-            this.change_file("previous");
-          } else {
-            this.$emit("change_task", "previous", this.task, false)
-          }
-        } else {
-          if (this.annotation_show_on) {
-            return
-          }
-          this.shift_frame_via_store(-1);
-        }
+    complete_and_move() {
+      if (
+        this.working_file &&
+        this.working_file.ann_is_complete == true ||
+        this.view_only_mode == true
+      ) {
+        return;
       }
+      this.$emit('save', true); // and_complete == true
     },
 
-    may_snap_to_instance: function (event) {
-      if (event.key === "f") {
-        if (this.instance_hover_index != undefined) {
-          this.focus_instance({index: this.instance_hover_index})
-        } else {
-          this.focus_instance_show_all()
-        }
-      }
-    },
-
-    may_toggle_file_change_right: function (event) {
-      if (event.keyCode === 39 || event.key === "d") {
-        // right arrow
-        if (this.shift_key) {
-          if (!this.task) {
-            this.change_file("next");
-          } else {
-            this.$emit("change_task", "next", this.task, false)
-          }
-
-        } else {
-          if (this.annotation_show_on) {
-            return
-          }
-          this.shift_frame_via_store(1);
-        }
-      }
-    },
-
-    may_toggle_show_hide_occlusion: function (event) {
-      if (event.key === "o" || event.key === "O") {
-        this.label_settings.show_occluded_keypoints =
-          !this.label_settings.show_occluded_keypoints;
-        this.refresh = new Date();
-      }
-    },
-
-    may_toggle_escape_key: function (event) {
-      if (event.keyCode === 27) {
-        // Esc
-        if (this.view_only_mode == true) {
-          return;
-        }
-        if (this.instance_select_for_issue || this.view_issue_mode) {
-          return;
-        }
-        if (this.instance_select_for_merge) {
-          return;
-        }
-
-        this.edit_mode_toggle(this.draw_mode);
-        this.is_actively_drawing = false;
-      }
-    },
-
-    may_save: function (event) {
-      if (event.key === "s" && this.shift_key == false) {
-        // save
-        this.$emit('save');
-      }
-    },
-
-    keyboard_events_global_down: function (event) {
-      var ctrlKey = 17,
-        cmdKey = 91,
-        shiftKey = 16,
-        vKey = 86,
-        cKey = 67;
-
-      this.set_control_key(event);
-      this.set_alt_key(event);
-      let frame_number_locked = this.image_annotation_ctx.current_frame;
-      if (this.$store.state.user.is_typing_or_menu_open == true) {
-        return; // this guard should be at highest level
-      }
-      if (event.keyCode === 78) {
-        // shift
-        //
-        this.n_key = true;
-      }
-      if (event.keyCode === shiftKey) {
-        // shift
-        //
-        this.shift_key = true;
-      }
-      if (event.keyCode === 90) {
-        this.z_key = true;
-      }
-      this.may_save(event);
-
-      this.may_snap_to_instance(event);
-
-      this.may_toggle_file_change_left(event);
-      this.may_toggle_file_change_right(event);
-
-      this.may_toggle_instance_transparency(event);
-      this.may_toggle_show_hide_occlusion(event);
-
-      if (event.key === "N") {
-        // shift + n
-        if (this.shift_key) {
-          this.$refs.video_controllers.next_instance();
-        }
-      }
-      if (event.keyCode == 88) {
-        // x key
-        this.reset_drawing();
-      }
-      if (event.keyCode === 67 && this.shift_key) {
-        // c
-
-        if (
-          this.working_file &&
-          this.working_file.ann_is_complete == true ||
-          this.view_only_mode == true
-        ) {
-          return;
-        }
-        if (
-          this.working_file &&
-          this.working_file.ann_is_complete == true ||
-          this.view_only_mode == true
-        ) {
-          return;
-        }
-        this.$emit('save', true); // and_complete == true
-      }
-
-      this.may_toggle_escape_key(event);
-
-      if (event.keyCode === 32) {
-        // space
-
-        event.preventDefault(); // rationale stop space bar from opening focused elements (eg dataset list)
-        this.space_bar = true;
-
-        // we update this directly otherwise it has to wait for mousemove
-        // and that could be confusing
-      }
-      if (this.ctrl_key && event.keyCode == cKey) {
-        this.copy_instance(true);
-      }
-      if (this.ctrl_key && event.keyCode == vKey) {
-        this.paste_instance(undefined, undefined, frame_number_locked);
-      }
-      // TBD this is a bad one since it's also refresh ?
-      if (this.shift_key && event.keyCode === 82) { // CTRL + r
-        this.annotation_show_activate(!this.task && this.working_file && this.working_file.id ? 'file' : 'task')
-      }
-      if (event.keyCode === 90 && this.ctrl_key) {
-        // ctrl + z
-        this.undo();
-      }
-
-      if (event.keyCode === 89 && this.ctrl_key) {
-        // ctrl + z
-        this.redo();
-      }
-    },
     reset_drawing: function () {
       if (this.view_only_mode == true) {
         return;
