@@ -79,4 +79,26 @@ describe('HotkeyListener', () => {
       triggerKeyboardEvent(testElement, 'keyup', 'a', { ctrlKey: true })
   });
 
+  it('should register and trigger on special keydown', (done) => {
+    listener.addScope('testScope')
+
+    listener.onSpecialKeydown({ keys: 'shift', scope: 'testScope' }, (event, handler) => {
+      expect(event.shiftKey).toBe(true)
+      done()
+    });
+
+    triggerKeyboardEvent(testElement, 'keydown', 'shift', {shiftKey: true})
+  });
+
+  it('should register and trigger on special keyup', (done) => {
+    listener.addScope('testScope')
+
+    listener.onSpecialKeyup({ keys: 'shift', scope: 'testScope' }, (event, handler) => {
+      expect(event.shiftKey).toBe(true)
+      done()
+    });
+
+    triggerKeyboardEvent(testElement, 'keyup', 'shift', {shiftKey: true})
+  });
+
 })

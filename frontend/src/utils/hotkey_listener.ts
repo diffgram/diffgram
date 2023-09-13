@@ -288,21 +288,20 @@ export class HotkeyListener {
     return binding.split(',').map(group => group.split('+').map(key => key.trim()));
   }
 
-  private checkSpecialKeyBindingPressed(bindings: string[][]): boolean {
-    return bindings.some(group =>
-      group.every(key => this.specialKeyState[key]) // All keys in a group should be pressed
-    );
-  }
-
-  private updateSpecialKeyState(event: KeyboardEvent) {
-    this.specialKeyState = {
-      shift: event.shiftKey,
-      control: event.ctrlKey,
-      alt: event.altKey,
-      option: hotkeys.option, // or use appropriate mapping
-      cmd: hotkeys.cmd, // or use appropriate mapping
-      command: hotkeys.command, // or use appropriate mapping
+  private checkSpecialKeyBindingPressed(bindings: string[][], event: KeyboardEvent): boolean {
+    const keyState = {
+      shift: hotkeys.shift || event.shiftKey || event.key === 'Shift',
+      control: hotkeys.ctrl || event.ctrlKey || event.key === 'Control',
+      ctrl: hotkeys.ctrl || event.ctrlKey || event.key === 'Control',
+      alt: hotkeys.alt || event.key === 'Alt',
+      option: hotkeys.option || event.key === 'Alt',
+      cmd: hotkeys.cmd || event.metaKey || event.key === 'Meta',
+      command: hotkeys.command || event.metaKey || event.key === 'Meta',
     };
+
+    return bindings.some(group =>
+      group.every(key => keyState[key]) // All keys in a group should be pressed
+    );
   }
 
   onSpecialKeydown(opts: HotkeysOptions, cb: KeyEventHandler) {
@@ -316,22 +315,20 @@ export class HotkeyListener {
 
     const bindKeys = platformDependent
       ? this.getPlatformBasedKeys(keys)
-      : keys
+     : keys
 
     const bindings = this.parseSpecialKeyBinding(bindKeys);
 
     const scopedCallback = (event: KeyboardEvent, handler: HotkeysEvent) => {
-      this.updateSpecialKeyState(event);
-
-      if (!this.selectedScopes.includes(scope) || !this.checkSpecialKeyBindingPressed(bindings)) {
-        return
+      if (!this.selectedScopes.includes(scope) || !this.checkSpecialKeyBindingPressed(bindings, event)) {
+        return;
       }
 
       if (preventDefaultEvent) {
-        event.preventDefault()
+        event.preventDefault();
       }
 
-      cb(event, handler)
+      cb(event, handler);
     }
 
     hotkeys(
@@ -358,16 +355,15 @@ export class HotkeyListener {
     const bindings = this.parseSpecialKeyBinding(bindKeys);
 
     const scopedCallback = (event: KeyboardEvent, handler: HotkeysEvent) => {
-
-      if (!this.selectedScopes.includes(scope) || !this.checkSpecialKeyBindingPressed(bindings)) {
-        return
+      if (!this.selectedScopes.includes(scope) || !this.checkSpecialKeyBindingPressed(bindings, event)) {
+        return;
       }
 
       if (preventDefaultEvent) {
-        event.preventDefault()
+        event.preventDefault();
       }
 
-      cb(event, handler)
+      cb(event, handler);
     }
 
     hotkeys(
