@@ -440,7 +440,7 @@ export default Vue.extend({
         }
         let attribute_value = attr_values[attribute_group_id]
         let attribute_group = this.attribute_group_list.find(group => group.id === attribute_group_id)
-        if(!attribute_value){
+        if(!attribute_value || !attribute_group){
           return
         }
         if(['slider', 'date', 'time', 'text'].includes(attribute_group.kind)){

@@ -256,7 +256,7 @@ class ProcessMediaQueueManager(metaclass = Singleton):
                 logger.error(f"{str(exception)}")
 
 
-    def get_remote_input(self, session, limit=2):
+    def get_remote_input(self, session, limit=1):
         input = session.query(Input).with_for_update(skip_locked = True).filter(
                 Input.processing_deferred == True,
                 Input.archived == False,

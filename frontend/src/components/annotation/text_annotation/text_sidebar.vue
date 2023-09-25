@@ -6,7 +6,7 @@
             top: ${toolbar_height}
         `"
     >
-        <v-expansion-panels multiple style="width: 350px;" accordion :value="open_panels">
+        <v-expansion-panels multiple style="width: 450px;" accordion :value="open_panels">
             <v-expansion-panel @change="on_change_expansion(0)">
               <global_attributes_list
                 v-if="annotation_ui_context.global_attribute_groups_list_compound && annotation_ui_context.global_attribute_groups_list_compound.length > 0"
@@ -319,8 +319,8 @@ export default Vue.extend({
 
 <style scoped>
 .wrapper-element {
-    width: 350px;
-    min-width: 350px;
+    width: 450px;
+    min-width: 450px;
     border-right: 1px solid #e0e0e0;
     position: sticky;
     left: 0;

@@ -2,15 +2,7 @@
   <div>
     <v_error_multiple :error="error" />
     <div v-if="!interface_type || !interface_type && !initializing">
-      <empty_file_editor_placeholder
-        :message="`File ID: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.id : 'N/A'}. File Type: ${annotation_ui_context.working_file ? annotation_ui_context.working_file.type : 'N/A'}`"
-        :title="'No File Loaded'"
-      />
-    </div>
-    <div v-else-if="interface_type === 'compound' && annotation_ui_context.working_file_list.length === 0 && !initializing" >
-      <empty_file_editor_placeholder
-        :message="'Try adding child files to this compound file.'"
-        :title="'This compound file has no child files.'" />
+      No Interface Type Defined.
     </div>
     <div v-else-if="!credentials_granted && !initializing">
       <empty_file_editor_placeholder
@@ -55,6 +47,7 @@
     </div>
     <div v-else-if="interface_type === 'audio'">
       <audio_annotation_core
+        v-if="!changing_file && !changing_task && image_annotation_ctx != undefined"
         v-bind="$props"
         v-on="$listeners"
         :ref="`audio_annotation_core_${working_file.id}`"
@@ -313,7 +306,8 @@ export default Vue.extend({
       type: Array,
       default: []
     },
-    annotation_show_event: {default: null}
+    annotation_show_event: {default: null},
+    hotkey_listener: { type: Object }
   },
   computed: {
     current_interface_ref: function () {

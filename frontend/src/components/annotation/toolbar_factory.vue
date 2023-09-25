@@ -1,5 +1,5 @@
 <template>
-  <div v-if="interface_type === 'image' || interface_type === 'video' || interface_type === 'text'">
+  <div v-if="interface_type === 'audio' || interface_type === 'image' || interface_type === 'video' || interface_type === 'text'">
     <main_menu
       :height="`${show_default_navigation ? '100px' : '50px'}`"
       :show_default_navigation="show_default_navigation"
@@ -22,6 +22,14 @@
             v-bind="$props"
             v-on="$listeners"
           />
+          <audio_toolbar
+            ref="toolbar"
+            v-if="interface_type === 'audio'"
+            :height="50"
+            :instance_type_list="filtered_instance_type_list"
+            v-bind="$props"
+            v-on="$listeners"
+          />
         </div>
       </template>
     </main_menu>
@@ -32,6 +40,7 @@
 import Vue from "vue";
 import image_and_video_toolbar from "./image_and_video_annotation/toolbar.vue"
 import text_toolbar from "./text_annotation/text_toolbar.vue"
+import audio_toolbar from './audio_annotation/audio_toolbar'
 import CustomButtonsSection from "../ui_schema/custom_buttons_section.vue";
 
 export default Vue.extend({
@@ -39,9 +48,13 @@ export default Vue.extend({
   components:{
     CustomButtonsSection,
     image_and_video_toolbar,
-    text_toolbar
+    text_toolbar,
+    audio_toolbar
   },
   props: {
+    platform: {
+      default: 'win',
+    },
     project_string_id: { type: String, required: true },
     working_file: { type: Object, required: true },
     command_manager: { type: Object, required: true },

@@ -373,7 +373,7 @@ export default Vue.extend({
   },
   computed: {
     real_container_width: function() {
-      if (this.container_width) return this.container_width - 100
+      if (this.container_width) return this.container_width - 30
       else return window.innerWidth - 350
     },
     render_rects: function () {
@@ -440,6 +440,7 @@ export default Vue.extend({
   watch: {
     initial_words_measures: function(newVal) {
       if (newVal) {
+        this.image_annotation_ctx.rendering = true
         setTimeout(this.initialize_token_render, 1000)
       }
     },
@@ -760,7 +761,7 @@ export default Vue.extend({
       this.initial_words_measures.map((word, index) => {
         const refs = this.$refs[`word_${index}_file_${this.working_file.id}`]
         let current_token_width = 0
-        if(refs.length >  0){
+        if(refs && refs.length >  0){
           current_token_width = refs[0].getBoundingClientRect().width
 
         }
@@ -1095,7 +1096,7 @@ export default Vue.extend({
     on_select_instance: function(instance) {
       this.annotation_ui_context.get_current_ann_ctx().current_instance = instance
     },
-    on_update_attribute: function(event, is_global) {
+    update_attribute: function(event, is_global) {
       const attribute = event
       let command
 

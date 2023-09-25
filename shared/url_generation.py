@@ -69,30 +69,19 @@ def default_url_regenerate(session: Session,
     except Exception as e:
         msg = traceback.format_exc()
         logger.error(msg)
+        if type(blob_object) == Image:
+            blob_object.error = msg
         log['error']['default_url_regenerate'] = msg
         return blob_object, log
     return blob_object, log
 
 
-def get_url_from_connector(connector, params, log):
-    """
-        Gets signed URL from given connector.
-    :param connector:
-    :param params:
-    :param log:
-    :return:
-    """
+
+
+def get_from_connector(connector, params, log):
     connector.connect()
     response = connector.fetch_data(params)
-    if response is None or response.get('result') is None:
-        msg = f'Error from connector: {params}. Response: {response}'
-        if response.get('log') is not None and type(response.get('log')) == dict:
-            log = response.get('log')
-        log['error']['connector_client'] = msg
-        logger.error(msg)
-        return None, log
-    response_data = response.get('result')
-    return response_data, log
+    return response, log
 
 
 def upload_thumbnail_for_connection_image(session: Session,
@@ -127,7 +116,7 @@ def upload_thumbnail_for_connection_image(session: Session,
     )
     if regular_log.log_has_error(log):
         return blob_object, log
-    put_data, log = get_url_from_connector(connector = client, params = params, log = log)
+    put_data, log = get_from_connector(connector = client, params = params, log = log)
     if regular_log.log_has_error(log):
         if 'blob_exists' in log['error']:
             log = regular_log.default()
@@ -209,51 +198,6 @@ def get_custom_url_supported_connector(session: Session, log: dict, connection_i
     return client, log
 
 
-def generate_thumbnails_for_image(
-    session: Session,
-    blob_object: DiffgramBlobObjectType,
-    log: dict,
-    params: dict,
-    connection_id: int,
-    bucket_name: str,
-    new_offset_in_seconds: int,
-    member: Member,
-    client: any,
-    access_token: str = None,
-    reference_file: File = None
-):
-    if type(blob_object) != Image:
-        return blob_object, log
-
-    if type(blob_object) == Image and blob_object.url_signed_thumb_blob_path is None:
-        # Try uploading thumbnails and then generating URL for them
-        blob_object, log = upload_thumbnail_for_connection_image(
-            session = session,
-            blob_object = blob_object,
-            connection_id = connection_id,
-            bucket_name = bucket_name,
-            new_offset_in_seconds = new_offset_in_seconds,
-            member = member,
-            access_token = access_token,
-            reference_file = reference_file
-        )
-        if regular_log.log_has_error(log):
-            logger.error(log)
-            # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
-            log = regular_log.default()
-            session.add(blob_object)
-            return blob_object, log
-    params['path'] = blob_object.url_signed_thumb_blob_path
-    params['action_type'] = 'get_pre_signed_url'
-    thumb_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
-    if regular_log.log_has_error(log):
-        # We reset the log to avoid resetting URL (we still want to get full file url if thumbnail fails)
-        log = regular_log.default()
-        session.add(blob_object)
-        return blob_object, log
-    blob_object.url_signed_thumb = thumb_signed_url
-    return blob_object, log
-
 
 def generate_text_token_url(
     session: Session,
@@ -263,7 +207,7 @@ def generate_text_token_url(
     client: any,
 ):
     params['path'] = blob_object.tokens_url_signed_blob_path
-    token_signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+    token_signed_url, log = get_from_connector(connector = client, params = params, log = log)
     if regular_log.log_has_error(log):
         return blob_object, log
     blob_object.tokens_url_signed = token_signed_url
@@ -276,21 +220,11 @@ def connection_url_regenerate(session: Session,
                               bucket_name: str,
                               new_offset_in_seconds: int,
                               access_token: str = None,
-                              reference_file: File = None,
-                              create_thumbnails: bool = True) -> [DiffgramBlobObjectType, dict]:
-    """
-        Regenerates signed url from the given connection ID, bucket and blob path.
-    :param session:
-    :param blob_object:
-    :param connection_id:
-    :param bucket_name:
-    :param new_offset_in_seconds:
-    :return:
-    """
+                              reference_file: File = None) -> list[DiffgramBlobObjectType, dict]:
 
     log = regular_log.default()
-
     member = get_member(session = session)
+
     params = {
         'bucket_name': bucket_name,
         'path': blob_object.url_signed_blob_path if reference_file is None else reference_file.get_blob_path(),
@@ -309,31 +243,24 @@ def connection_url_regenerate(session: Session,
     if regular_log.log_has_error(log):
         return blob_object, log
 
-    signed_url, log = get_url_from_connector(connector = client, params = params, log = log)
+    result, log = get_from_connector(
+        connector = client, 
+        params = params, 
+        log = log)
+    
     if regular_log.log_has_error(log):
         return blob_object, log
-    if regular_log.log_has_error(log):
-        return blob_object, log
-    blob_object.url_signed = signed_url
-
+    
+    blob_object.url_signed = result.get('signed_url')
+    blob_object.url_signed_thumb = result.get('signed_url')
+    error = result.get('error')
+    if error:
+        try:
+            blob_object.error = result.get('error')
+        except:
+            blob_object.error = str(result.get('error'))
     # Extra assets (Depending on type)
-    if type(blob_object) == Image and create_thumbnails:
-        blob_object.url_signed_thumb = signed_url
-        # Temp removal to re use original image instead of building thumbnail
 
-        # blob_object, url = generate_thumbnails_for_image(
-        #     session = session,
-        #     log = log,
-        #     blob_object = blob_object,
-        #     params = params,
-        #     client = client,
-        #     connection_id = connection_id,
-        #     bucket_name = bucket_name,
-        #     new_offset_in_seconds = new_offset_in_seconds,
-        #     member = member,
-        #     access_token = None,
-        #     reference_file = reference_file
-        # )
     if type(blob_object) == TextFile and blob_object.tokens_url_signed_blob_path:
         blob_object, log = generate_text_token_url(
             session = session,
@@ -342,7 +269,9 @@ def connection_url_regenerate(session: Session,
             log = log,
             client = client,
         )
-    session.add(blob_object)
+    session.add(blob_object)    # TODO review if needed to add to session here
+    # If it's unique for every user then it's not clear why we would need to do this
+    # And adds processing delays for viewing large amounts at once.
     return blob_object, log
 
 
@@ -351,16 +280,8 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
                         connection_id: int = None,
                         bucket_name: str = None,
                         access_token: str = None,
-                        reference_file: File = None,
-                        create_thumbnails: bool = True) -> [str, dict]:
-    """
-        Regenerates the signed url of the given blob object.
-    :param blob_object:
-    :param session:
-    :param connection_id:
-    :param bucket_name:
-    :return:
-    """
+                        reference_file: File = None) -> list[object, dict]:
+
     if not blob_object.url_signed_blob_path:
         return
 
@@ -390,15 +311,16 @@ def blob_regenerate_url(blob_object: DiffgramBlobObjectType,
             bucket_name = bucket_name,
             new_offset_in_seconds = new_offset_in_seconds,
             reference_file = reference_file,
-            access_token = access_token,
-            create_thumbnails = create_thumbnails
+            access_token = access_token
         )
 
     if regular_log.log_has_error(log):
         logger.error(f'Failed to regenerate Blob URL {log}')
         blob_object.url_signed = None
+        blob_object.error = str(log)
         session.add(blob_object)
         return blob_object, log
+
     return blob_object, log
 
 

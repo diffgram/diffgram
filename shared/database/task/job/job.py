@@ -1000,15 +1000,15 @@ class Job(Base, Caching):
         self,
         session):
         """
-        Slight problem is that this statistic could be out if
-        the file doesn't get remove properly from the job...
-
         """
+        if self.file_count_statistic == 1000: return
+
         self.file_count_statistic = WorkingDirFileLink.file_list(
             session = session,
             working_dir_id = self.directory_id,
             counts_only = True,
             limit = 1000)
+
         session.add(self)
 
 

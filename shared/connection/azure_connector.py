@@ -308,7 +308,7 @@ class AzureConnector(Connector):
             blob_name,
             sas
         )
-        return {'result': sas_url}
+        return {'signed_url': sas_url}
 
     @with_connection
     @with_azure_exception_handler

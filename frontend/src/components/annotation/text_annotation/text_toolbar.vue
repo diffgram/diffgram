@@ -374,10 +374,12 @@ import label_schema_selector from "../../label/label_schema_selector.vue"
 import task_status from "../image_and_video_annotation/task_status.vue"
 import CustomButtonsSection from "@/components/ui_schema/custom_buttons_section.vue";
 import image_and_video_toolbar from "@/components/annotation/image_and_video_annotation/toolbar.vue";
+import logo from "../../diffgram/logo.vue";
 
 export default Vue.extend({
   name: "text_toolbar",
   components: {
+    logo,
     image_and_video_toolbar,
     CustomButtonsSection,
     label_select_annotation,
