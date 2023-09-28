@@ -5,6 +5,8 @@
 •
 [Request Slack Invite](https://www.jotform.com/form/222377866413058)
 
+# News
+Sept 28 2023: New [Diffgram license version 2 (DLv2)](https://diffgram.readme.io/docs/diffgram-license-v2-dlv2). Featuring [new contributor license (CL)](https://diffgram.readme.io/docs/diffgram-contributor-license-cl) available at no financial cost. MSA customers will receive a financial credit for all contributions.
 
 # The AI Datastore
 The AI Datastore for Schemas, BLOBs, and Predictions. Use with your apps or integrate built-in Human Supervision, Data Workflow, and UI Catalog to get the most value out of your AI Data.
@@ -23,7 +25,7 @@ Diffgram is installed by you and you have control over your data.
 
 ## Supervision (Data Labeling) Media Types
 A popular use case is for human supervision
-* [Grid](https://diffgram.readme.io/docs/multi-modal-annotation)
+* [Grid & Multi-Modal](https://diffgram.readme.io/docs/multi-modal-annotation)
 * [Conversational & LLM (Preview)](https://diffgram.readme.io/docs/conversational-annotation)
 * [Image](https://diffgram.readme.io/docs/image-annotation)
 * [Video](https://diffgram.readme.io/docs/video-introduction)
