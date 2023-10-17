@@ -741,6 +741,12 @@ export default Vue.extend({
   watch: {
     is_active: function (){
       this.canvas_element.style.cursor = ''
+      //console.log(this.is_active, this.working_file.id)
+      let scope=`image ${this.working_file.id}`
+      this.hotkey_listener.setScope(scope)
+      console.log(this.hotkey_listener.scopeCallbackRegistry)
+      console.log(this.hotkey_listener.selectedScopes)
+
     },
     global_instance: function(){
       this.$emit('global_instance_changed', this.working_file.id,  this.global_instance)
@@ -1729,7 +1735,7 @@ export default Vue.extend({
     }
     this.mounted();
 
-    this.hotkeyListenerScope = `image ${this.working_file.hash}`
+    this.hotkeyListenerScope = `image ${this.working_file.id}`
 
     this.setupHotkeys(this.hotkeyListenerScope)
 

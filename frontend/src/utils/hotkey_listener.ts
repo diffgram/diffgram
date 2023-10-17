@@ -31,6 +31,9 @@ export type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => v
  * - **Flexible Unbinding**: Offers the ability to clear hotkeys, either entirely, by a specific scope, or by key combinations, 
  *   providing granular control over the registered hotkeys.
  *
+ * How to Change Scope:
+ *  TBD
+ *
  * Usage:
  *
  * 1. **Initialization**:
@@ -43,7 +46,7 @@ export type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => v
  *
  * 3. **Scopes**:
  *      - Select scope and create if doesn't exist already: `listener.addScope('myScope')`.
- *      - Cancle selection of a scope: `listener.removeScope('myScope')`.
+ *      - Cancel selection of a scope: `listener.removeScope('myScope')`.
  *      - Delete scope and all hotkey bindings: `listener.deleteScope('myScope')`.
  *      - Note: A hotkey will only trigger if its scope is among the selected scopes.
  *
@@ -141,6 +144,10 @@ export class HotkeyListener {
 
   getScopes() : Array<string> {
     return this.selectedScopes
+  }
+
+  setScope(scope: string) {
+    return this.selectedScopes = [scope]
   }
 
   addScope(scope: string) {
@@ -312,6 +319,7 @@ export class HotkeyListener {
       preventDefaultEvent = DEFAULT_HOTKEYS_OPTIONS.preventDefaultEvent,
     } = opts
 
+    console.log(keys, scope, element)
 
     const bindKeys = platformDependent
       ? this.getPlatformBasedKeys(keys)
