@@ -403,7 +403,6 @@ import {saveTaskAnnotations, saveFileAnnotations} from "../../services/saveServi
 import {get_instance_list_from_file, get_instance_list_from_task} from "../../services/instanceServices.js"
 import {get_child_files} from "../../services/fileServices";
 import empty_file_editor_placeholder from "./image_and_video_annotation/empty_file_editor_placeholder.vue"
-import HotKeyManager from "./hotkeys/HotKeysManager"
 import {GlobalInstance} from "../vue_canvas/instances/GlobalInstance";
 import {postInstanceList} from "../../services/instanceList"
 import {CustomButton} from "../../types/ui_schema/Buttons";
@@ -444,7 +443,6 @@ export default Vue.extend({
                 task_request: null,
             },
             show_ui_schema_context_menu: false,
-            hotkey_manager: null,
             platform: {
               default: 'win'
             },
@@ -524,15 +522,6 @@ export default Vue.extend({
                 this.annotation_ui_context.history = new History()
                 this.annotation_ui_context.command_manager = new CommandManager(this.annotation_ui_context.history)
             }
-
-            if (
-                this.annotation_ui_context &&
-                this.hotkey_manager &&
-                this.listeners_map() &&
-                this.annotation_ui_context.working_file_list.length >= 1
-            ) {
-                this.hotkey_manager.activate(this.listeners_map())
-            }
         },
         async '$route'(to, from) {
             if (from.name === 'task_annotation' && to.name === 'studio') {
@@ -606,7 +595,6 @@ export default Vue.extend({
         })
     },
     beforeDestroy() {
-        this.hotkey_manager.deactivate()
         window.removeEventListener(
             "resize",
             this.update_window_size_from_listener
@@ -679,8 +667,6 @@ export default Vue.extend({
             this.task_prefetcher.update_tasks(this.annotation_ui_context.task)
         }
 
-        this.hotkey_manager = new HotKeyManager()
-        this.activate_hotkeys()
         this.initializing = false
     },
     computed: {
@@ -846,9 +832,7 @@ export default Vue.extend({
         on_file_rendered: function () {
             this.on_panes_ready()
         },
-        trigger_listeners_setup: function () {
-            if (this.hotkey_manager) this.hotkey_manager.activate(this.listeners_map())
-        },
+
         open_change_label_dialog_sidebar: function (instance_id: number) {
             let sidebar = this.$refs.sidebar_factory.get_current_sidebar_ref()
             if (sidebar && sidebar.$refs.instance_detail_list) {
@@ -887,17 +871,6 @@ export default Vue.extend({
 
         },
 
-
-        activate_hotkeys: function () {
-            if (this.hotkey_manager && this.listeners_map()) {
-                this.hotkey_manager.activate(this.listeners_map())
-            }
-        },
-        remove_hotkeys: function () {
-            if (this.hotkey_manager) {
-                this.hotkey_manager.activate(this.listeners_map())
-            }
-        },
         listeners_map: function () {
             let listener_map = null;
 
