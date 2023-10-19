@@ -143,6 +143,10 @@ export class HotkeyListener {
     return this.selectedScopes
   }
 
+  setScopes(scopes: Array<string>) : void {
+    this.selectedScopes = scopes
+  }
+
   addScope(scope: string) {
     if (!this.selectedScopes.includes(scope)) {
       this.selectedScopes.push(scope)
