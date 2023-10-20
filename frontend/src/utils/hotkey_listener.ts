@@ -14,11 +14,9 @@ interface HotkeysOptions {
   scope: string
   element ?: HTMLElement,
   debounceThreshold?: number
-  platformDependent: boolean
-  preventDefaultEvent: boolean
+  platformDependent?: boolean
+  preventDefaultEvent?: boolean
 }
-
-export type KeysOrOpts = HotkeysOptions
 
 export type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => void
 /**
@@ -37,12 +35,13 @@ export type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => v
  *      - Fetch the listener instance: `const listener = HotkeyListener.getInstance()`.
  *
  * 2. **Hotkey Registration**:
- *      - Register a hotkey that reacts on keyup: `listener.onKeyup('ctrl+b', callback)`.
- *      - For keydown events: `listener.onKeydown('ctrl+b', callback)`.]
+ *      - Register a hotkey that reacts on keyup: `listener.onKeyup({keys: 'ctrl+b', scope: 'foo'}, callback)`.
+ *      - For keydown events: `listener.onKeydown({keys: 'ctrl+a,ctrl+b', scope: 'foo'}, callback)`.]
  *      - For binding to individual special keys like shift, ctrl, etc. use onSpecialKeydown and onSpecialKeyup: `listener.onSpecialKeydown('shift', callback)`
  *
  * 3. **Scopes**:
- *      - Select scope and create if doesn't exist already: `listener.addScope('myScope')`.
+ *      - Select only scopes passed as an argument: `listener.setScopes(['scope_one', 'scope_two'])`.
+ *      - Select scope and keep previously selected scopes selected: `listener.addScope('myScope')`.
  *      - Cancle selection of a scope: `listener.removeScope('myScope')`.
  *      - Delete scope and all hotkey bindings: `listener.deleteScope('myScope')`.
  *      - Note: A hotkey will only trigger if its scope is among the selected scopes.
@@ -55,8 +54,26 @@ export type KeyEventHandler = (event: KeyboardEvent, handler: HotkeysEvent) => v
  * **Important**: Due to `hotkeys-js` providing a singleton instance, `HotkeyListener` uses the singleton pattern 
  * to ensure a single centralized management point.
  *
+  * @example
+ * ```javascript
+ * const listener = HotkeyListener.getInstance(); // Initialization
+ *
+ * // Register hotkeys
+ * listener.onKeyup({keys: 'ctrl+a', scope: 'foo'}, () => {}); // Register callback to fire when 'ctrl+a' is pressed and scope 'foo' is active
+ * listener.onKeyup({keys: 'ctrl+b', scope: 'foo'}, () => {}); // Register callback to fire when 'ctrl+b' is pressed and scope 'foo' is active
+ * listener.onKeyup({keys: 'ctrl+c', scope: 'bar'}, () => {}); // Register callback to fire when 'ctrl+c' is pressed and scope 'bar' is active
+ *
+ * // Enable/disable scopes
+ * listener.addScopes('foo'); // Hotkey callbacks registered for 'foo' scope will be active
+ * listener.removeScope('foo'); // Hotkey callbacks registered for 'foo' scope won't fire
+ * listener.addScopes('bar'); // Hotkey callbacks registered for 'foo' and 'bar' scopes will be active
+ * listener.setScopes(['foo']); // Only hotkey callbacks registered for 'foo' scope will be active
+ * listener.deleteScope('foo'); // Unselects 'foo' scope and unregisters all the callbacks associated with that scope.
+
+ * listener.addScope('bar'); // Hotkeys for 'bar' scope will still fire callbacks, but not for 'foo' scope since deleteScope was called on it
+ * ```
  * TODO:
- * 1. If we are ever in situation where we need to have many too many scopes registered
+ * 1. If we are ever in situation where we need to have too many scopes registered
  * at the same time, we can enhance HotkeyListener logic so it unregisters callbacks for non-active scopes.
  * This will reduce the number of active callbacks
  * @class
@@ -141,6 +158,10 @@ export class HotkeyListener {
 
   getScopes() : Array<string> {
     return this.selectedScopes
+  }
+
+  setScopes(scopes: Array<string>) : void {
+    this.selectedScopes = scopes
   }
 
   addScope(scope: string) {
