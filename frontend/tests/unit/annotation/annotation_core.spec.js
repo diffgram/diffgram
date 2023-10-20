@@ -84,6 +84,7 @@ describe("Test annotation_core", () => {
           onKeydown: jest.fn(),
           onSpecialKeydown: jest.fn(),
           onSpecialKeyup: jest.fn(),
+          setScopes: jest.fn()
         },
         label_schema: {
           id: 1,
