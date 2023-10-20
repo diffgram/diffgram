@@ -1741,7 +1741,7 @@ export default Vue.extend({
 
     this.setupHotkeys(this.hotkeyListenerScope)
 
-    if ( this.is_active ) {
+    if(this.is_active && this.hotkey_listener) {
       this.hotkey_listener.setScopes([this.hotkeyListenerScope])
     }
 
