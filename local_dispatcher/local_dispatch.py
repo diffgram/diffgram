@@ -19,12 +19,13 @@ env_adapter = EnvAdapter()
 
 
 class Service():
-    def __init__(self, name, host, port, path_function, is_default=False):
+    def __init__(self, name, host, port, path_function, is_default=False, get_service_path=lambda path : path):
         self.name = name
         self.host = host
         self.port = port
         self.path_function = path_function
         self.is_default = is_default
+        self.get_service_path = get_service_path
 
     def get_url(self):
         return self.host + ":" + str(self.port) + "/"
@@ -103,6 +104,8 @@ class Ingress():
         path_with_params = f"{path}?{urllib.parse.unquote(url_parsed.query)}"
         return path_with_params
 
+    def get_request_query_params(self):
+        return dict(urllib.parse.parse_qsl(urllib.parse.urlsplit(request.url).query))
 
     def build_request(self, url):
         return requests.request(
@@ -111,23 +114,24 @@ class Ingress():
                 headers = {key: value for (key, value) in request.headers if key != 'Host'},
                 data = request.get_data(),
                 cookies = request.cookies,
-                allow_redirects = False)
+                allow_redirects = False,
+                params = self.get_request_query_params()
+                )
 
 
     def route(self, path):
- 
         service = self.determine_service(path)
 
         try:
-            path_with_params = self.get_path_with_params(path)
+            service_path_with_params = service.get_service_path(path)
 
-            url = service.get_url() + path_with_params
+            url_with_path = service.get_url() + service_path_with_params
 
-            self.app.logger.info(f"Service: {service.name} \t Ingress: {ingress.name} \t URL: {url}")
+            self.app.logger.info(f"Service: {service.name} \t Ingress: {ingress.name} \t URL: {url_with_path}")
 
-            response = self.build_request(url)
+            resp = self.build_request(url_with_path)
 
-            return self.default_response_formatting(response)
+            return self.default_response_formatting(resp)
 
         except requests.exceptions.ConnectionError:
             return self.unreachable_error(service)
@@ -158,11 +162,27 @@ class DockerComposeIngress(Ingress):
         self.name = "Docker Compose"
 
         self.default.host = 'http://default'
-        self.walrus.host = 'http://walrus'     
+        self.walrus.host = 'http://walrus'
         self.frontend.host = 'http://frontend'
         self.frontend.port = 80
 
-        self.app = Flask(__name__, 
+
+        DOCKER_COMPOSE_CONTEXT = env_adapter.bool(os.getenv('DOCKER_COMPOSE_CONTEXT', False))
+
+        if DOCKER_COMPOSE_CONTEXT == True:
+            self.minio = Service(
+                name = 'minio',
+                host = 'http://minio',
+                port = 9000,
+                path_function = lambda path : True if path[: 14] == "proxy_to_minio" else False,
+                get_service_path = lambda path : path.replace('proxy_to_minio/', '')
+                )
+
+            # insert minio as a first service to make sure its path_function is evaluated first
+            # to prevent request going to frontend service
+            self.services_list.insert(0, self.minio)
+
+        self.app = Flask(__name__,
                                static_url_path = '/dispatcher-static-files')
 
 
@@ -191,7 +211,7 @@ class Router():
 
         self.ingress.app.logger.setLevel(logging.INFO)
 
-        self.ingress.app.debug = False
+        self.ingress.app.debug = True
         self.ingress.app.run(host = '0.0.0.0', port = self.ingress.port)
 
     
