@@ -211,7 +211,7 @@ class Router():
 
         self.ingress.app.logger.setLevel(logging.INFO)
 
-        self.ingress.app.debug = True
+        self.ingress.app.debug = False
         self.ingress.app.run(host = '0.0.0.0', port = self.ingress.port)
 
     
