@@ -741,6 +741,14 @@ export default Vue.extend({
   watch: {
     is_active: function (){
       this.canvas_element.style.cursor = ''
+      if ( !this.hotkeyListenerScope ) {
+        return
+      }
+      if ( this.is_active) {
+        this.hotkey_listener.setScopes([this.hotkeyListenerScope])
+      } else {
+        this.hotkey_listener.removeScope(this.hotkeyListenerScope)
+      }
     },
     global_instance: function(){
       this.$emit('global_instance_changed', this.working_file.id,  this.global_instance)
@@ -1733,6 +1741,10 @@ export default Vue.extend({
 
     this.setupHotkeys(this.hotkeyListenerScope)
 
+    if(this.is_active && this.hotkey_listener) {
+      this.hotkey_listener.setScopes([this.hotkeyListenerScope])
+    }
+
     if (
       this.annotation_ui_context.working_file_list[0].id === this.annotation_ui_context.working_file.id
     ) {
@@ -1752,8 +1764,6 @@ export default Vue.extend({
     },
 
     setupHotkeys(scope) {
-
-      this.hotkey_listener.addScope(scope)
 
       this.hotkey_listener.addFilter(this.hotkeyListenerFilter)
 
