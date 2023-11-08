@@ -19,13 +19,13 @@ env_adapter = EnvAdapter()
 
 
 class Service():
-    def __init__(self, name, host, port, path_function, is_default=False, get_service_path=lambda path : path):
+    def __init__(self, name, host, port, select_path_function, is_default=False, map_service_path=lambda path : path):
         self.name = name
         self.host = host
         self.port = port
-        self.path_function = path_function
+        self.select_path_function = select_path_function
         self.is_default = is_default
-        self.get_service_path = get_service_path
+        self.map_service_path = map_service_path
 
     def get_url(self):
         return self.host + ":" + str(self.port) + "/"
@@ -50,7 +50,7 @@ class Ingress():
             name = 'default',
             host = self.host,
             port = 8080,
-            path_function = None,
+            select_path_function = None,
             is_default = True
             )
 
@@ -58,14 +58,14 @@ class Ingress():
             name = 'walrus',
             host = self.host,
             port = 8082,
-            path_function = lambda path : True if path[: 10] == "api/walrus" else False
+            select_path_function = lambda path : True if path[: 10] == "api/walrus" else False
             )
 
         self.frontend = Service(
             name = 'frontend',
             host = self.host,
             port = 8081,
-            path_function = lambda path : True if path[: 3] != "api" or path[: 6] == "static" else False
+            select_path_function = lambda path : True if path[: 3] != "api" or path[: 6] == "static" else False
             )
 
         self.services_list.extend([self.default, self.walrus, self.frontend])
@@ -80,8 +80,8 @@ class Ingress():
     def determine_service(self, path):
         service = None
         for service in self.services_list:
-            if service.path_function:
-                path_result = service.path_function(path)
+            if service.select_path_function:
+                path_result = service.select_path_function(path)
                 if path_result is True:
                     return service
 
@@ -123,7 +123,7 @@ class Ingress():
         service = self.determine_service(path)
 
         try:
-            service_path_with_params = service.get_service_path(path)
+            service_path_with_params = service.map_service_path(path)
 
             url_with_path = service.get_url() + service_path_with_params
 
@@ -174,11 +174,11 @@ class DockerComposeIngress(Ingress):
                 name = 'minio',
                 host = 'http://minio',
                 port = 9000,
-                path_function = lambda path : True if path[: 14] == "proxy_to_minio" else False,
-                get_service_path = lambda path : path.replace('proxy_to_minio/', '')
+                select_path_function = lambda path : True if path[: 14] == "proxy_to_minio" else False,
+                map_service_path = lambda path : path.replace('proxy_to_minio/', '')
                 )
 
-            # insert minio as a first service to make sure its path_function is evaluated first
+            # insert minio as a first service to make sure its select_path_function is evaluated first
             # to prevent request going to frontend service
             self.services_list.insert(0, self.minio)
 
