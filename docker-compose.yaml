@@ -152,7 +152,8 @@ services:
   createbuckets:
     image: minio/mc
     depends_on:
-      - minio
+      minio:
+        condition: service_healthy
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc config host add myminio http://minio:9000 ${DIFFGRAM_MINIO_ACCESS_KEY_ID} ${DIFFGRAM_MINIO_ACCESS_KEY_SECRET};
