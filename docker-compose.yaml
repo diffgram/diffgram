@@ -38,6 +38,7 @@ services:
     environment:
       PYTHONPATH: "/app/"
       DIFFGRAM_SERVICE_NAME: eventhandlers
+      DOCKER_COMPOSE_CONTEXT: True
     entrypoint: ["python3", "-u", "/app/main.py"]
   walrus:
     image: diffgram/walrus:${DIFFGRAM_VERSION_TAG}
@@ -58,6 +59,7 @@ services:
     environment:
       PYTHONPATH: "/app/"
       DIFFGRAM_SERVICE_NAME: walrus
+      DOCKER_COMPOSE_CONTEXT: True
     entrypoint: ["python3", "-u", "/app/main.py"]
 
   default:
