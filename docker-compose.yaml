@@ -11,6 +11,7 @@ services:
     - walrus
     environment:
       DOCKER_CONTEXT: True
+      DOCKER_COMPOSE_CONTEXT: True
   frontend:
     image: diffgram/frontend:${DIFFGRAM_VERSION_TAG}
     ports:
@@ -37,6 +38,7 @@ services:
     environment:
       PYTHONPATH: "/app/"
       DIFFGRAM_SERVICE_NAME: eventhandlers
+      DOCKER_COMPOSE_CONTEXT: True
     entrypoint: ["python3", "-u", "/app/main.py"]
   walrus:
     image: diffgram/walrus:${DIFFGRAM_VERSION_TAG}
@@ -57,6 +59,7 @@ services:
     environment:
       PYTHONPATH: "/app/"
       DIFFGRAM_SERVICE_NAME: walrus
+      DOCKER_COMPOSE_CONTEXT: True
     entrypoint: ["python3", "-u", "/app/main.py"]
 
   default:
@@ -84,6 +87,7 @@ services:
     environment:
       PYTHONPATH: "/app/"
       DIFFGRAM_SERVICE_NAME: default
+      DOCKER_COMPOSE_CONTEXT: True
     command: ["python3", "-u", "/app/main.py"]
   db_migration:
     image: diffgram/default:${DIFFGRAM_VERSION_TAG}
@@ -124,7 +128,6 @@ services:
       interval: 30s
       timeout: 30s
       retries: 3
-    container_name: 'rabbitmq'
     expose: [5672, 15672]
     ports:
         - 5672:5672
@@ -141,12 +144,18 @@ services:
     environment:
       - "MINIO_ROOT_USER=${DIFFGRAM_MINIO_ACCESS_KEY_ID}"
       - "MINIO_ROOT_PASSWORD=${DIFFGRAM_MINIO_ACCESS_KEY_SECRET}"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
     command: server /export --console-address :9001
 
   createbuckets:
     image: minio/mc
     depends_on:
-      - minio
+      minio:
+        condition: service_healthy
     entrypoint: >
       /bin/sh -c "
       /usr/bin/mc config host add myminio http://minio:9000 ${DIFFGRAM_MINIO_ACCESS_KEY_ID} ${DIFFGRAM_MINIO_ACCESS_KEY_SECRET};
