@@ -32,7 +32,7 @@
     "@vue/cli-plugin-typescript": "^5.0.8",
     "@vue/cli-service": "^5.0.8",
     "@vue/vue2-jest": "^27.0.0",
-    "axios": "^0.21.2",
+    "axios": "^1.6.0",
     "bezier-js": "^2.6.1",
     "chart.js": "^2.9.4",
     "codemirror": "^5.60.0",
