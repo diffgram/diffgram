@@ -100,7 +100,7 @@ export default {
         if (this.action.trigger_data.event_name === 'action_completed') {
           this.steps_config.show_step('pre_conditions')
           const { data } = await axios.get(`/api/v1/project/${this.project_string_id}/action/previous/${this.action.id}`)
-          this.previous_action = data.previuos_action
+          this.previous_action = data.previous_action
         } else {
           this.steps_config.hide_step('pre_conditions')
           this.previous_action = null

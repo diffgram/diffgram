@@ -21,5 +21,5 @@ def api_action_previous(project_string_id, action_id):
         if log_has_error(log) >= 1:
             return jsonify(log = log), 400
 
-        out = jsonify(previuos_action=previous_action, log=log)
+        out = jsonify(previous_action=previous_action, log=log)
         return out, 200
