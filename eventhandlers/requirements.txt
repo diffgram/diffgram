@@ -29,7 +29,7 @@ python-keycloak
 pyjwt==2.6.0
 opencv-python==4.7.0.72
 torchvision==0.15.1
-transformers==4.30.0
+transformers==4.36.0
 deepchecks[vision]
 memory-profiler==0.55.0
 opencv-contrib-python==4.7.0.72
