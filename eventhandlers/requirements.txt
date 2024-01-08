@@ -16,7 +16,7 @@ Flask-SSLify==0.1.5
 requests==2.31.0
 imageio==2.9.0
 analytics-python==1.2.9
-cryptography==41.0.4
+cryptography==41.0.6
 colorlog==4.2.1
 boto3==1.16.4
 azure-storage-blob==12.8.0
