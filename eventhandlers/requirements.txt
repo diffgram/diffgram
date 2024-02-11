@@ -1,4 +1,4 @@
-grpcio==1.54.0
+grpcio==1.54.3
 python-dateutil==2.8.2
 Flask==2.2.5
 six==1.15.0
