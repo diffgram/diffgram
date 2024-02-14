@@ -628,12 +628,14 @@ export default Vue.extend({
             this.file_list = response.data.file_list;
           }
           else{
+            // TODO clarify point of this block relative to concat
             for(const file in response.data.file_list){
               if(!this.file_list.find(f => f.id === file.id)){
                 this.file_list.push(file);
               }
             }
             this.file_list = this.file_list.concat(response.data.file_list);
+            this.file_list = this.file_list.filter((file) => typeof file === 'object')
           }
         }
         this.metadata_previous = response.data.metadata;
@@ -643,8 +645,8 @@ export default Vue.extend({
 
       }
       catch (error) {
-        console.error(error)
         if (error.toString() !== 'Cancel'){
+          console.error(error)
           this.query_error = this.$route_api_errors(error)
         }
       }
@@ -675,8 +677,11 @@ export default Vue.extend({
 
     },
     reset_file_selected: function(){
+      console.log(this.file_list)
       for (let file_elm of this.file_list) {
-        file_elm.selected = false;
+        if (typeof file_elm === 'object') {
+          file_elm.selected = false;
+        }
       }
       this.selected_files = []
     },
