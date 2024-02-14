@@ -22,7 +22,7 @@ memory-profiler==0.55.0
 tenacity>=6.0.0
 botocore==1.19.63
 scaleapi==0.3.1
-cryptography==41.0.6
+cryptography==42.0.0
 colorlog==4.2.1
 labelbox==3.47.1
 boto3==1.16.63
