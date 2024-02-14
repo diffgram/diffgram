@@ -6,7 +6,7 @@ sqlalchemy==1.4.48
 psycopg2-binary==2.9.6
 numpy==1.24.3
 scipy==1.10.1
-pillow==10.0.1
+pillow==10.2.0
 proglog==0.1.9
 google-cloud-storage==1.35.1
 google-api-python-client==1.12.3
