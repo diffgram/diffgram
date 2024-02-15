@@ -677,7 +677,6 @@ export default Vue.extend({
 
     },
     reset_file_selected: function(){
-      console.log(this.file_list)
       for (let file_elm of this.file_list) {
         if (typeof file_elm === 'object') {
           file_elm.selected = false;
