@@ -20,7 +20,7 @@ imageio==2.9.0
 pyotp==2.2.6
 analytics-python==1.2.9
 memory-profiler==0.55.0
-cryptography==42.0.0
+cryptography==42.0.2
 colorlog==4.2.1
 boto3==1.16.4
 alembic==1.11.1
