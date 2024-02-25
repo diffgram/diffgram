@@ -44,7 +44,6 @@ read the commercial open source [license](https://github.com/diffgram/diffgram/b
 
 * [Install Diffgram](https://diffgram.readme.io/docs/install)
 * [Sales Info](https://diffgram.readme.io/docs/sales)
-* [Try Online Playground](https://app.diffgram.com/user/data_platform/new)
 * [Join us on Slack](https://www.jotform.com/form/222377866413058)
 * [Contribute](https://diffgram.readme.io/docs/contribute)
 
