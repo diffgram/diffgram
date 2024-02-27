@@ -1292,6 +1292,15 @@ export default Vue.extend({
                 video_data,
             }
             const [result, error] = await saveFileAnnotations(this.computed_project_string_id, this.root_file.id, payload)
+
+            AnnotationSavePrechecks.add_ids_to_new_instances_and_delete_old(
+              result,
+              false,
+              this.annotation_ui_context.compound_global_attributes_instance_list,
+              false,
+              false
+            )
+
             this.root_file.instance_list = this.annotation_ui_context.compound_global_attributes_instance_list
             if (error) {
                 console.error(error)

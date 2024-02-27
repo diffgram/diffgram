@@ -324,7 +324,7 @@ class Event(Base):
             session.flush()
         Event.track_user(event, email)
         logger.debug(f'Created event {event.id}:{event.kind}')
-        event.send_to_eventhub()
+        #event.send_to_eventhub()
         event.broadcast()
         return event
 
