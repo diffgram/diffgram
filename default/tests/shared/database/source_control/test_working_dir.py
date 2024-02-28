@@ -1,11 +1,12 @@
 from methods.regular.regular_api import *
 from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
-from shared.database.permissions.roles import Role, RoleMemberObject, ValidObjectTypes
-from shared.permissions.policy_engine.policy_engine import PolicyEngine, PermissionResult, PermissionResultObjectSet
-from shared.database.source_control.dataset_perms import DatasetPermissions, DatasetDefaultRoles
-from enum import Enum
-
+from shared.database.permissions.roles import ValidObjectTypes
+from shared.permissions.policy_engine.policy_engine import PolicyEngine
+from shared.database.source_control.dataset_perms import DatasetPermissions
+from unittest.mock import Mock, patch
+from shared.database.permissions.roles import ValidObjectTypes
+from shared.database.source_control.dataset_perms import DatasetPermissions
 
 class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
     """
@@ -34,7 +35,8 @@ class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
         self.member = self.auth_api.member
         self.policy_engine = PolicyEngine(session = self.session, project = self.project)
 
-    def test_list(self):
+    @patch("shared.database.source_control.working_dir.WorkingDir.get_dataset_viewing_permissions")
+    def test_list(self, mock_get_dataset_viewing_permissions):
         user = data_mocking.register_user({
             'username': 'test_user',
             'email': 'testdirlist@test.com',
@@ -66,32 +68,102 @@ class TestWorkingDir(testing_setup.DiffgramBaseTestCase):
             'access_type': 'restricted'
         }, self.session)
 
+        mock_perm_result = Mock()
+        mock_perm_result.allow_all = False
+        mock_perm_result.allowed_object_id_list = [ds1.id, ds2.id, ds3.id]
+        mock_get_dataset_viewing_permissions.return_value = mock_perm_result
+
         dirs = WorkingDir.list(
             session = self.session,
-            project_id = self.project.id,
+            project = self.project,
             member = user.member,
         )
         dirs_id_list = [x.id for x in dirs]
-        self.assertEqual(len(dirs), 6)
+        self.assertEqual(len(dirs), 3)
         self.assertTrue(ds1.id in dirs_id_list)
         self.assertTrue(ds2.id in dirs_id_list)
         self.assertTrue(ds3.id in dirs_id_list)
 
-        RoleMemberObject.new(
-            session = self.session,
-            object_type = ValidObjectTypes.dataset,
-            default_role_name = DatasetDefaultRoles.dataset_viewer,
-            member_id = user.member.id,
-            object_id = ds_restricted.id
-        )
+        mock_perm_result.allowed_object_id_list.append(ds_restricted.id)
+
         dirs = WorkingDir.list(
             session = self.session,
-            project_id = self.project.id,
+            project = self.project,
             member = user.member,
         )
         dirs_id_list = [x.id for x in dirs]
-        self.assertEqual(len(dirs), 7)
+        self.assertEqual(len(dirs), 4)
         self.assertTrue(ds1.id in dirs_id_list)
         self.assertTrue(ds2.id in dirs_id_list)
         self.assertTrue(ds3.id in dirs_id_list)
         self.assertTrue(ds_restricted.id in dirs_id_list)
+
+    @patch("shared.database.source_control.working_dir.PolicyEngine")
+    def test_get_dataset_viewing_permissions(self, MockPolicyEngine):
+        # Arrange
+        mock_policy_engine_instance = MockPolicyEngine.return_value
+        mock_perm_result = {
+            'allow_all': True,
+            'allowed_object_id_list': []
+        }
+        mock_policy_engine_instance.get_allowed_object_id_list.return_value = mock_perm_result
+
+        # Act
+        result = WorkingDir.get_dataset_viewing_permissions(self.session, self.project, self.member)
+
+        # Assert
+        self.assertEqual(result, mock_perm_result)
+        MockPolicyEngine.assert_called_once_with(session=self.session, project=self.project)
+        mock_policy_engine_instance.get_allowed_object_id_list.assert_called_once_with(
+            member=self.member,
+            object_type=ValidObjectTypes.dataset,
+            perm=DatasetPermissions.dataset_view
+        )
+
+    @patch("shared.database.source_control.working_dir.WorkingDir.get_dataset_viewing_permissions")
+    def test_can_member_view_datasets_allow_all(self, mock_get_dataset_viewing_permissions):
+        # Arrange
+        mock_perm_result = Mock()
+        mock_perm_result.allow_all = True
+        mock_get_dataset_viewing_permissions.return_value = mock_perm_result
+        candidate_dataset_ids = [1, 2, 3]
+
+        # Act
+        result = WorkingDir.can_member_view_datasets(self.session, self.project, self.member, candidate_dataset_ids)
+
+        # Assert
+        self.assertTrue(result)
+
+    @patch("shared.database.source_control.working_dir.WorkingDir.get_dataset_viewing_permissions")
+    def test_can_member_view_datasets_subset_allowed(self, mock_get_dataset_viewing_permissions):
+        # Arrange
+        mock_perm_result = Mock()
+        mock_perm_result.allow_all = False
+        mock_perm_result.allowed_object_id_list = [2, 3, 1, 4]
+        mock_get_dataset_viewing_permissions.return_value = mock_perm_result
+        candidate_dataset_ids = [1, 2]
+
+        # Act
+        result = WorkingDir.can_member_view_datasets(self.session, self.project, self.member, candidate_dataset_ids)
+
+        # Assert
+        self.assertTrue(result)
+
+    @patch("shared.database.source_control.working_dir.WorkingDir.get_dataset_viewing_permissions")
+    def test_can_member_view_datasets_not_allowed(self, mock_get_dataset_viewing_permissions):
+        # Arrange
+        mock_perm_result = Mock()
+        mock_perm_result.allow_all = False
+        mock_perm_result.allowed_object_id_list = [1,3,4]
+        mock_get_dataset_viewing_permissions.return_value = mock_perm_result
+        candidate_dataset_ids = [1, 2]
+
+        # Act
+        result = WorkingDir.can_member_view_datasets(self.session, self.project, self.member, candidate_dataset_ids)
+
+        # Assert
+        self.assertFalse(result)
+
+
+
+

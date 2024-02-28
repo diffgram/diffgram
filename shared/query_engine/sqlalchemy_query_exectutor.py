@@ -202,10 +202,11 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
 
         compare_expression, self.log = CompareExpression.new(
             session = self.session,
+            project = self.diffgram_query.project,
+            member = self.diffgram_query.member,
             left_raw = children[0],
             compare_op_raw = children[1],
             right_raw = children[2],
-            project_id = self.diffgram_query.project.id,
             log = self.log
         )
         return compare_expression
@@ -218,7 +219,8 @@ class SqlAlchemyQueryExecutor(BaseDiffgramQueryExecutor):
         local_tree = args[0]
         if len(local_tree.children) != 3:
             self.log['error']['compare_expr'] = f"Invalid compare expression {str(args)}"
-
+            return
+        
         children = local_tree.children
 
         compare_expression: CompareExpression = self.init_compare_expression(children)

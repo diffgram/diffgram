@@ -196,7 +196,8 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
                 left_raw = token,
                 right_raw = token2,
                 compare_op_raw = operator,
-                project_id = self.project.id,
+                project = self.project,
+                member = self.member,
                 log = regular_log.default()
             )
             value = executor._SqlAlchemyQueryExecutor__validate_expression(comp_expr)
@@ -211,7 +212,8 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
                 left_raw = token,
                 right_raw = token2,
                 compare_op_raw = operator,
-                project_id = self.project.id,
+                project = self.project,
+                member = self.member,
                 log = regular_log.default()
             )
             print(comp_expr, log)
@@ -228,7 +230,8 @@ class TestQueryCreator(testing_setup.DiffgramBaseTestCase):
                 left_raw = token,
                 right_raw = token2,
                 compare_op_raw = operator,
-                project_id = self.project.id,
+                project = self.project,
+                member = self.member,
                 log = regular_log.default()
             )
             executor.log['error'] = {}

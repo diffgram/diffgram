@@ -16,7 +16,7 @@ class AttributeCompareExpression(CompareExpression):
         attribute_group = Attribute_Template_Group.get_by_name_and_project(
             session = session,
             name = attr_group_name,
-            project_id = self.project_id
+            project_id = self.project.id
         )
 
         if not attribute_group:
@@ -25,7 +25,7 @@ class AttributeCompareExpression(CompareExpression):
             attribute_group = Attribute_Template_Group.get_by_name_and_project(
                 session = session,
                 name = attr_group_name,
-                project_id = self.project_id
+                project_id = self.project.id
             )
         if not attribute_group:
             error_string = f"Attribute Group {str(attr_group_name)} does not exists"

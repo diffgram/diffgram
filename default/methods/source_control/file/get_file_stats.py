@@ -2,12 +2,10 @@ try:
     from methods.regular.regular_api import *
     from shared.database.source_control.file_stats import FileStats
     from methods.source_control.file.remove import remove_core as file_remove_core
-    from methods.source_control.file.file_browser import File_Browser
 
 except:
     from default.methods.regular.regular_api import *
     from default.methods.source_control.file.remove import remove_core as file_remove_core
-    from default.methods.source_control.file.file_browser import File_Browser
 
 
 @routes.route('/api/v1/project/<string:project_string_id>/file/<int:file_id>/file-stats',

@@ -2,7 +2,6 @@ from methods.regular.regular_api import *
 from default.tests.test_utils import testing_setup
 from shared.tests.test_utils import common_actions, data_mocking
 from shared.query_engine.sql_alchemy_query_elements.query_elements import QueryElement, QueryEntity
-from shared.query_engine.expressions.expressions import CompareExpression, CompareOperator
 from shared.query_engine.sql_alchemy_query_elements.scalar import ScalarQueryElement
 from shared.query_engine.sql_alchemy_query_elements.file import FileQueryElement
 from shared.query_engine.sql_alchemy_query_elements.attribute import AttributeQueryElement
