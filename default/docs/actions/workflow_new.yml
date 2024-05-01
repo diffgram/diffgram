@@ -1,29 +1,32 @@
-
 ---
-summary: Create Workflow
-description: Create a new workflow.
-tags:
+summary: Create Workflow  # Summary of the API endpoint
+description: Create a new workflow.  # Description of the API endpoint
+
+tags:  # Tags associated with the API endpoint
   - Workflows & Actions
-parameters:
-  - name: project_string_id
-    in: path
-    type: string
-    required: true
-  - in: body
-    name: ActionsNewRequestBody
-    required: true
-    description: The metadata to be updated. Any keys not provided will be ignored.
-    schema:
-      $ref: '#/definitions/WorkflowNewRequestBody'
-definitions:
-  WorkflowNewRequestBody:
-    type: object
-    properties:
-      name:
-        description: the name of the workflow.
-        type: string
-responses:
-  200:
-    description: The created workflow.
-    schema:
-      $ref: './default/docs/actions/schemas.yaml#/definitions/Workflow'
+
+parameters:  # Parameters required for the API endpoint
+  - name: project_string_id  # The name of the parameter
+    in: path  # The location of the parameter (in this case, in the URL path)
+    type: string  # The type of the parameter
+    required: true  # Whether the parameter is required or not
+  - in: body  # The location of the parameter (in this case, in the request body)
+    name: ActionsNewRequestBody  # The name of the parameter
+    required: true  # Whether the parameter is required or not
+    description: The metadata to be updated. Any keys not provided will be ignored.  # Description of the parameter
+    schema:  # The schema of the parameter (in this case, an object)
+      $ref: '#/definitions/WorkflowNewRequestBody'  # The reference to the schema definition
+
+definitions:  # The definitions of the objects used in the API specification
+  WorkflowNewRequestBody:  # The definition of the WorkflowNewRequestBody object
+    type: object  # The type of the object
+    properties:  # The properties of the object
+      name:  # The name of the property
+        description: the name of the workflow.  # Description of the property
+        type: string  # The type of the property
+
+responses:  # The responses of the API endpoint
+  200:  # The status code of the response
+    description: The created workflow.  # Description of the response
+    schema:  # The schema of the response (in this case, a Workflow object)
+      $ref: './default/docs/actions/schemas.yaml#/definitions/Workflow'  # The reference to the schema definition
