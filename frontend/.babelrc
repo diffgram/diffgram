@@ -1,15 +1,16 @@
 {
   "presets": [
-    [
-      "@babel/preset-env",
-      {
-        "modules": false
-      },
-      "@vue/babel-preset-jsx"
-    ]
+    ["@babel/preset-env", {"modules": false}],
+    "@vue/babel-preset-jsx"
   ],
   "plugins": [
     "@vue/babel-plugin-transform-vue-jsx",
-    "@babel/transform-runtime"
+    ["@babel/plugin-transform-runtime", {
+      "absoluteRuntime": false,
+      "corejs": 2,
+      "helpers": true,
+      "regenerator": true,
+      "useESModules": false
+    }]
   ]
 }
