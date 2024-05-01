@@ -8,9 +8,14 @@ except:
 @Project_permissions.user_has_project(Roles = ["admin", "Editor", "Viewer"], apis_user_list = ["api_enabled_builder"])
 def instance_history_api(project_string_id, instance_id):
     """
-        Create a new instance template.
-    :param project_string_id:
-    :return:
+        This function creates a new instance template by calling the instance_history_core function.
+        
+        It first imports the required functions and modules. Then, it validates the user permissions
+        to access the project using the Project_permissions.user_has_project decorator. 
+
+        :param project_string_id: The unique string ID of the project.
+        :param instance_id: The unique ID of the instance.
+        :return: A JSON response containing the instance history data or an error message.
     """
     instance_history_spec_list = []
 
@@ -50,12 +55,13 @@ def instance_history_core(
         project, 
         log = regular_log.default()):
     """
-        Creates a new instance template. It first creates the related instances and then saves the template
-        and instances relations.
-    :param session: SQL Alchemy Session.
-    :param log: regular_log
-    :param root_id: int
-    :return:
+        This function creates a new instance template by first creating the related instances and then saving
+        the template and instances relations.
+
+        :param session: SQL Alchemy Session.
+        :param log: regular_log
+        :param root_id: int
+        :return: A tuple containing the instance history data and the log.
     """
     if project is None:
         log['error']['project'] = 'Provide project object.'
