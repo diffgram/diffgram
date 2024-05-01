@@ -1,31 +1,37 @@
-
 ---
-summary: Workflows Runs List
-description: Gets the workflows runs associated with the given project & workflow ID. Each workflow run represents the execution of a workflow.
-tags:
-  - Workflows & Actions
-parameters:
-  - name: project_string_id
-    in: path
-    type: string
-    required: true
-  - in: body
-    name: WorkflowRunListRequestBody
-    required: true
-    description: The metadata to for filtering the list
-    schema:
-      $ref: '#/definitions/WorkflowRunListRequestBody'
-definitions:
-  WorkflowRunListRequestBody:
-    type: object
-    properties:
-      flow_id:
-        description: The workflow ID to list the runs from.
-        type: number
-responses:
-  200:
-    description: The list of workflow runs.
-    schema:
-      type: array
-      items:
-        $ref: './default/docs/actions/schemas.yaml#/definitions/WorkflowRun'
+# This is a Workflows Runs List endpoint which gets the workflow runs associated with the given project & workflow ID.
+# Each workflow run represents the execution of a workflow.
+#
+#Tags: 
+#  - Workflows & Actions
+#
+# Parameters:
+#   - name: project_string_id
+#     in: path
+#     type: string
+#     required: true
+#     description: The project ID in string format.
+#   - name: WorkflowRunListRequestBody
+#     in: body
+#     required: true
+#     description: The metadata to for filtering the list.
+#     schema:
+#       $ref: '#/definitions/WorkflowRunListRequestBody'
+#
+# Definitions:
+#   WorkflowRunListRequestBody:
+#     type: object
+#     properties:
+#       flow_id:
+#         description: The workflow ID to list the runs from.
+#         type: number
+#         example: 12345
+#
+# Responses:
+#   200:
+#     description: The list of workflow runs.
+#     schema:
+#       type: array
+#       items:
+#         $ref: './default/docs/actions/schemas.yaml#/definitions/WorkflowRun'
+#
