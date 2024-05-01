@@ -3,33 +3,16 @@ import sys
 import time
 import json
 import datetime
-
 from dataclasses import dataclass, field
 from typing import Any
 
-from flask import jsonify
-from flask import request
+from flask import Flask, request, jsonify
+from sqlalchemy.orm.attributes import flag_modified
+from sqlalchemy import or_
 
-from shared.settings import settings
-
-
-try:
-
-	# CAUTION if getting 405 not found make sure 
-	# routes importing properly (ie not default.methods if calling from within default folder)
-	from methods import routes
-	from methods.stats.stats import Stats
-except:
-	# For test env, where
-	# the default folder is still there
-	# (Production gets built into seperate folder through 
-	# deploy process)
-	from default.methods import routes
-
+import shared.settings as settings
 from shared.helpers import sessionMaker
 from shared.helpers.security import limiter
-
-from sqlalchemy.orm.attributes import flag_modified
 
 from shared.database.user import User
 from shared.database.project import Project
@@ -42,7 +25,7 @@ from shared.database.annotation.instance import Instance
 from shared.regular import regular_input
 from shared.regular import regular_log
 from shared.regular import regular_methods
-from shared.regular.regular_member import get_member 
+from shared.regular.regular_member import get_member
 
 from shared.communicate.email import communicate_via_email
 
@@ -59,17 +42,26 @@ from shared.database.auth.api import Auth_api
 
 from werkzeug.exceptions import Forbidden
 
-from sqlalchemy import or_
-
 from shared.database.event.event import Event
 
 from shared.database.project_directory_list import Project_Directory_List
 
-from memory_profiler import profile
 
+app = Flask(__name__)
 
-from shared.utils.logging import DiffgramLogger
-default_abstract_logger = DiffgramLogger('default')
-default_abstract_logger.configure_concrete_logger(
-	system_mode = settings.DIFFGRAM_SYSTEM_MODE)
-logger = default_abstract_logger.get_concrete_logger()
+# Add routes here
+__all__ = [
+    "routes",
+]
+
+@app.before_request
+def before_request():
+    if not request.path.startswith("/static"):
+        limiter.check(request.remote_addr)
+
+@app.route("/test", methods=["GET"])
+def test():
+    return jsonify({"message": "Hello, World!"})
+
+if __name__ == "__main__":
+    app.run(debug=True)
