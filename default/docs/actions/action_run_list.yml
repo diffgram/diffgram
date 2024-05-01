@@ -1,22 +1,22 @@
-
 ---
-summary: Action Runs List
-description: Gets the actions runs associated with the given action ID.
+# This is the summary for the API endpoint. It provides a brief description of what the endpoint does.
+summary: Action Runs List # Gets the list of action runs associated with the given action ID.
+
+# The description field provides more detailed information about the endpoint.
+description: This endpoint retrieves the action runs associated with the given action ID in the specified project.
+
+# The tags field is used to categorize the endpoint and make it easier to find in documentation.
 tags:
-  - Workflows & Actions
+  - Workflows & Actions # Indicates that this endpoint is related to workflows and actions.
+
+# The parameters field lists the expected inputs for the endpoint.
 parameters:
-  - name: project_string_id
-    in: path
-    type: string
-    required: true
-  - name: action_id
-    in: path
-    type: number
-    required: true
-responses:
-  200:
-    description: The list of action runs.
-    schema:
-      type: array
-      items:
-        $ref: './default/docs/actions/schemas.yaml#/definitions/ActionRun'
+  - name: project_string_id # The name of the parameter.
+    in: path # The location of the parameter (in this case, in the URL path).
+    type: string # The data type of the parameter.
+    required: true # Whether or not the parameter is required.
+
+  - name: action_id # The name of the parameter.
+    in: path # The location of the parameter (in this case, in the URL path).
+    type: number # The data type of the parameter.
+
