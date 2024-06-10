@@ -19,7 +19,7 @@ analytics-python==1.2.9
 cryptography==41.0.6
 colorlog==4.2.1
 boto3==1.16.4
-azure-storage-blob==12.8.0
+azure-storage-blob==12.13.0
 lark
 SQLAlchemy-serializer==1.4.1
 newrelic
