@@ -81,16 +81,14 @@ jobs:
           - /__w/diffgram/diffgram/myminio/.minio/data:/root/.minio
         options: --health-cmd "curl -s http://localhost:9000/minio/health/live"
     steps:
-    - uses: actions/setup-node@v3
+    - uses: actions/setup-node@v4
       with:
         node-version: 18
-      env:
-        NODE_OPTIONS: --openssl-legacy-provider
     - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
     - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
     - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
     - name: Check out repository code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - run: cp -rf . /__w/diffgram
     - run: cd /__w/diffgram
     - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
