@@ -117,6 +117,7 @@ jobs:
         # we have already installed all dependencies above
         install: false
         start: |
+          NODE_OPTIONS=--openssl-legacy-provider
           yarn --cwd run dev
           python3 ../default/main.py
           python3 ../walrus/main.py
