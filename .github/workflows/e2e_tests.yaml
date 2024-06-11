@@ -19,6 +19,7 @@ jobs:
       options: --user root --shm-size 4gb
       env:
         NODE_ENV: development
+        NODE_OPTIONS: --openssl-legacy-provider
         DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
         PYTHONPATH: /__w/diffgram
         DIFFGRAM_SYSTEM_MODE: testing_e2e
@@ -134,6 +135,7 @@ jobs:
         # Recommended: pass the GitHub token lets this action correctly
         # determine the unique run id necessary to re-run the checks
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        NODE_OPTIONS: --openssl-legacy-provider
         NODE_ENV: development
         DEBUG: 'cypress:server:util:process_profiler'
         DATABASE_URL: postgresql+psycopg2://postgres:postgres@postgres/diffgram_unit_tests?sslmode=disable
