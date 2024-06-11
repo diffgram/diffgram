@@ -108,8 +108,7 @@ jobs:
     - name: Check processes
       run: ls -a
     - run: yarn --cwd frontend/ install
-    #    - run: yarn --cwd frontend/ run cypress install
-    - run: yarn --cwd frontend/ build
+    - run: NODE_OPTIONS=--openssl-legacy-provider yarn --cwd frontend/ build
     # Populate DB
     - run: cd default/play_and_scripts/scripts; python3 setup_database_e2e_tests.py
     - name: "UI Tests - Chrome"
