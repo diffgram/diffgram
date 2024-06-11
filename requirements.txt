@@ -3,6 +3,6 @@ boto3==1.18.1
 google-cloud-storage==1.35.1
 google-api-python-client==1.12.3
 google-cloud-aiplatform
-azure-storage-blob==12.8.1
+azure-storage-blob==12.13.0
 python-dotenv==1.0.0
 jwt
