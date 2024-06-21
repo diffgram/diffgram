@@ -106,7 +106,7 @@ services:
     hostname: db
     restart: always
     healthcheck:
-      test: ${HEALTHCHECK_TEST}
+      test: ['CMD-SHELL', ${HEALTHCHECK_TEST_COMMAND}, ${HEALTHCHECK_TEST_ARG_0}, ${HEALTHCHECK_TEST_ARG_1}]
       interval: 30s
       timeout: 60s
       retries: 5
