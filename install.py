@@ -524,13 +524,14 @@ class DiffgramInstallTool:
         env_file += f"RABBITMQ_PORT={self.rabbit_port}\n"
 
         if self.local_database:
-            env_file += "POSTGRES_IMAGE=postgres:12.5\n"
+            env_file += "POSTGRES_IMAGE=postgres:16\n"
             env_file += "DATABASE_URL=postgresql+psycopg2://postgres:postgres@db/diffgram\n"
             env_file += "DATABASE_NAME=diffgram\n"
             env_file += "DATABASE_HOST=db\n"
             env_file += "DATABASE_NAME=diffgram\n"
             env_file += "DATABASE_USER=postgres\n"
             env_file += "DATABASE_PASS=postgres\n"
+            env_file += f"HEALTHCHECK_TEST='['CMD-SHELL', 'pg_isready', '-d', 'db_prod']'\n"
 
         else:
             env_file += "POSTGRES_IMAGE=tianon/true\n"
@@ -539,6 +540,7 @@ class DiffgramInstallTool:
             env_file += f"DATABASE_NAME={self.db_name}\n"
             env_file += f"DATABASE_USER={self.db_username}\n"
             env_file += f"DATABASE_PASS={self.db_pass}\n"
+            env_file += f"HEALTHCHECK_TEST='['CMD-SHELL', 'echo', 'Remote db in use. Health check not supported yet.']'\n"
 
         if self.mailgun:
             env_file += f"MAILGUN_KEY={self.mailgun_key}\n"

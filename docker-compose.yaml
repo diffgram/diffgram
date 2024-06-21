@@ -106,7 +106,7 @@ services:
     hostname: db
     restart: always
     healthcheck:
-      test: [ "CMD-SHELL", "pg_isready", "-d", "db_prod" ]
+      test: ${HEALTHCHECK_TEST}
       interval: 30s
       timeout: 60s
       retries: 5
