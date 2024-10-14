@@ -9,10 +9,10 @@ from shared.database.model.model_run import ModelRun
 @Project_permissions.user_has_project(Roles = ["admin", "Editor", "allow_if_project_is_public"], apis_user_list = ["api_enabled_builder"])
 def model_run_list_web(project_string_id):
     """
-        List all the discussion based on the given filters.
-        We can filter by job_id, task_id, file_id, status and project.
-    :param project_string_id:
-    :return:
+        List all the model runs based on the given filters.
+        We can filter by directory_id, id_list, file_id, job_id, status and project.
+    :param project_string_id: The string ID of the project.
+    :return: A JSON response containing the list of model runs or an error message.
     """
     issue_list_spec_list = [
         {"directory_id": {
@@ -94,18 +94,18 @@ def model_run_list_core(session: object,
                     id_list: list = None,
                     members_list: list = []):
     """
-        Returns serialized dictionary of the list of issues that match the given filters.
+        Returns serialized dictionary of the list of model runs that match the given filters.
         This method assumes data has been validated previously, so no extra validations are done in the function.
 
-    :param session:
-    :param log:
-    :param project_id:
-    :param task_id:
-    :param file_id:
-    :param job_id:
-    :param status:
-    :param members_list:
-    :return:
+    :param session: The database session object.
+    :param log: The log dictionary.
+    :param project_id: The ID of the project.
+    :param directory_id: The ID of the directory.
+    :param file_id: The ID of the file.
+    :param job_id: The ID of the job.
+    :param status: The status of the model runs.
+    :param members_list: The list of members.
+    :return: A tuple containing the serialized list of model runs and the log dictionary.
     """
     if project_id is None:
         log['error']['project_id'] = 'Provide project_id'

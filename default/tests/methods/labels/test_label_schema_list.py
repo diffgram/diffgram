@@ -1,25 +1,23 @@
-from methods.regular.regular_api import *
-from default.tests.test_utils import testing_setup
-from shared.tests.test_utils import common_actions, data_mocking
-from base64 import b64encode
-from methods.task.task_template.job_list import job_view_core, default_metadata, filter_by_project
-from unittest.mock import patch
-from methods.task.task_template import job_new_or_update
-from shared.utils.logging import DiffgramLogger
-from shared.database.labels.label_schema import LabelSchema
-from methods.labels.label_schema_list import label_schema_list_core
-
+from methods.regular.regular_api import *  # Import regular API methods
+from default.tests.test_utils import testing_setup  # Import testing setup
+from shared.tests.test_utils import common_actions, data_mocking  # Import common actions and data mocking utilities
+from base64 import b64encode  # Import base64 encoding
+from methods.task.task_template.job_list import job_view_core, default_metadata, filter_by_project  # Import job_view_core, default_metadata, and filter_by_project
+from unittest.mock import patch  # Import patch for mocking
+from methods.task.task_template import job_new_or_update  # Import job_new_or_update
+from shared.utils.logging import DiffgramLogger  # Import DiffgramLogger
+from shared.database.labels.label_schema import LabelSchema  # Import LabelSchema
+from methods.labels.label_schema_list import label_schema_list_core  # Import label_schema_list_core
 
 class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
     """
-
-
-
+    Test class for testing label schema listing functionality.
     """
 
     def setUp(self):
-        # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
-        # For future tests a mechanism of setting up and tearing down the database should be created.
+        """
+        Initializes the project, authentication, and member objects for testing.
+        """
         super(TestLabelSchemaList, self).setUp()
         project_data = data_mocking.create_project_with_context(
             {
@@ -37,6 +35,9 @@ class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
         self.member = self.auth_api.member
 
     def test_api_label_schema_list(self):
+        """
+        Tests the API endpoint for label schema listing.
+        """
         endpoint = f'/api/v1/project/{self.project.project_string_id}/labels-schema'
         schema1 = LabelSchema.new(
             session = self.session,
@@ -73,6 +74,9 @@ class TestLabelSchemaList(testing_setup.DiffgramBaseTestCase):
             self.assertTrue(id in ids_list)
 
     def test_label_schema_list_core(self):
+        """
+        Tests the label_schema_list_core function.
+        """
         result, log = label_schema_list_core(
             session = self.session,
             project = self.project,

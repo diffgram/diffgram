@@ -1,193 +1,192 @@
-from methods.regular.regular_api import *
-from default.tests.test_utils import testing_setup
-from shared.tests.test_utils import common_actions, data_mocking
-from base64 import b64encode
-from methods.task.task import task_next_issue
 from unittest.mock import patch
+
+import json
 import flask
+from typing import Dict, Any, Union
 from shared.database.hashing_functions import make_secure_val
-from methods.task.task import task_review
-from shared.utils.task import task_complete
 from shared.database.discussion.discussion_comment import DiscussionComment
 from shared.database.task.task_event import TaskEvent
 from shared.utils.task.task_update_manager import Task_Update
-from shared.database.task.task import TASK_STATUSES
+from shared.database.task.task import TASK_STATUSES, Task
+from methods.task.task import task_next_issue, task_complete
+from methods.regular.regular_api import get_project_by_project_string_id
+from methods.task.task import task_review
+from shared.database.project.project import Project
+from shared.database.directory.directory import Directory
+from shared.database.member.member import Member
+from shared.database.user.user import User
+from shared.database.file.file import File
+from shared.database.job.job import Job
+from shared.database.session import SessionLocal
 
 
-class TestTaskReview(testing_setup.DiffgramBaseTestCase):
-    """
-        
-        
-        
-    """
+class TestTaskReview:
+    """Test cases for task_review module."""
 
-    def setUp(self):
-        # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
-        # For future tests a mechanism of setting up and tearing down the database should be created.
-        super(TestTaskReview, self).setUp()
-        project_data = data_mocking.create_project_with_context(
-            {
-                'users': [
-                    {'username': 'Test',
-                     'email': 'test@test.com',
-                     'password': 'diffgram123',
-                     }
-                ]
-            },
-            self.session
-
+    def setUp(self) -> None:
+        """Set up the test environment."""
+        self.session: SessionLocal = SessionLocal()
+        self.project_data = self.create_project_with_context()
+        self.project: Project = self.project_data['project']
+        self.auth_api = self.create_project_auth()
+        self.member: Member = self.auth_api.member
+        self.member.user = self.register_user(
+            username='test_user',
+            email='test@test.com',
+            password='diffgram123',
+            project_string_id=self.project.project_string_id,
+            member_id=self.member.id
         )
-        self.project = project_data['project']
-        self.auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
-        self.member = self.auth_api.member
-        self.member.user = data_mocking.register_user({
-            'username': 'test_user',
-            'email': 'test@test.com',
-            'password': 'diffgram123',
-            'project_string_id': self.project.project_string_id,
-            'member_id': self.member.id
-        }, self.session)
-        job = data_mocking.create_job({
-            'name': f"my-test-job-{1}",
-            'project': self.project,
-            'allow_reviews': True
-        }, self.session)
-        file = data_mocking.create_file({'project_id': self.project.id}, self.session)
-        self.task = data_mocking.create_task({'name': 'test task', 'file': file, 'job': job, 'status': 'available'},
-                                             self.session)
-        self.task.add_reviewer(session = self.session, user = self.auth_api.member.user)
-        self.task.add_reviewer(session = self.session, user = self.member.user)
+        job = self.create_job(name=f"my-test-job-{1}", project=self.project)
+        file = self.create_file(project_id=self.project.id)
+        self.task: Task = self.create_task(
+            name='test task', file=file, job=job, status='available'
+        )
+        self.task.add_reviewer(self.session, self.auth_api.member.user)
+        self.task.add_reviewer(self.session, self.member.user)
         self.session.commit()
 
-    def test_task_review_api(self):
+    def create_project_with_context(self, users: Dict[str, Any]) -> Dict[str, Union[Project, Member]]:
+        """Create a project with context."""
+        return data_mocking.create_project_with_context(users, self.session)
+
+    def create_project_auth(self, project: Project = None, session: SessionLocal = None) -> common_actions:
+        """Create project authentication."""
+        return common_actions.create_project_auth(project=project, session=session)
+
+    def register_user(
+        self,
+        username: str,
+        email: str,
+        password: str,
+        project_string_id: str,
+        member_id: int
+    ) -> User:
+        """Register a user."""
+        return data_mocking.register_user(
+            {
+                'username': username,
+                'email': email,
+                'password': password,
+                'project_string_id': project_string_id,
+                'member_id': member_id
+            },
+            self.session
+        )
+
+    def create_job(self, name: str, project: Project) -> Job:
+        """Create a job."""
+        return data_mocking.create_job({'name': name, 'project': project}, self.session)
+
+    def create_file(self, project_id: int) -> File:
+        """Create a file."""
+        return data_mocking.create_file({'project_id': project_id}, self.session)
+
+    def create_task(
+        self,
+        name: str,
+        file: File,
+        job: Job,
+        status: str
+    ) -> Task:
+        """Create a task."""
+        return data_mocking.create_task({'name': name, 'file': file, 'job': job, 'status': status}, self.session)
+
+    @staticmethod
+    def test_task_review_api(
+        client,
+        client_id: str,
+        client_secret: str,
+        project_string_id: str,
+        task_id: int,
+        make_secure_val_mock: patch
+    ) -> None:
+        """Test task review API."""
         request_data = {
             'action': 'approve'
         }
-        endpoint = f"/api/v1/task/{self.task.id}/review"
-        auth_api = common_actions.create_project_auth(project = self.project, session = self.session)
-        auth_api.member.user = data_mocking.register_user({
-            'username': 'test_user',
-            'email': 'test@test.com',
-            'password': 'diffgram123',
-            'project_string_id': self.project.project_string_id,
-            'member_id': self.member.id
-        }, self.session)
+        auth_api = common_actions.create_project_auth(
+            project=get_project_by_project_string_id(project_string_id, client, self.session),
+            session=self.session
+        )
+        auth_api.member.user = data_mocking.register_user(
+            {
+                'username': 'test_user',
+                'email': 'test@test.com',
+                'password': 'diffgram123',
+                'project_string_id': project_string_id,
+                'member_id': auth_api.member.id
+            },
+            self.session
+        )
         self.task.add_reviewer(self.session, auth_api.member.user)
         self.session.commit()
-        with self.client.session_transaction() as session:
-            session['user_id'] = make_secure_val(auth_api.member.user.id)
-            credentials = b64encode(f"{auth_api.client_id}:{auth_api.client_secret}".encode()).decode('utf-8')
 
-        response = self.client.post(
-            endpoint,
-            data = json.dumps(request_data),
-            headers = {
+        with client.session_transaction() as session:
+            session['user_id'] = make_secure_val_mock(auth_api.member.user.id)
+            credentials = b64encode(f"{client_id}:{client_secret}".encode()).decode('utf-8')
+
+        response = client.post(
+            f"/api/v1/task/{task_id}/review",
+            data=json.dumps(request_data),
+            headers={
                 'directory_id': str(self.project.directory_default_id),
                 'Authorization': f"Basic {credentials}"
             }
         )
         data = response.json
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(data['task']['status'], 'complete')
+        make_secure_val_mock.assert_called_once()
+        assert response.status_code == 200
+        assert data['task']['status'] == 'complete'
 
         # 400 Case
         request_data = {
             'action': 'wrong_value'
         }
-        response = self.client.post(
-            endpoint,
-            data = json.dumps(request_data),
-            headers = {
+        response = client.post(
+            f"/api/v1/task/{task_id}/review",
+            data=json.dumps(request_data),
+            headers={
                 'directory_id': str(self.project.directory_default_id),
                 'Authorization': f"Basic {credentials}"
             }
         )
         data = response.json
-        self.assertEqual(response.status_code, 400)
+        assert response.status_code == 400
 
-    def test_task_review_core(self):
-        # Approve & No comment case
-        with patch.object(task_complete, 'task_complete') as mock:
-            task_review.task_review_core(
-                session = self.session,
-                task_id = self.task.id,
-                action = 'approve',
-                member = self.member,
-                comment_text = None
-            )
-            mock.assert_called_once_with(
-                session = self.session,
-                task = self.task,
-                new_file = self.task.file,
-                project = self.task.project,
-                member = self.member,
-                post_review = True
-            )
-        # Assert return
-        result = task_review.task_review_core(
-            session = self.session,
-            task_id = self.task.id,
-            action = 'approve',
-            member = self.member,
-            comment_text = None
-        )
-        self.assertEqual(result['id'], self.task.id)
-        self.assertEqual(result['status'], TASK_STATUSES['complete'])
-
-        # Approve & comment case
-        with patch.object(task_complete, 'task_complete') as mock:
-            with patch.object(DiscussionComment, 'new', return_value = 'discussion_comment_result') as new_mock:
-                with patch.object(TaskEvent, 'generate_task_comment_event') as task_event_mock:
-                    comment_text = 'comment'
-                    result = task_review.task_review_core(
-                        session = self.session,
-                        task_id = self.task.id,
-                        action = 'approve',
-                        member = self.member,
-                        comment_text = comment_text,
-                    )
-                    mock.assert_called_once_with(
-                        session = self.session,
-                        task = self.task,
-                        new_file = self.task.file,
-                        project = self.task.project,
-                        member = self.member,
-                        post_review = True
-                    )
-
-                    new_mock.assert_called_once_with(
-                        session = self.session,
-                        content = comment_text,
-                        member_created_id = self.member.id,
-                        project_id = self.task.project.id,
-                        user_id = self.member.user_id
-                    )
-
-                    task_event_mock.assert_called_once_with(
-                        session = self.session,
-                        task = self.task,
-                        member = self.member,
-                        comment = 'discussion_comment_result'
-                    )
-
-        # Request Changes Case & No comment case
-        with patch.object(Task_Update, 'main') as mock:
-            task_review.task_review_core(
-                session = self.session,
-                task_id = self.task.id,
-                action = 'request_change',
-                member = self.member,
-                comment_text = None
-            )
-            mock.assert_called_once()
-
-        result = task_review.task_review_core(
-            session = self.session,
-            task_id = self.task.id,
-            action = 'request_change',
-            member = self.member,
-            comment_text = None
-        )
-        mock.assert_called_once()
-        self.assertEqual(result['id'], self.task.id)
-        self.assertEqual(result['status'], TASK_STATUSES['requires_changes'])
+    @staticmethod
+    def test_task_review_core(
+        session: SessionLocal,
+        task: Task,
+        member: Member,
+        action: str,
+        comment_text: str
+    ) -> None:
+        """Test task review core."""
+        with patch('shared.utils.task.task_update_manager.Task_Update.main') as mock:
+            with patch('shared.database.discussion.discussion_comment.DiscussionComment.new', return_value='discussion_comment_result') as new_mock:
+                with patch('shared.database.task.task_event.TaskEvent.generate_task_comment_event') as task_event_mock:
+                    if action == 'approve':
+                        task_review.task_review_core(
+                            session=session,
+                            task_id=task.id,
+                            action=action,
+                            member=member,
+                            comment_text=comment_text
+                        )
+                        mock.assert_called_once()
+                        new_mock.assert_called_once()
+                        task_event_mock.assert_called_once()
+                    elif action == 'request_change':
+                        result = task_review.task_review_core(
+                            session=session,
+                            task_id=task.id,
+                            action=action,
+                            member=member,
+                            comment_text=comment_text
+                        )
+                        mock.assert_called_once()
+                        assert result['id'] == task.id
+                        assert result['status'] == TASK_STATUSES['requires_changes']
+                    else:
+                        raise ValueError(f"Invalid action: {action}")

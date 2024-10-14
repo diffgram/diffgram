@@ -1,22 +1,85 @@
-
 ---
-summary: Action Runs List
-description: Gets the actions runs associated with the given action ID.
-tags:
-  - Workflows & Actions
-parameters:
-  - name: project_string_id
-    in: path
-    type: string
-    required: true
-  - name: action_id
-    in: path
-    type: number
-    required: true
-responses:
-  200:
-    description: The list of action runs.
-    schema:
-      type: array
-      items:
-        $ref: './default/docs/actions/schemas.yaml#/definitions/ActionRun'
+# OpenAPI specification for the API endpoint.
+openapi: 3.0.0
+info:
+  title: My API
+  version: 1.0.0
+
+# This is the summary for the API endpoint. It provides a brief description of what the endpoint does.
+paths:
+  /projects/{project_string_id}/actions/{action_id}/runs:
+    get:
+      # The summary field provides a brief description of the endpoint.
+      summary: Get Action Runs List
+      # The description field provides more detailed information about the endpoint.
+      description: This endpoint retrieves the list of action runs associated with the given action ID in the specified project.
+
+      # The tags field is used to categorize the endpoint and make it easier to find in documentation.
+      tags:
+        - Workflows_and_Actions # Indicates that this endpoint is related to workflows and actions.
+
+      # The parameters field lists the expected inputs for the endpoint.
+      parameters:
+        - name: project_string_id # The name of the parameter.
+          in: path # The location of the parameter (in this case, in the URL path).
+          description: The unique identifier of the project.
+          required: true # Whether or not the parameter is required.
+          schema:
+            type: string
+
+        - name: action_id # The name of the parameter.
+          in: path # The location of the parameter (in this case, in the URL path).
+          description: The unique identifier of the action.
+          required: true # Whether or not the parameter is required.
+          schema:
+            type: integer
+
+      # The responses field describes the possible responses from the endpoint.
+      responses:
+        '200':
+          description: Successful operation.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ActionRun'
+
+        '400':
+          description: Bad Request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+        '404':
+          description: Not Found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+# The components field is used to define reusable components such as schemas and responses.
+components:
+  schemas:
+    ActionRun:
+      type: object
+      properties:
+        id:
+          type: integer
+        status:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
