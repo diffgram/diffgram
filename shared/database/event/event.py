@@ -342,6 +342,10 @@ class Event(Base):
 
         if settings.DIFFGRAM_SYSTEM_MODE in ['sandbox'] and self.kind in EXCLUDED_EVENTHUB_TRACKING_EVENTS:
             return
+        
+        if settings.ALLOW_EVENTHUB is False:
+            return
+        
         try:
             event_data = self.serialize()
             event_data['event_type'] = 'user'
