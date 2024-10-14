@@ -127,7 +127,7 @@ class WorkingDir(Base):
     @staticmethod
     def list(
         session,
-        project_id,
+        project,
         member,
         exclude_archived = True,
         limit = None,
@@ -145,7 +145,7 @@ class WorkingDir(Base):
         """
             Lists directories/datasets in a project
         :param session:
-        :param project_id:
+        :param project:
         :param exclude_archived:
         :param limit:
         :param return_kind:
@@ -159,22 +159,11 @@ class WorkingDir(Base):
         :param order_by_direction:
         :return:
         """
-        from shared.database.project import Project
-        project = Project.get_by_id(session = session, id = project_id)
+        
         query = session.query(WorkingDir).filter(
-            WorkingDir.project_id == project_id,
+            WorkingDir.project_id == project.id,
             or_(WorkingDir.archived == False, WorkingDir.archived.is_(None))
 
-        )
-
-        from shared.database.permissions.roles import ValidObjectTypes
-
-        # Permissions: get datasets that user can see
-        policy_engine = PolicyEngine(session = session, project = project)
-        perm_result = policy_engine.get_allowed_object_id_list(
-            member = member,
-            object_type = ValidObjectTypes.dataset,
-            perm = DatasetPermissions.dataset_view
         )
 
         if nickname:
@@ -200,10 +189,13 @@ class WorkingDir(Base):
                 created_time_string = 'created_time'
             )
 
+        # Permissions: get datasets that user can see
+        perm_result = WorkingDir.get_dataset_viewing_permissions(session, project, member)
         if not perm_result.allow_all:
             query = query.filter(
                 WorkingDir.id.in_(perm_result.allowed_object_id_list)
             )
+
         # Must call order by before limit / offset?
         if order_by_class_and_attribute:
             query = query.order_by(
@@ -278,13 +270,35 @@ class WorkingDir(Base):
         Other ways we could do this but this seems to work as a basic check
         Future perhaps permissions on individual directories
         """
-        directory = session.query(WorkingDir).filter(
-            WorkingDir.project_id == project.id,
-            WorkingDir.id == directory_id).first()
-        if directory:
-            return True
+        
+        directory = WorkingDir.get(session, directory_id, project.id)
+        return bool(directory)
+        
+    @staticmethod
+    def get_dataset_viewing_permissions(session, project, member) -> PermissionResultObjectSet:
+        from shared.database.permissions.roles import ValidObjectTypes
+    
+        policy_engine = PolicyEngine(session = session, project = project)
+        perm_result = policy_engine.get_allowed_object_id_list(
+            member = member,
+            object_type = ValidObjectTypes.dataset,
+            perm = DatasetPermissions.dataset_view
+        )
 
-        return False
+        return perm_result
+
+    @staticmethod
+    def can_member_view_datasets(session, project, member, candidate_dataset_ids):
+        perm_result = WorkingDir.get_dataset_viewing_permissions(session, project, member)
+
+        if perm_result.allow_all:
+            return True
+            
+        candidate_ids_set = set(candidate_dataset_ids)
+        allowed_ids_set = set(perm_result.allowed_object_id_list)
+
+        return candidate_ids_set.issubset(allowed_ids_set)
+
 
     @staticmethod
     def get(

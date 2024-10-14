@@ -25,13 +25,6 @@ class QueryCreator:
         self.session = session
         self.member = member
         self.directory = directory
-        # Additional security check just for sanity
-        Project_permissions.by_project_core(
-            project_string_id = self.project.project_string_id,
-            Roles = ["admin", "Editor", "Viewer", "allow_if_project_is_public"],
-            apis_project_list = [],
-            apis_user_list = ['security_email_verified']
-        )
         self.log = regular_log.default()
         self.parser = Lark(grammar_definition,
                            parser = 'lalr',
@@ -111,6 +104,6 @@ class QueryCreator:
             if query_string:
                 tree = self.parser.parse(query_string)
             # print(tree.pretty())
-            return DiffgramQuery(tree, self.project, self.member, directory = self.directory)
+            return DiffgramQuery(tree, self.project, self.member)
         except Exception as e:
             self.log['error']['parser'] = str(e)
