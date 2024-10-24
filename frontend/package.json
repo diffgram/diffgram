@@ -69,7 +69,7 @@
     "tiptap-extensions": "^1.33.2",
     "typescript": "^3.9.7",
     "uuid": "^8.3.1",
-    "vue": "^2.6.12",
+    "vue": "^3.0.0",
     "vue-chartjs": "^3.5.0",
     "vue-code-diff": "^1.1.0",
     "vue-color": "^2.7.1",
