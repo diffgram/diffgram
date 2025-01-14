@@ -27,7 +27,7 @@ markupsafe==2.1.2
 pika
 python-keycloak
 pyjwt==2.6.0
-opencv-python==4.7.0.72
+opencv-python==4.8.1.78
 torchvision==0.15.1
 transformers==4.36.0
 deepchecks[vision]
