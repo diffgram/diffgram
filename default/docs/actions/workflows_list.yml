@@ -1,18 +1,26 @@
-
 ---
-summary: Workflows List
-description: Gets the workflows associated with the given project.
+# Summary of the endpoint's purpose
+summary: Workflows List # Gets the workflows associated with the given project
+
+# A brief description of the endpoint's functionality
+description: This endpoint retrieves the workflows related to the specified project using its string ID.
+
+# Tags to categorize and organize the endpoint
 tags:
-  - Workflows & Actions
+  - Workflows & Actions # Grouping this endpoint with other workflow and action related endpoints
+
+# Details about the required parameter for this endpoint
 parameters:
-  - name: project_string_id
-    in: path
-    type: string
-    required: true
+  - name: project_string_id # The name of the parameter
+    in: path # The location of the parameter (in this case, in the URL path)
+    type: string # The type of the parameter (a string)
+    required: true # Whether this parameter is required or not
+
+# The expected response schema and status code for a successful request
 responses:
-  200:
-    description: The list of action runs.
-    schema:
-      type: array
-      items:
-        $ref: './default/docs/actions/schemas.yaml#/definitions/ActionRun'
+  200: # The HTTP status code for a successful request
+    description: The list of action runs. # A brief description of the response
+    schema: # The response schema
+      type: array # The response is an array
+      items: # Each item in the array
+        $ref: './default/docs/actions/schemas.yaml#/definitions/ActionRun' # A reference to the schema definition for an action run object

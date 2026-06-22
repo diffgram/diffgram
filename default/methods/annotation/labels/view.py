@@ -1,28 +1,3 @@
-import random
-import string
-
-from flask import request
-from flask import jsonify
-
-from shared.database import hashing_functions
-from methods import routes
-
-from shared.database.project import Project
-from shared.database.source_control.file import File
-from shared.database.source_control.working_dir import WorkingDirFileLink
-from shared.database.source_control.working_dir import WorkingDir
-
-from shared.permissions.project_permissions import Project_permissions
-
-from shared.helpers import sessionMaker
-from shared.database.labels.label_schema import LabelSchema
-from shared.regular import regular_log
-
-
-# ADDING new view functions here?
-# TODO merge old view functions from labels.py
-
-
 @routes.route('/api/v1/project/<string:project_string_id>' + \
               '/labels/view/name_to_file_id',
               methods = ['GET'])
@@ -30,8 +5,15 @@ from shared.regular import regular_log
     ["admin", "Editor", "Viewer", "allow_if_project_is_public"])
 def web_build_name_to_file_id_dict(project_string_id):
     """
-    """
+    View function to build a dictionary mapping label names to their corresponding IDs in the project's default schema or a specified schema.
 
+    Args:
+        project_string_id (str): The unique identifier of the project.
+
+    Returns:
+        A JSON response containing the name-to-file_id dictionary and log information.
+
+    """
     log = regular_log.default()
     schema_id = request.args.get('schema_id')
 
@@ -59,7 +41,19 @@ def build_name_to_file_id_dict(
         project, 
         log, 
         schema_id = None):
+    """
+    A helper function to build the name-to-file_id dictionary.
 
+    Args:
+        session: The database session.
+        project: The Project object.
+        log: The log object.
+        schema_id (int, optional): The ID of the schema to use. Defaults to None.
+
+    Returns:
+        A tuple containing the name-to-file_id dictionary and the log object.
+
+    """
 
     if schema_id is None:
         schema = project.get_default_schema(session = session)

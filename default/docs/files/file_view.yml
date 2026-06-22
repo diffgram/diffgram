@@ -1,18 +1,19 @@
-
 ---
-summary: View File
-description: Gets the details of a given file ID
-tags:
+summary:            // A brief summary of what the API endpoint does
+View File           // The name of the API endpoint
+description:         // A detailed description of what the API endpoint does
+Gets the details of a given file ID
+tags:               // Tags help categorize and organize the API endpoints
   - Files
-parameters:
-  - in: body
-    required: true
+parameters:         // Parameters are inputs that the API endpoint expects
+  - in: body         // The parameter is sent in the request body
+    required: true  // The parameter is required to make the API call
     name: FileUpdateMetadataReqBody
     description: The metadata to be updated. Any keys not provided will be ignored.
-    schema:
+    schema:          // The schema defines the structure of the parameter
       $ref: '#/definitions/FileUpdateMetadataReqBody'
-definitions:
-  File:
+definitions:        // Definitions are reusable objects that can be used across the API specification
+  File:             // Definition for a File object
     type: object
     properties:
       image:
@@ -60,8 +61,8 @@ definitions:
       ordinal:
         description: the ordinal for a child file. Useful for ordering compound files.
         type: number
-responses:
-  200:
+responses:           // Responses are the possible outcomes of making an API call
+  200:               // HTTP status code 200 indicates a successful API call
     description: The updated file.
-    schema:
+    schema:          // The schema defines the structure of the response
       $ref: '#/definitions/File'

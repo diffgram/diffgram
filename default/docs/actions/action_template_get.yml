@@ -1,20 +1,26 @@
-
 ---
-summary: Get Action Template
-description: Gets the given action template by ID.
-tags:
+summary:        # A one-sentence summary of what the API call does
+Get Action Template
+
+description:    # A more detailed description of the API call's functionality
+Gets the given action template by ID. This operation is useful when you need to retrieve a specific action template from a project.
+
+tags:           # Tags help categorize and organize the API documentation
   - Workflows & Actions
-parameters:
-  - name: project_string_id
-    in: path
-    type: string
-    required: true
-  - name: action_template_id
-    in: path
-    type: number
-    required: true
-responses:
+
+parameters:     # Parameters are inputs the API needs to make the call
+  - name: project_string_id   # The name of the parameter
+    in: path                  # The location of the parameter (in this case, it's part of the URL path)
+    type: string              # The data type of the parameter
+    required: true            # Whether or not this parameter is required
+
+  - name: action_template_id  # The name of the parameter
+    in: path                  # The location of the parameter (in this case, it's part of the URL path)
+    type: number              # The data type of the parameter
+    required: true            # Whether or not this parameter is required
+
+responses:       # The possible responses the API can return
   200:
-    description: The action template object.
+    description: The action template object.  # A short description of the response
     schema:
-      $ref: './default/docs/actions/schemas.yaml#/definitions/ActionTemplate'
+      $ref: './default/docs/actions/schemas.yaml#/definitions/ActionTemplate'  # A reference to the schema defining the structure of the response

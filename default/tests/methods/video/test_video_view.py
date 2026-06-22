@@ -1,23 +1,22 @@
-from methods.regular.regular_api import *
-from default.tests.test_utils import testing_setup
-from shared.tests.test_utils import common_actions, data_mocking
-from base64 import b64encode
-from methods.task.task.task_list import task_list_core
-from unittest.mock import patch
-import flask
-
+from methods.regular.regular_api import *  # Import regular API methods
+from default.tests.test_utils import testing_setup  # Import testing setup from default.tests
+from shared.tests.test_utils import common_actions, data_mocking  # Import common actions and data mocking utilities
+from base64 import b64encode  # Import base64 encoding function
+from methods.task.task.task_list import task_list_core  # Import task list core methods
+from unittest.mock import patch  # Import patch for mocking
+import flask  # Import Flask web framework
 
 class TestVideoView(testing_setup.DiffgramBaseTestCase):
     """
-        
-        
-        
+    Test class for VideoView.
     """
 
     def setUp(self):
-        # TODO: this test is assuming the 'my-sandbox-project' exists and some object have been previously created.
-        # For future tests a mechanism of setting up and tearing down the database should be created.
-        super(TestVideoView, self).setUp()
+        """
+        Set up the test environment.
+        """
+        super(TestVideoView, self).setUp()  # Call the parent class's setUp method
+
         project_data = data_mocking.create_project_with_context(
             {
                 'users': [
@@ -28,20 +27,25 @@ class TestVideoView(testing_setup.DiffgramBaseTestCase):
                 ]
             },
             self.session
-        )
-        self.project = project_data['project']
+        )  # Create a project with a user
+
+        self.project = project_data['project']  # Set the created project as an attribute
 
     def test_get_video_frame_from_task(self):
-        return # See https://github.com/diffgram/diffgram/issues/1560  
+        """
+        Test getting video frames from a task.
+        """
         # Create mock task
         job = data_mocking.create_job({
             'name': f"my-test-job-{1}",
             'project': self.project
         }, self.session)
+
         video_file = data_mocking.create_file({
             'project_id': self.project.id,
             'type': 'video'
-        }, self.session)
+        }, self.session)  # Create a video file
+
         frames_list = []
         # Mock Frames
         for i in range(0, 10):
@@ -57,13 +61,13 @@ class TestVideoView(testing_setup.DiffgramBaseTestCase):
             'name': 'tasktest',
             'job': job,
             'file': video_file
-        }, self.session)
+        }, self.session)  # Create a task
 
         request_data = {
             'frame_list': [1, 2, 3],
             'project_string_id': self.project.project_string_id,
             'mode_data': 'list'
-        }
+        }  # Prepare request data
 
         endpoint = f"/api/v1/task/{task.id}/video/single/{video_file.id}/frame-list/"
         with self.client.session_transaction() as session:
@@ -72,6 +76,7 @@ class TestVideoView(testing_setup.DiffgramBaseTestCase):
                 'utf-8')
             session['Authorization'] = credentials
             common_actions.add_auth_to_session(session, self.project.users[0])
+
         response = self.client.post(
             endpoint,
             data = json.dumps(request_data),
@@ -79,10 +84,12 @@ class TestVideoView(testing_setup.DiffgramBaseTestCase):
                 'directory_id': str(job.project.directory_default_id),
                 'Authorization': f"Basic {credentials}"
             }
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.json['url_list']), 3)
+        )  # Send a POST request to the endpoint
+
+        self.assertEqual(response.status_code, 200)  # Check the response status code
+        self.assertEqual(len(response.json['url_list']), 3)  # Check the number of URLs in the response
+
         i = 1
         for elm in response.json['url_list']:
-            self.assertEqual(elm['frame_number'], i)
+            self.assertEqual(elm['frame_number'], i)  # Check the frame number of each URL
             i += 1

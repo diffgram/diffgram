@@ -1,5 +1,10 @@
+from flask import Flask
 
-from flask import Blueprint
+app = Flask(__name__)
 
+@app.route('/')
+def home():
+    return "Welcome to the home page!"
 
-routes = Blueprint('routes', __name__)
+if __name__ == '__main__':
+    app.run(debug=True)

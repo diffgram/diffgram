@@ -7,30 +7,36 @@ import re
 
 from shared.database.user import UserbaseProject
 
-
 @routes.route('/api/v1/task/<int:task_id>/file/is_complete_toggle', 
 			  methods=['POST'])
 @Permission_Task.by_task_id(apis_user_list=["builder_or_trainer"])
 def api_by_task_is_complete_toggle(task_id):
-	with sessionMaker.session_scope() as session:
-		task = Task.get_by_id(
-					session = session,
-					task_id = task_id)
-		file = task.file
-		new_file = file.toggle_flag_shared(session)
+    """
+    This function handles the API request to toggle the completion flag of a file associated with a task.
 
-		if new_file is False: return jsonify(False), 400
+    args:
+        task_id (int): The ID of the task.
 
-		Event.new(					
-			session = session,
-			kind = "file_complete_toggle",
-			member = get_member(session=session),
-			project_id = task.project_id,
-			file_id = file.id,
-			description = f"from_task_{str(file.ann_is_complete)}"
-			)
+    returns:
+        A JSON response indicating success and the new file object.
+    """
+    with sessionMaker.session_scope() as session:
+        task = Task.get_by_id(session = session, task_id = task_id)
+        file = task.file
+        new_file = file.toggle_flag_shared(session)
 
-		return jsonify( success = True,
+        if new_file is False: return jsonify(False), 400
+
+        Event.new(					
+            session = session,
+            kind = "file_complete_toggle",
+            member = get_member(session=session),
+            project_id = task.project_id,
+            file_id = file.id,
+            description = f"from_task_{str(file.ann_is_complete)}"
+            )
+
+        return jsonify( success = True,
 						new_file = new_file.serialize_with_type(session)), 200
 
 
@@ -40,14 +46,15 @@ def api_by_task_is_complete_toggle(task_id):
 @Project_permissions.user_has_project(["admin", "Editor"])
 def ann_is_complete_toggle(project_string_id, file_id):
     """
-    args
-        file_id
+    This function handles the API request to toggle the completion flag of an annotation file.
 
-    returns
-        file (may be a new one)
+    args:
+        project_string_id (str): The string ID of the project.
+        file_id (int): The ID of the file.
 
+    returns:
+        A JSON response indicating success and the new file object.
     """
-
     # TODO review if this should be shared with file update!!!
     # probably yes!!!
 

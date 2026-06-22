@@ -1,222 +1,289 @@
 definitions:
+  // An Action object represents a single action instance in the system.
   Action:
     type: object
     properties:
       id:
+        // The unique identifier of the Action instance.
         description: The unique identifier of the Action instance.
         type: number
       kind:
+        // The kind/type of the Action.
         description: The kind/type of the Action.
         type: string
       active:
+        // A flag indicating whether the Action is active or not.
         description: A flag indicating whether the Action is active or not.
         type: boolean
       archived:
+        // A flag indicating whether the Action is archived or not.
         description: A flag indicating whether the Action is archived or not.
         type: boolean
         default: false
       status:
+        // The status of the Action.
         description: The status of the Action.
         type: string
       template_id:
+        // The unique identifier of the Action's associated Action Template.
         description: The unique identifier of the Action's associated Action Template.
         type: number
       workflow_id:
+        // The unique identifier of the Action's associated Workflow.
         description: The unique identifier of the Action's associated Workflow.
         type: number
       public_name:
+        // The public name of the Action.
         description: The public name of the Action.
         type: string
       icon:
+        // The icon associated with the Action.
         description: The icon associated with the Action.
         type: string
       description:
+        // A description of the Action.
         description: A description of the Action.
         type: string
       trigger_data:
+        // The data used to trigger the Action.
         description: The data used to trigger the Action.
         $ref: '#/definitions/TriggerData'
       config_data:
+        // The configuration data associated with the Action.
         description: The configuration data associated with the Action.
         type: object
       precondition:
+        // The precondition data associated with the Action.
         description: The precondition data associated with the Action.
         $ref: '#/definitions/PreConditionData'
       completion_condition_data:
+        // The completion condition data associated with the Action.
         description: The completion condition data associated with the Action.
         $ref: '#/definitions/CompletionConditionData'
       output:
+        // The output data of the Action.
         description: The output data of the Action.
         type: object
       output_interface:
+        // The interface used for the Action's output.
         description: The interface used for the Action's output.
         type: object
       ordinal:
+        // The ordinal value of the Action.
         description: The ordinal value of the Action.
         type: number
       is_root:
+        // A flag indicating whether the Action is a root Action or not.
         description: A flag indicating whether the Action is a root Action or not.
         type: boolean
       root_id:
+        // The unique identifier of the Action's root Action.
         description: The unique identifier of the Action's root Action.
         type: number
       parent_id:
+        // The unique identifier of the Action's parent Action.
         description: The unique identifier of the Action's parent Action.
         type: number
       child_primary_id:
+        // The unique identifier of the Action's primary child Action.
         description: The unique identifier of the Action's primary child Action.
         type: number
       project_id:
+        // The unique identifier of the Project associated with the Action.
         description: The unique identifier of the Project associated with the Action.
         type: number
       org_id:
+        // The unique identifier of the Org associated with the Action.
         description: The unique identifier of the Org associated with the Action.
         type: number
       member_created_id:
+        // The unique identifier of the Member who created the Action.
         description: The unique identifier of the Member who created the Action.
         type: number
       member_updated_id:
+        // The unique identifier of the Member who last updated the Action.
         description: The unique identifier of the Member who last updated the Action.
         type: number
       time_created:
+        // The date and time the Action was created.
         description: The date and time the Action was created.
         type: string
       time_updated:
+        // The date and time the Action was last updated.
         description: The date and time the Action was last updated.
         type: string
 
+  // An ActionRun object represents a single Action Run instance in the system.
   ActionRun:
     type: object
     properties:
       id:
+        // The unique identifier of the Action Run instance.
         description: The unique identifier of the Action Run instance.
         type: number
       kind:
+        // The kind/type of the Action Run.
         description: The kind/type of the Action Run.
         type: string
       status:
+        // The status of the Action Run.
         description: The status of the Action Run.
         type: string
       output:
+        // The output data of the Action Run execution.
         description: The output data of the Action Run execution.
         type: object
       workflow_id:
+        // The unique identifier of the Workflow associated with the Action Run.
         description: The unique identifier of the Workflow associated with the Action Run.
         type: number
       action_id:
+        // The unique identifier of the Action associated with the Action Run.
         description: The unique identifier of the Action associated with the Action Run.
         type: number
       time_created:
+        // The date and time the Action Run was created.
         description: The date and time the Action Run was created.
         type: string
   TriggerData:
     type: object
     properties:
       event_name:
+        // The name of the event to listen for triggering.
         description: The name of the event to listen for triggering.
         type: string
       upload_directory_id_list:
+        // In case for directories events, the list of dir IDs to listen for.
         description: In case for directories events, the list of dir IDs to listen for.
         type: number
       trigger_action_id:
+        // The ID of the action this trigger belongs to.
         description: The ID of the action this trigger belongs to.
         type: number
   PreConditionData:
     type: object
     properties:
       event_name:
+        // The name of the event to allow triggering the action, all other events will not trigger it.
         description: The name of the event to allow triggering the action, all other events will not trigger it.
         type: string
   CompletionConditionData:
     type: object
     properties:
       event_name:
+        // The name of the event to allow triggering the action, all other events will not trigger it.
         description: The name of the event to allow triggering the action, all other events will not trigger it.
         type: string
   ActionTemplate:
     type: object
     properties:
       id:
+        // The unique identifier of the Action Template instance.
         description: The unique identifier of the Action Template instance.
         type: number
       public_name:
+        // The public name of the Action Template.
         description: The public name of the Action Template.
         type: string
       icon:
+        // The icon associated with the Action Template.
         description: The icon associated with the Action Template.
         type: string
       description:
+        // A description of the Action Template.
         description: A description of the Action Template.
         type: string
       trigger_data:
+        // The data used to trigger the Action Template.
         description: The data used to trigger the Action Template.
         type: object
       condition_data:
+        // The precondition data associated with the Action Template.
         description: The precondition data associated with the Action Template.
         type: object
       completion_condition_data:
+        // The completion condition data associated with the Action Template.
         description: The completion condition data associated with the Action Template.
         type: object
       kind:
+        // The kind/type of the Action Template.
         description: The kind/type of the Action Template.
         type: string
       category:
+        // The category of the Action Template.
         description: The category of the Action Template.
         type: string
       is_available:
+        // A flag indicating whether the Action Template is available or not.
         description: A flag indicating whether the Action Template is available or not.
         type: boolean
       is_global:
+        // A flag indicating whether the Action Template is global or not.
         description: A flag indicating whether the Action Template is global or not.
         type: boolean
       member_created_id:
+        // The unique identifier of the Member who created the Action Template.
         description: The unique identifier of the Member who created the Action Template.
         type: number
       member_updated_id:
+        // The unique identifier of the Member who last updated the Action Template.
         description: The unique identifier of the Member who last updated the Action Template.
         type: number
       time_created:
+        // The date and time the Action Template was created.
         description: The date and time the Action Template was created.
         type: string
       time_updated:
+        // The date and time the Action Template was last updated.
         description: The date and time the Action Template was last updated.
         type: string
   Workflow:
     type: object
     properties:
       id:
+        // The unique identifier of the Workflow instance.
         description: The unique identifier of the Workflow instance.
         type: number
       string_id:
+        // The string identifier of the Workflow instance.
         description: The string identifier of the Workflow instance.
         type: string
       name:
+        // The name of the Workflow.
         description: The name of the Workflow.
         type: string
       trigger_type:
+        // The trigger type of the Workflow.
         description: The trigger type of the Workflow.
         type: string
       time_window:
+        // The time window of the Workflow.
         description: The time window of the Workflow.
         type: string
       active:
+        // A flag indicating whether the Workflow is active or not.
         description: A flag indicating whether the Workflow is active or not.
         type: boolean
       time_updated:
+        // The date and time the Workflow was last updated.
         description: The date and time the Workflow was last updated.
         type: string
   WorkflowRun:
     type: object
     properties:
       id:
+        // The unique identifier of the WorkflowRun instance.
         description: The unique identifier of the WorkflowRun instance.
         type: number
       status:
+        // The status of the WorkflowRun.
         description: The status of the WorkflowRun.
         type: string
       status_description:
+        // A description of the status of the WorkflowRun.
         description: A description of the status of the WorkflowRun.
         type: string
       file:
+        // The file associated with the WorkflowRun.
         description: The file associated with the WorkflowRun.
         type: object

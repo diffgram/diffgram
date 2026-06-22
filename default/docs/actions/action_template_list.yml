@@ -1,18 +1,22 @@
-
 ---
-summary: Action Templates List
-description: Gets the list of action templates on the project.
-tags:
+summary: # (summary) A brief summary of the endpoint's purpose.
+description: # (description) A detailed explanation of the endpoint's functionality.
+  This action retrieves the list of action templates for a specific project.
+
+tags: # (tags) Categorizes the endpoint for easier navigation in the API documentation.
   - Workflows & Actions
-parameters:
-  - name: project_string_id
-    in: path
-    type: string
-    required: true
-responses:
-  200:
-    description: The list of action templates.
-    schema:
-      type: array
-      items:
-        $ref: './default/docs/actions/schemas.yaml#/definitions/ActionTemplate'
+
+parameters: # (parameters) Describes the required input for this endpoint.
+  - name: project_string_id # (name) The name of the parameter.
+    in: path # (in) The location of the parameter in the API call.
+    type: string # (type) The data type of the parameter.
+    required: true # (required) Whether or not the parameter is mandatory.
+
+responses: # (responses) Describes the possible HTTP status codes and their associated data structures.
+  200: # (200) The standard HTTP success status code.
+    description: # (description) A brief explanation of the response.
+      The list of action templates is returned in this response.
+    schema: # (schema) Describes the structure of the response body.
+      type: array # (type) The data type of the response.
+      items: # (items) Describes the structure of each item in the array.
+        $ref: './default/docs/actions/schemas.yaml#/definitions/ActionTemplate' # (ref) A reference to the ActionTemplate schema.

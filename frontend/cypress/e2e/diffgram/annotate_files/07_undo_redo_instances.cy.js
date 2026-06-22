@@ -1,223 +1,69 @@
 import testUser from '../../../fixtures/users.json';
 import testLabels from '../../../fixtures/labels.json';
 
+const shapes = [
+  { type: 'Box', points: [75, 75, 120, 120] },
+  { type: 'Polygon', points: [200, 25, 200, 60, 180, 40, 160, 10, 200, 25] },
+  { type: 'Line', points: [145, 145, 220, 90] },
+  { type: 'Point', points: [25, 25] },
+  { type: 'Cuboid', points: [160, 160, 195, 180, 215, 230] },
+  { type: 'Ellipse', points: [80, 175, 135, 160] },
+];
 
 describe('Annotate Files Tests', () => {
   before(function () {
     Cypress.Cookies.debug(true, {verbose: true})
 
-    // login before all tests
     cy.loginByForm(testUser.email, testUser.password)
       .gotToProject(testUser.project_string_id)
       .createLabels(testLabels)
       .uploadAndViewSampleImage(testUser.project_string_id)
-      // Minimize file explorer
       .wait(3000)
       .get('[data-cy="minimize-file-explorer-button"]').click({force: true})
-      // Select Label
-      .select_label()
-  })
+      .select_label();
+  });
+
   context('Undo/Redo All Instance Type Creations', () => {
-    it('Correctly Undos a Bounding Box Creation', () => {
-      // Draw box
-      cy.wait(3000)
-      cy.mousedowncanvas(75, 75);
-      cy.wait(500)
+    shapes.forEach((shape) => {
+      it(`Correctly Undos a ${shape.type} Creation`, () => {
+        createShape(shape);
+        undoCreation();
+      });
+    });
+  });
+
+  context('Undo all instance type editions', () => {
+    shapes.forEach((shape) => {
+      it(`Correctly Undos a ${shape.type} Edition`, () => {
+        editShape(shape);
+        undoEdition();
+      });
+    });
+  });
+});
+
+function createShape(shape) {
+  cy.get('[data-cy="instance-type-select"]').click({force: true});
+  cy.get('.v-list.v-select-list div').contains(shape.type).click({force: true});
+  shape.points.forEach((point, index) => {
+    if (index % 2 === 0) {
+      cy.mousedowncanvas(point, shape.points[index + 1]);
+    } else {
       cy.mouseupcanvas();
-      cy.wait(1000)
-      cy.mousedowncanvas(120, 120);
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
+    }
+  });
+  cy.wait(1000);
+}
 
-    })
+function editShape(shape) {
+  cy.get('[data-cy="edit_toggle"]').click({force: true});
+  createShape(shape);
+}
 
-    it('Correctly Undo a Polygon Creation', () => {
-      // Draw Polygon
-      cy.get('[data-cy="instance-type-select"]').click({force: true})
-      cy.get('.v-list.v-select-list div').contains('Polygon').click({force: true})
-      cy.mousedowncanvas(200, 25);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(200, 60);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(180, 40);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(160, 10);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(200, 25);
-      cy.mouseupcanvas()
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
+function undoCreation() {
+  cy.get('body').type('{ctrl+z}');
+}
 
-
-    })
-
-    it('Correctly Undo Line Creation', () => {
-      // Draw Polygon
-      cy.get('[data-cy="instance-type-select"]').click({force: true})
-      cy.get('.v-list.v-select-list div').contains('Line').click({force: true})
-      cy.mousedowncanvas(145, 145);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(220, 90);
-      cy.mouseupcanvas()
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
-
-    })
-
-    it('Correctly Undo Point Creation', () => {
-      // Draw Point
-      cy.get('[data-cy="instance-type-select"]').click({force: true})
-      cy.get('.v-list.v-select-list div').contains('Point').click({force: true})
-      cy.mousedowncanvas(25, 25);
-      cy.mouseupcanvas()
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
-
-    })
-
-    it('Correctly Undo Cuboid Creation', () => {
-      // Draw Cuboid
-      cy.get('[data-cy="instance-type-select"]').click({force: true})
-      cy.get('.v-list.v-select-list div').contains('Cuboid').click({force: true})
-      cy.mousedowncanvas(160, 160);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(195, 180);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(215, 230);
-      cy.mouseupcanvas()
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
-
-    })
-
-    it('Correctly Undo Ellipse Creation', () => {
-      // Draw Ellipse
-      cy.get('[data-cy="instance-type-select"]').click({force: true})
-      cy.get('.v-list.v-select-list div').contains('Ellipse').click({force: true})
-      cy.mousedowncanvas(80, 175);
-      cy.mouseupcanvas()
-      cy.wait(500)
-      cy.mousedowncanvas(135, 160);
-      cy.mouseupcanvas()
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
-
-    })
-    
-  })
-  context('Undo all instance type editions', () =>{
-
-    it('Correctly Undos a Bounding Box Edition', () => {
-      // Draw box
-      cy.get('[data-cy="instance-type-select"]').click({force: true})
-      cy.get('.v-list.v-select-list div').contains('Box').click({force: true})
-      cy.mousedowncanvas(75, 75);
-      cy.mouseupcanvas();
-      cy.mousedowncanvas(120, 120);
-      cy.mouseupcanvas();
-      cy.wait(1000)
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
-      cy.wait(1000)
-      cy.dragcanvas(75, 75, 50, 50);
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
-
-    })
-
-    it('Correctly Undos a Polygon Edition', () => {
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
-      cy.get('[data-cy="instance-type-select"]').click({force: true})
-      cy.get('.v-list.v-select-list div').contains('Polygon').click({force: true})
-      cy.mousedowncanvas(200, 25);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(200, 60);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(180, 40);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(160, 10);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(200, 25);
-      cy.mouseupcanvas()
-      cy.wait(1000)
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
-      cy.wait(1000)
-      cy.dragcanvas(180, 40, 100, 100);
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
-
-    })
-
-    it('Correctly Undos a Line Edition', () => {
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
-      cy.get('[data-cy="instance-type-select"]').click({force: true})
-      cy.get('.v-list.v-select-list div').contains('Line').click({force: true})
-      cy.mousedowncanvas(145, 145);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(220, 90);
-      cy.mouseupcanvas()
-      cy.wait(1000)
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
-      cy.wait(1000)
-      cy.dragcanvas(145, 145, 90, 90);
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
-
-    })
-
-
-    it('Correctly Undos a Point Edition', () => {
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
-      cy.get('[data-cy="instance-type-select"]').click({force: true})
-      cy.get('.v-list.v-select-list div').contains('Point').click({force: true})
-      cy.mousedowncanvas(25, 25);
-      cy.mouseupcanvas()
-      cy.wait(1000)
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
-      cy.wait(1000)
-      cy.dragcanvas(25, 25, 84, 84);
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
-
-    })
-
-    it('Correctly Undos a Cuboid Edition', () => {
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
-      cy.get('[data-cy="instance-type-select"]').click({force: true})
-      cy.get('.v-list.v-select-list div').contains('Cuboid').click({force: true})
-      cy.mousedowncanvas(160, 160);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(195, 180);
-      cy.mouseupcanvas()
-      cy.mousedowncanvas(215, 230);
-      cy.mouseupcanvas()
-      cy.wait(1000)
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
-      cy.wait(1000)
-      cy.dragcanvas(160, 160, 130, 130);
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
-
-    })
-
-    it('Correctly Undos an Ellipse Edition', () => {
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
-      cy.get('[data-cy="instance-type-select"]').click({force: true})
-      cy.get('.v-list.v-select-list div').contains('Ellipse').click({force: true})
-      cy.mousedowncanvas(80, 175);
-      cy.mouseupcanvas()
-      cy.wait(500)
-      cy.mousedowncanvas(135, 160);
-      cy.mouseupcanvas()
-      cy.wait(1000)
-      cy.get('[data-cy="edit_toggle"]').click({force: true})
-      cy.wait(1000)
-      cy.dragcanvas(90, 150, 80, 200);
-      cy.wait(1000)
-      cy.get('body').type('{ctrl+z}');
-    })
-
-
-  })
-
-
-})
+function undoEdition() {
+  cy.get('body').type('{ctrl+z}');
+}

@@ -1,36 +1,34 @@
-
 ---
-summary: Create Discussion Comment
-description: Creates a comment on the given discussion ID.
-tags:
-  - Discussions
-parameters:
-  - name: project_string_id
-    in: path
-    type: string
-    required: true
-  - name: discussion_id
-    in: path
-    type: number
-    required: true
-  - in: body
-    name: DiscussionCommentReqBody
-    description: The comment body content
-    schema:
-      $ref: '#/definitions/DiscussionCommentReqBody'
-definitions:
+summary:        This is a brief summary of what the API endpoint does. In this case, it creates a comment on a discussion.
+description:    This is a more detailed description of the API endpoint. It explains that the endpoint creates a comment on a discussion with the given discussion ID.
+tags:           These are tags that help categorize the API endpoint. In this case, the endpoint is related to "Discussions".
+parameters:     These are the parameters required to make a request to the API endpoint.
+  - name:          The name of the parameter. In this case, "project_string_id" is a required path parameter.
+    in:            This specifies where the parameter is located. In this case, it is located in the path.
+    type:          The data type of the parameter. In this case, "project_string_id" is a string.
+    required:      This indicates whether the parameter is required or not. In this case, "project_string_id" is required.
+  - name:          The name of the parameter. In this case, "discussion_id" is a required path parameter.
+    in:            This specifies where the parameter is located. In this case, it is located in the path.
+    type:          The data type of the parameter. In this case, "discussion_id" is a number.
+    required:      This indicates whether the parameter is required or not. In this case, "discussion_id" is required.
+  - in:            This specifies where the request body is located. In this case, it is located in the body.
+    name:          The name of the request body. In this case, "DiscussionCommentReqBody" is the request body content.
+    description:  This is a more detailed description of the request body.
+    schema:        This specifies the schema of the request body.
+      $ref:        This is a reference to the schema definition. In this case, it refers to "#/definitions/DiscussionCommentReqBody".
+definitions:    These are the definitions of the data structures used in the API endpoint.
   DiscussionComment:
-    type: object
-    properties:
-      id:
-        type: number
+    type:          The data type of the definition. In this case, "DiscussionComment" is an object.
+    properties:    These are the properties of the object.
+      id:          The name of the property. In this case, "id" is a property of "DiscussionComment".
+        type:        The data type of the property. In this case, "id" is a number.
   DiscussionCommentReqBody:
-    type: object
-    properties:
-      content:
-        type: string
-responses:
-  200:
-    description: The newly created comment
-    schema:
-      $ref: '#/definitions/DiscussionComment'
+    type:          The data type of the definition. In this case, "DiscussionCommentReqBody" is an object.
+    properties:    These are the properties of the object.
+      content:      The name of the property. In this case, "content" is a property of "DiscussionCommentReqBody".
+        type:        The data type of the property. In this case, "content" is a string.
+responses:       These are the possible responses from the API endpoint.
+  200:            This is the status code for a successful request.
+    description:  This is a description of the response. In this case, it is the newly created comment.
+    schema:        This specifies the schema of the response.
+      $ref:        This is a reference to the schema definition. In this case, it refers to "#/definitions/DiscussionComment".

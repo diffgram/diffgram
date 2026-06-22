@@ -1,20 +1,22 @@
 # OPENCORE - ADD
-try:
-    from methods.regular.regular_api import *
-except:
-    from default.methods.regular.regular_api import *
+import datetime
+
+# Import required modules
+from methods.regular.regular_api import *
 from dataclasses import dataclass
 from shared.database.task.job.job_launch import JobLaunch, JobLaunchQueue
 from shared.utils.job_launch_utils import job_launch_limits_with_permission_check
 from shared.database.task.job.job_working_dir import JobWorkingDir
 from shared.regular.regular_log import log_has_error
 import requests
+from flask import jsonify, request, sessionMaker
 
 
 @dataclass
 class TaskTemplateLaunchInvoker:
-    task_template: Job
-    session: any
+    def __init__(self, task_template: Job, session: any):
+        self.task_template = task_template
+        self.session = session
 
     def enqueue_task_template_launch(self, member_created=None):
         # Create a JobLaunch entry for future queries.
@@ -25,44 +27,45 @@ class TaskTemplateLaunchInvoker:
             job=self.task_template,
             member_created=member_created
         )
+
         # Now Create a new queue element for the worker to process it.
         JobLaunchQueue.add_to_queue(session=self.session,
                                     job_launch=job_launch,
                                     add_to_session=True,
                                     flush_session=True)
-        
-        regular_methods.commit_with_rollback(session = self.session)
-        self.notify_workers()
 
+        regular_methods.commit_with_rollback(session=self.session)
+        self.notify_workers()
 
     def notify_workers(self):
         regular_methods.transmit_interservice_request(
-            message = 'new_job_launch_queue_item',
-            logger = logger,
-            service_target = 'walrus')
-
+            message='new_job_launch_queue_item',
+            logger=logger,
+            service_target='walrus'
+        )
 
 
 def check_integrations_support(session, task_template, log):
     if not task_template.interface_connection:
         return log
+
     connection = task_template.interface_connection
     files_count = task_template.get_attached_files(session=session, return_kind='count')
 
     if connection.integration_name == 'scale_ai':
         if task_template.instance_type not in ['box', 'polygon']:
             log['error'][
-                'labelbox_interface'] = 'Cannot use instance type {} for ScaleAI  please choose one of'.format(
-                task_template.instance_type,
-                '"box", "polygon" or "line".')
+                'labelbox_interface'] = f'Cannot use instance type {task_template.instance_type} for ScaleAI. ' \
+                                         f'Please choose one of "box", "polygon" or "line".'
             if files_count == 0:
-                log['error']['file_count'] = 'Datasets must contains at least 1 file to launch.'
+                log['error']['file_count'] = 'Datasets must contain at least 1 file to launch.'
 
     return log
 
 
 def check_exam_has_assignees(session, task_template):
     """
+    Check if the exam template has any assignees.
 
     :return:
     """
@@ -70,23 +73,18 @@ def check_exam_has_assignees(session, task_template):
         return True
 
     assignee_list = task_template.get_assignees(session)
-    if len(assignee_list) > 0:
-        return True
-    return False
+    return len(assignee_list) > 0
 
 
-@routes.route('/api/v1/job/launch',
-              methods=['POST'])
+@routes.route('/api/v1/job/launch', methods=['POST'])
 def task_template_launch_api():
     """
-
-
+    API endpoint to launch a job template.
 
     """
     spec_list = [{"job_id": int}]
 
-    log, input, untrusted_input = regular_input.master(request=request,
-                                                       spec_list=spec_list)
+    log, input, untrusted_input = regular_input.master(request=request, spec_list=spec_list)
     if len(log["error"].keys()) >= 1:
         return jsonify(log=log), 400
 
@@ -110,26 +108,12 @@ def task_template_launch_api():
 
         if not check_exam_assignees_ok:
             log['error']['check_assignees'] = 'Exam must have at least 1 assignee.'
-            return jsonify(log = log), 400
+            return jsonify(log=log), 400
 
-        """
-        Why condition on file_count_statistic
-            1) If job has a small number of things we can create it fast and return results to user
-                We assume it's better for small jobs (ie test things) that the user can see it right away.
-            
-            2) If job has a large number risk of time out (and slow user interaction)
-        
-        """
-        user = User.get(session)
-
-        # We are now always enqueuing job launches.
-        log['info']['launch_flow'] = "soon"
-        task_template.launch_datetime = datetime.datetime.utcnow()
-        task_template.status = 'active'
-        session.add(task_template)
         # Enqueue Job Launch for future processing.
         task_template_launcher = TaskTemplateLaunchInvoker(task_template=task_template, session=session)
         member = None
+        user = User.get(session)
         if user:
             member = user.member
 
@@ -157,5 +141,3 @@ def task_template_launch_api():
 
         out = jsonify(log=log)
         return out, 200
-
-
