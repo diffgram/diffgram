@@ -260,7 +260,7 @@ class Usage():
 
         directory_list = WorkingDir.list(
             session = self.session,
-            project_id = self.project.id,
+            project = self.project,
             exclude_archived = self.exclude_removed
         )
         # Handle all directories in project

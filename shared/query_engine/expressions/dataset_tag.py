@@ -23,7 +23,7 @@ class DatasetTagCompareExpression(CompareExpression):
         for tag_name in raw_scalar_value:
             tag_name = tag_name.strip('\"')
             tag_name = tag_name.strip('\'')
-            tag = Tag.get(session = session, name = tag_name, project_id = self.project_id)
+            tag = Tag.get(session = session, name = tag_name, project_id = self.project.id)
             if tag:
                 tag_id_list.append(tag.id)
 
