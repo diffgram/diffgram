@@ -101,8 +101,44 @@ class OAuth2ClientBase(metaclass = SingletonABC):
             return False
 
     def get_decoded_jwt_token(self, id_token: str) -> dict:
-        decoded_token = jwt.decode(id_token, verify=False, algorithms='RS256', options={"verify_signature": False})
-        return decoded_token
+        """
+            Decode a JWT token with signature verification using the provider's
+            public key. Falls back to unverified decode only when no public key
+            is configured, with a security warning.
+
+            Security note (CWE-347): Previously this method decoded JWTs without
+            any signature verification, allowing an attacker to forge tokens with
+            arbitrary claims. The token is now verified against the OIDC provider's
+            public key when available.
+        """
+        public_key = getattr(settings, 'OAUTH2_PROVIDER_PUBLIC_KEY', None)
+        if public_key:
+            try:
+                header = "-----BEGIN PUBLIC KEY-----\n"
+                trailer = "\n-----END PUBLIC KEY-----"
+                key = header + str(public_key) + trailer
+                decoded_token = jwt.decode(
+                    id_token,
+                    key=key,
+                    algorithms=['RS256'],
+                    options={"verify_exp": False}  # Expiry is checked separately by id_token_has_expired
+                )
+                return decoded_token
+            except jwt.exceptions.PyJWTError as e:
+                logger.error(f"JWT signature verification failed: {e}")
+                return {}
+        else:
+            logger.warning(
+                "SECURITY WARNING: OAUTH2_PROVIDER_PUBLIC_KEY is not configured. "
+                "JWT signature verification is skipped. This allows token forgery. "
+                "Set OAUTH2_PROVIDER_PUBLIC_KEY to enable signature verification."
+            )
+            decoded_token = jwt.decode(
+                id_token,
+                algorithms=['RS256'],
+                options={"verify_signature": False}
+            )
+            return decoded_token
 
     @abc.abstractmethod
     def get_access_token_from_jwt(self, jwt_data: dict):
