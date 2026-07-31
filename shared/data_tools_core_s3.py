@@ -8,6 +8,9 @@ from botocore.config import Config
 
 from imageio import imread
 
+# Appended to the botocore user agent so S3 providers can identify Diffgram requests.
+S3_USER_AGENT_EXTRA = f'diffgram/{settings.DIFFGRAM_VERSION_TAG or "dev"}'
+
 
 class DataToolsS3:
     """
@@ -42,6 +45,8 @@ class DataToolsS3:
                    aws_secret_access_key, 
                    region_name=None, 
                    config=None):
+
+        config = Config(user_agent_extra=S3_USER_AGENT_EXTRA).merge(config or Config())
 
         return boto3.client(
             's3',
