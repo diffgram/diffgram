@@ -3,6 +3,7 @@ from shared.settings import settings
 
 from .data_tools_core_s3 import Config
 from .data_tools_core_s3 import DataToolsS3
+from .data_tools_core_s3 import S3_USER_AGENT_EXTRA
 from shared.shared_logger import get_shared_logger
 
 logger = get_shared_logger()
@@ -65,6 +66,8 @@ class DataToolsMinio(DataToolsS3):
                    region_name = None, 
                    verify = False,
                    config = None):
+
+        config = Config(user_agent_extra=S3_USER_AGENT_EXTRA).merge(config or Config())
 
         return boto3.client(
             's3',
